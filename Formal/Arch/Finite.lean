@@ -702,4 +702,85 @@ theorem maxDepthOfFinite_correct_of_acyclic {C : Type u} {G : ArchGraph C}
 
 end ArchitectureSignature
 
+namespace ComponentUniverse
+
+/--
+Layer assignment induced by finite bounded dependency depth from each source.
+
+This is an executable depth measure over the proof-carrying component universe;
+acyclicity is used by the theorem below to show that it is a strict layering.
+-/
+def sourceDepthLayer {C : Type u} {G : ArchGraph C}
+    [DecidableRel G.edge] (U : ComponentUniverse G) : Layering C :=
+  fun c => ArchitectureSignature.boundedDepthFrom G U.components U.components.length c
+
+/--
+In a finite acyclic component universe, source depth strictly decreases along
+each dependency edge.
+-/
+theorem sourceDepthLayer_strictLayering_of_acyclic {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hAcyclic : Acyclic G) :
+    StrictLayering G (sourceDepthLayer U) := by
+  intro c d hEdge
+  simp only [sourceDepthLayer]
+  have hSourceBoundC :
+      ∀ {terminal : C} (walk : Walk G c terminal),
+        walk.length ≤
+          ArchitectureSignature.boundedDepthFrom G U.components U.components.length c := by
+    intro terminal walk
+    have hFuel : walk.length ≤ U.components.length :=
+      walk_length_le_components_length_of_acyclic U hAcyclic walk
+    exact ArchitectureSignature.walk_length_le_boundedDepthFrom_of_walk U walk hFuel
+  have hPositive :
+      0 < ArchitectureSignature.boundedDepthFrom G U.components U.components.length c := by
+    have hOne :
+        (Walk.cons hEdge (Walk.nil d)).length ≤
+          ArchitectureSignature.boundedDepthFrom G U.components U.components.length c :=
+      hSourceBoundC (Walk.cons hEdge (Walk.nil d))
+    have hOne' :
+        1 ≤ ArchitectureSignature.boundedDepthFrom G U.components U.components.length c := by
+      simpa [Walk.length] using hOne
+    exact hOne'
+  have hDepthDLePred :
+      ArchitectureSignature.boundedDepthFrom G U.components U.components.length d ≤
+        ArchitectureSignature.boundedDepthFrom G U.components U.components.length c - 1 := by
+    exact ArchitectureSignature.boundedDepthFrom_le_of_walk_depth_bound
+      (components := U.components)
+      (bound :=
+        ArchitectureSignature.boundedDepthFrom G U.components U.components.length c - 1)
+      (fuel := U.components.length) (c := d)
+      (by
+        intro terminal walk
+        have hCons :
+            (Walk.cons hEdge walk).length ≤
+              ArchitectureSignature.boundedDepthFrom G U.components U.components.length c :=
+          hSourceBoundC (Walk.cons hEdge walk)
+        have hCons' :
+            walk.length + 1 ≤
+              ArchitectureSignature.boundedDepthFrom G U.components U.components.length c := by
+          simpa [Walk.length, Nat.succ_eq_add_one] using hCons
+        omega)
+  omega
+
+/-- Finite acyclic component universes are strictly layered. -/
+theorem strictLayered_of_acyclic {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hAcyclic : Acyclic G) :
+    StrictLayered G :=
+  ⟨sourceDepthLayer U, sourceDepthLayer_strictLayering_of_acyclic U hAcyclic⟩
+
+end ComponentUniverse
+
+namespace FiniteArchGraph
+
+/-- Finite acyclic architecture graphs are strictly layered. -/
+theorem strictLayered_of_acyclic {C : Type u} [DecidableEq C]
+    (FG : FiniteArchGraph C) [DecidableRel FG.graph.edge]
+    (hAcyclic : Acyclic FG.graph) :
+    StrictLayered FG.graph :=
+  ComponentUniverse.strictLayered_of_acyclic FG.componentUniverse hAcyclic
+
+end FiniteArchGraph
+
 end Formal.Arch
