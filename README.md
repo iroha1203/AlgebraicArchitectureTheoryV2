@@ -1,4 +1,4 @@
-# 代数的アーキテクチャ理論 V2
+# 代数的アーキテクチャ論 V2
 
 このリポジトリは、**Algebraic Architecture Theory V2** の Lean 形式化と研究ノートを管理するための独立リポジトリです。
 
@@ -28,7 +28,7 @@ V2 では、次の三層を分けて進めます。
 
 3. **定量評価**
    - 不変量の破れを `ArchitectureSignature` として多軸評価する。
-   - 実証的な相関は Lean の定理ではなく、別途 empirical hypothesis として扱う。
+   - 実証的な相関は Lean の定理ではなく、別途 empirical hypothesis（実証仮説）として扱う。
 
 Lean では、定義が明確で全称命題として扱える構造的事実を証明します。現実コードベースにおける変更コストや障害修正時間との相関は、実証研究の仮説として分離します。
 
@@ -37,15 +37,15 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 現在のタスク管理は GitHub Issues / Milestones に移行しています。大まかな進行順は次の通りです。
 
 1. **Finite Universe Bridge**
-   - finite-list executable metrics を、証明付きの有限 universe と接続する。
+   - finite-list executable metrics（有限リスト上で実行可能な指標）を、証明付きの有限 universe（測定対象の有限集合）と接続する。
    - `ComponentUniverse` / `FiniteArchGraph` の役割分担を整理する。
 
 2. **Path and Reachability Correctness**
    - `Walk` から `Path` / `SimpleWalk` を分離する。
    - 有限 universe 上で `Reachable` なら bounded path が存在することを証明する。
-
-3. **SCC and Depth Correctness**
    - `hasCycleBool` と `HasClosedWalk` の有限 universe 上の対応を証明する。
+
+3. **Cycle, SCC and Depth Correctness**
    - `sccSizeAt` と相互到達可能性の同値類を接続する。
    - acyclic finite graph 上の depth 指標を正当化する。
 
@@ -60,6 +60,7 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 6. **Projection / Observation Invariants**
    - DIP, Strong DIP, projection exactness, representative stability の役割を整理する。
    - observation factorization と LSP の関係を発展させる。
+   - SOLID を局所契約層として形式化し、それだけでは `Decomposable` が従わないことを明確にする。
 
 7. **Path and Matrix Foundations**
    - adjacency matrix, nilpotence, DAG との bridge を作る。
@@ -83,7 +84,13 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 - observation, observation factorization, LSP compatibility
 - SOLID 風局所条件だけでは decomposability が従わない反例
 - `ArchitectureSignature` と componentwise risk order
-- finite-list executable metrics for signature v0
+- signature v0 の finite-list executable metrics（有限リスト上で実行可能な指標）
+
+## 詳細ドキュメント
+
+- [研究概要](docs/aat_v2_overview.md)
+- [設計原則の分類](docs/design_principle_classification.md)
+- [証明義務と実証仮説](docs/proof_obligations.md)
 
 ## リポジトリ構成
 
