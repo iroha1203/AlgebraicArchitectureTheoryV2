@@ -33,5 +33,5 @@ The initial formalization includes:
 - projection soundness/completeness/exactness and strong operational DIP;
 - observation, observation factorization, and LSP compatibility;
 - local-contract and abstract-layer-cycle counterexamples;
-- architecture signatures with componentwise risk order.
-
+- architecture signatures with componentwise risk order and executable v0
+  finite-list metrics.
