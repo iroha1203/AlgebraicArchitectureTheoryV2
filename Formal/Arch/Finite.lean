@@ -40,6 +40,28 @@ structure ComponentUniverse {C : Type u} (G : ArchGraph C) where
 
 namespace ComponentUniverse
 
+/--
+For a full finite component universe, edge-closedness follows from coverage.
+
+`ComponentUniverse` keeps `edgeClosed` explicit so future closed measurement
+sub-universes can use the same theorem interfaces without requiring full
+coverage.
+-/
+theorem edgeClosed_of_covers {C : Type u} {G : ArchGraph C} {components : List C}
+    (covers : ∀ c : C, c ∈ components) :
+    ∀ {c d : C}, G.edge c d → c ∈ components ∧ d ∈ components := by
+  intro c d _hEdge
+  exact ⟨covers c, covers d⟩
+
+/-- Build a full component universe from a duplicate-free covering list. -/
+def full {C : Type u} (G : ArchGraph C) (components : List C)
+    (nodup : components.Nodup) (covers : ∀ c : C, c ∈ components) :
+    ComponentUniverse G where
+  components := components
+  nodup := nodup
+  covers := covers
+  edgeClosed := edgeClosed_of_covers covers
+
 /-- Build the v0 signature using the finite universe's component list. -/
 def v0 {C : Type u} {G : ArchGraph C}
     [DecidableEq C] [DecidableRel G.edge]
@@ -160,6 +182,56 @@ theorem reachable_exists_bounded_path {C : Type u} {G : ArchGraph C}
   exact ⟨p, simpleWalk_length_le_components_length U p⟩
 
 end ComponentUniverse
+
+/--
+A finite architecture graph is a graph bundled with the proof-carrying finite
+measurement universe used by executable metrics and finite-graph theorems.
+
+The bundle is deliberately thin: `ComponentUniverse` remains the owner of
+coverage, duplicate-freeness, and edge-closedness assumptions, while list-based
+metric APIs remain available for raw executable measurements.
+-/
+structure FiniteArchGraph (C : Type u) where
+  graph : ArchGraph C
+  componentUniverse : ComponentUniverse graph
+
+namespace FiniteArchGraph
+
+/-- Bundle an existing graph and component universe as a finite architecture graph. -/
+def ofComponentUniverse {C : Type u} {G : ArchGraph C}
+    (U : ComponentUniverse G) : FiniteArchGraph C where
+  graph := G
+  componentUniverse := U
+
+/-- The executable measurement list carried by a finite architecture graph. -/
+def components {C : Type u} (FG : FiniteArchGraph C) : List C :=
+  FG.componentUniverse.components
+
+/-- The component list carried by a finite architecture graph is duplicate-free. -/
+theorem nodup_components {C : Type u} (FG : FiniteArchGraph C) :
+    FG.components.Nodup :=
+  FG.componentUniverse.nodup
+
+/-- The component list carried by a finite architecture graph covers every vertex. -/
+theorem covers_components {C : Type u} (FG : FiniteArchGraph C) (c : C) :
+    c ∈ FG.components :=
+  FG.componentUniverse.covers c
+
+/-- Edges of a finite architecture graph stay inside its component universe. -/
+theorem edgeClosed_components {C : Type u} (FG : FiniteArchGraph C)
+    {c d : C} (hEdge : FG.graph.edge c d) :
+    c ∈ FG.components ∧ d ∈ FG.components :=
+  FG.componentUniverse.edgeClosed hEdge
+
+/-- Build the v0 signature from the bundled component universe. -/
+def v0 {C : Type u} (FG : FiniteArchGraph C)
+    [DecidableEq C] [DecidableRel FG.graph.edge]
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignature :=
+  FG.componentUniverse.v0 boundaryAllowed abstractionAllowed
+
+end FiniteArchGraph
 
 namespace ArchitectureSignature
 

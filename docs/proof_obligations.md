@@ -23,7 +23,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 
 | Issue | State | Milestone | Lean status | 関連セクション | 内容 |
 | --- | --- | --- | --- | --- | --- |
-| [#3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) | open | 1. Finite Universe Bridge | `defined only` / design | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [未解決課題](#未解決課題) | `ComponentUniverse` と `FiniteArchGraph` の役割分担を決める。 |
+| [#3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) | open | 1. Finite Universe Bridge | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `ComponentUniverse` と `FiniteArchGraph` の役割分担を整理する。 |
 | [#4](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4) | closed | 1. Finite Universe Bridge | `proved` / resolved naming | [Bridge theorem naming policy](#bridge-theorem-naming-policy) | bridge theorem の命名方針を整理する。 |
 | [#5](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5) | closed | 2. Path and Reachability Correctness | `defined only` / resolved definition | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `Path` / `SimpleWalk` を導入する。 |
 | [#6](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6) | closed | 2. Path and Reachability Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | 有限 universe 上で reachable なら bounded path があることを証明する。 |
@@ -34,7 +34,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | open | 4. Signature v0 Stabilization | `defined only` / design | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `averageFanout` を `totalFanout` / `maxFanout` / `fanoutRisk` のどれに寄せるか決める。 |
 | [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | open | 5. Layering Equivalence | `future proof obligation` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
 | [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
-| [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25) | open | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | SCC サイズ指標と相互到達可能性の同値類を接続する。 |
+| [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | SCC サイズ指標と相互到達可能性の同値類を接続する。 |
 | [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26) | open | 7. Path and Matrix Foundations | `future proof obligation` / design | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理), [解析的指標は発展課題として扱う](#解析的指標は発展課題として扱う) | adjacency matrix と DAG / nilpotence / spectral bridge を設計する。 |
 
 ## Lean で証明する命題
@@ -126,7 +126,7 @@ Lean status:
 - `DAG -> rho(A) = 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 - `cycle -> rho(A) > 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 
-`Acyclic + finite vertices -> StrictLayered` に進むには、有限で計算可能なグラフ表現が必要になる。次フェーズでは `[Fintype C]`, `[DecidableEq C]`, `DecidableRel G.edge`、または専用の `FiniteArchGraph` を導入する。この設計上の前提は [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) で扱う。
+`Acyclic + finite vertices -> StrictLayered` に進むための有限グラフ表現は、`ComponentUniverse` と `FiniteArchGraph` の二層に分ける。`ComponentUniverse` は proof-carrying measurement universe として list, `Nodup`, coverage, edge-closedness を保持する。`FiniteArchGraph` は `ArchGraph` と `ComponentUniverse` を束ねる薄い graph-plus-universe structure として、将来の有限グラフ theorem statement の入口にする。この整理は [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) で扱う。
 
 ### 3. SOLID 不完全性定理
 
@@ -358,6 +358,13 @@ Lean status:
   coverage, and edge-closedness assumptions. The current `ComponentUniverse` is
   a full universe, so edge-closedness follows from coverage. It remains an
   explicit field to leave room for future closed measurement sub-universes.
+- `FiniteArchGraph` is a thin bundle of an `ArchGraph` and its
+  `ComponentUniverse`. It does not replace raw list metrics or
+  `ComponentUniverse`; it provides a stable graph-plus-universe entry point for
+  future finite-graph theorem statements. `ComponentUniverse.full` records the
+  full-universe case where `edgeClosed` follows from `covers`. This resolves
+  [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3)
+  at the design/definition level.
 - `SimpleWalk` packages a `Walk` with `walk.vertices.Nodup`, and `Path` is
   currently an alias for `SimpleWalk`. This resolves
   [Issue #5](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5)
@@ -365,18 +372,14 @@ Lean status:
   while `Path` / `SimpleWalk` marks the no-repeated-vertices representative
   needed for future path-shortening.
 - `ComponentUniverse` is still a proof-carrying measurement universe, not a
-  parser or extractor for real codebases. The remaining design split with
-  `FiniteArchGraph` is tracked by
-  [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3).
+  parser or extractor for real codebases. `FiniteArchGraph` is only the bundled
+  Lean representation of a graph with such a universe.
 - `averageFanout : Nat` remains an initial coarse metric. Its replacement or
   normalization is tracked by
   [Issue #11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11).
 
 `future proof obligation`:
 
-- Decide whether `FiniteArchGraph` should become a bundled graph-plus-universe
-  structure; design tracking:
-  [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3).
 - Stabilize the fanout risk axis after the `averageFanout` design decision;
   design tracking:
   [Issue #11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11).
