@@ -33,7 +33,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10) | open | 6. Projection / Observation Invariants | `defined only` / design | [5. DIP は射影整合性である](#5-dip-は射影整合性である), [6. LSP は観測関手による同値性である](#6-lsp-は観測関手による同値性である) | `DIPCompatible` と `StrongDIPCompatible` の役割分担を整理する。 |
 | [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | open | 4. Signature v0 Stabilization | `defined only` / design | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `averageFanout` を `totalFanout` / `maxFanout` / `fanoutRisk` のどれに寄せるか決める。 |
 | [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | open | 5. Layering Equivalence | `future proof obligation` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
-| [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | open | 3. Cycle, SCC and Depth Correctness | `future proof obligation` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
+| [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | open | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
 | [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25) | open | 3. Cycle, SCC and Depth Correctness | `future proof obligation` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | SCC サイズ指標と相互到達可能性の同値類を接続する。 |
 | [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26) | open | 7. Path and Matrix Foundations | `future proof obligation` / design | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理), [解析的指標は発展課題として扱う](#解析的指標は発展課題として扱う) | adjacency matrix と DAG / nilpotence / spectral bridge を設計する。 |
 
@@ -335,6 +335,13 @@ Lean status:
   `hasCycleBool_correct_under_finite_universe` connect the executable cycle
   indicator with `HasClosedWalk` under a finite `ComponentUniverse`. This
   resolves [Issue #8](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/8).
+- `walk_length_le_components_length_of_acyclic`,
+  `maxDepthOfFinite_is_global_walk_depth_bound_of_acyclic`,
+  `maxDepthOfFinite_le_of_global_walk_depth_bound`, and
+  `maxDepthOfFinite_correct_of_acyclic` show that, under an acyclic finite
+  `ComponentUniverse`, executable `maxDepthOfFinite` is the least upper bound
+  of all concrete dependency-walk lengths. This resolves
+  [Issue #24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24).
 
 `defined only`:
 
@@ -367,8 +374,6 @@ Lean status:
 - Decide whether `FiniteArchGraph` should become a bundled graph-plus-universe
   structure; design tracking:
   [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3).
-- Prove max-depth correctness on acyclic finite graphs; tracking:
-  [Issue #24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24).
 - Stabilize the fanout risk axis after the `averageFanout` design decision;
   design tracking:
   [Issue #11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11).
