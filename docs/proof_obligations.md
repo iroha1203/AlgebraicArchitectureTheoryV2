@@ -319,6 +319,35 @@ Lean status:
   bundled graph-plus-universe structure.
 - Future proof obligation: prove max-depth correctness on acyclic finite graphs.
 
+Bridge theorem naming policy:
+
+- Use `*_sound` for executable Boolean evidence implying graph-level
+  propositions.
+  Example: `reachesWithin_sound`.
+- Use `*_of_hasCycleBool` for facts extracted from a true executable cycle
+  indicator.
+  Examples: `edge_reachable_of_hasCycleBool`,
+  `hasClosedWalk_of_hasCycleBool`.
+- Use `*_complete_of_walk` for bounded completeness from an explicit `Walk`
+  and an explicit fuel bound.
+  Example: `reachesWithin_complete_of_walk`.
+- Use `*_complete_of_reachable_under_universe` for completeness from
+  propositional `Reachable` under a `ComponentUniverse`, where the fuel is fixed
+  to `components.length`.
+  Example: `reachesWithin_complete_of_reachable_under_universe`.
+- Use `*_complete_of_bounded_return_walk` for the older bounded cycle bridge
+  that starts from one generating edge and an explicit bounded return walk.
+  Example: `hasCycleBool_complete_of_bounded_return_walk`.
+- Use `*_complete_of_hasClosedWalk` when a graph-level closed-walk proposition
+  implies an executable Boolean result under a finite universe.
+  Example: `hasCycleBool_complete_of_hasClosedWalk`.
+- Use `*_correct_under_finite_universe` for final iff-style correctness
+  theorems under `ComponentUniverse`.
+  Example: `hasCycleBool_correct_under_finite_universe`.
+
+This resolves Issue #4 at the naming-policy level. The current Lean theorem
+names already follow this convention, so no Lean rename is needed.
+
 ## 実証研究で検証する仮説
 
 ### 1. 変更波及との相関
