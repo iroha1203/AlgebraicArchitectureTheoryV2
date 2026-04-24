@@ -1,0 +1,11 @@
+name = "AlgebraicArchitectureTheoryV2"
+version = "0.1.0"
+defaultTargets = ["aatv2"]
+
+[[lean_lib]]
+name = "Formal"
+
+[[lean_exe]]
+name = "aatv2"
+root = "Main"
+
