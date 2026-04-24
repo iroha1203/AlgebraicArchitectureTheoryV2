@@ -284,16 +284,23 @@ Lean status:
 - Defined: executable v0 metrics over a supplied finite component list:
   `hasCycleBool`, bounded SCC size, bounded max depth, Nat-valued average fanout,
   boundary violation count, abstraction violation count, and `v0OfFinite`.
-- Defined only: the supplied component list is treated as the measurement universe.
-  There is not yet a Lean proof that it is duplicate-free or complete for a
-  semantic codebase.
-- Future proof obligation: introduce `ComponentUniverse` or `FiniteArchGraph`
-  with no-duplicate and edge-closedness invariants, then connect finite bounded
-  reachability/SCC metrics to `Walk` and `Reachable`.
-- Future proof obligation: prove correctness lemmas such as
-  `reachesWithin_sound`, `reachesWithin_complete_under_universe`,
-  `hasCycleBool_correct_under_finite_universe`, and
-  `sccSizeAt_correct_under_finite_universe`.
+- Defined: `ComponentUniverse` packages the executable component list with
+  `Nodup`, coverage, and edge-closedness assumptions.
+- Note: the current `ComponentUniverse` is a full universe, so edge-closedness
+  follows from coverage. It remains an explicit field to leave room for future
+  closed measurement sub-universes.
+- Proved: `reachesWithin_sound`, `edge_reachable_of_hasCycleBool`,
+  `hasClosedWalk_of_hasCycleBool`, `reachesWithin_complete_of_walk`, and
+  `hasCycleBool_complete_of_bounded_return_walk`.
+- Defined only: `ComponentUniverse` is still a proof-carrying measurement
+  universe, not a parser or extractor for real codebases.
+- Future proof obligation: connect SCC-size counts to equivalence classes of
+  mutual `Reachable`, and decide whether `FiniteArchGraph` should become a
+  bundled graph-plus-universe structure.
+- Future proof obligation: prove
+  `reachesWithin_complete_of_reachable_under_universe`,
+  `hasCycleBool ↔ HasClosedWalk` under a finite universe, and max-depth
+  correctness on acyclic finite graphs.
 
 ## 実証研究で検証する仮説
 

@@ -85,6 +85,7 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 - SOLID 風局所条件だけでは decomposability が従わない反例
 - `ArchitectureSignature` と componentwise risk order
 - signature v0 の finite-list executable metrics（有限リスト上で実行可能な指標）
+- executable metrics を `Walk` / `Reachable` に接続する proof-carrying finite component universe（証明付き有限測定 universe）
 
 ## 詳細ドキュメント
 
