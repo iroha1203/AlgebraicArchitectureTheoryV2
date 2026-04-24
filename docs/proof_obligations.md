@@ -304,18 +304,18 @@ Lean status:
 - Proved: `ComponentUniverse.reachable_exists_bounded_path` shows that
   `Reachable G c d` over a finite `ComponentUniverse` has a `Path G c d` whose
   length is bounded by `components.length`. This resolves Issue #6.
+- Proved: `reachesWithin_complete_of_reachable_under_universe` connects
+  propositional `Reachable G c d` to executable bounded search over
+  `ComponentUniverse.components` with `components.length` fuel. This resolves
+  Issue #7.
 - Defined only: `ComponentUniverse` is still a proof-carrying measurement
   universe, not a parser or extractor for real codebases.
 - Future proof obligation: connect SCC-size counts to equivalence classes of
   mutual `Reachable`, and decide whether `FiniteArchGraph` should become a
   bundled graph-plus-universe structure.
 - Future proof obligation: prove
-  `reachesWithin_complete_of_reachable_under_universe`,
   `hasCycleBool ↔ HasClosedWalk` under a finite universe, and max-depth
   correctness on acyclic finite graphs.
-- Future proof obligation: use
-  `ComponentUniverse.reachable_exists_bounded_path` to prove
-  `reachesWithin_complete_of_reachable_under_universe`.
 
 ## 実証研究で検証する仮説
 

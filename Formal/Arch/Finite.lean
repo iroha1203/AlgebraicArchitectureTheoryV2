@@ -196,6 +196,18 @@ theorem reachesWithin_complete_of_walk {C : Type u} {G : ArchGraph C}
             simp [reachesWithin, hEq, hAny]
 
 /--
+Under a finite component universe, propositional reachability is complete for
+the executable bounded search at `components.length` fuel.
+-/
+theorem reachesWithin_complete_of_reachable_under_universe
+    {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge] (U : ComponentUniverse G)
+    {c d : C} (h : Reachable G c d) :
+    reachesWithin G U.components U.components.length c d = true := by
+  rcases ComponentUniverse.reachable_exists_bounded_path U h with ⟨p, hLen⟩
+  exact reachesWithin_complete_of_walk U p.walk hLen
+
+/--
 An edge followed by a bounded return walk is detected by the cycle indicator
 under a finite component universe.
 -/
