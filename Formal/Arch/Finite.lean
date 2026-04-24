@@ -31,6 +31,87 @@ def v0 {C : Type u} {G : ArchGraph C}
     ArchitectureSignature :=
   ArchitectureSignature.v0OfFinite G U.components boundaryAllowed abstractionAllowed
 
+/-- If `a` occurs in `l` and `a ≠ b`, then `a` still occurs after erasing `b`. -/
+private theorem mem_erase_of_ne_of_mem {C : Type u} [DecidableEq C]
+    {a b : C} {l : List C} (hne : a ≠ b) (hmem : a ∈ l) :
+    a ∈ l.erase b := by
+  induction l with
+  | nil =>
+      cases hmem
+  | cons c cs ih =>
+      by_cases hcb : c = b
+      · subst c
+        simp [List.erase_cons_head, hne] at hmem ⊢
+        exact hmem
+      · rw [List.erase_cons_tail]
+        · simp at hmem ⊢
+          cases hmem with
+          | inl hca => exact Or.inl hca
+          | inr hincs => exact Or.inr (ih hincs)
+        · simp [hcb]
+
+/--
+A duplicate-free list included in another duplicate-free list cannot be longer
+than that containing list.
+-/
+private theorem length_le_of_nodup_subset {C : Type u} [DecidableEq C]
+    {xs ys : List C} (hxs : xs.Nodup) (hys : ys.Nodup)
+    (hSub : ∀ a, a ∈ xs → a ∈ ys) : xs.length ≤ ys.length := by
+  revert ys
+  induction xs with
+  | nil =>
+      intro ys _hys _hSub
+      simp
+  | cons x xs ih =>
+      intro ys hys hSub
+      have hxNot : x ∉ xs := (List.nodup_cons.mp hxs).1
+      have hxsNodup : xs.Nodup := (List.nodup_cons.mp hxs).2
+      have hxMem : x ∈ ys := hSub x (by simp)
+      have hSubErase : ∀ a, a ∈ xs → a ∈ ys.erase x := by
+        intro a ha
+        exact mem_erase_of_ne_of_mem
+          (by
+            intro h
+            exact hxNot (by simpa [h] using ha))
+          (hSub a (by simp [ha]))
+      have ihLen : xs.length ≤ (ys.erase x).length :=
+        ih hxsNodup (List.Nodup.erase x hys) hSubErase
+      have hEraseLen : (ys.erase x).length = ys.length - 1 :=
+        List.length_erase_of_mem hxMem
+      have hPos : 0 < ys.length := List.length_pos_of_mem hxMem
+      have hSucc : xs.length + 1 ≤ (ys.erase x).length + 1 :=
+        Nat.succ_le_succ ihLen
+      calc
+        (x :: xs).length = xs.length + 1 := rfl
+        _ ≤ (ys.erase x).length + 1 := hSucc
+        _ = ys.length := by omega
+
+/--
+Every simple walk over a component universe is bounded by the universe list
+length.
+-/
+theorem simpleWalk_length_le_components_length {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] (U : ComponentUniverse G) {c d : C}
+    (p : SimpleWalk G c d) : p.length ≤ U.components.length := by
+  have hVerticesLen : p.vertices.length ≤ U.components.length :=
+    length_le_of_nodup_subset p.nodup_vertices U.nodup
+      (fun a _ha => U.covers a)
+  have hWalkLen : p.length ≤ p.vertices.length := by
+    rw [SimpleWalk.vertices_length]
+    exact Nat.le_succ p.length
+  exact Nat.le_trans hWalkLen hVerticesLen
+
+/--
+Reachability over a finite component universe has a simple path representative
+whose length is bounded by `components.length`.
+-/
+theorem reachable_exists_bounded_path {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] (U : ComponentUniverse G) {c d : C}
+    (h : Reachable G c d) :
+    ∃ p : Path G c d, p.length ≤ U.components.length := by
+  rcases Reachable.exists_path h with ⟨p, _⟩
+  exact ⟨p, simpleWalk_length_le_components_length U p⟩
+
 end ComponentUniverse
 
 namespace ArchitectureSignature
