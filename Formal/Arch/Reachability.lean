@@ -32,6 +32,16 @@ def of_walk {C : Type u} {G : ArchGraph C} {c d : C} :
   | Walk.nil _ => Reachable.refl _
   | Walk.cons h rest => Reachable.step h (of_walk rest)
 
+/-- Simple walks imply reachability through their underlying walk. -/
+def of_simpleWalk {C : Type u} {G : ArchGraph C} {c d : C}
+    (p : SimpleWalk G c d) : Reachable G c d :=
+  of_walk p.walk
+
+/-- Paths imply reachability through their underlying simple walk. -/
+def of_path {C : Type u} {G : ArchGraph C} {c d : C}
+    (p : Path G c d) : Reachable G c d :=
+  of_simpleWalk p
+
 end Reachable
 
 end Formal.Arch
