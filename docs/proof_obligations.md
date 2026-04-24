@@ -8,6 +8,35 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 
 未証明の主張を `axiom` や `sorry` で隠蔽しない。証明できていない命題は、この文書に証明義務または実証仮説として残す。
 
+## Lean status の区分
+
+この文書では、研究上の主張を次の status に分ける。
+
+- `proved`: Lean で証明済みの命題。
+- `defined only`: Lean 上の定義や executable metric はあるが、対応する正当性定理が未完了のもの。
+- `future proof obligation`: Lean で証明すべき未解決命題。
+- `empirical hypothesis`: 実コードベースや運用データで検証する仮説。Lean proof のブロッカーではない。
+
+design / tooling 系の Issue は、上の status を補助する作業として扱う。たとえば `ComponentUniverse` と `FiniteArchGraph` の役割分担は `defined only` から future theorem へ進むための設計課題であり、empirical extractor は Lean theorem ではなく測定 tooling 側の課題である。
+
+## GitHub Issues 索引
+
+| Issue | State | Milestone | Lean status | 関連セクション | 内容 |
+| --- | --- | --- | --- | --- | --- |
+| [#3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) | open | 1. Finite Universe Bridge | `defined only` / design | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [未解決課題](#未解決課題) | `ComponentUniverse` と `FiniteArchGraph` の役割分担を決める。 |
+| [#4](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4) | closed | 1. Finite Universe Bridge | `proved` / resolved naming | [Bridge theorem naming policy](#bridge-theorem-naming-policy) | bridge theorem の命名方針を整理する。 |
+| [#5](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5) | closed | 2. Path and Reachability Correctness | `defined only` / resolved definition | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `Path` / `SimpleWalk` を導入する。 |
+| [#6](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6) | closed | 2. Path and Reachability Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | 有限 universe 上で reachable なら bounded path があることを証明する。 |
+| [#7](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/7) | closed | 2. Path and Reachability Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `reachesWithin_complete_of_reachable_under_universe` を証明する。 |
+| [#8](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/8) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `hasCycleBool` と `HasClosedWalk` の有限 universe 上の同値を証明する。 |
+| [#9](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/9) | open | 1. Finite Universe Bridge | docs index | [GitHub Issues 索引](#github-issues-索引) | この文書を GitHub Issues への索引として更新する。 |
+| [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10) | open | 6. Projection / Observation Invariants | `defined only` / design | [5. DIP は射影整合性である](#5-dip-は射影整合性である), [6. LSP は観測関手による同値性である](#6-lsp-は観測関手による同値性である) | `DIPCompatible` と `StrongDIPCompatible` の役割分担を整理する。 |
+| [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | open | 4. Signature v0 Stabilization | `defined only` / design | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `averageFanout` を `totalFanout` / `maxFanout` / `fanoutRisk` のどれに寄せるか決める。 |
+| [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | open | 5. Layering Equivalence | `future proof obligation` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
+| [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | open | 3. Cycle, SCC and Depth Correctness | `future proof obligation` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
+| [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25) | open | 3. Cycle, SCC and Depth Correctness | `future proof obligation` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | SCC サイズ指標と相互到達可能性の同値類を接続する。 |
+| [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26) | open | 7. Path and Matrix Foundations | `future proof obligation` / design | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理), [解析的指標は発展課題として扱う](#解析的指標は発展課題として扱う) | adjacency matrix と DAG / nilpotence / spectral bridge を設計する。 |
+
 ## Lean で証明する命題
 
 ## 基本 convention
@@ -34,11 +63,11 @@ Decomposable G := StrictLayered G
 
 `Acyclic`, `FinitePropagation`, `Nilpotent` などを最初から `Decomposable` の定義に混ぜない。まず単純な定義から始め、次の定理として接続を育てる。
 
-- `StrictLayered -> Acyclic`
-- `StrictLayered -> FinitePropagation`
-- `Acyclic + finite vertices -> StrictLayered`
-- `Acyclic <-> WalkAcyclic`
-- `DAG <-> Nilpotent adjacency matrix`
+- `StrictLayered -> Acyclic`: `proved`
+- `StrictLayered -> FinitePropagation`: `proved`
+- `Acyclic + finite vertices -> StrictLayered`: `future proof obligation`, [Issue #23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23)
+- `Acyclic <-> WalkAcyclic`: `proved`
+- `DAG <-> Nilpotent adjacency matrix`: `future proof obligation`, [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 
 ### 1. 依存グラフから thin category が生成される
 
@@ -73,31 +102,31 @@ HasClosedWalk G := exists c, exists w : Walk G c c, 0 < w.length
 WalkAcyclic G := not HasClosedWalk G
 ```
 
-証明義務:
+Lean status:
 
-- `Acyclic -> WalkAcyclic`
-- `WalkAcyclic -> Acyclic`
+- `proved`: `Acyclic -> WalkAcyclic`
+- `proved`: `WalkAcyclic -> Acyclic`
 
 ### 2. 分解可能性の基礎定理
 
 有限依存グラフについて、層化可能性、非循環性、有限伝播を接続する。
 
-初期段階で証明すること:
+初期段階の Lean status:
 
-- `Decomposable G := StrictLayered G`
-- `StrictLayered -> Acyclic`
-- `StrictLayered -> FinitePropagation`
-- Layered な4層例が `Decomposable` であること
-- 2点循環グラフが `Decomposable` でないこと
+- `defined only`: `Decomposable G := StrictLayered G`
+- `proved`: `StrictLayered -> Acyclic`
+- `proved`: `StrictLayered -> FinitePropagation`
+- `proved`: Layered な4層例が `Decomposable` であること
+- `proved`: 2点循環グラフが `Decomposable` でないこと
 
 発展段階で検討すること:
 
-- `Acyclic + finite vertices -> StrictLayered`
-- `DAG <-> Nilpotent adjacency matrix`
-- `DAG -> rho(A) = 0`
-- `cycle -> rho(A) > 0`
+- `Acyclic + finite vertices -> StrictLayered`: [Issue #23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23)
+- `DAG <-> Nilpotent adjacency matrix`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
+- `DAG -> rho(A) = 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
+- `cycle -> rho(A) > 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 
-`Acyclic + finite vertices -> StrictLayered` に進むには、有限で計算可能なグラフ表現が必要になる。次フェーズでは `[Fintype C]`, `[DecidableEq C]`, `DecidableRel G.edge`、または専用の `FiniteArchGraph` を導入する。
+`Acyclic + finite vertices -> StrictLayered` に進むには、有限で計算可能なグラフ表現が必要になる。次フェーズでは `[Fintype C]`, `[DecidableEq C]`, `DecidableRel G.edge`、または専用の `FiniteArchGraph` を導入する。この設計上の前提は [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) で扱う。
 
 ### 3. SOLID 不完全性定理
 
@@ -187,6 +216,8 @@ SOLID(G) and StrictLayered(G) -> Decomposable(G)
 
 ### 5. DIP は射影整合性である
 
+関連 Issue: [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10)
+
 DIP を、具体グラフから抽象グラフへの射影が整合することとして定義する。
 
 定義候補:
@@ -227,6 +258,8 @@ DIPCompatible =
 
 ### 6. LSP は観測関手による同値性である
 
+関連 Issue: [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10)
+
 LSP を、内部構造ではなく観測可能な振る舞いの一致として定式化する。
 
 定義候補:
@@ -249,6 +282,8 @@ ObservationFactorsThrough π O -> LSPCompatible π O
 ```
 
 ### 7. Architecture Signature は半順序を持つ
+
+関連 Issue: [#3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3), [#5](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5), [#6](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6), [#7](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/7), [#8](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/8), [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11), [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24), [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25)
 
 多軸評価ベクトルに成分ごとのリスク順序を入れる。各成分は、値が大きいほど構造的リスクが高いように正規化する。
 
@@ -280,44 +315,63 @@ Sig(A) <=risk Sig(B)
 
 Lean status:
 
-- Proved: componentwise risk order is reflexive, transitive, and antisymmetric.
-- Defined: executable v0 metrics over a supplied finite component list:
-  `hasCycleBool`, bounded SCC size, bounded max depth, Nat-valued average fanout,
-  boundary violation count, abstraction violation count, and `v0OfFinite`.
-- Defined: `ComponentUniverse` packages the executable component list with
-  `Nodup`, coverage, and edge-closedness assumptions.
-- Note: the current `ComponentUniverse` is a full universe, so edge-closedness
-  follows from coverage. It remains an explicit field to leave room for future
-  closed measurement sub-universes.
-- Proved: `reachesWithin_sound`, `edge_reachable_of_hasCycleBool`,
+`proved`:
+
+- Componentwise risk order is reflexive, transitive, and antisymmetric.
+- `reachesWithin_sound`, `edge_reachable_of_hasCycleBool`,
   `hasClosedWalk_of_hasCycleBool`, `reachesWithin_complete_of_walk`, and
   `hasCycleBool_complete_of_bounded_return_walk`.
-- Defined: `SimpleWalk` packages a `Walk` with `walk.vertices.Nodup`, and
-  `Path` is currently an alias for `SimpleWalk`. This resolves Issue #5 at the
-  definition level: `Walk` remains the length/count-preserving object, while
-  `Path` / `SimpleWalk` marks the no-repeated-vertices representative needed
-  for future path-shortening.
-- Proved: `Reachable.exists_path` constructs a `Path` / `SimpleWalk`
-  representative from propositional reachability. If a leading edge would
-  repeat a vertex, the construction keeps the simple suffix starting at that
-  vertex.
-- Proved: `ComponentUniverse.reachable_exists_bounded_path` shows that
-  `Reachable G c d` over a finite `ComponentUniverse` has a `Path G c d` whose
-  length is bounded by `components.length`. This resolves Issue #6.
-- Proved: `reachesWithin_complete_of_reachable_under_universe` connects
-  propositional `Reachable G c d` to executable bounded search over
+- `Reachable.exists_path` constructs a `Path` / `SimpleWalk` representative
+  from propositional reachability. If a leading edge would repeat a vertex, the
+  construction keeps the simple suffix starting at that vertex.
+- `ComponentUniverse.reachable_exists_bounded_path` shows that `Reachable G c d`
+  over a finite `ComponentUniverse` has a `Path G c d` whose length is bounded
+  by `components.length`. This resolves [Issue #6](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6).
+- `reachesWithin_complete_of_reachable_under_universe` connects propositional
+  `Reachable G c d` to executable bounded search over
   `ComponentUniverse.components` with `components.length` fuel. This resolves
-  Issue #7.
-- Proved: `hasCycleBool_complete_of_hasClosedWalk` and
+  [Issue #7](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/7).
+- `hasCycleBool_complete_of_hasClosedWalk` and
   `hasCycleBool_correct_under_finite_universe` connect the executable cycle
   indicator with `HasClosedWalk` under a finite `ComponentUniverse`. This
-  resolves Issue #8.
-- Defined only: `ComponentUniverse` is still a proof-carrying measurement
-  universe, not a parser or extractor for real codebases.
-- Future proof obligation: connect SCC-size counts to equivalence classes of
-  mutual `Reachable`, and decide whether `FiniteArchGraph` should become a
-  bundled graph-plus-universe structure.
-- Future proof obligation: prove max-depth correctness on acyclic finite graphs.
+  resolves [Issue #8](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/8).
+
+`defined only`:
+
+- Executable v0 metrics over a supplied finite component list:
+  `hasCycleBool`, bounded SCC size, bounded max depth, Nat-valued average fanout,
+  boundary violation count, abstraction violation count, and `v0OfFinite`.
+- `ComponentUniverse` packages the executable component list with `Nodup`,
+  coverage, and edge-closedness assumptions. The current `ComponentUniverse` is
+  a full universe, so edge-closedness follows from coverage. It remains an
+  explicit field to leave room for future closed measurement sub-universes.
+- `SimpleWalk` packages a `Walk` with `walk.vertices.Nodup`, and `Path` is
+  currently an alias for `SimpleWalk`. This resolves
+  [Issue #5](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5)
+  at the definition level: `Walk` remains the length/count-preserving object,
+  while `Path` / `SimpleWalk` marks the no-repeated-vertices representative
+  needed for future path-shortening.
+- `ComponentUniverse` is still a proof-carrying measurement universe, not a
+  parser or extractor for real codebases. The remaining design split with
+  `FiniteArchGraph` is tracked by
+  [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3).
+- `averageFanout : Nat` remains an initial coarse metric. Its replacement or
+  normalization is tracked by
+  [Issue #11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11).
+
+`future proof obligation`:
+
+- Connect SCC-size counts to equivalence classes of mutual `Reachable`;
+  tracking:
+  [Issue #25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25).
+- Decide whether `FiniteArchGraph` should become a bundled graph-plus-universe
+  structure; design tracking:
+  [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3).
+- Prove max-depth correctness on acyclic finite graphs; tracking:
+  [Issue #24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24).
+- Stabilize the fanout risk axis after the `averageFanout` design decision;
+  design tracking:
+  [Issue #11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11).
 
 Bridge theorem naming policy:
 
@@ -349,6 +403,8 @@ This resolves Issue #4 at the naming-policy level. The current Lean theorem
 names already follow this convention, so no Lean rename is needed.
 
 ## 実証研究で検証する仮説
+
+Lean status: `empirical hypothesis`. この節の仮説は実コードベースや運用データで検証する対象であり、Lean proof のブロッカーではない。
 
 ### 1. 変更波及との相関
 
