@@ -143,6 +143,9 @@ def totalFanout {C : Type u} (G : ArchGraph C)
 Coarse Nat-valued average fanout used by the initial signature.
 
 For an empty component universe, Lean's natural-number division gives `0`.
+Because this is integer division, sparse graphs can also round down to `0`;
+future signatures may prefer `totalFanout`, `maxFanout`, or another fanout-risk
+normalization.
 -/
 def averageFanoutOfFinite {C : Type u} (G : ArchGraph C)
     [DecidableRel G.edge] (components : List C) : Nat :=
@@ -156,7 +159,12 @@ def boundedDepthFrom {C : Type u} (G : ArchGraph C)
       maxNatList (components.map (fun d =>
         if decide (G.edge c d) then boundedDepthFrom G components fuel d + 1 else 0))
 
-/-- Maximum bounded dependency-chain depth over the supplied finite universe. -/
+/--
+Maximum bounded dependency-chain depth over the supplied finite universe.
+
+On cyclic graphs this is a fuel-bounded measurement, not a true global depth.
+Cycle risk is represented separately by `hasCycle`.
+-/
 def maxDepthOfFinite {C : Type u} (G : ArchGraph C)
     [DecidableRel G.edge] (components : List C) : Nat :=
   maxNatList (components.map (fun c => boundedDepthFrom G components components.length c))
