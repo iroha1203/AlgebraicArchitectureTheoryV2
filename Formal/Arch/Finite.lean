@@ -222,6 +222,31 @@ theorem hasCycleBool_complete_of_bounded_return_walk {C : Type u} {G : ArchGraph
   exact ⟨d, (U.edgeClosed hEdge).2, by
     simp [decide_eq_true hEdge, reachesWithin_complete_of_walk U w hLen]⟩
 
+/--
+A nonempty closed walk is detected by the cycle indicator under a finite
+component universe.
+-/
+theorem hasCycleBool_complete_of_hasClosedWalk {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge] (U : ComponentUniverse G)
+    (h : HasClosedWalk G) : hasCycleBool G U.components = true := by
+  rcases h with ⟨c, w, hLen⟩
+  rcases edge_reachable_of_closed_walk w hLen with ⟨d, hEdge, hReach⟩
+  rw [hasCycleBool, List.any_eq_true]
+  refine ⟨c, (U.edgeClosed hEdge).1, ?_⟩
+  rw [List.any_eq_true]
+  exact ⟨d, (U.edgeClosed hEdge).2, by
+    simp [decide_eq_true hEdge,
+      reachesWithin_complete_of_reachable_under_universe U hReach]⟩
+
+/--
+Correctness of the executable cycle indicator under a finite component
+universe.
+-/
+theorem hasCycleBool_correct_under_finite_universe {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge] (U : ComponentUniverse G) :
+    hasCycleBool G U.components = true ↔ HasClosedWalk G :=
+  ⟨hasClosedWalk_of_hasCycleBool, hasCycleBool_complete_of_hasClosedWalk U⟩
+
 end ArchitectureSignature
 
 end Formal.Arch

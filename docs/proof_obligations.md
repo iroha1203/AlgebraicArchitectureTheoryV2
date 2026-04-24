@@ -308,14 +308,16 @@ Lean status:
   propositional `Reachable G c d` to executable bounded search over
   `ComponentUniverse.components` with `components.length` fuel. This resolves
   Issue #7.
+- Proved: `hasCycleBool_complete_of_hasClosedWalk` and
+  `hasCycleBool_correct_under_finite_universe` connect the executable cycle
+  indicator with `HasClosedWalk` under a finite `ComponentUniverse`. This
+  resolves Issue #8.
 - Defined only: `ComponentUniverse` is still a proof-carrying measurement
   universe, not a parser or extractor for real codebases.
 - Future proof obligation: connect SCC-size counts to equivalence classes of
   mutual `Reachable`, and decide whether `FiniteArchGraph` should become a
   bundled graph-plus-universe structure.
-- Future proof obligation: prove
-  `hasCycleBool ↔ HasClosedWalk` under a finite universe, and max-depth
-  correctness on acyclic finite graphs.
+- Future proof obligation: prove max-depth correctness on acyclic finite graphs.
 
 ## 実証研究で検証する仮説
 
