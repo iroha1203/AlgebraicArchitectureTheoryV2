@@ -1,0 +1,3 @@
+display_name: Issue Creater
+short_description: docsから次タスクを考え、GitHub Issueを作成する
+default_prompt: $issue-creater を使って、docsを読んで次に実装すべきタスクをGitHub Issueとして作成してください。
