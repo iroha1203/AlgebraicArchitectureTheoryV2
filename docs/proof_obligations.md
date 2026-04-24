@@ -256,7 +256,8 @@ ObservationFactorsThrough π O -> LSPCompatible π O
 
 ```text
 ArchitectureSignature
-SignatureLE
+RiskLE
+v0OfFinite
 ```
 
 意味:
@@ -273,8 +274,26 @@ Sig(A) <=risk Sig(B)
 
 - `hasCycle` は 0/1 の risk indicator として扱う。
 - `sccMaxSize` は将来的に `sccExcessSize = sccMaxSize - 1` として正規化することを検討する。
-- `averageFanout : Nat` は初期の粗い足場であり、PR4 以降で `fanoutRisk` または `maxFanout` への改名を検討する。
+- `maxDepth` は PR4 では bounded max depth であり、循環グラフ上の真の大域 depth ではない。循環リスクは `hasCycle` で別軸として扱う。
+- `averageFanout : Nat` は初期の粗い足場であり、Nat 除算で丸められる。PR4 以降で `fanoutRisk = totalFanout` または `maxFanout` への置き換えを検討する。
 - `nilpotencyIndex?` は初期 Lean 実装には入れず、adjacency matrix 導入後の発展指標として扱う。
+
+Lean status:
+
+- Proved: componentwise risk order is reflexive, transitive, and antisymmetric.
+- Defined: executable v0 metrics over a supplied finite component list:
+  `hasCycleBool`, bounded SCC size, bounded max depth, Nat-valued average fanout,
+  boundary violation count, abstraction violation count, and `v0OfFinite`.
+- Defined only: the supplied component list is treated as the measurement universe.
+  There is not yet a Lean proof that it is duplicate-free or complete for a
+  semantic codebase.
+- Future proof obligation: introduce `ComponentUniverse` or `FiniteArchGraph`
+  with no-duplicate and edge-closedness invariants, then connect finite bounded
+  reachability/SCC metrics to `Walk` and `Reachable`.
+- Future proof obligation: prove correctness lemmas such as
+  `reachesWithin_sound`, `reachesWithin_complete_under_universe`,
+  `hasCycleBool_correct_under_finite_universe`, and
+  `sccSizeAt_correct_under_finite_universe`.
 
 ## 実証研究で検証する仮説
 
