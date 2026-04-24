@@ -10,7 +10,9 @@ A finite measurement universe for an architecture graph.
 
 `components` is the executable list used by v0 metrics. `nodup`, `covers`, and
 `edgeClosed` make explicit which assumptions are needed before list-based
-metrics are treated as graph-level facts.
+metrics are treated as graph-level facts. In this full-universe version,
+`edgeClosed` follows from `covers`; it remains explicit to leave room for future
+closed measurement sub-universes.
 -/
 structure ComponentUniverse {C : Type u} (G : ArchGraph C) where
   components : List C
@@ -116,7 +118,7 @@ theorem reachesWithin_complete_of_walk {C : Type u} {G : ArchGraph C}
 An edge followed by a bounded return walk is detected by the cycle indicator
 under a finite component universe.
 -/
-theorem hasCycleBool_complete_of_edge_walk {C : Type u} {G : ArchGraph C}
+theorem hasCycleBool_complete_of_bounded_return_walk {C : Type u} {G : ArchGraph C}
     [DecidableEq C] [DecidableRel G.edge] (U : ComponentUniverse G)
     {c d : C} (hEdge : G.edge c d) (w : Walk G d c)
     (hLen : w.length ≤ U.components.length) :
