@@ -39,6 +39,41 @@ theorem vertices_length {C : Type u} {G : ArchGraph C} {c d : C}
   | cons hEdge rest ih =>
       simp [vertices, length, ih]
 
+/-- Suffix of a walk starting at a vertex already visited by the walk. -/
+noncomputable def suffixFrom {C : Type u} [DecidableEq C] {G : ArchGraph C}
+    {x c d : C} : (w : Walk G c d) → x ∈ w.vertices → Walk G x d
+  | nil c, hMem => by
+      have hx : x = c := by
+        simpa [vertices] using hMem
+      cases hx
+      exact nil x
+  | @cons _ G c next d hEdge rest, hMem => by
+      by_cases hx : x = c
+      · cases hx
+        exact cons hEdge rest
+      · have hTail : x ∈ rest.vertices := by
+          simpa [vertices, hx] using hMem
+        exact suffixFrom rest hTail
+
+/-- The vertices of a walk suffix form a sublist of the original walk vertices. -/
+theorem suffixFrom_vertices_sublist {C : Type u} [DecidableEq C]
+    {G : ArchGraph C} {x c d : C} (w : Walk G c d)
+    (hMem : x ∈ w.vertices) : (suffixFrom w hMem).vertices.Sublist w.vertices := by
+  induction w with
+  | nil c =>
+      have hx : x = c := by
+        simpa [vertices] using hMem
+      cases hx
+      simp [suffixFrom]
+  | @cons c next d hEdge rest ih =>
+      by_cases hx : x = c
+      · cases hx
+        simp [suffixFrom]
+      · have hTail : x ∈ rest.vertices := by
+          simpa [vertices, hx] using hMem
+        have hSub := ih hTail
+        simpa [suffixFrom, hx, vertices] using hSub.cons c
+
 end Walk
 
 /--
@@ -90,6 +125,14 @@ def vertices {C : Type u} {G : ArchGraph C} {c d : C}
 theorem vertices_length {C : Type u} {G : ArchGraph C} {c d : C}
     (p : SimpleWalk G c d) : p.vertices.length = p.length + 1 :=
   Walk.vertices_length p.walk
+
+/-- Suffix of a simple walk starting at a vertex already visited by it. -/
+noncomputable def suffixFrom {C : Type u} [DecidableEq C] {G : ArchGraph C}
+    {x c d : C} (p : SimpleWalk G c d) (hMem : x ∈ p.vertices) :
+    SimpleWalk G x d where
+  walk := Walk.suffixFrom p.walk hMem
+  nodup_vertices :=
+    p.nodup_vertices.sublist (Walk.suffixFrom_vertices_sublist p.walk hMem)
 
 end SimpleWalk
 

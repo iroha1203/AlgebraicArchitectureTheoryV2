@@ -42,6 +42,21 @@ def of_path {C : Type u} {G : ArchGraph C} {c d : C}
     (p : Path G c d) : Reachable G c d :=
   of_simpleWalk p
 
+/--
+Reachability admits a simple path representative.
+
+If adding a new leading edge would repeat the source, the construction keeps
+the already-simple suffix starting at that repeated source instead.
+-/
+theorem exists_path {C : Type u} [DecidableEq C] {G : ArchGraph C} :
+    ∀ {c d : C}, Reachable G c d → ∃ _ : Path G c d, True
+  | _, _, Reachable.refl c => ⟨SimpleWalk.nil c, trivial⟩
+  | c, _e, Reachable.step (d := d) hEdge hRest => by
+      rcases exists_path hRest with ⟨p, _⟩
+      by_cases hMem : c ∈ p.vertices
+      · exact ⟨SimpleWalk.suffixFrom p hMem, trivial⟩
+      · exact ⟨SimpleWalk.cons hEdge p hMem, trivial⟩
+
 end Reachable
 
 end Formal.Arch

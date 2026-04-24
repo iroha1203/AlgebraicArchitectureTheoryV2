@@ -297,6 +297,13 @@ Lean status:
   definition level: `Walk` remains the length/count-preserving object, while
   `Path` / `SimpleWalk` marks the no-repeated-vertices representative needed
   for future path-shortening.
+- Proved: `Reachable.exists_path` constructs a `Path` / `SimpleWalk`
+  representative from propositional reachability. If a leading edge would
+  repeat a vertex, the construction keeps the simple suffix starting at that
+  vertex.
+- Proved: `ComponentUniverse.reachable_exists_bounded_path` shows that
+  `Reachable G c d` over a finite `ComponentUniverse` has a `Path G c d` whose
+  length is bounded by `components.length`. This resolves Issue #6.
 - Defined only: `ComponentUniverse` is still a proof-carrying measurement
   universe, not a parser or extractor for real codebases.
 - Future proof obligation: connect SCC-size counts to equivalence classes of
@@ -306,9 +313,9 @@ Lean status:
   `reachesWithin_complete_of_reachable_under_universe`,
   `hasCycleBool ↔ HasClosedWalk` under a finite universe, and max-depth
   correctness on acyclic finite graphs.
-- Future proof obligation: prove a path-shortening theorem from arbitrary
-  `Walk` / `Reachable` evidence to a bounded `Path` under a finite
-  `ComponentUniverse`, with the length bound tied to `components.length`.
+- Future proof obligation: use
+  `ComponentUniverse.reachable_exists_bounded_path` to prove
+  `reachesWithin_complete_of_reachable_under_universe`.
 
 ## 実証研究で検証する仮説
 
