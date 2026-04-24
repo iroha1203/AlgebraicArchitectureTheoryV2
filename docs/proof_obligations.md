@@ -32,7 +32,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#9](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/9) | open | 1. Finite Universe Bridge | docs index | [GitHub Issues 索引](#github-issues-索引) | この文書を GitHub Issues への索引として更新する。 |
 | [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10) | open | 6. Projection / Observation Invariants | `defined only` / design | [5. DIP は射影整合性である](#5-dip-は射影整合性である), [6. LSP は観測関手による同値性である](#6-lsp-は観測関手による同値性である) | `DIPCompatible` と `StrongDIPCompatible` の役割分担を整理する。 |
 | [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | open | 4. Signature v0 Stabilization | `defined only` / design | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `averageFanout` を `totalFanout` / `maxFanout` / `fanoutRisk` のどれに寄せるか決める。 |
-| [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | open | 5. Layering Equivalence | `future proof obligation` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
+| [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | open | 5. Layering Equivalence | `proved` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
 | [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
 | [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | SCC サイズ指標と相互到達可能性の同値類を接続する。 |
 | [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26) | open | 7. Path and Matrix Foundations | `future proof obligation` / design | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理), [解析的指標は発展課題として扱う](#解析的指標は発展課題として扱う) | adjacency matrix と DAG / nilpotence / spectral bridge を設計する。 |
@@ -65,7 +65,7 @@ Decomposable G := StrictLayered G
 
 - `StrictLayered -> Acyclic`: `proved`
 - `StrictLayered -> FinitePropagation`: `proved`
-- `Acyclic + finite vertices -> StrictLayered`: `future proof obligation`, [Issue #23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23)
+- `Acyclic + finite vertices -> StrictLayered`: `proved`, [Issue #23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23)
 - `Acyclic <-> WalkAcyclic`: `proved`
 - `DAG <-> Nilpotent adjacency matrix`: `future proof obligation`, [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 
@@ -118,15 +118,17 @@ Lean status:
 - `proved`: `StrictLayered -> FinitePropagation`
 - `proved`: Layered な4層例が `Decomposable` であること
 - `proved`: 2点循環グラフが `Decomposable` でないこと
+- `proved`: `ComponentUniverse.strictLayered_of_acyclic` and
+  `FiniteArchGraph.strictLayered_of_acyclic` construct `StrictLayered` from a
+  finite acyclic component universe
 
 発展段階で検討すること:
 
-- `Acyclic + finite vertices -> StrictLayered`: [Issue #23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23)
 - `DAG <-> Nilpotent adjacency matrix`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 - `DAG -> rho(A) = 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 - `cycle -> rho(A) > 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 
-`Acyclic + finite vertices -> StrictLayered` に進むための有限グラフ表現は、`ComponentUniverse` と `FiniteArchGraph` の二層に分ける。`ComponentUniverse` は proof-carrying measurement universe として list, `Nodup`, coverage, edge-closedness を保持する。`FiniteArchGraph` は `ArchGraph` と `ComponentUniverse` を束ねる薄い graph-plus-universe structure として、将来の有限グラフ theorem statement の入口にする。この整理は [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) で扱う。
+`Acyclic + finite vertices -> StrictLayered` は、`ComponentUniverse.sourceDepthLayer` を層関数として使い、有限 universe 上の bounded source depth が依存辺に沿って厳密に下がることとして証明する。有限グラフ表現は `ComponentUniverse` と `FiniteArchGraph` の二層に分ける。`ComponentUniverse` は proof-carrying measurement universe として list, `Nodup`, coverage, edge-closedness を保持する。`FiniteArchGraph` は `ArchGraph` と `ComponentUniverse` を束ねる薄い graph-plus-universe structure として、有限グラフ theorem statement の入口にする。この整理は [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) で扱う。
 
 ### 3. SOLID 不完全性定理
 
