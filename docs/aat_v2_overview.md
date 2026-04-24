@@ -95,7 +95,7 @@ Sig0(A) =
 
 `sccMaxSize` は初期指標として残すが、将来的には非循環成分を 0 risk にするため `sccExcessSize = sccMaxSize - 1` への正規化を検討する。`averageFanout : Nat` は初期の粗い足場であり、Nat 除算で丸められるため、PR4 以降で `fanoutRisk = totalFanout` または `maxFanout` への置き換えを検討する。
 
-Lean PR4 では、有限な component list を測定 universe とする executable v0 metrics を定義する。これは実コードベース抽出器の完全性を主張するものではない。抽出された component list の重複排除・完全性、および SCC 計算との正当性接続は、将来の有限グラフ表現で扱う。
+Lean PR4 では、有限な component list を測定 universe とする executable v0 metrics を定義する。Lean PR5 では、その list に `Nodup`, coverage, edge-closedness を持たせる `ComponentUniverse` を追加し、bounded reachability と `Walk` / `Reachable` の基本的な正当性 bridge を証明する。これは実コードベース抽出器の完全性を主張するものではない。SCC count と相互到達可能性の同値類との接続は、次の proof obligation として残す。
 
 発展シグネチャ `Sig1(A)` では、解析的・実証的な軸を追加する。
 

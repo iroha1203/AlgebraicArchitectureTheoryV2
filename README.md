@@ -34,4 +34,6 @@ The initial formalization includes:
 - observation, observation factorization, and LSP compatibility;
 - local-contract and abstract-layer-cycle counterexamples;
 - architecture signatures with componentwise risk order and executable v0
-  finite-list metrics.
+  finite-list metrics;
+- a proof-carrying finite component universe for bridging executable metrics to
+  `Walk` and `Reachable`.
