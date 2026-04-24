@@ -163,6 +163,72 @@ end ComponentUniverse
 
 namespace ArchitectureSignature
 
+/-- Two components are in the same graph-level SCC when each reaches the other. -/
+def MutuallyReachable {C : Type u} (G : ArchGraph C) (c d : C) : Prop :=
+  Reachable G c d ∧ Reachable G d c
+
+/-- Noncomputable Boolean view of propositional reachability. -/
+noncomputable def reachableBool {C : Type u} (G : ArchGraph C) (c d : C) : Bool := by
+  classical
+  exact decide (Reachable G c d)
+
+/-- Noncomputable Boolean view of graph-level mutual reachability. -/
+noncomputable def mutualReachableBool {C : Type u} (G : ArchGraph C)
+    (c d : C) : Bool := by
+  classical
+  exact decide (MutuallyReachable G c d)
+
+/-- The noncomputable reachability Boolean reflects `Reachable`. -/
+theorem reachableBool_eq_true_iff {C : Type u} {G : ArchGraph C} {c d : C} :
+    reachableBool G c d = true ↔ Reachable G c d := by
+  classical
+  simp [reachableBool]
+
+/-- The noncomputable mutual-reachability Boolean reflects `MutuallyReachable`. -/
+theorem mutualReachableBool_eq_true_iff {C : Type u} {G : ArchGraph C} {c d : C} :
+    mutualReachableBool G c d = true ↔ MutuallyReachable G c d := by
+  classical
+  simp [mutualReachableBool]
+
+/-- Mutual reachability is reflexive. -/
+theorem mutuallyReachable_refl {C : Type u} {G : ArchGraph C} (c : C) :
+    MutuallyReachable G c c :=
+  ⟨Reachable.refl c, Reachable.refl c⟩
+
+/-- Mutual reachability is symmetric. -/
+theorem mutuallyReachable_symm {C : Type u} {G : ArchGraph C} {c d : C}
+    (h : MutuallyReachable G c d) : MutuallyReachable G d c :=
+  ⟨h.2, h.1⟩
+
+/-- Mutual reachability is transitive. -/
+theorem mutuallyReachable_trans {C : Type u} {G : ArchGraph C} {a b c : C}
+    (hab : MutuallyReachable G a b) (hbc : MutuallyReachable G b c) :
+    MutuallyReachable G a c :=
+  ⟨Reachable.trans hab.1 hbc.1, Reachable.trans hbc.2 hab.2⟩
+
+/--
+The graph-level SCC class of `c` inside a supplied finite measurement list.
+
+This is intentionally noncomputable: it uses propositional `Reachable`, while
+`sccSizeAt` remains the executable bounded-search metric.
+-/
+noncomputable def mutualReachableClass {C : Type u} (G : ArchGraph C)
+    (components : List C) (c : C) : List C :=
+  components.filter (fun d => mutualReachableBool G c d)
+
+/-- Graph-level SCC class size inside a supplied finite measurement list. -/
+noncomputable def mutualReachableClassSize {C : Type u} (G : ArchGraph C)
+    (components : List C) (c : C) : Nat :=
+  (mutualReachableClass G components c).length
+
+/-- Membership in the graph-level SCC class is exactly mutual reachability. -/
+theorem mem_mutualReachableClass_iff {C : Type u} {G : ArchGraph C}
+    {components : List C} {c d : C} :
+    d ∈ mutualReachableClass G components c ↔
+      d ∈ components ∧ MutuallyReachable G c d := by
+  classical
+  simp [mutualReachableClass, mutualReachableBool_eq_true_iff]
+
 /-- Folding `Nat.max` never decreases its accumulator. -/
 private theorem acc_le_foldl_max (xs : List Nat) (acc : Nat) :
     acc ≤ xs.foldl Nat.max acc := by
@@ -305,6 +371,53 @@ theorem reachesWithin_complete_of_reachable_under_universe
     reachesWithin G U.components U.components.length c d = true := by
   rcases ComponentUniverse.reachable_exists_bounded_path U h with ⟨p, hLen⟩
   exact reachesWithin_complete_of_walk U p.walk hLen
+
+/--
+Under a finite component universe, bounded Boolean reachability at the standard
+fuel is exactly propositional `Reachable`.
+-/
+theorem reachesWithin_eq_reachableBool_under_universe {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) {c d : C} :
+    reachesWithin G U.components U.components.length c d =
+      reachableBool G c d := by
+  classical
+  apply Bool.eq_iff_iff.mpr
+  constructor
+  · intro h
+    exact reachableBool_eq_true_iff.mpr (reachesWithin_sound h)
+  · intro h
+    exact reachesWithin_complete_of_reachable_under_universe U
+      (reachableBool_eq_true_iff.mp h)
+
+/--
+Under a finite component universe, the executable bounded SCC size at `c`
+equals the graph-level mutual-reachability class size of `c`.
+-/
+theorem sccSizeAt_eq_mutualReachableClassSize_under_universe {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (c : C) :
+    sccSizeAt G U.components c =
+      mutualReachableClassSize G U.components c := by
+  classical
+  simp [sccSizeAt, countWhere, mutualReachableClassSize,
+    mutualReachableClass, mutualReachableBool, reachableBool, MutuallyReachable,
+    reachesWithin_eq_reachableBool_under_universe U]
+
+/--
+Under a finite component universe, the executable maximum SCC size is the
+maximum graph-level mutual-reachability class size over the universe.
+-/
+theorem sccMaxSizeOfFinite_eq_max_mutualReachableClassSize_under_universe
+    {C : Type u} {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) :
+    sccMaxSizeOfFinite G U.components =
+      maxNatList
+        (U.components.map (fun c =>
+          mutualReachableClassSize G U.components c)) := by
+  classical
+  simp [sccMaxSizeOfFinite,
+    sccSizeAt_eq_mutualReachableClassSize_under_universe U]
 
 /--
 An edge followed by a bounded return walk is detected by the cycle indicator
