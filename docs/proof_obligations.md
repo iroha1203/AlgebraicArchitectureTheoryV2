@@ -292,6 +292,11 @@ Lean status:
 - Proved: `reachesWithin_sound`, `edge_reachable_of_hasCycleBool`,
   `hasClosedWalk_of_hasCycleBool`, `reachesWithin_complete_of_walk`, and
   `hasCycleBool_complete_of_bounded_return_walk`.
+- Defined: `SimpleWalk` packages a `Walk` with `walk.vertices.Nodup`, and
+  `Path` is currently an alias for `SimpleWalk`. This resolves Issue #5 at the
+  definition level: `Walk` remains the length/count-preserving object, while
+  `Path` / `SimpleWalk` marks the no-repeated-vertices representative needed
+  for future path-shortening.
 - Defined only: `ComponentUniverse` is still a proof-carrying measurement
   universe, not a parser or extractor for real codebases.
 - Future proof obligation: connect SCC-size counts to equivalence classes of
@@ -301,6 +306,9 @@ Lean status:
   `reachesWithin_complete_of_reachable_under_universe`,
   `hasCycleBool ↔ HasClosedWalk` under a finite universe, and max-depth
   correctness on acyclic finite graphs.
+- Future proof obligation: prove a path-shortening theorem from arbitrary
+  `Walk` / `Reachable` evidence to a bounded `Path` under a finite
+  `ComponentUniverse`, with the length bound tied to `components.length`.
 
 ## 実証研究で検証する仮説
 
