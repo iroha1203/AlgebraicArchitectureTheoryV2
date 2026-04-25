@@ -157,10 +157,29 @@ Issue [#55](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/55
 `adjacencyNilpotent_iff_acyclic` により、有限 `ComponentUniverse` 上では
 adjacency nilpotence / `WalkAcyclic` / `Acyclic` が一致する。
 
+Issue [#85](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/85)
+では、`nilpotencyIndex` を matrix bridge 由来の executable extension axis
+として固定した。Lean 側の `nilpotencyIndexOfFinite U` は
+`List.range (U.components.length + 2)` の範囲で最初に `A^k = 0` となる power を
+`some k` として返す。見つからない場合は `none` とし、これは非 DAG または
+未成立を表す欠損値であって risk 0 ではない。`rho(A)` などの spectral claim は
+この axis には混ぜない。
+
+`adjacencyPowerZeroOnComponentsBool_iff_zero` により、executable zero test は
+`ComponentUniverse.covers` の下で graph-level 全 0 条件と一致する。
+`adjacencyPowerEntry_zero_at_acyclic_cutoff` は finite acyclic graph で
+`A^(components.length + 1)` が 0 になることを証明し、
+`nilpotencyIndexOfFinite_isSome_of_acyclic` は finite acyclic graph では
+`nilpotencyIndexOfFinite` が必ず `some` になることを示す。
+`ArchitectureSignature.v1OfComponentUniverseWithNilpotencyIndex` は、この値を
+`ArchitectureSignatureV1.nilpotencyIndex` に埋める entry point である。
+
 当面は次の status に分ける。
 
 - `DAG <-> Nilpotent adjacency matrix`: `proved` for finite `ComponentUniverse`
   natural-number adjacency powers
+- `nilpotencyIndex`: executable metric / proved acyclic bridge for finite
+  `ComponentUniverse`
 - `DAG -> rho(A) = 0`: `future proof obligation`, matrix bridge 後の解析的拡張
 - `cycle -> rho(A) > 0`: `future proof obligation`, matrix bridge 後の解析的拡張
 - spectral radius を変更波及や障害伝播の増幅指標として使う主張:
@@ -416,7 +435,7 @@ Sig(A) <=risk Sig(B)
 - `sccMaxSize` は将来的に `sccExcessSize = sccMaxSize - 1` として正規化することを検討する。
 - `maxDepth` は PR4 では bounded max depth であり、循環グラフ上の真の大域 depth ではない。循環リスクは `hasCycle` で別軸として扱う。
 - `fanoutRisk : Nat` は v0 では `totalFanout` として扱う。Nat-valued average fanout は丸め落ちるため Signature 本体から外し、`maxFanout` は局所集中を表す将来軸として分離する。
-- `nilpotencyIndex?` は初期 Lean 実装には入れず、adjacency matrix 導入後の発展指標として扱う。
+- `nilpotencyIndex?` は v1 extension axis として `Option Nat` で保持し、matrix bridge の `nilpotencyIndexOfFinite` で測定できる場合だけ `some` にする。`none` は非 DAG または未評価を表し、risk 0 とは解釈しない。
 
 Lean status:
 
@@ -639,7 +658,7 @@ Lean status の区分:
 | `weightedSccRisk` | `weight : C -> Nat` を入力し、各 component の重み付き SCC excess を合計する executable metric。重みの由来は empirical / extractor tooling 側に残す | `defined only` / `proved` |
 | `projectionSoundnessViolation` | 具象依存が抽象依存へ sound に写らない measured edge を数える | `defined only` / `proved` |
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
-| `nilpotencyIndex` | adjacency matrix 導入後に DAG / 層化 / 冪零性と接続する | `future proof obligation` |
+| `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み | `defined only` / `proved` |
 | `rho(A)` | 行列解析上の伝播増幅指標として扱う | `future proof obligation` / `empirical hypothesis` |
 | `runtimePropagation` | 実行時依存抽出に依存する | `empirical hypothesis` |
 | `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
@@ -647,7 +666,7 @@ Lean status の区分:
 
 後続 Issue への分割:
 
-- adjacency matrix, `nilpotencyIndex`, `rho(A)` は
+- adjacency matrix と `rho(A)` の解析的拡張は
   [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
   で扱う。
 - 静的依存と実行時依存の分離は
