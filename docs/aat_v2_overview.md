@@ -144,6 +144,14 @@ core axis と、extractor / empirical tooling 側で後から埋める extension
 bridge を証明し、repository-level の重みづけや empirical calibration は tooling
 側に残す。
 
+Projection bridge と observation bridge は同じ `InterfaceProjection` を共有できるが、
+保証する不変量は異なる。前者は具象依存が抽象依存へ sound に写ること、後者は観測が
+抽象を通じて因子化することを扱う。実装置換の局所契約層では
+`DIPCompatible G π GA ∧ ObservationFactorsThrough π O` として並列に読み、集約や
+重みづけは empirical / extractor tooling 側へ残す。詳細は
+[Observation bridge と projection bridge の関係](design/observation_projection_bridge.md)
+に置く。
+
 `nilpotencyIndex` と `rho(A)` は adjacency matrix bridge 軸である。`nilpotencyIndex` は finite `ComponentUniverse` 上で最初に `A^k = 0` となる power を探す executable extension axis として扱う。見つかった場合は `some k`、見つからない場合は `none` とし、未評価・非 DAG を risk 0 と混同しない。Lean では finite acyclic graph でこの axis が `some` になることを証明済みである。`rho(A)` は mathlib-backed な解析的拡張として分離し、finite acyclic graph では `rho(A)=0`、finite closed walk がある場合は `rho(A)>0` になることを証明済みである。変更コスト・障害伝播増幅との相関は後続の実証課題に残す。
 
 adjacency matrix は、有限 `ComponentUniverse` 上の 0/1 行列として導入する。これは `Decomposable` の定義ではなく、`Walk` / DAG / nilpotence を接続する bridge layer である。`A^k` の entry を長さ `k` の walk 数として読む議論は、到達可能性を Hom にする thin `ComponentCategory` ではなく、長さと本数を保持する `Walk` 側で扱う。`rho(A)` は `Complex` 係数の mathlib `Matrix` へ持ち上げた解析的拡張であり、現時点では構造的 theorem と empirical claim を混同しない。
