@@ -1,0 +1,400 @@
+{
+  "schemaVersion": "empirical-signature-dataset-v0",
+  "repository": {
+    "owner": "leanprover-community",
+    "name": "lean4-samples",
+    "defaultBranch": "main"
+  },
+  "pullRequest": {
+    "number": 15,
+    "author": "lovettchris",
+    "createdAt": "2022-10-13T20:23:39Z",
+    "mergedAt": "2022-10-13T20:23:47Z",
+    "baseCommit": "f3fcf37c6298d5a26786eea973e10e91a42b5978",
+    "headCommit": "47b244ae0a7638c6c299103304e7c9c149aad346",
+    "mergeCommit": "4ac1d4dcce0bcbb8d47ef8f5ff32db3f5e92088e",
+    "labels": [],
+    "isBotGenerated": false
+  },
+  "signatureBefore": {
+    "commit": {
+      "sha": "f3fcf37c6298d5a26786eea973e10e91a42b5978",
+      "role": "base"
+    },
+    "extractor": {
+      "name": "sig0-extractor",
+      "version": "0.1.0",
+      "ruleSetVersion": "sig0-v0",
+      "policyVersion": null
+    },
+    "signature": {
+      "hasCycle": 0,
+      "sccMaxSize": 1,
+      "maxDepth": 1,
+      "fanoutRisk": 127,
+      "boundaryViolationCount": 0,
+      "abstractionViolationCount": 0,
+      "sccExcessSize": 0,
+      "maxFanout": 6,
+      "reachableConeSize": 6,
+      "weightedSccRisk": null,
+      "projectionSoundnessViolation": null,
+      "lspViolationCount": null,
+      "nilpotencyIndex": null,
+      "runtimePropagation": null,
+      "relationComplexity": null,
+      "empiricalChangeCost": null
+    },
+    "metricStatus": {
+      "abstractionViolationCount": {
+        "measured": false,
+        "reason": "policy file not provided"
+      },
+      "boundaryViolationCount": {
+        "measured": false,
+        "reason": "policy file not provided"
+      },
+      "empiricalChangeCost": {
+        "measured": false,
+        "reason": "empirical target variable not provided"
+      },
+      "fanoutRisk": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "hasCycle": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "lspViolationCount": {
+        "measured": false,
+        "reason": "observation rule set not provided"
+      },
+      "maxDepth": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "maxFanout": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "nilpotencyIndex": {
+        "measured": false,
+        "reason": "matrix bridge output not provided"
+      },
+      "projectionSoundnessViolation": {
+        "measured": false,
+        "reason": "projection rule set not provided"
+      },
+      "reachableConeSize": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "relationComplexity": {
+        "measured": false,
+        "reason": "relation complexity observation not provided"
+      },
+      "runtimePropagation": {
+        "measured": false,
+        "reason": "runtime dependency graph not provided"
+      },
+      "sccExcessSize": {
+        "measured": true,
+        "source": "sig0-extractor:derived-scc-excess"
+      },
+      "sccMaxSize": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "weightedSccRisk": {
+        "measured": false,
+        "reason": "weight rule set not provided"
+      }
+    }
+  },
+  "signatureAfter": {
+    "commit": {
+      "sha": "47b244ae0a7638c6c299103304e7c9c149aad346",
+      "role": "head"
+    },
+    "extractor": {
+      "name": "sig0-extractor",
+      "version": "0.1.0",
+      "ruleSetVersion": "sig0-v0",
+      "policyVersion": null
+    },
+    "signature": {
+      "hasCycle": 0,
+      "sccMaxSize": 1,
+      "maxDepth": 1,
+      "fanoutRisk": 244,
+      "boundaryViolationCount": 0,
+      "abstractionViolationCount": 0,
+      "sccExcessSize": 0,
+      "maxFanout": 13,
+      "reachableConeSize": 13,
+      "weightedSccRisk": null,
+      "projectionSoundnessViolation": null,
+      "lspViolationCount": null,
+      "nilpotencyIndex": null,
+      "runtimePropagation": null,
+      "relationComplexity": null,
+      "empiricalChangeCost": null
+    },
+    "metricStatus": {
+      "abstractionViolationCount": {
+        "measured": false,
+        "reason": "policy file not provided"
+      },
+      "boundaryViolationCount": {
+        "measured": false,
+        "reason": "policy file not provided"
+      },
+      "empiricalChangeCost": {
+        "measured": false,
+        "reason": "empirical target variable not provided"
+      },
+      "fanoutRisk": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "hasCycle": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "lspViolationCount": {
+        "measured": false,
+        "reason": "observation rule set not provided"
+      },
+      "maxDepth": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "maxFanout": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "nilpotencyIndex": {
+        "measured": false,
+        "reason": "matrix bridge output not provided"
+      },
+      "projectionSoundnessViolation": {
+        "measured": false,
+        "reason": "projection rule set not provided"
+      },
+      "reachableConeSize": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "relationComplexity": {
+        "measured": false,
+        "reason": "relation complexity observation not provided"
+      },
+      "runtimePropagation": {
+        "measured": false,
+        "reason": "runtime dependency graph not provided"
+      },
+      "sccExcessSize": {
+        "measured": true,
+        "source": "sig0-extractor:derived-scc-excess"
+      },
+      "sccMaxSize": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "weightedSccRisk": {
+        "measured": false,
+        "reason": "weight rule set not provided"
+      }
+    }
+  },
+  "deltaSignatureSigned": {
+    "hasCycle": 0,
+    "sccMaxSize": 0,
+    "maxDepth": 0,
+    "fanoutRisk": 117,
+    "boundaryViolationCount": null,
+    "abstractionViolationCount": null,
+    "sccExcessSize": 0,
+    "maxFanout": 7,
+    "reachableConeSize": 7,
+    "weightedSccRisk": null,
+    "projectionSoundnessViolation": null,
+    "lspViolationCount": null,
+    "nilpotencyIndex": null,
+    "runtimePropagation": null,
+    "relationComplexity": null
+  },
+  "metricDeltaStatus": {
+    "abstractionViolationCount": {
+      "comparable": false,
+      "reason": "before: policy file not provided; after: policy file not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "boundaryViolationCount": {
+      "comparable": false,
+      "reason": "before: policy file not provided; after: policy file not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "fanoutRisk": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "hasCycle": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "lspViolationCount": {
+      "comparable": false,
+      "reason": "before: observation rule set not provided; after: observation rule set not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "maxDepth": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "maxFanout": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "nilpotencyIndex": {
+      "comparable": false,
+      "reason": "before: matrix bridge output not provided; after: matrix bridge output not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "projectionSoundnessViolation": {
+      "comparable": false,
+      "reason": "before: projection rule set not provided; after: projection rule set not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "reachableConeSize": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "relationComplexity": {
+      "comparable": false,
+      "reason": "before: relation complexity observation not provided; after: relation complexity observation not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "runtimePropagation": {
+      "comparable": false,
+      "reason": "before: runtime dependency graph not provided; after: runtime dependency graph not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "sccExcessSize": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "sccMaxSize": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "weightedSccRisk": {
+      "comparable": false,
+      "reason": "before: weight rule set not provided; after: weight rule set not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    }
+  },
+  "prMetrics": {
+    "changedFiles": 48,
+    "changedLinesAdded": 1356,
+    "changedLinesDeleted": 60,
+    "changedComponents": [
+      "NaturalNumbers.AdditionWorld.Level6",
+      "NaturalNumbers.AdvancedAdditionWorld",
+      "NaturalNumbers.AdvancedAdditionWorld.Level1",
+      "NaturalNumbers.AdvancedAdditionWorld.Level10",
+      "NaturalNumbers.AdvancedAdditionWorld.Level11",
+      "NaturalNumbers.AdvancedAdditionWorld.Level12",
+      "NaturalNumbers.AdvancedAdditionWorld.Level13",
+      "NaturalNumbers.AdvancedAdditionWorld.Level2",
+      "NaturalNumbers.AdvancedAdditionWorld.Level3",
+      "NaturalNumbers.AdvancedAdditionWorld.Level4",
+      "NaturalNumbers.AdvancedAdditionWorld.Level5",
+      "NaturalNumbers.AdvancedAdditionWorld.Level6",
+      "NaturalNumbers.AdvancedAdditionWorld.Level7",
+      "NaturalNumbers.AdvancedAdditionWorld.Level8",
+      "NaturalNumbers.AdvancedAdditionWorld.Level9",
+      "NaturalNumbers.AdvancedPropositionWorld",
+      "NaturalNumbers.AdvancedPropositionWorld.Level1",
+      "NaturalNumbers.AdvancedPropositionWorld.Level10",
+      "NaturalNumbers.AdvancedPropositionWorld.Level2",
+      "NaturalNumbers.AdvancedPropositionWorld.Level3",
+      "NaturalNumbers.AdvancedPropositionWorld.Level4",
+      "NaturalNumbers.AdvancedPropositionWorld.Level5",
+      "NaturalNumbers.AdvancedPropositionWorld.Level6",
+      "NaturalNumbers.AdvancedPropositionWorld.Level7",
+      "NaturalNumbers.AdvancedPropositionWorld.Level8",
+      "NaturalNumbers.AdvancedPropositionWorld.Level9",
+      "NaturalNumbers.FunctionWorld",
+      "NaturalNumbers.FunctionWorld.Level5",
+      "NaturalNumbers.MultiplicationWorld",
+      "NaturalNumbers.MultiplicationWorld.Level7",
+      "NaturalNumbers.MultiplicationWorld.Level8",
+      "NaturalNumbers.MultiplicationWorld.Level9",
+      "NaturalNumbers.MyNat.Definition",
+      "NaturalNumbers.MyNat.Propositions",
+      "NaturalNumbers.MyNat.Tactic",
+      "NaturalNumbers.PowerWorld",
+      "NaturalNumbers.PropositionWorld",
+      "NaturalNumbers.PropositionWorld.Level3",
+      "NaturalNumbers.PropositionWorld.Level4",
+      "NaturalNumbers.PropositionWorld.Level6",
+      "NaturalNumbers.PropositionWorld.Level9",
+      "NaturalNumbers.TutorialWorld",
+      "NaturalNumbers.lakefile"
+    ],
+    "reviewCommentCount": 0,
+    "reviewThreadCount": 0,
+    "reviewRoundCount": 0,
+    "firstReviewLatencyHours": null,
+    "approvalLatencyHours": null,
+    "mergeLatencyHours": 0.0022222222222222222
+  },
+  "issueIncidentLinks": [],
+  "analysisMetadata": {
+    "signatureAfterCommitRole": "head",
+    "excludedFromPrimaryAnalysis": false,
+    "exclusionReasons": [],
+    "primaryCostRecord": null,
+    "relationComplexityComponents": null,
+    "runtimeMetrics": {
+      "runtimeGraphMeasured": false,
+      "runtimeEdgeEvidenceCount": null,
+      "runtimePairCount": null,
+      "runtimeFanout": null,
+      "unprotectedRuntimePropagationRadius": null,
+      "circuitBreakerCoverageRatio": null,
+      "protectedPairCount": null,
+      "partialPairCount": null,
+      "unprotectedPairCount": null,
+      "unknownCoveragePairCount": null,
+      "failureModeTaxonomyVersion": null,
+      "coveragePolicyVersion": null,
+      "confidenceThreshold": null
+    },
+    "alternateSignatureAfter": null
+  }
+}

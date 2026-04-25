@@ -1,0 +1,360 @@
+{
+  "schemaVersion": "empirical-signature-dataset-v0",
+  "repository": {
+    "owner": "leanprover-community",
+    "name": "lean4-samples",
+    "defaultBranch": "main"
+  },
+  "pullRequest": {
+    "number": 10,
+    "author": "lovettchris",
+    "createdAt": "2022-09-15T22:57:35Z",
+    "mergedAt": "2022-09-19T17:34:36Z",
+    "baseCommit": "4785ec2baea49570d4c90d7ccac2af5ec0cc8d57",
+    "headCommit": "5ad41281bbe016d03354369fef6ec3260e4cc402",
+    "mergeCommit": "18514ed18d867d5da0d9b8706e8bf012ae57a986",
+    "labels": [],
+    "isBotGenerated": false
+  },
+  "signatureBefore": {
+    "commit": {
+      "sha": "4785ec2baea49570d4c90d7ccac2af5ec0cc8d57",
+      "role": "base"
+    },
+    "extractor": {
+      "name": "sig0-extractor",
+      "version": "0.1.0",
+      "ruleSetVersion": "sig0-v0",
+      "policyVersion": null
+    },
+    "signature": {
+      "hasCycle": 0,
+      "sccMaxSize": 1,
+      "maxDepth": 1,
+      "fanoutRisk": 9,
+      "boundaryViolationCount": 0,
+      "abstractionViolationCount": 0,
+      "sccExcessSize": 0,
+      "maxFanout": 1,
+      "reachableConeSize": 1,
+      "weightedSccRisk": null,
+      "projectionSoundnessViolation": null,
+      "lspViolationCount": null,
+      "nilpotencyIndex": null,
+      "runtimePropagation": null,
+      "relationComplexity": null,
+      "empiricalChangeCost": null
+    },
+    "metricStatus": {
+      "abstractionViolationCount": {
+        "measured": false,
+        "reason": "policy file not provided"
+      },
+      "boundaryViolationCount": {
+        "measured": false,
+        "reason": "policy file not provided"
+      },
+      "empiricalChangeCost": {
+        "measured": false,
+        "reason": "empirical target variable not provided"
+      },
+      "fanoutRisk": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "hasCycle": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "lspViolationCount": {
+        "measured": false,
+        "reason": "observation rule set not provided"
+      },
+      "maxDepth": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "maxFanout": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "nilpotencyIndex": {
+        "measured": false,
+        "reason": "matrix bridge output not provided"
+      },
+      "projectionSoundnessViolation": {
+        "measured": false,
+        "reason": "projection rule set not provided"
+      },
+      "reachableConeSize": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "relationComplexity": {
+        "measured": false,
+        "reason": "relation complexity observation not provided"
+      },
+      "runtimePropagation": {
+        "measured": false,
+        "reason": "runtime dependency graph not provided"
+      },
+      "sccExcessSize": {
+        "measured": true,
+        "source": "sig0-extractor:derived-scc-excess"
+      },
+      "sccMaxSize": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "weightedSccRisk": {
+        "measured": false,
+        "reason": "weight rule set not provided"
+      }
+    }
+  },
+  "signatureAfter": {
+    "commit": {
+      "sha": "5ad41281bbe016d03354369fef6ec3260e4cc402",
+      "role": "head"
+    },
+    "extractor": {
+      "name": "sig0-extractor",
+      "version": "0.1.0",
+      "ruleSetVersion": "sig0-v0",
+      "policyVersion": null
+    },
+    "signature": {
+      "hasCycle": 0,
+      "sccMaxSize": 1,
+      "maxDepth": 1,
+      "fanoutRisk": 11,
+      "boundaryViolationCount": 0,
+      "abstractionViolationCount": 0,
+      "sccExcessSize": 0,
+      "maxFanout": 1,
+      "reachableConeSize": 1,
+      "weightedSccRisk": null,
+      "projectionSoundnessViolation": null,
+      "lspViolationCount": null,
+      "nilpotencyIndex": null,
+      "runtimePropagation": null,
+      "relationComplexity": null,
+      "empiricalChangeCost": null
+    },
+    "metricStatus": {
+      "abstractionViolationCount": {
+        "measured": false,
+        "reason": "policy file not provided"
+      },
+      "boundaryViolationCount": {
+        "measured": false,
+        "reason": "policy file not provided"
+      },
+      "empiricalChangeCost": {
+        "measured": false,
+        "reason": "empirical target variable not provided"
+      },
+      "fanoutRisk": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "hasCycle": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "lspViolationCount": {
+        "measured": false,
+        "reason": "observation rule set not provided"
+      },
+      "maxDepth": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "maxFanout": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "nilpotencyIndex": {
+        "measured": false,
+        "reason": "matrix bridge output not provided"
+      },
+      "projectionSoundnessViolation": {
+        "measured": false,
+        "reason": "projection rule set not provided"
+      },
+      "reachableConeSize": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "relationComplexity": {
+        "measured": false,
+        "reason": "relation complexity observation not provided"
+      },
+      "runtimePropagation": {
+        "measured": false,
+        "reason": "runtime dependency graph not provided"
+      },
+      "sccExcessSize": {
+        "measured": true,
+        "source": "sig0-extractor:derived-scc-excess"
+      },
+      "sccMaxSize": {
+        "measured": true,
+        "source": "sig0-extractor:import-graph"
+      },
+      "weightedSccRisk": {
+        "measured": false,
+        "reason": "weight rule set not provided"
+      }
+    }
+  },
+  "deltaSignatureSigned": {
+    "hasCycle": 0,
+    "sccMaxSize": 0,
+    "maxDepth": 0,
+    "fanoutRisk": 2,
+    "boundaryViolationCount": null,
+    "abstractionViolationCount": null,
+    "sccExcessSize": 0,
+    "maxFanout": 0,
+    "reachableConeSize": 0,
+    "weightedSccRisk": null,
+    "projectionSoundnessViolation": null,
+    "lspViolationCount": null,
+    "nilpotencyIndex": null,
+    "runtimePropagation": null,
+    "relationComplexity": null
+  },
+  "metricDeltaStatus": {
+    "abstractionViolationCount": {
+      "comparable": false,
+      "reason": "before: policy file not provided; after: policy file not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "boundaryViolationCount": {
+      "comparable": false,
+      "reason": "before: policy file not provided; after: policy file not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "fanoutRisk": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "hasCycle": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "lspViolationCount": {
+      "comparable": false,
+      "reason": "before: observation rule set not provided; after: observation rule set not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "maxDepth": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "maxFanout": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "nilpotencyIndex": {
+      "comparable": false,
+      "reason": "before: matrix bridge output not provided; after: matrix bridge output not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "projectionSoundnessViolation": {
+      "comparable": false,
+      "reason": "before: projection rule set not provided; after: projection rule set not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "reachableConeSize": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "relationComplexity": {
+      "comparable": false,
+      "reason": "before: relation complexity observation not provided; after: relation complexity observation not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "runtimePropagation": {
+      "comparable": false,
+      "reason": "before: runtime dependency graph not provided; after: runtime dependency graph not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    },
+    "sccExcessSize": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "sccMaxSize": {
+      "comparable": true,
+      "reason": "measured before and after",
+      "beforeMeasured": true,
+      "afterMeasured": true
+    },
+    "weightedSccRisk": {
+      "comparable": false,
+      "reason": "before: weight rule set not provided; after: weight rule set not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    }
+  },
+  "prMetrics": {
+    "changedFiles": 6,
+    "changedLinesAdded": 447,
+    "changedLinesDeleted": 0,
+    "changedComponents": [
+      "ListComprehension.ListComprehension",
+      "ListComprehension.Main",
+      "ListComprehension.lakefile"
+    ],
+    "reviewCommentCount": 4,
+    "reviewThreadCount": 2,
+    "reviewRoundCount": 1,
+    "firstReviewLatencyHours": null,
+    "approvalLatencyHours": null,
+    "mergeLatencyHours": 90.61694444444444
+  },
+  "issueIncidentLinks": [],
+  "analysisMetadata": {
+    "signatureAfterCommitRole": "head",
+    "excludedFromPrimaryAnalysis": false,
+    "exclusionReasons": [],
+    "primaryCostRecord": null,
+    "relationComplexityComponents": null,
+    "runtimeMetrics": {
+      "runtimeGraphMeasured": false,
+      "runtimeEdgeEvidenceCount": null,
+      "runtimePairCount": null,
+      "runtimeFanout": null,
+      "unprotectedRuntimePropagationRadius": null,
+      "circuitBreakerCoverageRatio": null,
+      "protectedPairCount": null,
+      "partialPairCount": null,
+      "unprotectedPairCount": null,
+      "unknownCoveragePairCount": null,
+      "failureModeTaxonomyVersion": null,
+      "coveragePolicyVersion": null,
+      "confidenceThreshold": null
+    },
+    "alternateSignatureAfter": null
+  }
+}

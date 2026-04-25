@@ -1,0 +1,58 @@
+{
+  "repository": {
+    "owner": "leanprover-community",
+    "name": "lean4-samples",
+    "defaultBranch": "main"
+  },
+  "pullRequest": {
+    "number": 10,
+    "author": "lovettchris",
+    "createdAt": "2022-09-15T22:57:35Z",
+    "mergedAt": "2022-09-19T17:34:36Z",
+    "baseCommit": "4785ec2baea49570d4c90d7ccac2af5ec0cc8d57",
+    "headCommit": "5ad41281bbe016d03354369fef6ec3260e4cc402",
+    "mergeCommit": "18514ed18d867d5da0d9b8706e8bf012ae57a986",
+    "labels": [],
+    "isBotGenerated": false
+  },
+  "prMetrics": {
+    "changedFiles": 6,
+    "changedLinesAdded": 447,
+    "changedLinesDeleted": 0,
+    "changedComponents": [
+      "ListComprehension.ListComprehension",
+      "ListComprehension.Main",
+      "ListComprehension.lakefile"
+    ],
+    "reviewCommentCount": 4,
+    "reviewThreadCount": 2,
+    "reviewRoundCount": 1,
+    "firstReviewLatencyHours": null,
+    "approvalLatencyHours": null,
+    "mergeLatencyHours": 90.61694444444444
+  },
+  "issueIncidentLinks": [],
+  "analysisMetadata": {
+    "signatureAfterCommitRole": "head",
+    "excludedFromPrimaryAnalysis": false,
+    "exclusionReasons": [],
+    "primaryCostRecord": null,
+    "relationComplexityComponents": null,
+    "runtimeMetrics": {
+      "runtimeGraphMeasured": false,
+      "runtimeEdgeEvidenceCount": null,
+      "runtimePairCount": null,
+      "runtimeFanout": null,
+      "unprotectedRuntimePropagationRadius": null,
+      "circuitBreakerCoverageRatio": null,
+      "protectedPairCount": null,
+      "partialPairCount": null,
+      "unprotectedPairCount": null,
+      "unknownCoveragePairCount": null,
+      "failureModeTaxonomyVersion": null,
+      "coveragePolicyVersion": null,
+      "confidenceThreshold": null
+    },
+    "alternateSignatureAfter": null
+  }
+}

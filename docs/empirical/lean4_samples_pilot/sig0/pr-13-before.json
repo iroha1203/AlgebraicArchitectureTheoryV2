@@ -1,0 +1,673 @@
+{
+  "schemaVersion": "sig0-extractor-v0",
+  "root": "/tmp/aatv2-lean4-samples",
+  "componentKind": "lean-module",
+  "components": [
+    {
+      "id": "CSVParser.CSVParser",
+      "path": "CSVParser/CSVParser.lean"
+    },
+    {
+      "id": "CSVParser.Main",
+      "path": "CSVParser/Main.lean"
+    },
+    {
+      "id": "CSVParser.lakefile",
+      "path": "CSVParser/lakefile.lean"
+    },
+    {
+      "id": "GuessMyNumber.Main",
+      "path": "GuessMyNumber/Main.lean"
+    },
+    {
+      "id": "GuessMyNumber.lakefile",
+      "path": "GuessMyNumber/lakefile.lean"
+    },
+    {
+      "id": "HelloWorld.Main",
+      "path": "HelloWorld/Main.lean"
+    },
+    {
+      "id": "HelloWorld.lakefile",
+      "path": "HelloWorld/lakefile.lean"
+    },
+    {
+      "id": "ListComprehension.ListComprehension",
+      "path": "ListComprehension/ListComprehension.lean"
+    },
+    {
+      "id": "ListComprehension.Main",
+      "path": "ListComprehension/Main.lean"
+    },
+    {
+      "id": "ListComprehension.lakefile",
+      "path": "ListComprehension/lakefile.lean"
+    },
+    {
+      "id": "NaturalNumbers.AdditionWorld",
+      "path": "NaturalNumbers/AdditionWorld.lean"
+    },
+    {
+      "id": "NaturalNumbers.AdditionWorld.Level1",
+      "path": "NaturalNumbers/AdditionWorld/Level1.lean"
+    },
+    {
+      "id": "NaturalNumbers.AdditionWorld.Level2",
+      "path": "NaturalNumbers/AdditionWorld/Level2.lean"
+    },
+    {
+      "id": "NaturalNumbers.AdditionWorld.Level3",
+      "path": "NaturalNumbers/AdditionWorld/Level3.lean"
+    },
+    {
+      "id": "NaturalNumbers.AdditionWorld.Level4",
+      "path": "NaturalNumbers/AdditionWorld/Level4.lean"
+    },
+    {
+      "id": "NaturalNumbers.AdditionWorld.Level5",
+      "path": "NaturalNumbers/AdditionWorld/Level5.lean"
+    },
+    {
+      "id": "NaturalNumbers.AdditionWorld.Level6",
+      "path": "NaturalNumbers/AdditionWorld/Level6.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld",
+      "path": "NaturalNumbers/MultiplicationWorld.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level1",
+      "path": "NaturalNumbers/MultiplicationWorld/Level1.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level2",
+      "path": "NaturalNumbers/MultiplicationWorld/Level2.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level3",
+      "path": "NaturalNumbers/MultiplicationWorld/Level3.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level4",
+      "path": "NaturalNumbers/MultiplicationWorld/Level4.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level5",
+      "path": "NaturalNumbers/MultiplicationWorld/Level5.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level6",
+      "path": "NaturalNumbers/MultiplicationWorld/Level6.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level7",
+      "path": "NaturalNumbers/MultiplicationWorld/Level7.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level8",
+      "path": "NaturalNumbers/MultiplicationWorld/Level8.lean"
+    },
+    {
+      "id": "NaturalNumbers.MultiplicationWorld.Level9",
+      "path": "NaturalNumbers/MultiplicationWorld/Level9.lean"
+    },
+    {
+      "id": "NaturalNumbers.MyNat.Addition",
+      "path": "NaturalNumbers/MyNat/Addition.lean"
+    },
+    {
+      "id": "NaturalNumbers.MyNat.Definition",
+      "path": "NaturalNumbers/MyNat/Definition.lean"
+    },
+    {
+      "id": "NaturalNumbers.MyNat.Multiplication",
+      "path": "NaturalNumbers/MyNat/Multiplication.lean"
+    },
+    {
+      "id": "NaturalNumbers.TutorialWorld",
+      "path": "NaturalNumbers/TutorialWorld.lean"
+    },
+    {
+      "id": "NaturalNumbers.TutorialWorld.Level1",
+      "path": "NaturalNumbers/TutorialWorld/Level1.lean"
+    },
+    {
+      "id": "NaturalNumbers.TutorialWorld.Level2",
+      "path": "NaturalNumbers/TutorialWorld/Level2.lean"
+    },
+    {
+      "id": "NaturalNumbers.TutorialWorld.Level3",
+      "path": "NaturalNumbers/TutorialWorld/Level3.lean"
+    },
+    {
+      "id": "NaturalNumbers.TutorialWorld.Level4",
+      "path": "NaturalNumbers/TutorialWorld/Level4.lean"
+    },
+    {
+      "id": "NaturalNumbers.lakefile",
+      "path": "NaturalNumbers/lakefile.lean"
+    },
+    {
+      "id": "RubiksCube.Rubiks",
+      "path": "RubiksCube/Rubiks.lean"
+    },
+    {
+      "id": "RubiksCube.lakefile",
+      "path": "RubiksCube/lakefile.lean"
+    },
+    {
+      "id": "SimpleMonads.Main",
+      "path": "SimpleMonads/Main.lean"
+    },
+    {
+      "id": "SimpleMonads.Monads",
+      "path": "SimpleMonads/Monads.lean"
+    },
+    {
+      "id": "SimpleMonads.lakefile",
+      "path": "SimpleMonads/lakefile.lean"
+    }
+  ],
+  "edges": [
+    {
+      "source": "CSVParser.CSVParser",
+      "target": "Lean.Data.Parsec",
+      "kind": "import",
+      "evidence": "import Lean.Data.Parsec"
+    },
+    {
+      "source": "CSVParser.Main",
+      "target": "CSVParser",
+      "kind": "import",
+      "evidence": "import CSVParser"
+    },
+    {
+      "source": "CSVParser.lakefile",
+      "target": "Lake",
+      "kind": "import",
+      "evidence": "import Lake"
+    },
+    {
+      "source": "GuessMyNumber.lakefile",
+      "target": "Lake",
+      "kind": "import",
+      "evidence": "import Lake"
+    },
+    {
+      "source": "HelloWorld.lakefile",
+      "target": "Lake",
+      "kind": "import",
+      "evidence": "import Lake"
+    },
+    {
+      "source": "ListComprehension.Main",
+      "target": "ListComprehension",
+      "kind": "import",
+      "evidence": "import ListComprehension"
+    },
+    {
+      "source": "ListComprehension.lakefile",
+      "target": "Lake",
+      "kind": "import",
+      "evidence": "import Lake"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld",
+      "target": "AdditionWorld.Level1",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld",
+      "target": "AdditionWorld.Level2",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level2"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld",
+      "target": "AdditionWorld.Level3",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level3"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld",
+      "target": "AdditionWorld.Level4",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level4"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld",
+      "target": "AdditionWorld.Level5",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level5"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld",
+      "target": "AdditionWorld.Level6",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level6"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level1",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level2",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level3",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level4",
+      "target": "AdditionWorld.Level1",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level4",
+      "target": "AdditionWorld.Level3",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level3"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level4",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level5",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level6",
+      "target": "AdditionWorld.Level2",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level2"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level6",
+      "target": "AdditionWorld.Level4",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level4"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level6",
+      "target": "AdditionWorld.Level5",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level5"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level6",
+      "target": "Mathlib.Tactic.Ring",
+      "kind": "import",
+      "evidence": "import Mathlib.Tactic.Ring"
+    },
+    {
+      "source": "NaturalNumbers.AdditionWorld.Level6",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level1",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level1",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level2",
+      "target": "AdditionWorld.Level1",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level2",
+      "target": "AdditionWorld.Level5",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level5"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level2",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level2",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level3",
+      "target": "AdditionWorld.Level1",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level3",
+      "target": "AdditionWorld.Level5",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level5"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level3",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level3",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level4",
+      "target": "AdditionWorld.Level1",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level4",
+      "target": "AdditionWorld.Level2",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level2"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level4",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level4",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level5",
+      "target": "MultiplicationWorld.Level1",
+      "kind": "import",
+      "evidence": "import MultiplicationWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level5",
+      "target": "MultiplicationWorld.Level4",
+      "kind": "import",
+      "evidence": "import MultiplicationWorld.Level4"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level5",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level5",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level6",
+      "target": "AdditionWorld.Level6",
+      "kind": "import",
+      "evidence": "import AdditionWorld.Level6"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level6",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level6",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level7",
+      "target": "MultiplicationWorld.Level1",
+      "kind": "import",
+      "evidence": "import MultiplicationWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level7",
+      "target": "MultiplicationWorld.Level6",
+      "kind": "import",
+      "evidence": "import MultiplicationWorld.Level6"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level7",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level7",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level8",
+      "target": "MultiplicationWorld.Level1",
+      "kind": "import",
+      "evidence": "import MultiplicationWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level8",
+      "target": "MultiplicationWorld.Level6",
+      "kind": "import",
+      "evidence": "import MultiplicationWorld.Level6"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level8",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level8",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level9",
+      "target": "MultiplicationWorld.Level5",
+      "kind": "import",
+      "evidence": "import MultiplicationWorld.Level5"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level9",
+      "target": "MultiplicationWorld.Level8",
+      "kind": "import",
+      "evidence": "import MultiplicationWorld.Level8"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level9",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.MultiplicationWorld.Level9",
+      "target": "MyNat.Multiplication",
+      "kind": "import",
+      "evidence": "import MyNat.Multiplication"
+    },
+    {
+      "source": "NaturalNumbers.MyNat.Addition",
+      "target": "MyNat.Definition",
+      "kind": "import",
+      "evidence": "import MyNat.Definition"
+    },
+    {
+      "source": "NaturalNumbers.MyNat.Definition",
+      "target": "Mathlib.Tactic.Basic",
+      "kind": "import",
+      "evidence": "import Mathlib.Tactic.Basic"
+    },
+    {
+      "source": "NaturalNumbers.MyNat.Definition",
+      "target": "Mathlib.Tactic.Cases",
+      "kind": "import",
+      "evidence": "import Mathlib.Tactic.Cases"
+    },
+    {
+      "source": "NaturalNumbers.MyNat.Multiplication",
+      "target": "MyNat.Definition",
+      "kind": "import",
+      "evidence": "import MyNat.Definition"
+    },
+    {
+      "source": "NaturalNumbers.TutorialWorld",
+      "target": "TutorialWorld.Level1",
+      "kind": "import",
+      "evidence": "import TutorialWorld.Level1"
+    },
+    {
+      "source": "NaturalNumbers.TutorialWorld",
+      "target": "TutorialWorld.Level2",
+      "kind": "import",
+      "evidence": "import TutorialWorld.Level2"
+    },
+    {
+      "source": "NaturalNumbers.TutorialWorld",
+      "target": "TutorialWorld.Level3",
+      "kind": "import",
+      "evidence": "import TutorialWorld.Level3"
+    },
+    {
+      "source": "NaturalNumbers.TutorialWorld",
+      "target": "TutorialWorld.Level4",
+      "kind": "import",
+      "evidence": "import TutorialWorld.Level4"
+    },
+    {
+      "source": "NaturalNumbers.TutorialWorld.Level1",
+      "target": "MyNat.Definition",
+      "kind": "import",
+      "evidence": "import MyNat.Definition"
+    },
+    {
+      "source": "NaturalNumbers.TutorialWorld.Level2",
+      "target": "MyNat.Definition",
+      "kind": "import",
+      "evidence": "import MyNat.Definition"
+    },
+    {
+      "source": "NaturalNumbers.TutorialWorld.Level3",
+      "target": "MyNat.Definition",
+      "kind": "import",
+      "evidence": "import MyNat.Definition"
+    },
+    {
+      "source": "NaturalNumbers.TutorialWorld.Level4",
+      "target": "MyNat.Addition",
+      "kind": "import",
+      "evidence": "import MyNat.Addition"
+    },
+    {
+      "source": "NaturalNumbers.lakefile",
+      "target": "Lake",
+      "kind": "import",
+      "evidence": "import Lake"
+    },
+    {
+      "source": "RubiksCube.Rubiks",
+      "target": "Lean",
+      "kind": "import",
+      "evidence": "import Lean"
+    },
+    {
+      "source": "RubiksCube.lakefile",
+      "target": "Lake",
+      "kind": "import",
+      "evidence": "import Lake"
+    },
+    {
+      "source": "SimpleMonads.Main",
+      "target": "Monads",
+      "kind": "import",
+      "evidence": "import Monads"
+    },
+    {
+      "source": "SimpleMonads.lakefile",
+      "target": "Lake",
+      "kind": "import",
+      "evidence": "import Lake"
+    }
+  ],
+  "policies": {
+    "boundaryAllowed": [],
+    "abstractionAllowed": []
+  },
+  "signature": {
+    "hasCycle": 0,
+    "sccMaxSize": 1,
+    "maxDepth": 1,
+    "fanoutRisk": 77,
+    "boundaryViolationCount": 0,
+    "abstractionViolationCount": 0
+  },
+  "metricStatus": {
+    "abstractionViolationCount": {
+      "measured": false,
+      "reason": "policy file not provided"
+    },
+    "boundaryViolationCount": {
+      "measured": false,
+      "reason": "policy file not provided"
+    },
+    "fanoutRisk": {
+      "measured": true,
+      "source": "sig0-extractor:import-graph"
+    },
+    "hasCycle": {
+      "measured": true,
+      "source": "sig0-extractor:import-graph"
+    },
+    "maxDepth": {
+      "measured": true,
+      "source": "sig0-extractor:import-graph"
+    },
+    "sccMaxSize": {
+      "measured": true,
+      "source": "sig0-extractor:import-graph"
+    }
+  }
+}

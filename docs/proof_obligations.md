@@ -881,9 +881,22 @@ Stabilization / Audit 時点で残す後続タスク:
 - [#134](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/134):
   paper-ready research note を作成する。
 - [#135](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/135):
-  empirical pilot を小規模 repository で実施する。
+  empirical pilot を小規模 repository で実施する。本 PR では
+  [`lean4-samples` pilot](empirical/lean4_samples_pilot/README.md) として
+  5 件の before / after signature record を生成し、policy / runtime 未指定の
+  placeholder 0 が `metricStatus.measured = false` と `deltaSignatureSigned = null`
+  によって risk 0 から分離されることを確認した。Lean status は
+  `empirical hypothesis` / pilot validation である。
 - [#136](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/136):
   Lean refinement 候補を整理し、必要最小限だけ証明する。
+- [#146](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/146):
+  sig0 pilot 用 PR metadata 生成を自動化する。
+- [#147](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/147):
+  外部 pilot 用の boundary / runtime evidence 入力を整備する。
+- [#148](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/148):
+  multi-project repo での component 粒度を整理する。
+- [#149](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/149):
+  module root import target の `ComponentUniverse` validation を整理する。
 
 `LocalReplacementContract` 風の packaging theorem は
 [#118](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/118)
