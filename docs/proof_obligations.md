@@ -712,6 +712,10 @@ Issue [#127](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1
 `unknown` / `partial` coverage は risk 0 に丸めず、保守的な v0 projection では
 未保護 edge 側に残す。coverage が incident scope や repair cost を下げる主張は
 Lean theorem ではなく empirical hypothesis として扱う。
+Issue [#126](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/126)
+では、`runtimeFanout` / `runtimePropagationRadius` と incident / repair cost の関係を
+H5 empirical protocol として固定した。`runtimeFanout` は v1 extension axis へ追加せず、
+analysis-derived metric として dataset / analysis metadata 側に保持する。
 詳細は [runtimePropagation 設計](design/runtime_propagation_design.md) に分離する。
 
 Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
@@ -1045,10 +1049,7 @@ ArchitectureDependencyGraphs C =
 - Lean 側: `StaticDependencyGraph`, `RuntimeDependencyGraph`, `ArchitectureDependencyGraphs` を定義し、0/1 graph として言える構造的命題だけを theorem 化する。
 - extractor / empirical 側: import, type reference, RPC, queue, shared database, timeout propagation などの抽出規則と edge metadata を管理する。
 - Signature 側: v0 の静的構造軸を維持し、`runtimePropagation` は v1 extension として `RuntimeDependencyGraph` から別に計算する。
-
-後続 Issue 候補:
-
-- `runtimeFanout` / `runtimePropagationRadius` と障害修正コストの実証プロトコルを設計する。
+- empirical protocol 側: Issue #126 で、`runtimeFanout` / `runtimePropagationRadius` と障害修正コストの関係を H5 empirical hypothesis として設計した。
 
 ### 解析的指標は発展課題として扱う
 

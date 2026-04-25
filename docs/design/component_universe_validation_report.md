@@ -203,7 +203,7 @@ SignatureSnapshot.validationReport =
   universeMode: "local-only" | "closed-with-external"
 ```
 
-H1 から H4 の主要分析では、`summaryResult = fail` の snapshot を除外する。
+H1 から H5 の主要分析では、`summaryResult = fail` の snapshot を除外する。
 `summaryResult = warn` の snapshot は、warning 種別を stratification または sensitivity
 analysis に使う。`not_measured` metric は既存の `metricStatus` と同じく欠損値であり、
 placeholder 0 を risk 0 として扱わない。
