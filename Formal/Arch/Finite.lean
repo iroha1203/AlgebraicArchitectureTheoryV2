@@ -600,6 +600,20 @@ theorem fanoutRiskOfFinite_eq_measuredDependencyEdges_length_under_universe
   exact fanoutRiskOfFinite_eq_measuredDependencyEdges_length G U.components
 
 /--
+Under a finite component universe, the v1 core max-fanout metric is the maximum
+size of the measured dependency-edge class with a common source component.
+-/
+theorem maxFanoutOfFinite_eq_max_measuredDependencyEdgesFromSource_length_under_universe
+    {C : Type u} {G : ArchGraph C} [DecidableRel G.edge]
+    (U : ComponentUniverse G) :
+    maxFanoutOfFinite G U.components =
+      maxNatList
+        (U.components.map (fun c =>
+          (measuredDependencyEdgesFromSource G U.components c).length)) := by
+  exact maxFanoutOfFinite_eq_max_measuredDependencyEdgesFromSource_length G
+    U.components
+
+/--
 An edge followed by a bounded return walk is detected by the cycle indicator
 under a finite component universe.
 -/
