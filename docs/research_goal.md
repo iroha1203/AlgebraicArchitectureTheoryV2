@@ -128,6 +128,9 @@ Sig(A) =
 - relation complexity と運用リスク
 
 これらは Lean の定理ではなく、実データで検証する仮説として扱う。
+最初の pilot study では [Signature 実証プロトコル](empirical_protocol.md) に従い、
+対象 repository、期間、before / after signature、PR / issue / incident metadata、
+除外条件を固定してから分析する。
 
 ## 評価軸
 
