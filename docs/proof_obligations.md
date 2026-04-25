@@ -377,6 +377,8 @@ Lean status:
   `projectionSoundnessViolationEdges`, `projectionSoundnessViolation`
 - `proved`: `projectionSound_of_projectionExact`,
   `projectionComplete_of_projectionExact`,
+  `projectedConcreteEdge_of_projectionComplete`,
+  `abstractEdge_iff_projectedConcreteEdge_of_projectionExact`,
   `dipCompatible_of_strongDIPCompatible`,
   `mem_projectionSoundnessViolationEdges_iff`,
   `projectionSoundnessViolation_eq_zero_of_projectionSound`,
@@ -391,11 +393,13 @@ Issue [#81](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/81
 `¬ Decomposable` が起こり得ることを証明済みである。
 これは Layered とは別軸の局所契約 invariant として扱う。
 
-今後の proof obligation:
-
-- exact projection の edge-level bridge theorem を追加する場合は、
-  `ProjectionExact G π GA` から `GA.edge a b` と
-  `exists c d, π.expose c = a ∧ π.expose d = b ∧ G.edge c d` の同値を切る。
+Issue [#107](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/107)
+では、exact projection の edge-level bridge theorem を追加する判断を採用した。
+`abstractEdge_iff_projectedConcreteEdge_of_projectionExact` により、
+`ProjectionExact G π GA` から `GA.edge a b` と
+`exists c d, π.expose c = a ∧ π.expose d = b ∧ G.edge c d` の同値を読める。
+片方向の witness 取り出しは
+`projectedConcreteEdge_of_projectionComplete` として切り出した。
 
 ### 6. LSP は観測関手による同値性である
 
@@ -818,8 +822,6 @@ Lean status の区分:
 
 残る後続タスク:
 
-- `ProjectionExact` から抽象 edge と投影された具体 edge 集合の一致を読む
-  edge-level bridge theorem を追加するか判断する。
 - `DIPCompatible G π GA` と `ObservationFactorsThrough π O` を束ねる
   `LocalReplacementContract` 風の packaging theorem を追加するか判断する。
 

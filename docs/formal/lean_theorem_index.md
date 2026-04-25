@@ -108,6 +108,8 @@ File: `Formal/Arch/Projection.lean`
 | `StrongDIPCompatible` | `def` | `DIPCompatible` に `ProjectionComplete` を加えた強い互換性。 | `defined only` |
 | `projectionSound_of_projectionExact` | `theorem` | exact projection から soundness を得る。 | `proved` |
 | `projectionComplete_of_projectionExact` | `theorem` | exact projection から completeness を得る。 | `proved` |
+| `projectedConcreteEdge_of_projectionComplete` | `theorem` | completeness から抽象 edge の具体 edge witness を得る。 | `proved` |
+| `abstractEdge_iff_projectedConcreteEdge_of_projectionExact` | `theorem` | exact projection の下で抽象 edge と投影された具体 edge witness が同値。 | `proved` |
 | `dipCompatible_of_strongDIPCompatible` | `theorem` | strong DIP compatible なら DIP compatible。 | `proved` |
 | `respectsProjection_id` | `theorem` | identity projection は元の graph を respect する。 | `proved` |
 | `quotientWellDefined_id` | `theorem` | identity projection は quotient well-defined。 | `proved` |

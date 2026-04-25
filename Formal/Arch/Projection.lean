@@ -139,6 +139,32 @@ theorem projectionComplete_of_projectionExact {C : Type u} {A : Type v}
     (h : ProjectionExact G π GA) : ProjectionComplete G π GA :=
   h.2
 
+/-- Projection completeness turns an abstract edge into a concrete edge witness. -/
+theorem projectedConcreteEdge_of_projectionComplete {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : ProjectionComplete G π GA) {a b : A} (hEdge : GA.edge a b) :
+    ∃ c d : C, π.expose c = a ∧ π.expose d = b ∧ G.edge c d :=
+  h hEdge
+
+/--
+Exact projection identifies abstract edges with projected concrete edge
+witnesses.
+-/
+theorem abstractEdge_iff_projectedConcreteEdge_of_projectionExact
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : ProjectionExact G π GA) {a b : A} :
+    GA.edge a b ↔
+      ∃ c d : C, π.expose c = a ∧ π.expose d = b ∧ G.edge c d := by
+  constructor
+  · intro hEdge
+    exact projectedConcreteEdge_of_projectionComplete
+      (projectionComplete_of_projectionExact h) hEdge
+  · rintro ⟨c, d, hc, hd, hEdge⟩
+    have hAbstract : GA.edge (π.expose c) (π.expose d) :=
+      projectionSound_of_projectionExact h hEdge
+    simpa [hc, hd] using hAbstract
+
 /--
 The quotient is well-defined when representatives of the same abstraction
 induce the same abstract outgoing dependency predicate.
