@@ -492,6 +492,47 @@ theorem sccMaxSizeOfFinite_eq_max_mutualReachableClassSize_under_universe
     sccSizeAt_eq_mutualReachableClassSize_under_universe U]
 
 /--
+The SCC excess metric is exactly the graph-level maximum mutual-reachability
+class size, normalized by subtracting one.
+-/
+theorem sccExcessSizeOfFinite_eq_max_mutualReachableClassSize_sub_one_under_universe
+    {C : Type u} {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) :
+    sccExcessSizeOfFinite G U.components =
+      maxNatList
+        (U.components.map (fun c =>
+          mutualReachableClassSize G U.components c)) - 1 := by
+  rw [sccExcessSizeOfFinite,
+    sccMaxSizeOfFinite_eq_max_mutualReachableClassSize_under_universe U]
+
+/--
+The SCC excess metric is zero exactly when the measured maximum SCC size is at
+most one. This covers empty measurement lists and singleton SCCs by Nat
+subtraction.
+-/
+theorem sccExcessSizeOfFinite_eq_zero_iff_sccMaxSizeOfFinite_le_one
+    {C : Type u} (G : ArchGraph C) [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) :
+    sccExcessSizeOfFinite G components = 0 ↔
+      sccMaxSizeOfFinite G components ≤ 1 := by
+  simp [sccExcessSizeOfFinite, Nat.sub_eq_zero_iff_le]
+
+/--
+Under a finite component universe, the SCC excess metric is zero whenever every
+graph-level mutual-reachability class has size at most one.
+-/
+theorem sccExcessSizeOfFinite_eq_zero_of_max_mutualReachableClassSize_le_one_under_universe
+    {C : Type u} {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G)
+    (h :
+      maxNatList
+        (U.components.map (fun c =>
+          mutualReachableClassSize G U.components c)) ≤ 1) :
+    sccExcessSizeOfFinite G U.components = 0 := by
+  rw [sccExcessSizeOfFinite_eq_max_mutualReachableClassSize_sub_one_under_universe U]
+  exact Nat.sub_eq_zero_of_le h
+
+/--
 Under a finite component universe, v0 `fanoutRiskOfFinite` counts exactly the
 measured dependency edges inside the universe.
 -/
