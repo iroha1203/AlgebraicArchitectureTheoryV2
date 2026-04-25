@@ -8,14 +8,16 @@
 
 1. [研究の最終ゴール](research_goal.md)
 2. [研究概要](aat_v2_overview.md)
-3. [設計原則の分類](design_principle_classification.md)
-4. [証明義務と実証仮説](proof_obligations.md)
-5. [Lean 定義・定理索引](formal/lean_theorem_index.md)
+3. [Paper-ready research note outline](research_note_outline.md)
+4. [設計原則の分類](design_principle_classification.md)
+5. [証明義務と実証仮説](proof_obligations.md)
+6. [Lean 定義・定理索引](formal/lean_theorem_index.md)
 
 ## 全体文書
 
 - [研究概要](aat_v2_overview.md): 現在の理論構成、三層構造、Signature v0/v1 の位置づけ。
 - [研究の最終ゴール](research_goal.md): 完成時に何を説明・測定できる状態を目指すか。
+- [Paper-ready research note outline](research_note_outline.md): 外部説明用 technical note / paper outline として、Lean proof、executable metric、empirical hypothesis の責務境界を圧縮した文書。
 - [設計原則の分類](design_principle_classification.md): SOLID, Layered, Clean Architecture, Event Sourcing, Saga, CRUD などの役割分担。
 - [証明義務と実証仮説](proof_obligations.md): 未解決の proof obligation と empirical hypothesis の台帳。
 
