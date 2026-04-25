@@ -30,7 +30,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#7](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/7) | closed | 2. Path and Reachability Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `reachesWithin_complete_of_reachable_under_universe` を証明する。 |
 | [#8](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/8) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `hasCycleBool` と `HasClosedWalk` の有限 universe 上の同値を証明する。 |
 | [#9](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/9) | open | 1. Finite Universe Bridge | docs index | [GitHub Issues 索引](#github-issues-索引) | この文書を GitHub Issues への索引として更新する。 |
-| [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10) | open | 6. Projection / Observation Invariants | `defined only` / design | [5. DIP は射影整合性である](#5-dip-は射影整合性である), [6. LSP は観測関手による同値性である](#6-lsp-は観測関手による同値性である) | `DIPCompatible` と `StrongDIPCompatible` の役割分担を整理する。 |
+| [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10) | closed | 6. Projection / Observation Invariants | `defined only` / design decided | [5. DIP は射影整合性である](#5-dip-は射影整合性である), [6. LSP は観測関手による同値性である](#6-lsp-は観測関手による同値性である) | `DIPCompatible` と `StrongDIPCompatible` の役割分担を整理する。 |
 | [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | closed | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `fanoutRisk = totalFanout` として v0 の fanout 軸を安定化する。 |
 | [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | closed | 5. Layering Equivalence | `proved` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
 | [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
@@ -291,6 +291,26 @@ DIPCompatible =
 
 現行 Lean 実装の `DIPCompatible` は、本研究における strong operational formalization として扱う。すなわち、単に「具象が抽象へ依存する」という方向制約ではなく、projection soundness と strong representative-stability を要求する。
 
+`StrongDIPCompatible` は、`DIPCompatible` の別名ではなく exact-projection refinement として扱う。つまり、
+`ProjectionSound` に加えて `ProjectionComplete` も要求し、抽象グラフ上の辺が何らかの具体依存に由来することまで固定する。
+
+Lean status:
+
+- `defined only`: `ProjectionSound`, `ProjectionComplete`, `ProjectionExact`,
+  `RepresentativeStable`, `DIPCompatible`, `StrongDIPCompatible`
+- `proved`: `projectionSound_of_projectionExact`,
+  `projectionComplete_of_projectionExact`,
+  `dipCompatible_of_strongDIPCompatible`
+
+今後の proof obligation:
+
+- `projectionSoundnessViolation` などの executable metric を定義し、
+  `ProjectionSound` の graph-level facts と接続する。
+- exact projection が必要な場面と soundness だけで十分な場面を、設計原則分類と
+  Signature v1 の projection bridge 軸で分ける。
+- SOLID 不完全性反例では、DIP 風の依存方向や `DIPCompatible` を満たしても、
+  抽象層の循環から `¬ Decomposable` が起こり得ることを Layered とは別軸として扱う。
+
 ### 6. LSP は観測関手による同値性である
 
 関連 Issue: [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10)
@@ -315,6 +335,18 @@ LSPCompatible
 ```text
 ObservationFactorsThrough π O -> LSPCompatible π O
 ```
+
+Lean status:
+
+- `defined only`: `Observation`, `ObservationallyEquivalent`,
+  `LSPCompatibleAt`, `LSPCompatible`, `ObservationFactorsThrough`
+- `proved`: `lspAt_of_lsp`, `lspCompatibleAt_refl`,
+  `lspObservation_symm`, `lspCompatible_of_observationFactorsThrough`
+
+今後の proof obligation:
+
+- `ObservationFactorsThrough` と projection bridge の関係を、実装置換の局所契約層として整理する。
+- `observationalDivergence` や `lspViolationCount` は executable / empirical metric として別途設計する。
 
 ### 7. Architecture Signature は半順序を持つ
 

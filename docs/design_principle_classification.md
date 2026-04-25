@@ -135,3 +135,5 @@ Dependencies:
 この例では、具象 `OrderAdapter` / `PaymentAdapter` は抽象 `OrderPort` / `PaymentPort` へ依存しており、具象への逆向き依存はない。それでも抽象層 `OrderPort <-> PaymentPort` が循環しているため、`Decomposable` は従わない。狙いは、DIP 風の依存方向を保っても、大域的な抽象層の循環を排除するには Layered などの別原則が必要であることを示すことである。
 
 この段階では、旧 `AbstractCycleComponent` は完全な `DIPCompatible` 反例ではなく、`DIP-direction-only counterexample` として位置づける。より強い Lean 例では、`RespectsProjection`, `QuotientWellDefined`, `DIPCompatible`, `LSPCompatible` を満たしながら、抽象層循環により `¬ Decomposable` となる形を用意する。
+
+`DIPCompatible` は、現行 Lean では単なる具象から抽象への依存方向制約ではなく、`ProjectionSound` と `RepresentativeStable` を合わせた strong operational formalization である。`StrongDIPCompatible` はこれに `ProjectionComplete` を加えた exact-projection refinement として扱う。したがって、DIP 系の局所契約が満たされることと、抽象層そのものが非循環・層化可能であることは別の不変量である。

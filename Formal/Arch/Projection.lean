@@ -37,6 +37,18 @@ def ProjectionExact {C : Type u} {A : Type v}
     (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) : Prop :=
   ProjectionSound G π GA ∧ ProjectionComplete G π GA
 
+/-- Exact projection includes projection soundness. -/
+theorem projectionSound_of_projectionExact {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : ProjectionExact G π GA) : ProjectionSound G π GA :=
+  h.1
+
+/-- Exact projection includes projection completeness. -/
+theorem projectionComplete_of_projectionExact {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : ProjectionExact G π GA) : ProjectionComplete G π GA :=
+  h.2
+
 /--
 The quotient is well-defined when representatives of the same abstraction
 induce the same abstract outgoing dependency predicate.
@@ -61,10 +73,22 @@ def DIPCompatible {C : Type u} {A : Type v}
     (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) : Prop :=
   ProjectionSound G π GA ∧ RepresentativeStable G π
 
-/-- Stronger exact DIP: exact projection plus representative stability. -/
+/--
+Stronger exact DIP: exact projection plus representative stability.
+
+`DIPCompatible` is the strong operational projection condition used by the
+current core; `StrongDIPCompatible` adds projection completeness, so it is the
+exact-projection refinement.
+-/
 def StrongDIPCompatible {C : Type u} {A : Type v}
     (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) : Prop :=
   ProjectionExact G π GA ∧ RepresentativeStable G π
+
+/-- Exact DIP refines the current strong operational DIP condition. -/
+theorem dipCompatible_of_strongDIPCompatible {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : StrongDIPCompatible G π GA) : DIPCompatible G π GA :=
+  ⟨projectionSound_of_projectionExact h.1, h.2⟩
 
 /-- Identity projection respects the original graph. -/
 theorem respectsProjection_id {C : Type u} (G : ArchGraph C) :
