@@ -603,6 +603,19 @@ calibration は empirical / extractor tooling 側に残す。Lean では
 `v1OfFiniteWithWeightedSccRisk` により、重みが明示的に渡された場合だけ
 `ArchitectureSignatureV1.weightedSccRisk` を `some` で埋める。
 
+Issue [#86](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/86)
+では、`runtimePropagation` の最小 metric を `runtimePropagationRadius` として
+固定した。Lean 側の `runtimePropagationOfFinite G components` は
+`RuntimeDependencyGraph` 上で `reachableConeSizeOfFinite G components` を再利用し、
+測定 universe 内の最大 strict reachable cone size を返す。
+`v1OfFiniteWithRuntimePropagation static runtime components ...` は、v1 core を
+静的依存グラフ `static` から計算し、`runtimePropagation` だけを実行時依存グラフ
+`runtime` から `some` で埋める。runtime graph が未抽出なら `v1OfFinite` を使い、
+`runtimePropagation = none` のままにする。`none` は未評価であり、risk 0 ではない。
+runtime edge metadata, timeout budget, retry policy, circuit breaker coverage から
+0/1 graph への projection rule は extractor / empirical tooling 側に残す。
+詳細は [runtimePropagation 設計](design/runtime_propagation_design.md) に分離する。
+
 Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
 では、projection bridge の最小 Lean 定義を追加した。`projectionSoundnessViolation`
 は `components : List C` に現れる concrete edge `(c, d)` のうち、
@@ -660,7 +673,7 @@ Lean status の区分:
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み | `defined only` / `proved` |
 | `rho(A)` | 行列解析上の伝播増幅指標として扱う | `future proof obligation` / `empirical hypothesis` |
-| `runtimePropagation` | 実行時依存抽出に依存する | `empirical hypothesis` |
+| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime propagation radius として計算する。runtime metadata から graph への projection は tooling 側に残す | `defined only` / `empirical hypothesis` |
 | `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データで検証する目的変数 | `empirical hypothesis` |
 
@@ -686,6 +699,11 @@ Lean status の区分:
   [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36)
   で扱う。初期設計は
   [relation_complexity_design.md](design/relation_complexity_design.md)
+  に分離する。
+- `runtimePropagation` の最小 metric と extractor 境界は
+  [#86](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/86)
+  で扱う。初期設計は
+  [runtime_propagation_design.md](design/runtime_propagation_design.md)
   に分離する。
 
 Bridge theorem naming policy:
@@ -853,18 +871,18 @@ ArchitectureDependencyGraphs C =
 - external SaaS
 - timeout propagation
 
-実行時依存グラフは、Circuit Breaker, timeout propagation, runtime fanout, failure propagation radius など、運用時の結合と障害伝播の評価に使う。Lean core の `RuntimeDependencyGraph` は当面 0/1 edge の存在だけを表す。edge label, weight, failure mode, timeout budget, retry policy, circuit breaker coverage などは extractor / empirical tooling 側の metadata として保持し、対応する projection が固まった後で Lean 定義へ橋渡しする。
+実行時依存グラフは、Circuit Breaker, timeout propagation, runtime fanout, failure propagation radius など、運用時の結合と障害伝播の評価に使う。Lean core の `RuntimeDependencyGraph` は当面 0/1 edge の存在だけを表す。edge label, weight, failure mode, timeout budget, retry policy, circuit breaker coverage などは extractor / empirical tooling 側の metadata として保持し、対応する projection が固まった後で Lean 定義へ橋渡しする。初期の `runtimePropagation` は、0/1 runtime graph 上の `runtimePropagationRadius` として `reachableConeSizeOfFinite` を再利用する。
 
 責務境界:
 
 - Lean 側: `StaticDependencyGraph`, `RuntimeDependencyGraph`, `ArchitectureDependencyGraphs` を定義し、0/1 graph として言える構造的命題だけを theorem 化する。
 - extractor / empirical 側: import, type reference, RPC, queue, shared database, timeout propagation などの抽出規則と edge metadata を管理する。
-- Signature 側: v0 の静的構造軸を維持し、`runtimePropagation` は v1 以降の empirical extension として分離する。
+- Signature 側: v0 の静的構造軸を維持し、`runtimePropagation` は v1 extension として `RuntimeDependencyGraph` から別に計算する。
 
 後続 Issue 候補:
 
-- runtime edge metadata と 0/1 `RuntimeDependencyGraph` への projection を設計する。
-- Circuit Breaker coverage を runtime propagation radius の低減として測る executable metric を設計する。
+- runtime edge metadata と 0/1 `RuntimeDependencyGraph` への projection を実 extractor に実装する。
+- Circuit Breaker coverage を runtime propagation radius の低減として測る policy-aware metric を設計する。
 - `runtimeFanout` / `runtimePropagationRadius` と障害修正コストの実証プロトコルを設計する。
 
 ### 解析的指標は発展課題として扱う

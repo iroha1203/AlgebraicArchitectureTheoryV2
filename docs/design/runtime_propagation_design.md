@@ -1,0 +1,68 @@
+# runtimePropagation 設計
+
+`runtimePropagation` は Signature v1 の empirical extension 軸であり、実行時依存と
+障害伝播の広がりを表す。静的な import / type reference から作る構造軸とは分け、
+`RuntimeDependencyGraph` 上の 0/1 edge と、extractor が保持する runtime metadata
+の二層で扱う。
+
+## 最小 metric
+
+初期 Lean metric は `runtimePropagationRadius` とする。計算規則は
+`RuntimeDependencyGraph` 上の
+`ArchitectureSignature.runtimePropagationOfFinite G components` であり、既存の
+`reachableConeSizeOfFinite G components` を再利用する。
+
+この値は、測定 universe 内で、ある component から runtime edge に沿って到達できる
+異なる component 数の最大値である。辺の向きは既存 convention と同じく
+`edge c d` means `c depends on d` で読む。runtime graph では、これは `c` の実行時
+呼び出しや通信が依存する相手へどれだけ広がるかを表す。
+
+`runtimeFanout` は同じ 0/1 runtime graph 上で `maxFanoutOfFinite` を再利用できるが、
+最初の `ArchitectureSignatureV1.runtimePropagation` entry point には入れない。
+`runtimeFanout` は局所集中、`runtimePropagationRadius` は到達範囲を測る別軸候補として
+残す。
+
+## Signature への埋め込み
+
+Lean 側では
+`ArchitectureSignature.v1OfFiniteWithRuntimePropagation static runtime components ...`
+を runtime 軸の entry point とする。
+
+- v1 core は `static : StaticDependencyGraph C` から計算する。
+- `runtimePropagation` は `runtime : RuntimeDependencyGraph C` から
+  `some (runtimePropagationOfFinite runtime components)` として埋める。
+- runtime graph が未抽出の場合は既存の `v1OfFinite` を使い、`runtimePropagation = none`
+  のままにする。
+
+`none` は未評価を意味し、runtime risk 0 ではない。`some 0` は、測定済みの runtime
+graph において runtime edge の到達範囲が空であることを表す。
+
+## Extractor 境界
+
+extractor / empirical tooling 側は、次の情報を保持する。
+
+- runtime edge の抽出根拠: RPC, queue publish / subscribe, shared database,
+  external SaaS, distributed transaction, timeout propagation など。
+- edge metadata: label, weight, failure mode, timeout budget, retry policy,
+  circuit breaker coverage, confidence, evidence location。
+- metadata から 0/1 `RuntimeDependencyGraph` へ落とす projection rule。
+
+Lean core に渡す 0/1 projection の初期規則は、実行時通信または共有 runtime resource
+への依存を示す evidence が 1 件以上ある component pair を edge として立てることにする。
+metadata の重み、failure mode、timeout budget、retry policy はこの 0/1 edge の存在へは
+畳み込むが、Lean theorem の前提にはしない。
+
+Circuit Breaker coverage は初期 `runtimePropagationRadius` には直接混ぜない。
+coverage を障害伝播低減として扱うには、未保護 edge を投影した graph や、policy-aware
+propagation graph を別に定義する必要がある。その設計は後続の tooling / empirical
+validation 課題として残す。
+
+## Lean status
+
+- `runtimePropagationOfFinite`: `defined only`
+- `v1OfFiniteWithRuntimePropagation`: `defined only`
+- runtime edge metadata から 0/1 graph への projection rule: `empirical hypothesis` /
+  tooling design
+- Circuit Breaker coverage が障害修正コストや障害範囲を下げる主張:
+  `empirical hypothesis`
+

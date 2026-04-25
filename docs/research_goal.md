@@ -152,7 +152,7 @@ Sig(A) =
 | 分散収束・ログ整合性 | 分散状態は前提条件のもとで収束するか。 | `consensusPreconditionRisk`, `divergenceWindow`, `replicationLagRisk` |
 | 実証的コスト | 指標は実際の変更・障害コストと関係するか。 | `empiricalChangeCost`, `reviewCost`, `incidentRepairCost` |
 
-Signature v1 では、これらを一度にすべて Lean 構造へ入れない。まず v0 の安定軸を保持し、分解可能性・依存伝播・境界・抽象化の executable metric を v1 core とする。`nilpotencyIndex` と `rho(A)` は adjacency matrix bridge の後続軸、`relationComplexity`, `runtimePropagation`, `empiricalChangeCost` は empirical extraction と実証プロトコル側の軸として分離する。`relationComplexity` は状態遷移代数層の構成要素ベクトルとして観測し、単一スコアだけで設計を評価しない。
+Signature v1 では、これらを一度にすべて Lean 構造へ入れない。まず v0 の安定軸を保持し、分解可能性・依存伝播・境界・抽象化の executable metric を v1 core とする。`nilpotencyIndex` と `rho(A)` は adjacency matrix bridge の後続軸であり、`runtimePropagation` は 0/1 `RuntimeDependencyGraph` 上の propagation radius から始める。`relationComplexity`, `empiricalChangeCost`, runtime metadata の解釈は empirical extraction と実証プロトコル側の軸として分離する。`relationComplexity` は状態遷移代数層の構成要素ベクトルとして観測し、単一スコアだけで設計を評価しない。
 
 静的依存と実行時依存は別 graph role として抽出する。Lean core の初期形は `StaticDependencyGraph` と `RuntimeDependencyGraph` をどちらも `ArchGraph` の 0/1 edge として扱い、runtime edge の label, weight, failure mode, timeout budget, retry policy, circuit breaker coverage は empirical tooling 側に置く。
 
