@@ -29,6 +29,11 @@ theorem decomposable_finitePropagation {C : Type u} {G : ArchGraph C}
     (h : Decomposable G) : FinitePropagation G :=
   finitePropagation_of_strictLayered h
 
+/-- Decomposability is preserved by deleting dependency edges. -/
+theorem decomposable_of_edgeSubset {C : Type u} {H G : ArchGraph C}
+    (hSubset : EdgeSubset H G) (h : Decomposable G) : Decomposable H :=
+  strictLayered_of_edgeSubset hSubset h
+
 /-- Four-layer example used as the first positive decomposability witness. -/
 inductive FourLayerComponent where
   | ui
@@ -68,4 +73,3 @@ theorem decomposable : Decomposable graph :=
 end FourLayerComponent
 
 end Formal.Arch
-

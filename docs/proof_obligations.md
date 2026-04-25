@@ -58,6 +58,10 @@ Decomposable G := StrictLayered G
 
 - `StrictLayered -> Acyclic`: `proved`
 - `StrictLayered -> FinitePropagation`: `proved`
+- Edge deletion / subgraph preservation:
+  `EdgeSubset`, `strictLayered_of_edgeSubset`, `acyclic_of_edgeSubset`,
+  and `decomposable_of_edgeSubset` are `proved`,
+  [Issue #161](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/161)
 - `Acyclic + finite vertices -> StrictLayered`: `proved`, [Issue #23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23)
 - `Acyclic <-> WalkAcyclic`: `proved`
 - `DAG <-> Nilpotent adjacency matrix`: `proved` for finite
@@ -111,6 +115,8 @@ Lean status:
 - `defined only`: `Decomposable G := StrictLayered G`
 - `proved`: `StrictLayered -> Acyclic`
 - `proved`: `StrictLayered -> FinitePropagation`
+- `proved`: `EdgeSubset` preserves `StrictLayered`, `Acyclic`, and
+  `Decomposable`, [Issue #161](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/161)
 - `proved`: Layered な4層例が `Decomposable` であること
 - `proved`: 2点循環グラフが `Decomposable` でないこと
 - `proved`: `ComponentUniverse.strictLayered_of_acyclic` and

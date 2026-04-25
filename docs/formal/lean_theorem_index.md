@@ -16,11 +16,16 @@ File: `Formal/Arch/Graph.lean`
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `ArchGraph` | `structure` | component 間の依存辺 `edge : C -> C -> Prop` を持つ基本グラフ。 | `defined only` |
+| `EdgeSubset` | `def` | 依存削除・部分グラフ化を、片方の graph の全 edge がもう片方に含まれる関係として表す。 | `defined only` |
+| `EdgeSubset.refl` | `theorem` | 任意 graph は自身の edge subset である。 | `proved` |
+| `EdgeSubset.trans` | `theorem` | edge subset 関係は推移的である。 | `proved` |
 | `StaticDependencyGraph` | `abbrev` | 静的依存を表す graph role。 | `defined only` |
 | `RuntimeDependencyGraph` | `abbrev` | 実行時依存を表す graph role。 | `defined only` |
 | `ArchitectureDependencyGraphs` | `structure` | 静的依存と実行時依存を同時に保持する薄い構造。 | `defined only` |
 | `Walk` | `inductive` | 長さを保持する依存 walk。 | `defined only` |
 | `Walk.length` | `def` | walk の長さ。 | `defined only` |
+| `Walk.map_edgeSubset` | `def` | edge subset に沿って小さい graph の walk を大きい graph の walk へ写す。 | `proved` |
+| `Walk.length_map_edgeSubset` | `theorem` | edge subset に沿って写した walk の長さは保存される。 | `proved` |
 | `Walk.vertices` | `def` | walk が通る頂点列。 | `defined only` |
 | `Walk.vertices_length` | `theorem` | `vertices` と `length` の基本関係。 | `proved` |
 | `SimpleWalk` | `structure` | 頂点重複のない walk。 | `defined only` |
@@ -37,6 +42,7 @@ File: `Formal/Arch/Reachability.lean`
 | `Reachable.refl'` | `theorem` | 任意 component は自身へ到達可能。 | `proved` |
 | `Reachable.of_edge` | `theorem` | 依存辺から到達可能性を得る。 | `proved` |
 | `Reachable.trans` | `def` | 到達可能性の推移性。 | `proved` |
+| `Reachable.map_edgeSubset` | `def` | edge subset に沿って小さい graph の reachability を大きい graph の reachability へ写す。 | `proved` |
 | `Reachable.of_walk` | `def` | `Walk` から `Reachable` を得る。 | `proved` |
 | `Reachable.of_simpleWalk` | `def` | `SimpleWalk` から `Reachable` を得る。 | `proved` |
 | `Reachable.exists_path` | `theorem` | 到達可能なら simple path が存在する。 | `proved` |
@@ -54,9 +60,12 @@ File: `Formal/Arch/Layering.lean`
 | `HasClosedWalk` | `def` | 閉 walk を持つこと。 | `defined only` |
 | `WalkAcyclic` | `def` | 非自明な閉 walk が存在しないこと。 | `defined only` |
 | `FinitePropagation` | `def` | 任意 component からの walk 長に上界があること。 | `defined only` |
+| `strictLayering_of_edgeSubset` | `theorem` | edge subset restriction は特定の strict layer assignment を保存する。 | `proved` |
+| `strictLayered_of_edgeSubset` | `theorem` | edge subset restriction は `StrictLayered` を保存する。 | `proved` |
 | `layer_le_of_reachable` | `theorem` | strict layering 下で reachable な依存先の layer は増えない。 | `proved` |
 | `acyclic_of_strictLayering` | `theorem` | strict layering は acyclicity を与える。 | `proved` |
 | `strictLayered_acyclic` | `theorem` | `StrictLayered -> Acyclic`。 | `proved` |
+| `acyclic_of_edgeSubset` | `theorem` | edge subset restriction は `Acyclic` を保存する。 | `proved` |
 | `walkAcyclic_of_acyclic` | `theorem` | `Acyclic -> WalkAcyclic`。 | `proved` |
 | `acyclic_of_walkAcyclic` | `theorem` | `WalkAcyclic -> Acyclic`。 | `proved` |
 | `acyclic_iff_walkAcyclic` | `theorem` | acyclicity と walk acyclicity の同値。 | `proved` |
@@ -72,6 +81,7 @@ File: `Formal/Arch/Decomposable.lean`
 | `decomposable_iff_strictLayered` | `theorem` | `Decomposable G <-> StrictLayered G`。 | `proved` |
 | `decomposable_acyclic` | `theorem` | `Decomposable -> Acyclic`。 | `proved` |
 | `decomposable_finitePropagation` | `theorem` | `Decomposable -> FinitePropagation`。 | `proved` |
+| `decomposable_of_edgeSubset` | `theorem` | edge subset restriction は `Decomposable` を保存する。 | `proved` |
 | `FourLayerExample.decomposable` | `theorem` | 4層例が decomposable であること。 | `proved` |
 
 ## Thin Category
