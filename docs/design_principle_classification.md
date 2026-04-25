@@ -77,13 +77,13 @@ Replicated Log は quorum、failure model、network partition、availability な
 重要な主張は次である。
 
 ```text
-SOLID(G) does not imply Decomposable(G)
-SOLID(G) and StrictLayered(G) imply Decomposable(G)
+SOLID-style local contracts do not imply Decomposable(G)
+SOLID-style local contracts and StrictLayered(G) imply Decomposable(G)
 ```
 
 意味は次である。
 
-- SOLID は局所健全性を担う。
+- 本研究の操作的形式化における SOLID-style local contracts は局所健全性を担う。
 - Layered は大域分解可能性を担う。
 - 両者は競合するものではなく、異なる不変量を保証する。
 
