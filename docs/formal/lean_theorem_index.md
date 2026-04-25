@@ -295,15 +295,21 @@ File: `Formal/Arch/SolidCounterexample.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
-| `TwoCycle.not_decomposable` | `theorem` | 2点循環グラフが decomposable でないこと。 | `proved` |
-| `PaymentCycle.not_decomposable` | `theorem` | 局所契約風データを持つ循環例が decomposable でないこと。 | `proved` |
-| `AbstractCycle.not_decomposable` | `theorem` | 抽象層循環例が decomposable でないこと。 | `proved` |
-| `StrongAbstractCycle.lspCompatible` | `theorem` | 強い抽象層循環例が LSP compatible であること。 | `proved` |
-| `StrongAbstractCycle.projectionSound` | `theorem` | 強い抽象層循環例の projection soundness。 | `proved` |
-| `StrongAbstractCycle.projectionComplete` | `theorem` | 強い抽象層循環例の projection completeness。 | `proved` |
-| `StrongAbstractCycle.dipCompatible` | `theorem` | 強い抽象層循環例が DIP compatible であること。 | `proved` |
-| `StrongAbstractCycle.strongDIPCompatible` | `theorem` | 強い抽象層循環例が strong DIP compatible であること。 | `proved` |
-| `StrongAbstractCycle.not_decomposable` | `theorem` | strong DIP / LSP 互換でも decomposable は従わないこと。 | `proved` |
+| `TwoCycleComponent.not_decomposable` | `theorem` | 2点循環グラフが decomposable でないこと。 | `proved` |
+| `PaymentComponent.not_decomposable` | `theorem` | 局所契約風データを持つ循環例が decomposable でないこと。 | `proved` |
+| `AbstractCycleComponent.not_decomposable` | `theorem` | 抽象層循環例が decomposable でないこと。 | `proved` |
+| `StrongAbstractCycleComponent.observation_factors` | `theorem` | 強い抽象層循環例の observation factorization。 | `proved` |
+| `StrongAbstractCycleComponent.lspCompatible` | `theorem` | 強い抽象層循環例が LSP compatible であること。 | `proved` |
+| `StrongAbstractCycleComponent.abstractGraph_not_decomposable` | `theorem` | 抽象 port-level cycle graph が decomposable でないこと。 | `proved` |
+| `StrongAbstractCycleComponent.projectionSound` | `theorem` | 強い抽象層循環例の projection soundness。 | `proved` |
+| `StrongAbstractCycleComponent.projectionComplete` | `theorem` | 強い抽象層循環例の projection completeness。 | `proved` |
+| `StrongAbstractCycleComponent.projectionExact` | `theorem` | 強い抽象層循環例の exact projection。 | `proved` |
+| `StrongAbstractCycleComponent.representativeStable` | `theorem` | 強い抽象層循環例の representative stability。 | `proved` |
+| `StrongAbstractCycleComponent.dipCompatible` | `theorem` | 強い抽象層循環例が DIP compatible であること。 | `proved` |
+| `StrongAbstractCycleComponent.strongDIPCompatible` | `theorem` | 強い抽象層循環例が strong DIP compatible であること。 | `proved` |
+| `StrongAbstractCycleComponent.not_decomposable` | `theorem` | strong DIP / LSP 互換でも decomposable は従わないこと。 | `proved` |
+| `StrongAbstractCycleComponent.dipCompatible_and_not_decomposable` | `theorem` | DIP compatible と `¬ Decomposable` が同時に成立すること。 | `proved` |
+| `StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable` | `theorem` | strong DIP compatible と `¬ Decomposable` が同時に成立すること。 | `proved` |
 
 ## 現在 Lean に入れていないもの
 
