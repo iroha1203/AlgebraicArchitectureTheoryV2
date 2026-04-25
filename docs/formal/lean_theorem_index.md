@@ -6,6 +6,9 @@
 
 この索引は手動管理である。Lean 定義・定理を追加、削除、rename する PR では、研究上参照する主要 API に影響がある場合にこの文書も更新する。
 
+`Formal/Arch` 以下の責務分類、file move の判断基準、当面の配置ルールは
+[Lean module 階層整理方針](lean_module_organization.md) に分離する。
+
 ## Graph / Walk
 
 File: `Formal/Arch/Graph.lean`

@@ -22,6 +22,7 @@
 ## Lean 形式化
 
 - [Lean 定義・定理索引](formal/lean_theorem_index.md): 現在 Lean に存在する主要な定義・定理の索引。
+- [Lean module 階層整理方針](formal/lean_module_organization.md): `Formal/Arch` 以下の責務分類、移動判断基準、当面の配置ルール。
 
 Lean で証明済みの構造的事実、定義のみの概念、将来の証明義務、実証仮説は混同しない。
 
