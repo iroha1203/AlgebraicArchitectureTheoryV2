@@ -38,6 +38,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26) | closed | 7. Path and Matrix Foundations | `future proof obligation` / design decided | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理), [Matrix bridge 設計](#matrix-bridge-設計), [解析的指標は発展課題として扱う](#解析的指標は発展課題として扱う) | adjacency matrix と DAG / nilpotence / spectral bridge の設計境界を固定する。 |
 | [#32](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/32) | open | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [Signature v1 軸設計](#signature-v1-軸設計) | ArchitectureSignature v1 の軸構成を整理する。 |
 | [#33](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/33) | open | 8. Empirical Signature Extraction | `defined only` / design decided | [静的依存と実行時依存を分ける](#静的依存と実行時依存を分ける) | 静的依存グラフと実行時依存グラフを別 roles として定義する。 |
+| [#34](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/34) | open | 8. Empirical Signature Extraction | `empirical hypothesis` / tooling design | [実コードからの Sig0 extractor v0 設計](sig0_extractor_design.md) | Lean module import graph から Sig0 入力を抽出する最小 tooling の対象範囲、入出力形式、責務境界を固定する。 |
 
 ## Lean で証明する命題
 
@@ -498,7 +499,9 @@ Lean status の区分:
   で扱う。
 - 実コードベースからの Sig0 / v1 core 抽出 tooling は
   [#34](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/34)
-  で扱う。
+  で扱う。最小 Sig0 extractor の v0 設計は
+  [sig0_extractor_design.md](sig0_extractor_design.md)
+  に分離する。
 - 実証プロトコルと empirical cost 軸は
   [#35](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/35)
   で扱う。
