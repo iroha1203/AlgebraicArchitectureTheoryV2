@@ -7,3 +7,4 @@
 - [ArchitectureSignature v1 後半戦まとめ](signature_v1_wrapup.md)
 - [relationComplexity 設計](relation_complexity_design.md)
 - [runtimePropagation 設計](runtime_propagation_design.md)
+- [Projection soundness と exact projection の使い分け](projection_exact_soundness.md)

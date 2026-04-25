@@ -144,3 +144,5 @@ Dependencies:
 この段階では、旧 `AbstractCycleComponent` は完全な `DIPCompatible` 反例ではなく、`DIP-direction-only counterexample` として位置づける。より強い Lean 例では、`RespectsProjection`, `QuotientWellDefined`, `DIPCompatible`, `LSPCompatible` を満たしながら、抽象層循環により `¬ Decomposable` となる形を用意する。
 
 `DIPCompatible` は、現行 Lean では単なる具象から抽象への依存方向制約ではなく、`ProjectionSound` と `RepresentativeStable` を合わせた strong operational formalization である。`StrongDIPCompatible` はこれに `ProjectionComplete` を加えた exact-projection refinement として扱う。したがって、DIP 系の局所契約が満たされることと、抽象層そのものが非循環・層化可能であることは別の不変量である。
+
+この使い分けの詳細は [Projection soundness と exact projection の使い分け](design/projection_exact_soundness.md) に置く。Signature v1 の `projectionSoundnessViolation` は soundness-only metric であり、`StrongDIPCompatible` が要求する exact projection 全体を測るものではない。

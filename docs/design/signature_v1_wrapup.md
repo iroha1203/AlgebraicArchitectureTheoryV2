@@ -22,7 +22,7 @@ Lean 側の出力 schema は、次の 2 層に分ける。
 | `maxFanout` | source ごとの measured dependency edges 数の最大値として計算する | `defined only` / `proved` |
 | `reachableConeSize` | strict reachable cone size の最大値として計算する | `defined only` / `proved` |
 | `weightedSccRisk` | 明示的な `weight : C -> Nat` が渡された場合だけ extension axis を埋める | `defined only` / `proved` |
-| `projectionSoundnessViolation` | projection bridge の measured soundness violation count として扱う | `defined only` / `proved` |
+| `projectionSoundnessViolation` | projection bridge の measured soundness violation count として扱い、exact projection とは分離する | `defined only` / `proved` |
 | `lspViolationCount` | behavioral extension の measured pair count として扱う | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上の matrix bridge entry point から埋める | `defined only` / `proved` |
 | `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上の propagation radius として計算する | `defined only` / `empirical hypothesis` |
@@ -43,6 +43,8 @@ Lean 側の出力 schema は、次の 2 層に分ける。
 次の主張は Signature v1 schema には場所を持つが、Lean core の全称定理としてはまだ扱わない。
 
 - `rho(A)` は行列解析を含むため、spectral bridge の後続 proof obligation とする。
+- `projectionSoundnessViolation` は soundness-only metric であり、`ProjectionComplete`
+  の欠如や exact projection gap は別 refinement として扱う。
 - runtime edge metadata, timeout budget, retry policy, circuit breaker coverage は extractor / empirical tooling 側に残す。
 - `relationComplexity` と `empiricalChangeCost` は実証プロトコル上の観測・目的変数として扱う。
 
