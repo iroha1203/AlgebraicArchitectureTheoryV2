@@ -39,6 +39,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#32](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/32) | open | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [Signature v1 軸設計](#signature-v1-軸設計) | ArchitectureSignature v1 の軸構成を整理する。 |
 | [#33](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/33) | open | 8. Empirical Signature Extraction | `defined only` / design decided | [静的依存と実行時依存を分ける](#静的依存と実行時依存を分ける) | 静的依存グラフと実行時依存グラフを別 roles として定義する。 |
 | [#34](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/34) | open | 8. Empirical Signature Extraction | `empirical hypothesis` / tooling design | [実コードからの Sig0 extractor v0 設計](sig0_extractor_design.md) | Lean module import graph から Sig0 入力を抽出する最小 tooling の対象範囲、入出力形式、責務境界を固定する。 |
+| [#35](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/35) | open | 8. Empirical Signature Extraction | `empirical hypothesis` / protocol design | [実証研究で検証する仮説](#実証研究で検証する仮説), [Signature 実証プロトコル](empirical_protocol.md) | Signature と変更・レビュー・障害コストの実証プロトコルを固定する。 |
 | [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36) | open | 8. Empirical Signature Extraction | `empirical hypothesis` / design decided | [関係式複雑度と運用リスク](#5-関係式複雑度と運用リスク), [relationComplexity 設計](relation_complexity_design.md) | 状態遷移代数層の `relationComplexity` を empirical metric として扱う方針を固定する。 |
 
 ## Lean で証明する命題
@@ -505,7 +506,9 @@ Lean status の区分:
   に分離する。
 - 実証プロトコルと empirical cost 軸は
   [#35](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/35)
-  で扱う。
+  で扱う。初期 protocol は
+  [empirical_protocol.md](empirical_protocol.md)
+  に分離する。
 - `relationComplexity` は
   [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36)
   で扱う。初期設計は
@@ -544,6 +547,11 @@ names already follow this convention, so no Lean rename is needed.
 ## 実証研究で検証する仮説
 
 Lean status: `empirical hypothesis`. この節の仮説は実コードベースや運用データで検証する対象であり、Lean proof のブロッカーではない。
+
+Issue [#35](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/35)
+では、最初の pilot study 用に仮説を 4 個に絞り、必要データ、測定方法、
+除外条件、extractor tooling と data analysis の前提分離を
+[empirical_protocol.md](empirical_protocol.md) に固定する。
 
 ### 1. 変更波及との相関
 

@@ -178,5 +178,7 @@ Lean では、定義が明確で全称命題として扱える部分を証明す
 
 実コードベースから `Sig0` 入力を抽出する最小 tooling の対象範囲と
 責務境界は、[Sig0 extractor v0 設計](sig0_extractor_design.md)で扱う。
+Signature と変更・レビュー・障害コストを結合する pilot study の protocol は
+[Signature 実証プロトコル](empirical_protocol.md)で扱う。
 
 この分担により、Lean で証明できる数学的事実と、現実データで反証可能な仮説を混同しない。
