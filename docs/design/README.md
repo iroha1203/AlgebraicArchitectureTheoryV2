@@ -5,3 +5,4 @@
 - [Sig0 extractor v0 設計](sig0_extractor_design.md)
 - [Signature 実証プロトコル](empirical_protocol.md)
 - [relationComplexity 設計](relation_complexity_design.md)
+- [runtimePropagation 設計](runtime_propagation_design.md)

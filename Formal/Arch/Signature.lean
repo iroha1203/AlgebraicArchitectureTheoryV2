@@ -514,6 +514,43 @@ def v1OfFiniteWithWeightedSccRisk {C : Type u} (G : ArchGraph C)
   relationComplexity := none
   empiricalChangeCost := none
 
+/--
+Runtime propagation radius over a finite runtime dependency graph.
+
+This reuses the existing strict reachable-cone metric on the runtime graph role.
+Runtime edge metadata and circuit-breaker policy remain outside this Lean
+counting rule.
+-/
+def runtimePropagationOfFinite {C : Type u} (G : RuntimeDependencyGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) : Nat :=
+  reachableConeSizeOfFinite G components
+
+/--
+Build a Signature v1 value and populate the runtime propagation extension axis.
+
+The core axes are still computed from the static dependency graph. The runtime
+axis is computed from a separate 0/1 runtime dependency graph, keeping runtime
+coupling distinct from static structural constraints.
+-/
+def v1OfFiniteWithRuntimePropagation {C : Type u}
+    (static : StaticDependencyGraph C)
+    (runtime : RuntimeDependencyGraph C)
+    [DecidableEq C]
+    [DecidableRel static.edge] [DecidableRel runtime.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1 where
+  core := v1CoreOfFinite static components boundaryAllowed abstractionAllowed
+  weightedSccRisk := none
+  projectionSoundnessViolation := none
+  lspViolationCount := none
+  nilpotencyIndex := none
+  runtimePropagation := some (runtimePropagationOfFinite runtime components)
+  relationComplexity := none
+  empiricalChangeCost := none
+
 namespace Examples
 
 /-- One-component graph with no dependency edges. -/
@@ -640,6 +677,13 @@ theorem v1Schema_boolCycle_weightedScc :
       (fun _ _ => True) (fun _ _ => True)
       (fun c => if c then 3 else 2)).weightedSccRisk =
       some 5 := by
+  native_decide
+
+/-- The runtime propagation entry point populates only the runtime axis. -/
+theorem v1Schema_boolForward_runtimePropagation :
+    (v1OfFiniteWithRuntimePropagation boolForwardGraph boolForwardGraph
+      [false, true] (fun _ _ => True) (fun _ _ => True)).runtimePropagation =
+      some 1 := by
   native_decide
 
 end Examples
