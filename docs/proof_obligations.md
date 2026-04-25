@@ -122,8 +122,8 @@ Lean status:
 - `DAG <-> Nilpotent adjacency matrix`: `proved` for finite
   `ComponentUniverse` natural-number adjacency powers,
   [Issue #55](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/55)
-- `DAG -> rho(A) = 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
-- `cycle -> rho(A) > 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
+- `DAG -> rho(A) = 0`: [Issue #94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
+- `cycle -> rho(A) > 0`: [Issue #95](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/95)
 
 #### Matrix bridge 設計
 
@@ -174,14 +174,23 @@ Issue [#85](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/85
 `ArchitectureSignature.v1OfComponentUniverseWithNilpotencyIndex` は、この値を
 `ArchitectureSignatureV1.nilpotencyIndex` に埋める entry point である。
 
+Issue [#79](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/79)
+では、`rho(A)` bridge を mathlib-backed な解析的拡張として分離する方針にした。
+対象行列は `ComponentUniverse.components` を `Fin U.components.length` で添字化した
+`Complex` 係数の正方行列とし、既存の `NatMatrix` は walk count / nilpotence
+bridge として維持する。詳細は
+[spectral radius bridge 設計](design/spectral_radius_bridge.md) に分離する。
+
 当面は次の status に分ける。
 
 - `DAG <-> Nilpotent adjacency matrix`: `proved` for finite `ComponentUniverse`
   natural-number adjacency powers
 - `nilpotencyIndex`: executable metric / proved acyclic bridge for finite
   `ComponentUniverse`
-- `DAG -> rho(A) = 0`: `future proof obligation`, matrix bridge 後の解析的拡張
-- `cycle -> rho(A) > 0`: `future proof obligation`, matrix bridge 後の解析的拡張
+- `DAG -> rho(A) = 0`: `future proof obligation`,
+  [Issue #94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
+- `cycle -> rho(A) > 0`: `future proof obligation`,
+  [Issue #95](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/95)
 - spectral radius を変更波及や障害伝播の増幅指標として使う主張:
   `empirical hypothesis`
 
@@ -699,8 +708,9 @@ Lean status の区分:
 後続 Issue への分割:
 
 - adjacency matrix と `rho(A)` の解析的拡張は
-  [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
-  で扱う。
+  [#94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
+  と [#95](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/95)
+  に分割して扱う。
 - 静的依存と実行時依存の分離は
   [#33](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/33)
   で扱う。
