@@ -332,6 +332,7 @@ pub struct AnalysisMetadata {
     pub exclusion_reasons: Vec<String>,
     pub primary_cost_record: Option<String>,
     pub relation_complexity_components: Option<RelationComplexityComponents>,
+    pub runtime_metrics: Option<RuntimeMetrics>,
     pub alternate_signature_after: Option<Box<SignatureSnapshot>>,
 }
 
@@ -343,9 +344,28 @@ impl Default for AnalysisMetadata {
             exclusion_reasons: Vec::new(),
             primary_cost_record: None,
             relation_complexity_components: None,
+            runtime_metrics: None,
             alternate_signature_after: None,
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeMetrics {
+    pub runtime_graph_measured: bool,
+    pub runtime_edge_evidence_count: Option<usize>,
+    pub runtime_pair_count: Option<usize>,
+    pub runtime_fanout: Option<usize>,
+    pub unprotected_runtime_propagation_radius: Option<usize>,
+    pub circuit_breaker_coverage_ratio: Option<f64>,
+    pub protected_pair_count: Option<usize>,
+    pub partial_pair_count: Option<usize>,
+    pub unprotected_pair_count: Option<usize>,
+    pub unknown_coverage_pair_count: Option<usize>,
+    pub failure_mode_taxonomy_version: Option<String>,
+    pub coverage_policy_version: Option<String>,
+    pub confidence_threshold: Option<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

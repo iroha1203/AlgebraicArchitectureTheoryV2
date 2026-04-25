@@ -6,6 +6,49 @@ Lean status: `empirical hypothesis` / tooling output.
 
 ## Usage
 
+fixture を使った最小再現例は次である。
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+  --root tools/sig0-extractor/tests/fixtures/minimal \
+  --policy tools/sig0-extractor/tests/fixtures/minimal/policy_measured_zero.json \
+  --runtime-edges tools/sig0-extractor/tests/fixtures/minimal/runtime_edges.json \
+  --out .lake/sig0-fixture.json
+```
+
+代表的な出力 contract は次の形になる。
+
+```json
+{
+  "schemaVersion": "sig0-extractor-v0",
+  "componentKind": "lean-module",
+  "policies": {
+    "policyId": "minimal-measured-zero",
+    "schemaVersion": "signature-policy-v0"
+  },
+  "metricStatus": {
+    "boundaryViolationCount": {
+      "measured": true,
+      "source": "policy:minimal-measured-zero"
+    },
+    "runtimePropagation": {
+      "measured": true,
+      "source": "runtime-edge-projection-v0"
+    }
+  },
+  "runtimeDependencyGraph": {
+    "projectionRule": "runtime-edge-projection-v0",
+    "edgeKind": "runtime"
+  }
+}
+```
+
+policy を渡さない場合、`boundaryViolationCount` と
+`abstractionViolationCount` の値は placeholder の `0` になるが、
+`metricStatus.<axis>.measured = false` なので違反なしとは読まない。
+runtime edge evidence を渡さない場合も、dataset 側の `runtimePropagation` は
+未評価の `null` として残る。
+
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
   --root . \
@@ -34,6 +77,28 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
 `metricStatus` から duplicate-free component list, local edge closure, external target,
 policy metric status を検査する。report は tooling-side evidence であり、
 `ComponentUniverse` の Lean witness そのものではない。
+
+fixture 出力を検証する例:
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
+  --input .lake/sig0-fixture.json \
+  --out .lake/sig0-fixture-validation.json \
+  --universe-mode local-only
+```
+
+pass する場合の要点は次である。
+
+```json
+{
+  "schemaVersion": "component-universe-validation-report-v0",
+  "summary": {
+    "result": "pass",
+    "failedCheckCount": 0,
+    "notMeasuredCheckCount": 0
+  }
+}
+```
 
 repository root を測定する場合、`.git`, `.lake`, `.elan`, `target`, root 直下の
 `tools` は scan 対象から除外する。これは extractor 自身の fixture や build artifact
@@ -82,6 +147,52 @@ PR metadata の `pullRequest.mergeCommit` が必須である。
 runtime edge evidence がない Sig0 JSON では `runtimePropagation` は `null` のままで、
 測定済み 0 とは扱わない。
 
+fixture metadata を使った dataset 生成例:
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+  --root tools/sig0-extractor/tests/fixtures/minimal \
+  --out .lake/sig0-before.json
+
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+  --root tools/sig0-extractor/tests/fixtures/minimal \
+  --policy tools/sig0-extractor/tests/fixtures/minimal/policy_measured_zero.json \
+  --runtime-edges tools/sig0-extractor/tests/fixtures/minimal/runtime_edges.json \
+  --out .lake/sig0-after.json
+
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- dataset \
+  --before .lake/sig0-before.json \
+  --after .lake/sig0-after.json \
+  --pr-metadata tools/sig0-extractor/tests/fixtures/minimal/pr_metadata.json \
+  --after-role head \
+  --out .lake/empirical-dataset-v0.json
+```
+
+この例では before 側の policy / runtime graph が未評価なので、after 側が測定済みでも
+次のように delta は `null` になる。
+
+```json
+{
+  "deltaSignatureSigned": {
+    "boundaryViolationCount": null,
+    "runtimePropagation": null
+  },
+  "metricDeltaStatus": {
+    "boundaryViolationCount": {
+      "comparable": false,
+      "beforeMeasured": false,
+      "afterMeasured": true
+    }
+  },
+  "analysisMetadata": {
+    "runtimeMetrics": {
+      "runtimeGraphMeasured": true,
+      "runtimeEdgeEvidenceCount": 2
+    }
+  }
+}
+```
+
 workflow 単位の `RelationComplexityObservation` を候補 evidence JSON から生成する場合は
 次を使う。
 
@@ -100,3 +211,18 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- relation-complexity
 同じ evidence item 内の同一 tag は 1 回だけ数える。`application-owned` と
 `application-configured` は counting candidate とし、`framework-generated` や
 未対応 framework の候補は `excludedEvidence` に理由を残す。
+
+fixture の代表出力では `constraints = 1`, `compensations = 1`,
+`failureTransitions = 1` なので、`relationComplexity = 3` になる。
+
+## Test and CI
+
+ローカル検証は次で行う。
+
+```bash
+cargo test --manifest-path tools/sig0-extractor/Cargo.toml
+```
+
+CI では GitHub Actions の `sig0-extractor cargo test` job が同じコマンドを実行する。
+Lean theorem ではなく tooling contract の再現性を確認するため、fixtures と CLI test で
+policy, runtime edge projection, relation complexity, dataset conversion を通す。
