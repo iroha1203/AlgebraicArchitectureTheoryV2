@@ -794,7 +794,8 @@ pub fn validate_component_universe_report(
 
     let mut warnings = Vec::new();
     if universe_mode == "local-only" && !external_edges.is_empty() {
-        warnings.push("local-only universe excludes external import targets".to_string());
+        warnings
+            .push("local-only universe excludes external or synthetic import targets".to_string());
     }
 
     Ok(ComponentUniverseValidationReport {
@@ -1466,6 +1467,7 @@ fn check_edge_closure_local(
             component_ids.contains(&edge.source)
                 && is_local_like(&edge.target, local_roots)
                 && !component_ids.contains(&edge.target)
+                && !is_module_root_target(&edge.target, component_ids, local_roots)
         })
         .map(edge_example)
         .collect();
@@ -1591,9 +1593,11 @@ fn unresolved_edges(
             edge.source.is_empty()
                 || edge.target.is_empty()
                 || (!component_ids.contains(&edge.source)
-                    && is_local_like(&edge.source, local_roots))
+                    && is_local_like(&edge.source, local_roots)
+                    && !is_module_root_target(&edge.source, component_ids, local_roots))
                 || (!component_ids.contains(&edge.target)
-                    && is_local_like(&edge.target, local_roots))
+                    && is_local_like(&edge.target, local_roots)
+                    && !is_module_root_target(&edge.target, component_ids, local_roots))
         })
         .map(edge_example)
         .collect()
@@ -1609,8 +1613,10 @@ fn external_edges(
         .iter()
         .filter(|edge| {
             (!component_ids.contains(&edge.source) && !is_local_like(&edge.source, local_roots))
+                || is_module_root_target(&edge.source, component_ids, local_roots)
                 || (!component_ids.contains(&edge.target)
                     && !is_local_like(&edge.target, local_roots))
+                || is_module_root_target(&edge.target, component_ids, local_roots)
         })
         .map(edge_example)
         .collect()
@@ -1621,6 +1627,19 @@ fn is_local_like(component_id: &str, local_roots: &BTreeSet<String>) -> bool {
         .split('.')
         .next()
         .is_some_and(|root| local_roots.contains(root))
+}
+
+fn is_module_root_target(
+    component_id: &str,
+    component_ids: &BTreeSet<String>,
+    local_roots: &BTreeSet<String>,
+) -> bool {
+    local_roots.contains(component_id)
+        && !component_ids.contains(component_id)
+        && component_ids.iter().any(|id| {
+            id.strip_prefix(component_id)
+                .is_some_and(|rest| rest.starts_with('.'))
+        })
 }
 
 fn edge_example(edge: &Edge) -> ValidationExample {
@@ -2791,7 +2810,7 @@ import Should.Not.Appear
         }));
         assert_eq!(
             report.warnings,
-            vec!["local-only universe excludes external import targets".to_string()]
+            vec!["local-only universe excludes external or synthetic import targets".to_string()]
         );
     }
 

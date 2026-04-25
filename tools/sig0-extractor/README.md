@@ -75,7 +75,9 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
 
 `validate` は source file を再 scan せず、入力 JSON の `components`, `edges`,
 `metricStatus` から duplicate-free component list, local edge closure, external target,
-policy metric status を検査する。report は tooling-side evidence であり、
+synthetic module root target, policy metric status を検査する。`Foo.Main -> Foo` のような
+root module import target は component list へ自動補完せず、`local-only` universe 外の
+synthetic target として warning にする。report は tooling-side evidence であり、
 `ComponentUniverse` の Lean witness そのものではない。
 
 fixture 出力を検証する例:

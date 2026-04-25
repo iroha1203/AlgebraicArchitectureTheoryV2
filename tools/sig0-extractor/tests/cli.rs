@@ -9,6 +9,10 @@ fn fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal")
 }
 
+fn module_root_fixture_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/module_root")
+}
+
 fn temp_dir(test_name: &str) -> PathBuf {
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -160,5 +164,59 @@ fn cli_relation_complexity_fixture_outputs_observation() {
     assert_eq!(
         json["measurementUniverse"]["ruleSetVersion"],
         "relation-complexity-rules/v0"
+    );
+}
+
+#[test]
+fn cli_validation_warns_for_module_root_import_target() {
+    let root = module_root_fixture_root();
+    let out_dir = temp_dir("module-root");
+    let sig0 = out_dir.join("sig0.json");
+    let validation = out_dir.join("sig0-validation.json");
+
+    run_sig0(&[
+        "--root",
+        root.to_str().expect("fixture path is utf-8"),
+        "--out",
+        sig0.to_str().expect("sig0 path is utf-8"),
+    ]);
+    run_sig0(&[
+        "validate",
+        "--input",
+        sig0.to_str().expect("sig0 path is utf-8"),
+        "--out",
+        validation.to_str().expect("validation path is utf-8"),
+        "--universe-mode",
+        "local-only",
+    ]);
+
+    let json = read_json(&validation);
+    assert_eq!(json["summary"]["result"], "warn");
+    assert_eq!(json["summary"]["failedCheckCount"], 0);
+    assert_eq!(json["summary"]["externalEdgeCount"], 1);
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "edge-endpoint-resolved" && check["result"] == "pass")
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "edge-closure-local" && check["result"] == "pass")
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "external-edge-targets"
+                    && check["result"] == "warn"
+                    && check["count"] == 1
+            })
     );
 }

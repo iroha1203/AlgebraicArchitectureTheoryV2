@@ -102,8 +102,8 @@ Python pilot にも維持できる。
 
 ## Validation report observation
 
-raw Sig0 output に `sig0-extractor validate --universe-mode local-only` を適用すると、
-一部 record で `edge-endpoint-resolved` と `edge-closure-local` が fail した。
+raw Sig0 output に `sig0-extractor validate --universe-mode local-only` を適用した際、
+以前は一部 record で `edge-endpoint-resolved` と `edge-closure-local` が fail した。
 代表例は次である。
 
 ```text
@@ -111,11 +111,12 @@ CSVParser.Main -> CSVParser
 ListComprehension.Main -> ListComprehension
 ```
 
-これは `Foo/Main.lean` が root module `Foo` を import する sample layout に対し、
-extractor の component list と validation rule が module root target の扱いをまだ
-固定していないことを示す。dataset record の生成自体は可能だが、この raw Sig0 output
-を Lean の `ComponentUniverse` witness に対応する validation pass として扱わない。
-Follow-up: [#149](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/149)
+Issue [#149](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/149) で、
+`Foo/Main.lean` が root module `Foo` を import する sample layout では、`Foo` を
+source file component として自動補完せず、`local-only` universe 外の synthetic module
+root target として warning に分類する方針に固定した。validation summary が `fail` の
+snapshot は H1-H5 の主要分析から除外し、`warn` の snapshot は stratification または
+sensitivity analysis の対象として dataset に取り込める。
 
 ## 実行手順
 
@@ -154,10 +155,9 @@ issueIncidentLinks / analysisMetadata を持つ empirical dataset input JSON で
   component として扱われる。repository root と subproject root の測定単位、
   build config を component とするかの設計判断が必要である。
   Follow-up: [#148](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/148)
-- `Foo/Main.lean` から `Foo` を import する layout で module root target が
-  validation 上未解決になりうる。dataset record と validation pass の責務境界を
-  明確にする必要がある。
-  Follow-up: [#149](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/149)
+- `Foo/Main.lean` から `Foo` を import する layout の module root target は
+  [#149](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/149) で
+  synthetic module root target として warning に分類する方針に固定した。
 
 ## 結論
 
