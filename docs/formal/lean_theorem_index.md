@@ -4,6 +4,8 @@
 
 `proof_obligations.md` は未解決課題と実証仮説の台帳として扱い、この文書は実装済みの Lean API を確認する入口として扱う。
 
+この索引は手動管理である。Lean 定義・定理を追加、削除、rename する PR では、研究上参照する主要 API に影響がある場合にこの文書も更新する。
+
 ## Graph / Walk
 
 File: `Formal/Arch/Graph.lean`

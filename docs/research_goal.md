@@ -66,6 +66,10 @@ StrictLayered
 ↔ Nilpotent adjacency matrix
 ```
 
+この対応は無条件の同値として主張しない。`Acyclic -> StrictLayered`,
+`Acyclic -> FinitePropagation`, adjacency matrix の nilpotence との対応は、
+有限 `ComponentUniverse` などの適切な有限性仮定の下で整理する。
+
 ただし、`Decomposable G := StrictLayered G` という定義方針は維持する。`Acyclic`, `FinitePropagation`, `Nilpotent` などを定義に混ぜず、後から定理として接続する。
 
 完成時の意味は次である。

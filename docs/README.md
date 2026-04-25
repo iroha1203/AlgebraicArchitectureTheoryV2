@@ -2,6 +2,16 @@
 
 このディレクトリは、全体方針、Lean 形式化、個別 design、実証 protocol を分けて管理する。
 
+## 初めて読む順序
+
+初見では次の順に読む。
+
+1. [研究の最終ゴール](research_goal.md)
+2. [研究概要](aat_v2_overview.md)
+3. [設計原則の分類](design_principle_classification.md)
+4. [証明義務と実証仮説](proof_obligations.md)
+5. [Lean 定義・定理索引](formal/lean_theorem_index.md)
+
 ## 全体文書
 
 - [研究概要](aat_v2_overview.md): 現在の理論構成、三層構造、Signature v0/v1 の位置づけ。
