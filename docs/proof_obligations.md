@@ -470,6 +470,13 @@ v0 に残す軸:
 - `boundaryViolationCount`
 - `abstractionViolationCount`
 
+Issue [#52](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/52)
+では、extractor output と empirical dataset における未評価 metric の扱いを
+`metricStatus` として固定した。Lean の `ArchitectureSignature` に渡すため
+placeholder 0 を置く場合でも、`metricStatus.measured = false` の軸は欠損値であり、
+違反なしや risk 0 とは解釈しない。この規約の Lean status は
+`empirical hypothesis` / design decision であり、Lean theorem ではない。
+
 v1 core に追加・正規化する候補:
 
 - `sccExcessSize = sccMaxSize - 1`: 非循環 singleton SCC を 0 risk として扱うための循環リスク軸。
