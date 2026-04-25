@@ -1,0 +1,3 @@
+display_name: Docs Consistency Review
+short_description: docsと実装の乖離を確認し軽微修正する
+default_prompt: $docs-consistency-review を使って、docs と実装の乖離を確認し、軽微なものは修正し、複雑な gap は報告してください。
