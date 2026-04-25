@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "relation-complexity-candidates/v0",
+  "repository": "aatv2/reference-commerce-state-transitions",
+  "revision": "pilot-2026-04-26",
+  "measurementUniverse": {
+    "root": "samples/commerce-state-transitions",
+    "languages": ["typescript"],
+    "frameworks": ["vendor-workflow-x"]
+  },
+  "workflow": {
+    "id": "scheduled-payout-reconciliation",
+    "name": "Scheduled payout reconciliation",
+    "component": "CommercePayout",
+    "entrypoints": ["src/payout/PayoutReconciliation.ts"]
+  },
+  "evidenceCandidates": [
+    {
+      "id": "vendor-retry-policy",
+      "path": "src/payout/PayoutReconciliation.ts",
+      "symbol": "PayoutReconciliation.retryPolicy",
+      "line": 88,
+      "tags": ["failureTransitions", "idempotencyRequirements"],
+      "ownership": "application-configured",
+      "reviewStatus": "candidate",
+      "notes": "The framework is not in relation-complexity-rules/v0, so the candidate is kept only as excluded evidence."
+    }
+  ],
+  "excludedEvidence": []
+}

@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "relation-complexity-manual-baseline/v0",
+  "repository": "aatv2/reference-commerce-state-transitions",
+  "revision": "pilot-2026-04-26",
+  "measurementUniverse": {
+    "root": "samples/commerce-state-transitions",
+    "languages": ["typescript"],
+    "frameworks": ["event-sourcing", "saga", "crud"],
+    "ruleSetVersion": "relation-complexity-rules/v0"
+  },
+  "workflow": {
+    "id": "checkout-payment-fulfillment",
+    "name": "Checkout payment and fulfillment",
+    "component": "CommerceCheckout",
+    "entrypoints": [
+      "src/checkout/CheckoutWorkflow.ts",
+      "src/orders/OrderProjection.ts"
+    ]
+  },
+  "manualCounts": {
+    "constraints": 2,
+    "compensations": 2,
+    "projections": 1,
+    "failureTransitions": 3,
+    "idempotencyRequirements": 2
+  },
+  "manualRelationComplexity": 10,
+  "manualLabels": [
+    {
+      "id": "order-state-invariant",
+      "tags": ["constraints"],
+      "decision": "count",
+      "reason": "Application-owned state invariant."
+    },
+    {
+      "id": "inventory-reservation-invariant",
+      "tags": ["constraints"],
+      "decision": "count",
+      "reason": "Application-owned inventory invariant."
+    },
+    {
+      "id": "release-inventory-on-payment-failure",
+      "tags": ["compensations", "failureTransitions"],
+      "decision": "count",
+      "reason": "Saga compensation and explicit failure branch."
+    },
+    {
+      "id": "refund-payment-on-shipping-failure",
+      "tags": ["compensations", "failureTransitions"],
+      "decision": "count",
+      "reason": "Saga compensation and explicit failure branch."
+    },
+    {
+      "id": "order-summary-projection",
+      "tags": ["projections"],
+      "decision": "count",
+      "reason": "Event-sourced read model projection."
+    },
+    {
+      "id": "payment-timeout-retry",
+      "tags": ["failureTransitions", "idempotencyRequirements"],
+      "decision": "count",
+      "reason": "Configured retry requires a stable idempotency key."
+    },
+    {
+      "id": "checkout-command-idempotency",
+      "tags": ["idempotencyRequirements"],
+      "decision": "count",
+      "reason": "Application command deduplication rule."
+    },
+    {
+      "id": "generated-orm-unique-index",
+      "tags": ["constraints"],
+      "decision": "exclude",
+      "reason": "Framework-generated schema metadata."
+    },
+    {
+      "id": "crud-field-format-validation",
+      "tags": ["constraints"],
+      "decision": "exclude",
+      "reason": "CRUD field validation without a state-transition branch."
+    },
+    {
+      "id": "ambiguous-shipping-provider-hook",
+      "tags": ["failureTransitions"],
+      "decision": "review-later",
+      "reason": "Ownership is unknown; keep out of the primary baseline."
+    }
+  ],
+  "extractorDiff": {
+    "constraints": 0,
+    "compensations": 0,
+    "projections": 0,
+    "failureTransitions": 0,
+    "idempotencyRequirements": 0,
+    "relationComplexity": 0
+  },
+  "notes": "This pilot baseline is a small hand-labeled sample for validating relation-complexity-rules/v0. It is not a statistical claim about real-world incident risk."
+}

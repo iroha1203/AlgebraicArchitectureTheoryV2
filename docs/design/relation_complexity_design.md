@@ -233,5 +233,10 @@ raw count とは別の派生指標に分ける。
   で `sig0-extractor relation-complexity --input ...` として実装した。候補 evidence
   から workflow-level `RelationComplexityObservation` JSON を出力し、counts と
   `relationComplexity` は counted evidence tags から再計算可能にしている。
-- Event Sourcing / Saga / CRUD の pilot repository を選び、手動ラベルつき baseline dataset を作る。
+- Event Sourcing / Saga / CRUD を含む pilot baseline は
+  [#154](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/154)
+  で
+  [relation_complexity_pilot](../empirical/relation_complexity_pilot/README.md)
+  に追加した。手動ラベル、extractor output、差分 0 の確認、除外 evidence、
+  unsupported framework probe を記録している。
 - 状態遷移構造を Lean に入れるかどうかを、pilot の後に改めて判断する。

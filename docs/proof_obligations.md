@@ -653,6 +653,17 @@ per component, per KLOC などの正規化は raw count を置き換えない将
 この規約の Lean status は `empirical hypothesis` / tooling design であり、
 Lean theorem ではない。
 
+Issue [#154](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/154)
+では、Event Sourcing / Saga / CRUD を含む commerce 状態遷移 sample に対し、
+`relationComplexity` の手動 baseline と extractor output を
+[relation_complexity_pilot](empirical/relation_complexity_pilot/README.md)
+に追加した。baseline は `constraints = 2`, `compensations = 2`,
+`projections = 1`, `failureTransitions = 3`, `idempotencyRequirements = 2`,
+`relationComplexity = 10` で、`relation-complexity-rules/v0` の output と一致する。
+除外 evidence、unsupported framework probe、曖昧な ownership の候補も primary count
+から分離して記録した。これは `empirical hypothesis` / pilot validation であり、
+Lean theorem ではない。
+
 v1 core / extension に追加・正規化した軸:
 
 - `sccExcessSize = sccMaxSize - 1`: 非循環 singleton SCC を 0 risk として扱うための循環リスク軸。
@@ -1102,6 +1113,10 @@ Issue [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36
 Issue [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
 では、この候補 evidence から workflow-level observation JSON を作る tooling 実装を追加した。
 これは Lean theorem ではなく、`empirical hypothesis` / tooling implementation である。
+Issue [#154](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/154)
+では、Event Sourcing / Saga / CRUD を含む小さな commerce 状態遷移 sample で手動
+baseline と extractor output の差分を記録し、rule set v0 の pilot validation とした。
+状態遷移構造を Lean core に入れる判断はこの Issue では行わない。
 
 Analysis tier: exploratory.
 

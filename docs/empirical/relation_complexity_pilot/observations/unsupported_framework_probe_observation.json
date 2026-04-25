@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "relation-complexity-observation/v0",
+  "repository": "aatv2/reference-commerce-state-transitions",
+  "revision": "pilot-2026-04-26",
+  "measurementUniverse": {
+    "root": "samples/commerce-state-transitions",
+    "languages": [
+      "typescript"
+    ],
+    "frameworks": [
+      "vendor-workflow-x"
+    ],
+    "ruleSetVersion": "relation-complexity-rules/v0"
+  },
+  "workflow": {
+    "id": "scheduled-payout-reconciliation",
+    "name": "Scheduled payout reconciliation",
+    "component": "CommercePayout",
+    "entrypoints": [
+      "src/payout/PayoutReconciliation.ts"
+    ]
+  },
+  "counts": {
+    "constraints": 0,
+    "compensations": 0,
+    "projections": 0,
+    "failureTransitions": 0,
+    "idempotencyRequirements": 0
+  },
+  "relationComplexity": 0,
+  "evidence": [],
+  "excludedEvidence": [
+    {
+      "path": "src/payout/PayoutReconciliation.ts",
+      "reason": "unsupported-framework:vendor-workflow-x",
+      "symbol": "PayoutReconciliation.retryPolicy",
+      "line": 88
+    }
+  ]
+}
