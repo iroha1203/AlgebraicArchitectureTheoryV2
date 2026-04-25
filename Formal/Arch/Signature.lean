@@ -182,6 +182,52 @@ def fanoutRiskOfFinite {C : Type u} (G : ArchGraph C)
   totalFanout G components
 
 /--
+Signature v1 core SCC excess metric.
+
+This normalizes the v0 maximum SCC size so singleton SCCs contribute zero risk.
+It remains a derived finite-universe metric; graph-level SCC facts are proved as
+separate bridge theorems.
+-/
+def sccExcessSizeOfFinite {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) : Nat :=
+  sccMaxSizeOfFinite G components - 1
+
+/--
+Signature v1 core local fanout concentration metric.
+
+Unlike v0 `fanoutRiskOfFinite`, this records the largest per-component outgoing
+dependency count rather than the total dependency load.
+-/
+def maxFanoutOfFinite {C : Type u} (G : ArchGraph C)
+    [DecidableRel G.edge] (components : List C) : Nat :=
+  maxNatList (components.map (fun c => fanout G components c))
+
+/--
+Strict bounded reachable cone size from one component.
+
+The source component itself is excluded so an isolated component has propagation
+cone size zero. The direction follows the graph convention used by the existing
+bounded depth metric: `edge c d` means `c` depends on `d`.
+-/
+def reachableConeSizeAt {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) (c : C) : Nat :=
+  countWhere components (fun d =>
+    decide (c ≠ d) && reachesWithin G components components.length c d)
+
+/--
+Signature v1 core reachable-cone metric.
+
+This is the maximum strict bounded reachable cone size over the supplied finite
+measurement universe.
+-/
+def reachableConeSizeOfFinite {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) : Nat :=
+  maxNatList (components.map (fun c => reachableConeSizeAt G components c))
+
+/--
 The v0 fanout risk is exactly the number of measured dependency edges.
 -/
 theorem fanoutRiskOfFinite_eq_measuredDependencyEdges_length {C : Type u}
@@ -314,6 +360,20 @@ theorem v0_boolForward :
         fanoutRisk := 1
         boundaryViolationCount := 0
         abstractionViolationCount := 0 } := by
+  native_decide
+
+/-- A no-edge singleton has zero v1 core excess, fanout concentration, and cone risk. -/
+theorem v1Core_unitNoEdge :
+    sccExcessSizeOfFinite unitNoEdgeGraph [()] = 0 ∧
+      maxFanoutOfFinite unitNoEdgeGraph [()] = 0 ∧
+      reachableConeSizeOfFinite unitNoEdgeGraph [()] = 0 := by
+  native_decide
+
+/-- A one-way dependency has one unit of max fanout and reachable-cone risk. -/
+theorem v1Core_boolForward :
+    sccExcessSizeOfFinite boolForwardGraph [false, true] = 0 ∧
+      maxFanoutOfFinite boolForwardGraph [false, true] = 1 ∧
+      reachableConeSizeOfFinite boolForwardGraph [false, true] = 1 := by
   native_decide
 
 end Examples

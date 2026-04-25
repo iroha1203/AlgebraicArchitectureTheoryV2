@@ -513,11 +513,32 @@ v1 core に追加・正規化する候補:
 - `reachableConeSize`: 変更波及の到達範囲を表す executable metric。
 - `projectionSoundnessViolation`: 抽象射影に反する具体依存を数える projection bridge 軸。
 
+Issue [#63](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/63)
+では、v1 core の最小 Lean 定義を v0 signature の派生 executable metric として
+固定した。`ArchitectureSignature` v0 record は変更せず、有限な測定 universe
+`components : List C` 上で次の counting rule を使う。
+
+- `sccExcessSizeOfFinite G components = sccMaxSizeOfFinite G components - 1`。
+  Nat subtraction により、空 universe や singleton SCC は 0 risk に丸められる。
+- `maxFanoutOfFinite G components` は、各 component の `fanout G components c`
+  の最大値である。これは v0 `fanoutRiskOfFinite = totalFanout` を置き換えず、
+  局所的な依存集中だけを測る。
+- `reachableConeSizeAt G components c` は、bounded reachability で `c` から到達
+  できる component のうち `c` 自身を除いた数である。
+  `reachableConeSizeOfFinite G components` はその最大値である。辺の向きは既存の
+  `maxDepthOfFinite` と同じく `edge c d` means `c` depends on `d` に従う。
+
+この段階の Lean status は `defined only` である。有限 universe 下での
+`sccExcessSizeOfFinite` と graph-level mutual-reachability class size の接続、
+`maxFanoutOfFinite` と measured dependency edges の source ごとの分類、
+`reachableConeSizeOfFinite` と graph-level reachable set / cone の接続は、後続の
+bridge theorem として扱う。
+
 Lean status の区分:
 
 | 軸 | 扱い | Lean status |
 | --- | --- | --- |
-| `sccExcessSize`, `maxFanout`, `reachableConeSize` | 有限 universe 上の計算として定義し、graph-level facts は theorem として証明する | `defined only` -> `future proof obligation` |
+| `sccExcessSize`, `maxFanout`, `reachableConeSize` | 有限 universe 上の計算として定義済み。graph-level facts は theorem として証明する | `defined only` / `future proof obligation` |
 | `weightedSccRisk` | 重み関数つき executable metric として設計する | `defined only` |
 | `nilpotencyIndex` | adjacency matrix 導入後に DAG / 層化 / 冪零性と接続する | `future proof obligation` |
 | `rho(A)` | 行列解析上の伝播増幅指標として扱う | `future proof obligation` / `empirical hypothesis` |
