@@ -51,6 +51,131 @@ def AdjacencyNilpotent {C : Type u} {G : ArchGraph C}
   ∃ cutoff : Nat, ∀ {k : Nat} {c d : C},
     cutoff ≤ k → adjacencyPowerEntry U k c d = 0
 
+/--
+Executable zero test for one adjacency power on the finite measurement universe.
+
+This checks only the supplied `ComponentUniverse.components` list. Graph-level
+statements use `ComponentUniverse.covers` to lift the result to all components.
+-/
+def adjacencyPowerZeroOnComponentsBool {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (k : Nat) : Bool :=
+  U.components.all (fun c =>
+    U.components.all (fun d => decide (adjacencyPowerEntry U k c d = 0)))
+
+/--
+The executable zero test is true exactly when every measured entry of `A^k`
+is zero.
+-/
+theorem adjacencyPowerZeroOnComponentsBool_eq_true_iff {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (k : Nat) :
+    adjacencyPowerZeroOnComponentsBool U k = true ↔
+      ∀ {c : C}, c ∈ U.components →
+        ∀ {d : C}, d ∈ U.components → adjacencyPowerEntry U k c d = 0 := by
+  simp [adjacencyPowerZeroOnComponentsBool, List.all_eq_true]
+
+/--
+Because a `ComponentUniverse` covers the graph, the measured zero test is a
+graph-level zero test for that adjacency power.
+-/
+theorem adjacencyPowerZeroOnComponentsBool_iff_zero {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (k : Nat) :
+    adjacencyPowerZeroOnComponentsBool U k = true ↔
+      ∀ c d : C, adjacencyPowerEntry U k c d = 0 := by
+  constructor
+  · intro h c d
+    exact (adjacencyPowerZeroOnComponentsBool_eq_true_iff U k).mp h
+      (U.covers c) (U.covers d)
+  · intro h
+    exact (adjacencyPowerZeroOnComponentsBool_eq_true_iff U k).mpr
+      (fun {c} _ {d} _ => h c d)
+
+/--
+Find the first candidate power whose adjacency matrix is zero on the measured
+component universe.
+-/
+def firstZeroPowerIndex {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) : List Nat → Option Nat
+  | [] => none
+  | k :: ks =>
+      if adjacencyPowerZeroOnComponentsBool U k then
+        some k
+      else
+        firstZeroPowerIndex U ks
+
+private theorem firstZeroPowerIndex_isSome_of_mem {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) {candidates : List Nat} {k : Nat}
+    (hMem : k ∈ candidates)
+    (hZero : adjacencyPowerZeroOnComponentsBool U k = true) :
+    ∃ found, firstZeroPowerIndex U candidates = some found := by
+  induction candidates with
+  | nil =>
+      cases hMem
+  | cons head tail ih =>
+      by_cases hHead : adjacencyPowerZeroOnComponentsBool U head = true
+      · exact ⟨head, by simp [firstZeroPowerIndex, hHead]⟩
+      · simp [firstZeroPowerIndex, hHead]
+        simp at hMem
+        cases hMem with
+        | inl hEq =>
+            subst head
+            contradiction
+        | inr hTailMem =>
+            exact ih hTailMem
+
+/--
+Bound used by the executable nilpotency-index search.
+
+For an acyclic graph, `A^(components.length + 1)` is zero, so searching through
+this bound is enough to find a witness. Cyclic graphs return `none` unless a
+zero power is actually observed within the same finite universe.
+-/
+def nilpotencyIndexSearchBound {C : Type u} {G : ArchGraph C}
+    (U : ComponentUniverse G) : Nat :=
+  U.components.length + 2
+
+/--
+Executable nilpotency-index candidate for a finite component universe.
+
+`some k` means `k` is the first searched power whose adjacency matrix is zero.
+`none` means no zero power was found in the finite DAG-complete search window;
+the v1 signature keeps this distinct from risk zero.
+-/
+def nilpotencyIndexOfFinite {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) : Option Nat :=
+  firstZeroPowerIndex U (List.range (nilpotencyIndexSearchBound U))
+
+namespace ArchitectureSignature
+
+/--
+Build a Signature v1 value and populate the matrix-bridge `nilpotencyIndex`
+axis from a proof-carrying finite component universe.
+
+The other extension axes remain `none`; they are projection, behavioral, runtime
+or empirical metrics with separate extraction rules.
+-/
+def v1OfComponentUniverseWithNilpotencyIndex {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1 where
+  core := v1CoreOfFinite G U.components boundaryAllowed abstractionAllowed
+  weightedSccRisk := none
+  projectionSoundnessViolation := none
+  lspViolationCount := none
+  nilpotencyIndex := nilpotencyIndexOfFinite U
+  runtimePropagation := none
+  relationComplexity := none
+  empiricalChangeCost := none
+
+end ArchitectureSignature
+
 namespace Walk
 
 /-- Concatenate two walks. -/
@@ -236,6 +361,42 @@ theorem adjacencyNilpotent_of_acyclic {C : Type u} {G : ArchGraph C}
       ComponentUniverse.walk_length_le_components_length_of_acyclic U hAcyclic w
     omega
 
+/-- At the finite acyclic cutoff, every adjacency-power entry is zero. -/
+theorem adjacencyPowerEntry_zero_at_acyclic_cutoff {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hAcyclic : Acyclic G) :
+    ∀ c d : C,
+      adjacencyPowerEntry U (U.components.length + 1) c d = 0 := by
+  intro c d
+  by_cases hZero :
+      adjacencyPowerEntry U (U.components.length + 1) c d = 0
+  · exact hZero
+  · have hPos :
+        0 < adjacencyPowerEntry U (U.components.length + 1) c d :=
+      Nat.pos_of_ne_zero hZero
+    rcases (adjacencyPowerEntry_pos_iff_walk_length U).mp hPos with
+      ⟨w, _hLen⟩
+    have hBound :
+        w.length ≤ U.components.length :=
+      ComponentUniverse.walk_length_le_components_length_of_acyclic U hAcyclic w
+    omega
+
+/--
+Finite acyclic graphs always populate the executable nilpotency-index axis.
+-/
+theorem nilpotencyIndexOfFinite_isSome_of_acyclic {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hAcyclic : Acyclic G) :
+    ∃ k, nilpotencyIndexOfFinite U = some k := by
+  let cutoff := U.components.length + 1
+  have hZero :
+      adjacencyPowerZeroOnComponentsBool U cutoff = true := by
+    exact (adjacencyPowerZeroOnComponentsBool_iff_zero U cutoff).mpr
+      (adjacencyPowerEntry_zero_at_acyclic_cutoff U hAcyclic)
+  have hMem : cutoff ∈ List.range (nilpotencyIndexSearchBound U) := by
+    simp [cutoff, nilpotencyIndexSearchBound]
+  exact firstZeroPowerIndex_isSome_of_mem U hMem hZero
+
 /--
 If all sufficiently large adjacency powers are zero, then there is no nonempty
 closed walk.
@@ -293,6 +454,39 @@ theorem adjacencyNilpotent_iff_acyclic {C : Type u} {G : ArchGraph C}
     (U : ComponentUniverse G) :
     AdjacencyNilpotent U ↔ Acyclic G :=
   ⟨acyclic_of_adjacencyNilpotent U, adjacencyNilpotent_of_acyclic U⟩
+
+namespace ArchitectureSignature.Examples
+
+/-- Full finite universe for the one-way Boolean dependency graph. -/
+def boolForwardUniverse : ComponentUniverse boolForwardGraph :=
+  ComponentUniverse.full boolForwardGraph [false, true] (by simp) (by
+    intro c
+    cases c <;> simp)
+
+/-- Full finite universe for the two-component cycle graph. -/
+def boolCycleUniverse : ComponentUniverse boolCycleGraph :=
+  ComponentUniverse.full boolCycleGraph [false, true] (by simp) (by
+    intro c
+    cases c <;> simp)
+
+/-- The one-way Boolean graph has nilpotency index 2. -/
+theorem nilpotencyIndex_boolForward :
+    nilpotencyIndexOfFinite boolForwardUniverse = some 2 := by
+  native_decide
+
+/-- The two-component cycle has no zero adjacency power in the finite search window. -/
+theorem nilpotencyIndex_boolCycle :
+    nilpotencyIndexOfFinite boolCycleUniverse = none := by
+  native_decide
+
+/-- The matrix-bridge v1 entry point populates the `nilpotencyIndex` axis. -/
+theorem v1Schema_boolForward_nilpotencyIndex :
+    (v1OfComponentUniverseWithNilpotencyIndex boolForwardUniverse
+      (fun _ _ => True) (fun _ _ => True)).nilpotencyIndex =
+      some 2 := by
+  native_decide
+
+end ArchitectureSignature.Examples
 
 namespace FiniteArchGraph
 
