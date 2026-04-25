@@ -868,6 +868,12 @@ Lean status の区分:
   `components`, `edges`, `metricStatus` に基づく tooling-side evidence であり、
   Lean witness そのものではない。core 4 軸の `metricStatus` も測定済み metadata として
   extractor output に含める。
+- module root import target の validation は
+  [#149](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/149)
+  で整理した。`Foo.Main -> Foo` のような edge では `Foo` を source file component として
+  自動補完せず、`local-only` universe 外の synthetic module root target として
+  warning に分類する。validation summary が `fail` の snapshot は主要分析から除外し、
+  `warn` は stratification または sensitivity analysis の対象として dataset に取り込める。
 - `sig0-extractor` の外部利用向け hardening は
   [#137](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/137)
   で README の再現手順、representative fixture、CLI integration test、CI 上の
@@ -895,8 +901,6 @@ Stabilization / Audit 時点で残す後続タスク:
   外部 pilot 用の boundary / runtime evidence 入力を整備する。
 - [#148](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/148):
   multi-project repo での component 粒度を整理する。
-- [#149](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/149):
-  module root import target の `ComponentUniverse` validation を整理する。
 
 `LocalReplacementContract` 風の packaging theorem は
 [#118](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/118)
