@@ -794,6 +794,13 @@ Lean status の区分:
   で完了し、まとめは
   [signature_v1_wrapup.md](design/signature_v1_wrapup.md)
   に分離する。
+- v1 core / extension output と PR metadata を結合する empirical dataset の
+  最小 record schema は
+  [#108](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/108)
+  で固定し、
+  [empirical_dataset_schema.md](design/empirical_dataset_schema.md)
+  に分離する。`metricStatus.measured = false` と optional axis の `none` / `null`
+  は欠損値であり、risk 0 として集計しない。
 
 残る後続タスク:
 
@@ -801,7 +808,6 @@ Lean status の区分:
   violation count を測れるようにする。
 - extractor output と Lean の `ComponentUniverse` の責務境界を検査する
   validation report を設計する。
-- v1 core / extension output と PR metadata を結合する empirical dataset を作る。
 - `ProjectionExact` から抽象 edge と投影された具体 edge 集合の一致を読む
   edge-level bridge theorem を追加するか判断する。
 - `DIPCompatible G π GA` と `ObservationFactorsThrough π O` を束ねる

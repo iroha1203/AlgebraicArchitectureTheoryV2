@@ -80,6 +80,10 @@ PR または分析対象 commit ごとに次を記録する。
 - extractor version, rule set version, policy version
 - 未評価軸とその理由
 
+PR metadata と Signature before / after を結合した dataset record の最小 schema は
+[empirical dataset v0 schema](empirical_dataset_schema.md) に分離する。この protocol
+では分析手順を扱い、dataset schema 文書では列名、欠損値、比較可能性の規約を固定する。
+
 `signatureBefore` は PR base commit、`signatureAfter` は PR head または merge commit
 で計算する。merge commit の有無で結果が変わる場合は、その差分を metadata に残す。
 `deltaSignatureSigned` は `Nat` subtraction ではなく符号付き差分として扱う。
