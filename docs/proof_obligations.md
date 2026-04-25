@@ -583,9 +583,16 @@ Issue [#71](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/71
 特徴づけ、空 universe や singleton SCC は Nat subtraction により 0 risk に
 丸められることを明確にした。
 
-v1 core 派生 metric のうち `sccExcessSizeOfFinite` の graph-level bridge は
-証明済みである。`maxFanoutOfFinite` と measured dependency edges の source ごとの
-分類、`reachableConeSizeOfFinite` と graph-level reachable set / cone の接続は、
+Issue [#72](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/72)
+では、`reachableConeSizeAt` / `reachableConeSizeOfFinite` と graph-level strict
+reachable cone の接続を追加した。有限 universe 下で、bounded search による
+`reachableConeSizeAt` は source 自身を除く `Reachable` cone のサイズと一致し、
+`reachableConeSizeOfFinite` は component ごとの strict reachable cone size の
+最大値と一致する。
+
+v1 core 派生 metric のうち `sccExcessSizeOfFinite` と
+`reachableConeSizeOfFinite` の graph-level bridge は証明済みである。
+`maxFanoutOfFinite` と measured dependency edges の source ごとの分類は、
 後続の bridge theorem として扱う。
 
 Lean status の区分:
@@ -593,7 +600,8 @@ Lean status の区分:
 | 軸 | 扱い | Lean status |
 | --- | --- | --- |
 | `sccExcessSize` | 有限 universe 上の計算として定義済み。graph-level mutual-reachability class size 最大値との bridge を証明済み | `defined only` / `proved` |
-| `maxFanout`, `reachableConeSize` | 有限 universe 上の計算として定義済み。graph-level facts は theorem として証明する | `defined only` / `future proof obligation` |
+| `reachableConeSize` | 有限 universe 上の計算として定義済み。graph-level strict reachable cone size 最大値との bridge を証明済み | `defined only` / `proved` |
+| `maxFanout` | 有限 universe 上の計算として定義済み。source ごとの measured dependency edges との bridge は theorem として証明する | `defined only` / `future proof obligation` |
 | `weightedSccRisk` | 重み関数つき executable metric として設計する | `defined only` |
 | `projectionSoundnessViolation` | 具象依存が抽象依存へ sound に写らない measured edge を数える | `defined only` / `proved` |
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
