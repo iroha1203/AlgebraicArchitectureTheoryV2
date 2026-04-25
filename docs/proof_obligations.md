@@ -624,10 +624,10 @@ per component, per KLOC などの正規化は raw count を置き換えない将
 この規約の Lean status は `empirical hypothesis` / tooling design であり、
 Lean theorem ではない。
 
-v1 core に追加・正規化する候補:
+v1 core / extension に追加・正規化した軸:
 
 - `sccExcessSize = sccMaxSize - 1`: 非循環 singleton SCC を 0 risk として扱うための循環リスク軸。
-- `weightedSccRisk`: SCC の大きさや重要度を重みづけする将来の executable metric。
+- `weightedSccRisk`: SCC の大きさや重要度を重みづけする executable extension metric。
 - `maxFanout`: 局所的な依存集中を表す executable metric。
 - `reachableConeSize`: 変更波及の到達範囲を表す executable metric。
 - `projectionSoundnessViolation`: 抽象射影に反する具体依存を数える projection bridge 軸。
@@ -754,23 +754,28 @@ Lean status の区分:
 | `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データで検証する目的変数 | `empirical hypothesis` |
 
-後続 Issue への分割:
+完了済み・設計整理済みの項目:
 
 - adjacency matrix と `rho(A)` の解析的拡張は
   [#94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
   と [#95](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/95)
-  に分割して扱う。
+  に分割し、finite DAG で `rho(A)=0`、finite closed walk で `rho(A)>0`
+  になる bridge theorem を証明済みである。
 - 静的依存と実行時依存の分離は
   [#33](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/33)
-  で扱う。
-- 実コードベースからの Sig0 / v1 core 抽出 tooling は
+  で `StaticDependencyGraph`, `RuntimeDependencyGraph`,
+  `ArchitectureDependencyGraphs` の role alias / bundle として定義済みである。
+- 最小 Sig0 extractor CLI は
+  [#51](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/51)
+  で `tools/sig0-extractor/` に実装済みである。
+- 実コードベースからの Sig0 / v1 core 抽出 tooling の設計境界は
   [#34](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/34)
-  で扱う。最小 Sig0 extractor の v0 設計は
+  で扱う。最小 Sig0 extractor の v0 設計と現在の実装境界は
   [sig0_extractor_design.md](design/sig0_extractor_design.md)
   に分離する。
 - 実証プロトコルと empirical cost 軸は
   [#35](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/35)
-  で扱う。初期 protocol は
+  で扱う。初期 protocol 設計は
   [empirical_protocol.md](design/empirical_protocol.md)
   に分離する。
 - `relationComplexity` は
@@ -780,14 +785,27 @@ Lean status の区分:
   に分離する。
 - `runtimePropagation` の最小 metric と extractor 境界は
   [#86](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/86)
-  で扱う。初期設計は
+  で `runtimePropagationOfFinite` と
+  `v1OfFiniteWithRuntimePropagation` を定義済みである。初期設計は
   [runtime_propagation_design.md](design/runtime_propagation_design.md)
   に分離する。
 - Signature v1 後半戦の統合整理は
   [#83](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/83)
-  で扱う。完了時のまとめは
+  で完了し、まとめは
   [signature_v1_wrapup.md](design/signature_v1_wrapup.md)
   に分離する。
+
+残る後続タスク:
+
+- boundary / abstraction policy file の最小 schema を設計し、tooling 側で
+  violation count を測れるようにする。
+- extractor output と Lean の `ComponentUniverse` の責務境界を検査する
+  validation report を設計する。
+- v1 core / extension output と PR metadata を結合する empirical dataset を作る。
+- `ProjectionExact` から抽象 edge と投影された具体 edge 集合の一致を読む
+  edge-level bridge theorem を追加するか判断する。
+- `DIPCompatible G π GA` と `ObservationFactorsThrough π O` を束ねる
+  `LocalReplacementContract` 風の packaging theorem を追加するか判断する。
 
 Bridge theorem naming policy:
 

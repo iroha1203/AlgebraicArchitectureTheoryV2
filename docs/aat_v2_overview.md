@@ -95,9 +95,9 @@ Sig0(A) =
 
 `maxDepth` は初期 Lean 実装では bounded max depth として扱う。循環グラフ上の真の大域 depth ではなく、有限 universe による fuel-bounded measurement である。循環リスクは `hasCycle` の別軸で扱う。
 
-`sccMaxSize` は初期指標として残すが、将来的には非循環成分を 0 risk にするため `sccExcessSize = sccMaxSize - 1` への正規化を検討する。`fanoutRisk : Nat` は v0 では `totalFanout` として定義し、疎なグラフでも測定 universe 内に依存辺があれば 0 に丸め落ちないようにする。`maxFanout` は局所集中を表す別軸として、Signature v1 以降で追加を検討する。
+`sccMaxSize` は v0 互換の説明用指標として残すが、v1 core では非循環 singleton SCC を 0 risk にするため `sccExcessSize = sccMaxSize - 1` へ正規化する。`fanoutRisk : Nat` は v0 では `totalFanout` として定義し、疎なグラフでも測定 universe 内に依存辺があれば 0 に丸め落ちないようにする。`maxFanout` は局所集中を表す v1 core 軸、`reachableConeSize` は変更波及の到達範囲を表す v1 core 軸として追加済みである。
 
-Lean PR4 では、有限な component list を測定 universe とする executable v0 metrics を定義する。Lean PR5 では、その list に `Nodup`, coverage, edge-closedness を持たせる `ComponentUniverse` を追加し、bounded reachability と `Walk` / `Reachable` の基本的な正当性 bridge を証明する。現在の `ComponentUniverse` は full universe なので edge-closedness は coverage から導けるが、将来 closed measurement sub-universe を扱う余地を残すため明示フィールドとして保持する。これは実コードベース抽出器の完全性を主張するものではない。SCC count と相互到達可能性の同値類との接続は、次の proof obligation として残す。
+Lean 側では、有限な component list を測定 universe とする executable v0 metrics と、その list に `Nodup`, coverage, edge-closedness を持たせる `ComponentUniverse` を定義済みである。bounded reachability と `Walk` / `Reachable` の bridge、cycle indicator correctness、SCC count と相互到達可能性 class size の bridge、v1 core 派生 metric の主要 bridge は証明済みである。現在の `ComponentUniverse` は full universe なので edge-closedness は coverage から導けるが、将来 closed measurement sub-universe を扱う余地を残すため明示フィールドとして保持する。これは実コードベース抽出器の完全性を主張するものではない。
 
 発展シグネチャ `Sig1(A)` では、解析的・実証的な軸を追加する。
 
