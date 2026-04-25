@@ -301,6 +301,34 @@ theorem mem_mutualReachableClass_iff {C : Type u} {G : ArchGraph C}
   classical
   simp [mutualReachableClass, mutualReachableBool_eq_true_iff]
 
+/--
+The graph-level strict reachable cone of `c` inside a supplied finite
+measurement list.
+
+This is intentionally noncomputable: it uses propositional `Reachable`, while
+`reachableConeSizeAt` remains the executable bounded-search metric. The source
+component itself is excluded.
+-/
+noncomputable def reachableCone {C : Type u} (G : ArchGraph C)
+    [DecidableEq C]
+    (components : List C) (c : C) : List C :=
+  components.filter (fun d => decide (c ≠ d) && reachableBool G c d)
+
+/-- Graph-level strict reachable cone size inside a supplied finite list. -/
+noncomputable def reachableConeSize {C : Type u} (G : ArchGraph C)
+    [DecidableEq C]
+    (components : List C) (c : C) : Nat :=
+  (reachableCone G components c).length
+
+/-- Membership in the graph-level strict reachable cone is exactly reachability. -/
+theorem mem_reachableCone_iff {C : Type u} {G : ArchGraph C}
+    [DecidableEq C]
+    {components : List C} {c d : C} :
+    d ∈ reachableCone G components c ↔
+      d ∈ components ∧ c ≠ d ∧ Reachable G c d := by
+  classical
+  simp [reachableCone, reachableBool_eq_true_iff]
+
 /-- Folding `Nat.max` never decreases its accumulator. -/
 private theorem acc_le_foldl_max (xs : List Nat) (acc : Nat) :
     acc ≤ xs.foldl Nat.max acc := by
@@ -531,6 +559,34 @@ theorem sccExcessSizeOfFinite_eq_zero_of_max_mutualReachableClassSize_le_one_und
     sccExcessSizeOfFinite G U.components = 0 := by
   rw [sccExcessSizeOfFinite_eq_max_mutualReachableClassSize_sub_one_under_universe U]
   exact Nat.sub_eq_zero_of_le h
+
+/--
+Under a finite component universe, the executable bounded reachable cone size at
+`c` equals the graph-level strict reachable cone size of `c`.
+-/
+theorem reachableConeSizeAt_eq_reachableConeSize_under_universe {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (c : C) :
+    reachableConeSizeAt G U.components c =
+      reachableConeSize G U.components c := by
+  classical
+  simp [reachableConeSizeAt, countWhere, reachableConeSize, reachableCone,
+    reachableBool, reachesWithin_eq_reachableBool_under_universe U]
+
+/--
+Under a finite component universe, the executable reachable-cone metric is the
+maximum graph-level strict reachable cone size over the universe.
+-/
+theorem reachableConeSizeOfFinite_eq_max_reachableConeSize_under_universe
+    {C : Type u} {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) :
+    reachableConeSizeOfFinite G U.components =
+      maxNatList
+        (U.components.map (fun c =>
+          reachableConeSize G U.components c)) := by
+  classical
+  simp [reachableConeSizeOfFinite,
+    reachableConeSizeAt_eq_reachableConeSize_under_universe U]
 
 /--
 Under a finite component universe, v0 `fanoutRiskOfFinite` counts exactly the
