@@ -812,6 +812,11 @@ Lean status の区分:
   に分離する。`boundaryViolationCount` / `abstractionViolationCount` の counting
   unit は tooling output 上の unique dependency edge であり、policy 未指定や
   selector 未解決の placeholder 0 は欠損値として扱う。
+- Sig0 extractor が boundary / abstraction policy file を読み、
+  `boundaryViolationCount` / `abstractionViolationCount` を測定済み軸として出力する
+  実装は [#115](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/115)
+  で追加した。これは tooling-side evidence であり、Lean theorem や
+  `ComponentUniverse` witness ではない。
 - extractor output と Lean の `ComponentUniverse` の責務境界を検査する
   validation report の最小 schema と CLI contract は
   [#109](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/109)
