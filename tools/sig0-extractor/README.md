@@ -247,6 +247,89 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- relation-complexity
 fixture の代表出力では `constraints = 1`, `compensations = 1`,
 `failureTransitions = 1` なので、`relationComplexity = 3` になる。
 
+## Snapshot diff MVP
+
+週次 scan や任意期間比較では、まず Sig0 output と validation report から
+`signature-snapshot-store-v0` record を作り、2 つの snapshot を
+`signature-diff-report-v0` に比較する。この workflow は Lean theorem ではなく、
+empirical / tooling output である。
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+  --root . \
+  --policy signature-policy.json \
+  --out .lake/signature-current/sig0.json
+
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
+  --input .lake/signature-current/sig0.json \
+  --out .lake/signature-current/validation.json \
+  --universe-mode local-only
+
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
+  --input .lake/signature-current/sig0.json \
+  --validation-report .lake/signature-current/validation.json \
+  --repo-owner example \
+  --repo-name service \
+  --revision-sha "$(git rev-parse HEAD)" \
+  --revision-branch main \
+  --scanned-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --policy-path signature-policy.json \
+  --extractor-output-path .lake/signature-current/sig0.json \
+  --tag weekly \
+  --out .lake/signature-current/snapshot.json
+```
+
+任意期間 diff は次で作る。`--before-sig0` / `--after-sig0` を渡すと、増えた
+component、edge、policy violation も report に入る。`--pr-metadata` を渡すと、
+PR の changed components と after revision SHA に基づく原因候補を confidence 付きで
+出す。複数 PR を候補にする場合は `--pr-metadata` を繰り返す。
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- signature-diff \
+  --before-snapshot .lake/signature-previous/snapshot.json \
+  --after-snapshot .lake/signature-current/snapshot.json \
+  --before-sig0 .lake/signature-previous/sig0.json \
+  --after-sig0 .lake/signature-current/sig0.json \
+  --pr-metadata .lake/pr-metadata-123.json \
+  --out .lake/signature-current/diff-report.json
+```
+
+report は `worsenedAxes`, `improvedAxes`, `unchangedAxes`, `unmeasuredAxes`,
+`evidenceDiff`, `attribution` を持つ。`validationSummary.result = fail` または
+`not_run` の snapshot、extractor / rule set / policy が一致しない比較は
+`comparisonStatus.primaryDiffEligible = false` とし、主要 diff から除外する。
+未評価軸は `unmeasuredAxes` に理由を残し、placeholder 0 を risk 0 として扱わない。
+
+GitHub Actions では、週次 job で同じ 3 段階を実行して artifact として保存する。
+次は最小形であり、外部 storage に蓄積する場合は最後の upload 部分を置き換える。
+
+```yaml
+name: Signature diff
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+
+jobs:
+  signature-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: leanprover/lean-action@v1
+      - name: Build current snapshot
+        run: |
+          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- --root . --out .lake/signature-current/sig0.json
+          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate --input .lake/signature-current/sig0.json --out .lake/signature-current/validation.json
+          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot --input .lake/signature-current/sig0.json --validation-report .lake/signature-current/validation.json --repo-owner "$GITHUB_REPOSITORY_OWNER" --repo-name "${GITHUB_REPOSITORY#*/}" --revision-sha "$GITHUB_SHA" --revision-ref "$GITHUB_REF" --revision-branch "${GITHUB_REF_NAME:-main}" --scanned-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --tag weekly --out .lake/signature-current/snapshot.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signature-current
+          path: .lake/signature-current
+```
+
 ## Test and CI
 
 ローカル検証は次で行う。
@@ -257,4 +340,5 @@ cargo test --manifest-path tools/sig0-extractor/Cargo.toml
 
 CI では GitHub Actions の `sig0-extractor cargo test` job が同じコマンドを実行する。
 Lean theorem ではなく tooling contract の再現性を確認するため、fixtures と CLI test で
-policy, runtime edge projection, relation complexity, dataset conversion を通す。
+policy, runtime edge projection, relation complexity, dataset conversion,
+snapshot diff を通す。
