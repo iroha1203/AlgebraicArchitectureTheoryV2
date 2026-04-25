@@ -146,8 +146,9 @@ issueIncidentLinks / analysisMetadata を持つ empirical dataset input JSON で
 
 ## Pilot で見つかった不足
 
-- PR metadata から dataset input JSON を作る手順がまだ手作業である。
-  Follow-up: [#146](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/146)
+- PR metadata から dataset input JSON を作る手順は
+  [#146](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/146)
+  で `sig0-extractor pr-metadata` として repository-local tooling に移した。
 - 外部 repository 用の boundary / abstraction policy と runtime edge evidence が
   まだないため、H4 / H5 の pilot record としては欠損が多い。
   Follow-up: [#147](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/147)

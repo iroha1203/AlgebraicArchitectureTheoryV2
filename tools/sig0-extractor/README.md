@@ -128,6 +128,28 @@ validation report の出力 schema は
 PR 前後の Signature と PR metadata を empirical dataset v0 record に結合する場合は
 次を使う。
 
+GitHub API の PR detail / files / reviews JSON から `pr-metadata.json` を生成する場合は
+次を使う。
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- pr-metadata \
+  --pull-request github-pr.json \
+  --files github-pr-files.json \
+  --reviews github-pr-reviews.json \
+  --out pr-metadata.json
+```
+
+`--pull-request` は GitHub REST `pulls/{number}` の JSON を想定する。
+`--files` は pull request files API の配列を想定し、`.lean` file path から
+`changedComponents` を `Formal/Arch/A.lean -> Formal.Arch.A` の規則で抽出する。
+`--reviews` を省略した場合、`reviewRoundCount` は `0` になり、
+`firstReviewLatencyHours` と `approvalLatencyHours` は `null` になる。
+approval review がない場合も `approvalLatencyHours` は `null` であり、0 時間とは扱わない。
+`mergeLatencyHours` は `merged_at` がない場合に `null` になる。
+author が GitHub Bot type または `[bot]` / `-bot` login の場合、
+`pullRequest.isBotGenerated = true` として保持する。
+GraphQL reviewThreads JSON を別途持つ場合は `--review-threads` で渡せる。
+
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- dataset \
   --before .lake/sig0-base.json \
