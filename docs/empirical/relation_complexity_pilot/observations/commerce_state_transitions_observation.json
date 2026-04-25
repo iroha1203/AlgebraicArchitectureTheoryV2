@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "relation-complexity-observation/v0",
+  "repository": "aatv2/reference-commerce-state-transitions",
+  "revision": "pilot-2026-04-26",
+  "measurementUniverse": {
+    "root": "samples/commerce-state-transitions",
+    "languages": [
+      "typescript"
+    ],
+    "frameworks": [
+      "event-sourcing",
+      "saga",
+      "crud"
+    ],
+    "ruleSetVersion": "relation-complexity-rules/v0"
+  },
+  "workflow": {
+    "id": "checkout-payment-fulfillment",
+    "name": "Checkout payment and fulfillment",
+    "component": "CommerceCheckout",
+    "entrypoints": [
+      "src/checkout/CheckoutWorkflow.ts",
+      "src/orders/OrderProjection.ts"
+    ]
+  },
+  "counts": {
+    "constraints": 2,
+    "compensations": 2,
+    "projections": 1,
+    "failureTransitions": 3,
+    "idempotencyRequirements": 2
+  },
+  "relationComplexity": 10,
+  "evidence": [
+    {
+      "id": "checkout-command-idempotency",
+      "path": "src/checkout/CheckoutCommandHandler.ts",
+      "symbol": "CheckoutCommandHandler.handle",
+      "line": 21,
+      "tags": [
+        "idempotencyRequirements"
+      ],
+      "ownership": "application-owned",
+      "reviewStatus": "accepted",
+      "notes": "Command handler rejects duplicate checkout command ids."
+    },
+    {
+      "id": "inventory-reservation-invariant",
+      "path": "src/checkout/InventoryReservation.ts",
+      "symbol": "InventoryReservation.reserve",
+      "line": 58,
+      "tags": [
+        "constraints"
+      ],
+      "ownership": "application-owned",
+      "reviewStatus": "accepted",
+      "notes": "Reservation cannot exceed available stock for the SKU."
+    },
+    {
+      "id": "order-state-invariant",
+      "path": "src/checkout/CheckoutWorkflow.ts",
+      "symbol": "CheckoutWorkflow.assertOrderCanBePaid",
+      "line": 42,
+      "tags": [
+        "constraints"
+      ],
+      "ownership": "application-owned",
+      "reviewStatus": "accepted",
+      "notes": "Order must be PENDING_PAYMENT before payment capture."
+    },
+    {
+      "id": "order-summary-projection",
+      "path": "src/orders/OrderProjection.ts",
+      "symbol": "OrderProjection.applyOrderEvents",
+      "line": 35,
+      "tags": [
+        "projections"
+      ],
+      "ownership": "application-owned",
+      "reviewStatus": "accepted",
+      "notes": "Event log is projected into the order summary read model."
+    },
+    {
+      "id": "payment-timeout-retry",
+      "path": "src/payments/PaymentClient.ts",
+      "symbol": "PaymentClient.captureWithRetry",
+      "line": 77,
+      "tags": [
+        "failureTransitions",
+        "idempotencyRequirements"
+      ],
+      "ownership": "application-configured",
+      "reviewStatus": "accepted",
+      "notes": "Timeout retry uses a capture idempotency key."
+    },
+    {
+      "id": "refund-payment-on-shipping-failure",
+      "path": "src/checkout/CheckoutSaga.ts",
+      "symbol": "CheckoutSaga.refundPayment",
+      "line": 123,
+      "tags": [
+        "compensations",
+        "failureTransitions"
+      ],
+      "ownership": "application-owned",
+      "reviewStatus": "accepted",
+      "notes": "Shipping failure triggers payment refund compensation."
+    },
+    {
+      "id": "release-inventory-on-payment-failure",
+      "path": "src/checkout/CheckoutSaga.ts",
+      "symbol": "CheckoutSaga.releaseInventory",
+      "line": 96,
+      "tags": [
+        "compensations",
+        "failureTransitions"
+      ],
+      "ownership": "application-owned",
+      "reviewStatus": "accepted",
+      "notes": "Payment failure moves the workflow to inventory-release compensation."
+    }
+  ],
+  "excludedEvidence": [
+    {
+      "path": "src/checkout/CheckoutWorkflow.spec.ts",
+      "reason": "test-fixture",
+      "symbol": "CheckoutWorkflow test fixture",
+      "line": 18
+    },
+    {
+      "path": "src/generated/OrderRecord.ts",
+      "reason": "ownership-not-counted:framework-generated",
+      "symbol": "OrderRecord.uniqueIndex",
+      "line": 14
+    },
+    {
+      "path": "src/admin/OrderAdminController.ts",
+      "reason": "review-status-not-counted:false-positive",
+      "symbol": "OrderAdminController.updateEmail",
+      "line": 67
+    },
+    {
+      "path": "src/shipping/ProviderAdapter.ts",
+      "reason": "ownership-not-counted:unknown",
+      "symbol": "ProviderAdapter.onRetry",
+      "line": 51
+    }
+  ]
+}
