@@ -122,7 +122,9 @@ Lean status:
 - `DAG <-> Nilpotent adjacency matrix`: `proved` for finite
   `ComponentUniverse` natural-number adjacency powers,
   [Issue #55](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/55)
-- `DAG -> rho(A) = 0`: [Issue #94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
+- `DAG -> rho(A) = 0`: `proved` for finite `ComponentUniverse`
+  complex adjacency matrices,
+  [Issue #94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
 - `cycle -> rho(A) > 0`: [Issue #95](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/95)
 
 #### Matrix bridge 設計
@@ -181,13 +183,21 @@ Issue [#79](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/79
 bridge として維持する。詳細は
 [spectral radius bridge 設計](design/spectral_radius_bridge.md) に分離する。
 
+Issue [#94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
+では、`SpectralIndex`, `indexedAdjacencyMatrix`, `spectralAdjacencyMatrix`,
+`spectralRadiusOfAdjacency` を追加し、有限 acyclic graph で
+`spectralRadiusOfAdjacency U = 0` となることを証明した。これは構造的な
+adjacency matrix theorem であり、変更コストや障害伝播増幅との相関は
+引き続き empirical hypothesis として分離する。
+
 当面は次の status に分ける。
 
 - `DAG <-> Nilpotent adjacency matrix`: `proved` for finite `ComponentUniverse`
   natural-number adjacency powers
 - `nilpotencyIndex`: executable metric / proved acyclic bridge for finite
   `ComponentUniverse`
-- `DAG -> rho(A) = 0`: `future proof obligation`,
+- `DAG -> rho(A) = 0`: `proved` for finite `ComponentUniverse`
+  complex adjacency matrices,
   [Issue #94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
 - `cycle -> rho(A) > 0`: `future proof obligation`,
   [Issue #95](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/95)
@@ -700,7 +710,7 @@ Lean status の区分:
 | `projectionSoundnessViolation` | 具象依存が抽象依存へ sound に写らない measured edge を数える | `defined only` / `proved` |
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み | `defined only` / `proved` |
-| `rho(A)` | 行列解析上の伝播増幅指標として扱う | `future proof obligation` / `empirical hypothesis` |
+| `rho(A)` | 行列解析上の伝播増幅指標として扱う。finite DAG では 0 になる bridge を証明済み | `proved` for `DAG -> rho(A)=0` / `future proof obligation` for cycle positivity / `empirical hypothesis` |
 | `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime propagation radius として計算する。runtime metadata から graph への projection は tooling 側に残す | `defined only` / `empirical hypothesis` |
 | `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データで検証する目的変数 | `empirical hypothesis` |
