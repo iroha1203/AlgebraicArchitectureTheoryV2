@@ -19,6 +19,11 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 
 design / tooling 系の Issue は、上の status を補助する作業として扱う。たとえば `ComponentUniverse` と `FiniteArchGraph` の役割分担は `defined only` から future theorem へ進むための設計課題であり、empirical extractor は Lean theorem ではなく測定 tooling 側の課題である。
 
+Sig0 extractor CLI は [Issue #51](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/51)
+で `tools/sig0-extractor/` に置く。これは Lean module import graph から
+`ArchitectureSignature` v0 の入力 JSON を作る `empirical hypothesis` / tooling output
+であり、`ComponentUniverse` の完全な witness を生成したとは主張しない。
+
 GitHub Issue の状態、優先度、milestone は GitHub を source of truth とする。この文書では Issue の一覧表を複製せず、研究上の文脈に必要な箇所だけ Issue link を置く。
 
 ## Lean で証明する命題

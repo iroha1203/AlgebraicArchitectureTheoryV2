@@ -1,5 +1,6 @@
 .lake/
 build/
+target/
 *.olean
 *.ilean
 *.c
@@ -9,4 +10,3 @@ build/
 *.dll
 *.exe
 .DS_Store
-
