@@ -10,7 +10,48 @@ use walkdir::{DirEntry, WalkDir};
 pub const SCHEMA_VERSION: &str = "sig0-extractor-v0";
 pub const COMPONENT_KIND: &str = "lean-module";
 pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report-v0";
+pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
+pub const EXTRACTOR_NAME: &str = "sig0-extractor";
+pub const EXTRACTOR_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const RULE_SET_VERSION: &str = "sig0-v0";
 pub const DEFAULT_UNIVERSE_MODE: &str = "local-only";
+
+const DATASET_SIGNATURE_AXES: [&str; 16] = [
+    "hasCycle",
+    "sccMaxSize",
+    "maxDepth",
+    "fanoutRisk",
+    "boundaryViolationCount",
+    "abstractionViolationCount",
+    "sccExcessSize",
+    "maxFanout",
+    "reachableConeSize",
+    "weightedSccRisk",
+    "projectionSoundnessViolation",
+    "lspViolationCount",
+    "nilpotencyIndex",
+    "runtimePropagation",
+    "relationComplexity",
+    "empiricalChangeCost",
+];
+
+const DATASET_DELTA_AXES: [&str; 15] = [
+    "hasCycle",
+    "sccMaxSize",
+    "maxDepth",
+    "fanoutRisk",
+    "boundaryViolationCount",
+    "abstractionViolationCount",
+    "sccExcessSize",
+    "maxFanout",
+    "reachableConeSize",
+    "weightedSccRisk",
+    "projectionSoundnessViolation",
+    "lspViolationCount",
+    "nilpotencyIndex",
+    "runtimePropagation",
+    "relationComplexity",
+];
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -155,6 +196,194 @@ pub struct ValidationExample {
     pub target: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub evidence: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmpiricalDatasetInput {
+    pub repository: RepositoryRef,
+    pub pull_request: PullRequestRef,
+    pub pr_metrics: PullRequestMetrics,
+    #[serde(default)]
+    pub issue_incident_links: Vec<IssueIncidentLink>,
+    #[serde(default)]
+    pub analysis_metadata: AnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmpiricalSignatureDatasetV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub pull_request: PullRequestRef,
+    pub signature_before: SignatureSnapshot,
+    pub signature_after: SignatureSnapshot,
+    pub delta_signature_signed: NullableSignatureIntVector,
+    pub metric_delta_status: BTreeMap<String, MetricDeltaStatus>,
+    pub pr_metrics: PullRequestMetrics,
+    pub issue_incident_links: Vec<IssueIncidentLink>,
+    pub analysis_metadata: AnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepositoryRef {
+    pub owner: String,
+    pub name: String,
+    pub default_branch: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PullRequestRef {
+    pub number: usize,
+    pub author: String,
+    pub created_at: String,
+    pub merged_at: Option<String>,
+    pub base_commit: String,
+    pub head_commit: String,
+    pub merge_commit: Option<String>,
+    pub labels: Vec<String>,
+    pub is_bot_generated: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PullRequestMetrics {
+    pub changed_files: usize,
+    pub changed_lines_added: usize,
+    pub changed_lines_deleted: usize,
+    pub changed_components: Vec<String>,
+    pub review_comment_count: usize,
+    pub review_thread_count: usize,
+    pub review_round_count: usize,
+    pub first_review_latency_hours: Option<f64>,
+    pub approval_latency_hours: Option<f64>,
+    pub merge_latency_hours: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IssueIncidentLink {
+    pub kind: String,
+    pub id: String,
+    pub url: Option<String>,
+    pub severity: Option<String>,
+    pub labels: Vec<String>,
+    pub opened_at: Option<String>,
+    pub closed_at: Option<String>,
+    pub affected_components: Vec<String>,
+    pub rollback: Option<bool>,
+    pub reopened: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AnalysisMetadata {
+    pub signature_after_commit_role: String,
+    pub excluded_from_primary_analysis: bool,
+    pub exclusion_reasons: Vec<String>,
+    pub primary_cost_record: Option<String>,
+    pub relation_complexity_components: Option<RelationComplexityComponents>,
+    pub alternate_signature_after: Option<Box<SignatureSnapshot>>,
+}
+
+impl Default for AnalysisMetadata {
+    fn default() -> Self {
+        Self {
+            signature_after_commit_role: "head".to_string(),
+            excluded_from_primary_analysis: false,
+            exclusion_reasons: Vec::new(),
+            primary_cost_record: None,
+            relation_complexity_components: None,
+            alternate_signature_after: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityComponents {
+    pub constraints: usize,
+    pub compensations: usize,
+    pub projections: usize,
+    pub failure_transitions: usize,
+    pub idempotency_requirements: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitCommitRef {
+    pub sha: String,
+    pub role: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureSnapshot {
+    pub commit: GitCommitRef,
+    pub extractor: ExtractorRef,
+    pub signature: ArchitectureSignatureV1DatasetShape,
+    pub metric_status: BTreeMap<String, MetricStatus>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtractorRef {
+    pub name: String,
+    pub version: String,
+    pub rule_set_version: String,
+    pub policy_version: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureSignatureV1DatasetShape {
+    pub has_cycle: usize,
+    pub scc_max_size: usize,
+    pub max_depth: usize,
+    pub fanout_risk: usize,
+    pub boundary_violation_count: usize,
+    pub abstraction_violation_count: usize,
+    pub scc_excess_size: usize,
+    pub max_fanout: usize,
+    pub reachable_cone_size: usize,
+    pub weighted_scc_risk: Option<usize>,
+    pub projection_soundness_violation: Option<usize>,
+    pub lsp_violation_count: Option<usize>,
+    pub nilpotency_index: Option<usize>,
+    pub runtime_propagation: Option<usize>,
+    pub relation_complexity: Option<usize>,
+    pub empirical_change_cost: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NullableSignatureIntVector {
+    pub has_cycle: Option<i64>,
+    pub scc_max_size: Option<i64>,
+    pub max_depth: Option<i64>,
+    pub fanout_risk: Option<i64>,
+    pub boundary_violation_count: Option<i64>,
+    pub abstraction_violation_count: Option<i64>,
+    pub scc_excess_size: Option<i64>,
+    pub max_fanout: Option<i64>,
+    pub reachable_cone_size: Option<i64>,
+    pub weighted_scc_risk: Option<i64>,
+    pub projection_soundness_violation: Option<i64>,
+    pub lsp_violation_count: Option<i64>,
+    pub nilpotency_index: Option<i64>,
+    pub runtime_propagation: Option<i64>,
+    pub relation_complexity: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MetricDeltaStatus {
+    pub comparable: bool,
+    pub reason: String,
+    pub before_measured: bool,
+    pub after_measured: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -412,6 +641,281 @@ pub fn validate_component_universe_report(
         checks,
         warnings,
     })
+}
+
+pub fn build_empirical_dataset(
+    before: &Sig0Document,
+    after: &Sig0Document,
+    mut input: EmpiricalDatasetInput,
+    after_commit_role: &str,
+) -> Result<EmpiricalSignatureDatasetV0, Box<dyn Error>> {
+    if !matches!(after_commit_role, "head" | "merge") {
+        return Err(format!("unsupported after commit role: {after_commit_role}").into());
+    }
+
+    let before_snapshot = signature_snapshot(
+        before,
+        GitCommitRef {
+            sha: input.pull_request.base_commit.clone(),
+            role: "base".to_string(),
+        },
+    );
+    let after_sha = match after_commit_role {
+        "head" => input.pull_request.head_commit.clone(),
+        "merge" => input
+            .pull_request
+            .merge_commit
+            .clone()
+            .ok_or("after commit role merge requires pullRequest.mergeCommit")?,
+        _ => unreachable!("after commit role is checked above"),
+    };
+    let after_snapshot = signature_snapshot(
+        after,
+        GitCommitRef {
+            sha: after_sha,
+            role: after_commit_role.to_string(),
+        },
+    );
+    let delta_signature_signed = delta_signature_signed(&before_snapshot, &after_snapshot);
+    let metric_delta_status = metric_delta_status(&before_snapshot, &after_snapshot);
+
+    input.analysis_metadata.signature_after_commit_role = after_commit_role.to_string();
+
+    Ok(EmpiricalSignatureDatasetV0 {
+        schema_version: EMPIRICAL_DATASET_SCHEMA_VERSION.to_string(),
+        repository: input.repository,
+        pull_request: input.pull_request,
+        signature_before: before_snapshot,
+        signature_after: after_snapshot,
+        delta_signature_signed,
+        metric_delta_status,
+        pr_metrics: input.pr_metrics,
+        issue_incident_links: input.issue_incident_links,
+        analysis_metadata: input.analysis_metadata,
+    })
+}
+
+fn signature_snapshot(document: &Sig0Document, commit: GitCommitRef) -> SignatureSnapshot {
+    let signature = dataset_signature_shape(document);
+    SignatureSnapshot {
+        commit,
+        extractor: ExtractorRef {
+            name: EXTRACTOR_NAME.to_string(),
+            version: EXTRACTOR_VERSION.to_string(),
+            rule_set_version: RULE_SET_VERSION.to_string(),
+            policy_version: document.policies.policy_id.clone(),
+        },
+        metric_status: dataset_metric_status(document),
+        signature,
+    }
+}
+
+fn dataset_signature_shape(document: &Sig0Document) -> ArchitectureSignatureV1DatasetShape {
+    let graph = Graph::from_components_and_edges(&document.components, &document.edges);
+
+    ArchitectureSignatureV1DatasetShape {
+        has_cycle: document.signature.has_cycle,
+        scc_max_size: document.signature.scc_max_size,
+        max_depth: document.signature.max_depth,
+        fanout_risk: document.signature.fanout_risk,
+        boundary_violation_count: document.signature.boundary_violation_count,
+        abstraction_violation_count: document.signature.abstraction_violation_count,
+        scc_excess_size: document.signature.scc_max_size.saturating_sub(1),
+        max_fanout: graph.max_fanout(),
+        reachable_cone_size: graph.reachable_cone_size(),
+        weighted_scc_risk: None,
+        projection_soundness_violation: None,
+        lsp_violation_count: None,
+        nilpotency_index: None,
+        runtime_propagation: None,
+        relation_complexity: None,
+        empirical_change_cost: None,
+    }
+}
+
+fn dataset_metric_status(document: &Sig0Document) -> BTreeMap<String, MetricStatus> {
+    let mut status = BTreeMap::new();
+    for axis in DATASET_SIGNATURE_AXES {
+        let axis_status = match axis {
+            "hasCycle"
+            | "sccMaxSize"
+            | "maxDepth"
+            | "fanoutRisk"
+            | "boundaryViolationCount"
+            | "abstractionViolationCount" => document
+                .metric_status
+                .get(axis)
+                .cloned()
+                .unwrap_or_else(|| {
+                    unmeasured_status(format!("legacy data without metricStatus entry for {axis}"))
+                }),
+            "sccExcessSize" => measured_status("sig0-extractor:derived-scc-excess"),
+            "maxFanout" => measured_status("sig0-extractor:import-graph"),
+            "reachableConeSize" => measured_status("sig0-extractor:import-graph"),
+            "weightedSccRisk" => unmeasured_status("weight rule set not provided".to_string()),
+            "projectionSoundnessViolation" => {
+                unmeasured_status("projection rule set not provided".to_string())
+            }
+            "lspViolationCount" => {
+                unmeasured_status("observation rule set not provided".to_string())
+            }
+            "nilpotencyIndex" => unmeasured_status("matrix bridge output not provided".to_string()),
+            "runtimePropagation" => {
+                unmeasured_status("runtime dependency graph not provided".to_string())
+            }
+            "relationComplexity" => {
+                unmeasured_status("relation complexity observation not provided".to_string())
+            }
+            "empiricalChangeCost" => {
+                unmeasured_status("empirical target variable not provided".to_string())
+            }
+            _ => unreachable!("all dataset axes are covered"),
+        };
+        status.insert(axis.to_string(), axis_status);
+    }
+    status
+}
+
+fn delta_signature_signed(
+    before: &SignatureSnapshot,
+    after: &SignatureSnapshot,
+) -> NullableSignatureIntVector {
+    NullableSignatureIntVector {
+        has_cycle: signed_delta("hasCycle", before, after),
+        scc_max_size: signed_delta("sccMaxSize", before, after),
+        max_depth: signed_delta("maxDepth", before, after),
+        fanout_risk: signed_delta("fanoutRisk", before, after),
+        boundary_violation_count: signed_delta("boundaryViolationCount", before, after),
+        abstraction_violation_count: signed_delta("abstractionViolationCount", before, after),
+        scc_excess_size: signed_delta("sccExcessSize", before, after),
+        max_fanout: signed_delta("maxFanout", before, after),
+        reachable_cone_size: signed_delta("reachableConeSize", before, after),
+        weighted_scc_risk: signed_delta("weightedSccRisk", before, after),
+        projection_soundness_violation: signed_delta("projectionSoundnessViolation", before, after),
+        lsp_violation_count: signed_delta("lspViolationCount", before, after),
+        nilpotency_index: signed_delta("nilpotencyIndex", before, after),
+        runtime_propagation: signed_delta("runtimePropagation", before, after),
+        relation_complexity: signed_delta("relationComplexity", before, after),
+    }
+}
+
+fn metric_delta_status(
+    before: &SignatureSnapshot,
+    after: &SignatureSnapshot,
+) -> BTreeMap<String, MetricDeltaStatus> {
+    DATASET_DELTA_AXES
+        .iter()
+        .map(|axis| ((*axis).to_string(), delta_status(axis, before, after)))
+        .collect()
+}
+
+fn signed_delta(axis: &str, before: &SignatureSnapshot, after: &SignatureSnapshot) -> Option<i64> {
+    let before_measured = is_measured(axis, &before.metric_status);
+    let after_measured = is_measured(axis, &after.metric_status);
+    if !before_measured || !after_measured {
+        return None;
+    }
+
+    Some(signature_value(axis, &after.signature)? - signature_value(axis, &before.signature)?)
+}
+
+fn delta_status(
+    axis: &str,
+    before: &SignatureSnapshot,
+    after: &SignatureSnapshot,
+) -> MetricDeltaStatus {
+    let before_measured = is_measured(axis, &before.metric_status);
+    let after_measured = is_measured(axis, &after.metric_status);
+    let before_value = signature_value(axis, &before.signature);
+    let after_value = signature_value(axis, &after.signature);
+    let comparable =
+        before_measured && after_measured && before_value.is_some() && after_value.is_some();
+    let reason = if comparable {
+        "measured before and after".to_string()
+    } else {
+        delta_unavailable_reason(
+            axis,
+            before_measured,
+            after_measured,
+            before_value.is_some(),
+            after_value.is_some(),
+            &before.metric_status,
+            &after.metric_status,
+        )
+    };
+
+    MetricDeltaStatus {
+        comparable,
+        reason,
+        before_measured,
+        after_measured,
+    }
+}
+
+fn is_measured(axis: &str, metric_status: &BTreeMap<String, MetricStatus>) -> bool {
+    metric_status
+        .get(axis)
+        .is_some_and(|status| status.measured)
+}
+
+fn signature_value(axis: &str, signature: &ArchitectureSignatureV1DatasetShape) -> Option<i64> {
+    let value = match axis {
+        "hasCycle" => Some(signature.has_cycle),
+        "sccMaxSize" => Some(signature.scc_max_size),
+        "maxDepth" => Some(signature.max_depth),
+        "fanoutRisk" => Some(signature.fanout_risk),
+        "boundaryViolationCount" => Some(signature.boundary_violation_count),
+        "abstractionViolationCount" => Some(signature.abstraction_violation_count),
+        "sccExcessSize" => Some(signature.scc_excess_size),
+        "maxFanout" => Some(signature.max_fanout),
+        "reachableConeSize" => Some(signature.reachable_cone_size),
+        "weightedSccRisk" => signature.weighted_scc_risk,
+        "projectionSoundnessViolation" => signature.projection_soundness_violation,
+        "lspViolationCount" => signature.lsp_violation_count,
+        "nilpotencyIndex" => signature.nilpotency_index,
+        "runtimePropagation" => signature.runtime_propagation,
+        "relationComplexity" => signature.relation_complexity,
+        _ => None,
+    };
+    value.map(|value| value as i64)
+}
+
+fn delta_unavailable_reason(
+    axis: &str,
+    before_measured: bool,
+    after_measured: bool,
+    before_value_present: bool,
+    after_value_present: bool,
+    before_status: &BTreeMap<String, MetricStatus>,
+    after_status: &BTreeMap<String, MetricStatus>,
+) -> String {
+    let mut reasons = Vec::new();
+    if !before_measured {
+        reasons.push(format!(
+            "before: {}",
+            metric_status_reason(axis, before_status)
+        ));
+    }
+    if !after_measured {
+        reasons.push(format!(
+            "after: {}",
+            metric_status_reason(axis, after_status)
+        ));
+    }
+    if before_measured && !before_value_present {
+        reasons.push("before signature value is null".to_string());
+    }
+    if after_measured && !after_value_present {
+        reasons.push("after signature value is null".to_string());
+    }
+    reasons.join("; ")
+}
+
+fn metric_status_reason(axis: &str, metric_status: &BTreeMap<String, MetricStatus>) -> String {
+    metric_status
+        .get(axis)
+        .and_then(|status| status.reason.clone())
+        .unwrap_or_else(|| "metricStatus entry is missing".to_string())
 }
 
 fn count_checks(checks: &[ValidationCheck], result: &str) -> usize {
@@ -1232,6 +1736,34 @@ impl Graph {
         self.adjacency.values().map(BTreeSet::len).sum()
     }
 
+    fn max_fanout(&self) -> usize {
+        self.adjacency
+            .values()
+            .map(BTreeSet::len)
+            .max()
+            .unwrap_or(0)
+    }
+
+    fn reachable_cone_size(&self) -> usize {
+        self.nodes
+            .iter()
+            .map(|node| self.reachable_from(node).len())
+            .max()
+            .unwrap_or(0)
+    }
+
+    fn reachable_from(&self, source: &str) -> BTreeSet<String> {
+        let mut visited = BTreeSet::new();
+        let mut stack = self.neighbors(source);
+        while let Some(node) = stack.pop() {
+            if node == source || !visited.insert(node.clone()) {
+                continue;
+            }
+            stack.extend(self.neighbors(&node));
+        }
+        visited
+    }
+
     fn strongly_connected_components(&self) -> Vec<Vec<String>> {
         let mut visited = HashSet::new();
         let mut order = Vec::new();
@@ -1603,6 +2135,86 @@ import Should.Not.Appear
     }
 
     #[test]
+    fn builds_empirical_dataset_with_comparable_and_unmeasured_deltas() {
+        let before = sig0_document_for_edges(
+            vec![
+                ("A", "A.lean"),
+                ("B", "B.lean"),
+                ("C", "C.lean"),
+                ("D", "D.lean"),
+            ],
+            vec![("A", "B")],
+        );
+        let after = sig0_document_for_edges(
+            vec![
+                ("A", "A.lean"),
+                ("B", "B.lean"),
+                ("C", "C.lean"),
+                ("D", "D.lean"),
+            ],
+            vec![("A", "B"), ("A", "C"), ("C", "D")],
+        );
+
+        let dataset = build_empirical_dataset(&before, &after, dataset_input(), "head")
+            .expect("dataset builds");
+
+        assert_eq!(dataset.schema_version, EMPIRICAL_DATASET_SCHEMA_VERSION);
+        assert_eq!(dataset.signature_before.commit.sha, "base-sha");
+        assert_eq!(dataset.signature_after.commit.role, "head");
+        assert_eq!(dataset.delta_signature_signed.fanout_risk, Some(2));
+        assert_eq!(dataset.delta_signature_signed.max_fanout, Some(1));
+        assert_eq!(dataset.delta_signature_signed.reachable_cone_size, Some(2));
+        assert_eq!(
+            dataset.delta_signature_signed.boundary_violation_count,
+            None
+        );
+        assert_eq!(dataset.signature_after.signature.weighted_scc_risk, None);
+        assert!(
+            !dataset
+                .signature_after
+                .metric_status
+                .get("weightedSccRisk")
+                .expect("weighted status")
+                .measured
+        );
+
+        let fanout_status = dataset
+            .metric_delta_status
+            .get("fanoutRisk")
+            .expect("fanout delta status");
+        assert!(fanout_status.comparable);
+        assert!(fanout_status.before_measured);
+        assert!(fanout_status.after_measured);
+
+        let boundary_status = dataset
+            .metric_delta_status
+            .get("boundaryViolationCount")
+            .expect("boundary delta status");
+        assert!(!boundary_status.comparable);
+        assert!(!boundary_status.before_measured);
+        assert!(!boundary_status.after_measured);
+        assert!(
+            boundary_status
+                .reason
+                .contains("policy file not provided before")
+                || boundary_status.reason.contains("policy file not provided")
+        );
+    }
+
+    #[test]
+    fn dataset_merge_role_uses_merge_commit() {
+        let document = sig0_document_for_edges(vec![("A", "A.lean")], Vec::new());
+        let dataset = build_empirical_dataset(&document, &document, dataset_input(), "merge")
+            .expect("dataset builds");
+
+        assert_eq!(dataset.signature_after.commit.sha, "merge-sha");
+        assert_eq!(
+            dataset.analysis_metadata.signature_after_commit_role,
+            "merge"
+        );
+    }
+
+    #[test]
     fn detects_cycle_fixture_metrics() {
         let components = vec![
             Component {
@@ -1634,5 +2246,97 @@ import Should.Not.Appear
         assert_eq!(signature.has_cycle, 1);
         assert_eq!(signature.scc_max_size, 2);
         assert_eq!(signature.fanout_risk, 2);
+    }
+
+    fn sig0_document_for_edges(
+        components: Vec<(&str, &str)>,
+        edge_pairs: Vec<(&str, &str)>,
+    ) -> Sig0Document {
+        let components: Vec<Component> = components
+            .into_iter()
+            .map(|(id, path)| Component {
+                id: id.to_string(),
+                path: path.to_string(),
+            })
+            .collect();
+        let edges: Vec<Edge> = edge_pairs
+            .into_iter()
+            .map(|(source, target)| Edge {
+                source: source.to_string(),
+                target: target.to_string(),
+                kind: "import".to_string(),
+                evidence: format!("import {target}"),
+            })
+            .collect();
+        let signature = compute_signature(&components, &edges);
+        let mut metric_status = BTreeMap::new();
+        for axis in ["hasCycle", "sccMaxSize", "maxDepth", "fanoutRisk"] {
+            metric_status.insert(
+                axis.to_string(),
+                measured_status("sig0-extractor:import-graph"),
+            );
+        }
+        metric_status.insert(
+            "boundaryViolationCount".to_string(),
+            unmeasured_status("policy file not provided".to_string()),
+        );
+        metric_status.insert(
+            "abstractionViolationCount".to_string(),
+            unmeasured_status("policy file not provided".to_string()),
+        );
+
+        Sig0Document {
+            schema_version: SCHEMA_VERSION.to_string(),
+            root: ".".to_string(),
+            component_kind: COMPONENT_KIND.to_string(),
+            components,
+            edges,
+            policies: Policies {
+                boundary_allowed: Vec::new(),
+                abstraction_allowed: Vec::new(),
+                policy_id: None,
+                schema_version: None,
+                boundary_group_count: None,
+                abstraction_relation_count: None,
+            },
+            signature,
+            metric_status,
+            policy_violations: Vec::new(),
+        }
+    }
+
+    fn dataset_input() -> EmpiricalDatasetInput {
+        EmpiricalDatasetInput {
+            repository: RepositoryRef {
+                owner: "example".to_string(),
+                name: "service".to_string(),
+                default_branch: "main".to_string(),
+            },
+            pull_request: PullRequestRef {
+                number: 42,
+                author: "alice".to_string(),
+                created_at: "2026-04-01T00:00:00Z".to_string(),
+                merged_at: Some("2026-04-02T00:00:00Z".to_string()),
+                base_commit: "base-sha".to_string(),
+                head_commit: "head-sha".to_string(),
+                merge_commit: Some("merge-sha".to_string()),
+                labels: vec!["feature".to_string()],
+                is_bot_generated: false,
+            },
+            pr_metrics: PullRequestMetrics {
+                changed_files: 2,
+                changed_lines_added: 20,
+                changed_lines_deleted: 5,
+                changed_components: vec!["A".to_string(), "C".to_string()],
+                review_comment_count: 1,
+                review_thread_count: 1,
+                review_round_count: 1,
+                first_review_latency_hours: Some(2.0),
+                approval_latency_hours: Some(6.0),
+                merge_latency_hours: Some(12.0),
+            },
+            issue_incident_links: Vec::new(),
+            analysis_metadata: AnalysisMetadata::default(),
+        }
     }
 }

@@ -6,8 +6,8 @@ use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
 use sig0_extractor::{
-    DEFAULT_UNIVERSE_MODE, Sig0Document, extract_sig0_with_policy,
-    validate_component_universe_report,
+    DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, Sig0Document, build_empirical_dataset,
+    extract_sig0_with_policy, validate_component_universe_report,
 };
 
 #[derive(Debug, Parser)]
@@ -45,6 +45,29 @@ enum Command {
         #[arg(long, default_value = DEFAULT_UNIVERSE_MODE)]
         universe_mode: String,
     },
+
+    /// Build an empirical dataset v0 record from before / after signatures and PR metadata.
+    Dataset {
+        /// Input Sig0 extractor JSON for the PR base commit.
+        #[arg(long)]
+        before: PathBuf,
+
+        /// Input Sig0 extractor JSON for the PR head or merge commit.
+        #[arg(long)]
+        after: PathBuf,
+
+        /// PR metadata JSON path.
+        #[arg(long = "pr-metadata")]
+        pr_metadata: PathBuf,
+
+        /// Commit role used for the after signature: head or merge.
+        #[arg(long, default_value = "head")]
+        after_role: String,
+
+        /// Output dataset JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -80,6 +103,22 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             } else {
                 ExitCode::SUCCESS
             })
+        }
+        Some(Command::Dataset {
+            before,
+            after,
+            pr_metadata,
+            after_role,
+            out,
+        }) => {
+            let before_document: Sig0Document = serde_json::from_reader(File::open(&before)?)?;
+            let after_document: Sig0Document = serde_json::from_reader(File::open(&after)?)?;
+            let metadata: EmpiricalDatasetInput =
+                serde_json::from_reader(File::open(&pr_metadata)?)?;
+            let dataset =
+                build_empirical_dataset(&before_document, &after_document, metadata, &after_role)?;
+            write_json(out, &dataset)?;
+            Ok(ExitCode::SUCCESS)
         }
         None => {
             let document = extract_sig0_with_policy(&args.root, args.policy.as_deref())?;
