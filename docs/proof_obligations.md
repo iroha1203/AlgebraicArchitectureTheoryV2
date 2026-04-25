@@ -705,6 +705,13 @@ extractor / empirical tooling 側に残す。Issue
 では、runtime evidence が 1 件以上ある component pair を 0/1 runtime edge にする
 `runtime-edge-projection-v0` を `sig0-extractor --runtime-edges` として実装した。
 この projection は metadata を Lean theorem の前提に混ぜない。
+Issue [#127](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/127)
+では、Circuit Breaker coverage を raw `runtimePropagationOfFinite` には混ぜず、
+`unprotectedRuntimeGraph` から計算する `unprotectedRuntimePropagationRadius` と
+`circuitBreakerCoverageRatio` の policy-aware extension として扱う設計に固定した。
+`unknown` / `partial` coverage は risk 0 に丸めず、保守的な v0 projection では
+未保護 edge 側に残す。coverage が incident scope や repair cost を下げる主張は
+Lean theorem ではなく empirical hypothesis として扱う。
 詳細は [runtimePropagation 設計](design/runtime_propagation_design.md) に分離する。
 
 Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
@@ -1041,7 +1048,6 @@ ArchitectureDependencyGraphs C =
 
 後続 Issue 候補:
 
-- Circuit Breaker coverage を runtime propagation radius の低減として測る policy-aware metric を設計する。
 - `runtimeFanout` / `runtimePropagationRadius` と障害修正コストの実証プロトコルを設計する。
 
 ### 解析的指標は発展課題として扱う
