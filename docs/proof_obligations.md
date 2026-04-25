@@ -492,6 +492,18 @@ component-level contribution は説明用の補助データであり、大域軸
 単純和が PR-level delta と一致することは要求しない。この規約の Lean status は
 `empirical hypothesis` / design decision であり、Lean theorem ではない。
 
+Issue [#54](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/54)
+では、`RelationComplexityObservation` を workflow-level JSON record として扱い、
+repository-level の `relationComplexity` は workflow observation の集約から作る
+派生値として固定した。counting unit は evidence item, workflow observation,
+component aggregate, repository aggregate に分ける。1 つの evidence item が複数の
+構成要素に該当する場合は複数 tag を保持し、各 tag の count に寄与させる。
+framework-generated behavior は初期 metric から除外し、application-owned または
+application-configured behavior だけを counting candidate とする。per workflow,
+per component, per KLOC などの正規化は raw count を置き換えない将来の派生指標として扱う。
+この規約の Lean status は `empirical hypothesis` / tooling design であり、
+Lean theorem ではない。
+
 v1 core に追加・正規化する候補:
 
 - `sccExcessSize = sccMaxSize - 1`: 非循環 singleton SCC を 0 risk として扱うための循環リスク軸。

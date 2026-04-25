@@ -78,6 +78,111 @@ extractor tooling は、リポジトリごとに次を入力として `RelationC
 
 最初の pilot study では、完全自動抽出を目標にしない。静的抽出で候補を出し、人手レビューで false positive / false negative を記録する。
 
+### JSON schema
+
+`RelationComplexityObservation` は、まず workflow 単位の観測レコードとして保存する。
+repository-level の `relationComplexity` は、対象期間・対象 commit・対象 rule set を固定した
+うえで workflow-level observation を集約した派生値である。
+
+最小 schema:
+
+```json
+{
+  "schemaVersion": "relation-complexity-observation/v0",
+  "repository": "owner/name",
+  "revision": "git-sha",
+  "measurementUniverse": {
+    "root": ".",
+    "languages": ["example-language"],
+    "frameworks": ["example-framework"],
+    "ruleSetVersion": "relation-complexity-rules/v0"
+  },
+  "workflow": {
+    "id": "checkout-payment",
+    "name": "Checkout payment",
+    "component": "Billing",
+    "entrypoints": ["src/billing/checkout.example"]
+  },
+  "counts": {
+    "constraints": 0,
+    "compensations": 0,
+    "projections": 0,
+    "failureTransitions": 0,
+    "idempotencyRequirements": 0
+  },
+  "relationComplexity": 0,
+  "evidence": [
+    {
+      "id": "evidence-1",
+      "path": "src/billing/checkout.example",
+      "symbol": "CheckoutWorkflow",
+      "line": 42,
+      "tags": ["constraints"],
+      "ownership": "application-owned",
+      "reviewStatus": "candidate",
+      "notes": "domain invariant candidate"
+    }
+  ],
+  "excludedEvidence": [
+    {
+      "path": "src/framework/generated.example",
+      "reason": "framework-generated"
+    }
+  ]
+}
+```
+
+`counts` は `evidence.tags` から再計算できる値として扱う。保存する場合も、
+`evidence` と `ruleSetVersion` を source of truth とし、`relationComplexity` は
+`counts` の合計として再計算可能にする。
+
+### counting unit
+
+counting unit は次の階層に分ける。
+
+| unit | 役割 | 集計規約 |
+| --- | --- | --- |
+| evidence item | 実装上の 1 箇所。file path, symbol, line range, rule hit を持つ。 | 同じ rule hit を同じ workflow 内で二重に数えない。 |
+| workflow observation | 1 つの user-visible workflow, saga, command handler, batch job, projection pipeline。 | 初期分析の基本単位。 |
+| component aggregate | 同じ component に属する workflow observation の集約。 | component 間比較に使う補助値。 |
+| repository aggregate | 対象 repository / revision / rule set 全体の集約。 | Signature empirical extension の候補値として使う。 |
+
+初期 pilot では workflow observation を主単位にする。component aggregate と repository
+aggregate は派生値であり、workflow の切り方や component mapping が変われば再計算する。
+
+### 重複タグ方針
+
+1 つの evidence item が複数の構成要素に該当する場合は、`tags` に複数値を持たせる。
+例えば timeout 付きの補償処理は `compensations` と `failureTransitions` の両方に
+タグ付けしてよい。
+
+重複の扱い:
+
+- 同じ evidence item は、同じ tag について workflow 内で 1 回だけ数える。
+- 同じ evidence item が複数 tag を持つ場合、各 tag の count に 1 ずつ寄与する。
+- 複数 workflow から同じ実装箇所を共有している場合は、workflow ごとに evidence を持つ。
+  ただし repository aggregate では `evidence.id` または `(path, symbol, tag)` による
+  dedup view を別途作り、共有実装の過大評価を感度分析で確認する。
+- `relationComplexity` は tag ごとの count の合計であり、distinct evidence item 数ではない。
+
+この方針により、状態遷移設計の多面的な責務を保持する。単一箇所が複数の責務を持つこと自体が
+複雑さの候補であるため、初期 metric では tag ごとの寄与を落とさない。
+
+### framework-generated behavior
+
+framework-generated behavior と application-owned behavior は `ownership` で区別する。
+
+| ownership | 扱い |
+| --- | --- |
+| `application-owned` | アプリケーションコード、設定、明示的 workflow 定義。初期 metric に含める。 |
+| `application-configured` | framework 機能だが、retry, timeout, projection, compensation などをアプリケーションが明示設定している。初期 metric に含める候補とし、reviewStatus で確認する。 |
+| `framework-generated` | framework が暗黙に生成する処理。アプリケーション設計上の責務として扱わず、初期 metric から除外する。 |
+| `unknown` | 自動抽出では判定できない候補。主要分析では欠損または review 待ちとして扱う。 |
+
+framework の既定挙動は、アプリケーションが明示的に policy / annotation / configuration で
+選んでいる場合だけ `application-configured` として数える。単に framework に存在する機能は
+`framework-generated` として除外し、除外理由を `excludedEvidence` に残す。
+
 ## 除外条件
 
 次は初期 metric から除外する。
@@ -104,8 +209,26 @@ data analysis 側の前提:
 - リポジトリ規模、チーム規模、変更量、期間を交絡要因として記録する。
 - 集約値だけでなく構成要素別の係数や分布を見る。
 
+## 正規化候補
+
+初期 metric は raw count を保存する。規模補正は pilot study の将来課題として、
+raw count とは別の派生指標に分ける。
+
+候補:
+
+- `relationComplexityPerWorkflow`: repository aggregate を workflow 数で割る。
+- `relationComplexityPerComponent`: component aggregate を component 数または対象 component 数で割る。
+- `relationComplexityPerKLOC`: 対象 measurement universe の KLOC で割る。
+- `relationComplexityPerChange`: 対象期間の PR 数または変更 component 数で割る。
+- component vector normalization: `constraints`, `compensations`, `projections`,
+  `failureTransitions`, `idempotencyRequirements` を別々に正規化する。
+
+これらは repository 間比較のための補助指標であり、raw `RelationComplexityObservation`
+を置き換えない。初期分析では raw count、構成要素ベクトル、欠損・除外 metadata を残したまま、
+正規化指標の感度を見る。
+
 ## 後続 Issue 候補
 
-- `RelationComplexityObservation` の JSON schema と extractor rule set を定義する。
+- extractor rule set を実装し、`RelationComplexityObservation` JSON を出力する。
 - Event Sourcing / Saga / CRUD の pilot repository を選び、手動ラベルつき baseline dataset を作る。
 - 状態遷移構造を Lean に入れるかどうかを、pilot の後に改めて判断する。
