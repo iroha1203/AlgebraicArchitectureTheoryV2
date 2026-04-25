@@ -14,6 +14,7 @@
 - Event Sourcing を使う
 - Saga で補償する
 - Circuit Breaker を入れる
+- Replicated Log で状態をそろえる
 
 どれも大事な設計の言葉です。ただ、現場では「それによって何が良くなるのか」が曖昧になることがあります。
 
@@ -41,7 +42,9 @@
 
 ここでは、設計変更の前後で守りたい性質を「不変量」と呼びます。少し硬い言葉ですが、意味はシンプルです。
 
-たとえば Layered Architecture では、「上位層が下位層に依存する」という向きを守りたいです。逆向きの依存や循環依存が増えると、どこを直せばよいのか分かりにくくなります。
+たとえば Layered Architecture や Clean Architecture では、依存の向きを制御することが重要になります。
+
+ただし、この二つは同じ依存方向を意味するわけではありません。
 
 依存関係をグラフとして見ると、コンポーネントを点、依存関係を矢印で表せます。
 
@@ -51,15 +54,25 @@ edge c -> d means component c depends on component d.
 
 たとえば `OrderController -> OrderService` は、`OrderController` が `OrderService` に依存している、という意味です。
 
-Layered Architecture なら、依存先は必ず下位層に落ちてほしいです。
+古典的な Layered Architecture では、あらかじめ決めた層の順序に沿って、上位層から下位層へ依存する形を取ることがあります。
 
 ```text
-UI -> Application -> Domain -> Infrastructure
+Presentation -> Application -> Domain -> DataAccess
 ```
 
-この向きが守られていると、依存は上から下へ流れます。循環依存も起きにくくなり、変更の影響も追いやすくなります。
+一方で、Clean Architecture や Ports and Adapters では、Domain や Application が Infrastructure の具体実装に依存しないようにします。
 
-Lean 側では、この性質をもう少し厳密に書きます。
+```text
+UI -> Application -> Domain
+ApplicationService -> PaymentPort
+SqlPaymentRepository -> PaymentPort
+```
+
+この場合、`PaymentPort` は Application 側が定義する抽象であり、Infrastructure 側の `SqlPaymentRepository` がそれを実装します。
+
+重要なのは、どちらの形が常に正しいかではありません。採用したアーキテクチャの依存ポリシーに対して、実際の依存グラフが違反していないかです。
+
+Lean 側では、依存のたびにランクが厳密に下がる強いモデルを次のように書きます。
 
 ```text
 StrictLayered G :=
@@ -67,26 +80,15 @@ StrictLayered G :=
   for every edge c -> d, layer d < layer c
 ```
 
-ただし、この記事ではこの式を覚える必要はありません。大事なのは、「レイヤー構造を守る」とは、依存の向きを制御することです。
+これは実務上の Layered Architecture をすべて表す定義ではありません。「依存するたびにランクが必ず下がる」という強いモデルです。このモデルを満たすなら、循環依存は起きません。
+
+実際の設計では、同じ層の中の依存を許す場合もあります。その場合は、同一層内の依存ルールや循環の扱いを別に決める必要があります。
 
 ## SOLID を守っていても、レイヤー違反は起きます
 
 SOLID は、責務分離、抽象への依存、置換可能性などを考える上で役に立ちます。一方で、SOLID だけでシステム全体のレイヤー構造まで保証できるわけではありません。
 
-たとえば、次のような構成を考えます。
-
-```text
-UI
-  -> ApplicationService
-  -> PaymentPort
-
-Infrastructure
-  -> PaymentPort
-```
-
-これは自然な形です。`ApplicationService` は `PaymentPort` という抽象に依存し、`Infrastructure` 側が実装を提供します。
-
-しかし、ここに次の依存が入るとどうでしょうか。
+上の Clean Architecture / Ports and Adapters 風の例で、問題になるのは次のような依存です。
 
 ```text
 ApplicationService -> SqlPaymentRepository
@@ -94,13 +96,21 @@ ApplicationService -> SqlPaymentRepository
 
 `ApplicationService` が具体的な SQL 実装を直接呼び始めています。`ApplicationService` 自体の責務がある程度整理されていて、インターフェースも使っているかもしれません。それでも、大域的に見ると「Application 層が Infrastructure の詳細に依存する」というレイヤー違反が起きています。
 
+この 1 本の依存は、複数の指標に同時に影響します。
+
+- Application 層から Infrastructure の詳細への依存なので、`boundaryViolationCount` が増えます。
+- `PaymentPort` を通すべき場所で具体実装に依存しているなら、`abstractionViolationCount` が増えます。
+- `ApplicationService` の依存先が増えるので、`fanoutRisk` にも影響します。
+
+つまり、1 つの設計違反をただ「悪い」とまとめるのではなく、どの性質に対する違反なのかを分解して読めます。
+
 このように、SOLID が見ているものと Layered Architecture が見ているものは違います。
 
 | 設計原則 | 主に見ていること |
 | --- | --- |
 | SOLID / DIP / LSP | 責務が分かれているか、抽象に依存しているか、差し替えても振る舞いが壊れないか |
 | Layered / Clean Architecture | 依存の向きが守られているか、循環がないか、境界をまたぐ依存が増えていないか |
-| Event Sourcing / Saga / CRUD | 状態遷移や補償処理をどう表すか、失敗時の流れをどう扱うか |
+| Event Sourcing / Saga / CRUD 型の状態管理 | 状態遷移や補償処理をどう表すか、失敗時の流れをどう扱うか |
 | Circuit Breaker / Replicated Log | 実行時の障害伝播をどう止めるか、分散状態をどうそろえるか |
 
 設計原則を比べるときは、「どちらが偉いか」ではなく、「どのリスクを下げるためのものか」を見る方が実用的です。
@@ -129,10 +139,16 @@ Sig0(A) =
 | --- | --- |
 | `hasCycle` | 循環依存があるかどうかです。循環があると、変更の影響が回り込みやすくなります。 |
 | `sccMaxSize` | 強連結成分の最大サイズです。互いに到達できるコンポーネントの塊が大きいほど、分離しにくい構造です。 |
-| `maxDepth` | 依存をたどったときの深さです。深すぎると、変更の影響を追うのが難しくなります。 |
-| `fanoutRisk` | 依存先の多さです。多くのものに依存するコンポーネントは、変更やレビューの注意点が増えます。 |
+| `maxDepth` | 依存をたどったときの深さです。ただし循環グラフ上の任意の walk の長さではなく、初期版では有限な測定対象上の bounded depth として扱います。 |
+| `fanoutRisk` | 依存先の多さです。初期版では測定対象内の依存辺の合計、つまり `totalFanout` として扱います。 |
 | `boundaryViolationCount` | レイヤーやドメイン境界を越えた依存の数です。境界ルールがある場合に測ります。 |
 | `abstractionViolationCount` | 抽象を通すべき場所で、具体実装に直接依存している数です。DIP 的な違反を見ます。 |
+
+`maxDepth` には注意が必要です。循環があるグラフで任意の walk を許すと、同じ循環を何度でも回れてしまうため、深さは有限の値として扱えません。
+
+そのため初期版では、有限な測定対象上で fuel を決めた bounded depth として測ります。循環そのものの有無や大きさは `hasCycle` や `sccMaxSize` で見て、依存をどの程度深くたどるかは `maxDepth` で見る、という分担にします。
+
+`fanoutRisk` も、初期版では凝った重み付けをしません。測定対象内にある依存辺の合計を数えます。局所的に依存が集中しているかは、将来的には `maxFanout` のような別軸で見る方が自然です。
 
 たとえば、あるリファクタリングの前後で次のように変わったとします。
 
@@ -162,7 +178,35 @@ after:
 
 逆に、状態遷移の複雑さや実行時の障害伝播が悪化しているなら、それは別の軸として残します。単一スコアにまとめすぎると、どの問題が残っているのかが見えにくくなります。
 
+## 未測定を 0 risk と読まない
+
+実コードから指標を取るとき、すべての項目を常に測れるわけではありません。
+
+たとえば、境界ルールがまだ定義されていなければ、`boundaryViolationCount` は正しく測れません。このとき placeholder として `0` が入っていても、それは「境界違反がない」という意味ではありません。
+
+そこで、値とは別に `metricStatus` を持ちます。
+
+```json
+{
+  "signature": {
+    "boundaryViolationCount": 0
+  },
+  "metricStatus": {
+    "boundaryViolationCount": {
+      "measured": false,
+      "reason": "policy file not provided"
+    }
+  }
+}
+```
+
+`measured: false` は「未測定」という意味です。risk 0 ではありません。ここを分けないと、「測っていないだけ」のものを「問題なし」と誤読してしまいます。
+
 ## なぜ圏論が出てくるのか
+
+数学の話は、ソフトウェア設計の記事では敬遠されがちです。特に圏論という名前が出ると、それだけで読むのをやめたくなる人もいると思います。
+
+ただ、この研究では数学を飾りとして使いたいわけではありません。
 
 ここまでの話だけなら、依存グラフの話に見えると思います。実際、循環依存を見つけるだけならグラフ理論で十分です。
 
@@ -208,6 +252,8 @@ Lean で扱うのは、定義がはっきりしていて、数学的に証明で
 - 抽象への写し方が正しければ、抽象化違反の数は 0 になる
 - 観測される振る舞いが抽象を通して保たれれば、LSP 違反の数は 0 になる
 
+ただし、LSP 的な違反は依存グラフだけでは測れません。何を「観測される振る舞い」とみなすか、どの抽象を通して比較するかを別に定義する必要があります。
+
 一方で、次のような主張は Lean の定理ではありません。
 
 - fanout risk が高い変更はレビューコストが増える
@@ -217,38 +263,16 @@ Lean で扱うのは、定義がはっきりしていて、数学的に証明で
 
 これらは、実コードや運用データで確かめる仮説です。Lean は「この測定値は、有限グラフ上のこの性質に対応している」という土台を支えます。現実の変更コストやレビューコストとの関係は、別途データで確かめます。
 
-## 未測定を 0 risk と読まない
-
-実コードから指標を取るとき、すべての項目を常に測れるわけではありません。
-
-たとえば、境界ルールがまだ定義されていなければ、`boundaryViolationCount` は正しく測れません。このとき placeholder として `0` が入っていても、それは「境界違反がない」という意味ではありません。
-
-そこで、値とは別に `metricStatus` を持ちます。
-
-```json
-{
-  "signature": {
-    "boundaryViolationCount": 0
-  },
-  "metricStatus": {
-    "boundaryViolationCount": {
-      "measured": false,
-      "reason": "policy file not provided"
-    }
-  }
-}
-```
-
-`measured: false` は「未測定」という意味です。risk 0 ではありません。ここを分けないと、「測っていないだけ」のものを「問題なし」と誤読してしまいます。
-
 ## 最初に確かめたいこと
 
 実証研究では、いきなり大きな一般化は狙いません。まずは小さく、抽出ルールと分析手順を固定して、次のような関係を見ます。
 
 | ID | tier | 見たい関係 |
 | --- | --- | --- |
-| H1a | primary | PR 前の Signature risk が変更範囲の大きさと関係するか |
-| H3 | primary | fanout risk がレビューコストと関係するか |
+| H1a | primary | PR 前の Signature の各成分が、変更範囲の大きさと関係するか |
+| H3 | primary | `fanoutRisk` や `maxFanout` がレビューコストの proxy と関係するか |
+
+ここでのレビューコストは、レビューコメント数、レビュー往復回数、レビュー完了までの時間など、事前に固定した proxy で測ります。
 
 追加のデータがそろう場合は、次のような関係も探索的に見ます。
 
@@ -261,6 +285,8 @@ Lean で扱うのは、定義がはっきりしていて、数学的に証明で
 ここでも、Lean の証明と実データによる検証は分けます。実データで相関を見ることは、Lean の定理の代わりではありません。
 
 ## 何を目指しているか
+
+ここまでの話をまとめると、設計原則は絶対的な善ではありません。特定の性質を守るための設計上の制約や、変更の方向として読めます。
 
 最終的には、アーキテクチャレビューを「感想」から「診断」に近づけたいです。
 
