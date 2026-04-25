@@ -10,11 +10,15 @@ Lean status: `empirical hypothesis` / tooling output.
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
   --root . \
   --policy signature-policy.json \
+  --runtime-edges runtime-edges.json \
   --out .lake/sig0.json
 ```
 
 `--policy` を省略すると boundary / abstraction policy は未評価の placeholder として
 出力される。`--out` を省略すると JSON は stdout に出力される。
+`--runtime-edges` を指定すると runtime edge evidence を読み、metadata を保持したまま
+0/1 `RuntimeDependencyGraph` projection を出力する。省略した場合、
+`runtimePropagation` は未評価の欠損値として dataset 側に残る。
 
 既存 Sig0 JSON から `ComponentUniverse` 境界に対応する validation report を生成する場合は
 次を使う。
@@ -44,6 +48,8 @@ repository root を測定する場合、`.git`, `.lake`, `.elan`, `target`, root
 - `signature`: import graph から計算した `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk` と、policy 評価に基づく violation count。
 - `metricStatus`: 各 signature 軸が測定済みか、placeholder 欠損値かを記録する。
 - `policyViolations`: policy 評価で検出した unique dependency edge 単位の evidence。違反がなければ省略される。
+- `runtimeEdgeEvidence`: `--runtime-edges` で入力した runtime edge metadata。`label`, `failureMode`, `timeoutBudget`, `retryPolicy`, `circuitBreakerCoverage`, `confidence`, `evidenceLocation` を保持する。
+- `runtimeDependencyGraph`: runtime evidence が 1 件以上ある component pair を 0/1 edge に落とした projection。未指定なら省略される。
 
 この CLI は `ComponentUniverse` の完全な witness を生成したとは主張しない。duplicate-free component list, edge closure, coverage などの証明付き universe は Lean 側の別責務として扱う。
 
@@ -73,3 +79,5 @@ PR metadata の `pullRequest.mergeCommit` が必須である。
 `deltaSignatureSigned` は before / after の両方で `metricStatus.measured = true`
 かつ値が `null` でない軸だけを符号付き差分として出す。policy 未指定の
 `boundaryViolationCount` のような placeholder 0 は `null` delta として保持する。
+runtime edge evidence がない Sig0 JSON では `runtimePropagation` は `null` のままで、
+測定済み 0 とは扱わない。

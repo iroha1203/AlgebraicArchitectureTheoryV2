@@ -699,8 +699,12 @@ Issue [#86](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/86
 静的依存グラフ `static` から計算し、`runtimePropagation` だけを実行時依存グラフ
 `runtime` から `some` で埋める。runtime graph が未抽出なら `v1OfFinite` を使い、
 `runtimePropagation = none` のままにする。`none` は未評価であり、risk 0 ではない。
-runtime edge metadata, timeout budget, retry policy, circuit breaker coverage から
-0/1 graph への projection rule は extractor / empirical tooling 側に残す。
+runtime edge metadata, timeout budget, retry policy, circuit breaker coverage は
+extractor / empirical tooling 側に残す。Issue
+[#128](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/128)
+では、runtime evidence が 1 件以上ある component pair を 0/1 runtime edge にする
+`runtime-edge-projection-v0` を `sig0-extractor --runtime-edges` として実装した。
+この projection は metadata を Lean theorem の前提に混ぜない。
 詳細は [runtimePropagation 設計](design/runtime_propagation_design.md) に分離する。
 
 Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
@@ -1017,7 +1021,7 @@ ArchitectureDependencyGraphs C =
 - external SaaS
 - timeout propagation
 
-実行時依存グラフは、Circuit Breaker, timeout propagation, runtime fanout, failure propagation radius など、運用時の結合と障害伝播の評価に使う。Lean core の `RuntimeDependencyGraph` は当面 0/1 edge の存在だけを表す。edge label, weight, failure mode, timeout budget, retry policy, circuit breaker coverage などは extractor / empirical tooling 側の metadata として保持し、対応する projection が固まった後で Lean 定義へ橋渡しする。初期の `runtimePropagation` は、0/1 runtime graph 上の `runtimePropagationRadius` として `reachableConeSizeOfFinite` を再利用する。
+実行時依存グラフは、Circuit Breaker, timeout propagation, runtime fanout, failure propagation radius など、運用時の結合と障害伝播の評価に使う。Lean core の `RuntimeDependencyGraph` は当面 0/1 edge の存在だけを表す。edge label, weight, failure mode, timeout budget, retry policy, circuit breaker coverage などは extractor / empirical tooling 側の metadata として保持する。Issue #128 では、runtime evidence が 1 件以上ある component pair を `kind = "runtime"` の 0/1 edge に投影する `runtime-edge-projection-v0` を extractor 側に追加した。初期の `runtimePropagation` は、0/1 runtime graph 上の `runtimePropagationRadius` として `reachableConeSizeOfFinite` を再利用する。
 
 責務境界:
 
@@ -1027,7 +1031,6 @@ ArchitectureDependencyGraphs C =
 
 後続 Issue 候補:
 
-- runtime edge metadata と 0/1 `RuntimeDependencyGraph` への projection を実 extractor に実装する。
 - Circuit Breaker coverage を runtime propagation radius の低減として測る policy-aware metric を設計する。
 - `runtimeFanout` / `runtimePropagationRadius` と障害修正コストの実証プロトコルを設計する。
 
