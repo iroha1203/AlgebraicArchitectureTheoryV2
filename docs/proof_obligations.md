@@ -824,6 +824,12 @@ Lean status の区分:
   [component_universe_validation_report.md](design/component_universe_validation_report.md)
   に分離する。これは `Nodup`, coverage, edge-closedness に対応する JSON-level
   tooling evidence であり、`ComponentUniverse` の Lean witness そのものではない。
+- Sig0 extractor output から上記 validation report を生成する CLI は
+  [#116](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/116)
+  で `sig0-extractor validate --input ...` として実装済みである。report は入力 JSON の
+  `components`, `edges`, `metricStatus` に基づく tooling-side evidence であり、
+  Lean witness そのものではない。core 4 軸の `metricStatus` も測定済み metadata として
+  extractor output に含める。
 
 残る後続タスク:
 

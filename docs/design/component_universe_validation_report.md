@@ -1,11 +1,15 @@
 # ComponentUniverse validation report v0
 
-Lean status: `empirical hypothesis` / tooling design.
+Lean status: `empirical hypothesis` / tooling implementation.
 
 この文書は Issue [#109](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/109)
 の設計メモである。目的は、Sig0 / v1 extractor output と Lean の
 `ComponentUniverse` の責務境界を検査する validation report の最小 schema と CLI
 contract を固定することである。
+
+Issue [#116](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/116)
+で、Sig0 extractor output を入力にこの report を生成する
+`sig0-extractor validate --input ...` を実装した。
 
 ここで定義する report は Lean theorem ではない。extractor が現実コードベースから
 作った JSON graph を、Lean 側の proof-carrying measurement universe に渡せる形へ

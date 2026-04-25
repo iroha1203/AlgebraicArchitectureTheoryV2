@@ -238,7 +238,8 @@ Issue #115 では `--policy` で
 - extractor output と `ComponentUniverse` の責務境界を検査する validation report の
   schema と CLI contract は
   [ComponentUniverse validation report v0](component_universe_validation_report.md)
-  で固定した。後続実装ではこの report を生成する。
+  で固定し、Issue #116 で `sig0-extractor validate --input ...` として実装した。
+  同時に core 4 軸の `metricStatus` も測定済み metadata として出力するようにした。
 - 複数 repository に対する signature 時系列と PR metadata を結合する empirical dataset
   schema は [empirical dataset v0 schema](empirical_dataset_schema.md) で固定した。
 
