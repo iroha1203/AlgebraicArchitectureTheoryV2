@@ -8,3 +8,4 @@
 - [relationComplexity 設計](relation_complexity_design.md)
 - [runtimePropagation 設計](runtime_propagation_design.md)
 - [Projection soundness と exact projection の使い分け](projection_exact_soundness.md)
+- [spectral radius bridge 設計](spectral_radius_bridge.md)
