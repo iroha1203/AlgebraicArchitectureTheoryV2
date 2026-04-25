@@ -17,8 +17,8 @@ technical note / paper outline として圧縮する。目的は、新しい Lea
 中心主張は次である。
 
 ```text
-Design principles are operations that preserve or improve architecture invariants.
-Architecture quality is evaluated as a multi-axis signature of invariant violations.
+設計原則は、アーキテクチャ不変量を保存・改善する操作である。
+アーキテクチャ品質は、不変量の破れを多軸シグネチャとして評価する。
 ```
 
 この主張は単一スコアの品質評価ではない。たとえば循環依存、SCC excess、fanout、
