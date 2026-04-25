@@ -593,6 +593,13 @@ v0 signature を内側に持ち、`sccExcessSize`, `maxFanout`,
 `v1CoreOfFinite` と `v1OfFinite` は finite component list からこの schema を
 構成する executable entry point である。
 
+Issue [#83](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/83)
+では、v1 後半戦の子 Issue #87, #84, #85, #86 の決定を統合し、
+v0 互換軸、Lean core、matrix bridge、runtime / empirical extension の責務境界を
+整理した。まとめは
+[ArchitectureSignature v1 後半戦まとめ](design/signature_v1_wrapup.md)
+に分離する。
+
 Issue [#84](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/84)
 では、`weightedSccRisk` の Lean 側 counting rule を固定した。入力は
 `weight : C -> Nat` であり、`weightedSccRiskOfFinite G components weight` は
@@ -704,6 +711,11 @@ Lean status の区分:
   [#86](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/86)
   で扱う。初期設計は
   [runtime_propagation_design.md](design/runtime_propagation_design.md)
+  に分離する。
+- Signature v1 後半戦の統合整理は
+  [#83](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/83)
+  で扱う。完了時のまとめは
+  [signature_v1_wrapup.md](design/signature_v1_wrapup.md)
   に分離する。
 
 Bridge theorem naming policy:

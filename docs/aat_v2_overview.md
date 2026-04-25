@@ -129,6 +129,9 @@ Lean 側の v1 output schema は、v0 互換軸を含む `ArchitectureSignatureV
 `none` は未評価を意味し、risk 0 とは解釈しない。これにより、Lean で測定済みの
 core axis と、extractor / empirical tooling 側で後から埋める extension axis を
 同じ schema 上で区別できる。
+この後半戦の統合方針は
+[ArchitectureSignature v1 後半戦まとめ](design/signature_v1_wrapup.md)
+に分離する。
 
 `sccMaxSize` は v0 互換の説明用指標として残し、v1 の循環リスクでは `sccExcessSizeOfFinite = sccMaxSizeOfFinite - 1` を優先する。Lean では finite universe 下で `sccExcessSizeOfFinite` が graph-level mutual-reachability class size 最大値から 1 を引いた値と一致することを証明済みである。`weightedSccRiskOfFinite` は `weight : C -> Nat` を入力として、各 component の `weight c * (sccSizeAt G components c - 1)` を合計する executable metric である。重みの由来や calibration は empirical / extractor tooling 側に残し、Lean core では counting rule だけを扱う。
 
