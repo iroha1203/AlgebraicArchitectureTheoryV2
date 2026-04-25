@@ -38,4 +38,5 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 - [lean4-samples empirical pilot](empirical/lean4_samples_pilot/README.md):
   外部小規模 Lean repository に `sig0-extractor` と empirical dataset v0 schema を適用した
-  5 件の before / after signature record。
+  5 件の before / after signature record と、最小 policy を適用した測定済み 0 の
+  pilot record。

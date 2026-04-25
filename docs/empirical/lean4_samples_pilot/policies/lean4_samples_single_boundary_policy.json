@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "signature-policy-v0",
+  "policyId": "lean4-samples-single-boundary-v0",
+  "componentIdKind": "lean-module",
+  "selectorSemantics": "exact-or-prefix-star",
+  "boundary": {
+    "groups": [
+      {
+        "id": "sample-modules",
+        "components": ["*"]
+      }
+    ],
+    "allowedDependencies": [
+      {
+        "sourceGroup": "sample-modules",
+        "targetGroup": "sample-modules",
+        "reason": "All lean4-samples modules are treated as one tutorial/sample boundary in this minimal policy pilot."
+      }
+    ],
+    "unmatchedComponent": "not-measured"
+  },
+  "abstraction": {
+    "relations": [
+      {
+        "id": "sample-modules-direct-dependencies",
+        "abstraction": "*",
+        "clients": ["*"],
+        "implementations": ["*"],
+        "allowedDirectImplementationDependencies": ["*"]
+      }
+    ],
+    "unmatchedComponent": "ignore"
+  }
+}
