@@ -7,6 +7,7 @@ import Formal.Arch.Decomposable
 import Formal.Arch.Projection
 import Formal.Arch.Observation
 import Formal.Arch.LSP
+import Formal.Arch.LocalReplacement
 import Formal.Arch.SolidCounterexample
 import Formal.Arch.Signature
 import Formal.Arch.Finite

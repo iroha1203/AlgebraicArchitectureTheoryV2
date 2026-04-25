@@ -121,7 +121,7 @@ File: `Formal/Arch/Projection.lean`
 
 ## Observation / LSP
 
-Files: `Formal/Arch/Observation.lean`, `Formal/Arch/LSP.lean`
+Files: `Formal/Arch/Observation.lean`, `Formal/Arch/LSP.lean`, `Formal/Arch/LocalReplacement.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -147,6 +147,10 @@ Files: `Formal/Arch/Observation.lean`, `Formal/Arch/LSP.lean`
 | `lspViolationCount_eq_zero_of_lspCompatible` | `theorem` | `LSPCompatible` なら finite LSP violation count は 0。 | `proved` |
 | `lspViolationCount_eq_zero_of_observationFactorsThrough` | `theorem` | `ObservationFactorsThrough` なら finite LSP violation count は 0。 | `proved` |
 | `lspCompatible_of_lspViolationCount_eq_zero` | `theorem` | 測定 universe が同一抽象 pair を閉じていれば、violation 0 から `LSPCompatible` を得る。 | `proved` |
+| `LocalReplacementContract` | `def` | `DIPCompatible` と `ObservationFactorsThrough` を同じ `InterfaceProjection` 上で束ねる局所置換契約。 | `defined only` |
+| `projectionSound_of_localReplacementContract` | `theorem` | 局所置換契約から projection soundness を得る。 | `proved` |
+| `observationFactorsThrough_of_localReplacementContract` | `theorem` | 局所置換契約から observation factorization を得る。 | `proved` |
+| `violationCounts_eq_zero_of_localReplacementContract` | `theorem` | 局所置換契約から projection soundness violation count と LSP violation count が同時に 0 になることを得る。 | `proved` |
 
 ## Signature v0
 

@@ -147,8 +147,9 @@ bridge を証明し、repository-level の重みづけや empirical calibration 
 Projection bridge と observation bridge は同じ `InterfaceProjection` を共有できるが、
 保証する不変量は異なる。前者は具象依存が抽象依存へ sound に写ること、後者は観測が
 抽象を通じて因子化することを扱う。実装置換の局所契約層では
-`DIPCompatible G π GA ∧ ObservationFactorsThrough π O` として並列に読み、集約や
-重みづけは empirical / extractor tooling 側へ残す。詳細は
+`LocalReplacementContract G π GA O` として両者を束ねて読む。Lean ではこの bundle から
+`projectionSoundnessViolation = 0` と `lspViolationCount = 0` を同時に得る
+packaging theorem を証明済みである。集約や重みづけは empirical / extractor tooling 側へ残す。詳細は
 [Observation bridge と projection bridge の関係](design/observation_projection_bridge.md)
 に置く。
 

@@ -365,8 +365,8 @@ Issue [#80](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/80
 では、projection bridge と observation bridge を同じ `InterfaceProjection` を共有する
 局所契約層として整理した。projection bridge は依存構造の soundness を扱い、
 observation bridge は観測可能な振る舞いの因子化を扱う。片方からもう片方は一般には
-従わないため、実装置換の局所契約は
-`DIPCompatible G π GA ∧ ObservationFactorsThrough π O` として並列に読む。
+従わないため、実装置換の局所契約は `LocalReplacementContract G π GA O` として
+`DIPCompatible G π GA ∧ ObservationFactorsThrough π O` を明示的に束ねて読む。
 詳細は [Observation bridge と projection bridge の関係](design/observation_projection_bridge.md)
 に置く。
 
@@ -463,15 +463,25 @@ Issue [#80](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/80
 [Observation bridge と projection bridge の関係](design/observation_projection_bridge.md)
 に分離した。結論として、両者は同じ `InterfaceProjection` を共有できるが、
 projection bridge は依存構造の保存、observation bridge は置換可能性の
-behavioral extension を扱う。局所契約 bundle を Lean に追加する場合は、
-`DIPCompatible G π GA` と `ObservationFactorsThrough π O` から
-`projectionSoundnessViolation = 0` と `lspViolationCount = 0` を同時に得る
-packaging theorem として切る。
+behavioral extension を扱う。
+
+Issue [#118](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/118)
+では、局所契約 bundle を `LocalReplacementContract G π GA O` として Lean に追加した。
+これは `DIPCompatible G π GA ∧ ObservationFactorsThrough π O` を束ねる薄い定義であり、
+`violationCounts_eq_zero_of_localReplacementContract` により
+`projectionSoundnessViolation = 0` と `lspViolationCount = 0` を同時に得る。
+この theorem は `components` と `implementations` の測定 universe を受け取る
+packaging theorem であり、repository-level の重みづけや総合スコアは含めない。
+
+Lean status:
+
+- `defined only`: `LocalReplacementContract`
+- `proved`: `projectionSound_of_localReplacementContract`,
+  `observationFactorsThrough_of_localReplacementContract`,
+  `violationCounts_eq_zero_of_localReplacementContract`
 
 今後の proof obligation:
 
-- `DIPCompatible G π GA ∧ ObservationFactorsThrough π O` を束ねる
-  `LocalReplacementContract` 風の定義を導入するかは、Signature bundle 設計の後続で判断する。
 - `observationalDivergence` や `lspViolationCount` の repository-level 集約、
   重みづけ、閾値設計は empirical / extractor tooling 側で扱う。
 
