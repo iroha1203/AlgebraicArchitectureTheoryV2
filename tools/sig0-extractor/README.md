@@ -81,3 +81,22 @@ PR metadata の `pullRequest.mergeCommit` が必須である。
 `boundaryViolationCount` のような placeholder 0 は `null` delta として保持する。
 runtime edge evidence がない Sig0 JSON では `runtimePropagation` は `null` のままで、
 測定済み 0 とは扱わない。
+
+workflow 単位の `RelationComplexityObservation` を候補 evidence JSON から生成する場合は
+次を使う。
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- relation-complexity \
+  --input relation-complexity-candidates.json \
+  --out relation-complexity-observation.json
+```
+
+入力 schema は `schemaVersion: "relation-complexity-candidates/v0"` で、
+`repository`, `revision`, `measurementUniverse`, `workflow`,
+`evidenceCandidates` を持つ。出力 schema は
+`schemaVersion: "relation-complexity-observation/v0"` である。
+`relation-complexity-rules/v0` は `constraints`, `compensations`,
+`projections`, `failureTransitions`, `idempotencyRequirements` の tag を数え、
+同じ evidence item 内の同一 tag は 1 回だけ数える。`application-owned` と
+`application-configured` は counting candidate とし、`framework-generated` や
+未対応 framework の候補は `excludedEvidence` に理由を残す。

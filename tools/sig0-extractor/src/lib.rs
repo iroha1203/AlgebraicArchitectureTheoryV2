@@ -13,6 +13,10 @@ pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validatio
 pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
+pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
+pub const RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION: &str =
+    "relation-complexity-observation/v0";
+pub const RELATION_COMPLEXITY_RULE_SET_VERSION: &str = "relation-complexity-rules/v0";
 pub const EXTRACTOR_NAME: &str = "sig0-extractor";
 pub const EXTRACTOR_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const RULE_SET_VERSION: &str = "sig0-v0";
@@ -352,6 +356,93 @@ pub struct RelationComplexityComponents {
     pub projections: usize,
     pub failure_transitions: usize,
     pub idempotency_requirements: usize,
+}
+
+impl RelationComplexityComponents {
+    fn relation_complexity(&self) -> usize {
+        self.constraints
+            + self.compensations
+            + self.projections
+            + self.failure_transitions
+            + self.idempotency_requirements
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityCandidateFile {
+    pub schema_version: String,
+    pub repository: String,
+    pub revision: String,
+    pub measurement_universe: RelationComplexityMeasurementUniverse,
+    pub workflow: RelationComplexityWorkflow,
+    #[serde(default)]
+    pub evidence: Vec<RelationComplexityEvidence>,
+    #[serde(default)]
+    pub evidence_candidates: Vec<RelationComplexityEvidence>,
+    #[serde(default)]
+    pub excluded_evidence: Vec<RelationComplexityExcludedEvidence>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityObservation {
+    pub schema_version: String,
+    pub repository: String,
+    pub revision: String,
+    pub measurement_universe: RelationComplexityMeasurementUniverse,
+    pub workflow: RelationComplexityWorkflow,
+    pub counts: RelationComplexityComponents,
+    pub relation_complexity: usize,
+    pub evidence: Vec<RelationComplexityEvidence>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub excluded_evidence: Vec<RelationComplexityExcludedEvidence>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityMeasurementUniverse {
+    pub root: String,
+    pub languages: Vec<String>,
+    pub frameworks: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rule_set_version: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityWorkflow {
+    pub id: String,
+    pub name: String,
+    pub component: String,
+    pub entrypoints: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityEvidence {
+    pub id: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    pub tags: Vec<String>,
+    pub ownership: String,
+    pub review_status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityExcludedEvidence {
+    pub path: String,
+    pub reason: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -759,6 +850,238 @@ pub fn build_empirical_dataset(
         issue_incident_links: input.issue_incident_links,
         analysis_metadata: input.analysis_metadata,
     })
+}
+
+pub fn extract_relation_complexity_observation_from_file(
+    path: &Path,
+) -> Result<RelationComplexityObservation, Box<dyn Error>> {
+    let source = fs::read_to_string(path)?;
+    let input: RelationComplexityCandidateFile = serde_json::from_str(&source)?;
+    extract_relation_complexity_observation(input)
+}
+
+pub fn extract_relation_complexity_observation(
+    mut input: RelationComplexityCandidateFile,
+) -> Result<RelationComplexityObservation, Box<dyn Error>> {
+    if input.schema_version != RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION {
+        return Err(format!(
+            "unsupported relation complexity candidate schemaVersion: {}",
+            input.schema_version
+        )
+        .into());
+    }
+
+    input.measurement_universe.rule_set_version =
+        Some(RELATION_COMPLEXITY_RULE_SET_VERSION.to_string());
+
+    let mut excluded_evidence = input.excluded_evidence;
+    let mut included_by_id: BTreeMap<String, RelationComplexityEvidence> = BTreeMap::new();
+    let unsupported_frameworks =
+        unsupported_relation_complexity_frameworks(&input.measurement_universe.frameworks);
+    let framework_supported = input.measurement_universe.frameworks.is_empty()
+        || input
+            .measurement_universe
+            .frameworks
+            .iter()
+            .any(|framework| relation_complexity_framework_supported(framework));
+    let unsupported_reason = (!unsupported_frameworks.is_empty())
+        .then(|| format!("unsupported-framework:{}", unsupported_frameworks.join(",")));
+
+    let candidates = input
+        .evidence
+        .into_iter()
+        .chain(input.evidence_candidates)
+        .collect::<Vec<_>>();
+    for mut candidate in candidates {
+        validate_relation_complexity_candidate_shape(&candidate)?;
+
+        if !framework_supported {
+            excluded_evidence.push(excluded_relation_complexity_evidence(
+                &candidate,
+                unsupported_reason
+                    .as_deref()
+                    .expect("unsupported reason exists"),
+            ));
+            continue;
+        }
+
+        let ownership = candidate.ownership.as_str();
+        if !matches!(ownership, "application-owned" | "application-configured") {
+            excluded_evidence.push(excluded_relation_complexity_evidence(
+                &candidate,
+                &format!("ownership-not-counted:{ownership}"),
+            ));
+            continue;
+        }
+
+        if matches!(
+            candidate.review_status.as_str(),
+            "excluded" | "false-positive" | "rejected"
+        ) {
+            excluded_evidence.push(excluded_relation_complexity_evidence(
+                &candidate,
+                &format!("review-status-not-counted:{}", candidate.review_status),
+            ));
+            continue;
+        }
+
+        let mut unsupported_tags = Vec::new();
+        candidate.tags = relation_complexity_tags(candidate.tags, &mut unsupported_tags);
+        if !unsupported_tags.is_empty() {
+            excluded_evidence.push(excluded_relation_complexity_evidence(
+                &candidate,
+                &format!("unsupported-tags:{}", unsupported_tags.join(",")),
+            ));
+        }
+        if candidate.tags.is_empty() {
+            excluded_evidence.push(excluded_relation_complexity_evidence(
+                &candidate,
+                "no-counted-relation-complexity-tags",
+            ));
+            continue;
+        }
+
+        included_by_id
+            .entry(candidate.id.clone())
+            .and_modify(|existing| {
+                existing.tags = relation_complexity_tags(
+                    existing
+                        .tags
+                        .iter()
+                        .cloned()
+                        .chain(candidate.tags.iter().cloned())
+                        .collect(),
+                    &mut Vec::new(),
+                );
+            })
+            .or_insert(candidate);
+    }
+
+    let evidence: Vec<RelationComplexityEvidence> = included_by_id.into_values().collect();
+    let counts = relation_complexity_counts(&evidence);
+    let relation_complexity = counts.relation_complexity();
+
+    Ok(RelationComplexityObservation {
+        schema_version: RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION.to_string(),
+        repository: input.repository,
+        revision: input.revision,
+        measurement_universe: input.measurement_universe,
+        workflow: input.workflow,
+        counts,
+        relation_complexity,
+        evidence,
+        excluded_evidence,
+    })
+}
+
+fn validate_relation_complexity_candidate_shape(
+    candidate: &RelationComplexityEvidence,
+) -> Result<(), String> {
+    if candidate.id.is_empty() {
+        return Err("relation complexity evidence id must not be empty".to_string());
+    }
+    if candidate.path.is_empty() {
+        return Err(format!(
+            "relation complexity evidence path must not be empty for {}",
+            candidate.id
+        ));
+    }
+    if candidate.ownership.is_empty() {
+        return Err(format!(
+            "relation complexity evidence ownership must not be empty for {}",
+            candidate.id
+        ));
+    }
+    if candidate.review_status.is_empty() {
+        return Err(format!(
+            "relation complexity evidence reviewStatus must not be empty for {}",
+            candidate.id
+        ));
+    }
+    Ok(())
+}
+
+fn relation_complexity_tags(tags: Vec<String>, unsupported_tags: &mut Vec<String>) -> Vec<String> {
+    let mut supported = BTreeSet::new();
+    let mut unsupported = BTreeSet::new();
+    for tag in tags {
+        if relation_complexity_tag_rank(&tag).is_some() {
+            supported.insert(tag);
+        } else {
+            unsupported.insert(tag);
+        }
+    }
+    unsupported_tags.extend(unsupported);
+
+    let mut tags: Vec<String> = supported.into_iter().collect();
+    tags.sort_by_key(|tag| relation_complexity_tag_rank(tag).expect("supported tag"));
+    tags
+}
+
+fn relation_complexity_tag_rank(tag: &str) -> Option<usize> {
+    match tag {
+        "constraints" => Some(0),
+        "compensations" => Some(1),
+        "projections" => Some(2),
+        "failureTransitions" => Some(3),
+        "idempotencyRequirements" => Some(4),
+        _ => None,
+    }
+}
+
+fn relation_complexity_counts(
+    evidence: &[RelationComplexityEvidence],
+) -> RelationComplexityComponents {
+    let mut counts = RelationComplexityComponents {
+        constraints: 0,
+        compensations: 0,
+        projections: 0,
+        failure_transitions: 0,
+        idempotency_requirements: 0,
+    };
+
+    for item in evidence {
+        let tags: BTreeSet<&str> = item.tags.iter().map(String::as_str).collect();
+        for tag in tags {
+            match tag {
+                "constraints" => counts.constraints += 1,
+                "compensations" => counts.compensations += 1,
+                "projections" => counts.projections += 1,
+                "failureTransitions" => counts.failure_transitions += 1,
+                "idempotencyRequirements" => counts.idempotency_requirements += 1,
+                _ => {}
+            }
+        }
+    }
+
+    counts
+}
+
+fn unsupported_relation_complexity_frameworks(frameworks: &[String]) -> Vec<String> {
+    frameworks
+        .iter()
+        .filter(|framework| !relation_complexity_framework_supported(framework))
+        .cloned()
+        .collect()
+}
+
+fn relation_complexity_framework_supported(framework: &str) -> bool {
+    matches!(
+        framework,
+        "generic-workflow" | "event-sourcing" | "saga" | "crud" | "lean-fixture"
+    )
+}
+
+fn excluded_relation_complexity_evidence(
+    evidence: &RelationComplexityEvidence,
+    reason: &str,
+) -> RelationComplexityExcludedEvidence {
+    RelationComplexityExcludedEvidence {
+        path: evidence.path.clone(),
+        reason: reason.to_string(),
+        symbol: evidence.symbol.clone(),
+        line: evidence.line,
+    }
 }
 
 fn signature_snapshot(document: &Sig0Document, commit: GitCommitRef) -> SignatureSnapshot {
@@ -2186,6 +2509,77 @@ import Should.Not.Appear
                 .expect("runtime dataset status")
                 .measured
         );
+    }
+
+    #[test]
+    fn builds_relation_complexity_observation_from_candidate_fixture() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal");
+        let observation = extract_relation_complexity_observation_from_file(
+            &root.join("relation_complexity_candidates.json"),
+        )
+        .expect("relation complexity fixture extracts");
+
+        assert_eq!(
+            observation.schema_version,
+            RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION
+        );
+        assert_eq!(
+            observation.measurement_universe.rule_set_version.as_deref(),
+            Some(RELATION_COMPLEXITY_RULE_SET_VERSION)
+        );
+        assert_eq!(observation.workflow.id, "checkout-payment");
+        assert_eq!(observation.counts.constraints, 1);
+        assert_eq!(observation.counts.compensations, 1);
+        assert_eq!(observation.counts.projections, 0);
+        assert_eq!(observation.counts.failure_transitions, 1);
+        assert_eq!(observation.counts.idempotency_requirements, 0);
+        assert_eq!(observation.relation_complexity, 3);
+        assert_eq!(observation.evidence.len(), 2);
+        assert!(observation.evidence.iter().any(|evidence| {
+            evidence.id == "constraint-1"
+                && evidence.path == "src/billing/checkout.rs"
+                && evidence.symbol.as_deref() == Some("CheckoutWorkflow::validate")
+                && evidence.line == Some(42)
+                && evidence.tags == vec!["constraints".to_string()]
+                && evidence.ownership == "application-owned"
+                && evidence.review_status == "candidate"
+        }));
+        assert!(observation.evidence.iter().any(|evidence| {
+            evidence.id == "compensate-timeout"
+                && evidence.tags
+                    == vec![
+                        "compensations".to_string(),
+                        "failureTransitions".to_string(),
+                    ]
+                && evidence.ownership == "application-configured"
+        }));
+        assert!(observation.excluded_evidence.iter().any(|evidence| {
+            evidence.path == "src/framework/generated.rs"
+                && evidence.reason == "ownership-not-counted:framework-generated"
+        }));
+        assert!(observation.excluded_evidence.iter().any(|evidence| {
+            evidence.path == "src/billing/checkout.rs"
+                && evidence.reason == "unsupported-tags:notATag"
+        }));
+        assert!(observation.excluded_evidence.iter().any(|evidence| {
+            evidence.path == "src/billing/checkout_test.rs" && evidence.reason == "test-fixture"
+        }));
+    }
+
+    #[test]
+    fn relation_complexity_fixture_excludes_unsupported_framework() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal");
+        let observation = extract_relation_complexity_observation_from_file(
+            &root.join("relation_complexity_unsupported_framework.json"),
+        )
+        .expect("relation complexity fixture extracts");
+
+        assert_eq!(observation.relation_complexity, 0);
+        assert!(observation.evidence.is_empty());
+        assert!(observation.excluded_evidence.iter().any(|evidence| {
+            evidence.path == "src/billing/unsupported.rs"
+                && evidence.reason == "unsupported-framework:unsupported-framework"
+        }));
     }
 
     #[test]
