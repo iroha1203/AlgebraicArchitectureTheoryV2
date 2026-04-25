@@ -7,8 +7,8 @@ use std::process::ExitCode;
 use clap::{Parser, Subcommand};
 use sig0_extractor::{
     DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, Sig0Document, build_empirical_dataset,
-    extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    validate_component_universe_report,
+    build_pr_metadata_from_github_files, extract_relation_complexity_observation_from_file,
+    extract_sig0_with_runtime, validate_component_universe_report,
 };
 
 #[derive(Debug, Parser)]
@@ -74,6 +74,29 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Build dataset input PR metadata from GitHub API JSON.
+    PrMetadata {
+        /// GitHub REST pull request JSON path.
+        #[arg(long = "pull-request")]
+        pull_request: PathBuf,
+
+        /// GitHub pull request files JSON path.
+        #[arg(long)]
+        files: PathBuf,
+
+        /// Optional GitHub pull request reviews JSON path.
+        #[arg(long)]
+        reviews: Option<PathBuf>,
+
+        /// Optional GitHub GraphQL reviewThreads JSON path.
+        #[arg(long = "review-threads")]
+        review_threads: Option<PathBuf>,
+
+        /// Output PR metadata JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
     /// Build a workflow-level RelationComplexityObservation from candidate evidence.
     RelationComplexity {
         /// Input relation complexity candidate JSON path.
@@ -134,6 +157,22 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let dataset =
                 build_empirical_dataset(&before_document, &after_document, metadata, &after_role)?;
             write_json(out, &dataset)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::PrMetadata {
+            pull_request,
+            files,
+            reviews,
+            review_threads,
+            out,
+        }) => {
+            let metadata = build_pr_metadata_from_github_files(
+                &pull_request,
+                &files,
+                reviews.as_deref(),
+                review_threads.as_deref(),
+            )?;
+            write_json(out, &metadata)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::RelationComplexity { input, out }) => {

@@ -143,6 +143,65 @@ fn cli_dataset_fixture_keeps_unmeasured_deltas_null() {
 }
 
 #[test]
+fn cli_pr_metadata_generates_dataset_input_from_github_json() {
+    let root = fixture_root();
+    let out_dir = temp_dir("pr-metadata");
+    let out = out_dir.join("pr_metadata.json");
+    let out_without_reviews = out_dir.join("pr_metadata_without_reviews.json");
+
+    run_sig0(&[
+        "pr-metadata",
+        "--pull-request",
+        root.join("github_pr.json")
+            .to_str()
+            .expect("pull request path is utf-8"),
+        "--files",
+        root.join("github_files.json")
+            .to_str()
+            .expect("files path is utf-8"),
+        "--reviews",
+        root.join("github_reviews.json")
+            .to_str()
+            .expect("reviews path is utf-8"),
+        "--out",
+        out.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out);
+    assert_eq!(json["repository"]["owner"], "example");
+    assert_eq!(json["pullRequest"]["number"], 42);
+    assert_eq!(json["pullRequest"]["author"], "dependabot[bot]");
+    assert_eq!(json["pullRequest"]["isBotGenerated"], true);
+    assert_eq!(
+        json["prMetrics"]["changedComponents"],
+        serde_json::json!(["Formal", "Formal.Arch.A"])
+    );
+    assert_eq!(json["prMetrics"]["reviewRoundCount"], 1);
+    assert_eq!(json["prMetrics"]["firstReviewLatencyHours"], 2.0);
+    assert_eq!(json["prMetrics"]["approvalLatencyHours"], Value::Null);
+    assert_eq!(json["prMetrics"]["mergeLatencyHours"], 36.0);
+
+    run_sig0(&[
+        "pr-metadata",
+        "--pull-request",
+        root.join("github_pr.json")
+            .to_str()
+            .expect("pull request path is utf-8"),
+        "--files",
+        root.join("github_files.json")
+            .to_str()
+            .expect("files path is utf-8"),
+        "--out",
+        out_without_reviews.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out_without_reviews);
+    assert_eq!(json["prMetrics"]["reviewRoundCount"], 0);
+    assert_eq!(json["prMetrics"]["firstReviewLatencyHours"], Value::Null);
+    assert_eq!(json["prMetrics"]["approvalLatencyHours"], Value::Null);
+}
+
+#[test]
 fn cli_relation_complexity_fixture_outputs_observation() {
     let root = fixture_root();
     let out_dir = temp_dir("relation");

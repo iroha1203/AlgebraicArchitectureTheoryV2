@@ -836,6 +836,12 @@ Lean status の区分:
   実装済みである。`deltaSignatureSigned` は before / after の両方で測定済みの軸だけを
   符号付き差分にし、未測定軸や optional axis の `null` は比較不能として保持する。
   Lean status は `empirical hypothesis` / tooling implementation である。
+- GitHub PR detail / files / reviews JSON から dataset input 用 PR metadata を生成する
+  CLI は [#146](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/146)
+  で `sig0-extractor pr-metadata --pull-request ... --files ...` として実装済みである。
+  review latency や approval latency が測れない場合は `null` として保持し、
+  measured 0 と混同しない。Lean status は `empirical hypothesis` / tooling implementation
+  である。
 - RelationComplexityObservation extractor rule set v0 は
   [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
   で `sig0-extractor relation-complexity --input ...` として実装済みである。
