@@ -574,6 +574,16 @@ v0 signature を内側に持ち、`sccExcessSize`, `maxFanout`,
 `v1CoreOfFinite` と `v1OfFinite` は finite component list からこの schema を
 構成する executable entry point である。
 
+Issue [#84](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/84)
+では、`weightedSccRisk` の Lean 側 counting rule を固定した。入力は
+`weight : C -> Nat` であり、`weightedSccRiskOfFinite G components weight` は
+測定 universe 上の各 component について
+`weight c * (sccSizeAt G components c - 1)` を合計する。Nat subtraction により
+singleton SCC は 0 risk になり、component importance など重みの抽出根拠や
+calibration は empirical / extractor tooling 側に残す。Lean では
+`v1OfFiniteWithWeightedSccRisk` により、重みが明示的に渡された場合だけ
+`ArchitectureSignatureV1.weightedSccRisk` を `some` で埋める。
+
 Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
 では、projection bridge の最小 Lean 定義を追加した。`projectionSoundnessViolation`
 は `components : List C` に現れる concrete edge `(c, d)` のうち、
@@ -626,7 +636,7 @@ Lean status の区分:
 | `reachableConeSize` | 有限 universe 上の計算として定義済み。graph-level strict reachable cone size 最大値との bridge を証明済み | `defined only` / `proved` |
 | `maxFanout` | 有限 universe 上の計算として定義済み。source ごとの measured dependency edges との bridge を証明済み | `defined only` / `proved` |
 | `ArchitectureSignatureV1Core`, `ArchitectureSignatureV1` | v0 を内側に含む v1 output schema。未評価 extension axis は `Option Nat` で保持する | `defined only` |
-| `weightedSccRisk` | 重み関数つき executable metric として設計する | `defined only` |
+| `weightedSccRisk` | `weight : C -> Nat` を入力し、各 component の重み付き SCC excess を合計する executable metric。重みの由来は empirical / extractor tooling 側に残す | `defined only` / `proved` |
 | `projectionSoundnessViolation` | 具象依存が抽象依存へ sound に写らない measured edge を数える | `defined only` / `proved` |
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
 | `nilpotencyIndex` | adjacency matrix 導入後に DAG / 層化 / 冪零性と接続する | `future proof obligation` |
