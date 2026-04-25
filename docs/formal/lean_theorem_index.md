@@ -21,6 +21,7 @@ File: `Formal/Arch/Graph.lean`
 | `Walk.vertices` | `def` | walk が通る頂点列。 | `defined only` |
 | `Walk.vertices_length` | `theorem` | `vertices` と `length` の基本関係。 | `proved` |
 | `SimpleWalk` | `structure` | 頂点重複のない walk。 | `defined only` |
+| `Path` | `abbrev` | 現時点では `SimpleWalk` の別名。bounded reachability で使う path representative。 | `defined only` |
 | `SimpleWalk.vertices_length` | `theorem` | simple walk の頂点列と長さの基本関係。 | `proved` |
 
 ## Reachability
@@ -90,7 +91,9 @@ File: `Formal/Arch/Projection.lean`
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `InterfaceProjection` | `structure` | 具象 component から抽象 component への射影。 | `defined only` |
+| `AbstractGraph` | `abbrev` | 射影先の抽象依存グラフ。 | `defined only` |
 | `ProjectedDeps` | `def` | 具象依存を抽象依存へ写した関係。 | `defined only` |
+| `RespectsProjection` | `def` | すべての具象依存 edge が抽象 edge として表現されること。 | `defined only` |
 | `ProjectionSound` | `abbrev` | 具象依存が抽象依存へ sound に写ること。 | `defined only` |
 | `projectionSoundnessViolationEdges` | `def` | 有限な測定 universe 上で、abstract edge に写らない concrete edge のリスト。 | `defined only` |
 | `mem_projectionSoundnessViolationEdges_iff` | `theorem` | projection soundness violation edge の membership が、測定対象 concrete edge かつ projected abstract edge 不在であることと一致する。 | `proved` |
@@ -106,8 +109,13 @@ File: `Formal/Arch/Projection.lean`
 | `projectionSound_of_projectionExact` | `theorem` | exact projection から soundness を得る。 | `proved` |
 | `projectionComplete_of_projectionExact` | `theorem` | exact projection から completeness を得る。 | `proved` |
 | `dipCompatible_of_strongDIPCompatible` | `theorem` | strong DIP compatible なら DIP compatible。 | `proved` |
+| `respectsProjection_id` | `theorem` | identity projection は元の graph を respect する。 | `proved` |
+| `quotientWellDefined_id` | `theorem` | identity projection は quotient well-defined。 | `proved` |
 | `dipCompatible_id` | `theorem` | identity projection は DIP compatible。 | `proved` |
+| `projectionComplete_id` | `theorem` | identity projection は complete。 | `proved` |
+| `projectionExact_id` | `theorem` | identity projection は exact。 | `proved` |
 | `strongDIPCompatible_id` | `theorem` | identity projection は strong DIP compatible。 | `proved` |
+| `mapReachable` | `def` | projection soundness の下で具象到達可能性を抽象到達可能性へ写す。 | `proved` |
 
 ## Observation / LSP
 
@@ -200,9 +208,15 @@ File: `Formal/Arch/Finite.lean`
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `ComponentUniverse` | `structure` | finite measurement universe with proofs。 | `defined only` |
+| `ComponentUniverse.edgeClosed_of_covers` | `theorem` | full coverage universe では edge-closedness が coverage から従う。 | `proved` |
 | `ComponentUniverse.full` | `def` | full coverage universe を作る。 | `defined only` |
 | `ComponentUniverse.v0` | `def` | universe から v0 signature を計算する。 | `defined only` |
 | `FiniteArchGraph` | `structure` | `ArchGraph` と `ComponentUniverse` を束ねる構造。 | `defined only` |
+| `FiniteArchGraph.ofComponentUniverse` | `def` | 既存の graph と component universe を `FiniteArchGraph` として束ねる。 | `defined only` |
+| `FiniteArchGraph.components` | `def` | bundled component universe の測定 component list を読む。 | `defined only` |
+| `FiniteArchGraph.nodup_components` | `theorem` | `FiniteArchGraph.components` が duplicate-free であること。 | `proved` |
+| `FiniteArchGraph.covers_components` | `theorem` | `FiniteArchGraph.components` が全 component を cover すること。 | `proved` |
+| `FiniteArchGraph.edgeClosed_components` | `theorem` | `FiniteArchGraph` の edge が component universe 内に閉じていること。 | `proved` |
 | `FiniteArchGraph.v0` | `def` | finite graph から v0 signature を計算する。 | `defined only` |
 | `ComponentUniverse.reachable_exists_bounded_path` | `theorem` | finite universe 上で reachable なら bounded simple path がある。 | `proved` |
 | `reachableBool_eq_true_iff` | `theorem` | executable reachable boolean と propositional reachable の接続。 | `proved` |

@@ -158,6 +158,15 @@ boundary / abstraction policy が未指定の場合の最小例:
 `averageFanout` 由来の名前が残る場合でも、extractor v0 の出力では `fanoutRisk` を
 正規の列名にし、必要なら Lean 側 field との mapping を adapter で明示する。
 
+実装上、`components` は repository 内で検出した Lean source file に対応する local
+module component だけを列挙する。一方で、`edges` と executable graph metric は
+import target に現れる外部 module も graph node として扱う。たとえば `Mathlib.*` import
+は `components` には入らないが、edge target としては残る。このため extractor v0 の
+`fanoutRisk` は tooling output 上の unique import edge count であり、Lean の
+`ComponentUniverse` にそのまま渡した finite component list 上の `totalFanout` と
+同一視しない。Lean 側へ接続する場合は、local-only projection か external dependency
+node を含む測定 universe を別途明示する。
+
 `nilpotencyIndex`, `rho(A)`, `runtimePropagation`, `relationComplexity`,
 `empiricalChangeCost` は v0 extractor の対象外である。これらは matrix bridge、
 runtime dependency extraction、state transition algebra、実証プロトコルの後続課題に
@@ -207,10 +216,13 @@ policy file は v0 の対象外である。そのため `boundaryViolationCount`
 
 ## 後続 Issue への分割
 
-この設計から、後続実装は次の単位に分けられる。
+この設計のうち、Issue #51 では次を実装済みである。
 
 - Lean module import graph を抽出し、component / edge JSON を出力する CLI を作る。
 - JSON output から `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk` を計算する。
+
+残る後続実装は次の単位に分けられる。
+
 - boundary / abstraction policy file の最小 schema を設計し、violation count を出す。
 - extractor output と `ComponentUniverse` の責務境界を検査する validation report を出す。
 - 複数 repository に対する signature 時系列と PR metadata を結合する実証 protocol を作る。
