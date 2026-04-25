@@ -243,18 +243,27 @@ EmpiricalSignatureDatasetV0 =
 差分を 0 に丸めない。また before / after のどちらかで未評価の軸は delta を欠損値にし、
 0 として扱わない。
 
-pilot study で検証する仮説は次の形に絞る。
+pilot study で検証する仮説は、最初に検証しやすい primary analysis と、
+追加データが必要な exploratory analysis に分ける。H1 は同じ PR 内の
+signature delta と changed files の同時決定性を避けるため、pre-change risk を見る
+H1a と、将来観測窓を見る H1b に分ける。
 
-| ID | 仮説 | 主な説明変数 | 主な目的変数 |
-| --- | --- | --- | --- |
-| H1 | Signature の悪化は変更波及の増加と相関する | `deltaSignatureSigned`, `reachableConeSize`, `maxDepth` | changed files, changed components |
-| H2 | SCC / cycle risk が大きい領域では障害修正コストが増える | `hasCycle`, `sccExcessSize` | repair time, hotfix size |
-| H3 | fanout risk が高い変更はレビューコストが増える | `fanoutRisk`, `maxFanout` | review comments, approval time |
-| H4 | 境界違反と relation complexity は将来リスクと相関する | `boundaryViolationCount`, `relationComplexity` | future co-change, incident count |
-| H5 | runtime propagation が大きい領域では incident scope が広がる | `runtimePropagation`, `runtimeFanout` | affected components, repair time |
+| ID | tier | 仮説 | 主な説明変数 | 主な目的変数 |
+| --- | --- | --- | --- | --- |
+| H1a | primary | PR 前の Signature risk は変更波及の増加と相関する | pre-change `reachableConeSize`, `maxDepth`, `fanoutRisk`, `sccExcessSize` | changed files, changed lines, changed components |
+| H1b | exploratory | PR 前後の Signature delta は将来 co-change / repair scope と相関する | `deltaSignatureSigned`, risk increase / decrease vectors | future co-change, future repair scope |
+| H2 | exploratory | SCC / cycle risk が大きい領域では障害修正コストが増える | `hasCycle`, `sccExcessSize` | repair time, hotfix size |
+| H3 | primary | fanout risk が高い変更はレビューコストが増える | pre-change `fanoutRisk`, `maxFanout` | review comments, review rounds, approval time |
+| H4 | exploratory | 境界違反と relation complexity は将来リスクと相関する | `boundaryViolationCount`, `relationComplexity` components | future co-change, incident count |
+| H5 | exploratory | runtime propagation が大きい領域では incident scope が広がる | `runtimePropagation`, `runtimeFanout` | affected components, repair time |
 
 これらは Lean proof のブロッカーではない。反証可能な empirical hypothesis として、
 対象 repository、対象 PR、除外条件、欠損値規約を固定した上で検証する。
+最初の technical note では、H1a/H3 の primary analysis に必要な dataset と欠損値規約の
+再現性、小規模 pilot の記述統計、効果量、外れ値を報告する。H1b/H2/H4/H5 は、
+incident data、future window、boundary policy、relation complexity rule set、
+runtime evidence が揃う場合だけ exploratory analysis とし、因果効果や repository 一般化は
+主張しない。
 
 ## 9. Contributions
 
@@ -286,7 +295,8 @@ pilot study で検証する仮説は次の形に絞る。
    `rho(A)` bridge。
 5. Architecture Signature: v0 / v1 axes、risk order、`Option Nat` と欠損値規約。
 6. Projection and observation: DIP / LSP / local replacement contract の位置づけ。
-7. Empirical protocol: extractor、dataset、before / after signature、pilot hypotheses。
+7. Empirical protocol: extractor、dataset、before / after signature、primary H1a/H3 と
+   exploratory H1b/H2/H4/H5。
 8. Threats to validity: component 粒度、policy 未指定、external dependency、runtime
    evidence、repository selection。
 9. Related work: formal methods, software architecture metrics, empirical software
