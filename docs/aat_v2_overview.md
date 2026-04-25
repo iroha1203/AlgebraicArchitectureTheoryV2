@@ -86,7 +86,7 @@ Sig0(A) =
   < hasCycle,
     sccMaxSize,
     maxDepth,
-    averageFanout,
+    fanoutRisk,
     boundaryViolationCount,
     abstractionViolationCount >
 ```
@@ -95,7 +95,7 @@ Sig0(A) =
 
 `maxDepth` は初期 Lean 実装では bounded max depth として扱う。循環グラフ上の真の大域 depth ではなく、有限 universe による fuel-bounded measurement である。循環リスクは `hasCycle` の別軸で扱う。
 
-`sccMaxSize` は初期指標として残すが、将来的には非循環成分を 0 risk にするため `sccExcessSize = sccMaxSize - 1` への正規化を検討する。`averageFanout : Nat` は初期の粗い足場であり、Nat 除算で丸められるため、PR4 以降で `fanoutRisk = totalFanout` または `maxFanout` への置き換えを検討する。
+`sccMaxSize` は初期指標として残すが、将来的には非循環成分を 0 risk にするため `sccExcessSize = sccMaxSize - 1` への正規化を検討する。`fanoutRisk : Nat` は v0 では `totalFanout` として定義し、疎なグラフでも測定 universe 内に依存辺があれば 0 に丸め落ちないようにする。`maxFanout` は局所集中を表す別軸として、Signature v1 以降で追加を検討する。
 
 Lean PR4 では、有限な component list を測定 universe とする executable v0 metrics を定義する。Lean PR5 では、その list に `Nodup`, coverage, edge-closedness を持たせる `ComponentUniverse` を追加し、bounded reachability と `Walk` / `Reachable` の基本的な正当性 bridge を証明する。現在の `ComponentUniverse` は full universe なので edge-closedness は coverage から導けるが、将来 closed measurement sub-universe を扱う余地を残すため明示フィールドとして保持する。これは実コードベース抽出器の完全性を主張するものではない。SCC count と相互到達可能性の同値類との接続は、次の proof obligation として残す。
 

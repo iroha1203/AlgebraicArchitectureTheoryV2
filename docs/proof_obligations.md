@@ -31,7 +31,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#8](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/8) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `hasCycleBool` と `HasClosedWalk` の有限 universe 上の同値を証明する。 |
 | [#9](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/9) | open | 1. Finite Universe Bridge | docs index | [GitHub Issues 索引](#github-issues-索引) | この文書を GitHub Issues への索引として更新する。 |
 | [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10) | open | 6. Projection / Observation Invariants | `defined only` / design | [5. DIP は射影整合性である](#5-dip-は射影整合性である), [6. LSP は観測関手による同値性である](#6-lsp-は観測関手による同値性である) | `DIPCompatible` と `StrongDIPCompatible` の役割分担を整理する。 |
-| [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | open | 4. Signature v0 Stabilization | `defined only` / design | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `averageFanout` を `totalFanout` / `maxFanout` / `fanoutRisk` のどれに寄せるか決める。 |
+| [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | open | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `fanoutRisk = totalFanout` として v0 の fanout 軸を安定化する。 |
 | [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | open | 5. Layering Equivalence | `proved` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
 | [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
 | [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | SCC サイズ指標と相互到達可能性の同値類を接続する。 |
@@ -312,7 +312,7 @@ Sig(A) <=risk Sig(B)
 - `hasCycle` は 0/1 の risk indicator として扱う。
 - `sccMaxSize` は将来的に `sccExcessSize = sccMaxSize - 1` として正規化することを検討する。
 - `maxDepth` は PR4 では bounded max depth であり、循環グラフ上の真の大域 depth ではない。循環リスクは `hasCycle` で別軸として扱う。
-- `averageFanout : Nat` は初期の粗い足場であり、Nat 除算で丸められる。PR4 以降で `fanoutRisk = totalFanout` または `maxFanout` への置き換えを検討する。
+- `fanoutRisk : Nat` は v0 では `totalFanout` として扱う。Nat-valued average fanout は丸め落ちるため Signature 本体から外し、`maxFanout` は局所集中を表す将来軸として分離する。
 - `nilpotencyIndex?` は初期 Lean 実装には入れず、adjacency matrix 導入後の発展指標として扱う。
 
 Lean status:
@@ -354,8 +354,9 @@ Lean status:
 `defined only`:
 
 - Executable v0 metrics over a supplied finite component list:
-  `hasCycleBool`, bounded SCC size, bounded max depth, Nat-valued average fanout,
-  boundary violation count, abstraction violation count, and `v0OfFinite`.
+  `hasCycleBool`, bounded SCC size, bounded max depth, total-fanout
+  `fanoutRisk`, boundary violation count, abstraction violation count, and
+  `v0OfFinite`.
 - `ComponentUniverse` packages the executable component list with `Nodup`,
   coverage, and edge-closedness assumptions. The current `ComponentUniverse` is
   a full universe, so edge-closedness follows from coverage. It remains an
@@ -376,15 +377,16 @@ Lean status:
 - `ComponentUniverse` is still a proof-carrying measurement universe, not a
   parser or extractor for real codebases. `FiniteArchGraph` is only the bundled
   Lean representation of a graph with such a universe.
-- `averageFanout : Nat` remains an initial coarse metric. Its replacement or
-  normalization is tracked by
+- `averageFanoutOfFinite : Nat` remains only as a legacy derived executable
+  metric. Signature v0 uses `fanoutRiskOfFinite = totalFanout`, resolving the
+  design decision tracked by
   [Issue #11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11).
 
 `future proof obligation`:
 
-- Stabilize the fanout risk axis after the `averageFanout` design decision;
-  design tracking:
-  [Issue #11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11).
+- Prove graph-level correctness facts for `fanoutRiskOfFinite` under a finite
+  `ComponentUniverse`, such as equivalence with the number of measured
+  dependency edges.
 
 Bridge theorem naming policy:
 
@@ -452,7 +454,7 @@ sccMaxSize が大きいほど、障害修正時間が長くなる。
 仮説:
 
 ```text
-averageFanout または最大 fanout が大きいほど、レビューコストが増える。
+fanoutRisk または最大 fanout が大きいほど、レビューコストが増える。
 ```
 
 測定候補:
@@ -533,6 +535,6 @@ G_runtime
 
 スペクトル半径、最近極、形式的ゼータ関数、discounted propagation resolvent は重要だが、初期実装では中心に置かない。
 
-まずは `hasCycle`, `sccMaxSize`, `maxDepth`, `averageFanout`, `boundaryViolationCount`, `abstractionViolationCount` のような、抽出・説明・検証が容易な指標を優先する。
+まずは `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk`, `boundaryViolationCount`, `abstractionViolationCount` のような、抽出・説明・検証が容易な指標を優先する。
 
 なお、これらの定量指標には thin category だけでは不足する情報がある。経路数・経路長・walk 数を扱う場合は、`Reachable` ではなく `Walk`, `Path`, adjacency matrix, または `FreeCategoryOfGraph` 側で定義する。

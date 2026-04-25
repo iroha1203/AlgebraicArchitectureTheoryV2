@@ -53,7 +53,7 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 
 4. **Signature v0 Stabilization**
    - `ArchitectureSignature` v0 の各軸を安定化する。
-   - `averageFanout` を `totalFanout`, `maxFanout`, `fanoutRisk` のどれに寄せるか決める。
+   - `fanoutRisk` を `totalFanout` として扱い、`maxFanout` は将来の局所集中軸として分離する。
 
 5. **Layering Equivalence**
    - `Acyclic + finite vertices -> StrictLayered` を証明する。

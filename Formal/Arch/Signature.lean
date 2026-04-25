@@ -11,13 +11,13 @@ Every field is normalized as a risk axis: larger values mean greater structural
 risk on that axis. `hasCycle` is a 0/1 risk indicator.
 
 Future refinements may replace `sccMaxSize` with `sccExcessSize = sccMaxSize - 1`
-and `averageFanout` with `fanoutRisk` or `maxFanout`.
+and may split `fanoutRisk` into more refined propagation metrics.
 -/
 structure ArchitectureSignature where
   hasCycle : Nat
   sccMaxSize : Nat
   maxDepth : Nat
-  averageFanout : Nat
+  fanoutRisk : Nat
   boundaryViolationCount : Nat
   abstractionViolationCount : Nat
   deriving DecidableEq, Repr
@@ -29,7 +29,7 @@ def RiskLE (a b : ArchitectureSignature) : Prop :=
   a.hasCycle ≤ b.hasCycle ∧
   a.sccMaxSize ≤ b.sccMaxSize ∧
   a.maxDepth ≤ b.maxDepth ∧
-  a.averageFanout ≤ b.averageFanout ∧
+  a.fanoutRisk ≤ b.fanoutRisk ∧
   a.boundaryViolationCount ≤ b.boundaryViolationCount ∧
   a.abstractionViolationCount ≤ b.abstractionViolationCount
 
@@ -140,12 +140,24 @@ def totalFanout {C : Type u} (G : ArchGraph C)
   (components.map (fun c => fanout G components c)).sum
 
 /--
-Coarse Nat-valued average fanout used by the initial signature.
+Fanout risk for Signature v0.
+
+The v0 signature uses total outgoing dependency count rather than Nat-valued
+average fanout, so sparse graphs with at least one measured dependency do not
+round down to zero risk. A future signature can add `maxFanout` as a separate
+shape axis without changing this total propagation-load axis.
+-/
+def fanoutRiskOfFinite {C : Type u} (G : ArchGraph C)
+    [DecidableRel G.edge] (components : List C) : Nat :=
+  totalFanout G components
+
+/--
+Legacy coarse Nat-valued average fanout.
 
 For an empty component universe, Lean's natural-number division gives `0`.
-Because this is integer division, sparse graphs can also round down to `0`;
-future signatures may prefer `totalFanout`, `maxFanout`, or another fanout-risk
-normalization.
+Because this is integer division, sparse graphs can also round down to `0`.
+It is kept as a derived executable metric, but Signature v0 uses
+`fanoutRiskOfFinite`.
 -/
 def averageFanoutOfFinite {C : Type u} (G : ArchGraph C)
     [DecidableRel G.edge] (components : List C) : Nat :=
@@ -201,7 +213,7 @@ def v0OfFinite {C : Type u} (G : ArchGraph C)
   hasCycle := boolRisk (hasCycleBool G components)
   sccMaxSize := sccMaxSizeOfFinite G components
   maxDepth := maxDepthOfFinite G components
-  averageFanout := averageFanoutOfFinite G components
+  fanoutRisk := fanoutRiskOfFinite G components
   boundaryViolationCount := boundaryViolationCountOfFinite G components boundaryAllowed
   abstractionViolationCount := abstractionViolationCountOfFinite G components abstractionAllowed
 
@@ -229,7 +241,7 @@ theorem v0_unitNoEdge :
       { hasCycle := 0
         sccMaxSize := 1
         maxDepth := 0
-        averageFanout := 0
+        fanoutRisk := 0
         boundaryViolationCount := 0
         abstractionViolationCount := 0 } := by
   rfl
@@ -240,10 +252,30 @@ theorem v0_unitSelfLoop :
       { hasCycle := 1
         sccMaxSize := 1
         maxDepth := 1
-        averageFanout := 1
+        fanoutRisk := 1
         boundaryViolationCount := 0
         abstractionViolationCount := 0 } := by
   rfl
+
+/-- Two-component graph with one dependency edge. -/
+def boolForwardGraph : ArchGraph Bool where
+  edge c d := c = false ∧ d = true
+
+instance : DecidableRel boolForwardGraph.edge := by
+  intro c d
+  change Decidable (c = false ∧ d = true)
+  infer_instance
+
+/-- A single measured dependency contributes one unit of fanout risk. -/
+theorem v0_boolForward :
+    v0OfFinite boolForwardGraph [false, true] (fun _ _ => True) (fun _ _ => True) =
+      { hasCycle := 0
+        sccMaxSize := 1
+        maxDepth := 1
+        fanoutRisk := 1
+        boundaryViolationCount := 0
+        abstractionViolationCount := 0 } := by
+  native_decide
 
 end Examples
 
