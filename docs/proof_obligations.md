@@ -868,6 +868,13 @@ Lean status の区分:
   `components`, `edges`, `metricStatus` に基づく tooling-side evidence であり、
   Lean witness そのものではない。core 4 軸の `metricStatus` も測定済み metadata として
   extractor output に含める。
+- `sig0-extractor` の外部利用向け hardening は
+  [#137](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/137)
+  で README の再現手順、representative fixture、CLI integration test、CI 上の
+  `cargo test --manifest-path tools/sig0-extractor/Cargo.toml` として追加する。
+  JSON contract では `metricStatus.measured = false` と placeholder 0 / optional
+  `null` を区別し、Lean status は `empirical hypothesis` / tooling implementation
+  である。
 
 Stabilization / Audit 時点で残す後続タスク:
 
@@ -877,8 +884,6 @@ Stabilization / Audit 時点で残す後続タスク:
   empirical pilot を小規模 repository で実施する。
 - [#136](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/136):
   Lean refinement 候補を整理し、必要最小限だけ証明する。
-- [#137](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/137):
-  `sig0-extractor` tooling を外部利用向けに hardening する。
 
 `LocalReplacementContract` 風の packaging theorem は
 [#118](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/118)
