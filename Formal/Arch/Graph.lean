@@ -11,6 +11,28 @@ structure ArchGraph (C : Type u) where
   edge : C → C → Prop
 
 /--
+`EdgeSubset H G` means every dependency edge of `H` is also present in `G`.
+This is the graph-level relation used for dependency deletion and subgraph
+preservation theorems.
+-/
+def EdgeSubset {C : Type u} (H G : ArchGraph C) : Prop :=
+  ∀ {c d : C}, H.edge c d → G.edge c d
+
+namespace EdgeSubset
+
+/-- Every graph is an edge subset of itself. -/
+theorem refl {C : Type u} (G : ArchGraph C) : EdgeSubset G G :=
+  fun hEdge => hEdge
+
+/-- Edge subset inclusion is transitive. -/
+theorem trans {C : Type u} {G₁ G₂ G₃ : ArchGraph C}
+    (h₁₂ : EdgeSubset G₁ G₂) (h₂₃ : EdgeSubset G₂ G₃) :
+    EdgeSubset G₁ G₃ :=
+  fun hEdge => h₂₃ (h₁₂ hEdge)
+
+end EdgeSubset
+
+/--
 Static dependencies such as imports, type references, inheritance, and package
 dependencies.
 
@@ -55,6 +77,21 @@ namespace Walk
 def length {C : Type u} {G : ArchGraph C} {c d : C} : Walk G c d → Nat
   | nil _ => 0
   | cons _ rest => rest.length + 1
+
+/-- An edge subset turns every walk in the smaller graph into a walk in the larger graph. -/
+def map_edgeSubset {C : Type u} {H G : ArchGraph C} (hSubset : EdgeSubset H G) :
+    ∀ {c d : C}, Walk H c d → Walk G c d
+  | _, _, nil c => nil c
+  | _, _, cons hEdge rest => cons (hSubset hEdge) (map_edgeSubset hSubset rest)
+
+/-- Mapping a walk along an edge subset preserves its length. -/
+theorem length_map_edgeSubset {C : Type u} {H G : ArchGraph C}
+    (hSubset : EdgeSubset H G) :
+    ∀ {c d : C} (w : Walk H c d),
+      (map_edgeSubset hSubset w).length = w.length
+  | _, _, nil _ => rfl
+  | _, _, cons _ rest => by
+      simp [map_edgeSubset, length, length_map_edgeSubset hSubset rest]
 
 /-- Vertices visited by a walk, including both endpoints. -/
 def vertices {C : Type u} {G : ArchGraph C} {c d : C} : Walk G c d → List C

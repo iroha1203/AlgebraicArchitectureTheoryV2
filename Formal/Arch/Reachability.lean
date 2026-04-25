@@ -26,6 +26,12 @@ def trans {C : Type u} {G : ArchGraph C} {a b c : C} :
   | refl _, h₂ => h₂
   | step h hd, h₂ => step h (trans hd h₂)
 
+/-- An edge subset turns reachability in the smaller graph into reachability in the larger graph. -/
+def map_edgeSubset {C : Type u} {H G : ArchGraph C} (hSubset : EdgeSubset H G) :
+    ∀ {c d : C}, Reachable H c d → Reachable G c d
+  | _, _, refl c => refl c
+  | _, _, step hEdge hRest => step (hSubset hEdge) (map_edgeSubset hSubset hRest)
+
 /-- Walks imply reachability, but reachability forgets walk length and count. -/
 def of_walk {C : Type u} {G : ArchGraph C} {c d : C} :
     Walk G c d → Reachable G c d

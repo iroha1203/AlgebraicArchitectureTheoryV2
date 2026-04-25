@@ -31,6 +31,19 @@ def WalkAcyclic {C : Type u} (G : ArchGraph C) : Prop :=
 def FinitePropagation {C : Type u} (G : ArchGraph C) : Prop :=
   ∃ bound : C → Nat, ∀ {c d : C} (w : Walk G c d), w.length ≤ bound c
 
+/-- Strict layering is preserved when dependency edges are deleted. -/
+theorem strictLayering_of_edgeSubset {C : Type u} {H G : ArchGraph C}
+    (hSubset : EdgeSubset H G) {layer : Layering C}
+    (hLayer : StrictLayering G layer) : StrictLayering H layer :=
+  fun hEdge => hLayer (hSubset hEdge)
+
+/-- Strictly layered graphs remain strictly layered under edge subset restriction. -/
+theorem strictLayered_of_edgeSubset {C : Type u} {H G : ArchGraph C}
+    (hSubset : EdgeSubset H G) (hLayered : StrictLayered G) :
+    StrictLayered H := by
+  rcases hLayered with ⟨layer, hLayer⟩
+  exact ⟨layer, strictLayering_of_edgeSubset hSubset hLayer⟩
+
 /-- A strict layer assignment is monotone along reachability. -/
 theorem layer_le_of_reachable {C : Type u} {G : ArchGraph C} {layer : Layering C}
     (hLayer : StrictLayering G layer) :
@@ -52,6 +65,13 @@ theorem strictLayered_acyclic {C : Type u} {G : ArchGraph C}
     (h : StrictLayered G) : Acyclic G := by
   rcases h with ⟨layer, hLayer⟩
   exact acyclic_of_strictLayering hLayer
+
+/-- Acyclic graphs remain acyclic under edge subset restriction. -/
+theorem acyclic_of_edgeSubset {C : Type u} {H G : ArchGraph C}
+    (hSubset : EdgeSubset H G) (hAcyclic : Acyclic G) :
+    Acyclic H := by
+  intro c d hEdge hReach
+  exact hAcyclic (hSubset hEdge) (Reachable.map_edgeSubset hSubset hReach)
 
 /-- A nonempty closed walk exposes one generating edge followed by reachability back. -/
 theorem edge_reachable_of_closed_walk {C : Type u} {G : ArchGraph C}
