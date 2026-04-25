@@ -562,6 +562,18 @@ Issue [#63](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/63
   `reachableConeSizeOfFinite G components` はその最大値である。辺の向きは既存の
   `maxDepthOfFinite` と同じく `edge c d` means `c` depends on `d` に従う。
 
+Issue [#87](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/87)
+では、Lean 側の v1 output schema を `ArchitectureSignatureV1Core` と
+`ArchitectureSignatureV1` に分けて固定した。`ArchitectureSignatureV1Core` は
+v0 signature を内側に持ち、`sccExcessSize`, `maxFanout`,
+`reachableConeSize` を現在 Lean で測定できる v1 core 派生軸として保持する。
+`ArchitectureSignatureV1` は core に加えて、`weightedSccRisk`,
+`projectionSoundnessViolation`, `lspViolationCount`, `nilpotencyIndex`,
+`runtimePropagation`, `relationComplexity`, `empiricalChangeCost` を
+`Option Nat` として保持する。`none` は未評価を意味し、risk 0 とは解釈しない。
+`v1CoreOfFinite` と `v1OfFinite` は finite component list からこの schema を
+構成する executable entry point である。
+
 Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
 では、projection bridge の最小 Lean 定義を追加した。`projectionSoundnessViolation`
 は `components : List C` に現れる concrete edge `(c, d)` のうち、
@@ -613,6 +625,7 @@ Lean status の区分:
 | `sccExcessSize` | 有限 universe 上の計算として定義済み。graph-level mutual-reachability class size 最大値との bridge を証明済み | `defined only` / `proved` |
 | `reachableConeSize` | 有限 universe 上の計算として定義済み。graph-level strict reachable cone size 最大値との bridge を証明済み | `defined only` / `proved` |
 | `maxFanout` | 有限 universe 上の計算として定義済み。source ごとの measured dependency edges との bridge を証明済み | `defined only` / `proved` |
+| `ArchitectureSignatureV1Core`, `ArchitectureSignatureV1` | v0 を内側に含む v1 output schema。未評価 extension axis は `Option Nat` で保持する | `defined only` |
 | `weightedSccRisk` | 重み関数つき executable metric として設計する | `defined only` |
 | `projectionSoundnessViolation` | 具象依存が抽象依存へ sound に写らない measured edge を数える | `defined only` / `proved` |
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |

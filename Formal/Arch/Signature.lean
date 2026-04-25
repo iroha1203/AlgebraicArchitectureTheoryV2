@@ -364,6 +364,76 @@ def v0OfFinite {C : Type u} (G : ArchGraph C)
   boundaryViolationCount := boundaryViolationCountOfFinite G components boundaryAllowed
   abstractionViolationCount := abstractionViolationCountOfFinite G components abstractionAllowed
 
+/--
+Lean-side Signature v1 core schema.
+
+The v0 signature remains embedded as the stable compatibility layer. The extra
+fields are finite-universe derived metrics whose graph-level bridge theorems
+are developed separately.
+-/
+structure ArchitectureSignatureV1Core where
+  v0 : ArchitectureSignature
+  sccExcessSize : Nat
+  maxFanout : Nat
+  reachableConeSize : Nat
+  deriving DecidableEq, Repr
+
+/--
+Full Signature v1 output schema.
+
+The optional fields represent axes that may be unavailable for a given
+extractor output or are still future bridge work. `none` means not measured; it
+must not be read as risk zero.
+-/
+structure ArchitectureSignatureV1 where
+  core : ArchitectureSignatureV1Core
+  weightedSccRisk : Option Nat
+  projectionSoundnessViolation : Option Nat
+  lspViolationCount : Option Nat
+  nilpotencyIndex : Option Nat
+  runtimePropagation : Option Nat
+  relationComplexity : Option Nat
+  empiricalChangeCost : Option Nat
+  deriving DecidableEq, Repr
+
+/--
+Build the Lean-measured Signature v1 core from a finite component universe.
+
+This keeps `ArchitectureSignature` v0 intact and adds the currently executable
+v1 core axes as derived metrics.
+-/
+def v1CoreOfFinite {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1Core where
+  v0 := v0OfFinite G components boundaryAllowed abstractionAllowed
+  sccExcessSize := sccExcessSizeOfFinite G components
+  maxFanout := maxFanoutOfFinite G components
+  reachableConeSize := reachableConeSizeOfFinite G components
+
+/--
+Build a Signature v1 value with only the Lean-measured core axes populated.
+
+Future, policy-dependent, and empirical axes are left as `none` so that missing
+measurements stay distinct from zero risk.
+-/
+def v1OfFinite {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1 where
+  core := v1CoreOfFinite G components boundaryAllowed abstractionAllowed
+  weightedSccRisk := none
+  projectionSoundnessViolation := none
+  lspViolationCount := none
+  nilpotencyIndex := none
+  runtimePropagation := none
+  relationComplexity := none
+  empiricalChangeCost := none
+
 namespace Examples
 
 /-- One-component graph with no dependency edges. -/
@@ -430,6 +500,29 @@ theorem v1Core_unitNoEdge :
       maxFanoutOfFinite unitNoEdgeGraph [()] = 0 ∧
       reachableConeSizeOfFinite unitNoEdgeGraph [()] = 0 := by
   native_decide
+
+/-- The v1 core schema embeds the existing v0 signature and the derived core axes. -/
+theorem v1CoreSchema_unitNoEdge :
+    v1CoreOfFinite unitNoEdgeGraph [()] (fun _ _ => True) (fun _ _ => True) =
+      { v0 :=
+          { hasCycle := 0
+            sccMaxSize := 1
+            maxDepth := 0
+            fanoutRisk := 0
+            boundaryViolationCount := 0
+            abstractionViolationCount := 0 }
+        sccExcessSize := 0
+        maxFanout := 0
+        reachableConeSize := 0 } := by
+  rfl
+
+/-- Unmeasured v1 extension axes remain absent rather than being encoded as zero. -/
+theorem v1Schema_unitNoEdge_unmeasured :
+    (v1OfFinite unitNoEdgeGraph [()] (fun _ _ => True) (fun _ _ => True)).nilpotencyIndex =
+      none ∧
+    (v1OfFinite unitNoEdgeGraph [()] (fun _ _ => True) (fun _ _ => True)).runtimePropagation =
+      none := by
+  exact ⟨rfl, rfl⟩
 
 /-- A one-way dependency has one unit of max fanout and reachable-cone risk. -/
 theorem v1Core_boolForward :
