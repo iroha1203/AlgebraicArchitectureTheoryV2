@@ -85,6 +85,54 @@ PR または分析対象 commit ごとに次を記録する。
 `deltaSignatureSigned` は `Nat` subtraction ではなく符号付き差分として扱う。
 改善による負の差分を 0 に丸めない。
 
+#### 未評価 metric と欠損値
+
+extractor output は、Lean 側の `ArchitectureSignature` に合わせるため
+`signature` の各軸を `Nat` 値として出す。一方、empirical dataset では
+`metricStatus` を必ず保持し、0 と未評価を分離する。
+
+最小 schema:
+
+| field | 型 | 意味 |
+| --- | --- | --- |
+| `metricStatus.<axis>.measured` | boolean | 当該軸を extractor が測定したか。 |
+| `metricStatus.<axis>.reason` | string | `measured: false` の理由。 |
+| `metricStatus.<axis>.source` | string, optional | policy file, rule set, extractor algorithm などの測定根拠。 |
+
+分析方針:
+
+- `measured: false` の軸は欠損値として扱い、違反なしやリスク 0 として集計しない。
+- `deltaSignatureSigned` は、before / after の両方で `measured: true` の軸だけを
+  主要分析に使う。
+- before / after の片側だけが未評価の場合、その軸の delta は欠損値として扱い、
+  欠損理由を sensitivity analysis 用 metadata に残す。
+- policy 未指定で `boundaryViolationCount = 0` または
+  `abstractionViolationCount = 0` が出ている場合、その 0 は Lean input 用
+  placeholder であり、H4 の境界違反分析には入れない。
+- 欠損率が仮説ごとの分析対象の大半を占める場合、その仮説は pilot では
+  exploratory analysis として報告する。
+
+boundary / abstraction policy 未指定時の記録例:
+
+```json
+{
+  "signature": {
+    "boundaryViolationCount": 0,
+    "abstractionViolationCount": 0
+  },
+  "metricStatus": {
+    "boundaryViolationCount": {
+      "measured": false,
+      "reason": "policy file not provided"
+    },
+    "abstractionViolationCount": {
+      "measured": false,
+      "reason": "policy file not provided"
+    }
+  }
+}
+```
+
 ## 測定方法
 
 ### H1: Signature と変更波及
@@ -184,6 +232,8 @@ data analysis 側の前提:
 - repository size, PR size, team size, review policy, seasonality を交絡要因として記録する。
 - 効果量、信頼区間、外れ値を報告し、単一の有意差だけで結論にしない。
 - repository 間比較では、言語・framework・開発プロセスの違いを metadata として保持する。
+- `metricStatus.measured = false` の軸は欠損値として扱い、placeholder 0 を
+  risk 0 または違反なしとして集計しない。
 
 ## 記述ルール
 
