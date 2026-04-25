@@ -879,12 +879,16 @@ Stabilization / Audit 時点で残す後続タスク:
   Lean refinement 候補を整理し、必要最小限だけ証明する。
 - [#137](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/137):
   `sig0-extractor` tooling を外部利用向けに hardening する。
-- [#138](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/138):
-  `Formal/Arch` 以下の module 階層整理方針を決める。
 
 `LocalReplacementContract` 風の packaging theorem は
 [#118](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/118)
 で実装済みであり、この台帳では未解決タスクとして扱わない。
+
+`Formal/Arch` 以下の module 階層整理方針は
+[#138](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/138)
+で [Lean module 階層整理方針](formal/lean_module_organization.md) に固定する。
+現時点では file move を行わず、責務分類と当面の配置ルールを reader-facing な
+module map として扱う。
 
 Bridge theorem naming policy:
 
