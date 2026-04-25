@@ -140,6 +140,36 @@ def totalFanout {C : Type u} (G : ArchGraph C)
   (components.map (fun c => fanout G components c)).sum
 
 /--
+Measured dependency edges over the supplied finite component list.
+
+The list is measurement-universe based: duplicates in `components` intentionally
+produce duplicate measured pairs, matching the executable v0 metrics.
+-/
+def measuredDependencyEdges {C : Type u} (G : ArchGraph C)
+    [DecidableRel G.edge] (components : List C) : List (C × C) :=
+  components.flatMap (fun c =>
+    (components.filter (fun d => decide (G.edge c d))).map (fun d => (c, d)))
+
+/--
+Membership in `measuredDependencyEdges` is exactly being an edge whose source
+and target are both in the supplied measurement list.
+-/
+theorem mem_measuredDependencyEdges_iff {C : Type u} {G : ArchGraph C}
+    [DecidableRel G.edge] {components : List C} {edge : C × C} :
+    edge ∈ measuredDependencyEdges G components ↔
+      edge.1 ∈ components ∧ edge.2 ∈ components ∧ G.edge edge.1 edge.2 := by
+  rcases edge with ⟨c, d⟩
+  simp [measuredDependencyEdges]
+
+/--
+The total fanout metric is exactly the number of measured dependency edges.
+-/
+theorem totalFanout_eq_measuredDependencyEdges_length {C : Type u}
+    (G : ArchGraph C) [DecidableRel G.edge] (components : List C) :
+    totalFanout G components = (measuredDependencyEdges G components).length := by
+  simp [totalFanout, measuredDependencyEdges, fanout, countWhere]
+
+/--
 Fanout risk for Signature v0.
 
 The v0 signature uses total outgoing dependency count rather than Nat-valued
@@ -150,6 +180,15 @@ shape axis without changing this total propagation-load axis.
 def fanoutRiskOfFinite {C : Type u} (G : ArchGraph C)
     [DecidableRel G.edge] (components : List C) : Nat :=
   totalFanout G components
+
+/--
+The v0 fanout risk is exactly the number of measured dependency edges.
+-/
+theorem fanoutRiskOfFinite_eq_measuredDependencyEdges_length {C : Type u}
+    (G : ArchGraph C) [DecidableRel G.edge] (components : List C) :
+    fanoutRiskOfFinite G components =
+      (measuredDependencyEdges G components).length := by
+  simp [fanoutRiskOfFinite, totalFanout_eq_measuredDependencyEdges_length]
 
 /--
 Legacy coarse Nat-valued average fanout.

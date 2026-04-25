@@ -492,6 +492,17 @@ theorem sccMaxSizeOfFinite_eq_max_mutualReachableClassSize_under_universe
     sccSizeAt_eq_mutualReachableClassSize_under_universe U]
 
 /--
+Under a finite component universe, v0 `fanoutRiskOfFinite` counts exactly the
+measured dependency edges inside the universe.
+-/
+theorem fanoutRiskOfFinite_eq_measuredDependencyEdges_length_under_universe
+    {C : Type u} {G : ArchGraph C} [DecidableRel G.edge]
+    (U : ComponentUniverse G) :
+    fanoutRiskOfFinite G U.components =
+      (measuredDependencyEdges G U.components).length := by
+  exact fanoutRiskOfFinite_eq_measuredDependencyEdges_length G U.components
+
+/--
 An edge followed by a bounded return walk is detected by the cycle indicator
 under a finite component universe.
 -/

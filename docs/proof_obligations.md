@@ -454,12 +454,13 @@ Lean status:
   metric. Signature v0 uses `fanoutRiskOfFinite = totalFanout`, resolving the
   design decision tracked by
   [Issue #11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11).
-
-`future proof obligation`:
-
-- Prove graph-level correctness facts for `fanoutRiskOfFinite` under a finite
-  `ComponentUniverse`, such as equivalence with the number of measured
-  dependency edges.
+- `measuredDependencyEdges` lists the dependency pairs measured by the supplied
+  finite component list. `fanoutRiskOfFinite_eq_measuredDependencyEdges_length`
+  and
+  `fanoutRiskOfFinite_eq_measuredDependencyEdges_length_under_universe` prove
+  that Signature v0 `fanoutRisk` is exactly the number of measured dependency
+  edges. This resolves
+  [Issue #64](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/64).
 
 #### Signature v1 軸設計
 
