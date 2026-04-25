@@ -11,6 +11,37 @@ structure ArchGraph (C : Type u) where
   edge : C → C → Prop
 
 /--
+Static dependencies such as imports, type references, inheritance, and package
+dependencies.
+
+This is intentionally an alias for `ArchGraph`: existing reachability,
+layering, and Signature v0 theorems apply without duplicating graph theory.
+-/
+abbrev StaticDependencyGraph (C : Type u) := ArchGraph C
+
+/--
+Runtime dependencies such as RPC calls, message queues, shared databases, and
+timeout propagation.
+
+The Lean core records only the existence of a runtime dependency edge here.
+Labels, weights, failure modes, and empirical extraction metadata remain
+tooling-side data until a later bridge turns them into explicit definitions.
+-/
+abbrev RuntimeDependencyGraph (C : Type u) := ArchGraph C
+
+/--
+The two dependency roles used by Signature v1 design.
+
+`static` is the graph used for structural decomposition and boundary checks.
+`runtime` is a separate graph for runtime coupling and failure propagation.
+Keeping them separate prevents static architecture constraints from being
+mixed with operational propagation metrics.
+-/
+structure ArchitectureDependencyGraphs (C : Type u) where
+  static : StaticDependencyGraph C
+  runtime : RuntimeDependencyGraph C
+
+/--
 A walk preserves path-level information that is intentionally forgotten by
 `Reachable` and the thin category built from it.
 -/
