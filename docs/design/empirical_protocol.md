@@ -85,6 +85,55 @@ PR または分析対象 commit ごとに次を記録する。
 `deltaSignatureSigned` は `Nat` subtraction ではなく符号付き差分として扱う。
 改善による負の差分を 0 に丸めない。
 
+#### SignatureIntVector と signed delta
+
+Lean 側の `ArchitectureSignature` v0 は各軸を `Nat` として保持する。一方、
+empirical dataset では差分を改善・悪化の両方向で扱うため、同じ軸集合を
+`Int` に写した `SignatureIntVector` を使う。
+
+最小 schema:
+
+```text
+SignatureIntVector =
+  hasCycle: Int
+  sccMaxSize: Int
+  maxDepth: Int
+  fanoutRisk: Int
+  boundaryViolationCount: Int
+  abstractionViolationCount: Int
+```
+
+変換規約:
+
+- `ArchitectureSignature` から `SignatureIntVector` への変換は、各 `Nat` 軸を
+  同名の `Int` 軸へ埋め込むだけであり、正規化や重みづけを行わない。
+- `deltaSignatureSigned = signatureAfterInt - signatureBeforeInt` と定義する。
+- 正の値は risk の増加、負の値は risk の減少、0 は当該軸の変化なしを表す。
+- `hasCycle` は `0` または `1` の risk indicator として扱うため、
+  `-1`, `0`, `1` の delta だけを持つ。
+- before / after のどちらかで `metricStatus.<axis>.measured = false` の軸は、
+  `deltaSignatureSigned.<axis>` を欠損値として扱い、0 に丸めない。
+
+`riskIncrease` と `riskDecrease` は保存必須の一次データではなく、
+`deltaSignatureSigned` から作る派生値として扱う。
+
+```text
+riskIncrease.axis = max(deltaSignatureSigned.axis, 0)
+riskDecrease.axis = max(-deltaSignatureSigned.axis, 0)
+```
+
+この派生により、改善分を失わずに、悪化方向だけを見る分析と改善方向だけを見る
+分析を同じ signed delta から再現できる。保存する場合も、source of truth は
+`signatureBefore`, `signatureAfter`, `metricStatus`, `deltaSignatureSigned` とする。
+
+component-level signature contribution は、PR 内の changed component ごとに
+`SignatureIntVector` と同じ軸集合で記録する補助データである。PR-level delta は
+repository 全体の before / after signature 差分であり、component-level contribution
+の単純和と一致することは要求しない。SCC や reachability のような大域軸では、
+1 つの component の変更が複数 component の risk を同時に変えるためである。
+component-level contribution は原因候補の説明や感度分析に使い、H1 から H4 の
+主要分析では PR-level `deltaSignatureSigned` を使う。
+
 #### 未評価 metric と欠損値
 
 extractor output は、Lean 側の `ArchitectureSignature` に合わせるため
