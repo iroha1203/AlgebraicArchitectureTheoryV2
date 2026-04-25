@@ -52,6 +52,13 @@ Lean core に渡す 0/1 projection の初期規則は、実行時通信または
 metadata の重み、failure mode、timeout budget、retry policy はこの 0/1 edge の存在へは
 畳み込むが、Lean theorem の前提にはしない。
 
+`sig0-extractor` の `runtime-edge-projection-v0` はこの初期規則を実装する。
+`--runtime-edges` に `runtime-edge-evidence-v0` JSON を渡すと、raw metadata を
+`runtimeEdgeEvidence` に保存し、unique component pair ごとに `kind = "runtime"` の
+edge を `runtimeDependencyGraph.edges` へ出力する。runtime evidence 入力がない場合は
+`runtimeDependencyGraph` 自体を省略し、dataset 側の `runtimePropagation` は未評価の
+`null` として扱う。入力済み graph の edge が空であることと未抽出は区別する。
+
 Circuit Breaker coverage は初期 `runtimePropagationRadius` には直接混ぜない。
 coverage を障害伝播低減として扱うには、未保護 edge を投影した graph や、policy-aware
 propagation graph を別に定義する必要がある。その設計は後続の tooling / empirical
@@ -61,8 +68,7 @@ validation 課題として残す。
 
 - `runtimePropagationOfFinite`: `defined only`
 - `v1OfFiniteWithRuntimePropagation`: `defined only`
-- runtime edge metadata から 0/1 graph への projection rule: `empirical hypothesis` /
-  tooling design
+- runtime edge metadata から 0/1 graph への projection rule:
+  `runtime-edge-projection-v0` tooling implementation / `empirical hypothesis`
 - Circuit Breaker coverage が障害修正コストや障害範囲を下げる主張:
   `empirical hypothesis`
-

@@ -11,6 +11,8 @@ pub const SCHEMA_VERSION: &str = "sig0-extractor-v0";
 pub const COMPONENT_KIND: &str = "lean-module";
 pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report-v0";
 pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
+pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
+pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const EXTRACTOR_NAME: &str = "sig0-extractor";
 pub const EXTRACTOR_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const RULE_SET_VERSION: &str = "sig0-v0";
@@ -66,6 +68,10 @@ pub struct Sig0Document {
     pub metric_status: BTreeMap<String, MetricStatus>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub policy_violations: Vec<PolicyViolation>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub runtime_edge_evidence: Vec<RuntimeEdgeEvidence>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub runtime_dependency_graph: Option<RuntimeDependencyGraphProjection>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -130,6 +136,43 @@ pub struct PolicyViolation {
     pub target_group: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relation_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeEdgeEvidence {
+    pub source: String,
+    pub target: String,
+    pub label: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub failure_mode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timeout_budget: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retry_policy: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub circuit_breaker_coverage: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<String>,
+    pub evidence_location: RuntimeEvidenceLocation,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeEvidenceLocation {
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeDependencyGraphProjection {
+    pub projection_rule: String,
+    pub edge_kind: String,
+    pub edges: Vec<Edge>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -401,6 +444,14 @@ pub fn extract_sig0_with_policy(
     root: &Path,
     policy_path: Option<&Path>,
 ) -> Result<Sig0Document, Box<dyn Error>> {
+    extract_sig0_with_runtime(root, policy_path, None)
+}
+
+pub fn extract_sig0_with_runtime(
+    root: &Path,
+    policy_path: Option<&Path>,
+    runtime_edges_path: Option<&Path>,
+) -> Result<Sig0Document, Box<dyn Error>> {
     let root = root.to_path_buf();
     let mut components = Vec::new();
     let mut import_edges = Vec::new();
@@ -534,6 +585,19 @@ pub fn extract_sig0_with_policy(
         }
     }
 
+    let (runtime_edge_evidence, runtime_dependency_graph) =
+        if let Some(runtime_edges_path) = runtime_edges_path {
+            let evidence = RuntimeEdgeEvidenceFile::read(runtime_edges_path, &components)?;
+            let projection = project_runtime_dependency_graph(&evidence);
+            metric_status.insert(
+                "runtimePropagation".to_string(),
+                measured_status(RUNTIME_PROJECTION_RULE_VERSION),
+            );
+            (evidence, Some(projection))
+        } else {
+            (Vec::new(), None)
+        };
+
     Ok(Sig0Document {
         schema_version: SCHEMA_VERSION.to_string(),
         root: root.display().to_string(),
@@ -544,6 +608,8 @@ pub fn extract_sig0_with_policy(
         signature,
         metric_status,
         policy_violations,
+        runtime_edge_evidence,
+        runtime_dependency_graph,
     })
 }
 
@@ -712,6 +778,13 @@ fn signature_snapshot(document: &Sig0Document, commit: GitCommitRef) -> Signatur
 
 fn dataset_signature_shape(document: &Sig0Document) -> ArchitectureSignatureV1DatasetShape {
     let graph = Graph::from_components_and_edges(&document.components, &document.edges);
+    let runtime_propagation = document
+        .runtime_dependency_graph
+        .as_ref()
+        .map(|projection| {
+            Graph::from_components_and_edges(&document.components, &projection.edges)
+                .reachable_cone_size()
+        });
 
     ArchitectureSignatureV1DatasetShape {
         has_cycle: document.signature.has_cycle,
@@ -727,7 +800,7 @@ fn dataset_signature_shape(document: &Sig0Document) -> ArchitectureSignatureV1Da
         projection_soundness_violation: None,
         lsp_violation_count: None,
         nilpotency_index: None,
-        runtime_propagation: None,
+        runtime_propagation,
         relation_complexity: None,
         empirical_change_cost: None,
     }
@@ -761,7 +834,13 @@ fn dataset_metric_status(document: &Sig0Document) -> BTreeMap<String, MetricStat
             }
             "nilpotencyIndex" => unmeasured_status("matrix bridge output not provided".to_string()),
             "runtimePropagation" => {
-                unmeasured_status("runtime dependency graph not provided".to_string())
+                document
+                    .metric_status
+                    .get(axis)
+                    .cloned()
+                    .unwrap_or_else(|| {
+                        unmeasured_status("runtime dependency graph not provided".to_string())
+                    })
             }
             "relationComplexity" => {
                 unmeasured_status("relation complexity observation not provided".to_string())
@@ -1236,6 +1315,112 @@ struct PolicyFile {
     selector_semantics: String,
     boundary: Option<BoundaryPolicy>,
     abstraction: Option<AbstractionPolicy>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RuntimeEdgeEvidenceFile {
+    schema_version: String,
+    component_id_kind: String,
+    edges: Vec<RuntimeEdgeEvidence>,
+}
+
+impl RuntimeEdgeEvidenceFile {
+    fn read(
+        path: &Path,
+        components: &[Component],
+    ) -> Result<Vec<RuntimeEdgeEvidence>, Box<dyn Error>> {
+        let source = fs::read_to_string(path)?;
+        let file: RuntimeEdgeEvidenceFile = serde_json::from_str(&source)?;
+        if file.schema_version != RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION {
+            return Err(format!(
+                "unsupported runtime edge evidence schemaVersion: {}",
+                file.schema_version
+            )
+            .into());
+        }
+        if file.component_id_kind != COMPONENT_KIND {
+            return Err(format!(
+                "unsupported runtime edge evidence componentIdKind: {}",
+                file.component_id_kind
+            )
+            .into());
+        }
+
+        let component_ids = local_component_ids(components);
+        let mut edges = file.edges;
+        for edge in &edges {
+            validate_runtime_edge_evidence(edge, &component_ids)?;
+        }
+        edges.sort_by(|a, b| {
+            a.source
+                .cmp(&b.source)
+                .then(a.target.cmp(&b.target))
+                .then(a.label.cmp(&b.label))
+                .then(a.evidence_location.path.cmp(&b.evidence_location.path))
+                .then(a.evidence_location.line.cmp(&b.evidence_location.line))
+                .then(a.evidence_location.symbol.cmp(&b.evidence_location.symbol))
+        });
+        Ok(edges)
+    }
+}
+
+fn validate_runtime_edge_evidence(
+    edge: &RuntimeEdgeEvidence,
+    component_ids: &BTreeSet<String>,
+) -> Result<(), String> {
+    if edge.source.is_empty() {
+        return Err("runtime edge source must not be empty".to_string());
+    }
+    if edge.target.is_empty() {
+        return Err("runtime edge target must not be empty".to_string());
+    }
+    if edge.label.is_empty() {
+        return Err("runtime edge label must not be empty".to_string());
+    }
+    if edge.evidence_location.path.is_empty() {
+        return Err("runtime edge evidenceLocation.path must not be empty".to_string());
+    }
+    if !component_ids.contains(&edge.source) {
+        return Err(format!(
+            "runtime edge source is outside component universe: {}",
+            edge.source
+        ));
+    }
+    if !component_ids.contains(&edge.target) {
+        return Err(format!(
+            "runtime edge target is outside component universe: {}",
+            edge.target
+        ));
+    }
+    Ok(())
+}
+
+fn project_runtime_dependency_graph(
+    evidence: &[RuntimeEdgeEvidence],
+) -> RuntimeDependencyGraphProjection {
+    let mut by_pair: BTreeMap<(String, String), usize> = BTreeMap::new();
+    for item in evidence {
+        *by_pair
+            .entry((item.source.clone(), item.target.clone()))
+            .or_default() += 1;
+    }
+
+    let edges = by_pair
+        .into_iter()
+        .map(|((source, target), count)| Edge {
+            source,
+            target,
+            kind: "runtime".to_string(),
+            evidence: format!("runtime edge evidence count: {count}"),
+        })
+        .collect();
+
+    RuntimeDependencyGraphProjection {
+        projection_rule: RUNTIME_PROJECTION_RULE_VERSION.to_string(),
+        edge_kind: "runtime".to_string(),
+        edges,
+    }
 }
 
 impl PolicyFile {
@@ -1941,6 +2126,66 @@ import Should.Not.Appear
             Some("policy file not provided")
         );
         assert!(document.policy_violations.is_empty());
+        assert!(document.runtime_edge_evidence.is_empty());
+        assert!(document.runtime_dependency_graph.is_none());
+    }
+
+    #[test]
+    fn projects_runtime_edge_evidence_to_runtime_dependency_graph() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal");
+        let runtime_edges = root.join("runtime_edges.json");
+        let document =
+            extract_sig0_with_runtime(&root, None, Some(&runtime_edges)).expect("fixture extracts");
+
+        assert_eq!(document.runtime_edge_evidence.len(), 2);
+        assert!(document.runtime_edge_evidence.iter().any(|edge| {
+            edge.source == "Formal"
+                && edge.target == "Formal.Arch.A"
+                && edge.label == "rpc"
+                && edge.failure_mode.as_deref() == Some("timeout")
+                && edge.timeout_budget.as_deref() == Some("250ms")
+                && edge.retry_policy.as_deref() == Some("bounded-retry")
+                && edge.circuit_breaker_coverage.as_deref() == Some("covered")
+                && edge.confidence.as_deref() == Some("fixture")
+                && edge.evidence_location.path == "runtime/routes.json"
+        }));
+
+        let projection = document
+            .runtime_dependency_graph
+            .as_ref()
+            .expect("runtime projection");
+        assert_eq!(projection.projection_rule, RUNTIME_PROJECTION_RULE_VERSION);
+        assert_eq!(projection.edge_kind, "runtime");
+        assert_eq!(projection.edges.len(), 2);
+        assert!(projection.edges.iter().any(|edge| {
+            edge.source == "Formal"
+                && edge.target == "Formal.Arch.A"
+                && edge.kind == "runtime"
+                && edge.evidence == "runtime edge evidence count: 1"
+        }));
+        assert!(
+            document
+                .metric_status
+                .get("runtimePropagation")
+                .expect("runtime status")
+                .measured
+        );
+
+        let dataset = build_empirical_dataset(&document, &document, dataset_input(), "head")
+            .expect("dataset builds");
+        assert_eq!(
+            dataset.signature_after.signature.runtime_propagation,
+            Some(2)
+        );
+        assert_eq!(dataset.delta_signature_signed.runtime_propagation, Some(0));
+        assert!(
+            dataset
+                .signature_after
+                .metric_status
+                .get("runtimePropagation")
+                .expect("runtime dataset status")
+                .measured
+        );
     }
 
     #[test]
@@ -2086,6 +2331,8 @@ import Should.Not.Appear
             },
             metric_status,
             policy_violations: Vec::new(),
+            runtime_edge_evidence: Vec::new(),
+            runtime_dependency_graph: None,
         };
 
         let report =
@@ -2175,6 +2422,15 @@ import Should.Not.Appear
                 .metric_status
                 .get("weightedSccRisk")
                 .expect("weighted status")
+                .measured
+        );
+        assert_eq!(dataset.signature_after.signature.runtime_propagation, None);
+        assert!(
+            !dataset
+                .signature_after
+                .metric_status
+                .get("runtimePropagation")
+                .expect("runtime status")
                 .measured
         );
 
@@ -2302,6 +2558,8 @@ import Should.Not.Appear
             signature,
             metric_status,
             policy_violations: Vec::new(),
+            runtime_edge_evidence: Vec::new(),
+            runtime_dependency_graph: None,
         }
     }
 

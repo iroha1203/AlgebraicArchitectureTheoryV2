@@ -7,7 +7,7 @@ use std::process::ExitCode;
 use clap::{Parser, Subcommand};
 use sig0_extractor::{
     DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, Sig0Document, build_empirical_dataset,
-    extract_sig0_with_policy, validate_component_universe_report,
+    extract_sig0_with_runtime, validate_component_universe_report,
 };
 
 #[derive(Debug, Parser)]
@@ -27,6 +27,10 @@ struct Args {
     /// Optional boundary / abstraction policy JSON file.
     #[arg(long)]
     policy: Option<PathBuf>,
+
+    /// Optional runtime edge evidence JSON file.
+    #[arg(long = "runtime-edges")]
+    runtime_edges: Option<PathBuf>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -121,7 +125,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             Ok(ExitCode::SUCCESS)
         }
         None => {
-            let document = extract_sig0_with_policy(&args.root, args.policy.as_deref())?;
+            let document = extract_sig0_with_runtime(
+                &args.root,
+                args.policy.as_deref(),
+                args.runtime_edges.as_deref(),
+            )?;
             write_json(args.out, &document)?;
             Ok(ExitCode::SUCCESS)
         }
