@@ -39,6 +39,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#32](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/32) | open | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [Signature v1 軸設計](#signature-v1-軸設計) | ArchitectureSignature v1 の軸構成を整理する。 |
 | [#33](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/33) | open | 8. Empirical Signature Extraction | `defined only` / design decided | [静的依存と実行時依存を分ける](#静的依存と実行時依存を分ける) | 静的依存グラフと実行時依存グラフを別 roles として定義する。 |
 | [#34](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/34) | open | 8. Empirical Signature Extraction | `empirical hypothesis` / tooling design | [実コードからの Sig0 extractor v0 設計](sig0_extractor_design.md) | Lean module import graph から Sig0 入力を抽出する最小 tooling の対象範囲、入出力形式、責務境界を固定する。 |
+| [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36) | open | 8. Empirical Signature Extraction | `empirical hypothesis` / design decided | [関係式複雑度と運用リスク](#5-関係式複雑度と運用リスク), [relationComplexity 設計](relation_complexity_design.md) | 状態遷移代数層の `relationComplexity` を empirical metric として扱う方針を固定する。 |
 
 ## Lean で証明する命題
 
@@ -507,7 +508,9 @@ Lean status の区分:
   で扱う。
 - `relationComplexity` は
   [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36)
-  で扱う。
+  で扱う。初期設計は
+  [relation_complexity_design.md](relation_complexity_design.md)
+  に分離する。
 
 Bridge theorem naming policy:
 
@@ -617,7 +620,12 @@ relationComplexity =
   + idempotencyRequirements
 ```
 
-この定義はまだ固定しない。実証可能性と Lean 側の扱いやすさを見て調整する。
+Issue [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36)
+では、この軸をまず Lean core ではなく empirical metric として扱う方針に固定する。
+初期 metric は `constraints`, `compensations`, `projections`,
+`failureTransitions`, `idempotencyRequirements` の構成要素を保持し、
+派生値として合計を計算する。詳細は
+[relation_complexity_design.md](relation_complexity_design.md) を参照する。
 
 ## 未解決課題
 
