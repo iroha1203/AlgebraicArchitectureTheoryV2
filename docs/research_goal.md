@@ -146,6 +146,8 @@ Sig(A) =
 
 Signature v1 では、これらを一度にすべて Lean 構造へ入れない。まず v0 の安定軸を保持し、分解可能性・依存伝播・境界・抽象化の executable metric を v1 core とする。`nilpotencyIndex` と `rho(A)` は adjacency matrix bridge の後続軸、`relationComplexity`, `runtimePropagation`, `empiricalChangeCost` は empirical extraction と実証プロトコル側の軸として分離する。
 
+adjacency matrix bridge では、有限 `ComponentUniverse` 上の 0/1 隣接行列を使い、DAG / `WalkAcyclic` / nilpotence の対応を Lean theorem として育てる。`rho(A)` は同じ行列表現から来る伝播増幅の候補軸だが、初期 bridge では解析的・実証的拡張に分離する。
+
 ## 利用イメージ
 
 完成時には、設計改善の前後を次のように比較できる。
