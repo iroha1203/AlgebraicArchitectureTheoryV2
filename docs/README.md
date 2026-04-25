@@ -21,6 +21,10 @@
 - [設計原則の分類](design_principle_classification.md): SOLID, Layered, Clean Architecture, Event Sourcing, Saga, CRUD などの役割分担。
 - [証明義務と実証仮説](proof_obligations.md): 未解決の proof obligation と empirical hypothesis の台帳。
 
+## 外部向けドラフト
+
+- [Qiita 初回紹介記事ドラフト](outreach/qiita_intro_draft.md): 代数的アーキテクチャ論 V2 の中心主張、ArchitectureSignature、Lean proof と empirical hypothesis の分担を現場エンジニア向けに説明する記事案。
+
 ## Lean 形式化
 
 - [Lean 定義・定理索引](formal/lean_theorem_index.md): 現在 Lean に存在する主要な定義・定理の索引。
