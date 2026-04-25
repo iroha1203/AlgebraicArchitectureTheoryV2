@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "relation-complexity-candidates/v0",
+  "repository": "example/service",
+  "revision": "fixture-sha",
+  "measurementUniverse": {
+    "root": ".",
+    "languages": ["rust"],
+    "frameworks": ["saga"]
+  },
+  "workflow": {
+    "id": "checkout-payment",
+    "name": "Checkout payment",
+    "component": "Billing",
+    "entrypoints": ["src/billing/checkout.rs"]
+  },
+  "evidenceCandidates": [
+    {
+      "id": "constraint-1",
+      "path": "src/billing/checkout.rs",
+      "symbol": "CheckoutWorkflow::validate",
+      "line": 42,
+      "tags": ["constraints", "constraints"],
+      "ownership": "application-owned",
+      "reviewStatus": "candidate",
+      "notes": "domain invariant candidate"
+    },
+    {
+      "id": "compensate-timeout",
+      "path": "src/billing/checkout.rs",
+      "symbol": "CheckoutWorkflow::compensate_timeout",
+      "line": 77,
+      "tags": ["compensations", "failureTransitions"],
+      "ownership": "application-configured",
+      "reviewStatus": "candidate"
+    },
+    {
+      "id": "generated-projection",
+      "path": "src/framework/generated.rs",
+      "symbol": "GeneratedProjection",
+      "line": 12,
+      "tags": ["projections"],
+      "ownership": "framework-generated",
+      "reviewStatus": "candidate"
+    },
+    {
+      "id": "unknown-tag",
+      "path": "src/billing/checkout.rs",
+      "symbol": "CheckoutWorkflow::unknown",
+      "line": 91,
+      "tags": ["notATag"],
+      "ownership": "application-owned",
+      "reviewStatus": "candidate"
+    }
+  ],
+  "excludedEvidence": [
+    {
+      "path": "src/billing/checkout_test.rs",
+      "reason": "test-fixture"
+    }
+  ]
+}

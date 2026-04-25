@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "relation-complexity-candidates/v0",
+  "repository": "example/service",
+  "revision": "fixture-sha",
+  "measurementUniverse": {
+    "root": ".",
+    "languages": ["rust"],
+    "frameworks": ["unsupported-framework"]
+  },
+  "workflow": {
+    "id": "unsupported-workflow",
+    "name": "Unsupported workflow",
+    "component": "Billing",
+    "entrypoints": ["src/billing/unsupported.rs"]
+  },
+  "evidenceCandidates": [
+    {
+      "id": "constraint-unsupported",
+      "path": "src/billing/unsupported.rs",
+      "symbol": "UnsupportedWorkflow::validate",
+      "line": 11,
+      "tags": ["constraints"],
+      "ownership": "application-owned",
+      "reviewStatus": "candidate"
+    }
+  ]
+}

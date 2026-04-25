@@ -7,7 +7,8 @@ use std::process::ExitCode;
 use clap::{Parser, Subcommand};
 use sig0_extractor::{
     DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, Sig0Document, build_empirical_dataset,
-    extract_sig0_with_runtime, validate_component_universe_report,
+    extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
+    validate_component_universe_report,
 };
 
 #[derive(Debug, Parser)]
@@ -72,6 +73,17 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Build a workflow-level RelationComplexityObservation from candidate evidence.
+    RelationComplexity {
+        /// Input relation complexity candidate JSON path.
+        #[arg(long)]
+        input: PathBuf,
+
+        /// Output observation JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -122,6 +134,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let dataset =
                 build_empirical_dataset(&before_document, &after_document, metadata, &after_role)?;
             write_json(out, &dataset)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::RelationComplexity { input, out }) => {
+            let observation = extract_relation_complexity_observation_from_file(&input)?;
+            write_json(out, &observation)?;
             Ok(ExitCode::SUCCESS)
         }
         None => {

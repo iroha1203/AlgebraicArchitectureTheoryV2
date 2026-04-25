@@ -229,6 +229,9 @@ raw count とは別の派生指標に分ける。
 
 ## 後続 Issue 候補
 
-- extractor rule set を実装し、`RelationComplexityObservation` JSON を出力する。
+- extractor rule set v0 は [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
+  で `sig0-extractor relation-complexity --input ...` として実装した。候補 evidence
+  から workflow-level `RelationComplexityObservation` JSON を出力し、counts と
+  `relationComplexity` は counted evidence tags から再計算可能にしている。
 - Event Sourcing / Saga / CRUD の pilot repository を選び、手動ラベルつき baseline dataset を作る。
 - 状態遷移構造を Lean に入れるかどうかを、pilot の後に改めて判断する。

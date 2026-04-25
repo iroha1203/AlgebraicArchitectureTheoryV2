@@ -825,6 +825,13 @@ Lean status の区分:
   実装済みである。`deltaSignatureSigned` は before / after の両方で測定済みの軸だけを
   符号付き差分にし、未測定軸や optional axis の `null` は比較不能として保持する。
   Lean status は `empirical hypothesis` / tooling implementation である。
+- RelationComplexityObservation extractor rule set v0 は
+  [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
+  で `sig0-extractor relation-complexity --input ...` として実装済みである。
+  workflow-level candidate evidence を `relation-complexity-observation/v0` に正規化し、
+  `counts` と `relationComplexity` は counted `evidence.tags` から再計算可能にする。
+  `framework-generated` や未対応 framework は counting から外し、`excludedEvidence`
+  に理由を残す。Lean status は `empirical hypothesis` / tooling implementation である。
 - boundary / abstraction policy file の最小 schema は
   [#106](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/106)
   で固定し、
@@ -975,6 +982,9 @@ Issue [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36
 `failureTransitions`, `idempotencyRequirements` の構成要素を保持し、
 派生値として合計を計算する。詳細は
 [relation_complexity_design.md](design/relation_complexity_design.md) を参照する。
+Issue [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
+では、この候補 evidence から workflow-level observation JSON を作る tooling 実装を追加した。
+これは Lean theorem ではなく、`empirical hypothesis` / tooling implementation である。
 
 ## 未解決課題
 
