@@ -26,6 +26,96 @@ abbrev ProjectionSound {C : Type u} {A : Type v}
     (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) : Prop :=
   RespectsProjection G π GA
 
+/--
+Concrete dependency edges whose projected abstract edge is missing.
+
+The supplied component list is the finite measurement universe. Duplicates in
+the list intentionally duplicate measured pairs, matching the executable
+signature metrics.
+-/
+def projectionSoundnessViolationEdges {C : Type u} {A : Type v}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C) : List (C × C) :=
+  components.flatMap (fun c =>
+    (components.filter (fun d =>
+      decide (G.edge c d) && ! decide (GA.edge (π.expose c) (π.expose d)))).map
+        (fun d => (c, d)))
+
+/--
+Membership in projection-soundness violations is exactly a measured concrete
+edge whose projected abstract edge is absent.
+-/
+theorem mem_projectionSoundnessViolationEdges_iff {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    {components : List C} {edge : C × C} :
+    edge ∈ projectionSoundnessViolationEdges G π GA components ↔
+      edge.1 ∈ components ∧ edge.2 ∈ components ∧ G.edge edge.1 edge.2 ∧
+        ¬ GA.edge (π.expose edge.1) (π.expose edge.2) := by
+  rcases edge with ⟨c, d⟩
+  simp [projectionSoundnessViolationEdges]
+
+/--
+Executable projection bridge metric: the number of measured concrete
+dependencies that are not represented by an abstract edge.
+-/
+def projectionSoundnessViolation {C : Type u} {A : Type v}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C) : Nat :=
+  (projectionSoundnessViolationEdges G π GA components).length
+
+/--
+If projection soundness holds, the finite executable violation count is zero.
+-/
+theorem projectionSoundnessViolation_eq_zero_of_projectionSound
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C) (h : ProjectionSound G π GA) :
+    projectionSoundnessViolation G π GA components = 0 := by
+  have hNoViolation : ∀ c d : C,
+      (decide (G.edge c d) &&
+          ! decide (GA.edge (π.expose c) (π.expose d))) = false := by
+    intro c d
+    by_cases hEdge : G.edge c d
+    · have hAbstract : GA.edge (π.expose c) (π.expose d) := h hEdge
+      simp [hEdge, hAbstract]
+    · simp [hEdge]
+  induction components with
+  | nil =>
+      simp [projectionSoundnessViolation, projectionSoundnessViolationEdges]
+  | cons _ _ ih =>
+      simp [projectionSoundnessViolation, projectionSoundnessViolationEdges,
+        hNoViolation]
+      simpa [projectionSoundnessViolation, projectionSoundnessViolationEdges,
+        hNoViolation] using ih
+
+/--
+If every concrete edge is represented in the measurement universe, zero
+projection-soundness violations imply graph-level projection soundness.
+-/
+theorem projectionSound_of_projectionSoundnessViolation_eq_zero
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    {components : List C}
+    (hEdgeClosed : ∀ {c d : C}, G.edge c d → c ∈ components ∧ d ∈ components)
+    (hZero : projectionSoundnessViolation G π GA components = 0) :
+    ProjectionSound G π GA := by
+  intro c d hEdge
+  by_cases hAbstract : GA.edge (π.expose c) (π.expose d)
+  · exact hAbstract
+  have hClosed := hEdgeClosed hEdge
+  have hMem : (c, d) ∈ projectionSoundnessViolationEdges G π GA components := by
+    rw [mem_projectionSoundnessViolationEdges_iff]
+    exact ⟨hClosed.1, hClosed.2, hEdge, hAbstract⟩
+  have hPositive : 0 < projectionSoundnessViolation G π GA components := by
+    unfold projectionSoundnessViolation
+    exact List.length_pos_of_mem hMem
+  exact False.elim ((Nat.ne_of_gt hPositive) hZero)
+
 /-- Projection completeness: every abstract edge is induced by some concrete edge. -/
 def ProjectionComplete {C : Type u} {A : Type v}
     (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) : Prop :=

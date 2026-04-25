@@ -92,6 +92,11 @@ File: `Formal/Arch/Projection.lean`
 | `InterfaceProjection` | `structure` | 具象 component から抽象 component への射影。 | `defined only` |
 | `ProjectedDeps` | `def` | 具象依存を抽象依存へ写した関係。 | `defined only` |
 | `ProjectionSound` | `abbrev` | 具象依存が抽象依存へ sound に写ること。 | `defined only` |
+| `projectionSoundnessViolationEdges` | `def` | 有限な測定 universe 上で、abstract edge に写らない concrete edge のリスト。 | `defined only` |
+| `mem_projectionSoundnessViolationEdges_iff` | `theorem` | projection soundness violation edge の membership が、測定対象 concrete edge かつ projected abstract edge 不在であることと一致する。 | `proved` |
+| `projectionSoundnessViolation` | `def` | projection soundness に反する測定 concrete edge 数。 | `defined only` |
+| `projectionSoundnessViolation_eq_zero_of_projectionSound` | `theorem` | `ProjectionSound` なら finite violation count は 0。 | `proved` |
+| `projectionSound_of_projectionSoundnessViolation_eq_zero` | `theorem` | 測定 universe が concrete edge を閉じていれば、violation 0 から `ProjectionSound` を得る。 | `proved` |
 | `ProjectionComplete` | `def` | 抽象依存が具象依存で代表されること。 | `defined only` |
 | `ProjectionExact` | `def` | soundness と completeness の両方。 | `defined only` |
 | `QuotientWellDefined` | `def` | 同じ抽象へ写る代表の依存が安定すること。 | `defined only` |

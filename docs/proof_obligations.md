@@ -294,6 +294,8 @@ DIPCompatible =
 - `ProjectionComplete`: 抽象依存が何らかの具体依存に由来すること。
 - `ProjectionExact`: `ProjectionSound ∧ ProjectionComplete`。
 - `RepresentativeStable`: 同じ抽象に写る具体要素が同じ抽象 outgoing dependency predicate を誘導すること。
+- `projectionSoundnessViolation`: 有限な測定 universe 上で、具象依存が抽象依存へ
+  sound に写らない concrete edge を数える executable projection bridge metric。
 
 現行 Lean 実装の `QuotientWellDefined` は、`RepresentativeStable` と同じ strong representative-stability 条件である。
 
@@ -305,15 +307,17 @@ DIPCompatible =
 Lean status:
 
 - `defined only`: `ProjectionSound`, `ProjectionComplete`, `ProjectionExact`,
-  `RepresentativeStable`, `DIPCompatible`, `StrongDIPCompatible`
+  `RepresentativeStable`, `DIPCompatible`, `StrongDIPCompatible`,
+  `projectionSoundnessViolationEdges`, `projectionSoundnessViolation`
 - `proved`: `projectionSound_of_projectionExact`,
   `projectionComplete_of_projectionExact`,
-  `dipCompatible_of_strongDIPCompatible`
+  `dipCompatible_of_strongDIPCompatible`,
+  `mem_projectionSoundnessViolationEdges_iff`,
+  `projectionSoundnessViolation_eq_zero_of_projectionSound`,
+  `projectionSound_of_projectionSoundnessViolation_eq_zero`
 
 今後の proof obligation:
 
-- `projectionSoundnessViolation` などの executable metric を定義し、
-  `ProjectionSound` の graph-level facts と接続する。
 - exact projection が必要な場面と soundness だけで十分な場面を、設計原則分類と
   Signature v1 の projection bridge 軸で分ける。
 - SOLID 不完全性反例では、DIP 風の依存方向や `DIPCompatible` を満たしても、
@@ -528,7 +532,16 @@ Issue [#63](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/63
   `reachableConeSizeOfFinite G components` はその最大値である。辺の向きは既存の
   `maxDepthOfFinite` と同じく `edge c d` means `c` depends on `d` に従う。
 
-この段階の Lean status は `defined only` である。有限 universe 下での
+Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
+では、projection bridge の最小 Lean 定義を追加した。`projectionSoundnessViolation`
+は `components : List C` に現れる concrete edge `(c, d)` のうち、
+`GA.edge (π.expose c) (π.expose d)` が成り立たないものを数える。これは
+soundness 側だけを測るため、`ProjectionComplete` まで要求する exact projection
+とは分けて扱う。Lean では、`ProjectionSound` なら violation が 0 になること、
+また測定 universe が concrete edge を閉じている場合には violation 0 から
+`ProjectionSound` が得られることを証明済みである。
+
+v1 core 派生 metric の Lean status は `defined only` である。有限 universe 下での
 `sccExcessSizeOfFinite` と graph-level mutual-reachability class size の接続、
 `maxFanoutOfFinite` と measured dependency edges の source ごとの分類、
 `reachableConeSizeOfFinite` と graph-level reachable set / cone の接続は、後続の
