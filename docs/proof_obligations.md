@@ -491,6 +491,10 @@ Lean status:
   that Signature v0 `fanoutRisk` is exactly the number of measured dependency
   edges. This resolves
   [Issue #64](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/64).
+- `measuredDependencyEdgesFromSource` lists the measured dependency pairs for a
+  fixed source component. `fanout_eq_measuredDependencyEdgesFromSource_length`
+  proves that per-component `fanout` is exactly the number of such source-fixed
+  measured edges.
 
 #### Signature v1 軸設計
 
@@ -590,10 +594,17 @@ reachable cone の接続を追加した。有限 universe 下で、bounded searc
 `reachableConeSizeOfFinite` は component ごとの strict reachable cone size の
 最大値と一致する。
 
-v1 core 派生 metric のうち `sccExcessSizeOfFinite` と
-`reachableConeSizeOfFinite` の graph-level bridge は証明済みである。
-`maxFanoutOfFinite` と measured dependency edges の source ごとの分類は、
-後続の bridge theorem として扱う。
+Issue [#74](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/74)
+では、`maxFanoutOfFinite` と source ごとの measured dependency edges の接続を
+追加した。`measuredDependencyEdgesFromSource` により source 固定の測定依存辺を
+定義し、`maxFanoutOfFinite` は component ごとの source-fixed measured edge count
+の最大値であることを証明済みである。これにより、v0 `fanoutRiskOfFinite` は
+全 measured dependency edges 数、v1 core `maxFanoutOfFinite` は source ごとの
+局所集中の最大値として区別される。
+
+v1 core 派生 metric のうち `sccExcessSizeOfFinite`,
+`reachableConeSizeOfFinite`, `maxFanoutOfFinite` の graph-level bridge は
+証明済みである。
 
 Lean status の区分:
 
@@ -601,7 +612,7 @@ Lean status の区分:
 | --- | --- | --- |
 | `sccExcessSize` | 有限 universe 上の計算として定義済み。graph-level mutual-reachability class size 最大値との bridge を証明済み | `defined only` / `proved` |
 | `reachableConeSize` | 有限 universe 上の計算として定義済み。graph-level strict reachable cone size 最大値との bridge を証明済み | `defined only` / `proved` |
-| `maxFanout` | 有限 universe 上の計算として定義済み。source ごとの measured dependency edges との bridge は theorem として証明する | `defined only` / `future proof obligation` |
+| `maxFanout` | 有限 universe 上の計算として定義済み。source ごとの measured dependency edges との bridge を証明済み | `defined only` / `proved` |
 | `weightedSccRisk` | 重み関数つき executable metric として設計する | `defined only` |
 | `projectionSoundnessViolation` | 具象依存が抽象依存へ sound に写らない measured edge を数える | `defined only` / `proved` |
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |

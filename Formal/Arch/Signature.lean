@@ -134,6 +134,46 @@ def fanout {C : Type u} (G : ArchGraph C)
     [DecidableRel G.edge] (components : List C) (c : C) : Nat :=
   countWhere components (fun d => decide (G.edge c d))
 
+/--
+Measured dependency edges with a fixed source component.
+
+The target side is measured over the supplied finite component list, matching
+`fanout G components c`.
+-/
+def measuredDependencyEdgesFromSource {C : Type u} (G : ArchGraph C)
+    [DecidableRel G.edge] (components : List C) (c : C) : List (C × C) :=
+  (components.filter (fun d => decide (G.edge c d))).map (fun d => (c, d))
+
+/--
+Membership in `measuredDependencyEdgesFromSource` is exactly being a measured
+edge with the selected source.
+-/
+theorem mem_measuredDependencyEdgesFromSource_iff {C : Type u}
+    {G : ArchGraph C} [DecidableRel G.edge] {components : List C}
+    {source : C} {edge : C × C} :
+    edge ∈ measuredDependencyEdgesFromSource G components source ↔
+      edge.1 = source ∧ edge.2 ∈ components ∧ G.edge source edge.2 := by
+  rcases edge with ⟨c, d⟩
+  constructor
+  · intro h
+    simp [measuredDependencyEdgesFromSource] at h
+    rcases h with ⟨⟨hMem, hEdge⟩, hEq⟩
+    exact ⟨hEq.symm, hMem, hEdge⟩
+  · intro h
+    rcases h with ⟨hEq, hMem, hEdge⟩
+    simp [measuredDependencyEdgesFromSource]
+    exact ⟨⟨hMem, hEdge⟩, hEq.symm⟩
+
+/--
+The per-source fanout count is exactly the number of measured dependency edges
+with that source.
+-/
+theorem fanout_eq_measuredDependencyEdgesFromSource_length {C : Type u}
+    (G : ArchGraph C) [DecidableRel G.edge] (components : List C) (c : C) :
+    fanout G components c =
+      (measuredDependencyEdgesFromSource G components c).length := by
+  simp [fanout, measuredDependencyEdgesFromSource, countWhere]
+
 /-- Total outgoing dependency count over the supplied finite universe. -/
 def totalFanout {C : Type u} (G : ArchGraph C)
     [DecidableRel G.edge] (components : List C) : Nat :=
@@ -147,8 +187,7 @@ produce duplicate measured pairs, matching the executable v0 metrics.
 -/
 def measuredDependencyEdges {C : Type u} (G : ArchGraph C)
     [DecidableRel G.edge] (components : List C) : List (C × C) :=
-  components.flatMap (fun c =>
-    (components.filter (fun d => decide (G.edge c d))).map (fun d => (c, d)))
+  components.flatMap (fun c => measuredDependencyEdgesFromSource G components c)
 
 /--
 Membership in `measuredDependencyEdges` is exactly being an edge whose source
@@ -159,7 +198,17 @@ theorem mem_measuredDependencyEdges_iff {C : Type u} {G : ArchGraph C}
     edge ∈ measuredDependencyEdges G components ↔
       edge.1 ∈ components ∧ edge.2 ∈ components ∧ G.edge edge.1 edge.2 := by
   rcases edge with ⟨c, d⟩
-  simp [measuredDependencyEdges]
+  constructor
+  · intro h
+    simp [measuredDependencyEdges,
+      mem_measuredDependencyEdgesFromSource_iff] at h
+    rcases h with ⟨source, hSourceMem, hEq, hTargetMem, hEdge⟩
+    subst c
+    exact ⟨hSourceMem, hTargetMem, hEdge⟩
+  · intro h
+    rcases h with ⟨hSourceMem, hTargetMem, hEdge⟩
+    simp [measuredDependencyEdges, mem_measuredDependencyEdgesFromSource_iff]
+    exact ⟨c, hSourceMem, rfl, hTargetMem, hEdge⟩
 
 /--
 The total fanout metric is exactly the number of measured dependency edges.
@@ -167,7 +216,8 @@ The total fanout metric is exactly the number of measured dependency edges.
 theorem totalFanout_eq_measuredDependencyEdges_length {C : Type u}
     (G : ArchGraph C) [DecidableRel G.edge] (components : List C) :
     totalFanout G components = (measuredDependencyEdges G components).length := by
-  simp [totalFanout, measuredDependencyEdges, fanout, countWhere]
+  simp [totalFanout, measuredDependencyEdges,
+    fanout_eq_measuredDependencyEdgesFromSource_length]
 
 /--
 Fanout risk for Signature v0.
@@ -202,6 +252,18 @@ dependency count rather than the total dependency load.
 def maxFanoutOfFinite {C : Type u} (G : ArchGraph C)
     [DecidableRel G.edge] (components : List C) : Nat :=
   maxNatList (components.map (fun c => fanout G components c))
+
+/--
+The v1 core max-fanout metric is the maximum number of measured dependency
+edges with a common source component.
+-/
+theorem maxFanoutOfFinite_eq_max_measuredDependencyEdgesFromSource_length
+    {C : Type u} (G : ArchGraph C) [DecidableRel G.edge] (components : List C) :
+    maxFanoutOfFinite G components =
+      maxNatList
+        (components.map (fun c =>
+          (measuredDependencyEdgesFromSource G components c).length)) := by
+  simp [maxFanoutOfFinite, fanout_eq_measuredDependencyEdgesFromSource_length]
 
 /--
 Strict bounded reachable cone size from one component.
