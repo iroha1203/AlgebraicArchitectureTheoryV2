@@ -35,7 +35,7 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | closed | 5. Layering Equivalence | `proved` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
 | [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
 | [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | SCC サイズ指標と相互到達可能性の同値類を接続する。 |
-| [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26) | open | 7. Path and Matrix Foundations | `future proof obligation` / design | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理), [解析的指標は発展課題として扱う](#解析的指標は発展課題として扱う) | adjacency matrix と DAG / nilpotence / spectral bridge を設計する。 |
+| [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26) | closed | 7. Path and Matrix Foundations | `future proof obligation` / design decided | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理), [Matrix bridge 設計](#matrix-bridge-設計), [解析的指標は発展課題として扱う](#解析的指標は発展課題として扱う) | adjacency matrix と DAG / nilpotence / spectral bridge の設計境界を固定する。 |
 | [#32](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/32) | open | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [Signature v1 軸設計](#signature-v1-軸設計) | ArchitectureSignature v1 の軸構成を整理する。 |
 
 ## Lean で証明する命題
@@ -128,6 +128,38 @@ Lean status:
 - `DAG <-> Nilpotent adjacency matrix`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 - `DAG -> rho(A) = 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 - `cycle -> rho(A) > 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
+
+#### Matrix bridge 設計
+
+Issue [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
+では、adjacency matrix を `Decomposable` の定義へ混ぜず、有限
+`ComponentUniverse` 上の bridge layer として導入する方針に固定する。
+
+最初の Lean 側対象は、`ComponentUniverse.components` の添字を持つ 0/1
+隣接行列である。行列の entry は辺の存在を表し、thin
+`ComponentCategory` が忘れる walk 数や path 数を復元するための別構造として扱う。
+測定 universe は full universe として始め、実コードベース抽出器の完全性は主張しない。
+
+Lean で優先して証明する bridge theorem は次である。
+
+- `Acyclic G` と有限 universe 上の DAG 条件の対応。
+- DAG 条件から、十分大きい冪で 0 になる adjacency matrix nilpotence。
+- adjacency matrix nilpotence から、非空閉 walk が存在しないこと。
+- したがって有限 universe 上で `WalkAcyclic` / `Acyclic` と nilpotence が一致すること。
+
+`A^k` の entry を長さ `k` の walk 数と読む定理は、`Walk` を長さ付きの
+count-preserving object として使う。これは `Reachable` や
+`ComponentCategory` の Hom からは出さない。
+
+`rho(A)` などの spectral condition は、実数・複素数上の行列解析と
+Perron-Frobenius 型の補題を要するため、初期 Lean bridge では証明対象にしない。
+当面は次の status に分ける。
+
+- `DAG <-> Nilpotent adjacency matrix`: `future proof obligation`
+- `DAG -> rho(A) = 0`: `future proof obligation`, matrix bridge 後の解析的拡張
+- `cycle -> rho(A) > 0`: `future proof obligation`, matrix bridge 後の解析的拡張
+- spectral radius を変更波及や障害伝播の増幅指標として使う主張:
+  `empirical hypothesis`
 
 `Acyclic + finite vertices -> StrictLayered` は、`ComponentUniverse.sourceDepthLayer` を層関数として使い、有限 universe 上の bounded source depth が依存辺に沿って厳密に下がることとして証明する。有限グラフ表現は `ComponentUniverse` と `FiniteArchGraph` の二層に分ける。`ComponentUniverse` は proof-carrying measurement universe として list, `Nodup`, coverage, edge-closedness を保持する。`FiniteArchGraph` は `ArchGraph` と `ComponentUniverse` を束ねる薄い graph-plus-universe structure として、有限グラフ theorem statement の入口にする。この整理は [Issue #3](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3) で扱う。
 
