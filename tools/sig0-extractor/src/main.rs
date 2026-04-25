@@ -4,7 +4,7 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 
 use clap::Parser;
-use sig0_extractor::extract_sig0;
+use sig0_extractor::extract_sig0_with_policy;
 
 #[derive(Debug, Parser)]
 #[command(version, about = "Extract Sig0 input from Lean module imports")]
@@ -16,11 +16,15 @@ struct Args {
     /// Output JSON path. If omitted, JSON is written to stdout.
     #[arg(long)]
     out: Option<PathBuf>,
+
+    /// Optional boundary / abstraction policy JSON file.
+    #[arg(long)]
+    policy: Option<PathBuf>,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
-    let document = extract_sig0(&args.root)?;
+    let document = extract_sig0_with_policy(&args.root, args.policy.as_deref())?;
 
     match args.out {
         Some(path) => {

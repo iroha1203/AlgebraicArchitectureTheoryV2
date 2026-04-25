@@ -21,6 +21,8 @@ pub struct Sig0Document {
     pub policies: Policies,
     pub signature: Signature,
     pub metric_status: BTreeMap<String, MetricStatus>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub policy_violations: Vec<PolicyViolation>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -42,6 +44,14 @@ pub struct Edge {
 pub struct Policies {
     pub boundary_allowed: Vec<String>,
     pub abstraction_allowed: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub policy_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub boundary_group_count: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub abstraction_relation_count: Option<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -58,7 +68,25 @@ pub struct Signature {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MetricStatus {
     pub measured: bool,
-    pub reason: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyViolation {
+    pub axis: String,
+    pub source: String,
+    pub target: String,
+    pub evidence: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_group: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_group: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub relation_ids: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -69,6 +97,13 @@ struct ImportEdge {
 }
 
 pub fn extract_sig0(root: &Path) -> Result<Sig0Document, Box<dyn Error>> {
+    extract_sig0_with_policy(root, None)
+}
+
+pub fn extract_sig0_with_policy(
+    root: &Path,
+    policy_path: Option<&Path>,
+) -> Result<Sig0Document, Box<dyn Error>> {
     let root = root.to_path_buf();
     let mut components = Vec::new();
     let mut import_edges = Vec::new();
@@ -94,23 +129,107 @@ pub fn extract_sig0(root: &Path) -> Result<Sig0Document, Box<dyn Error>> {
     components.sort_by(|a, b| a.id.cmp(&b.id).then(a.path.cmp(&b.path)));
 
     let edges = dedup_edges(import_edges);
-    let signature = compute_signature(&components, &edges);
+    let mut signature = compute_signature(&components, &edges);
 
     let mut metric_status = BTreeMap::new();
     metric_status.insert(
         "boundaryViolationCount".to_string(),
         MetricStatus {
             measured: false,
-            reason: "policy file not provided".to_string(),
+            reason: Some("policy file not provided".to_string()),
+            source: None,
         },
     );
     metric_status.insert(
         "abstractionViolationCount".to_string(),
         MetricStatus {
             measured: false,
-            reason: "policy file not provided".to_string(),
+            reason: Some("policy file not provided".to_string()),
+            source: None,
         },
     );
+    let mut policies = Policies {
+        boundary_allowed: Vec::new(),
+        abstraction_allowed: Vec::new(),
+        policy_id: None,
+        schema_version: None,
+        boundary_group_count: None,
+        abstraction_relation_count: None,
+    };
+    let mut policy_violations = Vec::new();
+
+    if let Some(policy_path) = policy_path {
+        let policy = PolicyFile::read(policy_path)?;
+        policies = Policies {
+            boundary_allowed: Vec::new(),
+            abstraction_allowed: Vec::new(),
+            policy_id: Some(policy.policy_id.clone()),
+            schema_version: Some(policy.schema_version.clone()),
+            boundary_group_count: policy
+                .boundary
+                .as_ref()
+                .map(|boundary| boundary.groups.len()),
+            abstraction_relation_count: policy
+                .abstraction
+                .as_ref()
+                .map(|abstraction| abstraction.relations.len()),
+        };
+        let policy_source = format!("policy:{}", policy.policy_id);
+
+        match policy.boundary.as_ref() {
+            Some(boundary) => match measure_boundary(boundary, &components, &edges) {
+                Ok((count, violations)) => {
+                    signature.boundary_violation_count = count;
+                    metric_status.insert(
+                        "boundaryViolationCount".to_string(),
+                        measured_status(&policy_source),
+                    );
+                    policy_violations.extend(violations);
+                }
+                Err(reason) => {
+                    signature.boundary_violation_count = 0;
+                    metric_status.insert(
+                        "boundaryViolationCount".to_string(),
+                        unmeasured_status(reason),
+                    );
+                }
+            },
+            None => {
+                signature.boundary_violation_count = 0;
+                metric_status.insert(
+                    "boundaryViolationCount".to_string(),
+                    unmeasured_status("boundary policy not provided".to_string()),
+                );
+            }
+        }
+
+        match policy.abstraction.as_ref() {
+            Some(abstraction) => match measure_abstraction(abstraction, &components, &edges) {
+                Ok((count, violations)) => {
+                    signature.abstraction_violation_count = count;
+                    metric_status.insert(
+                        "abstractionViolationCount".to_string(),
+                        measured_status(&policy_source),
+                    );
+                    policy_violations.extend(violations);
+                }
+                Err(reason) => {
+                    signature.abstraction_violation_count = 0;
+                    metric_status.insert(
+                        "abstractionViolationCount".to_string(),
+                        unmeasured_status(reason),
+                    );
+                }
+            },
+            None => {
+                signature.abstraction_violation_count = 0;
+                metric_status.insert(
+                    "abstractionViolationCount".to_string(),
+                    unmeasured_status("abstraction policy not provided".to_string()),
+                );
+            }
+        }
+    }
 
     Ok(Sig0Document {
         schema_version: SCHEMA_VERSION.to_string(),
@@ -118,13 +237,365 @@ pub fn extract_sig0(root: &Path) -> Result<Sig0Document, Box<dyn Error>> {
         component_kind: COMPONENT_KIND.to_string(),
         components,
         edges,
-        policies: Policies {
-            boundary_allowed: Vec::new(),
-            abstraction_allowed: Vec::new(),
-        },
+        policies,
         signature,
         metric_status,
+        policy_violations,
     })
+}
+
+fn measured_status(source: &str) -> MetricStatus {
+    MetricStatus {
+        measured: true,
+        reason: None,
+        source: Some(source.to_string()),
+    }
+}
+
+fn unmeasured_status(reason: String) -> MetricStatus {
+    MetricStatus {
+        measured: false,
+        reason: Some(reason),
+        source: None,
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct PolicyFile {
+    schema_version: String,
+    policy_id: String,
+    component_id_kind: String,
+    selector_semantics: String,
+    boundary: Option<BoundaryPolicy>,
+    abstraction: Option<AbstractionPolicy>,
+}
+
+impl PolicyFile {
+    fn read(path: &Path) -> Result<Self, Box<dyn Error>> {
+        let source = fs::read_to_string(path)?;
+        let policy: PolicyFile = serde_json::from_str(&source)?;
+        if policy.schema_version != "signature-policy-v0" {
+            return Err(format!(
+                "unsupported policy schemaVersion: {}",
+                policy.schema_version
+            )
+            .into());
+        }
+        if policy.component_id_kind != COMPONENT_KIND {
+            return Err(format!(
+                "unsupported policy componentIdKind: {}",
+                policy.component_id_kind
+            )
+            .into());
+        }
+        if policy.selector_semantics != "exact-or-prefix-star" {
+            return Err(format!(
+                "unsupported policy selectorSemantics: {}",
+                policy.selector_semantics
+            )
+            .into());
+        }
+        Ok(policy)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct BoundaryPolicy {
+    groups: Vec<BoundaryGroup>,
+    allowed_dependencies: Vec<AllowedDependency>,
+    unmatched_component: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+struct BoundaryGroup {
+    id: String,
+    components: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AllowedDependency {
+    source_group: String,
+    target_group: String,
+    #[allow(dead_code)]
+    reason: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AbstractionPolicy {
+    relations: Vec<AbstractionRelation>,
+    #[allow(dead_code)]
+    unmatched_component: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AbstractionRelation {
+    id: String,
+    abstraction: String,
+    clients: Vec<String>,
+    implementations: Vec<String>,
+    #[serde(default)]
+    allowed_direct_implementation_dependencies: Vec<String>,
+}
+
+fn measure_boundary(
+    boundary: &BoundaryPolicy,
+    components: &[Component],
+    edges: &[Edge],
+) -> Result<(usize, Vec<PolicyViolation>), String> {
+    if boundary.unmatched_component.as_deref() != Some("not-measured") {
+        return Err("boundary.unmatchedComponent must be not-measured".to_string());
+    }
+
+    let component_ids = local_component_ids(components);
+    let mut membership: BTreeMap<String, BTreeSet<String>> = component_ids
+        .iter()
+        .map(|id| (id.clone(), BTreeSet::new()))
+        .collect();
+
+    for group in &boundary.groups {
+        if group.id.is_empty() {
+            return Err("boundary group id must not be empty".to_string());
+        }
+        if group.components.is_empty() {
+            return Err(format!(
+                "boundary group {} has no component selectors",
+                group.id
+            ));
+        }
+
+        for selector in &group.components {
+            let matches = resolve_selector(selector, &component_ids)?;
+            if matches.is_empty() {
+                return Err(format!(
+                    "boundary selector did not match component: {selector}"
+                ));
+            }
+            for component in matches {
+                membership
+                    .get_mut(&component)
+                    .expect("component id came from local set")
+                    .insert(group.id.clone());
+            }
+        }
+    }
+
+    let mut group_by_component = BTreeMap::new();
+    for (component, groups) in membership {
+        if groups.len() != 1 {
+            return Err(format!(
+                "boundary group membership is not unique for {component}"
+            ));
+        }
+        group_by_component.insert(
+            component,
+            groups
+                .into_iter()
+                .next()
+                .expect("exactly one boundary group"),
+        );
+    }
+
+    let allowed: BTreeSet<(String, String)> = boundary
+        .allowed_dependencies
+        .iter()
+        .map(|dependency| {
+            (
+                dependency.source_group.clone(),
+                dependency.target_group.clone(),
+            )
+        })
+        .collect();
+
+    let mut violations = Vec::new();
+    for edge in edges {
+        if !component_ids.contains(&edge.source) || !component_ids.contains(&edge.target) {
+            continue;
+        }
+
+        let source_group = group_by_component
+            .get(&edge.source)
+            .expect("local component has boundary group");
+        let target_group = group_by_component
+            .get(&edge.target)
+            .expect("local component has boundary group");
+        if allowed.contains(&(source_group.clone(), target_group.clone())) {
+            continue;
+        }
+
+        violations.push(PolicyViolation {
+            axis: "boundaryViolationCount".to_string(),
+            source: edge.source.clone(),
+            target: edge.target.clone(),
+            evidence: edge.evidence.clone(),
+            source_group: Some(source_group.clone()),
+            target_group: Some(target_group.clone()),
+            relation_ids: None,
+        });
+    }
+
+    Ok((violations.len(), violations))
+}
+
+fn measure_abstraction(
+    abstraction: &AbstractionPolicy,
+    components: &[Component],
+    edges: &[Edge],
+) -> Result<(usize, Vec<PolicyViolation>), String> {
+    if abstraction.relations.is_empty() {
+        return Err("abstraction.relations must not be empty".to_string());
+    }
+
+    let component_ids = local_component_ids(components);
+    let mut relation_components = Vec::new();
+    for relation in &abstraction.relations {
+        if relation.id.is_empty() {
+            return Err("abstraction relation id must not be empty".to_string());
+        }
+        let clients = resolve_nonempty_selectors(
+            &relation.clients,
+            &component_ids,
+            &format!("abstraction relation {} clients", relation.id),
+        )?;
+        let abstractions = resolve_selector(&relation.abstraction, &component_ids)?;
+        if abstractions.is_empty() {
+            return Err(format!(
+                "abstraction relation {} abstraction selector did not match component: {}",
+                relation.id, relation.abstraction
+            ));
+        }
+        let implementations = resolve_nonempty_selectors(
+            &relation.implementations,
+            &component_ids,
+            &format!("abstraction relation {} implementations", relation.id),
+        )?;
+        let allowed_direct = resolve_optional_selectors(
+            &relation.allowed_direct_implementation_dependencies,
+            &component_ids,
+        )?;
+
+        relation_components.push(ResolvedAbstractionRelation {
+            id: relation.id.clone(),
+            clients,
+            implementations,
+            allowed_direct,
+        });
+    }
+
+    let mut violations = Vec::new();
+    for edge in edges {
+        if !component_ids.contains(&edge.source) || !component_ids.contains(&edge.target) {
+            continue;
+        }
+
+        let relation_ids: Vec<String> = relation_components
+            .iter()
+            .filter(|relation| {
+                relation.clients.contains(&edge.source)
+                    && relation.implementations.contains(&edge.target)
+                    && !relation.allowed_direct.contains(&edge.target)
+            })
+            .map(|relation| relation.id.clone())
+            .collect();
+
+        if relation_ids.is_empty() {
+            continue;
+        }
+
+        violations.push(PolicyViolation {
+            axis: "abstractionViolationCount".to_string(),
+            source: edge.source.clone(),
+            target: edge.target.clone(),
+            evidence: edge.evidence.clone(),
+            source_group: None,
+            target_group: None,
+            relation_ids: Some(relation_ids),
+        });
+    }
+
+    Ok((violations.len(), violations))
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ResolvedAbstractionRelation {
+    id: String,
+    clients: BTreeSet<String>,
+    implementations: BTreeSet<String>,
+    allowed_direct: BTreeSet<String>,
+}
+
+fn local_component_ids(components: &[Component]) -> BTreeSet<String> {
+    components
+        .iter()
+        .map(|component| component.id.clone())
+        .collect()
+}
+
+fn resolve_nonempty_selectors(
+    selectors: &[String],
+    component_ids: &BTreeSet<String>,
+    label: &str,
+) -> Result<BTreeSet<String>, String> {
+    if selectors.is_empty() {
+        return Err(format!("{label} selectors must not be empty"));
+    }
+    let resolved = resolve_optional_selectors(selectors, component_ids)?;
+    if resolved.is_empty() {
+        return Err(format!("{label} selectors did not match any component"));
+    }
+    Ok(resolved)
+}
+
+fn resolve_optional_selectors(
+    selectors: &[String],
+    component_ids: &BTreeSet<String>,
+) -> Result<BTreeSet<String>, String> {
+    let mut resolved = BTreeSet::new();
+    for selector in selectors {
+        let matches = resolve_selector(selector, component_ids)?;
+        if matches.is_empty() {
+            return Err(format!("selector did not match component: {selector}"));
+        }
+        resolved.extend(matches);
+    }
+    Ok(resolved)
+}
+
+fn resolve_selector(
+    selector: &str,
+    component_ids: &BTreeSet<String>,
+) -> Result<BTreeSet<String>, String> {
+    validate_selector(selector)?;
+    if let Some(prefix) = selector.strip_suffix('*') {
+        return Ok(component_ids
+            .iter()
+            .filter(|component| component.starts_with(prefix))
+            .cloned()
+            .collect());
+    }
+
+    Ok(component_ids
+        .iter()
+        .filter(|component| component.as_str() == selector)
+        .cloned()
+        .collect())
+}
+
+fn validate_selector(selector: &str) -> Result<(), String> {
+    if selector.is_empty() {
+        return Err("selector must not be empty".to_string());
+    }
+
+    let star_count = selector.chars().filter(|ch| *ch == '*').count();
+    if star_count > 1 || (star_count == 1 && !selector.ends_with('*')) {
+        return Err(format!("unsupported selector: {selector}"));
+    }
+
+    Ok(())
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -458,6 +929,76 @@ import Should.Not.Appear
                 .expect("boundary status")
                 .measured
         );
+        assert_eq!(
+            document
+                .metric_status
+                .get("boundaryViolationCount")
+                .expect("boundary status")
+                .reason
+                .as_deref(),
+            Some("policy file not provided")
+        );
+        assert!(document.policy_violations.is_empty());
+    }
+
+    #[test]
+    fn applies_policy_with_measured_zero_counts() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal");
+        let policy = root.join("policy_measured_zero.json");
+        let document = extract_sig0_with_policy(&root, Some(&policy)).expect("fixture extracts");
+
+        assert_eq!(
+            document.policies.policy_id.as_deref(),
+            Some("minimal-measured-zero")
+        );
+        assert_eq!(document.policies.boundary_group_count, Some(2));
+        assert_eq!(document.policies.abstraction_relation_count, Some(1));
+        assert_eq!(document.signature.boundary_violation_count, 0);
+        assert_eq!(document.signature.abstraction_violation_count, 0);
+        assert!(
+            document
+                .metric_status
+                .get("boundaryViolationCount")
+                .expect("boundary status")
+                .measured
+        );
+        assert_eq!(
+            document
+                .metric_status
+                .get("boundaryViolationCount")
+                .expect("boundary status")
+                .source
+                .as_deref(),
+            Some("policy:minimal-measured-zero")
+        );
+        assert!(document.policy_violations.is_empty());
+    }
+
+    #[test]
+    fn counts_policy_violations_by_unique_dependency_edge() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal");
+        let policy = root.join("policy_violations.json");
+        let document = extract_sig0_with_policy(&root, Some(&policy)).expect("fixture extracts");
+
+        assert_eq!(document.signature.boundary_violation_count, 2);
+        assert_eq!(document.signature.abstraction_violation_count, 1);
+        assert!(
+            document
+                .policy_violations
+                .iter()
+                .any(|violation| violation.axis == "boundaryViolationCount"
+                    && violation.source == "Formal"
+                    && violation.target == "Formal.Arch.A")
+        );
+        assert!(document.policy_violations.iter().any(|violation| {
+            violation.axis == "abstractionViolationCount"
+                && violation.source == "Formal"
+                && violation.target == "Formal.Arch.B"
+                && violation
+                    .relation_ids
+                    .as_ref()
+                    .is_some_and(|relations| relations == &vec!["formal-api".to_string()])
+        }));
     }
 
     #[test]
