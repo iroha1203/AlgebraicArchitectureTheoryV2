@@ -808,11 +808,16 @@ Lean status の区分:
   に分離する。`boundaryViolationCount` / `abstractionViolationCount` の counting
   unit は tooling output 上の unique dependency edge であり、policy 未指定や
   selector 未解決の placeholder 0 は欠損値として扱う。
+- extractor output と Lean の `ComponentUniverse` の責務境界を検査する
+  validation report の最小 schema と CLI contract は
+  [#109](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/109)
+  で固定し、
+  [component_universe_validation_report.md](design/component_universe_validation_report.md)
+  に分離する。これは `Nodup`, coverage, edge-closedness に対応する JSON-level
+  tooling evidence であり、`ComponentUniverse` の Lean witness そのものではない。
 
 残る後続タスク:
 
-- extractor output と Lean の `ComponentUniverse` の責務境界を検査する
-  validation report を設計する。
 - `ProjectionExact` から抽象 edge と投影された具体 edge 集合の一致を読む
   edge-level bridge theorem を追加するか判断する。
 - `DIPCompatible G π GA` と `ObservationFactorsThrough π O` を束ねる

@@ -10,6 +10,7 @@
 | [Signature 実証プロトコル](empirical_protocol.md) | empirical protocol | Signature と PR / issue / incident metadata を結合し、変更波及・レビューコスト・障害修正との関係を検証する手順を固定する。 |
 | [empirical dataset v0 schema](empirical_dataset_schema.md) | empirical dataset schema | Signature before / after、signed delta、PR metadata、metric status を結合する最小 record schema を固定する。 |
 | [boundary / abstraction policy v0 schema](boundary_abstraction_policy_schema.md) | tooling design / empirical hypothesis | boundary / abstraction violation count を測る policy file schema と counting unit を固定する。 |
+| [ComponentUniverse validation report v0](component_universe_validation_report.md) | tooling design / empirical hypothesis | extractor output と Lean `ComponentUniverse` の責務境界を検査する report schema と CLI contract を固定する。 |
 | [ArchitectureSignature v1 後半戦まとめ](signature_v1_wrapup.md) | Lean schema / design decision | v0 互換軸、v1 core、optional extension axis の責務境界をまとめる。 |
 | [relationComplexity 設計](relation_complexity_design.md) | tooling design / empirical hypothesis | 状態遷移代数層の複雑度を workflow observation として測る方針を整理する。 |
 | [runtimePropagation 設計](runtime_propagation_design.md) | Lean executable metric / tooling boundary | 0/1 `RuntimeDependencyGraph` 上の propagation radius と runtime metadata の境界を整理する。 |
