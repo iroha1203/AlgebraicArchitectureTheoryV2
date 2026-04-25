@@ -869,10 +869,22 @@ Lean status の区分:
   Lean witness そのものではない。core 4 軸の `metricStatus` も測定済み metadata として
   extractor output に含める。
 
-残る後続タスク:
+Stabilization / Audit 時点で残す後続タスク:
 
-- `DIPCompatible G π GA` と `ObservationFactorsThrough π O` を束ねる
-  `LocalReplacementContract` 風の packaging theorem を追加するか判断する。
+- [#134](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/134):
+  paper-ready research note を作成する。
+- [#135](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/135):
+  empirical pilot を小規模 repository で実施する。
+- [#136](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/136):
+  Lean refinement 候補を整理し、必要最小限だけ証明する。
+- [#137](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/137):
+  `sig0-extractor` tooling を外部利用向けに hardening する。
+- [#138](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/138):
+  `Formal/Arch` 以下の module 階層整理方針を決める。
+
+`LocalReplacementContract` 風の packaging theorem は
+[#118](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/118)
+で実装済みであり、この台帳では未解決タスクとして扱わない。
 
 Bridge theorem naming policy:
 
