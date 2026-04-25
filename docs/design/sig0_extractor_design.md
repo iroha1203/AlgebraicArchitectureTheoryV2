@@ -241,7 +241,9 @@ Issue #115 では `--policy` で
   で固定し、Issue #116 で `sig0-extractor validate --input ...` として実装した。
   同時に core 4 軸の `metricStatus` も測定済み metadata として出力するようにした。
 - 複数 repository に対する signature 時系列と PR metadata を結合する empirical dataset
-  schema は [empirical dataset v0 schema](empirical_dataset_schema.md) で固定した。
+  schema は [empirical dataset v0 schema](empirical_dataset_schema.md) で固定し、
+  Issue #117 で `sig0-extractor dataset --before ... --after ... --pr-metadata ...`
+  として単一 PR record の生成を実装した。
 
 これらは Lean proof の進行をブロックしない。tooling の正確性は、golden fixture,
 snapshot test, 実コード上の再現性で確認し、Lean theorem としては主張しない。

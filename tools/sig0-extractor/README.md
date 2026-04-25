@@ -51,3 +51,25 @@ validation report の出力 schema は
 `schemaVersion: "component-universe-validation-report-v0"` の単一 JSON document である。
 `summary.result` は `pass`, `warn`, `fail` のいずれかで、`fail` の場合だけ CLI の終了コードは
 `1` になる。入力 JSON を読めない、または report を生成できない場合の終了コードは `2` である。
+
+PR 前後の Signature と PR metadata を empirical dataset v0 record に結合する場合は
+次を使う。
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- dataset \
+  --before .lake/sig0-base.json \
+  --after .lake/sig0-head.json \
+  --pr-metadata pr-metadata.json \
+  --after-role head \
+  --out .lake/empirical-dataset-v0.json
+```
+
+`--after-role` は `head` または `merge` を指定する。`merge` を指定する場合は
+PR metadata の `pullRequest.mergeCommit` が必須である。
+
+`pr-metadata.json` は `repository`, `pullRequest`, `prMetrics` を持つ JSON document
+で、`issueIncidentLinks` と `analysisMetadata` は省略できる。dataset 出力は
+`schemaVersion: "empirical-signature-dataset-v0"` の単一 record である。
+`deltaSignatureSigned` は before / after の両方で `metricStatus.measured = true`
+かつ値が `null` でない軸だけを符号付き差分として出す。policy 未指定の
+`boundaryViolationCount` のような placeholder 0 は `null` delta として保持する。

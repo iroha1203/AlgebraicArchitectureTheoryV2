@@ -805,6 +805,12 @@ Lean status の区分:
   [empirical_dataset_schema.md](design/empirical_dataset_schema.md)
   に分離する。`metricStatus.measured = false` と optional axis の `none` / `null`
   は欠損値であり、risk 0 として集計しない。
+- Sig0 extractor output と PR metadata から empirical dataset v0 record を生成する
+  CLI は [#117](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/117)
+  で `sig0-extractor dataset --before ... --after ... --pr-metadata ...` として
+  実装済みである。`deltaSignatureSigned` は before / after の両方で測定済みの軸だけを
+  符号付き差分にし、未測定軸や optional axis の `null` は比較不能として保持する。
+  Lean status は `empirical hypothesis` / tooling implementation である。
 - boundary / abstraction policy file の最小 schema は
   [#106](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/106)
   で固定し、
