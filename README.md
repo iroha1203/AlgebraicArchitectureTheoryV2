@@ -92,9 +92,12 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 ## 詳細ドキュメント
 
 - [研究概要](docs/aat_v2_overview.md)
+- [docs 読み方](docs/README.md)
 - [研究の最終ゴール](docs/research_goal.md)
 - [設計原則の分類](docs/design_principle_classification.md)
 - [証明義務と実証仮説](docs/proof_obligations.md)
+- [個別設計メモ](docs/design/README.md)
+- [Lean 定義・定理索引](docs/formal/lean_theorem_index.md)
 
 ## リポジトリ構成
 
