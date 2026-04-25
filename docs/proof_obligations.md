@@ -801,11 +801,16 @@ Lean status の区分:
   [empirical_dataset_schema.md](design/empirical_dataset_schema.md)
   に分離する。`metricStatus.measured = false` と optional axis の `none` / `null`
   は欠損値であり、risk 0 として集計しない。
+- boundary / abstraction policy file の最小 schema は
+  [#106](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/106)
+  で固定し、
+  [boundary_abstraction_policy_schema.md](design/boundary_abstraction_policy_schema.md)
+  に分離する。`boundaryViolationCount` / `abstractionViolationCount` の counting
+  unit は tooling output 上の unique dependency edge であり、policy 未指定や
+  selector 未解決の placeholder 0 は欠損値として扱う。
 
 残る後続タスク:
 
-- boundary / abstraction policy file の最小 schema を設計し、tooling 側で
-  violation count を測れるようにする。
 - extractor output と Lean の `ComponentUniverse` の責務境界を検査する
   validation report を設計する。
 - `ProjectionExact` から抽象 edge と投影された具体 edge 集合の一致を読む
