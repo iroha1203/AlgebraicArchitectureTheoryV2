@@ -144,6 +144,8 @@ Sig(A) =
 | 分散収束・ログ整合性 | 分散状態は前提条件のもとで収束するか。 | `consensusPreconditionRisk`, `divergenceWindow`, `replicationLagRisk` |
 | 実証的コスト | 指標は実際の変更・障害コストと関係するか。 | `empiricalChangeCost`, `reviewCost`, `incidentRepairCost` |
 
+Signature v1 では、これらを一度にすべて Lean 構造へ入れない。まず v0 の安定軸を保持し、分解可能性・依存伝播・境界・抽象化の executable metric を v1 core とする。`nilpotencyIndex` と `rho(A)` は adjacency matrix bridge の後続軸、`relationComplexity`, `runtimePropagation`, `empiricalChangeCost` は empirical extraction と実証プロトコル側の軸として分離する。
+
 ## 利用イメージ
 
 完成時には、設計改善の前後を次のように比較できる。
