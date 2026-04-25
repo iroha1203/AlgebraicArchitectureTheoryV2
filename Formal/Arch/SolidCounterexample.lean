@@ -236,6 +236,14 @@ inductive abstractEdge : Port → Port → Prop where
 def abstractGraph : AbstractGraph Port where
   edge := abstractEdge
 
+/-- The abstract port-level cycle itself is not decomposable. -/
+theorem abstractGraph_not_decomposable : ¬ Decomposable abstractGraph := by
+  intro h
+  rcases h with ⟨layer, hLayer⟩
+  have h1 : layer Port.payment < layer Port.order := hLayer abstractEdge.order_payment
+  have h2 : layer Port.order < layer Port.payment := hLayer abstractEdge.payment_order
+  exact Nat.lt_asymm h1 h2
+
 /-- Every concrete edge is represented at the abstract level. -/
 theorem projectionSound : ProjectionSound graph projection abstractGraph := by
   intro c d h
@@ -290,6 +298,22 @@ theorem not_decomposable : ¬ Decomposable graph := by
   have h1 : layer paymentPort < layer orderPort := hLayer edge.orderPort_paymentPort
   have h2 : layer orderPort < layer paymentPort := hLayer edge.paymentPort_orderPort
   exact Nat.lt_asymm h1 h2
+
+/--
+The strong operational DIP condition and non-decomposability hold together in
+the abstract-layer-cycle example.
+-/
+theorem dipCompatible_and_not_decomposable :
+    DIPCompatible graph projection abstractGraph ∧ ¬ Decomposable graph :=
+  ⟨dipCompatible, not_decomposable⟩
+
+/--
+Even exact projection plus representative stability does not by itself exclude
+the abstract-layer cycle.
+-/
+theorem strongDIPCompatible_and_not_decomposable :
+    StrongDIPCompatible graph projection abstractGraph ∧ ¬ Decomposable graph :=
+  ⟨strongDIPCompatible, not_decomposable⟩
 
 end StrongAbstractCycleComponent
 

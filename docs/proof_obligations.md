@@ -380,15 +380,22 @@ Lean status:
   `dipCompatible_of_strongDIPCompatible`,
   `mem_projectionSoundnessViolationEdges_iff`,
   `projectionSoundnessViolation_eq_zero_of_projectionSound`,
-  `projectionSound_of_projectionSoundnessViolation_eq_zero`
+  `projectionSound_of_projectionSoundnessViolation_eq_zero`,
+  `StrongAbstractCycleComponent.abstractGraph_not_decomposable`,
+  `StrongAbstractCycleComponent.dipCompatible_and_not_decomposable`,
+  `StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable`
+
+Issue [#81](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/81)
+では、DIP 風の依存方向だけでなく `DIPCompatible` /
+`StrongDIPCompatible` を満たしても、抽象層の循環から
+`¬ Decomposable` が起こり得ることを証明済みである。
+これは Layered とは別軸の局所契約 invariant として扱う。
 
 今後の proof obligation:
 
 - exact projection の edge-level bridge theorem を追加する場合は、
   `ProjectionExact G π GA` から `GA.edge a b` と
   `exists c d, π.expose c = a ∧ π.expose d = b ∧ G.edge c d` の同値を切る。
-- SOLID 不完全性反例では、DIP 風の依存方向や `DIPCompatible` を満たしても、
-  抽象層の循環から `¬ Decomposable` が起こり得ることを Layered とは別軸として扱う。
 
 ### 6. LSP は観測関手による同値性である
 
