@@ -1,6 +1,7 @@
 # spectral radius bridge 設計
 
-Lean status: `future proof obligation` / design decision.
+Lean status: `proved` for `DAG -> rho(A) = 0` on finite `ComponentUniverse`;
+`future proof obligation` for `cycle -> rho(A) > 0`; design decision.
 
 Issue [#79](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/79)
 の設計判断として、`rho(A)` は既存の `NatMatrix` bridge や
@@ -31,10 +32,9 @@ rho(A) := spectral radius of A over Complex
 係数体は最初から `Complex` とする。実数非負行列として始めると、固有値や
 spectral radius の標準補題で結局 `Complex` 化が必要になるためである。
 
-このリポジトリの現在の `lakefile.toml` は mathlib 依存を持たない。したがって
-`rho(A)` bridge theorem の実装 PR では、mathlib を導入するか、mathlib 依存を持つ
-別パッケージに切り出すかを最初に決める。#79 では Lean core に半端な独自
-spectral radius 定義を追加しない。
+Issue [#94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94)
+で mathlib 依存を追加し、Lean core では mathlib の `spectralRadius` を使う。
+#79 の方針どおり、半端な独自 spectral radius 定義は追加しない。
 
 ## theorem statement の分割
 
@@ -51,6 +51,7 @@ Perron-Frobenius 型の事実や trace / diagonal entry の評価が必要にな
 
 - [#94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94):
   `DAG` / adjacency nilpotence から `rho(A) = 0` への bridge theorem。
+  Lean status: `proved`.
 - [#95](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/95):
   cycle / closed walk から `rho(A) > 0` への bridge theorem。
 
@@ -66,7 +67,7 @@ Perron-Frobenius 型の事実や trace / diagonal entry の評価が必要にな
 | 軸 | 扱い | Lean status |
 | --- | --- | --- |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上の executable matrix bridge axis | `defined only` / `proved` |
-| `rho(A)` | mathlib-backed spectral bridge の後続候補 | `future proof obligation` |
+| `rho(A)` | mathlib-backed spectral bridge | `proved` for `DAG -> rho(A) = 0`; `future proof obligation` for cycle positivity |
 | `rho(A)` と変更・障害コストの関係 | 実データで検証する研究仮説 | `empirical hypothesis` |
 
 ## Lean core へ入れないもの

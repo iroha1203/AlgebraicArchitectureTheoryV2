@@ -1,3 +1,5 @@
+import Mathlib.Analysis.Normed.Algebra.Spectrum
+import Mathlib.Algebra.BigOperators.Fin
 import Formal.Arch.Finite
 
 namespace Formal.Arch
@@ -50,6 +52,51 @@ def AdjacencyNilpotent {C : Type u} {G : ArchGraph C}
     [DecidableEq C] [DecidableRel G.edge] (U : ComponentUniverse G) : Prop :=
   ∃ cutoff : Nat, ∀ {k : Nat} {c d : C},
     cutoff ≤ k → adjacencyPowerEntry U k c d = 0
+
+/--
+Finite index type used by the mathlib-backed spectral bridge.
+
+The entries are the duplicate-free component list carried by the
+`ComponentUniverse`; `SpectralIndex U` intentionally keeps the analytic matrix
+separate from the count-preserving `NatMatrix` bridge above.
+-/
+abbrev SpectralIndex {C : Type u} {G : ArchGraph C} (U : ComponentUniverse G) :=
+  Fin U.components.length
+
+namespace SpectralIndex
+
+/-- Read the component represented by a spectral matrix index. -/
+def component {C : Type u} {G : ArchGraph C} (U : ComponentUniverse G)
+    (i : SpectralIndex U) : C :=
+  U.components.get i
+
+end SpectralIndex
+
+/--
+The finite 0/1 adjacency matrix as a mathlib `Matrix` over natural numbers.
+
+This matrix uses `Fin U.components.length` as its index type so that mathlib
+matrix powers and spectrum APIs can be applied without adding a global
+`Fintype C` assumption.
+-/
+def indexedAdjacencyMatrix {C : Type u} {G : ArchGraph C} [DecidableRel G.edge]
+    (U : ComponentUniverse G) : Matrix (SpectralIndex U) (SpectralIndex U) Nat :=
+  fun i j =>
+    if G.edge (SpectralIndex.component U i) (SpectralIndex.component U j) then
+      1
+    else
+      0
+
+/-- The finite adjacency matrix over `Complex` used by the spectral bridge. -/
+noncomputable def spectralAdjacencyMatrix {C : Type u} {G : ArchGraph C}
+    [DecidableRel G.edge] (U : ComponentUniverse G) :
+    Matrix (SpectralIndex U) (SpectralIndex U) ℂ :=
+  (indexedAdjacencyMatrix U).map (Nat.castRingHom ℂ)
+
+/-- Spectral radius of the finite complex adjacency matrix. -/
+noncomputable def spectralRadiusOfAdjacency {C : Type u} {G : ArchGraph C}
+    [DecidableRel G.edge] (U : ComponentUniverse G) : ENNReal :=
+  spectralRadius ℂ (spectralAdjacencyMatrix U)
 
 /--
 Executable zero test for one adjacency power on the finite measurement universe.
@@ -261,6 +308,41 @@ theorem adjacencyMatrix_pos_iff {C : Type u} {G : ArchGraph C}
   · simp [adjacencyMatrix, hEdge]
 
 /--
+The mathlib-indexed natural adjacency matrix has the same powers as the
+existing list-summed `NatMatrix` bridge when entries are read through the
+component list.
+-/
+theorem indexedAdjacencyMatrix_pow_apply {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (k : Nat) (i j : SpectralIndex U) :
+    (indexedAdjacencyMatrix U ^ k) i j =
+      adjacencyPowerEntry U k
+        (SpectralIndex.component U i) (SpectralIndex.component U j) := by
+  induction k generalizing i j with
+  | zero =>
+      by_cases hEq : i = j
+      · subst j
+        simp [adjacencyPowerEntry, NatMatrix.pow, NatMatrix.id,
+          SpectralIndex.component]
+      · have hComponentNe :
+          SpectralIndex.component U i ≠ SpectralIndex.component U j := by
+          intro hComponent
+          exact hEq ((U.nodup.get_inj_iff).mp hComponent)
+        have hGetNe : U.components.get i ≠ U.components.get j := by
+          simpa [SpectralIndex.component] using hComponentNe
+        simpa [adjacencyPowerEntry, NatMatrix.pow, NatMatrix.id,
+          SpectralIndex.component, hEq, List.get_eq_getElem] using hGetNe
+  | succ k ih =>
+      rw [pow_succ']
+      simp only [Matrix.mul_apply, ih, adjacencyPowerEntry, NatMatrix.pow,
+        NatMatrix.mul, indexedAdjacencyMatrix, SpectralIndex.component]
+      simpa [adjacencyMatrix, List.get_eq_getElem] using
+        (Fin.sum_univ_fun_getElem U.components
+          (fun mid =>
+            adjacencyMatrix G (U.components.get i) mid *
+              NatMatrix.pow U (adjacencyMatrix G) k mid (U.components.get j)))
+
+/--
 The `(c,d)` entry of `A^k` is positive exactly when there is a walk from `c`
 to `d` with length `k`.
 -/
@@ -380,6 +462,73 @@ theorem adjacencyPowerEntry_zero_at_acyclic_cutoff {C : Type u}
         w.length ≤ U.components.length :=
       ComponentUniverse.walk_length_le_components_length_of_acyclic U hAcyclic w
     omega
+
+/--
+At the acyclic cutoff, the mathlib-indexed natural adjacency matrix is zero.
+-/
+theorem indexedAdjacencyMatrix_pow_zero_at_acyclic_cutoff {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hAcyclic : Acyclic G) :
+    indexedAdjacencyMatrix U ^ (U.components.length + 1) = 0 := by
+  ext i j
+  rw [indexedAdjacencyMatrix_pow_apply]
+  exact adjacencyPowerEntry_zero_at_acyclic_cutoff U hAcyclic
+    (SpectralIndex.component U i) (SpectralIndex.component U j)
+
+/--
+At the acyclic cutoff, the complex adjacency matrix used by the spectral bridge
+is zero.
+-/
+theorem spectralAdjacencyMatrix_pow_zero_at_acyclic_cutoff {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hAcyclic : Acyclic G) :
+    spectralAdjacencyMatrix U ^ (U.components.length + 1) = 0 := by
+  rw [spectralAdjacencyMatrix, ← Matrix.map_pow,
+    indexedAdjacencyMatrix_pow_zero_at_acyclic_cutoff U hAcyclic]
+  simp
+
+/-- Finite acyclic graphs have nilpotent complex adjacency matrices. -/
+theorem spectralAdjacencyMatrix_isNilpotent_of_acyclic {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hAcyclic : Acyclic G) :
+    IsNilpotent (spectralAdjacencyMatrix U) :=
+  ⟨U.components.length + 1,
+    spectralAdjacencyMatrix_pow_zero_at_acyclic_cutoff U hAcyclic⟩
+
+/--
+If a complex matrix has a positive zero power, its spectral radius is zero.
+-/
+theorem spectralRadius_eq_zero_of_matrix_pow_eq_zero {n : Type u}
+    [Fintype n] [DecidableEq n] (A : Matrix n n ℂ) {k : Nat}
+    (hk : k ≠ 0) (hpow : A ^ k = 0) :
+    spectralRadius ℂ A = 0 := by
+  have hLe :
+      spectralRadius ℂ A ^ k ≤ 0 := by
+    simpa [hpow] using spectrum.spectralRadius_pow_le (𝕜 := ℂ) A k hk
+  have hPowZero : spectralRadius ℂ A ^ k = 0 :=
+    le_antisymm hLe bot_le
+  by_contra hNonzero
+  have hPos : 0 < spectralRadius ℂ A := by
+    simpa [pos_iff_ne_zero] using hNonzero
+  have hPowPos : 0 < spectralRadius ℂ A ^ k :=
+    ENNReal.pow_pos hPos k
+  rw [hPowZero] at hPowPos
+  exact (lt_irrefl (0 : ENNReal)) hPowPos
+
+/--
+Finite DAGs have spectral radius zero for the complex adjacency matrix.
+
+The theorem is only about the structural finite adjacency matrix. It does not
+interpret `rho(A)` as a change-cost or propagation-risk metric.
+-/
+theorem spectralRadiusOfAdjacency_eq_zero_of_acyclic {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hAcyclic : Acyclic G) :
+    spectralRadiusOfAdjacency U = 0 := by
+  exact spectralRadius_eq_zero_of_matrix_pow_eq_zero
+    (spectralAdjacencyMatrix U)
+    (by omega)
+    (spectralAdjacencyMatrix_pow_zero_at_acyclic_cutoff U hAcyclic)
 
 /--
 Finite acyclic graphs always populate the executable nilpotency-index axis.

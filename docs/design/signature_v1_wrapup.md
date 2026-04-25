@@ -42,7 +42,8 @@ Lean 側の出力 schema は、次の 2 層に分ける。
 
 次の主張は Signature v1 schema には場所を持つが、Lean core の全称定理としてはまだ扱わない。
 
-- `rho(A)` は行列解析を含むため、spectral bridge の後続 proof obligation とする。
+- `rho(A)` のうち `DAG -> rho(A)=0` は spectral bridge で証明済みだが、
+  cycle positivity と empirical cost interpretation は後続課題とする。
 - `projectionSoundnessViolation` は soundness-only metric であり、`ProjectionComplete`
   の欠如や exact projection gap は別 refinement として扱う。
 - runtime edge metadata, timeout budget, retry policy, circuit breaker coverage は extractor / empirical tooling 側に残す。
