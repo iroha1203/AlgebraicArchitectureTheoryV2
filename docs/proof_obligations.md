@@ -848,6 +848,15 @@ Lean status の区分:
   review latency や approval latency が測れない場合は `null` として保持し、
   measured 0 と混同しない。Lean status は `empirical hypothesis` / tooling implementation
   である。
+- repository revision ごとの Signature を継続監視する snapshot store schema は
+  [#157](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/157)
+  で
+  [signature_snapshot_store_schema.md](design/signature_snapshot_store_schema.md)
+  に分離する。store は `repository`, `revision`, `scan.scannedAt`, extractor version,
+  `policy.policyId`, `signature`, `metricStatus`, validation summary を保持する。
+  `validationSummary.result = fail` の snapshot は主要 diff から除外し、測定済み 0 と
+  未評価 `null` を混同しない。Lean status は `empirical hypothesis` / tooling schema
+  である。
 - RelationComplexityObservation extractor rule set v0 は
   [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
   で `sig0-extractor relation-complexity --input ...` として実装済みである。

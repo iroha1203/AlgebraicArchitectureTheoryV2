@@ -128,6 +128,14 @@ validation report の出力 schema は
 PR 前後の Signature と PR metadata を empirical dataset v0 record に結合する場合は
 次を使う。
 
+main branch の週次 scan や任意期間 diff のために repository revision ごとの Signature を
+蓄積する場合は、`docs/design/signature_snapshot_store_schema.md` の
+`signature-snapshot-store-v0` を使う。snapshot store は PR metadata や signed delta を
+持たず、`repository`, `revision`, `scan.scannedAt`, extractor version, `policy.policyId`,
+`signature`, `metricStatus`, `validationSummary` を保持する。`validationSummary.result`
+が `fail` の snapshot は主要 diff から除外し、`metricStatus.measured = false` の軸は
+placeholder 0 でも risk 0 として扱わない。
+
 GitHub API の PR detail / files / reviews JSON から `pr-metadata.json` を生成する場合は
 次を使う。
 

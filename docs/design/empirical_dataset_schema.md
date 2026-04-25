@@ -11,6 +11,13 @@ record を固定することである。
 構造的事実を証明し、dataset は extractor / GitHub metadata / issue or incident
 metadata を結合した実証研究用の観測表として扱う。
 
+repository revision ごとの継続監視や週次 scan は
+[Signature snapshot store schema](signature_snapshot_store_schema.md) で扱う。
+この dataset は snapshot store の before / after record を PR metadata と結合し、
+`deltaSignatureSigned` と `metricDeltaStatus` を計算する分析用 record である。
+snapshot store 側の `validationSummary.result = fail` または `not_run` の snapshot は、
+PR-level dataset の主要分析に入れない。
+
 ## record 粒度
 
 最小単位は PR 単位の record である。1 record は、1 つの repository の 1 つの PR について、
