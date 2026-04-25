@@ -244,6 +244,63 @@ def sccExcessSizeOfFinite {C : Type u} (G : ArchGraph C)
   sccMaxSizeOfFinite G components - 1
 
 /--
+SCC excess around one component.
+
+Singleton SCCs contribute zero risk by Nat subtraction. This is the local
+building block for weighted SCC risk.
+-/
+def sccExcessAt {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) (c : C) : Nat :=
+  sccSizeAt G components c - 1
+
+/--
+Weighted SCC risk contribution of one component.
+
+The weight is supplied by the caller. Lean only treats it as a natural-number
+importance factor; evidence used to extract that weight belongs to empirical
+tooling rather than this graph-level metric.
+-/
+def weightedSccContributionAt {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) (weight : C → Nat) (c : C) : Nat :=
+  weight c * sccExcessAt G components c
+
+/--
+Signature v1 weighted SCC risk over a finite measurement universe.
+
+The counting rule sums each measured component's weight multiplied by its local
+SCC excess. Non-cyclic singleton SCCs therefore contribute zero risk, while
+larger mutually reachable classes can be emphasized by caller-supplied weights.
+Duplicates in `components` are counted as repeated measurements, matching the
+rest of the finite executable metrics.
+-/
+def weightedSccRiskOfFinite {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) (weight : C → Nat) : Nat :=
+  (components.map (fun c => weightedSccContributionAt G components weight c)).sum
+
+/-- Zero weights make weighted SCC risk zero for any measured graph. -/
+theorem weightedSccRiskOfFinite_zero_weight {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge] (components : List C) :
+    weightedSccRiskOfFinite G components (fun _ => 0) = 0 := by
+  have h : ∀ xs : List C, (xs.map (fun _ => 0)).sum = 0 := by
+    intro xs
+    induction xs with
+    | nil => rfl
+    | cons _ xs ih => simp [ih]
+  simpa [weightedSccRiskOfFinite, weightedSccContributionAt] using h components
+
+/--
+With unit weights, weighted SCC risk is the sum of local SCC excess values.
+-/
+theorem weightedSccRiskOfFinite_unit_weight {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge] (components : List C) :
+    weightedSccRiskOfFinite G components (fun _ => 1) =
+      (components.map (fun c => sccExcessAt G components c)).sum := by
+  simp [weightedSccRiskOfFinite, weightedSccContributionAt]
+
+/--
 Signature v1 core local fanout concentration metric.
 
 Unlike v0 `fanoutRiskOfFinite`, this records the largest per-component outgoing
@@ -434,6 +491,29 @@ def v1OfFinite {C : Type u} (G : ArchGraph C)
   relationComplexity := none
   empiricalChangeCost := none
 
+/--
+Build a Signature v1 value with the Lean executable weighted SCC axis populated.
+
+The caller supplies component weights explicitly. This keeps weight extraction
+or calibration outside the Lean graph core while still making the counting rule
+executable.
+-/
+def v1OfFiniteWithWeightedSccRisk {C : Type u} (G : ArchGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed]
+    (weight : C → Nat) :
+    ArchitectureSignatureV1 where
+  core := v1CoreOfFinite G components boundaryAllowed abstractionAllowed
+  weightedSccRisk := some (weightedSccRiskOfFinite G components weight)
+  projectionSoundnessViolation := none
+  lspViolationCount := none
+  nilpotencyIndex := none
+  runtimePropagation := none
+  relationComplexity := none
+  empiricalChangeCost := none
+
 namespace Examples
 
 /-- One-component graph with no dependency edges. -/
@@ -483,6 +563,15 @@ instance : DecidableRel boolForwardGraph.edge := by
   change Decidable (c = false ∧ d = true)
   infer_instance
 
+/-- Two-component graph whose components are mutually reachable. -/
+def boolCycleGraph : ArchGraph Bool where
+  edge c d := c ≠ d
+
+instance : DecidableRel boolCycleGraph.edge := by
+  intro c d
+  change Decidable (c ≠ d)
+  infer_instance
+
 /-- A single measured dependency contributes one unit of fanout risk. -/
 theorem v0_boolForward :
     v0OfFinite boolForwardGraph [false, true] (fun _ _ => True) (fun _ _ => True) =
@@ -529,6 +618,28 @@ theorem v1Core_boolForward :
     sccExcessSizeOfFinite boolForwardGraph [false, true] = 0 ∧
       maxFanoutOfFinite boolForwardGraph [false, true] = 1 ∧
       reachableConeSizeOfFinite boolForwardGraph [false, true] = 1 := by
+  native_decide
+
+/-- Acyclic singleton SCCs contribute zero weighted SCC risk. -/
+theorem weightedSccRisk_boolForward :
+    weightedSccRiskOfFinite boolForwardGraph [false, true]
+      (fun c => if c then 3 else 2) = 0 := by
+  native_decide
+
+/--
+In a two-component cycle, each component contributes its supplied weight once.
+-/
+theorem weightedSccRisk_boolCycle :
+    weightedSccRiskOfFinite boolCycleGraph [false, true]
+      (fun c => if c then 3 else 2) = 5 := by
+  native_decide
+
+/-- The weighted SCC entry point populates only the weighted SCC extension axis. -/
+theorem v1Schema_boolCycle_weightedScc :
+    (v1OfFiniteWithWeightedSccRisk boolCycleGraph [false, true]
+      (fun _ _ => True) (fun _ _ => True)
+      (fun c => if c then 3 else 2)).weightedSccRisk =
+      some 5 := by
   native_decide
 
 end Examples
