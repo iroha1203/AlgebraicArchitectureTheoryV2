@@ -1,4 +1,4 @@
-# SOLID や Layered Architecture は何を守っているのか？依存グラフと不変量から考える
+# SOLIDやLayered Architectureは何を守っているのか？――代数的アーキテクチャ論から見る依存グラフと不変量
 
 <!-- Lean status: `docs synthesis` / outreach article draft. -->
 
