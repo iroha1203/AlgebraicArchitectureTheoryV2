@@ -31,11 +31,12 @@ design / tooling 系の Issue は、上の status を補助する作業として
 | [#8](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/8) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | `hasCycleBool` と `HasClosedWalk` の有限 universe 上の同値を証明する。 |
 | [#9](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/9) | open | 1. Finite Universe Bridge | docs index | [GitHub Issues 索引](#github-issues-索引) | この文書を GitHub Issues への索引として更新する。 |
 | [#10](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/10) | open | 6. Projection / Observation Invariants | `defined only` / design | [5. DIP は射影整合性である](#5-dip-は射影整合性である), [6. LSP は観測関手による同値性である](#6-lsp-は観測関手による同値性である) | `DIPCompatible` と `StrongDIPCompatible` の役割分担を整理する。 |
-| [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | open | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `fanoutRisk = totalFanout` として v0 の fanout 軸を安定化する。 |
-| [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | open | 5. Layering Equivalence | `proved` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
+| [#11](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/11) | closed | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [fanout とレビューコスト](#3-fanout-とレビューコスト) | `fanoutRisk = totalFanout` として v0 の fanout 軸を安定化する。 |
+| [#23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23) | closed | 5. Layering Equivalence | `proved` | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理) | 有限非循環グラフから `StrictLayered` を構成する。 |
 | [#24](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/24) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | acyclic finite graph 上の `maxDepth` correctness を証明する。 |
 | [#25](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/25) | closed | 3. Cycle, SCC and Depth Correctness | `proved` | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ) | SCC サイズ指標と相互到達可能性の同値類を接続する。 |
 | [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26) | open | 7. Path and Matrix Foundations | `future proof obligation` / design | [2. 分解可能性の基礎定理](#2-分解可能性の基礎定理), [解析的指標は発展課題として扱う](#解析的指標は発展課題として扱う) | adjacency matrix と DAG / nilpotence / spectral bridge を設計する。 |
+| [#32](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/32) | open | 4. Signature v0 Stabilization | `defined only` / design decided | [7. Architecture Signature は半順序を持つ](#7-architecture-signature-は半順序を持つ), [Signature v1 軸設計](#signature-v1-軸設計) | ArchitectureSignature v1 の軸構成を整理する。 |
 
 ## Lean で証明する命題
 
@@ -387,6 +388,58 @@ Lean status:
 - Prove graph-level correctness facts for `fanoutRiskOfFinite` under a finite
   `ComponentUniverse`, such as equivalence with the number of measured
   dependency edges.
+
+#### Signature v1 軸設計
+
+Issue [#32](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/32)
+では、v1 を v0 の単純な置き換えではなく、v0 の安定軸を含む多軸診断として扱う。
+
+v0 に残す軸:
+
+- `hasCycle`
+- `sccMaxSize`
+- `maxDepth`
+- `fanoutRisk = totalFanout`
+- `boundaryViolationCount`
+- `abstractionViolationCount`
+
+v1 core に追加・正規化する候補:
+
+- `sccExcessSize = sccMaxSize - 1`: 非循環 singleton SCC を 0 risk として扱うための循環リスク軸。
+- `weightedSccRisk`: SCC の大きさや重要度を重みづけする将来の executable metric。
+- `maxFanout`: 局所的な依存集中を表す executable metric。
+- `reachableConeSize`: 変更波及の到達範囲を表す executable metric。
+- `projectionSoundnessViolation`: 抽象射影に反する具体依存を数える projection bridge 軸。
+
+Lean status の区分:
+
+| 軸 | 扱い | Lean status |
+| --- | --- | --- |
+| `sccExcessSize`, `maxFanout`, `reachableConeSize` | 有限 universe 上の計算として定義し、graph-level facts は theorem として証明する | `defined only` -> `future proof obligation` |
+| `weightedSccRisk` | 重み関数つき executable metric として設計する | `defined only` |
+| `nilpotencyIndex` | adjacency matrix 導入後に DAG / 層化 / 冪零性と接続する | `future proof obligation` |
+| `rho(A)` | 行列解析上の伝播増幅指標として扱う | `future proof obligation` / `empirical hypothesis` |
+| `runtimePropagation` | 実行時依存抽出に依存する | `empirical hypothesis` |
+| `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
+| `empiricalChangeCost` | 実データで検証する目的変数 | `empirical hypothesis` |
+
+後続 Issue への分割:
+
+- adjacency matrix, `nilpotencyIndex`, `rho(A)` は
+  [#26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
+  で扱う。
+- 静的依存と実行時依存の分離は
+  [#33](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/33)
+  で扱う。
+- 実コードベースからの Sig0 / v1 core 抽出 tooling は
+  [#34](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/34)
+  で扱う。
+- 実証プロトコルと empirical cost 軸は
+  [#35](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/35)
+  で扱う。
+- `relationComplexity` は
+  [#36](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/36)
+  で扱う。
 
 Bridge theorem naming policy:
 

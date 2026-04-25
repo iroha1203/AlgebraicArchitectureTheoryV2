@@ -103,13 +103,34 @@ Lean PR4 では、有限な component list を測定 universe とする executab
 
 ```text
 Sig1(A) =
-  < rho(A),
-    poleRadius,
-    weightedSccRisk,
-    relationComplexity,
-    runtimePropagation,
-    empiricalChangeCost >
+  < decompositionRisk,
+    propagationRisk,
+    boundaryRisk,
+    abstractionRisk,
+    behavioralRisk,
+    stateTransitionRisk,
+    runtimeRisk,
+    empiricalCost >
 ```
+
+v1 は v0 を置き換える巨大な単一構造ではなく、v0 の安定軸を内側に含む多軸診断として設計する。まず `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk`, `boundaryViolationCount`, `abstractionViolationCount` は v0 互換の executable metric として残す。その上で、次の順序で拡張する。
+
+| 段階 | 軸 | 代表指標 | Lean status |
+| --- | --- | --- | --- |
+| v1 core | 分解可能性・循環リスク | `sccExcessSize`, `weightedSccRisk` | executable metric / future proof obligation |
+| v1 core | 変更波及・依存伝播 | `maxFanout`, `reachableConeSize`, `fanoutRisk = totalFanout` | executable metric / future proof obligation |
+| matrix bridge | 行列的伝播 | `nilpotencyIndex`, `rho(A)` | future proof obligation |
+| projection bridge | 境界・抽象化 | `boundaryViolationCount`, `abstractionViolationCount`, `projectionSoundnessViolation` | defined only / future proof obligation |
+| behavioral extension | 観測可能性 | `observationalDivergence`, `lspViolationCount` | defined only / future proof obligation |
+| empirical extension | 状態遷移・実行時・実証コスト | `relationComplexity`, `runtimePropagation`, `empiricalChangeCost` | empirical hypothesis |
+
+`sccMaxSize` は v0 互換の説明用指標として残し、v1 の循環リスクでは `sccExcessSize = sccMaxSize - 1` を優先する。`weightedSccRisk` は SCC の大きさや重要度を重みづけする将来の executable metric とする。
+
+`fanoutRisk` は #11 の設計判断に従い `totalFanout` として残す。`maxFanout` は局所的な依存集中、`reachableConeSize` は変更波及の到達範囲を表す別軸として扱う。
+
+`nilpotencyIndex` と `rho(A)` は adjacency matrix 導入後の bridge 軸である。`nilpotencyIndex` は DAG / 層化 / 冪零性との Lean theorem を目標にする。一方で `rho(A)` は実数・行列解析を含むため、初期 v1 では executable / empirical 側の候補に留め、Lean proof は後続課題に分離する。
+
+`runtimePropagation`, `relationComplexity`, `empiricalChangeCost` は実コードや運用データの抽出設計に依存するため、Lean の全称定理としては扱わない。これらは Signature v1 の最終候補軸だが、初期実装では empirical hypothesis として分離する。
 
 単一スコア化は補助的な集約に留める。研究の中心は、多軸シグネチャ間のリスク順序と、各軸がどの不変量の破れを表すかの説明に置く。
 
