@@ -55,7 +55,9 @@ Decomposable G := StrictLayered G
 - `StrictLayered -> FinitePropagation`: `proved`
 - `Acyclic + finite vertices -> StrictLayered`: `proved`, [Issue #23](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/23)
 - `Acyclic <-> WalkAcyclic`: `proved`
-- `DAG <-> Nilpotent adjacency matrix`: `future proof obligation`, [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
+- `DAG <-> Nilpotent adjacency matrix`: `proved` for finite
+  `ComponentUniverse` natural-number adjacency powers,
+  [Issue #55](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/55)
 
 ### 1. 依存グラフから thin category が生成される
 
@@ -112,7 +114,9 @@ Lean status:
 
 発展段階で検討すること:
 
-- `DAG <-> Nilpotent adjacency matrix`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
+- `DAG <-> Nilpotent adjacency matrix`: `proved` for finite
+  `ComponentUniverse` natural-number adjacency powers,
+  [Issue #55](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/55)
 - `DAG -> rho(A) = 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 - `cycle -> rho(A) > 0`: [Issue #26](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/26)
 
@@ -140,9 +144,18 @@ count-preserving object として使う。これは `Reachable` や
 
 `rho(A)` などの spectral condition は、実数・複素数上の行列解析と
 Perron-Frobenius 型の補題を要するため、初期 Lean bridge では証明対象にしない。
+Issue [#55](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/55)
+で、Lean 側には `NatMatrix`, `adjacencyMatrix`, `adjacencyPowerEntry`,
+`AdjacencyNilpotent` を導入した。`adjacencyPowerEntry_pos_iff_walk_length`
+により、`A^k` の entry が正であることと長さ `k` の walk の存在が一致する。
+また `adjacencyNilpotent_iff_walkAcyclic` と
+`adjacencyNilpotent_iff_acyclic` により、有限 `ComponentUniverse` 上では
+adjacency nilpotence / `WalkAcyclic` / `Acyclic` が一致する。
+
 当面は次の status に分ける。
 
-- `DAG <-> Nilpotent adjacency matrix`: `future proof obligation`
+- `DAG <-> Nilpotent adjacency matrix`: `proved` for finite `ComponentUniverse`
+  natural-number adjacency powers
 - `DAG -> rho(A) = 0`: `future proof obligation`, matrix bridge 後の解析的拡張
 - `cycle -> rho(A) > 0`: `future proof obligation`, matrix bridge 後の解析的拡張
 - spectral radius を変更波及や障害伝播の増幅指標として使う主張:

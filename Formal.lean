@@ -10,3 +10,4 @@ import Formal.Arch.LSP
 import Formal.Arch.SolidCounterexample
 import Formal.Arch.Signature
 import Formal.Arch.Finite
+import Formal.Arch.Matrix
