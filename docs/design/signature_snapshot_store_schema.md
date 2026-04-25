@@ -293,3 +293,50 @@ measured 0 と unmeasured `null` の規約を両方で維持できる。
 
 この例では `boundaryViolationCount = 0` は測定済み 0 である。一方、
 `runtimePropagation = null` は未評価であり、runtime risk 0 ではない。
+
+## Diff report MVP
+
+Issue [#156](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/156)
+では、snapshot store record 同士を比較する tooling output として
+`signature-diff-report-v0` を追加する。これは Lean theorem ではなく、週次監視や
+PR attribution のための empirical report である。
+
+```text
+SignatureDiffReportV0 =
+  schemaVersion: "signature-diff-report-v0"
+  before: SnapshotDiffEndpoint
+  after: SnapshotDiffEndpoint
+  comparisonStatus: SnapshotComparisonStatus
+  deltaSignatureSigned: NullableSignatureIntVector
+  metricDeltaStatus: MetricDeltaStatus
+  worsenedAxes: List SignatureAxisChange
+  improvedAxes: List SignatureAxisChange
+  unchangedAxes: List SignatureAxisChange
+  unmeasuredAxes: List UnmeasuredAxisDelta
+  evidenceDiff: SnapshotEvidenceDiff
+  attribution: SnapshotDiffAttribution
+```
+
+`deltaSignatureSigned` と `metricDeltaStatus` は empirical dataset v0 と同じ規約を使う。
+before / after のどちらかで未評価の軸、または optional extension axis が `null` の軸は
+`unmeasuredAxes` に理由を残し、主要 diff の数値比較には入れない。
+
+`comparisonStatus.primaryDiffEligible = false` になる代表例は次である。
+
+- before または after の `validationSummary.result` が `fail` または `not_run`。
+- `extractor.name`, `extractor.version`, `extractor.ruleSetVersion` が一致しない。
+- `policy.policyId` または `policy.version` が一致しない。
+
+`evidenceDiff` は raw Sig0 extractor JSON が before / after ともに与えられた場合だけ
+component / edge / policy violation の追加・削除を保持する。snapshot record 単体には
+raw edge list を持たせないため、raw JSON がない場合は `available = false` とし、
+Signature axis diff だけを report する。
+
+`attribution` は v0 では PR metadata に基づく原因候補である。after revision SHA が
+`pullRequest.headCommit` または `pullRequest.mergeCommit` と一致するか、PR の
+`changedComponents` が `evidenceDiff` の追加・削除 component と重なるかを使って
+confidence を出す。これは因果証明ではなく、調査開始点を提示する ranking である。
+
+CLI の再現手順は
+[`tools/sig0-extractor/README.md`](../../tools/sig0-extractor/README.md) の
+`Snapshot diff MVP` を参照する。

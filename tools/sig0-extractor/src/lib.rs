@@ -12,6 +12,8 @@ pub const SCHEMA_VERSION: &str = "sig0-extractor-v0";
 pub const COMPONENT_KIND: &str = "lean-module";
 pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report-v0";
 pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
+pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-store-v0";
+pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
@@ -85,7 +87,7 @@ pub struct Component {
     pub path: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Edge {
     pub source: String,
     pub target: String,
@@ -128,7 +130,7 @@ pub struct MetricStatus {
     pub source: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PolicyViolation {
     pub axis: String,
@@ -512,6 +514,223 @@ pub struct ArchitectureSignatureV1DatasetShape {
     pub empirical_change_cost: Option<usize>,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureSnapshotStoreRecordV0 {
+    pub schema_version: String,
+    pub repository: SnapshotRepositoryRef,
+    pub revision: RepositoryRevisionRef,
+    pub scan: ScanMetadata,
+    pub extractor: SnapshotExtractorMetadata,
+    pub policy: SnapshotPolicyMetadata,
+    pub signature: ArchitectureSignatureV1DatasetShape,
+    pub metric_status: BTreeMap<String, MetricStatus>,
+    pub validation_summary: SnapshotValidationSummary,
+    pub artifacts: SnapshotArtifacts,
+    pub analysis_metadata: SnapshotAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotRepositoryRef {
+    pub owner: String,
+    pub name: String,
+    pub default_branch: String,
+    pub remote_url: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepositoryRevisionRef {
+    pub sha: String,
+    #[serde(rename = "ref")]
+    pub ref_name: Option<String>,
+    pub branch: Option<String>,
+    pub committed_at: Option<String>,
+    pub parent_shas: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ScanMetadata {
+    pub scanned_at: String,
+    pub scanner_id: Option<String>,
+    pub trigger: String,
+    pub root: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotExtractorMetadata {
+    pub name: String,
+    pub version: String,
+    pub rule_set_version: String,
+    pub input_schema_version: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotPolicyMetadata {
+    pub policy_id: Option<String>,
+    pub schema_version: Option<String>,
+    pub version: Option<String>,
+    pub source_path: Option<String>,
+    pub content_hash: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotValidationSummary {
+    pub schema_version: Option<String>,
+    pub result: String,
+    pub universe_mode: Option<String>,
+    pub failed_check_count: Option<usize>,
+    pub warning_check_count: Option<usize>,
+    pub not_measured_check_count: Option<usize>,
+    pub report_path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotArtifacts {
+    pub extractor_output_path: Option<String>,
+    pub validation_report_path: Option<String>,
+    pub policy_path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotAnalysisMetadata {
+    pub excluded_from_primary_diff: bool,
+    pub exclusion_reasons: Vec<String>,
+    pub tags: Vec<String>,
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SnapshotRecordInput {
+    pub repository: SnapshotRepositoryRef,
+    pub revision: RepositoryRevisionRef,
+    pub scan: ScanMetadata,
+    pub policy_version: Option<String>,
+    pub policy_source_path: Option<String>,
+    pub policy_content_hash: Option<String>,
+    pub extractor_output_path: Option<String>,
+    pub validation_report_path: Option<String>,
+    pub tags: Vec<String>,
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureDiffReportV0 {
+    pub schema_version: String,
+    pub before: SnapshotDiffEndpoint,
+    pub after: SnapshotDiffEndpoint,
+    pub comparison_status: SnapshotComparisonStatus,
+    pub delta_signature_signed: NullableSignatureIntVector,
+    pub metric_delta_status: BTreeMap<String, MetricDeltaStatus>,
+    pub worsened_axes: Vec<SignatureAxisChange>,
+    pub improved_axes: Vec<SignatureAxisChange>,
+    pub unchanged_axes: Vec<SignatureAxisChange>,
+    pub unmeasured_axes: Vec<UnmeasuredAxisDelta>,
+    pub evidence_diff: SnapshotEvidenceDiff,
+    pub attribution: SnapshotDiffAttribution,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotDiffEndpoint {
+    pub repository: SnapshotRepositoryRef,
+    pub revision: RepositoryRevisionRef,
+    pub validation_result: String,
+    pub extractor_version: String,
+    pub rule_set_version: String,
+    pub policy_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotComparisonStatus {
+    pub primary_diff_eligible: bool,
+    pub reasons: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureAxisChange {
+    pub axis: String,
+    pub before: i64,
+    pub after: i64,
+    pub delta: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnmeasuredAxisDelta {
+    pub axis: String,
+    pub reason: String,
+    pub before_measured: bool,
+    pub after_measured: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotEvidenceDiff {
+    pub available: bool,
+    pub unavailable_reason: Option<String>,
+    pub component_delta: Option<ComponentSetDelta>,
+    pub edge_delta: Option<EdgeSetDelta>,
+    pub policy_violation_delta: Option<PolicyViolationSetDelta>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComponentSetDelta {
+    pub before_count: usize,
+    pub after_count: usize,
+    pub delta: i64,
+    pub added: Vec<String>,
+    pub removed: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EdgeSetDelta {
+    pub before_count: usize,
+    pub after_count: usize,
+    pub delta: i64,
+    pub added: Vec<Edge>,
+    pub removed: Vec<Edge>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyViolationSetDelta {
+    pub before_count: usize,
+    pub after_count: usize,
+    pub delta: i64,
+    pub added: Vec<PolicyViolation>,
+    pub removed: Vec<PolicyViolation>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotDiffAttribution {
+    pub method: String,
+    pub candidates: Vec<AttributionCandidate>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttributionCandidate {
+    pub kind: String,
+    pub id: String,
+    pub confidence: f64,
+    pub reasons: Vec<String>,
+    pub changed_components: Vec<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NullableSignatureIntVector {
@@ -872,6 +1091,87 @@ pub fn build_empirical_dataset(
         issue_incident_links: input.issue_incident_links,
         analysis_metadata: input.analysis_metadata,
     })
+}
+
+pub fn build_signature_snapshot_record(
+    document: &Sig0Document,
+    validation_report: Option<&ComponentUniverseValidationReport>,
+    input: SnapshotRecordInput,
+) -> SignatureSnapshotStoreRecordV0 {
+    let validation_summary =
+        snapshot_validation_summary(validation_report, input.validation_report_path.clone());
+    let mut exclusion_reasons = Vec::new();
+    match validation_summary.result.as_str() {
+        "fail" => exclusion_reasons.push("validationSummary.result = fail".to_string()),
+        "not_run" => exclusion_reasons.push("validationSummary.result = not_run".to_string()),
+        _ => {}
+    }
+
+    SignatureSnapshotStoreRecordV0 {
+        schema_version: SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION.to_string(),
+        repository: input.repository,
+        revision: input.revision,
+        scan: input.scan,
+        extractor: SnapshotExtractorMetadata {
+            name: EXTRACTOR_NAME.to_string(),
+            version: EXTRACTOR_VERSION.to_string(),
+            rule_set_version: RULE_SET_VERSION.to_string(),
+            input_schema_version: document.schema_version.clone(),
+        },
+        policy: SnapshotPolicyMetadata {
+            policy_id: document.policies.policy_id.clone(),
+            schema_version: document.policies.schema_version.clone(),
+            version: input.policy_version,
+            source_path: input.policy_source_path.clone(),
+            content_hash: input.policy_content_hash,
+        },
+        signature: dataset_signature_shape(document),
+        metric_status: dataset_metric_status(document),
+        validation_summary,
+        artifacts: SnapshotArtifacts {
+            extractor_output_path: input.extractor_output_path,
+            validation_report_path: input.validation_report_path,
+            policy_path: input.policy_source_path,
+        },
+        analysis_metadata: SnapshotAnalysisMetadata {
+            excluded_from_primary_diff: !exclusion_reasons.is_empty(),
+            exclusion_reasons,
+            tags: input.tags,
+            notes: input.notes,
+        },
+    }
+}
+
+pub fn build_signature_diff_report(
+    before: &SignatureSnapshotStoreRecordV0,
+    after: &SignatureSnapshotStoreRecordV0,
+    before_document: Option<&Sig0Document>,
+    after_document: Option<&Sig0Document>,
+    pr_metadata: &[EmpiricalDatasetInput],
+) -> SignatureDiffReportV0 {
+    let before_snapshot = store_record_signature_snapshot(before, "before");
+    let after_snapshot = store_record_signature_snapshot(after, "after");
+    let delta_signature_signed = delta_signature_signed(&before_snapshot, &after_snapshot);
+    let metric_delta_status = metric_delta_status(&before_snapshot, &after_snapshot);
+    let (worsened_axes, improved_axes, unchanged_axes, unmeasured_axes) =
+        classify_axis_deltas(before, after, &metric_delta_status);
+    let evidence_diff = snapshot_evidence_diff(before_document, after_document);
+    let attribution = snapshot_diff_attribution(after, &evidence_diff, &worsened_axes, pr_metadata);
+
+    SignatureDiffReportV0 {
+        schema_version: SIGNATURE_DIFF_REPORT_SCHEMA_VERSION.to_string(),
+        before: snapshot_diff_endpoint(before),
+        after: snapshot_diff_endpoint(after),
+        comparison_status: snapshot_comparison_status(before, after),
+        delta_signature_signed,
+        metric_delta_status,
+        worsened_axes,
+        improved_axes,
+        unchanged_axes,
+        unmeasured_axes,
+        evidence_diff,
+        attribution,
+    }
 }
 
 pub fn build_pr_metadata_from_github_files(
@@ -1618,6 +1918,348 @@ fn metric_status_reason(axis: &str, metric_status: &BTreeMap<String, MetricStatu
         .get(axis)
         .and_then(|status| status.reason.clone())
         .unwrap_or_else(|| "metricStatus entry is missing".to_string())
+}
+
+fn snapshot_validation_summary(
+    report: Option<&ComponentUniverseValidationReport>,
+    report_path: Option<String>,
+) -> SnapshotValidationSummary {
+    match report {
+        Some(report) => SnapshotValidationSummary {
+            schema_version: Some(report.schema_version.clone()),
+            result: report.summary.result.clone(),
+            universe_mode: Some(report.universe_mode.clone()),
+            failed_check_count: Some(report.summary.failed_check_count),
+            warning_check_count: Some(report.summary.warning_check_count),
+            not_measured_check_count: Some(report.summary.not_measured_check_count),
+            report_path,
+        },
+        None => SnapshotValidationSummary {
+            schema_version: None,
+            result: "not_run".to_string(),
+            universe_mode: None,
+            failed_check_count: None,
+            warning_check_count: None,
+            not_measured_check_count: None,
+            report_path: None,
+        },
+    }
+}
+
+fn store_record_signature_snapshot(
+    record: &SignatureSnapshotStoreRecordV0,
+    role: &str,
+) -> SignatureSnapshot {
+    SignatureSnapshot {
+        commit: GitCommitRef {
+            sha: record.revision.sha.clone(),
+            role: role.to_string(),
+        },
+        extractor: ExtractorRef {
+            name: record.extractor.name.clone(),
+            version: record.extractor.version.clone(),
+            rule_set_version: record.extractor.rule_set_version.clone(),
+            policy_version: record.policy.policy_id.clone(),
+        },
+        signature: record.signature.clone(),
+        metric_status: record.metric_status.clone(),
+    }
+}
+
+fn snapshot_diff_endpoint(record: &SignatureSnapshotStoreRecordV0) -> SnapshotDiffEndpoint {
+    SnapshotDiffEndpoint {
+        repository: record.repository.clone(),
+        revision: record.revision.clone(),
+        validation_result: record.validation_summary.result.clone(),
+        extractor_version: record.extractor.version.clone(),
+        rule_set_version: record.extractor.rule_set_version.clone(),
+        policy_id: record.policy.policy_id.clone(),
+    }
+}
+
+fn snapshot_comparison_status(
+    before: &SignatureSnapshotStoreRecordV0,
+    after: &SignatureSnapshotStoreRecordV0,
+) -> SnapshotComparisonStatus {
+    let mut reasons = Vec::new();
+    if !matches!(before.validation_summary.result.as_str(), "pass" | "warn") {
+        reasons.push(format!(
+            "before validationSummary.result = {}",
+            before.validation_summary.result
+        ));
+    }
+    if !matches!(after.validation_summary.result.as_str(), "pass" | "warn") {
+        reasons.push(format!(
+            "after validationSummary.result = {}",
+            after.validation_summary.result
+        ));
+    }
+    if before.extractor.name != after.extractor.name {
+        reasons.push("extractor.name differs".to_string());
+    }
+    if before.extractor.version != after.extractor.version {
+        reasons.push("extractor.version differs".to_string());
+    }
+    if before.extractor.rule_set_version != after.extractor.rule_set_version {
+        reasons.push("extractor.ruleSetVersion differs".to_string());
+    }
+    if before.policy.policy_id != after.policy.policy_id {
+        reasons.push("policy.policyId differs".to_string());
+    }
+    if before.policy.version != after.policy.version {
+        reasons.push("policy.version differs".to_string());
+    }
+
+    SnapshotComparisonStatus {
+        primary_diff_eligible: reasons.is_empty(),
+        reasons,
+    }
+}
+
+fn classify_axis_deltas(
+    before: &SignatureSnapshotStoreRecordV0,
+    after: &SignatureSnapshotStoreRecordV0,
+    status: &BTreeMap<String, MetricDeltaStatus>,
+) -> (
+    Vec<SignatureAxisChange>,
+    Vec<SignatureAxisChange>,
+    Vec<SignatureAxisChange>,
+    Vec<UnmeasuredAxisDelta>,
+) {
+    let mut worsened = Vec::new();
+    let mut improved = Vec::new();
+    let mut unchanged = Vec::new();
+    let mut unmeasured = Vec::new();
+
+    for axis in DATASET_DELTA_AXES {
+        let axis_status = status
+            .get(axis)
+            .expect("metric delta status exists for every dataset delta axis");
+        let before_value = signature_value(axis, &before.signature);
+        let after_value = signature_value(axis, &after.signature);
+        if !axis_status.comparable {
+            unmeasured.push(UnmeasuredAxisDelta {
+                axis: axis.to_string(),
+                reason: axis_status.reason.clone(),
+                before_measured: axis_status.before_measured,
+                after_measured: axis_status.after_measured,
+            });
+            continue;
+        }
+
+        let before_value = before_value.expect("comparable before value exists");
+        let after_value = after_value.expect("comparable after value exists");
+        let change = SignatureAxisChange {
+            axis: axis.to_string(),
+            before: before_value,
+            after: after_value,
+            delta: after_value - before_value,
+        };
+        match change.delta.cmp(&0) {
+            std::cmp::Ordering::Greater => worsened.push(change),
+            std::cmp::Ordering::Less => improved.push(change),
+            std::cmp::Ordering::Equal => unchanged.push(change),
+        }
+    }
+
+    (worsened, improved, unchanged, unmeasured)
+}
+
+fn snapshot_evidence_diff(
+    before: Option<&Sig0Document>,
+    after: Option<&Sig0Document>,
+) -> SnapshotEvidenceDiff {
+    let (before, after) = match (before, after) {
+        (Some(before), Some(after)) => (before, after),
+        _ => {
+            return SnapshotEvidenceDiff {
+                available: false,
+                unavailable_reason: Some(
+                    "before and after Sig0 extractor JSON are required for component / edge evidence diff"
+                        .to_string(),
+                ),
+                component_delta: None,
+                edge_delta: None,
+                policy_violation_delta: None,
+            };
+        }
+    };
+
+    let before_components = before
+        .components
+        .iter()
+        .map(|component| component.id.clone())
+        .collect::<BTreeSet<_>>();
+    let after_components = after
+        .components
+        .iter()
+        .map(|component| component.id.clone())
+        .collect::<BTreeSet<_>>();
+    let before_edges = before.edges.iter().cloned().collect::<BTreeSet<_>>();
+    let after_edges = after.edges.iter().cloned().collect::<BTreeSet<_>>();
+    let before_policy_violations = before
+        .policy_violations
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let after_policy_violations = after
+        .policy_violations
+        .iter()
+        .cloned()
+        .collect::<BTreeSet<_>>();
+
+    SnapshotEvidenceDiff {
+        available: true,
+        unavailable_reason: None,
+        component_delta: Some(ComponentSetDelta {
+            before_count: before_components.len(),
+            after_count: after_components.len(),
+            delta: after_components.len() as i64 - before_components.len() as i64,
+            added: set_added(&before_components, &after_components),
+            removed: set_removed(&before_components, &after_components),
+        }),
+        edge_delta: Some(EdgeSetDelta {
+            before_count: before_edges.len(),
+            after_count: after_edges.len(),
+            delta: after_edges.len() as i64 - before_edges.len() as i64,
+            added: set_added(&before_edges, &after_edges),
+            removed: set_removed(&before_edges, &after_edges),
+        }),
+        policy_violation_delta: Some(PolicyViolationSetDelta {
+            before_count: before_policy_violations.len(),
+            after_count: after_policy_violations.len(),
+            delta: after_policy_violations.len() as i64 - before_policy_violations.len() as i64,
+            added: set_added(&before_policy_violations, &after_policy_violations),
+            removed: set_removed(&before_policy_violations, &after_policy_violations),
+        }),
+    }
+}
+
+fn set_added<T: Ord + Clone>(before: &BTreeSet<T>, after: &BTreeSet<T>) -> Vec<T> {
+    after.difference(before).cloned().collect()
+}
+
+fn set_removed<T: Ord + Clone>(before: &BTreeSet<T>, after: &BTreeSet<T>) -> Vec<T> {
+    before.difference(after).cloned().collect()
+}
+
+fn snapshot_diff_attribution(
+    after: &SignatureSnapshotStoreRecordV0,
+    evidence_diff: &SnapshotEvidenceDiff,
+    worsened_axes: &[SignatureAxisChange],
+    pr_metadata: &[EmpiricalDatasetInput],
+) -> SnapshotDiffAttribution {
+    let touched_components = touched_components_from_evidence_diff(evidence_diff);
+    let mut candidates = pr_metadata
+        .iter()
+        .map(|metadata| {
+            attribution_candidate(
+                after,
+                &touched_components,
+                !worsened_axes.is_empty(),
+                metadata,
+            )
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by(|left, right| {
+        right
+            .confidence
+            .partial_cmp(&left.confidence)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(left.id.cmp(&right.id))
+    });
+
+    let method = if pr_metadata.is_empty() {
+        "none: PR metadata not provided".to_string()
+    } else if touched_components.is_empty() {
+        "pr-metadata: commit match and changed components; raw evidence diff unavailable or empty"
+            .to_string()
+    } else {
+        "pr-metadata: commit match and changed-component overlap with added/removed evidence"
+            .to_string()
+    };
+
+    SnapshotDiffAttribution { method, candidates }
+}
+
+fn touched_components_from_evidence_diff(evidence_diff: &SnapshotEvidenceDiff) -> BTreeSet<String> {
+    let mut components = BTreeSet::new();
+    if let Some(component_delta) = &evidence_diff.component_delta {
+        components.extend(component_delta.added.iter().cloned());
+        components.extend(component_delta.removed.iter().cloned());
+    }
+    if let Some(edge_delta) = &evidence_diff.edge_delta {
+        for edge in edge_delta.added.iter().chain(edge_delta.removed.iter()) {
+            components.insert(edge.source.clone());
+            components.insert(edge.target.clone());
+        }
+    }
+    if let Some(policy_delta) = &evidence_diff.policy_violation_delta {
+        for violation in policy_delta.added.iter().chain(policy_delta.removed.iter()) {
+            components.insert(violation.source.clone());
+            components.insert(violation.target.clone());
+        }
+    }
+    components
+}
+
+fn attribution_candidate(
+    after: &SignatureSnapshotStoreRecordV0,
+    touched_components: &BTreeSet<String>,
+    has_worsened_axes: bool,
+    metadata: &EmpiricalDatasetInput,
+) -> AttributionCandidate {
+    let changed_components = metadata.pr_metrics.changed_components.clone();
+    let changed_set = changed_components.iter().cloned().collect::<BTreeSet<_>>();
+    let overlap = changed_set
+        .intersection(touched_components)
+        .cloned()
+        .collect::<Vec<_>>();
+    let mut confidence = 0.15;
+    let mut reasons = Vec::new();
+
+    if after.revision.sha == metadata.pull_request.head_commit {
+        confidence += 0.35;
+        reasons.push("after revision matches pullRequest.headCommit".to_string());
+    }
+    if metadata
+        .pull_request
+        .merge_commit
+        .as_ref()
+        .is_some_and(|merge_commit| after.revision.sha == *merge_commit)
+    {
+        confidence += 0.35;
+        reasons.push("after revision matches pullRequest.mergeCommit".to_string());
+    }
+    if !overlap.is_empty() {
+        let denominator = touched_components.len().max(1) as f64;
+        confidence += 0.35 * (overlap.len() as f64 / denominator).min(1.0);
+        reasons.push(format!(
+            "changed components overlap with evidence diff: {}",
+            overlap.join(", ")
+        ));
+    }
+    if has_worsened_axes {
+        confidence += 0.10;
+        reasons.push("signature has worsened axes".to_string());
+    }
+    if reasons.is_empty() {
+        reasons.push(
+            "weak candidate: PR metadata provided but no commit or evidence overlap".to_string(),
+        );
+    }
+
+    AttributionCandidate {
+        kind: "pullRequest".to_string(),
+        id: format!("#{}", metadata.pull_request.number),
+        confidence: round_confidence(confidence.min(0.95)),
+        reasons,
+        changed_components,
+    }
+}
+
+fn round_confidence(value: f64) -> f64 {
+    (value * 100.0).round() / 100.0
 }
 
 fn count_checks(checks: &[ValidationCheck], result: &str) -> usize {

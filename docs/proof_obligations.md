@@ -866,6 +866,14 @@ Lean status の区分:
   `validationSummary.result = fail` の snapshot は主要 diff から除外し、測定済み 0 と
   未評価 `null` を混同しない。Lean status は `empirical hypothesis` / tooling schema
   である。
+- Architecture Signature の時系列 diff / PR attribution MVP は
+  [#156](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/156)
+  で `sig0-extractor snapshot` と `sig0-extractor signature-diff` として実装済みである。
+  `signature-diff-report-v0` は悪化・改善・変化なし・未評価の軸を分け、raw Sig0 JSON
+  がある場合は増えた component / edge / policy violation を report する。PR metadata
+  を渡した場合の attribution は changed components と after revision SHA に基づく
+  confidence 付き原因候補であり、因果証明ではない。Lean status は
+  `empirical hypothesis` / tooling implementation である。
 - RelationComplexityObservation extractor rule set v0 は
   [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
   で `sig0-extractor relation-complexity --input ...` として実装済みである。
