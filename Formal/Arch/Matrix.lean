@@ -1,5 +1,9 @@
 import Mathlib.Analysis.Normed.Algebra.Spectrum
+import Mathlib.Analysis.Complex.Polynomial.Basic
 import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.LinearAlgebra.Eigenspace.Zero
+import Mathlib.LinearAlgebra.Matrix.Charpoly.Eigs
+import Mathlib.RingTheory.Finiteness.Nilpotent
 import Formal.Arch.Finite
 
 namespace Formal.Arch
@@ -343,6 +347,22 @@ theorem indexedAdjacencyMatrix_pow_apply {C : Type u} {G : ArchGraph C}
               NatMatrix.pow U (adjacencyMatrix G) k mid (U.components.get j)))
 
 /--
+The complex spectral adjacency matrix has the same powers as the natural
+indexed adjacency matrix, after coercing entries to `Complex`.
+-/
+theorem spectralAdjacencyMatrix_pow_apply {C : Type u} {G : ArchGraph C}
+    [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (k : Nat) (i j : SpectralIndex U) :
+    (spectralAdjacencyMatrix U ^ k) i j =
+      (adjacencyPowerEntry U k
+        (SpectralIndex.component U i)
+        (SpectralIndex.component U j) : ℂ) := by
+  rw [spectralAdjacencyMatrix, ← Matrix.map_pow,
+    Matrix.map_apply]
+  rw [indexedAdjacencyMatrix_pow_apply U k i j]
+  simp
+
+/--
 The `(c,d)` entry of `A^k` is positive exactly when there is a walk from `c`
 to `d` with length `k`.
 -/
@@ -515,6 +535,86 @@ theorem spectralRadius_eq_zero_of_matrix_pow_eq_zero {n : Type u}
   rw [hPowZero] at hPowPos
   exact (lt_irrefl (0 : ENNReal)) hPowPos
 
+private theorem multiset_prod_X_sub_C_eq_X_pow_of_forall_eq_zero
+    (roots : Multiset ℂ) (hroots : ∀ z ∈ roots, z = 0) :
+    (roots.map (fun z => Polynomial.X - Polynomial.C z)).prod =
+      Polynomial.X ^ roots.card := by
+  induction roots using Multiset.induction_on with
+  | empty =>
+      simp
+  | cons z roots ih =>
+      have hz : z = 0 := hroots z (by simp)
+      have htail : ∀ y ∈ roots, y = 0 := by
+        intro y hy
+        exact hroots y (by simp [hy])
+      simp [hz, ih htail, pow_succ, mul_comm]
+
+/--
+For finite complex matrices, spectral radius zero forces nilpotence.
+
+This is the analytic half of the cycle bridge: if the spectrum has radius zero,
+all characteristic roots are zero, so the characteristic polynomial is `X^n`,
+and the finite-dimensional nilpotence criterion applies.
+-/
+theorem matrix_isNilpotent_of_spectralRadius_eq_zero {n : Type u}
+    [Fintype n] [DecidableEq n] (A : Matrix n n ℂ)
+    (hRadius : spectralRadius ℂ A = 0) :
+    IsNilpotent A := by
+  classical
+  have hSpectrumZero : ∀ z ∈ spectrum ℂ A, z = 0 := by
+    intro z hz
+    have hNormLe : (‖z‖₊ : ENNReal) ≤ spectralRadius ℂ A :=
+      le_iSup₂_of_le z hz le_rfl
+    rw [hRadius] at hNormLe
+    have hNormZeroENN : (‖z‖₊ : ENNReal) = 0 :=
+      le_antisymm hNormLe bot_le
+    have hNormZero : ‖z‖₊ = 0 :=
+      ENNReal.coe_eq_zero.mp hNormZeroENN
+    simpa using hNormZero
+  have hRootsZero : ∀ z ∈ A.charpoly.roots, z = 0 := by
+    intro z hz
+    have hRoot : A.charpoly.IsRoot z :=
+      (Polynomial.mem_roots A.charpoly_monic.ne_zero).mp hz
+    exact hSpectrumZero z (Matrix.mem_spectrum_of_isRoot_charpoly hRoot)
+  have hRootsProd :
+      (A.charpoly.roots.map (fun z => Polynomial.X - Polynomial.C z)).prod =
+        Polynomial.X ^ A.charpoly.roots.card :=
+    multiset_prod_X_sub_C_eq_X_pow_of_forall_eq_zero A.charpoly.roots
+      hRootsZero
+  have hCharpoly :
+      A.charpoly = Polynomial.X ^ Fintype.card n := by
+    calc
+      A.charpoly =
+          (A.charpoly.roots.map (fun z => Polynomial.X - Polynomial.C z)).prod :=
+        (IsAlgClosed.splits A.charpoly).eq_prod_roots_of_monic
+          A.charpoly_monic
+      _ = Polynomial.X ^ A.charpoly.roots.card := hRootsProd
+      _ = Polynomial.X ^ Fintype.card n := by
+        have hRootsCard : A.charpoly.roots.card = Fintype.card n := by
+          rw [← (IsAlgClosed.splits A.charpoly).natDegree_eq_card_roots,
+            Matrix.charpoly_natDegree_eq_dim]
+        rw [hRootsCard]
+  have hLin : IsNilpotent A.toLin' := by
+    rw [LinearMap.isNilpotent_iff_charpoly]
+    simpa [Matrix.charpoly_toLin', Module.finrank_fintype_fun_eq_card]
+      using hCharpoly
+  have hMat := hLin.map LinearMap.toMatrixAlgEquiv'
+  convert hMat using 1
+  exact (LinearMap.toMatrixAlgEquiv'_toLinAlgEquiv' A).symm
+
+/--
+A finite complex matrix with positive spectral radius is exactly what remains
+after ruling out nilpotence in the zero-radius case.
+-/
+theorem spectralRadius_pos_of_matrix_not_isNilpotent {n : Type u}
+    [Fintype n] [DecidableEq n] (A : Matrix n n ℂ)
+    (hNonNil : ¬ IsNilpotent A) :
+    0 < spectralRadius ℂ A := by
+  by_contra hNotPos
+  have hRadiusZero : spectralRadius ℂ A = 0 :=
+    le_antisymm (not_lt.mp hNotPos) bot_le
+  exact hNonNil (matrix_isNilpotent_of_spectralRadius_eq_zero A hRadiusZero)
+
 /--
 Finite DAGs have spectral radius zero for the complex adjacency matrix.
 
@@ -529,6 +629,65 @@ theorem spectralRadiusOfAdjacency_eq_zero_of_acyclic {C : Type u}
     (spectralAdjacencyMatrix U)
     (by omega)
     (spectralAdjacencyMatrix_pow_zero_at_acyclic_cutoff U hAcyclic)
+
+/--
+A nonempty closed walk prevents the finite complex adjacency matrix from being
+nilpotent. The proof repeats the closed walk past a nilpotence cutoff, then
+reads the resulting positive diagonal adjacency-power entry through the
+spectral matrix.
+-/
+theorem spectralAdjacencyMatrix_not_isNilpotent_of_hasClosedWalk
+    {C : Type u} {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hClosed : HasClosedWalk G) :
+    ¬ IsNilpotent (spectralAdjacencyMatrix U) := by
+  intro hNil
+  rcases hNil with ⟨cutoff, hPowCutoff⟩
+  rcases hClosed with ⟨c, w, hLen⟩
+  rcases List.mem_iff_get.mp (U.covers c) with ⟨i, hi⟩
+  let repeated : Walk G c c := Walk.repeatClosed (cutoff + 1) w
+  have hRepeatedLen :
+      repeated.length = (cutoff + 1) * w.length :=
+    Walk.length_repeatClosed (cutoff + 1) w
+  have hOne : 1 ≤ w.length := hLen
+  have hCutoffLe : cutoff ≤ repeated.length := by
+    have hLeMul : cutoff + 1 ≤ (cutoff + 1) * w.length := by
+      simpa using Nat.mul_le_mul_left (cutoff + 1) hOne
+    rw [hRepeatedLen]
+    exact Nat.le_trans (Nat.le_succ cutoff) hLeMul
+  have hPowRepeated :
+      spectralAdjacencyMatrix U ^ repeated.length = 0 :=
+    pow_eq_zero_of_le hCutoffLe hPowCutoff
+  have hEntryPos :
+      0 < adjacencyPowerEntry U repeated.length c c :=
+    (adjacencyPowerEntry_pos_iff_walk_length U).mpr ⟨repeated, rfl⟩
+  have hEntryNe :
+      (adjacencyPowerEntry U repeated.length c c : ℂ) ≠ 0 := by
+    exact_mod_cast Nat.ne_of_gt hEntryPos
+  have hEntryZero :
+      (spectralAdjacencyMatrix U ^ repeated.length) i i = 0 := by
+    rw [hPowRepeated]
+    rfl
+  rw [spectralAdjacencyMatrix_pow_apply U repeated.length i i] at hEntryZero
+  have hComponent : SpectralIndex.component U i = c := hi
+  have hEntryZeroC :
+      (adjacencyPowerEntry U repeated.length c c : ℂ) = 0 := by
+    simpa [hComponent] using hEntryZero
+  exact hEntryNe hEntryZeroC
+
+/--
+Finite component universes with a nonempty closed walk have positive spectral
+radius for the complex adjacency matrix.
+
+This is a structural theorem about the finite adjacency matrix only; it does
+not identify spectral radius with change cost or runtime propagation risk.
+-/
+theorem spectralRadiusOfAdjacency_pos_of_hasClosedWalk {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    (U : ComponentUniverse G) (hClosed : HasClosedWalk G) :
+    0 < spectralRadiusOfAdjacency U := by
+  exact spectralRadius_pos_of_matrix_not_isNilpotent
+    (spectralAdjacencyMatrix U)
+    (spectralAdjacencyMatrix_not_isNilpotent_of_hasClosedWalk U hClosed)
 
 /--
 Finite acyclic graphs always populate the executable nilpotency-index axis.

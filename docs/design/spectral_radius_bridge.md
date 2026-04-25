@@ -1,7 +1,7 @@
 # spectral radius bridge 設計
 
-Lean status: `proved` for `DAG -> rho(A) = 0` on finite `ComponentUniverse`;
-`future proof obligation` for `cycle -> rho(A) > 0`; design decision.
+Lean status: `proved` for `DAG -> rho(A) = 0` and
+`cycle -> rho(A) > 0` on finite `ComponentUniverse`; design decision.
 
 Issue [#79](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/79)
 の設計判断として、`rho(A)` は既存の `NatMatrix` bridge や
@@ -45,7 +45,8 @@ Issue [#94](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/94
 
 同一 Issue で扱わない。前者は nilpotence から spectral radius 0 への標準線形代数
 補題に依存する。後者は非空閉 walk から正の spectral radius を得る補題に依存し、
-Perron-Frobenius 型の事実や trace / diagonal entry の評価が必要になる可能性がある。
+有限複素行列で spectral radius 0 が nilpotence を強制することと、閉 walk の
+反復が nilpotence cutoff を破る正の対角 entry を作ることを使う。
 
 後続 Issue:
 
@@ -54,6 +55,7 @@ Perron-Frobenius 型の事実や trace / diagonal entry の評価が必要にな
   Lean status: `proved`.
 - [#95](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/95):
   cycle / closed walk から `rho(A) > 0` への bridge theorem。
+  Lean status: `proved`.
 
 ## empirical claim との分離
 
@@ -67,7 +69,7 @@ Perron-Frobenius 型の事実や trace / diagonal entry の評価が必要にな
 | 軸 | 扱い | Lean status |
 | --- | --- | --- |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上の executable matrix bridge axis | `defined only` / `proved` |
-| `rho(A)` | mathlib-backed spectral bridge | `proved` for `DAG -> rho(A) = 0`; `future proof obligation` for cycle positivity |
+| `rho(A)` | mathlib-backed spectral bridge | `proved` for `DAG -> rho(A) = 0`; `proved` for cycle positivity |
 | `rho(A)` と変更・障害コストの関係 | 実データで検証する研究仮説 | `empirical hypothesis` |
 
 ## Lean core へ入れないもの
