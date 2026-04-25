@@ -323,6 +323,13 @@ DIPCompatible =
 `StrongDIPCompatible` は、`DIPCompatible` の別名ではなく exact-projection refinement として扱う。つまり、
 `ProjectionSound` に加えて `ProjectionComplete` も要求し、抽象グラフ上の辺が何らかの具体依存に由来することまで固定する。
 
+Issue [#82](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/82)
+では、`ProjectionSound` だけで十分な主張と exact projection が必要な主張を
+[Projection soundness と exact projection の使い分け](design/projection_exact_soundness.md)
+に分離した。Signature v1 の `projectionSoundnessViolation` は soundness-only
+metric として固定し、`ProjectionComplete` の欠如や exact projection gap は別の
+refinement として扱う。
+
 Lean status:
 
 - `defined only`: `ProjectionSound`, `ProjectionComplete`, `ProjectionExact`,
@@ -337,8 +344,9 @@ Lean status:
 
 今後の proof obligation:
 
-- exact projection が必要な場面と soundness だけで十分な場面を、設計原則分類と
-  Signature v1 の projection bridge 軸で分ける。
+- exact projection の edge-level bridge theorem を追加する場合は、
+  `ProjectionExact G π GA` から `GA.edge a b` と
+  `exists c d, π.expose c = a ∧ π.expose d = b ∧ G.edge c d` の同値を切る。
 - SOLID 不完全性反例では、DIP 風の依存方向や `DIPCompatible` を満たしても、
   抽象層の循環から `¬ Decomposable` が起こり得ることを Layered とは別軸として扱う。
 
@@ -631,6 +639,10 @@ soundness 側だけを測るため、`ProjectionComplete` まで要求する exa
 とは分けて扱う。Lean では、`ProjectionSound` なら violation が 0 になること、
 また測定 universe が concrete edge を閉じている場合には violation 0 から
 `ProjectionSound` が得られることを証明済みである。
+Issue [#82](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/82)
+で、この軸は soundness-only metric として固定した。`ProjectionComplete` の欠如や
+exact projection gap はこの count では測らず、抽象辺を具体依存 witness へ戻して読む
+refinement として別に扱う。
 
 Issue [#65](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/65)
 では、behavioral extension の最小 Lean bridge を追加した。`observationalDivergence`
