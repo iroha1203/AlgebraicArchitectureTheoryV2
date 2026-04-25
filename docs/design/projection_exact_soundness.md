@@ -59,8 +59,10 @@ executable metric である。
 - `dipCompatible_of_strongDIPCompatible`
 - `projectionSoundnessViolation_eq_zero_of_projectionSound`
 - `projectionSound_of_projectionSoundnessViolation_eq_zero`
+- `projectedConcreteEdge_of_projectionComplete`
+- `abstractEdge_iff_projectedConcreteEdge_of_projectionExact`
 
-後続で追加するなら、次の方向を別 Issue に分ける。
+Issue #107 では、次の片方向 witness theorem を追加した。
 
 ```text
 ProjectionComplete G π GA ->
@@ -69,6 +71,8 @@ ProjectionComplete G π GA ->
 ```
 
 これは定義の展開補題であり、抽象辺を具体 witness へ戻す bridge の入口になる。
+
+同じ Issue #107 では、次の exact projection edge-level bridge theorem も追加した。
 
 ```text
 ProjectionExact G π GA ->
