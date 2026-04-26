@@ -179,11 +179,14 @@ RequiredAxesAvailableAndZero L sig
 | projection obstruction | `ProjectionSound`, `projectionSoundnessViolationEdges` | 抽象辺に写らない具象辺を projection witness とする。 |
 | observation / LSP obstruction | `ObservationFactorsThrough`, `lspViolationPairs` | 同じ抽象 fiber 内の観測不一致を observation witness とする。 |
 | local replacement | `LocalReplacementContract` | projection witness と observation witness の同時消滅として扱う。 |
+| state transition / effect boundary laws | `StateTransitionExpr`, `EffectBoundaryExpr` | replay / roundtrip / compensation を required diagram family として扱う。 |
 | signature axis | `ArchitectureSignatureV1` | witness family ごとの count / optional metric として接続する。 |
 
-状態遷移代数、effect algebra, boundary policy は、まだ Lean 側の核が薄いため、
-先に `Expr` と `Semantics` による一般 law diagram として受け皿を作る。
-その後、各 law family を個別 module として追加する。
+状態遷移代数、effect algebra, boundary policy は、まず `Expr` と `Semantics`
+による一般 law diagram として受け皿を作る。Lean では
+`StateTransitionExpr` と `EffectBoundaryExpr` を追加し、replay / roundtrip /
+compensation を finite required diagram family として表せるようにした。
+この段階では、実コードベース抽出器の完全性や数値 curvature metric は主張しない。
 
 特に dependency obstruction は、最初から `lhs != rhs` 型の diagram として無理に
 表さない。`ClosedWalkWitness` のような forbidden witness 型を generic kernel に乗せる。
@@ -290,7 +293,10 @@ universe を cover する。
    `RequiredAxesAvailableAndZero <-> NoRequiredObstruction` bridge を追加する。
 9. 有限 universe から `CoversRequired` を構成できる law family を増やす。
 10. 状態遷移履歴、effect boundary, replay / roundtrip / compensation law を
-   個別の `Expr` と `Semantics` として追加する。
+   個別の `Expr` と `Semantics` として追加する。Lean status: `proved` /
+   `defined only`。`StateTransitionExpr`, `EffectBoundaryExpr` は `defined only`、
+   各 finite diagram family の `DiagramLawful <-> NoDiagramObstruction` bridge は
+   `proved`。
 11. 観測値に距離・重み・半環などを入れる必要が出た時点で、数値的 curvature metric を
    派生定義として追加する。
 
@@ -335,6 +341,16 @@ universe を cover する。
   `coversRequired_requiredDiagramsByList_self`,
   `ComponentUniverse.coversWitnesses_componentPairWitnesses`,
   [Issue #192](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/192)
+- `proved`: 状態遷移履歴と effect boundary の replay / roundtrip / compensation
+  finite diagram family について、lawfulness と diagram obstruction witness 不在を
+  接続する bridge,
+  `stateReplayLawful_iff_noStateReplayObstruction`,
+  `stateRoundtripLawful_iff_noStateRoundtripObstruction`,
+  `stateCompensationLawful_iff_noStateCompensationObstruction`,
+  `effectReplayLawful_iff_noEffectReplayObstruction`,
+  `effectRoundtripLawful_iff_noEffectRoundtripObstruction`,
+  `effectCompensationLawful_iff_noEffectCompensationObstruction`,
+  [Issue #193](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/193)
 - `future proof obligation`: 残る具体的な lawfulness predicate と witness 不在の
   exactness bridge。
 - `future proof obligation`: required Signature axis の abstract bridge を具体的な
