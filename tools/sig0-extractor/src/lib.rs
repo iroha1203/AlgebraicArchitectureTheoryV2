@@ -718,6 +718,7 @@ pub struct PolicyViolationSetDelta {
 #[serde(rename_all = "camelCase")]
 pub struct SnapshotDiffAttribution {
     pub method: String,
+    pub shared_worsened_axes: Vec<String>,
     pub candidates: Vec<AttributionCandidate>,
 }
 
@@ -727,8 +728,13 @@ pub struct AttributionCandidate {
     pub kind: String,
     pub id: String,
     pub confidence: f64,
+    pub confidence_level: String,
     pub reasons: Vec<String>,
     pub changed_components: Vec<String>,
+    pub matched_components: Vec<String>,
+    pub matched_edges: Vec<Edge>,
+    pub matched_policy_violations: Vec<PolicyViolation>,
+    pub affected_axes: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -2150,13 +2156,18 @@ fn snapshot_diff_attribution(
     pr_metadata: &[EmpiricalDatasetInput],
 ) -> SnapshotDiffAttribution {
     let touched_components = touched_components_from_evidence_diff(evidence_diff);
+    let worsened_axis_names = worsened_axes
+        .iter()
+        .map(|axis| axis.axis.clone())
+        .collect::<Vec<_>>();
     let mut candidates = pr_metadata
         .iter()
         .map(|metadata| {
             attribution_candidate(
                 after,
+                evidence_diff,
                 &touched_components,
-                !worsened_axes.is_empty(),
+                &worsened_axis_names,
                 metadata,
             )
         })
@@ -2179,7 +2190,22 @@ fn snapshot_diff_attribution(
             .to_string()
     };
 
-    SnapshotDiffAttribution { method, candidates }
+    let shared_worsened_axes = if candidates
+        .iter()
+        .filter(|candidate| candidate.confidence_level != "unknown")
+        .count()
+        > 1
+    {
+        worsened_axis_names
+    } else {
+        Vec::new()
+    };
+
+    SnapshotDiffAttribution {
+        method,
+        shared_worsened_axes,
+        candidates,
+    }
 }
 
 fn touched_components_from_evidence_diff(evidence_diff: &SnapshotEvidenceDiff) -> BTreeSet<String> {
@@ -2205,8 +2231,9 @@ fn touched_components_from_evidence_diff(evidence_diff: &SnapshotEvidenceDiff) -
 
 fn attribution_candidate(
     after: &SignatureSnapshotStoreRecordV0,
+    evidence_diff: &SnapshotEvidenceDiff,
     touched_components: &BTreeSet<String>,
-    has_worsened_axes: bool,
+    worsened_axes: &[String],
     metadata: &EmpiricalDatasetInput,
 ) -> AttributionCandidate {
     let changed_components = metadata.pr_metrics.changed_components.clone();
@@ -2215,7 +2242,13 @@ fn attribution_candidate(
         .intersection(touched_components)
         .cloned()
         .collect::<Vec<_>>();
-    let mut confidence = 0.15;
+    let matched_edges = matched_edges_from_evidence_diff(evidence_diff, &changed_set);
+    let matched_policy_violations =
+        matched_policy_violations_from_evidence_diff(evidence_diff, &changed_set);
+    let mut matched_components = overlap;
+    matched_components.sort();
+    matched_components.dedup();
+    let mut confidence = 0.0;
     let mut reasons = Vec::new();
 
     if after.revision.sha == metadata.pull_request.head_commit {
@@ -2231,30 +2264,125 @@ fn attribution_candidate(
         confidence += 0.35;
         reasons.push("after revision matches pullRequest.mergeCommit".to_string());
     }
-    if !overlap.is_empty() {
+    if !matched_components.is_empty() {
         let denominator = touched_components.len().max(1) as f64;
-        confidence += 0.35 * (overlap.len() as f64 / denominator).min(1.0);
+        confidence += 0.35 * (matched_components.len() as f64 / denominator).min(1.0);
         reasons.push(format!(
             "changed components overlap with evidence diff: {}",
-            overlap.join(", ")
+            matched_components.join(", ")
         ));
     }
-    if has_worsened_axes {
+    if !matched_edges.is_empty() {
+        confidence += 0.15;
+        reasons.push(format!(
+            "changed components touch added/removed edges: {}",
+            edge_labels(&matched_edges).join(", ")
+        ));
+    }
+    if !matched_policy_violations.is_empty() {
+        confidence += 0.15;
+        reasons.push(format!(
+            "changed components touch added/removed policy violations: {}",
+            policy_violation_labels(&matched_policy_violations).join(", ")
+        ));
+    }
+    if !worsened_axes.is_empty() && confidence > 0.0 {
         confidence += 0.10;
-        reasons.push("signature has worsened axes".to_string());
+        reasons.push(format!(
+            "signature worsened on axes: {}",
+            worsened_axes.join(", ")
+        ));
     }
     if reasons.is_empty() {
         reasons.push(
             "weak candidate: PR metadata provided but no commit or evidence overlap".to_string(),
         );
     }
+    let confidence = round_confidence(confidence.min(0.95));
 
     AttributionCandidate {
         kind: "pullRequest".to_string(),
         id: format!("#{}", metadata.pull_request.number),
-        confidence: round_confidence(confidence.min(0.95)),
+        confidence,
+        confidence_level: confidence_level(confidence).to_string(),
         reasons,
         changed_components,
+        matched_components,
+        matched_edges,
+        matched_policy_violations,
+        affected_axes: if confidence > 0.0 {
+            worsened_axes.to_vec()
+        } else {
+            Vec::new()
+        },
+    }
+}
+
+fn matched_edges_from_evidence_diff(
+    evidence_diff: &SnapshotEvidenceDiff,
+    changed_components: &BTreeSet<String>,
+) -> Vec<Edge> {
+    let Some(edge_delta) = &evidence_diff.edge_delta else {
+        return Vec::new();
+    };
+    edge_delta
+        .added
+        .iter()
+        .chain(edge_delta.removed.iter())
+        .filter(|edge| {
+            changed_components.contains(&edge.source) || changed_components.contains(&edge.target)
+        })
+        .cloned()
+        .collect()
+}
+
+fn matched_policy_violations_from_evidence_diff(
+    evidence_diff: &SnapshotEvidenceDiff,
+    changed_components: &BTreeSet<String>,
+) -> Vec<PolicyViolation> {
+    let Some(policy_delta) = &evidence_diff.policy_violation_delta else {
+        return Vec::new();
+    };
+    policy_delta
+        .added
+        .iter()
+        .chain(policy_delta.removed.iter())
+        .filter(|violation| {
+            changed_components.contains(&violation.source)
+                || changed_components.contains(&violation.target)
+        })
+        .cloned()
+        .collect()
+}
+
+fn edge_labels(edges: &[Edge]) -> Vec<String> {
+    edges
+        .iter()
+        .map(|edge| format!("{} -> {}", edge.source, edge.target))
+        .collect()
+}
+
+fn policy_violation_labels(violations: &[PolicyViolation]) -> Vec<String> {
+    violations
+        .iter()
+        .map(|violation| {
+            format!(
+                "{}:{} -> {}",
+                violation.axis, violation.source, violation.target
+            )
+        })
+        .collect()
+}
+
+fn confidence_level(confidence: f64) -> &'static str {
+    if confidence >= 0.80 {
+        "high"
+    } else if confidence >= 0.50 {
+        "medium"
+    } else if confidence > 0.0 {
+        "low"
+    } else {
+        "unknown"
     }
 }
 

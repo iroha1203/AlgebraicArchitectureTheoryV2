@@ -334,8 +334,12 @@ Signature axis diff だけを report する。
 
 `attribution` は v0 では PR metadata に基づく原因候補である。after revision SHA が
 `pullRequest.headCommit` または `pullRequest.mergeCommit` と一致するか、PR の
-`changedComponents` が `evidenceDiff` の追加・削除 component と重なるかを使って
-confidence を出す。これは因果証明ではなく、調査開始点を提示する ranking である。
+`changedComponents` が `evidenceDiff` の追加・削除 component、edge endpoint、
+policy violation endpoint と重なるかを使って confidence を出す。候補には数値
+`confidence` と `confidenceLevel: high | medium | low | unknown`、および
+`matchedComponents`, `matchedEdges`, `matchedPolicyViolations`, `affectedAxes` を残す。
+複数 PR が同じ悪化軸に関与し得る場合は、`sharedWorsenedAxes` に軸名を残し、単一原因
+として確定しない。これは因果証明ではなく、調査開始点を提示する ranking である。
 
 CLI の再現手順は
 [`tools/sig0-extractor/README.md`](../../tools/sig0-extractor/README.md) の
