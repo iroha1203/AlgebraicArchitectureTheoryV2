@@ -105,6 +105,9 @@ pass する場合の要点は次である。
 repository root を測定する場合、`.git`, `.lake`, `.elan`, `target`, root 直下の
 `tools` は scan 対象から除外する。これは extractor 自身の fixture や build artifact
 を Lean module import graph に混ぜないための v0 の実装仕様である。
+`lakefile.lean` は build configuration metadata として扱い、component universe から
+除外する。multi-project repository を project 単位で測りたい場合は、repository root
+全体ではなく各 subproject root を `--root` に指定して別々に実行する。
 
 ## Output
 

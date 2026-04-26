@@ -27,6 +27,15 @@ component 粒度は file/module とする。
 - declaration 粒度は import graph だけでは安定して取れないため v0 では扱わない。
 - `Main.lean`, `Formal.lean`, `Formal/Arch/*.lean` は測定対象にできるが、docs や
   workflow は静的依存グラフの component には含めない。
+- `lakefile.lean` は Lean source file ではあるが、build configuration metadata として
+  扱い、component universe には含めない。`lakefile.toml`, `lean-toolchain` と同じく
+  測定条件の metadata であり、import graph の設計 component とは解釈しない。
+
+measurement root は `--root` で渡した directory で固定する。repository root を渡した
+場合は、その repository 全体を 1 つの measurement universe として測る。multi-project
+repository で sample project ごとの比較が必要な場合は、各 subproject root に対して
+別々に extractor を実行し、出力の `root` と dataset / snapshot 側の repository metadata
+で測定単位を区別する。v0 では、1 回の実行で複数 subproject を自動分割しない。
 
 最小 extractor の入力は repository checkout である。初期実装では、Lean toolchain
 や lake build artifact に依存せず、source file と import 文から静的依存辺を抽出する。
