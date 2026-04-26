@@ -4,8 +4,7 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use clap::{Parser, Subcommand};
-use sig0_extractor::{
+use archsig::{
     ComponentUniverseValidationReport, DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput,
     RepositoryRevisionRef, ScanMetadata, Sig0Document, SignatureSnapshotStoreRecordV0,
     SnapshotRecordInput, SnapshotRepositoryRef, build_empirical_dataset,
@@ -13,9 +12,10 @@ use sig0_extractor::{
     build_signature_snapshot_record, extract_relation_complexity_observation_from_file,
     extract_sig0_with_runtime, validate_component_universe_report,
 };
+use clap::{Parser, Subcommand};
 
 #[derive(Debug, Parser)]
-#[command(version, about = "Extract Sig0 input from Lean module imports")]
+#[command(version, about = "Extract ArchSig JSON from Lean module imports")]
 struct Args {
     #[command(subcommand)]
     command: Option<Command>,
@@ -39,9 +39,9 @@ struct Args {
 
 #[derive(Debug, Subcommand)]
 enum Command {
-    /// Validate an existing Sig0 extractor JSON document.
+    /// Validate an existing ArchSig JSON document.
     Validate {
-        /// Input Sig0 extractor JSON path.
+        /// Input ArchSig JSON path.
         #[arg(long)]
         input: PathBuf,
 
@@ -56,11 +56,11 @@ enum Command {
 
     /// Build an empirical dataset v0 record from before / after signatures and PR metadata.
     Dataset {
-        /// Input Sig0 extractor JSON for the PR base commit.
+        /// Input ArchSig JSON for the PR base commit.
         #[arg(long)]
         before: PathBuf,
 
-        /// Input Sig0 extractor JSON for the PR head or merge commit.
+        /// Input ArchSig JSON for the PR head or merge commit.
         #[arg(long)]
         after: PathBuf,
 
@@ -113,7 +113,7 @@ enum Command {
 
     /// Build a repository-revision Signature snapshot store record.
     Snapshot {
-        /// Input Sig0 extractor JSON path.
+        /// Input ArchSig JSON path.
         #[arg(long)]
         input: PathBuf,
 
@@ -213,11 +213,11 @@ enum Command {
         #[arg(long = "after-snapshot", alias = "after")]
         after_snapshot: PathBuf,
 
-        /// Optional before Sig0 extractor JSON for component / edge evidence diff.
+        /// Optional before ArchSig JSON for component / edge evidence diff.
         #[arg(long = "before-sig0")]
         before_sig0: Option<PathBuf>,
 
-        /// Optional after Sig0 extractor JSON for component / edge evidence diff.
+        /// Optional after ArchSig JSON for component / edge evidence diff.
         #[arg(long = "after-sig0")]
         after_sig0: Option<PathBuf>,
 

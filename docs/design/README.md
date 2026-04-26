@@ -6,7 +6,7 @@
 
 | 文書 | 区分 | 用途 |
 | --- | --- | --- |
-| [Sig0 extractor v0 設計](sig0_extractor_design.md) | tooling design / empirical hypothesis | Lean module import graph から Signature v0 JSON を作る最小 extractor と、Lean `ComponentUniverse` との責務境界を整理する。 |
+| [ArchSig v0 設計](archsig_design.md) | tooling design / empirical hypothesis | Lean module import graph から Signature v0 JSON を作る最小 extractor と、Lean `ComponentUniverse` との責務境界を整理する。 |
 | [Signature 実証プロトコル](empirical_protocol.md) | empirical protocol | Signature と PR / issue / incident metadata を結合し、変更波及・レビューコスト・障害修正との関係を検証する手順を固定する。 |
 | [empirical dataset v0 schema](empirical_dataset_schema.md) | empirical dataset schema | Signature before / after、signed delta、PR metadata、metric status を結合する最小 record schema を固定する。 |
 | [Signature snapshot store schema](signature_snapshot_store_schema.md) | tooling schema / empirical hypothesis | repository revision ごとの Signature snapshot を蓄積し、週次 scan や任意期間 diff に使う最小 store schema を固定する。 |

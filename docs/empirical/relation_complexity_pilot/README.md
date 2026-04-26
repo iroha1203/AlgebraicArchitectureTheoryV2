@@ -5,7 +5,7 @@ Lean status: `empirical hypothesis` / pilot validation.
 Issue [#154](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/154)
 の pilot として、Event Sourcing / Saga / CRUD を含む小さな commerce 状態遷移
 sample を選び、`relationComplexity` の手動 baseline と
-`sig0-extractor relation-complexity` の出力差分を記録した。
+`archsig relation-complexity` の出力差分を記録した。
 
 この pilot の目的は統計的結論ではない。`RelationComplexityObservation` の
 counting rule v0 が、手動レビュー済み candidate から構成要素ベクトルを再現できるか、
@@ -94,11 +94,11 @@ observation として保持し、repository-level value は観測の集約とし
 ## 再生成手順
 
 ```bash
-cargo run --quiet --manifest-path tools/sig0-extractor/Cargo.toml -- relation-complexity \
+cargo run --quiet --manifest-path tools/archsig/Cargo.toml -- relation-complexity \
   --input docs/empirical/relation_complexity_pilot/candidates/commerce_state_transitions_candidates.json \
   --out docs/empirical/relation_complexity_pilot/observations/commerce_state_transitions_observation.json
 
-cargo run --quiet --manifest-path tools/sig0-extractor/Cargo.toml -- relation-complexity \
+cargo run --quiet --manifest-path tools/archsig/Cargo.toml -- relation-complexity \
   --input docs/empirical/relation_complexity_pilot/candidates/unsupported_framework_probe.json \
   --out docs/empirical/relation_complexity_pilot/observations/unsupported_framework_probe_observation.json
 ```

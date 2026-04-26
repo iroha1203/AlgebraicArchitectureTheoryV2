@@ -18,16 +18,16 @@ fn temp_dir(test_name: &str) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .expect("system clock is after unix epoch")
         .as_nanos();
-    let dir = std::env::temp_dir().join(format!("sig0-extractor-{test_name}-{nanos}"));
+    let dir = std::env::temp_dir().join(format!("archsig-{test_name}-{nanos}"));
     fs::create_dir_all(&dir).expect("temp dir is created");
     dir
 }
 
 fn run_sig0(args: &[&str]) {
-    let output = Command::new(env!("CARGO_BIN_EXE_sig0-extractor"))
+    let output = Command::new(env!("CARGO_BIN_EXE_archsig"))
         .args(args)
         .output()
-        .expect("sig0-extractor command runs");
+        .expect("archsig command runs");
     assert!(
         output.status.success(),
         "command failed\nstdout:\n{}\nstderr:\n{}",
@@ -63,7 +63,7 @@ fn cli_extracts_policy_runtime_fixture_contract() {
     ]);
 
     let json = read_json(&out);
-    assert_eq!(json["schemaVersion"], "sig0-extractor-v0");
+    assert_eq!(json["schemaVersion"], "archsig-sig0-v0");
     assert_eq!(json["policies"]["policyId"], "minimal-measured-zero");
     assert_eq!(
         json["metricStatus"]["boundaryViolationCount"]["measured"],

@@ -1,8 +1,8 @@
-# Sig0 extractor
+# ArchSig
 
 Lean status: `empirical hypothesis` / tooling output.
 
-`sig0-extractor` は repository checkout から Architecture Signature 用の JSON artifact を作る CLI である。
+`archsig` は repository checkout から Architecture Signature 用の JSON artifact を作る CLI である。
 Lean の証明器ではなく、CI や AI agent が読むための architecture telemetry generator として扱う。
 
 現状の自動 scan は Lean module import graph に対応する。出力 schema は JSON で固定し、
@@ -40,7 +40,7 @@ AI / CI が最初に読むべき成果物は次である。
 
 | 出力 | schemaVersion | 用途 |
 | --- | --- | --- |
-| Sig0 output | `sig0-extractor-v0` | 単一 revision の component、edge、signature、metric status。 |
+| Sig0 output | `archsig-sig0-v0` | 単一 revision の component、edge、signature、metric status。 |
 | Validation report | `component-universe-validation-report-v0` | Sig0 output の duplicate、edge closure、policy status などの検査結果。 |
 | Snapshot | `signature-snapshot-store-v0` | repository revision ごとの保存用 signature record。 |
 | Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
@@ -63,17 +63,17 @@ AI agent は `signature` の値だけで判断せず、必ず `metricStatus`, `m
 fixture で scan する。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
-  --root tools/sig0-extractor/tests/fixtures/minimal \
-  --policy tools/sig0-extractor/tests/fixtures/minimal/policy_measured_zero.json \
-  --runtime-edges tools/sig0-extractor/tests/fixtures/minimal/runtime_edges.json \
+cargo run --manifest-path tools/archsig/Cargo.toml -- \
+  --root tools/archsig/tests/fixtures/minimal \
+  --policy tools/archsig/tests/fixtures/minimal/policy_measured_zero.json \
+  --runtime-edges tools/archsig/tests/fixtures/minimal/runtime_edges.json \
   --out .lake/sig0-fixture.json
 ```
 
 validation report を作る。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
+cargo run --manifest-path tools/archsig/Cargo.toml -- validate \
   --input .lake/sig0-fixture.json \
   --out .lake/sig0-fixture-validation.json \
   --universe-mode local-only
@@ -82,7 +82,7 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
 repository root を scan する。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+cargo run --manifest-path tools/archsig/Cargo.toml -- \
   --root . \
   --out .lake/sig0.json
 ```
@@ -94,7 +94,7 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
 基本形:
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+cargo run --manifest-path tools/archsig/Cargo.toml -- \
   --root . \
   --policy signature-policy.json \
   --runtime-edges runtime-edges.json \
@@ -119,7 +119,7 @@ multi-project repository を project 単位で測る場合は、各 subproject r
 
 ```json
 {
-  "schemaVersion": "sig0-extractor-v0",
+  "schemaVersion": "archsig-sig0-v0",
   "componentKind": "lean-module",
   "components": [
     { "id": "Formal", "path": "Formal.lean" }
@@ -154,7 +154,7 @@ multi-project repository を project 単位で測る場合は、各 subproject r
 既存 Sig0 JSON を検査する。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
+cargo run --manifest-path tools/archsig/Cargo.toml -- validate \
   --input .lake/sig0.json \
   --out .lake/sig0-validation.json \
   --universe-mode local-only
@@ -189,7 +189,7 @@ pass する場合の要点:
 CI や週次 scan では、まず Sig0 output と validation report から snapshot を作る。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
+cargo run --manifest-path tools/archsig/Cargo.toml -- snapshot \
   --input .lake/signature-current/sig0.json \
   --validation-report .lake/signature-current/validation.json \
   --repo-owner example \
@@ -207,7 +207,7 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
 before / after の snapshot から diff report を作る。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- signature-diff \
+cargo run --manifest-path tools/archsig/Cargo.toml -- signature-diff \
   --before-snapshot .lake/signature-previous/snapshot.json \
   --after-snapshot .lake/signature-current/snapshot.json \
   --before-sig0 .lake/signature-previous/sig0.json \
@@ -219,7 +219,7 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- signature-diff \
 `signature-diff` は `diff` alias でも呼び出せる。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- diff \
+cargo run --manifest-path tools/archsig/Cargo.toml -- diff \
   --before .lake/signature-previous/snapshot.json \
   --after .lake/signature-current/snapshot.json \
   --out .lake/signature-current/diff-report.json
@@ -272,7 +272,7 @@ diff report は次を持つ。
 GitHub API の PR detail / files / reviews JSON から `pr-metadata.json` を作る。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- pr-metadata \
+cargo run --manifest-path tools/archsig/Cargo.toml -- pr-metadata \
   --pull-request github-pr.json \
   --files github-pr-files.json \
   --reviews github-pr-reviews.json \
@@ -289,7 +289,7 @@ GraphQL reviewThreads JSON を別途持つ場合は `--review-threads` で渡せ
 before / after の Sig0 output と PR metadata から empirical dataset record を作る。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- dataset \
+cargo run --manifest-path tools/archsig/Cargo.toml -- dataset \
   --before .lake/sig0-base.json \
   --after .lake/sig0-head.json \
   --pr-metadata pr-metadata.json \
@@ -310,7 +310,7 @@ dataset 出力は `schemaVersion: "empirical-signature-dataset-v0"` の単一 re
 workflow 単位の `RelationComplexityObservation` を candidate evidence JSON から生成する。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- relation-complexity \
+cargo run --manifest-path tools/archsig/Cargo.toml -- relation-complexity \
   --input relation-complexity-candidates.json \
   --out relation-complexity-observation.json
 ```
@@ -380,9 +380,9 @@ placeholder 0 を risk 0 として扱わない。
 ローカル検証は次で行う。
 
 ```bash
-cargo test --manifest-path tools/sig0-extractor/Cargo.toml
+cargo test --manifest-path tools/archsig/Cargo.toml
 ```
 
-CI では GitHub Actions の `sig0-extractor cargo test` job が同じコマンドを実行する。
+CI では GitHub Actions の `archsig cargo test` job が同じコマンドを実行する。
 fixtures と CLI test で policy, runtime edge projection, relation complexity, dataset conversion,
 snapshot diff を検証する。

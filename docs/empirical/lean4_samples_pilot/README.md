@@ -5,7 +5,7 @@ Lean status: `empirical hypothesis` / pilot validation.
 Issue [#135](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/135)
 の pilot として、外部 repository
 [`leanprover-community/lean4-samples`](https://github.com/leanprover-community/lean4-samples)
-に `sig0-extractor` と empirical dataset v0 schema を適用した。
+に `archsig` と empirical dataset v0 schema を適用した。
 
 この pilot の目的は強い統計的結論ではなく、実 repository の PR metadata と
 before / after signature を結合した record が再現可能に作れるか、また
@@ -76,7 +76,7 @@ Issue [#147](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1
 `metricStatus.<axis>.measured = true` の before / after record を作れるかを確認する
 pilot input である。
 
-2026-04-26 に `sig0-extractor` で生成した要約は次である。raw JSON は
+2026-04-26 に `archsig` で生成した要約は次である。raw JSON は
 `/tmp/aatv2-issue-147/` に生成し、従来どおり PR には含めない。
 
 | PR | base | head | components before | components after | import edges before | import edges after | boundary delta | abstraction delta | runtime delta |
@@ -103,7 +103,7 @@ HTTP route、message queue、job scheduler、RPC client などの runtime depend
 安定して抽出できる service stack ではないため、この pilot では入力しない。
 H5 の検証には、runtime edge evidence と coverage policy を持つ別 repository が必要である。
 
-`sig0-extractor validate --universe-mode local-only` の summary は before / after とも
+`archsig validate --universe-mode local-only` の summary は before / after とも
 `result = warn`, `failedCheckCount = 0`, `notMeasuredCheckCount = 0` だった。
 warning は既存 pilot と同じく、sample layout の import target が source file
 component として閉じていないことによる。
@@ -155,7 +155,7 @@ Python pilot にも維持できる。
 
 ## Validation report observation
 
-raw Sig0 output に `sig0-extractor validate --universe-mode local-only` を適用した際、
+raw Sig0 output に `archsig validate --universe-mode local-only` を適用した際、
 以前は一部 record で `edge-endpoint-resolved` と `edge-closure-local` が fail した。
 代表例は次である。
 
@@ -181,11 +181,11 @@ mkdir -p docs/empirical/lean4_samples_pilot/metadata \
   docs/empirical/lean4_samples_pilot/sig0 \
   docs/empirical/lean4_samples_pilot/records
 
-cargo run --quiet --manifest-path tools/sig0-extractor/Cargo.toml -- \
+cargo run --quiet --manifest-path tools/archsig/Cargo.toml -- \
   --root /tmp/aatv2-lean4-samples \
   --out docs/empirical/lean4_samples_pilot/sig0/pr-10-before.json
 
-cargo run --quiet --manifest-path tools/sig0-extractor/Cargo.toml -- dataset \
+cargo run --quiet --manifest-path tools/archsig/Cargo.toml -- dataset \
   --before docs/empirical/lean4_samples_pilot/sig0/pr-10-before.json \
   --after docs/empirical/lean4_samples_pilot/sig0/pr-10-after.json \
   --pr-metadata docs/empirical/lean4_samples_pilot/metadata/pr-10.json \
@@ -201,7 +201,7 @@ issueIncidentLinks / analysisMetadata を持つ empirical dataset input JSON で
 
 - PR metadata から dataset input JSON を作る手順は
   [#146](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/146)
-  で `sig0-extractor pr-metadata` として repository-local tooling に移した。
+  で `archsig pr-metadata` として repository-local tooling に移した。
 - 外部 repository 用の boundary / abstraction policy と runtime edge evidence が
   ない初期 record では、H4 / H5 の pilot record として欠損が多かった。
   [#147](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/147)
@@ -217,7 +217,7 @@ issueIncidentLinks / analysisMetadata を持つ empirical dataset input JSON で
 
 ## 結論
 
-`sig0-extractor` と empirical dataset v0 schema は、外部の小規模 Lean repository
+`archsig` と empirical dataset v0 schema は、外部の小規模 Lean repository
 に対して少なくとも 5 件の before / after signature record を生成できた。
 欠損値規約も維持され、policy / runtime 未指定の placeholder 0 は
 `metricStatus.measured = false` と `deltaSignatureSigned = null` によって

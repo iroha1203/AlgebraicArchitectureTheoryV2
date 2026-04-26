@@ -78,7 +78,7 @@ Lean core に渡す 0/1 projection の初期規則は、実行時通信または
 metadata の重み、failure mode、timeout budget、retry policy はこの 0/1 edge の存在へは
 畳み込むが、Lean theorem の前提にはしない。
 
-`sig0-extractor` の `runtime-edge-projection-v0` はこの初期規則を実装する。
+ArchSig の `runtime-edge-projection-v0` はこの初期規則を実装する。
 `--runtime-edges` に `runtime-edge-evidence-v0` JSON を渡すと、raw metadata を
 `runtimeEdgeEvidence` に保存し、unique component pair ごとに `kind = "runtime"` の
 edge を `runtimeDependencyGraph.edges` へ出力する。runtime evidence 入力がない場合は

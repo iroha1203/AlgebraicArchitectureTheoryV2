@@ -226,10 +226,10 @@ measured 0 と unmeasured `null` の規約を両方で維持できる。
     "root": "."
   },
   "extractor": {
-    "name": "sig0-extractor",
+    "name": "archsig",
     "version": "0.1.0",
     "ruleSetVersion": "sig0-v0",
-    "inputSchemaVersion": "sig0-extractor-v0"
+    "inputSchemaVersion": "archsig-sig0-v0"
   },
   "policy": {
     "policyId": "service-boundary-v0",
@@ -327,7 +327,7 @@ before / after のどちらかで未評価の軸、または optional extension 
 - `extractor.name`, `extractor.version`, `extractor.ruleSetVersion` が一致しない。
 - `policy.policyId` または `policy.version` が一致しない。
 
-`evidenceDiff` は raw Sig0 extractor JSON が before / after ともに与えられた場合だけ
+`evidenceDiff` は raw ArchSig JSON が before / after ともに与えられた場合だけ
 component / edge / policy violation の追加・削除を保持する。snapshot record 単体には
 raw edge list を持たせないため、raw JSON がない場合は `available = false` とし、
 Signature axis diff だけを report する。
@@ -342,7 +342,7 @@ policy violation endpoint と重なるかを使って confidence を出す。候
 として確定しない。これは因果証明ではなく、調査開始点を提示する ranking である。
 
 CLI の再現手順は
-[`tools/sig0-extractor/README.md`](../../tools/sig0-extractor/README.md) の
+[`tools/archsig/README.md`](../../tools/archsig/README.md) の
 `Snapshot diff MVP` を参照する。
 
 CI integration は
