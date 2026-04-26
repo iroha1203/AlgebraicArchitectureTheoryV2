@@ -513,6 +513,9 @@ File: `Formal/Arch/SolidCounterexample.lean`
 次は意図的に Lean core へ混ぜていない。
 
 - `Decomposable` の定義への acyclicity, finite propagation, nilpotence, spectral conditions の混入。
+- 一般の `Sem_A(p) - Sem_A(q)` 型の数値 curvature metric。
+  `Formal/Arch/Curvature.lean` は、観測値上の差分・距離・重み・集約規則が固まるまで
+  意図的に追加しない。
 - `relationComplexity`, `runtimePropagation`, `empiricalChangeCost` の実証相関。
 - extractor output が `ComponentUniverse` の完全な witness であるという主張。
 - `rho(A)` と変更波及・障害伝播コストの相関。

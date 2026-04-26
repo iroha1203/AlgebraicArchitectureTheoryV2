@@ -67,17 +67,20 @@ required axis exactness については、`MeasuredZero` と `AvailableAndZero` 
 `RequiredAxesAvailableAndZero <-> NoRequiredObstruction` を得る抽象 bridge も
 Lean で証明済みである
 ([Issue #195](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/195))。
-ただし、アーキテクチャ零曲率定理全体、具体的な `ProjectionSound` /
-`LSPCompatible` / `WalkAcyclic` などの lawfulness predicate との exactness、
-required `ArchitectureSignature` axis との具体 law family 接続は
-`future proof obligation` のまま扱う。
+具体的な `ProjectionSound` / `LSPCompatible` / `WalkAcyclic` /
+`LocalReplacementContract` / finite diagram law family についても、それぞれの
+lawfulness predicate と obstruction witness 不在を接続する exactness bridge は
+Lean で証明済みである。残る中心的な `future proof obligation` は、required
+`ArchitectureSignature` axis の抽象 bridge を具体 law family の axis valuation へ
+接続する theorem である。
 
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
-それだけでは中心定理の証明とは呼ばない。強い proof obligation は、
+それだけでは中心定理の証明とは呼ばない。強い Lean proof は、
 `ProjectionSound`, `LSPCompatible`, `WalkAcyclic`, `LocalReplacementContract`
 など、obstruction framework とは独立に定義された lawfulness predicate と、
-各 witness family の阻害証人不在を bridge theorem で接続することである。
+各 witness family の阻害証人不在を bridge theorem で接続することで進める。
+これらの代表的な exactness bridge は #188, #190, #193 で証明済みである。
 さらに、required `ArchitectureSignature` axis の抽象 exactness bridge を
 具体 law family に接続し、complete coverage を有限 universe から構成できる law family
 を増やすことを目標にする。
@@ -103,6 +106,14 @@ diagram constructors は `defined only`、各 replay / roundtrip / compensation 
 `DiagramLawful <-> NoDiagramObstruction` bridge は `proved` である。これは required
 diagram family の受け皿であり、実コードベース抽出器の完全性、観測値上の距離、
 重み、半環、数値 curvature metric は主張しない。
+
+Issue [#194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)
+では、数値的 curvature metric と empirical hypothesis を Lean proved core から
+派生層へ分離する。`Curv_A = Sem_A(p) - Sem_A(q)` 型の一般 metric は、
+観測値上の距離・差分・重み・集約規則と validation protocol が固まるまで
+`future design` / `empirical hypothesis` として扱う。これは obstruction witness
+zero-count theorem の代替ではなく、必要になった場合に追加 axis または派生評価として
+接続する。
 
 ## 基本 convention
 
@@ -912,6 +923,7 @@ Lean status の区分:
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み | `defined only` / `proved` |
 | `rho(A)` | 行列解析上の伝播増幅指標として扱う。finite DAG では 0、finite closed walk では正になる bridge を証明済み | `proved` for `DAG -> rho(A)=0` / `proved` for cycle positivity / `empirical hypothesis` |
+| `numericCurvature` | 一般の観測値差分 `Sem_A(p) - Sem_A(q)` 型 metric は、観測値上の距離・重み・集約規則が固まるまで Lean core へ入れない派生候補 | `future design` / `empirical hypothesis` |
 | `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime exposure radius として計算する。既存名は `runtimeExposureRadius` の互換名であり、blast radius は reverse reachability 由来の tooling / analysis metric として分ける | `defined only` / `empirical hypothesis` |
 | `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データで検証する目的変数 | `empirical hypothesis` |
