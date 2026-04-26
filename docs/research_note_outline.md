@@ -140,7 +140,7 @@ axis を分ける。
 | `projectionSoundnessViolation` | 具象依存が抽象依存へ sound に写らない数 | executable metric / proved bridge |
 | `lspViolationCount` | 同じ抽象に写る実装 pair の観測差分 | executable metric / proved bridge |
 | `nilpotencyIndex` | finite adjacency matrix が 0 になる最初の power | executable metric / proved acyclic bridge |
-| `runtimePropagation` | 0/1 runtime graph 上の propagation radius | executable metric / empirical interpretation |
+| `runtimePropagation` | 0/1 runtime graph 上の exposure radius。blast radius は reverse reachability 由来の analysis metric | executable metric / empirical interpretation |
 | `relationComplexity` | 状態遷移代数層の構成要素ベクトル | empirical hypothesis |
 | `empiricalChangeCost` | PR / issue / incident metadata 由来の目的変数 | empirical hypothesis |
 
@@ -255,7 +255,7 @@ H1a と、将来観測窓を見る H1b に分ける。
 | H2 | exploratory | SCC / cycle risk が大きい領域では障害修正コストが増える | `hasCycle`, `sccExcessSize` | repair time, hotfix size |
 | H3 | primary | fanout risk が高い変更はレビューコストが増える | pre-change `fanoutRisk`, `maxFanout` | review comments, review rounds, approval time |
 | H4 | exploratory | 境界違反と relation complexity は将来リスクと相関する | `boundaryViolationCount`, `relationComplexity` components | future co-change, incident count |
-| H5 | exploratory | runtime propagation が大きい領域では incident scope が広がる | `runtimePropagation`, `runtimeFanout` | affected components, repair time |
+| H5 | exploratory | runtime exposure / blast radius が大きい領域では incident scope が広がる | `runtimePropagation` / `runtimeExposureRadius`, `runtimeBlastRadius`, `runtimeFanout` | affected components, repair time |
 
 これらは Lean proof のブロッカーではない。反証可能な empirical hypothesis として、
 対象 repository、対象 PR、除外条件、欠損値規約を固定した上で検証する。

@@ -731,9 +731,16 @@ extractor / empirical tooling 側に残す。Issue
 では、runtime evidence が 1 件以上ある component pair を 0/1 runtime edge にする
 `runtime-edge-projection-v0` を `sig0-extractor --runtime-edges` として実装した。
 この projection は metadata を Lean theorem の前提に混ぜない。
+Issue [#163](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/163)
+では、既存の `runtimePropagationRadius` / `runtimePropagation` を
+`edge c d` means `c depends on d` の向きに沿う `runtimeExposureRadius` として読む方針に
+固定した。障害源 `d` が壊れたときに `d` へ依存する component がどれだけ影響を受けるかを
+測る `runtimeBlastRadius` は reverse reachability 由来の empirical / tooling metric とし、
+現時点では Lean core field や reverse graph API を追加しない。
 Issue [#127](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/127)
 では、Circuit Breaker coverage を raw `runtimePropagationOfFinite` には混ぜず、
-`unprotectedRuntimeGraph` から計算する `unprotectedRuntimePropagationRadius` と
+`unprotectedRuntimeGraph` から計算する exposure 側の
+`unprotectedRuntimePropagationRadius`、blast 側の `unprotectedRuntimeBlastRadius` と
 `circuitBreakerCoverageRatio` の policy-aware extension として扱う設計に固定した。
 `unknown` / `partial` coverage は risk 0 に丸めず、保守的な v0 projection では
 未保護 edge 側に残す。coverage が incident scope や repair cost を下げる主張は
@@ -805,7 +812,7 @@ Lean status の区分:
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み | `defined only` / `proved` |
 | `rho(A)` | 行列解析上の伝播増幅指標として扱う。finite DAG では 0、finite closed walk では正になる bridge を証明済み | `proved` for `DAG -> rho(A)=0` / `proved` for cycle positivity / `empirical hypothesis` |
-| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime propagation radius として計算する。runtime metadata から graph への projection は tooling 側に残す | `defined only` / `empirical hypothesis` |
+| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime exposure radius として計算する。既存名は `runtimeExposureRadius` の互換名であり、blast radius は reverse reachability 由来の tooling / analysis metric として分ける | `defined only` / `empirical hypothesis` |
 | `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データで検証する目的変数 | `empirical hypothesis` |
 
@@ -843,7 +850,9 @@ Lean status の区分:
   で `runtimePropagationOfFinite` と
   `v1OfFiniteWithRuntimePropagation` を定義済みである。初期設計は
   [runtime_propagation_design.md](design/runtime_propagation_design.md)
-  に分離する。
+  に分離する。Issue [#163](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/163)
+  で既存名を exposure radius として固定し、blast radius は reverse reachability 由来の
+  empirical / tooling metric として分離した。
 - Signature v1 後半戦の統合整理は
   [#83](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/83)
   で完了し、まとめは
@@ -1120,18 +1129,19 @@ baseline と extractor output の差分を記録し、rule set v0 の pilot vali
 
 Analysis tier: exploratory.
 
-### H5. runtime propagation と incident scope
+### H5. runtime exposure / blast radius と incident scope
 
 仮説:
 
 ```text
-runtimePropagation が大きい領域では、incident scope や障害修正コストが増える。
+runtime exposure / blast radius が大きい領域では、incident scope や障害修正コストが増える。
 ```
 
 測定候補:
 
 - runtime edge evidence と 0/1 `RuntimeDependencyGraph` projection
-- `runtimePropagation`, `runtimeFanout`, `unprotectedRuntimePropagationRadius`
+- `runtimePropagation` / `runtimeExposureRadius`, `runtimeBlastRadius`,
+  `runtimeFanout`, `unprotectedRuntimePropagationRadius`, `unprotectedRuntimeBlastRadius`
 - affected components, repair time, rollback, hotfix size
 
 runtime evidence、coverage policy、incident root cause が不足する場合は、欠損理由を
@@ -1183,14 +1193,14 @@ ArchitectureDependencyGraphs C =
 - external SaaS
 - timeout propagation
 
-実行時依存グラフは、Circuit Breaker, timeout propagation, runtime fanout, failure propagation radius など、運用時の結合と障害伝播の評価に使う。Lean core の `RuntimeDependencyGraph` は当面 0/1 edge の存在だけを表す。edge label, weight, failure mode, timeout budget, retry policy, circuit breaker coverage などは extractor / empirical tooling 側の metadata として保持する。Issue #128 では、runtime evidence が 1 件以上ある component pair を `kind = "runtime"` の 0/1 edge に投影する `runtime-edge-projection-v0` を extractor 側に追加した。初期の `runtimePropagation` は、0/1 runtime graph 上の `runtimePropagationRadius` として `reachableConeSizeOfFinite` を再利用する。
+実行時依存グラフは、Circuit Breaker, timeout propagation, runtime fanout, exposure radius, blast radius など、運用時の結合と障害伝播の評価に使う。Lean core の `RuntimeDependencyGraph` は当面 0/1 edge の存在だけを表す。edge label, weight, failure mode, timeout budget, retry policy, circuit breaker coverage などは extractor / empirical tooling 側の metadata として保持する。Issue #128 では、runtime evidence が 1 件以上ある component pair を `kind = "runtime"` の 0/1 edge に投影する `runtime-edge-projection-v0` を extractor 側に追加した。初期の `runtimePropagation` は、0/1 runtime graph 上の `runtimeExposureRadius` として `reachableConeSizeOfFinite` を再利用する。`runtimeBlastRadius` は reverse reachability 由来の analysis metric として分ける。
 
 責務境界:
 
 - Lean 側: `StaticDependencyGraph`, `RuntimeDependencyGraph`, `ArchitectureDependencyGraphs` を定義し、0/1 graph として言える構造的命題だけを theorem 化する。
 - extractor / empirical 側: import, type reference, RPC, queue, shared database, timeout propagation などの抽出規則と edge metadata を管理する。
-- Signature 側: v0 の静的構造軸を維持し、`runtimePropagation` は v1 extension として `RuntimeDependencyGraph` から別に計算する。
-- empirical protocol 側: Issue #126 で、`runtimeFanout` / `runtimePropagationRadius` と障害修正コストの関係を H5 empirical hypothesis として設計した。
+- Signature 側: v0 の静的構造軸を維持し、`runtimePropagation` は v1 extension として `RuntimeDependencyGraph` から exposure radius を別に計算する。
+- empirical protocol 側: Issue #126 と #163 で、`runtimeFanout` / `runtimeExposureRadius` / `runtimeBlastRadius` と障害修正コストの関係を H5 empirical hypothesis として設計した。
 
 ### 解析的指標は発展課題として扱う
 
