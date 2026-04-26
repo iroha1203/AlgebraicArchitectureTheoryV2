@@ -174,8 +174,8 @@ RequiredAxesAvailableAndZero L sig
 
 | 草案の成分 | 既存 Lean API | Lean 化の入口 |
 | --- | --- | --- |
-| dependency obstruction | `Walk`, `HasClosedWalk`, `WalkAcyclic`, `Acyclic` | 閉 walk を dependency witness として扱う。 |
-| nilpotence obstruction | `adjacencyNilpotent_iff_acyclic`, `spectralRadiusOfAdjacency` | 有限 `ComponentUniverse` 上の matrix bridge を obstruction family として参照する。 |
+| dependency obstruction | `ClosedWalkWitness`, `Walk`, `HasClosedWalk`, `WalkAcyclic`, `Acyclic` | 閉 walk を forbidden dependency witness として扱う。 |
+| nilpotence obstruction | `adjacencyNilpotent_iff_no_closedWalkObstruction`, `spectralRadiusOfAdjacency` | 有限 `ComponentUniverse` 上の matrix bridge を obstruction family として参照する。 |
 | projection obstruction | `ProjectionSound`, `projectionSoundnessViolationEdges` | 抽象辺に写らない具象辺を projection witness とする。 |
 | observation / LSP obstruction | `ObservationFactorsThrough`, `lspViolationPairs` | 同じ抽象 fiber 内の観測不一致を observation witness とする。 |
 | local replacement | `LocalReplacementContract` | projection witness と observation witness の同時消滅として扱う。 |
@@ -313,8 +313,14 @@ required diagram を列挙するなど、一部の law family では `CoversRequ
   `violatingWitnesses` の特殊例であること,
   `projectionSound_iff_noProjectionObstruction`,
   `lspCompatible_iff_noLSPObstruction`, [Issue #188](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/188)
-- `future proof obligation`: `WalkAcyclic` など残る具体的な lawfulness predicate と
-  witness 不在の exactness bridge。
+- `proved`: `ClosedWalkWitness` を forbidden dependency witness として追加し、
+  `WalkAcyclic`, `Acyclic`, finite `AdjacencyNilpotent` と witness 不在を接続する
+  exactness bridge,
+  `walkAcyclic_iff_no_closedWalkObstruction`,
+  `adjacencyNilpotent_iff_no_closedWalkObstruction`,
+  [Issue #190](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/190)
+- `future proof obligation`: 残る具体的な lawfulness predicate と witness 不在の
+  exactness bridge。
 - `future proof obligation`: required Signature axis の abstract bridge を具体的な
   projection / LSP / walk / nilpotence witness family に接続する定理。
 - `proved`: 抽象 `LawFamily` では、complete coverage 下での measured zero から

@@ -155,6 +155,9 @@ Lean status:
 
 - `proved`: `Acyclic -> WalkAcyclic`
 - `proved`: `WalkAcyclic -> Acyclic`
+- `proved`: `ClosedWalkWitness` packages `HasClosedWalk` as a forbidden
+  obstruction witness, and `WalkAcyclic` is exact absence of that witness,
+  [Issue #190](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/190)
 
 ### 2. 分解可能性の基礎定理
 
@@ -216,6 +219,14 @@ Issue [#55](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/55
 また `adjacencyNilpotent_iff_walkAcyclic` と
 `adjacencyNilpotent_iff_acyclic` により、有限 `ComponentUniverse` 上では
 adjacency nilpotence / `WalkAcyclic` / `Acyclic` が一致する。
+Issue [#190](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/190)
+では `ClosedWalkWitness` を追加し、閉 walk を equality diagram ではなく
+forbidden witness family として generic obstruction kernel に接続した。
+`walkAcyclic_iff_no_closedWalkObstruction`,
+`acyclic_iff_no_closedWalkObstruction`,
+`adjacencyNilpotent_iff_no_closedWalkObstruction` により、closed-walk witness
+不在、walk-level acyclicity、graph-level acyclicity、finite adjacency
+nilpotence の接続は Lean で証明済みである。
 
 Issue [#85](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/85)
 では、`nilpotencyIndex` を matrix bridge 由来の executable extension axis

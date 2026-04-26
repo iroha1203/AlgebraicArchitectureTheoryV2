@@ -15,7 +15,7 @@ follow-up Issue / PR に分割し、`lake build` を通して進める。
 | Structural invariants | `Layering`, `Decomposable`, `Finite` | `StrictLayered`, `Acyclic`, `FinitePropagation`, finite `ComponentUniverse`, finite graph bridge theorem を扱う。 |
 | Category / projection | `Category`, `ThinCategory`, `Projection` | thin category と抽象射影、DIP / projection soundness / exactness を扱う。 |
 | Behavior | `Observation`, `LSP`, `LocalReplacement` | 観測同値、LSP、projection bridge と observation bridge を束ねる局所置換契約を扱う。 |
-| Metrics / matrix | `Signature`, `Matrix` | Architecture Signature v0/v1、finite executable metrics、adjacency matrix / nilpotence / spectral bridge を扱う。 |
+| Metrics / matrix / obstruction bridge | `Signature`, `Matrix`, `DependencyObstruction` | Architecture Signature v0/v1、finite executable metrics、adjacency matrix / nilpotence / spectral bridge、closed-walk obstruction exactness を扱う。 |
 | Examples / counterexamples | `SolidCounterexample` | SOLID-style local contract だけでは `Decomposable` が従わない反例を保持する。 |
 
 この分類は reader-facing な責務整理であり、現時点の Lean import path は
