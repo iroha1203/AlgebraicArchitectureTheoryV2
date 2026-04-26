@@ -57,8 +57,14 @@ lawfulness への bridge である。
 Lean status は、generic witness-count kernel と required diagram の
 zero-count bridge については `proved` である
 ([Issue #189](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/189))。
-ただし、アーキテクチャ零曲率定理全体、独立に定義された lawfulness predicate との
-exactness、required `ArchitectureSignature` axis との exactness は
+さらに抽象 `LawFamily` では、独立に与えられた `Lawful` predicate、required witness
+上の `NoRequiredObstruction`、required axis 上の
+`RequiredAxesAvailableAndZero` を分離し、complete witness coverage と
+required axis exactness を前提にした中心 bridge を Lean で証明済みである
+([Issue #191](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/191))。
+ただし、アーキテクチャ零曲率定理全体、具体的な `ProjectionSound` /
+`LSPCompatible` / `WalkAcyclic` などの lawfulness predicate との exactness、
+required `ArchitectureSignature` axis との exactness は
 `future proof obligation` のまま扱う。
 
 証明強度は段階的に扱う。`violationCount bad xs = 0` と

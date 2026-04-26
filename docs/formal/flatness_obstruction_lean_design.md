@@ -293,9 +293,18 @@ required diagram を列挙するなど、一部の law family では `CoversRequ
   `diagramViolationCount_eq_zero_iff_forall_measured_DiagramCommutes`, [Issue #189](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/189)
 - `proved`: finite measured law universe での diagram zero-count bridge,
   `requiredDiagramCommutes_of_coversRequired_and_diagramViolationCount_eq_zero`, [Issue #189](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/189)
-- `future proof obligation`: independent lawfulness predicate と witness 不在の exactness bridge。
+- `proved`: 抽象 `LawFamily` で、独立 `Lawful` predicate、`NoRequiredObstruction`,
+  `RequiredAxesAvailableAndZero` を分離し、complete witness coverage と
+  required axis exactness を前提にした中心 bridge,
+  `lawful_iff_requiredAxesAvailableAndZero_of_completeCoverage_and_requiredAxisExact`,
+  [Issue #191](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/191)
+- `future proof obligation`: `ProjectionSound`, `LSPCompatible`, `WalkAcyclic` など具体的な
+  lawfulness predicate と witness 不在の exactness bridge。
 - `future proof obligation`: required Signature axis の `AvailableAndZero` と witness 不在の exactness bridge。
-- `future proof obligation`: complete coverage 下での measured zero から global lawfulness への bridge。
+- `proved`: 抽象 `LawFamily` では、complete coverage 下での measured zero から
+  global lawfulness への bridge,
+  `lawViolationCount_eq_zero_iff_lawful`, `lawful_iff_noRequiredObstruction_of_completeCoverage`,
+  [Issue #191](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/191)
 - `defined only`: witness family をまとめる signature schema。
 - `empirical hypothesis`: obstruction count と変更コスト・障害率・レビュー負荷の相関。
 
