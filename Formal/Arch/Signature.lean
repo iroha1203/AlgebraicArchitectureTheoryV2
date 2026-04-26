@@ -1,4 +1,5 @@
 import Formal.Arch.Graph
+import Formal.Arch.Lawfulness
 
 namespace Formal.Arch
 
@@ -452,6 +453,134 @@ structure ArchitectureSignatureV1 where
   relationComplexity : Option Nat
   empiricalChangeCost : Option Nat
   deriving DecidableEq, Repr
+
+/--
+Classification of Signature v1 axes by their current Lean status.
+
+This is a schema-level classification: concrete bridge theorems can move an
+axis from `unmeasuredRequiredLaw` to `provedWitnessAxis` without changing the
+`ArchitectureSignatureV1` output record.
+-/
+inductive AxisMeasurementClass where
+  | provedWitnessAxis
+  | definedExecutableAxis
+  | empiricalAxis
+  | unmeasuredRequiredLaw
+  deriving DecidableEq, Repr
+
+/-- The named axes exposed by the Signature v1 schema. -/
+inductive ArchitectureSignatureV1Axis where
+  | hasCycle
+  | sccMaxSize
+  | maxDepth
+  | fanoutRisk
+  | boundaryViolationCount
+  | abstractionViolationCount
+  | sccExcessSize
+  | maxFanout
+  | reachableConeSize
+  | weightedSccRisk
+  | projectionSoundnessViolation
+  | lspViolationCount
+  | nilpotencyIndex
+  | runtimePropagation
+  | relationComplexity
+  | empiricalChangeCost
+  deriving DecidableEq, Repr
+
+namespace ArchitectureSignatureV1
+
+/-- Read any Signature v1 axis as an optional natural-number metric. -/
+def axisValue (sig : ArchitectureSignatureV1) :
+    ArchitectureSignatureV1Axis -> Option Nat
+  | .hasCycle => some sig.core.v0.hasCycle
+  | .sccMaxSize => some sig.core.v0.sccMaxSize
+  | .maxDepth => some sig.core.v0.maxDepth
+  | .fanoutRisk => some sig.core.v0.fanoutRisk
+  | .boundaryViolationCount => some sig.core.v0.boundaryViolationCount
+  | .abstractionViolationCount => some sig.core.v0.abstractionViolationCount
+  | .sccExcessSize => some sig.core.sccExcessSize
+  | .maxFanout => some sig.core.maxFanout
+  | .reachableConeSize => some sig.core.reachableConeSize
+  | .weightedSccRisk => sig.weightedSccRisk
+  | .projectionSoundnessViolation => sig.projectionSoundnessViolation
+  | .lspViolationCount => sig.lspViolationCount
+  | .nilpotencyIndex => sig.nilpotencyIndex
+  | .runtimePropagation => sig.runtimePropagation
+  | .relationComplexity => sig.relationComplexity
+  | .empiricalChangeCost => sig.empiricalChangeCost
+
+/-- Classify Signature v1 axes by their current proof and measurement status. -/
+def axisMeasurementClass : ArchitectureSignatureV1Axis -> AxisMeasurementClass
+  | .projectionSoundnessViolation => .unmeasuredRequiredLaw
+  | .lspViolationCount => .unmeasuredRequiredLaw
+  | .relationComplexity => .empiricalAxis
+  | .empiricalChangeCost => .empiricalAxis
+  | _ => .definedExecutableAxis
+
+/-- Weak zero predicate for a Signature v1 axis value. -/
+def axisMeasuredZero (sig : ArchitectureSignatureV1)
+    (axis : ArchitectureSignatureV1Axis) : Prop :=
+  MeasuredZero (axisValue sig axis)
+
+/-- Strong available-and-zero predicate for a Signature v1 axis value. -/
+def axisAvailableAndZero (sig : ArchitectureSignatureV1)
+    (axis : ArchitectureSignatureV1Axis) : Prop :=
+  AvailableAndZero (axisValue sig axis)
+
+/-- Missing Signature v1 axis values are weakly measured-zero. -/
+theorem axisMeasuredZero_of_axisValue_none {sig : ArchitectureSignatureV1}
+    {axis : ArchitectureSignatureV1Axis}
+    (hNone : axisValue sig axis = none) :
+    axisMeasuredZero sig axis := by
+  unfold axisMeasuredZero
+  rw [hNone]
+  exact measuredZero_none
+
+/-- Missing Signature v1 axis values are not available-and-zero. -/
+theorem not_axisAvailableAndZero_of_axisValue_none
+    {sig : ArchitectureSignatureV1} {axis : ArchitectureSignatureV1Axis}
+    (hNone : axisValue sig axis = none) :
+    ¬ axisAvailableAndZero sig axis := by
+  unfold axisAvailableAndZero
+  rw [hNone]
+  exact not_availableAndZero_none
+
+/-- Present Signature v1 axis values are available-and-zero exactly at value 0. -/
+theorem axisAvailableAndZero_some_iff {sig : ArchitectureSignatureV1}
+    {axis : ArchitectureSignatureV1Axis} {n : Nat}
+    (hSome : axisValue sig axis = some n) :
+    axisAvailableAndZero sig axis ↔ n = 0 := by
+  unfold axisAvailableAndZero
+  rw [hSome]
+  exact availableAndZero_some_iff
+
+theorem projectionSoundnessViolation_axisClass :
+    axisMeasurementClass .projectionSoundnessViolation =
+      AxisMeasurementClass.unmeasuredRequiredLaw := by
+  rfl
+
+theorem lspViolationCount_axisClass :
+    axisMeasurementClass .lspViolationCount =
+      AxisMeasurementClass.unmeasuredRequiredLaw := by
+  rfl
+
+theorem relationComplexity_axisClass :
+    axisMeasurementClass .relationComplexity =
+      AxisMeasurementClass.empiricalAxis := by
+  rfl
+
+theorem empiricalChangeCost_axisClass :
+    axisMeasurementClass .empiricalChangeCost =
+      AxisMeasurementClass.empiricalAxis := by
+  rfl
+
+theorem nilpotencyIndex_axisClass :
+    axisMeasurementClass .nilpotencyIndex =
+      AxisMeasurementClass.definedExecutableAxis := by
+  rfl
+
+end ArchitectureSignatureV1
 
 /--
 Build the Lean-measured Signature v1 core from a finite component universe.
