@@ -32,6 +32,41 @@ theorem observationFactorsThrough_of_localReplacementContract
   h.2
 
 /--
+Unfolding a local replacement contract through projection-obstruction
+exactness keeps the representative-stability and observation-factorization
+axes explicit.
+-/
+theorem localReplacementContract_iff_noProjectionObstruction_and_representativeStable_and_observationFactorsThrough
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    {O : Observation C Obs} :
+    LocalReplacementContract G π GA O ↔
+      NoProjectionObstruction G π GA ∧ RepresentativeStable G π ∧
+        ObservationFactorsThrough π O := by
+  constructor
+  · intro h
+    exact ⟨projectionSound_iff_noProjectionObstruction.mp h.1.1, h.1.2, h.2⟩
+  · rintro ⟨hNoProjection, hStable, hObservation⟩
+    exact ⟨⟨projectionSound_iff_noProjectionObstruction.mpr hNoProjection,
+      hStable⟩, hObservation⟩
+
+/--
+A local replacement contract eliminates projection obstruction witnesses and
+LSP obstruction witnesses simultaneously.
+-/
+theorem noProjectionObstruction_and_noLSPObstruction_of_localReplacementContract
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    {O : Observation C Obs}
+    (h : LocalReplacementContract G π GA O) :
+    NoProjectionObstruction G π GA ∧ NoLSPObstruction π O :=
+  ⟨projectionSound_iff_noProjectionObstruction.mp
+      (projectionSound_of_localReplacementContract h),
+    lspCompatible_iff_noLSPObstruction.mp
+      (lspCompatible_of_observationFactorsThrough
+        (observationFactorsThrough_of_localReplacementContract h))⟩
+
+/--
 A local replacement contract simultaneously zeroes the measured projection and
 LSP violation counts.
 -/

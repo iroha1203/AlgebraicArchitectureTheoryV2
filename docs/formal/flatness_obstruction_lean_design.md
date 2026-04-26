@@ -308,8 +308,13 @@ required diagram を列挙するなど、一部の law family では `CoversRequ
   から `RequiredAxesAvailableAndZero <-> NoRequiredObstruction` を得る抽象 bridge,
   `requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_axisExactFamily`,
   [Issue #195](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/195)
-- `future proof obligation`: `ProjectionSound`, `LSPCompatible`, `WalkAcyclic` など具体的な
-  lawfulness predicate と witness 不在の exactness bridge。
+- `proved`: `ProjectionSound` / `LSPCompatible` と obstruction witness 不在の
+  exactness bridge、および既存 finite violation list membership が generic
+  `violatingWitnesses` の特殊例であること,
+  `projectionSound_iff_noProjectionObstruction`,
+  `lspCompatible_iff_noLSPObstruction`, [Issue #188](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/188)
+- `future proof obligation`: `WalkAcyclic` など残る具体的な lawfulness predicate と
+  witness 不在の exactness bridge。
 - `future proof obligation`: required Signature axis の abstract bridge を具体的な
   projection / LSP / walk / nilpotence witness family に接続する定理。
 - `proved`: 抽象 `LawFamily` では、complete coverage 下での measured zero から

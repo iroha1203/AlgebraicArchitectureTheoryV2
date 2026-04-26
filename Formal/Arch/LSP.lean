@@ -1,5 +1,6 @@
 import Formal.Arch.Projection
 import Formal.Arch.Observation
+import Formal.Arch.Obstruction
 
 namespace Formal.Arch
 
@@ -28,6 +29,34 @@ def ObservationFactorsThrough {Impl : Type u} {Abs : Type v} {Obs : Type w}
 def ObservationallyDivergent {Impl : Type u} {Obs : Type v}
     (O : Observation Impl Obs) (x y : Impl) : Prop :=
   ¬ ObservationallyEquivalent O x y
+
+/-- Candidate ordered implementation pairs in a finite measurement universe. -/
+def lspCandidatePairs {Impl : Type u} (implementations : List Impl) :
+    List (Impl × Impl) :=
+  implementations.flatMap (fun x => implementations.map (fun y => (x, y)))
+
+/--
+An LSP obstruction witness: two implementations in the same abstract fiber
+whose observations differ.
+-/
+def LSPObstruction {Impl : Type u} {Abs : Type v} {Obs : Type w}
+    (π : InterfaceProjection Impl Abs) (O : Observation Impl Obs)
+    (pair : Impl × Impl) : Prop :=
+  π.expose pair.1 = π.expose pair.2 ∧ ObservationallyDivergent O pair.1 pair.2
+
+/-- LSP obstruction witnesses are decidable when abstraction and observation are decidable. -/
+instance instDecidablePredLSPObstruction {Impl : Type u} {Abs : Type v} {Obs : Type w}
+    (π : InterfaceProjection Impl Abs) (O : Observation Impl Obs)
+    [DecidableEq Abs] [DecidableEq Obs] :
+    DecidablePred (LSPObstruction π O) := by
+  intro pair
+  unfold LSPObstruction ObservationallyDivergent ObservationallyEquivalent
+  infer_instance
+
+/-- No LSP obstruction witness exists at implementation-pair level. -/
+def NoLSPObstruction {Impl : Type u} {Abs : Type v} {Obs : Type w}
+    (π : InterfaceProjection Impl Abs) (O : Observation Impl Obs) : Prop :=
+  ∀ pair : Impl × Impl, ¬ LSPObstruction π O pair
 
 /--
 Executable pair-level behavioral divergence.
@@ -67,6 +96,38 @@ theorem mem_lspViolationPairs_iff {Impl : Type u} {Abs : Type v} {Obs : Type w}
         π.expose pair.1 = π.expose pair.2 ∧ ObservationallyDivergent O pair.1 pair.2 := by
   rcases pair with ⟨x, y⟩
   simp [lspViolationPairs, ObservationallyDivergent, ObservationallyEquivalent]
+
+/--
+Membership in candidate LSP witnesses is membership of both implementations in
+the finite measurement universe.
+-/
+theorem mem_lspCandidatePairs_iff {Impl : Type u}
+    {implementations : List Impl} {pair : Impl × Impl} :
+    pair ∈ lspCandidatePairs implementations ↔
+      pair.1 ∈ implementations ∧ pair.2 ∈ implementations := by
+  rcases pair with ⟨x, y⟩
+  simp [lspCandidatePairs]
+
+/--
+The existing finite LSP violation membership is the generic obstruction kernel
+specialized to LSP obstruction witnesses.
+-/
+theorem mem_lspViolationPairs_iff_mem_violatingWitnesses
+    {Impl : Type u} {Abs : Type v} {Obs : Type w}
+    [DecidableEq Abs] [DecidableEq Obs]
+    {π : InterfaceProjection Impl Abs} {O : Observation Impl Obs}
+    {implementations : List Impl} {pair : Impl × Impl} :
+    pair ∈ lspViolationPairs π O implementations ↔
+      pair ∈ violatingWitnesses (LSPObstruction π O)
+        (lspCandidatePairs implementations) := by
+  rw [mem_lspViolationPairs_iff, mem_violatingWitnesses_iff,
+    mem_lspCandidatePairs_iff]
+  unfold LSPObstruction
+  constructor
+  · rintro ⟨hLeft, hRight, hAbs, hDivergent⟩
+    exact ⟨⟨hLeft, hRight⟩, hAbs, hDivergent⟩
+  · rintro ⟨⟨hLeft, hRight⟩, hAbs, hDivergent⟩
+    exact ⟨hLeft, hRight, hAbs, hDivergent⟩
 
 /-- Executable behavioral extension metric: measured LSP violation count. -/
 def lspViolationCount {Impl : Type u} {Abs : Type v} {Obs : Type w}
@@ -128,6 +189,21 @@ theorem lspCompatible_of_observationFactorsThrough
     O.observe x = OAbs (π.expose x) := hObs x
     _ = OAbs (π.expose y) := by rw [hAbs]
     _ = O.observe y := (hObs y).symm
+
+/--
+LSP compatibility is exactly the absence of LSP obstruction witnesses.
+-/
+theorem lspCompatible_iff_noLSPObstruction
+    {Impl : Type u} {Abs : Type v} {Obs : Type w}
+    {π : InterfaceProjection Impl Abs} {O : Observation Impl Obs} :
+    LSPCompatible π O ↔ NoLSPObstruction π O := by
+  constructor
+  · intro h pair hBad
+    exact hBad.2 (h hBad.1)
+  · intro h x y hAbs
+    by_cases hObs : ObservationallyEquivalent O x y
+    · exact hObs
+    · exact False.elim (h (x, y) ⟨hAbs, hObs⟩)
 
 /--
 If LSP compatibility holds, the finite executable violation count is zero.
