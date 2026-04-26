@@ -82,6 +82,20 @@ required `ArchitectureSignature` axis との具体 law family 接続は
 具体 law family に接続し、complete coverage を有限 universe から構成できる law family
 を増やすことを目標にする。
 
+Issue [#192](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/192)
+では、finite required witness / diagram list から coverage predicate を構成する
+bridge を追加した。Lean status は `proved` で、`RequiredByList`,
+`RequiredDiagramsByList`, `coversWitnesses_requiredByList_self`,
+`coversRequired_requiredDiagramsByList_self` により、有限 list が列挙する required
+universe を measured list が cover することを証明する。また、
+`ComponentUniverse.componentPairWitnesses` と
+`ComponentUniverse.coversWitnesses_componentPairWitnesses` により、finite component
+universe から ordered component-pair witness coverage を構成する代表 API を追加した。
+coverage がない場合に measured zero と global lawfulness を同一視しないため、
+`RequiredWitnessCoverage` と
+`noRequiredObstruction_of_requiredWitnessCoverage_and_lawViolationCount_eq_zero` は、
+required witness が測定済みであることを明示的な仮定として残す。
+
 ## 基本 convention
 
 依存辺の向きは次で固定する。

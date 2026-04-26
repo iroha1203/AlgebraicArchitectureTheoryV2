@@ -93,6 +93,14 @@ universe.
 def componentPairs {C : Type u} (components : List C) : List (C × C) :=
   components.flatMap (fun c => components.map (fun d => (c, d)))
 
+/-- Membership in `componentPairs` is exactly membership of both components. -/
+theorem mem_componentPairs_iff {C : Type u} {components : List C}
+    {pair : C × C} :
+    pair ∈ componentPairs components ↔
+      pair.1 ∈ components ∧ pair.2 ∈ components := by
+  rcases pair with ⟨c, d⟩
+  simp [componentPairs]
+
 /-- Bounded reachability search over a supplied finite component universe. -/
 def reachesWithin {C : Type u} (G : ArchGraph C)
     [DecidableEq C] [DecidableRel G.edge]
