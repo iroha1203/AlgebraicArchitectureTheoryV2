@@ -1,4 +1,5 @@
 import Formal.Arch.ThinCategory
+import Formal.Arch.Obstruction
 
 namespace Formal.Arch
 
@@ -25,6 +26,30 @@ def RespectsProjection {C : Type u} {A : Type v}
 abbrev ProjectionSound {C : Type u} {A : Type v}
     (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) : Prop :=
   RespectsProjection G π GA
+
+/-- Candidate concrete dependency edges in a finite measurement universe. -/
+def projectionSoundnessCandidateEdges {C : Type u} (components : List C) : List (C × C) :=
+  components.flatMap (fun c => components.map (fun d => (c, d)))
+
+/-- A projection obstruction witness: a concrete edge with no projected abstract edge. -/
+def ProjectionObstruction {C : Type u} {A : Type v}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (edge : C × C) : Prop :=
+  G.edge edge.1 edge.2 ∧ ¬ GA.edge (π.expose edge.1) (π.expose edge.2)
+
+/-- Projection obstruction witnesses are decidable when both graphs have decidable edges. -/
+instance instDecidablePredProjectionObstruction {C : Type u} {A : Type v}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    [DecidableRel G.edge] [DecidableRel GA.edge] :
+    DecidablePred (ProjectionObstruction G π GA) := by
+  intro edge
+  unfold ProjectionObstruction
+  infer_instance
+
+/-- No projection obstruction witness exists at graph level. -/
+def NoProjectionObstruction {C : Type u} {A : Type v}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) : Prop :=
+  ∀ edge : C × C, ¬ ProjectionObstruction G π GA edge
 
 /--
 Concrete dependency edges whose projected abstract edge is missing.
@@ -57,6 +82,38 @@ theorem mem_projectionSoundnessViolationEdges_iff {C : Type u} {A : Type v}
   simp [projectionSoundnessViolationEdges]
 
 /--
+Membership in candidate projection witnesses is membership of both endpoints in
+the finite measurement universe.
+-/
+theorem mem_projectionSoundnessCandidateEdges_iff {C : Type u}
+    {components : List C} {edge : C × C} :
+    edge ∈ projectionSoundnessCandidateEdges components ↔
+      edge.1 ∈ components ∧ edge.2 ∈ components := by
+  rcases edge with ⟨c, d⟩
+  simp [projectionSoundnessCandidateEdges]
+
+/--
+The existing finite projection violation membership is the generic obstruction
+kernel specialized to projection obstruction witnesses.
+-/
+theorem mem_projectionSoundnessViolationEdges_iff_mem_violatingWitnesses
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    {components : List C} {edge : C × C} :
+    edge ∈ projectionSoundnessViolationEdges G π GA components ↔
+      edge ∈ violatingWitnesses (ProjectionObstruction G π GA)
+        (projectionSoundnessCandidateEdges components) := by
+  rw [mem_projectionSoundnessViolationEdges_iff, mem_violatingWitnesses_iff,
+    mem_projectionSoundnessCandidateEdges_iff]
+  unfold ProjectionObstruction
+  constructor
+  · rintro ⟨hLeft, hRight, hEdge, hMissing⟩
+    exact ⟨⟨hLeft, hRight⟩, hEdge, hMissing⟩
+  · rintro ⟨⟨hLeft, hRight⟩, hEdge, hMissing⟩
+    exact ⟨hLeft, hRight, hEdge, hMissing⟩
+
+/--
 Executable projection bridge metric: the number of measured concrete
 dependencies that are not represented by an abstract edge.
 -/
@@ -65,6 +122,21 @@ def projectionSoundnessViolation {C : Type u} {A : Type v}
     [DecidableRel G.edge] [DecidableRel GA.edge]
     (components : List C) : Nat :=
   (projectionSoundnessViolationEdges G π GA components).length
+
+/--
+Projection soundness is exactly the absence of projection obstruction witnesses.
+-/
+theorem projectionSound_iff_noProjectionObstruction
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A} :
+    ProjectionSound G π GA ↔ NoProjectionObstruction G π GA := by
+  constructor
+  · intro h edge hBad
+    exact hBad.2 (h hBad.1)
+  · intro h c d hEdge
+    by_cases hAbstract : GA.edge (π.expose c) (π.expose d)
+    · exact hAbstract
+    · exact False.elim (h (c, d) ⟨hEdge, hAbstract⟩)
 
 /--
 If projection soundness holds, the finite executable violation count is zero.

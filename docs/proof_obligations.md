@@ -430,13 +430,18 @@ Lean status:
 
 - `defined only`: `ProjectionSound`, `ProjectionComplete`, `ProjectionExact`,
   `RepresentativeStable`, `DIPCompatible`, `StrongDIPCompatible`,
-  `projectionSoundnessViolationEdges`, `projectionSoundnessViolation`
+  `projectionSoundnessCandidateEdges`, `ProjectionObstruction`,
+  `NoProjectionObstruction`, `projectionSoundnessViolationEdges`,
+  `projectionSoundnessViolation`
 - `proved`: `projectionSound_of_projectionExact`,
   `projectionComplete_of_projectionExact`,
   `projectedConcreteEdge_of_projectionComplete`,
   `abstractEdge_iff_projectedConcreteEdge_of_projectionExact`,
   `dipCompatible_of_strongDIPCompatible`,
   `mem_projectionSoundnessViolationEdges_iff`,
+  `mem_projectionSoundnessCandidateEdges_iff`,
+  `mem_projectionSoundnessViolationEdges_iff_mem_violatingWitnesses`,
+  `projectionSound_iff_noProjectionObstruction`,
   `projectionSoundnessViolation_eq_zero_of_projectionSound`,
   `projectionSound_of_projectionSoundnessViolation_eq_zero`,
   `StrongAbstractCycleComponent.abstractGraph_not_decomposable`,
@@ -489,11 +494,15 @@ Lean status:
 
 - `defined only`: `Observation`, `ObservationallyEquivalent`,
   `LSPCompatibleAt`, `LSPCompatible`, `ObservationFactorsThrough`,
-  `ObservationallyDivergent`, `observationalDivergence`,
+  `ObservationallyDivergent`, `lspCandidatePairs`, `LSPObstruction`,
+  `NoLSPObstruction`, `observationalDivergence`,
   `lspViolationPairs`, `lspViolationCount`
 - `proved`: `lspAt_of_lsp`, `lspCompatibleAt_refl`,
   `lspObservation_symm`, `lspCompatible_of_observationFactorsThrough`,
-  `mem_lspViolationPairs_iff`, `observationalDivergence_eq_zero_of_equivalent`,
+  `lspCompatible_iff_noLSPObstruction`,
+  `mem_lspViolationPairs_iff`, `mem_lspCandidatePairs_iff`,
+  `mem_lspViolationPairs_iff_mem_violatingWitnesses`,
+  `observationalDivergence_eq_zero_of_equivalent`,
   `observationallyEquivalent_of_observationalDivergence_eq_zero`,
   `lspViolationCount_eq_zero_of_lspCompatible`,
   `lspViolationCount_eq_zero_of_observationFactorsThrough`,
@@ -534,12 +543,20 @@ Lean status:
 - `defined only`: `LocalReplacementContract`
 - `proved`: `projectionSound_of_localReplacementContract`,
   `observationFactorsThrough_of_localReplacementContract`,
+  `localReplacementContract_iff_noProjectionObstruction_and_representativeStable_and_observationFactorsThrough`,
+  `noProjectionObstruction_and_noLSPObstruction_of_localReplacementContract`,
   `violationCounts_eq_zero_of_localReplacementContract`
 
 今後の proof obligation:
 
 - `observationalDivergence` や `lspViolationCount` の repository-level 集約、
   重みづけ、閾値設計は empirical / extractor tooling 側で扱う。
+- Issue [#188](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/188)
+  では、projection / LSP の既存 finite violation list membership を generic
+  `violatingWitnesses` の特殊例として接続し、`ProjectionSound` /
+  `LSPCompatible` と obstruction witness 不在の exactness bridge を証明した。
+  `LocalReplacementContract` については、projection obstruction 不在と
+  LSP obstruction 不在が同時に従う packaging theorem を追加した。
 
 ### 7. Architecture Signature は半順序を持つ
 
