@@ -6,6 +6,19 @@
 
 本プロジェクトの中心主張は次の通りです。
 
+> **アーキテクチャ零曲率定理**
+>
+> 有限な法則宇宙と完全被覆の下で、アーキテクチャが法則健全であることは、
+> 要求法則族に対する有限な阻害証人が存在しないこと、すなわち
+> `ArchitectureSignature` の要求阻害軸がすべて零であることと同値である。
+
+これは現在の中心定理候補であり、Lean 側ではまず generic witness-count kernel、
+可換図式の特殊例、有限測定 universe 上の零カウント橋渡しとして形式化します。
+数値的な curvature は最初から仮定せず、観測値に距離・重みなどの追加構造を入れた後の
+派生 metric として扱います。
+
+この定理候補を支える研究上の基本主張は次の通りです。
+
 > 設計原則は、アーキテクチャ不変量を保存・改善する操作である。
 >
 > アーキテクチャ品質は、不変量の破れを多軸シグネチャとして評価する。
@@ -18,17 +31,21 @@
 
 ## 研究方針
 
-V2 では、次の三層を分けて進めます。
+V2 では、次の四つの層を分けて進めます。
 
-1. **構文的構造**
+1. **法則と阻害証人**
+   - 法則宇宙、要求法則族、阻害証人、完全被覆を分けて定義する。
+   - 可換図式の非可換性は、有限 witness / zero-count bridge の重要な特殊例として扱う。
+
+2. **構文的構造**
    - コンポーネントを頂点、依存関係を有向辺として表す。
    - `Walk`, `Reachable`, thin category, projection, observation を基礎概念にする。
 
-2. **設計原則の分類**
+3. **設計原則の分類**
    - SOLID, Layered Architecture, Clean Architecture などを、どの不変量を保証・保存・改善するかで分類する。
    - SOLID は局所契約層、Layered は大域構造層として扱い、役割を混同しない。
 
-3. **定量評価**
+4. **定量評価**
    - 不変量の破れを `ArchitectureSignature` として多軸評価する。
    - 実証的な相関は Lean の定理ではなく、別途 empirical hypothesis（実証仮説）として扱う。
 
@@ -89,11 +106,16 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 - signature v0 の finite-list executable metrics（有限リスト上で実行可能な指標）
 - executable metrics を `Walk` / `Reachable` に接続する proof-carrying finite component universe（証明付き有限測定 universe）
 
+アーキテクチャ零曲率定理に向けた generic witness-count kernel は、現時点では
+[Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)として整理しており、
+Lean 実装は今後の proof obligation として扱います。
+
 ## 詳細ドキュメント
 
 - [研究概要](docs/aat_v2_overview.md)
 - [docs 読み方](docs/README.md)
 - [研究の最終ゴール](docs/research_goal.md)
+- [アーキテクチャ零曲率定理 Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)
 - [設計原則の分類](docs/design_principle_classification.md)
 - [証明義務と実証仮説](docs/proof_obligations.md)
 - [個別設計メモ](docs/design/README.md)
