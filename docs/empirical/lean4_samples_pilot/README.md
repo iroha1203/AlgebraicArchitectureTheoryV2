@@ -197,18 +197,20 @@ PR metadata は GitHub API の PR detail と files API から作成した。
 `metadata/pr-*.json` は repository / pullRequest / prMetrics /
 issueIncidentLinks / analysisMetadata を持つ empirical dataset input JSON である。
 
-## Pilot で見つかった不足
+## Pilot で見つかった不足と整理結果
 
 - PR metadata から dataset input JSON を作る手順は
   [#146](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/146)
   で `sig0-extractor pr-metadata` として repository-local tooling に移した。
 - 外部 repository 用の boundary / abstraction policy と runtime edge evidence が
-  まだないため、H4 / H5 の pilot record としては欠損が多い。
-  Follow-up: [#147](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/147)
+  ない初期 record では、H4 / H5 の pilot record として欠損が多かった。
+  [#147](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/147)
+  で最小 boundary / abstraction policy を追加し、policy 軸の測定済み 0 を確認した。
+  runtime evidence は `lean4-samples` では安定抽出できないため、別 repository で扱う。
 - `lean4-samples` は multi-project repository であり、`lakefile.lean` も `.lean`
-  component として扱われる。repository root と subproject root の測定単位、
-  build config を component とするかの設計判断が必要である。
-  Follow-up: [#148](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/148)
+  component として扱われる余地があった。[#148](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/148)
+  で repository root と subproject root の測定単位を整理し、`lakefile.lean` は
+  build configuration metadata として component universe から除外する方針に固定した。
 - `Foo/Main.lean` から `Foo` を import する layout の module root target は
   [#149](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/149) で
   synthetic module root target として warning に分類する方針に固定した。
