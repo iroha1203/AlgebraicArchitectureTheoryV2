@@ -402,12 +402,12 @@ fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
     .expect("PR metadata is written");
 
     run_sig0(&[
-        "signature-diff",
-        "--before-snapshot",
+        "diff",
+        "--before",
         before_snapshot
             .to_str()
             .expect("before snapshot path is utf-8"),
-        "--after-snapshot",
+        "--after",
         after_snapshot
             .to_str()
             .expect("after snapshot path is utf-8"),

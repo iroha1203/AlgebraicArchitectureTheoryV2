@@ -203,13 +203,14 @@ enum Command {
     },
 
     /// Diff two Signature snapshot store records.
+    #[command(alias = "diff")]
     SignatureDiff {
         /// Before snapshot store record JSON path.
-        #[arg(long = "before-snapshot")]
+        #[arg(long = "before-snapshot", alias = "before")]
         before_snapshot: PathBuf,
 
         /// After snapshot store record JSON path.
-        #[arg(long = "after-snapshot")]
+        #[arg(long = "after-snapshot", alias = "after")]
         after_snapshot: PathBuf,
 
         /// Optional before Sig0 extractor JSON for component / edge evidence diff.

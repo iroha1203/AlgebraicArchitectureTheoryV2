@@ -889,6 +889,9 @@ Lean status の区分:
 - Architecture Signature の時系列 diff / PR attribution MVP は
   [#156](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/156)
   で `sig0-extractor snapshot` と `sig0-extractor signature-diff` として実装済みである。
+  Snapshot 同士の最小 diff CLI contract は
+  [#158](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/158)
+  で `sig0-extractor diff --before ... --after ...` alias としても提供する。
   `signature-diff-report-v0` は悪化・改善・変化なし・未評価の軸を分け、raw Sig0 JSON
   がある場合は増えた component / edge / policy violation を report する。PR metadata
   を渡した場合の attribution は changed components と after revision SHA に基づく
