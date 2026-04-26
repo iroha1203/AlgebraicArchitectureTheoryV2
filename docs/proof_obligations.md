@@ -74,6 +74,14 @@ Lean で証明済みである。残る中心的な `future proof obligation` は
 `ArchitectureSignature` axis の抽象 bridge を具体 law family の axis valuation へ
 接続する theorem である。
 
+したがって、現時点で Lean proved と呼べるのは、アーキテクチャ零曲率定理の
+structural core である。抽象 `LawFamily`、complete witness coverage、
+required axis exactness を前提に、`Lawful` と
+`RequiredAxesAvailableAndZero` を接続する bridge は証明済みである。一方、
+`ArchitectureSignatureV1.axisValue` を projection / LSP / walk / nilpotence などの
+具体 law family valuation へ接続する theorem は、まだ `future proof obligation`
+として残る。
+
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
 それだけでは中心定理の証明とは呼ばない。強い Lean proof は、
@@ -277,6 +285,10 @@ Issue [#85](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/85
 `nilpotencyIndexOfFinite` が必ず `some` になることを示す。
 `ArchitectureSignature.v1OfComponentUniverseWithNilpotencyIndex` は、この値を
 `ArchitectureSignatureV1.nilpotencyIndex` に埋める entry point である。
+この axis は `some k` として最初の zero adjacency power を返す executable index
+であり、`some 0` を要求する `AvailableAndZero` 型の zero-axis ではない。
+したがって nilpotence obstruction を required axis zero として読むには、
+別途 axis interpretation / exactness theorem が必要である。
 
 Issue [#79](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/79)
 では、`rho(A)` bridge を mathlib-backed な解析的拡張として分離する方針にした。
@@ -577,10 +589,18 @@ behavioral extension を扱う。
 Issue [#118](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/118)
 では、局所契約 bundle を `LocalReplacementContract G π GA O` として Lean に追加した。
 これは `DIPCompatible G π GA ∧ ObservationFactorsThrough π O` を束ねる薄い定義であり、
+`localReplacementContract_iff_noProjectionObstruction_and_representativeStable_and_observationFactorsThrough`
+により、projection obstruction 不在、representative stability、
+observation factorization へ分解される。
 `violationCounts_eq_zero_of_localReplacementContract` により
 `projectionSoundnessViolation = 0` と `lspViolationCount = 0` を同時に得る。
 この theorem は `components` と `implementations` の測定 universe を受け取る
 packaging theorem であり、repository-level の重みづけや総合スコアは含めない。
+なお、Lean で証明済みの同値は `LocalReplacementContract ↔
+NoProjectionObstruction ∧ RepresentativeStable ∧ ObservationFactorsThrough`
+であり、`LocalReplacementContract ↔ NoProjectionObstruction ∧ NoLSPObstruction`
+ではない。`ObservationFactorsThrough` から `LSPCompatible` /
+`NoLSPObstruction` が従う、という向きで扱う。
 
 Lean status:
 
@@ -599,8 +619,10 @@ Lean status:
   では、projection / LSP の既存 finite violation list membership を generic
   `violatingWitnesses` の特殊例として接続し、`ProjectionSound` /
   `LSPCompatible` と obstruction witness 不在の exactness bridge を証明した。
-  `LocalReplacementContract` については、projection obstruction 不在と
-  LSP obstruction 不在が同時に従う packaging theorem を追加した。
+  `LocalReplacementContract` については、projection obstruction 不在、
+  representative stability、observation factorization への分解 theorem と、
+  projection obstruction 不在と LSP obstruction 不在が同時に従う packaging
+  theorem を追加した。
 
 ### 7. Architecture Signature は半順序を持つ
 
@@ -921,7 +943,7 @@ Lean status の区分:
 | `weightedSccRisk` | `weight : C -> Nat` を入力し、各 component の重み付き SCC excess を合計する executable metric。重みの由来は empirical / extractor tooling 側に残す | `defined only` / `proved` |
 | `projectionSoundnessViolation` | 具象依存が抽象依存へ sound に写らない measured edge を数える | `defined only` / `proved` |
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
-| `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み | `defined only` / `proved` |
+| `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み。`some k` は index 値であり、required zero-axis ではない | `defined only` / `proved` |
 | `rho(A)` | 行列解析上の伝播増幅指標として扱う。finite DAG では 0、finite closed walk では正になる bridge を証明済み | `proved` for `DAG -> rho(A)=0` / `proved` for cycle positivity / `empirical hypothesis` |
 | `numericCurvature` | 一般の観測値差分 `Sem_A(p) - Sem_A(q)` 型 metric は、観測値上の距離・重み・集約規則が固まるまで Lean core へ入れない派生候補 | `future design` / `empirical hypothesis` |
 | `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime exposure radius として計算する。既存名は `runtimeExposureRadius` の互換名であり、blast radius は reverse reachability 由来の tooling / analysis metric として分ける | `defined only` / `empirical hypothesis` |

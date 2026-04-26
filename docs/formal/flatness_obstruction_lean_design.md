@@ -180,7 +180,7 @@ RequiredAxesAvailableAndZero L sig
 | nilpotence obstruction | `adjacencyNilpotent_iff_no_closedWalkObstruction`, `spectralRadiusOfAdjacency` | 有限 `ComponentUniverse` 上の matrix bridge を obstruction family として参照する。 |
 | projection obstruction | `ProjectionSound`, `projectionSoundnessViolationEdges` | 抽象辺に写らない具象辺を projection witness とする。 |
 | observation / LSP obstruction | `ObservationFactorsThrough`, `lspViolationPairs` | 同じ抽象 fiber 内の観測不一致を observation witness とする。 |
-| local replacement | `LocalReplacementContract` | projection witness と observation witness の同時消滅として扱う。 |
+| local replacement | `LocalReplacementContract` | projection obstruction 不在、representative stability、observation factorization へ分解し、そこから projection / LSP obstruction の同時消滅を得る。 |
 | state transition / effect boundary laws | `StateTransitionExpr`, `EffectBoundaryExpr` | replay / roundtrip / compensation を required diagram family として扱う。 |
 | signature axis | `ArchitectureSignatureV1` | witness family ごとの count / optional metric として接続する。 |
 
@@ -267,6 +267,14 @@ cover、required axis 全体の
 それぞれの witness 不在との exactness bridge を証明済みである。
 ただし、required Signature axis の抽象 bridge を、すべての具体 law family の
 axis valuation へ接続する theorem は今後の proof obligation として残す。
+
+したがって、現時点で Lean proved と呼べるのは、アーキテクチャ零曲率定理の
+structural core である。すなわち、抽象 `LawFamily`、complete witness coverage、
+required axis exactness を前提に、`Lawful` と
+`RequiredAxesAvailableAndZero` を接続する bridge は証明済みである。一方、
+`ArchitectureSignatureV1.axisValue` を projection / LSP / walk / nilpotence などの
+具体 law family valuation へ接続する theorem は、まだ `future proof obligation`
+として残る。
 
 complete coverage は単なる強い仮定として放置しない。
 有限 component universe から component pair を列挙する、有限 diagram universe から
@@ -356,8 +364,11 @@ theorem を置き換えず、追加の axis または派生評価として接続
   `walkAcyclic_iff_no_closedWalkObstruction`,
   `adjacencyNilpotent_iff_no_closedWalkObstruction`,
   [Issue #190](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/190)
-- `proved`: `LocalReplacementContract` から projection obstruction と LSP
-  obstruction の同時消滅、および対応する finite violation count が 0 であること,
+- `proved`: `LocalReplacementContract` は projection obstruction 不在、
+  representative stability、observation factorization に分解され、そこから
+  projection obstruction と LSP obstruction の同時消滅、および対応する finite
+  violation count が 0 であること,
+  `localReplacementContract_iff_noProjectionObstruction_and_representativeStable_and_observationFactorsThrough`,
   `noProjectionObstruction_and_noLSPObstruction_of_localReplacementContract`,
   `violationCounts_eq_zero_of_localReplacementContract`,
   [Issue #188](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/188)
@@ -383,6 +394,9 @@ theorem を置き換えず、追加の axis または派生評価として接続
   [Issue #193](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/193)
 - `future proof obligation`: required Signature axis の abstract bridge を具体的な
   projection / LSP / walk / nilpotence witness family に接続する定理。
+  特に `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
+  executable index であり、`RequiredAxesAvailableAndZero` の zero-axis として読むには
+  別途 axis interpretation / exactness theorem が必要である。
 - `defined only`: witness family をまとめる signature schema と
   `ArchitectureSignatureV1` axis classification。
 - `future design` / `empirical hypothesis`: 一般の数値 curvature metric を定義する
