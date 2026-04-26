@@ -53,6 +53,40 @@ theorem violationCount_eq_zero_iff_forall_not_bad {W : Type u}
           exact hNoBad w (by simp [hw])
         simp [hx, ih hxs]
 
+/--
+The measured witness list covers every required witness.
+
+This one-way coverage is the part needed to turn measured-zero obstruction
+counts into required-law statements. The measured list may contain additional
+diagnostic witnesses.
+-/
+def CoversWitnesses {W : Type u} (required : W -> Prop) (measured : List W) :
+    Prop :=
+  ∀ w, required w -> w ∈ measured
+
+/-- A finite list can be used as the required witness predicate it enumerates. -/
+def RequiredByList {W : Type u} (required : List W) : W -> Prop :=
+  fun w => w ∈ required
+
+/--
+If all witnesses in a required list occur in the measured list, the measured
+list covers the finite required universe represented by that list.
+-/
+theorem coversWitnesses_of_requiredByList_subset {W : Type u}
+    {required measured : List W}
+    (hSubset : ∀ w, w ∈ required -> w ∈ measured) :
+    CoversWitnesses (RequiredByList required) measured := by
+  intro w hRequired
+  exact hSubset w hRequired
+
+/-- A finite required witness list covers itself. -/
+theorem coversWitnesses_requiredByList_self {W : Type u}
+    (required : List W) :
+    CoversWitnesses (RequiredByList required) required := by
+  exact coversWitnesses_of_requiredByList_subset (by
+    intro w hRequired
+    exact hRequired)
+
 /-- A required equality diagram over an abstract expression type. -/
 structure RequiredDiagram (Expr : Type u) where
   lhs : Expr
@@ -102,6 +136,30 @@ def CoversRequired {Expr : Type u}
     (required : RequiredDiagram Expr -> Prop)
     (measured : List (RequiredDiagram Expr)) : Prop :=
   ∀ d, required d -> d ∈ measured
+
+/-- A finite list can be used as the required diagram predicate it enumerates. -/
+def RequiredDiagramsByList {Expr : Type u}
+    (required : List (RequiredDiagram Expr)) :
+    RequiredDiagram Expr -> Prop :=
+  RequiredByList required
+
+/--
+If every required diagram listed by a finite diagram universe is measured, the
+measured diagram list satisfies `CoversRequired`.
+-/
+theorem coversRequired_of_requiredDiagramsByList_subset {Expr : Type u}
+    {required measured : List (RequiredDiagram Expr)}
+    (hSubset : ∀ d, d ∈ required -> d ∈ measured) :
+    CoversRequired (RequiredDiagramsByList required) measured := by
+  exact coversWitnesses_of_requiredByList_subset hSubset
+
+/-- A finite required diagram universe covers itself. -/
+theorem coversRequired_requiredDiagramsByList_self {Expr : Type u}
+    (required : List (RequiredDiagram Expr)) :
+    CoversRequired (RequiredDiagramsByList required) required := by
+  exact coversRequired_of_requiredDiagramsByList_subset (by
+    intro d hRequired
+    exact hRequired)
 
 /--
 Zero measured diagram violations constructively gives the absence of measured

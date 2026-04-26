@@ -100,6 +100,10 @@ def NoRequiredObstruction {A : Type u} (a : A) (L : LawFamily A) : Prop :=
 def NoMeasuredObstruction {A : Type u} (a : A) (L : LawFamily A) : Prop :=
   ∀ w, w ∈ L.measured -> ¬ L.bad a w
 
+/-- The measured witness list contains every required witness. -/
+def RequiredWitnessCoverage {A : Type u} (L : LawFamily A) : Prop :=
+  CoversWitnesses L.required L.measured
+
 /-- The finite measured witness list is exactly the required witness universe. -/
 def CompleteWitnessCoverage {A : Type u} (L : LawFamily A) : Prop :=
   ∀ w, w ∈ L.measured ↔ L.required w
@@ -128,6 +132,14 @@ theorem lawViolationCount_eq_zero_iff_lawful {A : Type u} {a : A}
   exact Iff.trans violationCount_eq_zero_iff_forall_not_bad
     (Iff.symm lawful_iff_noMeasuredObstruction)
 
+/-- Complete witness coverage includes required-witness coverage. -/
+theorem requiredWitnessCoverage_of_completeWitnessCoverage
+    {A : Type u} {L : LawFamily A}
+    (hCoverage : CompleteWitnessCoverage L) :
+    RequiredWitnessCoverage L := by
+  intro w hRequired
+  exact (hCoverage w).mpr hRequired
+
 /--
 Complete witness coverage turns measured obstruction absence into required
 obstruction absence.
@@ -139,6 +151,33 @@ theorem noRequiredObstruction_of_completeCoverage_and_noMeasuredObstruction
     NoRequiredObstruction a L := by
   intro w hRequired
   exact hNoMeasured w ((hCoverage w).mpr hRequired)
+
+/--
+Required-witness coverage is the precise assumption needed to turn measured
+obstruction absence into required obstruction absence.
+-/
+theorem noRequiredObstruction_of_requiredWitnessCoverage_and_noMeasuredObstruction
+    {A : Type u} {a : A} {L : LawFamily A}
+    (hCoverage : RequiredWitnessCoverage L)
+    (hNoMeasured : NoMeasuredObstruction a L) :
+    NoRequiredObstruction a L := by
+  intro w hRequired
+  exact hNoMeasured w (hCoverage w hRequired)
+
+/--
+Under required-witness coverage, zero measured law violations imply absence of
+required obstruction witnesses. Without this coverage, measured-zero is only a
+statement about the measured list.
+-/
+theorem noRequiredObstruction_of_requiredWitnessCoverage_and_lawViolationCount_eq_zero
+    {A : Type u} {a : A} {L : LawFamily A}
+    [DecidablePred (L.bad a)]
+    (hCoverage : RequiredWitnessCoverage L)
+    (hZero : lawViolationCount a L = 0) :
+    NoRequiredObstruction a L := by
+  exact noRequiredObstruction_of_requiredWitnessCoverage_and_noMeasuredObstruction
+    hCoverage (lawful_iff_noMeasuredObstruction.mp
+      (lawViolationCount_eq_zero_iff_lawful.mp hZero))
 
 /--
 Complete witness coverage turns required obstruction absence into measured
