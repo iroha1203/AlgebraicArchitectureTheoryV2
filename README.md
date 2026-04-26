@@ -8,14 +8,35 @@
 
 > **アーキテクチャ零曲率定理**
 >
-> 有限な法則宇宙と完全被覆の下で、アーキテクチャが法則健全であることは、
-> 要求法則族に対する有限な阻害証人が存在しないこと、すなわち
-> `ArchitectureSignature` の要求阻害軸がすべて零であることと同値である。
+> 適切な witness coverage と required axis exactness の下で、
+> アーキテクチャが要求された法則族に対して健全であることは、
+> 要求された阻害証人が存在しないこと、すなわち
+> `ArchitectureSignature` の要求阻害軸が測定済みで零であることと同値である。
 
-これは現在の中心定理候補であり、Lean 側ではまず generic witness-count kernel、
-可換図式の特殊例、有限測定 universe 上の零カウント橋渡しとして形式化します。
-数値的な curvature は最初から仮定せず、観測値に距離・重みなどの追加構造を入れた後の
-派生 metric として扱います。
+少し圧縮して書くと、次の形を目指します。
+
+```text
+Lawful(A, L)
+  <-> NoRequiredObstruction(A, L)
+  <-> RequiredAxesAvailableAndZero(Signature(A), L)
+```
+
+`A` は対象のアーキテクチャ、`L` は採用した法則族、`Signature(A)` は
+`ArchitectureSignature` です。砕いて言えば、「設計原則の名前」ではなく、
+その原則を破る具体例が残っているか、対応する診断軸が測定済みで 0 かを読む、
+という見方です。
+
+ここでいう「零曲率」は単一スコアではありません。数値的な curvature は最初から
+仮定せず、観測値に距離・重みなどの追加構造を入れた後の派生 metric として扱います。
+`ArchitectureSignature` は、循環、SCC、深さ、fanout、境界違反、抽象違反などの
+複数軸からなる診断表として扱います。
+
+Lean 側では、generic witness-count kernel、required diagram の zero-count bridge、
+抽象 `LawFamily` における `Lawful` / `NoRequiredObstruction` /
+`RequiredAxesAvailableAndZero` の structural core は証明済みです。一方で、
+`ArchitectureSignatureV1.axisValue` を projection / LSP / walk / nilpotence などの
+具体 law family valuation へ接続する theorem は、今後の proof obligation として
+残しています。
 
 この定理候補を支える研究上の基本主張は次の通りです。
 
@@ -24,8 +45,6 @@
 > アーキテクチャ品質は、不変量の破れを多軸シグネチャとして評価する。
 
 ここでいう「設計原則」は、単なる経験則ではなく、依存構造・抽象化・観測可能な振る舞い・境界保存などの不変量に作用する操作として扱います。
-
-また、品質評価は単一スコアに潰さず、循環、SCC、深さ、fanout、境界違反、抽象違反などの複数軸からなる `ArchitectureSignature` として扱います。
 
 最終的には、アーキテクチャレビューを「感想」から「診断」に変える理論とツールを目指します。つまり、設計原則が守る不変量、コードベース上で破れている不変量、その破れと変更波及・障害修正・レビューコストの関係を説明できる状態を目標にします。詳細は [研究の最終ゴール](docs/research_goal.md) にまとめています。
 
@@ -102,13 +121,15 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 - representative stability と strong operational DIP
 - observation, observation factorization, LSP compatibility
 - SOLID 風局所条件だけでは decomposability が従わない反例
+- generic witness-count kernel と lawfulness / obstruction bridge
+- required diagram law family と状態遷移・effect boundary の bridge
 - `ArchitectureSignature` と componentwise risk order
 - signature v0 の finite-list executable metrics（有限リスト上で実行可能な指標）
 - executable metrics を `Walk` / `Reachable` に接続する proof-carrying finite component universe（証明付き有限測定 universe）
 
-アーキテクチャ零曲率定理に向けた generic witness-count kernel は、現時点では
-[Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)として整理しており、
-Lean 実装は今後の proof obligation として扱います。
+アーキテクチャ零曲率定理の Lean 化方針と残る証明義務は、
+[Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)と
+[証明義務と実証仮説](docs/proof_obligations.md)に整理しています。
 
 ## 詳細ドキュメント
 
