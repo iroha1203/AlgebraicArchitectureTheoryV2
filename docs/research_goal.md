@@ -148,11 +148,11 @@ Sig(A) =
 | 抽象化・DIP 整合性 | 具体依存が抽象グラフに整合して写っているか。 | `projectionSoundnessViolation`, `projectionCompletenessGap`, `representativeStabilityViolation` |
 | LSP・観測可能性 | 実装を差し替えても観測可能な振る舞いが保たれるか。 | `observationalDivergence`, `lspViolationCount`, `behavioralDistance` |
 | 状態遷移・関係式複雑度 | 補償・制約・失敗パスが複雑すぎないか。 | `relationComplexity`, `compensationCount`, `failureTransitionCount` |
-| 実行時依存・障害伝播 | 障害はどこまで伝播するか。実行時に隠れた密結合がないか。 | `runtimeFanout`, `runtimePropagationRadius`, `circuitBreakerCoverage` |
+| 実行時依存・障害伝播 | 障害はどこまで伝播するか。実行時に隠れた密結合がないか。 | `runtimeFanout`, `runtimeExposureRadius`, `runtimeBlastRadius`, `circuitBreakerCoverage` |
 | 分散収束・ログ整合性 | 分散状態は前提条件のもとで収束するか。 | `consensusPreconditionRisk`, `divergenceWindow`, `replicationLagRisk` |
 | 実証的コスト | 指標は実際の変更・障害コストと関係するか。 | `empiricalChangeCost`, `reviewCost`, `incidentRepairCost` |
 
-Signature v1 では、これらを一度にすべて Lean 構造へ入れない。まず v0 の安定軸を保持し、分解可能性・依存伝播・境界・抽象化の executable metric を v1 core とする。`nilpotencyIndex` と `rho(A)` は adjacency matrix bridge の後続軸であり、`rho(A)` については finite DAG から 0、finite closed walk から正になる構造的 bridge を証明済みである。`runtimePropagation` は 0/1 `RuntimeDependencyGraph` 上の propagation radius から始める。`relationComplexity`, `empiricalChangeCost`, runtime metadata の解釈は empirical extraction と実証プロトコル側の軸として分離する。`relationComplexity` は状態遷移代数層の構成要素ベクトルとして観測し、単一スコアだけで設計を評価しない。
+Signature v1 では、これらを一度にすべて Lean 構造へ入れない。まず v0 の安定軸を保持し、分解可能性・依存伝播・境界・抽象化の executable metric を v1 core とする。`nilpotencyIndex` と `rho(A)` は adjacency matrix bridge の後続軸であり、`rho(A)` については finite DAG から 0、finite closed walk から正になる構造的 bridge を証明済みである。`runtimePropagation` は 0/1 `RuntimeDependencyGraph` 上の outgoing exposure radius から始め、既存名は `runtimeExposureRadius` の互換名として扱う。障害源から影響を受け得る範囲を測る `runtimeBlastRadius` は reverse reachability 由来の empirical / tooling 側 metric として分離する。`relationComplexity`, `empiricalChangeCost`, runtime metadata の解釈は empirical extraction と実証プロトコル側の軸として分離する。`relationComplexity` は状態遷移代数層の構成要素ベクトルとして観測し、単一スコアだけで設計を評価しない。
 
 静的依存と実行時依存は別 graph role として抽出する。Lean core の初期形は `StaticDependencyGraph` と `RuntimeDependencyGraph` をどちらも `ArchGraph` の 0/1 edge として扱い、runtime edge の label, weight, failure mode, timeout budget, retry policy, circuit breaker coverage は empirical tooling 側に置く。
 
@@ -171,7 +171,8 @@ Architecture Signature before:
   boundaryViolationCount    = 22
   abstractionViolationCount = 8
   relationComplexity        = 41
-  runtimePropagationRadius  = 5
+  runtimeExposureRadius     = 5
+  runtimeBlastRadius        = 8
 
 Architecture Signature after:
   hasCycle                  = 0
@@ -181,7 +182,8 @@ Architecture Signature after:
   boundaryViolationCount    = 5
   abstractionViolationCount = 2
   relationComplexity        = 38
-  runtimePropagationRadius  = 3
+  runtimeExposureRadius     = 3
+  runtimeBlastRadius        = 4
 ```
 
 このとき、単に「リファクタリングで良くなった」とは言わない。

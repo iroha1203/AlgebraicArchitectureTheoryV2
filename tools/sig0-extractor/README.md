@@ -48,6 +48,9 @@ policy を渡さない場合、`boundaryViolationCount` と
 `metricStatus.<axis>.measured = false` なので違反なしとは読まない。
 runtime edge evidence を渡さない場合も、dataset 側の `runtimePropagation` は
 未評価の `null` として残る。
+`runtimePropagation` は既存互換名であり、`edge c d` means `c depends on d` の向きに沿う
+`runtimeExposureRadius` を表す。障害源から影響を受け得る範囲を測る
+`runtimeBlastRadius` は reverse reachability 由来の analysis metric として別に扱う。
 
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
@@ -62,6 +65,8 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
 `--runtime-edges` を指定すると runtime edge evidence を読み、metadata を保持したまま
 0/1 `RuntimeDependencyGraph` projection を出力する。省略した場合、
 `runtimePropagation` は未評価の欠損値として dataset 側に残る。
+この CLI が直接出力する `runtimePropagation` は exposure 側の値であり、blast radius は
+dataset / analysis metadata 側で逆向き到達として派生させる。
 
 既存 Sig0 JSON から `ComponentUniverse` 境界に対応する validation report を生成する場合は
 次を使う。
@@ -181,6 +186,8 @@ PR metadata の `pullRequest.mergeCommit` が必須である。
 `boundaryViolationCount` のような placeholder 0 は `null` delta として保持する。
 runtime edge evidence がない Sig0 JSON では `runtimePropagation` は `null` のままで、
 測定済み 0 とは扱わない。
+この `runtimePropagation` は exposure radius の互換名であり、incident root cause からの
+blast radius とは分けて解釈する。
 
 fixture metadata を使った dataset 生成例:
 

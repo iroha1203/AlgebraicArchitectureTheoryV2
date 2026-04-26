@@ -272,7 +272,7 @@ Lean で扱うのは、定義がはっきりしていて、数学的に証明で
 - fanout risk が高い変更はレビューコストが増える
 - 強連結成分が大きい領域では障害修正コストが増える
 - 境界違反が将来の変更波及と関係する
-- runtime propagation が incident scope と関係する
+- runtime exposure / blast radius が incident scope と関係する
 
 これらは、実コードや運用データで確かめる仮説です。Lean は「この測定値は、有限グラフ上のこの性質に対応している」という土台を支えます。現実の変更コストやレビューコストとの関係は、別途データで確かめます。
 
@@ -293,7 +293,7 @@ Lean で扱うのは、定義がはっきりしていて、数学的に証明で
 | --- | --- | --- |
 | H2 | exploratory | cycle risk と障害修正コストの関係 |
 | H4 | exploratory | 境界違反や状態遷移の複雑さと将来リスクの関係 |
-| H5 | exploratory | runtime propagation と incident scope の関係 |
+| H5 | exploratory | runtime exposure / blast radius と incident scope の関係 |
 
 ここでも、Lean の証明と実データによる検証は分けます。実データで相関を見ることは、Lean の定理の代わりではありません。
 

@@ -14,7 +14,7 @@
 | [ComponentUniverse validation report v0](component_universe_validation_report.md) | tooling design / empirical hypothesis | extractor output と Lean `ComponentUniverse` の責務境界を検査する report schema と CLI contract を固定する。 |
 | [ArchitectureSignature v1 後半戦まとめ](signature_v1_wrapup.md) | Lean schema / design decision | v0 互換軸、v1 core、optional extension axis の責務境界をまとめる。 |
 | [relationComplexity 設計](relation_complexity_design.md) | tooling design / empirical hypothesis | 状態遷移代数層の複雑度を workflow observation として測る方針を整理する。 |
-| [runtimePropagation 設計](runtime_propagation_design.md) | Lean executable metric / tooling boundary | 0/1 `RuntimeDependencyGraph` 上の propagation radius と runtime metadata の境界を整理する。 |
+| [runtimePropagation 設計](runtime_propagation_design.md) | Lean executable metric / tooling boundary | 0/1 `RuntimeDependencyGraph` 上の exposure radius、blast radius、runtime metadata の境界を整理する。 |
 | [Projection soundness と exact projection の使い分け](projection_exact_soundness.md) | Lean bridge design | `ProjectionSound` で足りる主張と `ProjectionExact` が必要な refinement を分ける。 |
 | [Observation bridge と projection bridge の関係](observation_projection_bridge.md) | Lean bridge design / proved packaging | projection bridge と observation bridge を局所契約層で並列に扱い、`LocalReplacementContract` の包装定理との接続を整理する。 |
 | [spectral radius bridge 設計](spectral_radius_bridge.md) | Lean bridge / empirical boundary | `rho(A)` の構造的 theorem と変更・障害コストの empirical claim を分離する。 |

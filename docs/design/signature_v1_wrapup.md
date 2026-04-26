@@ -25,7 +25,7 @@ Lean 側の出力 schema は、次の 2 層に分ける。
 | `projectionSoundnessViolation` | projection bridge の measured soundness violation count として扱い、exact projection とは分離する | `defined only` / `proved` |
 | `lspViolationCount` | behavioral extension の measured pair count として扱う | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上の matrix bridge entry point から埋める | `defined only` / `proved` |
-| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上の propagation radius として計算する | `defined only` / `empirical hypothesis` |
+| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上の exposure radius として計算する。blast radius は reverse reachability 由来の tooling / analysis metric として分ける | `defined only` / `empirical hypothesis` |
 | `relationComplexity` | workflow observation から作る empirical extension として扱う | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データ検証の目的変数として扱う | `empirical hypothesis` |
 
@@ -36,7 +36,7 @@ Lean 側の出力 schema は、次の 2 層に分ける。
 | #87 | `ArchitectureSignatureV1Core` / `ArchitectureSignatureV1` の 2 層 schema に固定する | `Formal/Arch/Signature.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
 | #84 | `weightedSccRisk` は component weight を入力にした SCC excess contribution の合計とする | `Formal/Arch/Signature.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
 | #85 | `nilpotencyIndex` は matrix bridge 由来の optional extension axis とし、`rho(A)` とは分離する | `Formal/Arch/Matrix.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
-| #86 | `runtimePropagation` は初期 metric を `runtimePropagationRadius` に固定し、runtime metadata は tooling 側に残す | `Formal/Arch/Signature.lean`, `docs/design/runtime_propagation_design.md`, `docs/proof_obligations.md` |
+| #86 / #163 | `runtimePropagation` は初期 metric を exposure 側の `runtimePropagationRadius` に固定し、blast radius と runtime metadata は tooling / analysis 側に残す | `Formal/Arch/Signature.lean`, `docs/design/runtime_propagation_design.md`, `docs/proof_obligations.md` |
 
 ## 残る境界
 
