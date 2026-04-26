@@ -3092,11 +3092,15 @@ fn lean_files(root: &Path) -> Result<Vec<PathBuf>, Box<dyn Error>> {
 }
 
 fn is_skipped_entry(root: &Path, entry: &DirEntry) -> bool {
+    let name = entry.file_name().to_string_lossy();
+    if entry.file_type().is_file() {
+        return name == "lakefile.lean";
+    }
+
     if !entry.file_type().is_dir() {
         return false;
     }
 
-    let name = entry.file_name().to_string_lossy();
     if matches!(name.as_ref(), ".git" | ".lake" | ".elan" | "target") {
         return true;
     }
@@ -3374,6 +3378,7 @@ import Should.Not.Appear
         assert_eq!(document.component_kind, COMPONENT_KIND);
         assert!(document.components.iter().any(|c| c.id == "Formal"));
         assert!(document.components.iter().any(|c| c.id == "Formal.Arch.B"));
+        assert!(!document.components.iter().any(|c| c.id == "lakefile"));
         assert!(document.edges.iter().any(|edge| {
             edge.source == "Formal.Arch.B"
                 && edge.target == "Formal.Arch.A"
