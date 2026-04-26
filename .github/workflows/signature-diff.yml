@@ -91,7 +91,7 @@ jobs:
           gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
             > "$OUT_DIR/pr/github-pr-reviews.json"
 
-          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- pr-metadata \
+          cargo run --manifest-path tools/archsig/Cargo.toml -- pr-metadata \
             --pull-request "$OUT_DIR/pr/github-pr.json" \
             --files "$OUT_DIR/pr/github-pr-files.json" \
             --reviews "$OUT_DIR/pr/github-pr-reviews.json" \
@@ -118,12 +118,12 @@ jobs:
             sha="$(git -C "$worktree" rev-parse HEAD)"
             committed_at="$(git -C "$worktree" show -s --format=%cI HEAD)"
 
-            cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+            cargo run --manifest-path tools/archsig/Cargo.toml -- \
               --root "$worktree" \
               --out "$out/sig0.json"
 
             set +e
-            cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
+            cargo run --manifest-path tools/archsig/Cargo.toml -- validate \
               --input "$out/sig0.json" \
               --out "$out/validation.json" \
               --universe-mode local-only
@@ -133,7 +133,7 @@ jobs:
               exit "$validation_code"
             fi
 
-            cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
+            cargo run --manifest-path tools/archsig/Cargo.toml -- snapshot \
               --input "$out/sig0.json" \
               --validation-report "$out/validation.json" \
               --repo-owner "$GITHUB_REPOSITORY_OWNER" \
@@ -160,7 +160,7 @@ jobs:
             pr_args=(--pr-metadata "$OUT_DIR/pr/pr-metadata.json")
           fi
 
-          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- diff \
+          cargo run --manifest-path tools/archsig/Cargo.toml -- diff \
             --before "$OUT_DIR/before/snapshot.json" \
             --after "$OUT_DIR/after/snapshot.json" \
             --before-sig0 "$OUT_DIR/before/sig0.json" \

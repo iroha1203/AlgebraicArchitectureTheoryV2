@@ -69,7 +69,7 @@ placeholder scan は文脈を見る。docs の方針説明に出る `axiom` / `s
 tooling docs または tooling behavior に触れた場合は、該当 tool のテストも実行する。
 
 ```bash
-cargo test --manifest-path tools/sig0-extractor/Cargo.toml
+cargo test --manifest-path tools/archsig/Cargo.toml
 ```
 
 ## 報告

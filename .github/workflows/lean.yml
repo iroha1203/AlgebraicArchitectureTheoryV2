@@ -20,12 +20,12 @@ jobs:
       - name: Build
         run: lake build
 
-  sig0-extractor:
-    name: sig0-extractor cargo test
+  archsig:
+    name: archsig cargo test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Test sig0 extractor
-        run: cargo test --manifest-path tools/sig0-extractor/Cargo.toml
+      - name: Test ArchSig
+        run: cargo test --manifest-path tools/archsig/Cargo.toml

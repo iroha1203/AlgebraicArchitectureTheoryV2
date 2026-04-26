@@ -202,7 +202,7 @@ Lean では、定義が明確で全称命題として扱える部分を証明す
 - 境界違反と将来の変更波及の相関
 
 実コードベースから `Sig0` 入力を抽出する最小 tooling の対象範囲と
-責務境界は、[Sig0 extractor v0 設計](design/sig0_extractor_design.md)で扱う。
+責務境界は、[ArchSig v0 設計](design/archsig_design.md)で扱う。
 Signature と変更・レビュー・障害コストを結合する pilot study の protocol は
 [Signature 実証プロトコル](design/empirical_protocol.md)で扱う。
 

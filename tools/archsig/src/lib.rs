@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use walkdir::{DirEntry, WalkDir};
 
-pub const SCHEMA_VERSION: &str = "sig0-extractor-v0";
+pub const SCHEMA_VERSION: &str = "archsig-sig0-v0";
 pub const COMPONENT_KIND: &str = "lean-module";
 pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report-v0";
 pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
@@ -20,7 +20,7 @@ pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complex
 pub const RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION: &str =
     "relation-complexity-observation/v0";
 pub const RELATION_COMPLEXITY_RULE_SET_VERSION: &str = "relation-complexity-rules/v0";
-pub const EXTRACTOR_NAME: &str = "sig0-extractor";
+pub const EXTRACTOR_NAME: &str = "archsig";
 pub const EXTRACTOR_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const RULE_SET_VERSION: &str = "sig0-v0";
 pub const DEFAULT_UNIVERSE_MODE: &str = "local-only";
@@ -818,10 +818,7 @@ pub fn extract_sig0_with_runtime(
 
     let mut metric_status = BTreeMap::new();
     for axis in ["hasCycle", "sccMaxSize", "maxDepth", "fanoutRisk"] {
-        metric_status.insert(
-            axis.to_string(),
-            measured_status("sig0-extractor:import-graph"),
-        );
+        metric_status.insert(axis.to_string(), measured_status("archsig:import-graph"));
     }
     metric_status.insert(
         "boundaryViolationCount".to_string(),
@@ -1751,9 +1748,9 @@ fn dataset_metric_status(document: &Sig0Document) -> BTreeMap<String, MetricStat
                 .unwrap_or_else(|| {
                     unmeasured_status(format!("legacy data without metricStatus entry for {axis}"))
                 }),
-            "sccExcessSize" => measured_status("sig0-extractor:derived-scc-excess"),
-            "maxFanout" => measured_status("sig0-extractor:import-graph"),
-            "reachableConeSize" => measured_status("sig0-extractor:import-graph"),
+            "sccExcessSize" => measured_status("archsig:derived-scc-excess"),
+            "maxFanout" => measured_status("archsig:import-graph"),
+            "reachableConeSize" => measured_status("archsig:import-graph"),
             "weightedSccRisk" => unmeasured_status("weight rule set not provided".to_string()),
             "projectionSoundnessViolation" => {
                 unmeasured_status("projection rule set not provided".to_string())
@@ -2081,7 +2078,7 @@ fn snapshot_evidence_diff(
             return SnapshotEvidenceDiff {
                 available: false,
                 unavailable_reason: Some(
-                    "before and after Sig0 extractor JSON are required for component / edge evidence diff"
+                    "before and after ArchSig JSON are required for component / edge evidence diff"
                         .to_string(),
                 ),
                 component_delta: None,
@@ -4014,10 +4011,7 @@ import Should.Not.Appear
         let signature = compute_signature(&components, &edges);
         let mut metric_status = BTreeMap::new();
         for axis in ["hasCycle", "sccMaxSize", "maxDepth", "fanoutRisk"] {
-            metric_status.insert(
-                axis.to_string(),
-                measured_status("sig0-extractor:import-graph"),
-            );
+            metric_status.insert(axis.to_string(), measured_status("archsig:import-graph"));
         }
         metric_status.insert(
             "boundaryViolationCount".to_string(),

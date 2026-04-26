@@ -230,7 +230,7 @@ raw count とは別の派生指標に分ける。
 ## 後続 Issue 候補
 
 - extractor rule set v0 は [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
-  で `sig0-extractor relation-complexity --input ...` として実装した。候補 evidence
+  で `archsig relation-complexity --input ...` として実装した。候補 evidence
   から workflow-level `RelationComplexityObservation` JSON を出力し、counts と
   `relationComplexity` は counted evidence tags から再計算可能にしている。
 - Event Sourcing / Saga / CRUD を含む pilot baseline は

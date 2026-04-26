@@ -205,7 +205,7 @@ policy が未指定の場合の規約は既存の `metricStatus` 方針を維持
 Sig0 / v1 extractor が policy file を読む場合の最小 CLI contract は次とする。
 
 ```bash
-sig0-extractor --root . --policy signature-policy.json --out .lake/sig0.json
+archsig --root . --policy signature-policy.json --out .lake/sig0.json
 ```
 
 tooling 実装は、次を検査してから count を測定済みにする。

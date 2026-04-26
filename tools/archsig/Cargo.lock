@@ -53,6 +53,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "archsig"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "serde",
+ "serde_json",
+ "walkdir",
+]
+
+[[package]]
 name = "clap"
 version = "4.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -196,16 +206,6 @@ dependencies = [
  "serde",
  "serde_core",
  "zmij",
-]
-
-[[package]]
-name = "sig0-extractor"
-version = "0.1.0"
-dependencies = [
- "clap",
- "serde",
- "serde_json",
- "walkdir",
 ]
 
 [[package]]

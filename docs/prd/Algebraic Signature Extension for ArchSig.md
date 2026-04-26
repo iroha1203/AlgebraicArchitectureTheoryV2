@@ -1,4 +1,4 @@
-# PRD: Algebraic Signature Extension for `sig0-extractor`
+# PRD: Algebraic Signature Extension for ArchSig
 
 ## 1. プロダクト概要
 
@@ -8,13 +8,13 @@
 
 ### 一文要約
 
-既存の依存グラフ中心の `sig0-extractor` に、**設計原則が要求する代数法則・状態遷移法則・履歴再構成性・副作用境界・表現変換の健全性**を測る `algebraic-signature-v0` を追加する。
+既存の依存グラフ中心の ArchSig に、**設計原則が要求する代数法則・状態遷移法則・履歴再構成性・副作用境界・表現変換の健全性**を測る `algebraic-signature-v0` を追加する。
 
 ### 背景
 
 研究全体のゴールでは、ソフトウェアアーキテクチャを「依存・抽象・観測・状態遷移・実行時依存の複数グラフまたは代数構造」として表現し、不変量の破れを `ArchitectureSignature` として定量評価することが掲げられています。さらに、目標は単一スコアではなく、分解可能性、置換可能性、履歴再構成性、障害局所性、変更容易性など、どの不変量が破れているかを多軸で診断することです。([GitHub][2])
 
-現行の `sig0-extractor` は、依存グラフ由来の `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk`, boundary / abstraction violation などを扱えます。また、`Relation Complexity` では `constraints`, `compensations`, `projections`, `failureTransitions`, `idempotencyRequirements` をcandidate evidenceから数える足場があります。([GitHub][1])
+現行の ArchSig は、依存グラフ由来の `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk`, boundary / abstraction violation などを扱えます。また、`Relation Complexity` では `constraints`, `compensations`, `projections`, `failureTransitions`, `idempotencyRequirements` をcandidate evidenceから数える足場があります。([GitHub][1])
 
 今回の拡張では、この `Relation Complexity` を単なる数え上げから一段進めて、
 
@@ -83,7 +83,7 @@ Repository.write effect を直接発生させている。
 
 ## Goal 1: 依存グラフとは別軸の `AlgebraicArchitectureSignature` を追加する
 
-既存の `sig0-extractor-v0` を壊さず、別artifactとして以下を出力する。
+既存の `archsig-sig0-v0` を壊さず、別artifactとして以下を出力する。
 
 ```text
 algebraic-signature-v0
@@ -897,7 +897,7 @@ property test、replay check、Lean proof、manual attestationなどを受け取
 law registry と evidence を読み、`algebraic-signature-v0` を出す。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- algebraic-laws \
+cargo run --manifest-path tools/archsig/Cargo.toml -- algebraic-laws \
   --laws architecture-laws.json \
   --evidence law-evidence.json \
   --out .lake/algebraic-signature.json
@@ -908,7 +908,7 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- algebraic-laws \
 effect policy と evidence を読み、effect leakage metrics を出す。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- effect-signature \
+cargo run --manifest-path tools/archsig/Cargo.toml -- effect-signature \
   --policy effect-policy.json \
   --evidence effect-evidence.json \
   --out .lake/effect-signature.json
@@ -919,7 +919,7 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- effect-signature \
 `algebraic-signature-v0` の妥当性を検査する。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- algebraic-validate \
+cargo run --manifest-path tools/archsig/Cargo.toml -- algebraic-validate \
   --laws architecture-laws.json \
   --evidence law-evidence.json \
   --out .lake/algebraic-validation.json
@@ -928,7 +928,7 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- algebraic-validate 
 生成済みsignatureを検査する形も許す。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- algebraic-validate \
+cargo run --manifest-path tools/archsig/Cargo.toml -- algebraic-validate \
   --input .lake/algebraic-signature.json \
   --out .lake/algebraic-validation.json
 ```
@@ -958,7 +958,7 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- algebraic-validate 
 拡張後は複数signature artifactを扱えるようにする。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
+cargo run --manifest-path tools/archsig/Cargo.toml -- snapshot \
   --input .lake/sig0.json \
   --algebraic-signature .lake/algebraic-signature.json \
   --validation-report .lake/sig0-validation.json \
@@ -975,7 +975,7 @@ snapshot内では以下のように保持する。
 {
   "signatureArtifacts": [
     {
-      "schemaVersion": "sig0-extractor-v0",
+      "schemaVersion": "archsig-sig0-v0",
       "path": ".lake/sig0.json"
     },
     {
@@ -1515,7 +1515,7 @@ failureTransitions
 新規コマンド案:
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- law-candidates \
+cargo run --manifest-path tools/archsig/Cargo.toml -- law-candidates \
   --relation-complexity relation-complexity-candidates.json \
   --out architecture-laws.generated.json
 ```
@@ -1541,7 +1541,7 @@ CLIは直接アプリコードを実行しない。
 外部replay checkerが出したJSONを読む。
 
 ```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- algebraic-laws \
+cargo run --manifest-path tools/archsig/Cargo.toml -- algebraic-laws \
   --laws architecture-laws.json \
   --evidence law-evidence.json \
   --event-replay-evidence event-replay-evidence.json \

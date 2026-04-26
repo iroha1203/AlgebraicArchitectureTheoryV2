@@ -445,7 +445,7 @@ data analysis 側の前提:
 最初の成果物を empirical paper ではなく technical note として出す場合は、主張を次に
 限定する。
 
-- `sig0-extractor` output、PR metadata、before / after signature を結合する手順の再現性。
+- ArchSig output、PR metadata、before / after signature を結合する手順の再現性。
 - H1a/H3 の primary analysis に必要な列と欠損値規約の妥当性。
 - H1b/H2/H4/H5 を exploratory analysis として残すための必要データと欠損理由の整理。
 - 小規模 pilot 上の記述統計、順位相関、外れ値の報告。
