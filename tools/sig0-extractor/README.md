@@ -2,11 +2,65 @@
 
 Lean status: `empirical hypothesis` / tooling output.
 
-`sig0-extractor` は Lean module import graph から Architecture Signature v0 の入力 JSON を作る最小 CLI である。Lean の証明器ではなく、repository checkout から測定用データを作る外部 tooling として扱う。
+`sig0-extractor` は repository checkout から Architecture Signature 用の JSON artifact を作る CLI である。
+Lean の証明器ではなく、CI や AI agent が読むための architecture telemetry generator として扱う。
 
-## Usage
+現状の自動 scan は Lean module import graph に対応する。出力 schema は JSON で固定し、
+後段の `validate`, `snapshot`, `signature-diff`, `dataset` は JSON artifact を入力にして動く。
 
-fixture を使った最小再現例は次である。
+## 何ができるか
+
+- Lean source の `import` から component / dependency edge を抽出する。
+- `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk` を計算する。
+- policy JSON がある場合、`boundaryViolationCount` と `abstractionViolationCount` を測る。
+- runtime edge evidence JSON がある場合、0/1 `RuntimeDependencyGraph` projection を作る。
+- Sig0 output が測定 universe として扱えるか validation report を作る。
+- revision ごとの snapshot を作り、before / after の signature diff を出す。
+- GitHub PR JSON から PR metadata を作り、dataset や diff attribution に使う。
+- relation complexity candidate JSON から workflow-level observation を作る。
+
+## 標準フロー
+
+PR / CI 診断では、基本的に次の順で artifact を作る。
+
+```text
+scan
+  -> validate
+  -> snapshot
+  -> signature-diff
+  -> AI agent / CI job が diff report を読む
+```
+
+単一 revision の状態だけを見たい場合は `scan` と `validate` まででよい。
+before / after の悪化軸や evidence diff を見たい場合は `snapshot` と `signature-diff` まで作る。
+
+## 出力の読み方
+
+AI / CI が最初に読むべき成果物は次である。
+
+| 出力 | schemaVersion | 用途 |
+| --- | --- | --- |
+| Sig0 output | `sig0-extractor-v0` | 単一 revision の component、edge、signature、metric status。 |
+| Validation report | `component-universe-validation-report-v0` | Sig0 output の duplicate、edge closure、policy status などの検査結果。 |
+| Snapshot | `signature-snapshot-store-v0` | repository revision ごとの保存用 signature record。 |
+| Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
+| Dataset record | `empirical-signature-dataset-v0` | PR metadata と before / after signature を結合した実証研究用 record。 |
+
+通常の PR / CI 診断では、最終的に `signature-diff-report-v0` を読む。
+
+この CLI では、測定済み 0 と未評価を分ける。
+
+- `metricStatus.<axis>.measured = true`: 測定済み。
+- `metricStatus.<axis>.measured = false`: 未評価。signature 値が placeholder 0 でも risk 0 と読まない。
+- optional axis の `null`: 未評価、またはこの入力では比較不能。
+- `deltaSignatureSigned.<axis> = null`: before / after のどちらかが未評価、または値が `null`。
+
+AI agent は `signature` の値だけで判断せず、必ず `metricStatus`, `metricDeltaStatus`,
+`unmeasuredAxes` を併読する。
+
+## 最短手順
+
+fixture で scan する。
 
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
@@ -16,41 +70,28 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
   --out .lake/sig0-fixture.json
 ```
 
-代表的な出力 contract は次の形になる。
+validation report を作る。
 
-```json
-{
-  "schemaVersion": "sig0-extractor-v0",
-  "componentKind": "lean-module",
-  "policies": {
-    "policyId": "minimal-measured-zero",
-    "schemaVersion": "signature-policy-v0"
-  },
-  "metricStatus": {
-    "boundaryViolationCount": {
-      "measured": true,
-      "source": "policy:minimal-measured-zero"
-    },
-    "runtimePropagation": {
-      "measured": true,
-      "source": "runtime-edge-projection-v0"
-    }
-  },
-  "runtimeDependencyGraph": {
-    "projectionRule": "runtime-edge-projection-v0",
-    "edgeKind": "runtime"
-  }
-}
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
+  --input .lake/sig0-fixture.json \
+  --out .lake/sig0-fixture-validation.json \
+  --universe-mode local-only
 ```
 
-policy を渡さない場合、`boundaryViolationCount` と
-`abstractionViolationCount` の値は placeholder の `0` になるが、
-`metricStatus.<axis>.measured = false` なので違反なしとは読まない。
-runtime edge evidence を渡さない場合も、dataset 側の `runtimePropagation` は
-未評価の `null` として残る。
-`runtimePropagation` は既存互換名であり、`edge c d` means `c depends on d` の向きに沿う
-`runtimeExposureRadius` を表す。障害源から影響を受け得る範囲を測る
-`runtimeBlastRadius` は reverse reachability 由来の analysis metric として別に扱う。
+repository root を scan する。
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+  --root . \
+  --out .lake/sig0.json
+```
+
+`--out` を省略すると JSON は stdout に出る。
+
+## Scan する
+
+基本形:
 
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
@@ -60,16 +101,57 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
   --out .lake/sig0.json
 ```
 
-`--policy` を省略すると boundary / abstraction policy は未評価の placeholder として
-出力される。`--out` を省略すると JSON は stdout に出力される。
-`--runtime-edges` を指定すると runtime edge evidence を読み、metadata を保持したまま
-0/1 `RuntimeDependencyGraph` projection を出力する。省略した場合、
-`runtimePropagation` は未評価の欠損値として dataset 側に残る。
-この CLI が直接出力する `runtimePropagation` は exposure 側の値であり、blast radius は
-dataset / analysis metadata 側で逆向き到達として派生させる。
+`--policy` と `--runtime-edges` は任意である。
 
-既存 Sig0 JSON から `ComponentUniverse` 境界に対応する validation report を生成する場合は
-次を使う。
+`--policy` を省略すると `boundaryViolationCount` と `abstractionViolationCount` は placeholder の
+`0` になる。ただし `metricStatus.<axis>.measured = false` なので、違反なしとは読まない。
+
+`--runtime-edges` を省略すると `runtimePropagation` は未評価として扱う。
+runtime evidence を渡した場合、metadata を保持したまま 0/1 `RuntimeDependencyGraph` projection を出す。
+この CLI が直接出す `runtimePropagation` は dependency edge の向きに沿う exposure radius である。
+incident root cause からの blast radius は reverse reachability 由来の analysis metric として別に扱う。
+
+repository root を測定する場合、`.git`, `.lake`, `.elan`, `target`, root 直下の `tools` は scan 対象から除外する。
+`lakefile.lean` は build configuration metadata として扱い、component universe から除外する。
+multi-project repository を project 単位で測る場合は、各 subproject root を `--root` に指定して別々に実行する。
+
+代表的な Sig0 output:
+
+```json
+{
+  "schemaVersion": "sig0-extractor-v0",
+  "componentKind": "lean-module",
+  "components": [
+    { "id": "Formal", "path": "Formal.lean" }
+  ],
+  "edges": [
+    {
+      "source": "Formal",
+      "target": "Formal.Arch.A",
+      "kind": "import",
+      "evidence": "import Formal.Arch.A"
+    }
+  ],
+  "signature": {
+    "hasCycle": 0,
+    "sccMaxSize": 1,
+    "maxDepth": 2,
+    "fanoutRisk": 3,
+    "boundaryViolationCount": 0,
+    "abstractionViolationCount": 0
+  },
+  "metricStatus": {
+    "boundaryViolationCount": {
+      "measured": true,
+      "source": "policy:minimal-measured-zero"
+    }
+  }
+}
+```
+
+## Validate する
+
+既存 Sig0 JSON を検査する。
 
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
@@ -78,23 +160,14 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
   --universe-mode local-only
 ```
 
-`validate` は source file を再 scan せず、入力 JSON の `components`, `edges`,
-`metricStatus` から duplicate-free component list, local edge closure, external target,
-synthetic module root target, policy metric status を検査する。`Foo.Main -> Foo` のような
-root module import target は component list へ自動補完せず、`local-only` universe 外の
-synthetic target として warning にする。report は tooling-side evidence であり、
-`ComponentUniverse` の Lean witness そのものではない。
+`validate` は source file を再 scan しない。入力 JSON の `components`, `edges`, `metricStatus` から
+duplicate-free component list, local edge closure, external target, synthetic module root target,
+policy metric status を検査する。
 
-fixture 出力を検証する例:
+`Foo.Main -> Foo` のような root module import target は component list へ自動補完せず、
+`local-only` universe 外の synthetic target として warning にする。
 
-```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
-  --input .lake/sig0-fixture.json \
-  --out .lake/sig0-fixture-validation.json \
-  --universe-mode local-only
-```
-
-pass する場合の要点は次である。
+pass する場合の要点:
 
 ```json
 {
@@ -107,45 +180,96 @@ pass する場合の要点は次である。
 }
 ```
 
-repository root を測定する場合、`.git`, `.lake`, `.elan`, `target`, root 直下の
-`tools` は scan 対象から除外する。これは extractor 自身の fixture や build artifact
-を Lean module import graph に混ぜないための v0 の実装仕様である。
-`lakefile.lean` は build configuration metadata として扱い、component universe から
-除外する。multi-project repository を project 単位で測りたい場合は、repository root
-全体ではなく各 subproject root を `--root` に指定して別々に実行する。
+`summary.result` は `pass`, `warn`, `fail` のいずれかである。
+`fail` の場合だけ CLI の終了コードは `1` になる。
+入力 JSON を読めない、または report を生成できない場合の終了コードは `2` である。
 
-## Output
+## Snapshot / Diff を作る
 
-出力 schema は `schemaVersion: "sig0-extractor-v0"` の単一 JSON document である。
+CI や週次 scan では、まず Sig0 output と validation report から snapshot を作る。
 
-- `components`: Lean source file から得た module component。
-- `edges`: `source depends on target` の import edge。これは `ArchGraph.edge source target` に対応する。
-- `signature`: import graph から計算した `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk` と、policy 評価に基づく violation count。
-- `metricStatus`: 各 signature 軸が測定済みか、placeholder 欠損値かを記録する。
-- `policyViolations`: policy 評価で検出した unique dependency edge 単位の evidence。違反がなければ省略される。
-- `runtimeEdgeEvidence`: `--runtime-edges` で入力した runtime edge metadata。`label`, `failureMode`, `timeoutBudget`, `retryPolicy`, `circuitBreakerCoverage`, `confidence`, `evidenceLocation` を保持する。
-- `runtimeDependencyGraph`: runtime evidence が 1 件以上ある component pair を 0/1 edge に落とした projection。未指定なら省略される。
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
+  --input .lake/signature-current/sig0.json \
+  --validation-report .lake/signature-current/validation.json \
+  --repo-owner example \
+  --repo-name service \
+  --revision-sha "$(git rev-parse HEAD)" \
+  --revision-ref "$(git rev-parse --abbrev-ref HEAD)" \
+  --revision-branch main \
+  --scanned-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  --policy-path signature-policy.json \
+  --extractor-output-path .lake/signature-current/sig0.json \
+  --tag ci \
+  --out .lake/signature-current/snapshot.json
+```
 
-この CLI は `ComponentUniverse` の完全な witness を生成したとは主張しない。duplicate-free component list, edge closure, coverage などの証明付き universe は Lean 側の別責務として扱う。
+before / after の snapshot から diff report を作る。
 
-validation report の出力 schema は
-`schemaVersion: "component-universe-validation-report-v0"` の単一 JSON document である。
-`summary.result` は `pass`, `warn`, `fail` のいずれかで、`fail` の場合だけ CLI の終了コードは
-`1` になる。入力 JSON を読めない、または report を生成できない場合の終了コードは `2` である。
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- signature-diff \
+  --before-snapshot .lake/signature-previous/snapshot.json \
+  --after-snapshot .lake/signature-current/snapshot.json \
+  --before-sig0 .lake/signature-previous/sig0.json \
+  --after-sig0 .lake/signature-current/sig0.json \
+  --pr-metadata .lake/pr-metadata-123.json \
+  --out .lake/signature-current/diff-report.json
+```
 
-PR 前後の Signature と PR metadata を empirical dataset v0 record に結合する場合は
-次を使う。
+`signature-diff` は `diff` alias でも呼び出せる。
 
-main branch の週次 scan や任意期間 diff のために repository revision ごとの Signature を
-蓄積する場合は、`docs/design/signature_snapshot_store_schema.md` の
-`signature-snapshot-store-v0` を使う。snapshot store は PR metadata や signed delta を
-持たず、`repository`, `revision`, `scan.scannedAt`, extractor version, `policy.policyId`,
-`signature`, `metricStatus`, `validationSummary` を保持する。`validationSummary.result`
-が `fail` の snapshot は主要 diff から除外し、`metricStatus.measured = false` の軸は
-placeholder 0 でも risk 0 として扱わない。
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- diff \
+  --before .lake/signature-previous/snapshot.json \
+  --after .lake/signature-current/snapshot.json \
+  --out .lake/signature-current/diff-report.json
+```
 
-GitHub API の PR detail / files / reviews JSON から `pr-metadata.json` を生成する場合は
-次を使う。
+diff report は次を持つ。
+
+- `comparisonStatus`: primary diff として扱えるか。
+- `deltaSignatureSigned`: after - before の符号付き差分。
+- `worsenedAxes`: risk が増えた軸。
+- `improvedAxes`: risk が減った軸。
+- `unchangedAxes`: 変化しなかった軸。
+- `unmeasuredAxes`: 未評価または比較不能な軸と理由。
+- `evidenceDiff`: component / edge / policy violation の追加削除。
+- `attribution`: PR metadata に基づく原因候補。因果証明ではなく調査開始点である。
+
+代表的な diff report 抜粋:
+
+```json
+{
+  "schemaVersion": "signature-diff-report-v0",
+  "comparisonStatus": {
+    "primaryDiffEligible": true,
+    "reasons": []
+  },
+  "worsenedAxes": [
+    {
+      "axis": "fanoutRisk",
+      "before": 3,
+      "after": 5,
+      "delta": 2
+    }
+  ],
+  "unmeasuredAxes": [
+    {
+      "axis": "runtimePropagation",
+      "reason": "runtime dependency graph not provided",
+      "beforeMeasured": false,
+      "afterMeasured": false
+    }
+  ]
+}
+```
+
+`validationSummary.result = fail` または `not_run` の snapshot、extractor / rule set / policy が一致しない比較は
+`comparisonStatus.primaryDiffEligible = false` になる。
+
+## PR Metadata / Dataset を作る
+
+GitHub API の PR detail / files / reviews JSON から `pr-metadata.json` を作る。
 
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- pr-metadata \
@@ -160,11 +284,9 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- pr-metadata \
 `changedComponents` を `Formal/Arch/A.lean -> Formal.Arch.A` の規則で抽出する。
 `--reviews` を省略した場合、`reviewRoundCount` は `0` になり、
 `firstReviewLatencyHours` と `approvalLatencyHours` は `null` になる。
-approval review がない場合も `approvalLatencyHours` は `null` であり、0 時間とは扱わない。
-`mergeLatencyHours` は `merged_at` がない場合に `null` になる。
-author が GitHub Bot type または `[bot]` / `-bot` login の場合、
-`pullRequest.isBotGenerated = true` として保持する。
 GraphQL reviewThreads JSON を別途持つ場合は `--review-threads` で渡せる。
+
+before / after の Sig0 output と PR metadata から empirical dataset record を作る。
 
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- dataset \
@@ -175,68 +297,17 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- dataset \
   --out .lake/empirical-dataset-v0.json
 ```
 
-`--after-role` は `head` または `merge` を指定する。`merge` を指定する場合は
-PR metadata の `pullRequest.mergeCommit` が必須である。
+`--after-role` は `head` または `merge` を指定する。
+`merge` を指定する場合は PR metadata の `pullRequest.mergeCommit` が必須である。
 
-`pr-metadata.json` は `repository`, `pullRequest`, `prMetrics` を持つ JSON document
-で、`issueIncidentLinks` と `analysisMetadata` は省略できる。dataset 出力は
-`schemaVersion: "empirical-signature-dataset-v0"` の単一 record である。
-`deltaSignatureSigned` は before / after の両方で `metricStatus.measured = true`
-かつ値が `null` でない軸だけを符号付き差分として出す。policy 未指定の
-`boundaryViolationCount` のような placeholder 0 は `null` delta として保持する。
-runtime edge evidence がない Sig0 JSON では `runtimePropagation` は `null` のままで、
-測定済み 0 とは扱わない。
-この `runtimePropagation` は exposure radius の互換名であり、incident root cause からの
-blast radius とは分けて解釈する。
+dataset 出力は `schemaVersion: "empirical-signature-dataset-v0"` の単一 record である。
+`deltaSignatureSigned` は before / after の両方で測定済み、かつ値が `null` でない軸だけを
+符号付き差分として出す。policy 未指定の `boundaryViolationCount` のような placeholder 0 は
+`null` delta として保持する。
 
-fixture metadata を使った dataset 生成例:
+## Relation Complexity
 
-```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
-  --root tools/sig0-extractor/tests/fixtures/minimal \
-  --out .lake/sig0-before.json
-
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
-  --root tools/sig0-extractor/tests/fixtures/minimal \
-  --policy tools/sig0-extractor/tests/fixtures/minimal/policy_measured_zero.json \
-  --runtime-edges tools/sig0-extractor/tests/fixtures/minimal/runtime_edges.json \
-  --out .lake/sig0-after.json
-
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- dataset \
-  --before .lake/sig0-before.json \
-  --after .lake/sig0-after.json \
-  --pr-metadata tools/sig0-extractor/tests/fixtures/minimal/pr_metadata.json \
-  --after-role head \
-  --out .lake/empirical-dataset-v0.json
-```
-
-この例では before 側の policy / runtime graph が未評価なので、after 側が測定済みでも
-次のように delta は `null` になる。
-
-```json
-{
-  "deltaSignatureSigned": {
-    "boundaryViolationCount": null,
-    "runtimePropagation": null
-  },
-  "metricDeltaStatus": {
-    "boundaryViolationCount": {
-      "comparable": false,
-      "beforeMeasured": false,
-      "afterMeasured": true
-    }
-  },
-  "analysisMetadata": {
-    "runtimeMetrics": {
-      "runtimeGraphMeasured": true,
-      "runtimeEdgeEvidenceCount": 2
-    }
-  }
-}
-```
-
-workflow 単位の `RelationComplexityObservation` を候補 evidence JSON から生成する場合は
-次を使う。
+workflow 単位の `RelationComplexityObservation` を candidate evidence JSON から生成する。
 
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- relation-complexity \
@@ -245,132 +316,66 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- relation-complexity
 ```
 
 入力 schema は `schemaVersion: "relation-complexity-candidates/v0"` で、
-`repository`, `revision`, `measurementUniverse`, `workflow`,
-`evidenceCandidates` を持つ。出力 schema は
-`schemaVersion: "relation-complexity-observation/v0"` である。
-`relation-complexity-rules/v0` は `constraints`, `compensations`,
-`projections`, `failureTransitions`, `idempotencyRequirements` の tag を数え、
-同じ evidence item 内の同一 tag は 1 回だけ数える。`application-owned` と
-`application-configured` は counting candidate とし、`framework-generated` や
-未対応 framework の候補は `excludedEvidence` に理由を残す。
+`repository`, `revision`, `measurementUniverse`, `workflow`, `evidenceCandidates` を持つ。
+出力 schema は `schemaVersion: "relation-complexity-observation/v0"` である。
 
-fixture の代表出力では `constraints = 1`, `compensations = 1`,
-`failureTransitions = 1` なので、`relationComplexity = 3` になる。
+`relation-complexity-rules/v0` は次の tag を数える。
 
-## Snapshot diff MVP
+- `constraints`
+- `compensations`
+- `projections`
+- `failureTransitions`
+- `idempotencyRequirements`
 
-週次 scan や任意期間比較では、まず Sig0 output と validation report から
-`signature-snapshot-store-v0` record を作り、2 つの snapshot を
-`signature-diff-report-v0` に比較する。この workflow は Lean theorem ではなく、
-empirical / tooling output である。
+同じ evidence item 内の同一 tag は 1 回だけ数える。
+`application-owned` と `application-configured` は counting candidate とし、
+`framework-generated` や未対応 framework の候補は `excludedEvidence` に理由を残す。
 
-```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
-  --root . \
-  --policy signature-policy.json \
-  --out .lake/signature-current/sig0.json
+## 現状で可能な診断
 
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
-  --input .lake/signature-current/sig0.json \
-  --out .lake/signature-current/validation.json \
-  --universe-mode local-only
+単一 revision の構造診断:
 
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
-  --input .lake/signature-current/sig0.json \
-  --validation-report .lake/signature-current/validation.json \
-  --repo-owner example \
-  --repo-name service \
-  --revision-sha "$(git rev-parse HEAD)" \
-  --revision-branch main \
-  --scanned-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --policy-path signature-policy.json \
-  --extractor-output-path .lake/signature-current/sig0.json \
-  --tag weekly \
-  --out .lake/signature-current/snapshot.json
-```
+| 診断 | 主に見る parameter / field | 高い、または増えた場合に言えること | 注意 |
+| --- | --- | --- | --- |
+| 静的依存の循環検出 | `signature.hasCycle`, `signature.sccMaxSize`, `sccExcessSize` | import graph に循環がある。`sccMaxSize` が大きいほど、相互到達できる component 群が大きく、分解可能性のリスクが高い。 | `hasCycle = 0` は scan 対象内の import graph で循環が見つからないという意味。runtime dependency や動的依存の非循環性までは言わない。 |
+| SCC リスク | `sccMaxSize`, `sccExcessSize`, `weightedSccRisk` | 大きい SCC は一部変更が同じ SCC 内へ波及しやすい候補になる。`sccExcessSize` は singleton SCC を 0 risk として正規化した値。 | `weightedSccRisk` は重み入力がある場合だけ測れる。重みの意味は policy / empirical 側で決める。 |
+| 依存深度 | `maxDepth` | 依存 chain が深い。変更や理解のために辿る階層が長い可能性がある。 | 現状は bounded max depth。循環リスクは `hasCycle` / SCC 軸で別に読む。 |
+| fanout / 依存集中 | `fanoutRisk`, `maxFanout` | `fanoutRisk` が増えると測定対象内の依存辺総数が増えたことを示す。`maxFanout` が高い component は多くの依存先を持つ局所的な結合点候補。 | fanout 増加は常に悪ではない。新機能追加や module 追加でも増えるため、差分 edge と PR context を併読する。 |
+| 到達 cone / 変更波及候補 | `reachableConeSize` | ある component から到達できる依存先集合が大きい。変更理解や影響確認の範囲が広がる候補。 | edge 方向は `source depends on target`。障害源から影響を受ける側の blast radius とは向きが違う。 |
+| boundary violation | `boundaryViolationCount`, `policyViolations[]` | policy で禁止した境界越え依存がある。増えた場合、意図した layer / domain boundary が破られている候補。 | policy 未指定なら placeholder 0 でも `metricStatus.boundaryViolationCount.measured = false`。違反なしとは読まない。 |
+| abstraction violation | `abstractionViolationCount`, `policyViolations[]` | 抽象化 rule に反する直接依存がある。DIP / abstraction boundary の破れ候補。 | 現状の CLI は policy-based な tooling evidence。Lean の `ProjectionSound` witness そのものではない。 |
+| runtime exposure | `runtimePropagation`, `runtimeDependencyGraph`, `runtimeEdgeEvidence[]` | runtime evidence 上で、依存辺の向きに沿った exposure radius が大きい。実行時依存の連鎖が広い候補。 | runtime edge evidence を渡した場合だけ測定済み。incident root cause からの blast radius は reverse reachability 由来の別 metric として扱う。 |
+| relation complexity | `relationComplexity`, `counts.*`, `excludedEvidence[]` | workflow に制約、補償、projection、失敗遷移、冪等性要求が多い。状態遷移設計や運用リスクのレビュー対象候補。 | candidate evidence からの observation。実 repository での完全自動抽出や品質相関はまだ empirical hypothesis。 |
 
-任意期間 diff は次で作る。`--before-sig0` / `--after-sig0` を渡すと、増えた
-component、edge、policy violation も report に入る。`--pr-metadata` を渡すと、
-PR の changed components と after revision SHA に基づく原因候補を `high`,
-`medium`, `low`, `unknown` の confidence level 付きで出す。複数 PR を候補にする
-場合は `--pr-metadata` を繰り返す。
+before / after の差分診断:
 
-```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- signature-diff \
-  --before-snapshot .lake/signature-previous/snapshot.json \
-  --after-snapshot .lake/signature-current/snapshot.json \
-  --before-sig0 .lake/signature-previous/sig0.json \
-  --after-sig0 .lake/signature-current/sig0.json \
-  --pr-metadata .lake/pr-metadata-123.json \
-  --out .lake/signature-current/diff-report.json
-```
+| 診断 | 主に見る parameter / field | 高い、または増えた場合に言えること | 注意 |
+| --- | --- | --- | --- |
+| before / after 差分 | `worsenedAxes`, `improvedAxes`, `unchangedAxes`, `deltaSignatureSigned` | どの signature axis が悪化、改善、維持されたかを判断できる。 | `deltaSignatureSigned` の正値は risk 増加、負値は risk 減少。未評価軸は `null`。 |
+| 未評価 / 比較不能軸 | `metricStatus`, `metricDeltaStatus`, `unmeasuredAxes` | 測定されていない、または before / after で比較できない軸を識別できる。 | AI agent は signature 値だけで判断せず、未評価理由を必ず併読する。 |
+| evidence diff | `evidenceDiff.componentDelta`, `evidenceDiff.edgeDelta`, `evidenceDiff.policyViolationDelta` | 追加 / 削除された component、dependency edge、policy violation を確認できる。悪化軸の具体的な調査入口になる。 | `--before-sig0` / `--after-sig0` を diff に渡した場合に raw evidence diff が有効になる。 |
+| PR attribution candidate | `attribution.candidates[]` | changed components、edge diff、policy violation diff から、どの PR が悪化軸に関係しそうかを候補として出せる。 | 因果証明ではない。confidence は調査優先度であり、最終判断ではない。 |
 
-`signature-diff` は `diff` alias でも呼び出せる。snapshot path は短縮形の
-`--before` / `--after` も使える。
+現状では、セキュリティ脆弱性診断、一般的な code smell 診断、runtime dependency の自動抽出、
+incident / repair cost との統計的相関判定、自然言語の修正提案は行わない。
 
-```bash
-cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- diff \
-  --before .lake/signature-previous/snapshot.json \
-  --after .lake/signature-current/snapshot.json \
-  --out .lake/signature-current/diff-report.json
-```
+## GitHub Actions
 
-report は `worsenedAxes`, `improvedAxes`, `unchangedAxes`, `unmeasuredAxes`,
-`evidenceDiff`, `attribution` を持つ。`attribution.candidates[]` は
-`changedComponents`, `matchedComponents`, `matchedEdges`, `matchedPolicyViolations`,
-`affectedAxes` を含む。複数 PR が同じ悪化軸に関与する候補として残る場合は
-`attribution.sharedWorsenedAxes` にその軸を残す。これは因果証明ではなく、
-同期間の PR metadata と evidence diff に基づく調査開始点である。
-`validationSummary.result = fail` または
-`not_run` の snapshot、extractor / rule set / policy が一致しない比較は
-`comparisonStatus.primaryDiffEligible = false` とし、主要 diff から除外する。
-未評価軸は `unmeasuredAxes` に理由を残し、placeholder 0 を risk 0 として扱わない。
+[Signature diff report workflow](../../.github/workflows/signature-diff.yml) は、PR / push / schedule /
+manual run で次を実行する。
 
-GitHub Actions では、[Signature diff report workflow](../../.github/workflows/signature-diff.yml)
-が同じ 3 段階を実行し、before / after の Sig0 output、validation report、
-snapshot、`signature-diff-report-v0` を artifact として保存する。PR では base
-revision と checkout revision を比較し、GitHub API から PR metadata を生成して
-attribution candidate も report に含める。push / schedule では checkout revision と
-直前 revision を比較する。manual run では `before_ref` と `after_ref` で任意の
-baseline / target ref を指定できる。
+1. before / after ref を解決する。
+2. Sig0 output を作る。
+3. validation report を作る。
+4. snapshot を作る。
+5. `signature-diff-report-v0` を作る。
+6. workflow summary と artifact を保存する。
 
-workflow の job summary には、悪化軸、改善軸、比較不能軸、raw evidence diff、
-PR attribution candidate が表示される。policy / runtime evidence を渡していない軸は
-未評価理由として `unmeasuredAxes` に残り、placeholder 0 を risk 0 として扱わない。
-これは Lean theorem ではなく empirical / tooling report である。
+PR では GitHub API から PR metadata を生成し、diff report の attribution candidate に含める。
+policy / runtime evidence を渡していない軸は `unmeasuredAxes` に理由を残し、
+placeholder 0 を risk 0 として扱わない。
 
-外部 storage に snapshot を蓄積する場合は、artifact upload step を置き換えるか、
-後続 job で `.lake/signature-diff-ci/*/snapshot.json` を保存先へ同期する。
-workflow の中核は次の形である。
-
-```yaml
-name: Signature diff
-
-on:
-  schedule:
-    - cron: "0 0 * * 1"
-  workflow_dispatch:
-
-jobs:
-  signature-diff:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: leanprover/lean-action@v1
-      - name: Build current snapshot
-        run: |
-          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- --root . --out .lake/signature-current/sig0.json
-          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate --input .lake/signature-current/sig0.json --out .lake/signature-current/validation.json
-          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot --input .lake/signature-current/sig0.json --validation-report .lake/signature-current/validation.json --repo-owner "$GITHUB_REPOSITORY_OWNER" --repo-name "${GITHUB_REPOSITORY#*/}" --revision-sha "$GITHUB_SHA" --revision-ref "$GITHUB_REF" --revision-branch "${GITHUB_REF_NAME:-main}" --scanned-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --tag weekly --out .lake/signature-current/snapshot.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: signature-current
-          path: .lake/signature-current
-```
-
-## Test and CI
+## Test
 
 ローカル検証は次で行う。
 
@@ -379,6 +384,5 @@ cargo test --manifest-path tools/sig0-extractor/Cargo.toml
 ```
 
 CI では GitHub Actions の `sig0-extractor cargo test` job が同じコマンドを実行する。
-Lean theorem ではなく tooling contract の再現性を確認するため、fixtures と CLI test で
-policy, runtime edge projection, relation complexity, dataset conversion,
-snapshot diff を通す。
+fixtures と CLI test で policy, runtime edge projection, relation complexity, dataset conversion,
+snapshot diff を検証する。
