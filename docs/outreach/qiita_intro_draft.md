@@ -128,6 +128,47 @@ ApplicationService -> SqlPaymentRepository
 
 設計原則を比べるときは、「どちらが偉いか」ではなく、「どのリスクを下げるためのものか」を見る方が実用的です。
 
+## 零曲率定理で何が変わるか
+
+アーキテクチャ零曲率定理が目指しているのは、設計原則を経験則の名前としてではなく、阻害証人を消すための操作として読むことです。
+
+Lean 側で中心に置いている形は、かなり圧縮して書くと次です。
+
+```text
+Lawful A L
+  <-> NoRequiredObstruction A L
+  <-> RequiredAxesAvailableAndZero sig L
+```
+
+`A` は対象のアーキテクチャ、`L` は要求された法則族、`sig` は `ArchitectureSignature` です。
+
+左の `Lawful A L` は、「採用した法則族に対してアーキテクチャが健全である」という意味です。ここで大事なのは、`Lawful` を最初から「違反がないこと」として定義しないことです。たとえば `ProjectionSound`、`LSPCompatible`、`WalkAcyclic`、状態遷移の roundtrip law など、法則ごとに独立した意味を持つ述語として置きます。
+
+中央の `NoRequiredObstruction A L` は、その法則族に対する required obstruction witness が存在しないことです。循環依存なら閉じた walk、projection soundness なら抽象辺へ写らない具象依存、LSP なら同じ抽象に写る実装どうしの観測不一致、Saga なら補償できない失敗経路、というように、法則ごとに「何が壊れている証拠なのか」を witness として持ちます。
+
+右の `RequiredAxesAvailableAndZero sig L` は、`ArchitectureSignature` のうち、その法則族で要求された軸が測定済みで、かつ 0 であることです。ここで `ArchSig = 0` と言う場合、それは全品質を 1 つの数値で 0 点にする話ではありません。要求された法則族に対応する obstruction axes が、それぞれ available and zero である、という多軸の主張です。
+
+この見方にすると、設計原則やパターンは次のように読み替えられます。
+
+| 設計の語彙 | 零曲率定理での読み方 |
+| --- | --- |
+| SOLID / DIP / LSP | 局所契約層の法則族です。責務、抽象への依存、置換可能性に関する obstruction witness を減らします。SOLID は万能原理ではなく、大域的な依存構造や分散実行の健全性を単独では保証しません。 |
+| Layered / Clean Architecture | 大域構造層の法則族です。依存方向、境界違反、循環依存、抽象化違反に関する obstruction witness を減らします。 |
+| Event Sourcing / Saga / CRUD | 状態遷移代数層の設計操作です。replay、roundtrip、補償、更新経路の整合性に関する obstruction witness を減らすために使います。 |
+| Circuit Breaker / Replicated Log | 実行時依存・分散収束層の設計操作です。障害伝播、実行時 exposure、合意や収束の破れに関する obstruction witness を減らします。 |
+
+つまり「Clean Architecture だから良い」「Event Sourcing だから良い」とは言いません。
+どの law family を要求していて、どの witness がまだ残っていて、どの Signature axis が測定済みで 0 なのかを確認します。
+
+ここで Lean が証明する部分と、実データで確かめる部分も分けます。
+
+Lean で証明済みの core は、有限な witness list 上の zero-count bridge、required diagram の可換性との bridge、抽象 `LawFamily` での `Lawful` / `NoRequiredObstruction` / `RequiredAxesAvailableAndZero` の橋渡しです。つまり、前提として complete coverage や axis exactness が与えられたときに、法則健全性、阻害証人不在、required axis の零性を接続する部分です。
+
+一方で、具体的な `ProjectionSound`、`LSPCompatible`、`WalkAcyclic`、状態遷移 law、実行時依存 law をすべてこの抽象 bridge に接続する作業は、まだ future proof obligation を含みます。また、obstruction count がレビューコスト、変更コスト、障害率、incident scope と相関するかは empirical hypothesis です。そこは Lean の定理ではなく、実コードベースと運用データで検証します。
+
+このため、「経験則から定量評価へ」という言い方は、経験則を雑に数値化するという意味ではありません。
+設計原則を、どの required obstruction axes を 0 に近づける、または 0 に保つ操作なのかとして読み、測定できる軸と未測定の required law を分けて扱う、という意味です。
+
 ## ArchitectureSignature: 複数のスコアで見る
 
 この研究では、アーキテクチャの状態を `ArchitectureSignature` として記録します。
