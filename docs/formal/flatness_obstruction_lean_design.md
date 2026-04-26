@@ -287,9 +287,12 @@ required diagram を列挙するなど、一部の law family では `CoversRequ
 
 最初に Lean で証明する対象は、構造的・有限・全称的な命題に限定する。
 
-- `future proof obligation`: finite witness list 上の generic zero-count bridge。
-- `future proof obligation`: required diagram の可換性と diagram obstruction witness 不在の同値。
-- `future proof obligation`: finite measured law universe での diagram zero-count bridge。
+- `proved`: finite witness list 上の generic zero-count bridge,
+  `violationCount_eq_zero_iff_forall_not_bad`, [Issue #189](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/189)
+- `proved`: required diagram の可換性と diagram obstruction witness 不在の同値,
+  `diagramViolationCount_eq_zero_iff_forall_measured_DiagramCommutes`, [Issue #189](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/189)
+- `proved`: finite measured law universe での diagram zero-count bridge,
+  `requiredDiagramCommutes_of_coversRequired_and_diagramViolationCount_eq_zero`, [Issue #189](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/189)
 - `future proof obligation`: independent lawfulness predicate と witness 不在の exactness bridge。
 - `future proof obligation`: required Signature axis の `AvailableAndZero` と witness 不在の exactness bridge。
 - `future proof obligation`: complete coverage 下での measured zero から global lawfulness への bridge。
