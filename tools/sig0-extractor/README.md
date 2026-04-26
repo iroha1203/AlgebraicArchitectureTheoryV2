@@ -326,8 +326,22 @@ report は `worsenedAxes`, `improvedAxes`, `unchangedAxes`, `unmeasuredAxes`,
 `comparisonStatus.primaryDiffEligible = false` とし、主要 diff から除外する。
 未評価軸は `unmeasuredAxes` に理由を残し、placeholder 0 を risk 0 として扱わない。
 
-GitHub Actions では、週次 job で同じ 3 段階を実行して artifact として保存する。
-次は最小形であり、外部 storage に蓄積する場合は最後の upload 部分を置き換える。
+GitHub Actions では、[Signature diff report workflow](../../.github/workflows/signature-diff.yml)
+が同じ 3 段階を実行し、before / after の Sig0 output、validation report、
+snapshot、`signature-diff-report-v0` を artifact として保存する。PR では base
+revision と checkout revision を比較し、GitHub API から PR metadata を生成して
+attribution candidate も report に含める。push / schedule では checkout revision と
+直前 revision を比較する。manual run では `before_ref` と `after_ref` で任意の
+baseline / target ref を指定できる。
+
+workflow の job summary には、悪化軸、改善軸、比較不能軸、raw evidence diff、
+PR attribution candidate が表示される。policy / runtime evidence を渡していない軸は
+未評価理由として `unmeasuredAxes` に残り、placeholder 0 を risk 0 として扱わない。
+これは Lean theorem ではなく empirical / tooling report である。
+
+外部 storage に snapshot を蓄積する場合は、artifact upload step を置き換えるか、
+後続 job で `.lake/signature-diff-ci/*/snapshot.json` を保存先へ同期する。
+workflow の中核は次の形である。
 
 ```yaml
 name: Signature diff

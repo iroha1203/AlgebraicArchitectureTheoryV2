@@ -344,3 +344,15 @@ policy violation endpoint と重なるかを使って confidence を出す。候
 CLI の再現手順は
 [`tools/sig0-extractor/README.md`](../../tools/sig0-extractor/README.md) の
 `Snapshot diff MVP` を参照する。
+
+CI integration は
+[`Signature diff report workflow`](../../.github/workflows/signature-diff.yml) で扱う。
+この workflow は PR / push / schedule / manual run で before / after snapshot を生成し、
+`signature-diff-report-v0` と raw Sig0 output を artifact として保存する。PR では
+GitHub API 由来の PR metadata を `pr-metadata` subcommand で正規化し、diff report の
+`attribution.candidates` に原因候補を残す。job summary には悪化軸、改善軸、
+比較不能軸、raw evidence diff、attribution candidate を表示する。
+
+policy / runtime evidence がない軸は `unmeasuredAxes` に理由を残す。CI report は
+調査開始点を与える empirical / tooling output であり、Lean theorem や単一スコア評価
+ではない。

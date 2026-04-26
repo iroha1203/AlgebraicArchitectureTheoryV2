@@ -1,0 +1,225 @@
+name: Signature diff report
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * 1"
+  workflow_dispatch:
+    inputs:
+      before_ref:
+        description: "Baseline revision or ref. Defaults to HEAD^ for manual runs."
+        required: false
+      after_ref:
+        description: "Target revision or ref. Defaults to the checked-out revision."
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  signature-diff:
+    name: signature diff report
+    runs-on: ubuntu-latest
+    env:
+      OUT_DIR: .lake/signature-diff-ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve comparison refs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          event="${{ github.event_name }}"
+          before_ref=""
+          after_ref=""
+          trigger="$event"
+
+          if [ "$event" = "pull_request" ]; then
+            before_ref="${{ github.event.pull_request.base.sha }}"
+            after_ref="$GITHUB_SHA"
+          elif [ "$event" = "push" ]; then
+            before_ref="${{ github.event.before }}"
+            after_ref="${{ github.sha }}"
+            if [ "$before_ref" = "0000000000000000000000000000000000000000" ]; then
+              before_ref="${after_ref}^"
+            fi
+          elif [ "$event" = "workflow_dispatch" ]; then
+            before_ref="${{ inputs.before_ref }}"
+            after_ref="${{ inputs.after_ref }}"
+            if [ -z "$after_ref" ]; then
+              after_ref="$GITHUB_SHA"
+            fi
+            if [ -z "$before_ref" ]; then
+              before_ref="${after_ref}^"
+            fi
+          else
+            after_ref="$GITHUB_SHA"
+            before_ref="${after_ref}^"
+          fi
+
+          git rev-parse --verify "${before_ref}^{commit}" >/dev/null
+          git rev-parse --verify "${after_ref}^{commit}" >/dev/null
+
+          {
+            echo "BEFORE_REF=$before_ref"
+            echo "AFTER_REF=$after_ref"
+            echo "SIGNATURE_TRIGGER=$trigger"
+          } >> "$GITHUB_ENV"
+
+      - name: Build PR metadata
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT_DIR/pr"
+
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+            > "$OUT_DIR/pr/github-pr.json"
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" \
+            > "$OUT_DIR/pr/github-pr-files.json"
+          gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
+            > "$OUT_DIR/pr/github-pr-reviews.json"
+
+          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- pr-metadata \
+            --pull-request "$OUT_DIR/pr/github-pr.json" \
+            --files "$OUT_DIR/pr/github-pr-files.json" \
+            --reviews "$OUT_DIR/pr/github-pr-reviews.json" \
+            --out "$OUT_DIR/pr/pr-metadata.json"
+
+      - name: Build snapshots and diff report
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          scan_revision() {
+            local role="$1"
+            local ref="$2"
+            local out="$3"
+            local worktree="$RUNNER_TEMP/signature-${role}"
+            local sha
+            local committed_at
+            local validation_code
+
+            rm -rf "$worktree" "$out"
+            mkdir -p "$out"
+            git worktree add --detach "$worktree" "$ref"
+
+            sha="$(git -C "$worktree" rev-parse HEAD)"
+            committed_at="$(git -C "$worktree" show -s --format=%cI HEAD)"
+
+            cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- \
+              --root "$worktree" \
+              --out "$out/sig0.json"
+
+            set +e
+            cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- validate \
+              --input "$out/sig0.json" \
+              --out "$out/validation.json" \
+              --universe-mode local-only
+            validation_code=$?
+            set -e
+            if [ "$validation_code" -gt 1 ]; then
+              exit "$validation_code"
+            fi
+
+            cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
+              --input "$out/sig0.json" \
+              --validation-report "$out/validation.json" \
+              --repo-owner "$GITHUB_REPOSITORY_OWNER" \
+              --repo-name "${GITHUB_REPOSITORY#*/}" \
+              --revision-sha "$sha" \
+              --revision-ref "$ref" \
+              --revision-branch "${GITHUB_REF_NAME:-main}" \
+              --committed-at "$committed_at" \
+              --scanned-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+              --trigger "$SIGNATURE_TRIGGER" \
+              --scan-root "." \
+              --extractor-output-path "$out/sig0.json" \
+              --tag "ci" \
+              --out "$out/snapshot.json"
+
+            git worktree remove --force "$worktree"
+          }
+
+          scan_revision "before" "$BEFORE_REF" "$OUT_DIR/before"
+          scan_revision "after" "$AFTER_REF" "$OUT_DIR/after"
+
+          pr_args=()
+          if [ -f "$OUT_DIR/pr/pr-metadata.json" ]; then
+            pr_args=(--pr-metadata "$OUT_DIR/pr/pr-metadata.json")
+          fi
+
+          cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- diff \
+            --before "$OUT_DIR/before/snapshot.json" \
+            --after "$OUT_DIR/after/snapshot.json" \
+            --before-sig0 "$OUT_DIR/before/sig0.json" \
+            --after-sig0 "$OUT_DIR/after/sig0.json" \
+            "${pr_args[@]}" \
+            --out "$OUT_DIR/diff-report.json"
+
+      - name: Write job summary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          report="$OUT_DIR/diff-report.json"
+          before_sha="$(jq -r '.before.revision.sha' "$report")"
+          after_sha="$(jq -r '.after.revision.sha' "$report")"
+          eligible="$(jq -r '.comparisonStatus.primaryDiffEligible' "$report")"
+          reasons="$(jq -r '.comparisonStatus.reasons | if length == 0 then "なし" else join("; ") end' "$report")"
+          worsened="$(jq -r '.worsenedAxes | if length == 0 then "なし" else map(.axis + " (" + (.delta|tostring) + ")") | join(", ") end' "$report")"
+          improved="$(jq -r '.improvedAxes | if length == 0 then "なし" else map(.axis + " (" + (.delta|tostring) + ")") | join(", ") end' "$report")"
+          unmeasured="$(jq -r '.unmeasuredAxes | if length == 0 then "なし" else map(.axis + ": " + .reason) | join("; ") end' "$report")"
+          evidence_available="$(jq -r '.evidenceDiff.available' "$report")"
+          added_edges="$(jq -r '.evidenceDiff.edgeDelta.added | if . == null then 0 else length end' "$report")"
+          removed_edges="$(jq -r '.evidenceDiff.edgeDelta.removed | if . == null then 0 else length end' "$report")"
+          added_components="$(jq -r '.evidenceDiff.componentDelta.added | if . == null then 0 else length end' "$report")"
+          removed_components="$(jq -r '.evidenceDiff.componentDelta.removed | if . == null then 0 else length end' "$report")"
+
+          {
+            echo "## Architecture Signature diff report"
+            echo
+            echo "- before: \`$before_sha\`"
+            echo "- after: \`$after_sha\`"
+            echo "- primary diff eligible: \`$eligible\`"
+            echo "- eligibility reasons: $reasons"
+            echo
+            echo "### Axis changes"
+            echo
+            echo "- worsened: $worsened"
+            echo "- improved: $improved"
+            echo "- unmeasured / incomparable: $unmeasured"
+            echo
+            echo "### Evidence diff"
+            echo
+            echo "- raw evidence available: \`$evidence_available\`"
+            echo "- components: +$added_components / -$removed_components"
+            echo "- edges: +$added_edges / -$removed_edges"
+            echo
+            echo "### Attribution candidates"
+            echo
+            jq -r '.attribution.candidates
+              | if length == 0 then "- なし"
+                else map("- " + .id + " [" + .confidenceLevel + ", " + (.confidence|tostring) + "]: " + (.affectedAxes | if length == 0 then "affected axes なし" else join(", ") end))
+                | join("\n")
+                end' "$report"
+            echo
+            echo "Full JSON artifacts are attached to this workflow run."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Signature report artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: signature-diff-report-${{ github.run_id }}
+          path: .lake/signature-diff-ci
