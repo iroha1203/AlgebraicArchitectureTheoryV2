@@ -54,8 +54,12 @@ lawfulness への bridge である。
 | obstruction witness | 阻害証人 |
 | zero-count bridge | 零カウント橋渡し |
 
-Lean status は `future proof obligation` であり、現時点でこの定理全体が
-Lean で証明済みであるとは扱わない。
+Lean status は、generic witness-count kernel と required diagram の
+zero-count bridge については `proved` である
+([Issue #189](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/189))。
+ただし、アーキテクチャ零曲率定理全体、独立に定義された lawfulness predicate との
+exactness、required `ArchitectureSignature` axis との exactness は
+`future proof obligation` のまま扱う。
 
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
