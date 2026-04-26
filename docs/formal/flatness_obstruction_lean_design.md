@@ -1,6 +1,7 @@
 # アーキテクチャ零曲率定理 Lean 化設計
 
-Lean status: `future proof obligation` / formalization design.
+Lean status: `proved` core / `defined only` schema /
+`future proof obligation` / `empirical hypothesis`.
 
 この文書は [Flatness–Obstruction Conjecture](../math/Flatness–Obstruction%20Conjecture.md)
 を、数学面の草案として残したまま Lean 化するための設計メモである。
@@ -19,7 +20,8 @@ Lean 側では、この主張を最初から数値的な `Curv_A = Sem_A(p) - Se
 として定義しない。まず、要求された law family に対して有限
 `obstruction witness` が存在するかどうかを扱う。可換であるべき図式の非可換性は、
 その最重要な特殊例として定義する。数値的な curvature, distance, norm, rank は、
-観測値に追加構造を入れた後の executable metric として扱う。
+観測値に追加構造を入れた後の派生 executable metric として扱う。
+したがって、数値 curvature の未導入は Lean proved core の未完了を意味しない。
 
 ## 形式化の基本方針
 
@@ -260,8 +262,11 @@ RequiredAxesAvailableAndZero L sig
 Lean では、抽象 `LawFamily` に対して axis ごとの `AxisExact`、required witness
 cover、required axis 全体の
 `requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_axisExactFamily`
-を証明済みである。具体的な `ProjectionSound` / `LSPCompatible` などの
-law family への exactness 接続は、個別の proof obligation として残す。
+を証明済みである。具体的な `ProjectionSound` / `LSPCompatible` /
+`WalkAcyclic` / `LocalReplacementContract` / finite diagram law family については、
+それぞれの witness 不在との exactness bridge を証明済みである。
+ただし、required Signature axis の抽象 bridge を、すべての具体 law family の
+axis valuation へ接続する theorem は今後の proof obligation として残す。
 
 complete coverage は単なる強い仮定として放置しない。
 有限 component universe から component pair を列挙する、有限 diagram universe から
@@ -298,7 +303,27 @@ universe を cover する。
    各 finite diagram family の `DiagramLawful <-> NoDiagramObstruction` bridge は
    `proved`。
 11. 観測値に距離・重み・半環などを入れる必要が出た時点で、数値的 curvature metric を
-   派生定義として追加する。
+   派生定義として追加する。現時点では Issue
+   [#194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)
+   の設計整理として、Lean proved core から分離しておく。
+
+## 数値 curvature metric の派生層
+
+数値 curvature metric は、zero-count bridge や required obstruction witness 不在の
+代替ではなく、それらの上に載る派生的な測定層である。`Formal/Arch/Curvature.lean`
+のような module は、少なくとも次の追加構造を固定してから導入する。
+
+- 観測値 `Obs` 上の差分・距離・同値など、diagram 非可換性を数値化する構造。
+- finite measured universe から数値を集約する方法。
+- `none`、測定済み 0、測定済み非零を区別する Signature axis への載せ方。
+- 数値と変更コスト・障害率・レビュー負荷の関係を検証する empirical protocol。
+
+このため、`Curv_A = Sem_A(p) - Sem_A(q)` 型の一般 metric は現時点では
+`future proof obligation` ではなく `future design` / `empirical hypothesis` として
+扱う。Lean core の `proved` 対象は、有限 witness list、required diagram、
+lawfulness predicate、obstruction witness 不在、required axis zero の構造的 bridge
+である。数値 metric が必要になった場合も、既存の obstruction witness zero-count
+theorem を置き換えず、追加の axis または派生評価として接続する。
 
 ## 証明対象と非対象
 
@@ -331,6 +356,11 @@ universe を cover する。
   `walkAcyclic_iff_no_closedWalkObstruction`,
   `adjacencyNilpotent_iff_no_closedWalkObstruction`,
   [Issue #190](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/190)
+- `proved`: `LocalReplacementContract` から projection obstruction と LSP
+  obstruction の同時消滅、および対応する finite violation count が 0 であること,
+  `noProjectionObstruction_and_noLSPObstruction_of_localReplacementContract`,
+  `violationCounts_eq_zero_of_localReplacementContract`,
+  [Issue #188](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/188)
 - `proved`: 抽象 `LawFamily` では、complete coverage 下での measured zero から
   global lawfulness への bridge,
   `lawViolationCount_eq_zero_iff_lawful`, `lawful_iff_noRequiredObstruction_of_completeCoverage`,
@@ -351,12 +381,13 @@ universe を cover する。
   `effectRoundtripLawful_iff_noEffectRoundtripObstruction`,
   `effectCompensationLawful_iff_noEffectCompensationObstruction`,
   [Issue #193](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/193)
-- `future proof obligation`: 残る具体的な lawfulness predicate と witness 不在の
-  exactness bridge。
 - `future proof obligation`: required Signature axis の abstract bridge を具体的な
   projection / LSP / walk / nilpotence witness family に接続する定理。
 - `defined only`: witness family をまとめる signature schema と
   `ArchitectureSignatureV1` axis classification。
+- `future design` / `empirical hypothesis`: 一般の数値 curvature metric を定義する
+  観測値上の追加構造、集約規則、validation protocol,
+  [Issue #194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)。
 - `empirical hypothesis`: obstruction count と変更コスト・障害率・レビュー負荷の相関。
 
 次は初期 Lean proof の対象にしない。
