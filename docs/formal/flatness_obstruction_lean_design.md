@@ -148,7 +148,7 @@ violationCount bad xs = 0
 ```text
 Lawful A L
 NoRequiredObstruction A L
-RequiredAxesAvailableAndZero sig L
+RequiredAxesAvailableAndZero L sig
 ```
 
 `Lawful A L` は、既存の意味論的 predicate や law family の充足条件として定義する。
@@ -159,7 +159,7 @@ RequiredAxesAvailableAndZero sig L
 `NoRequiredObstruction A L` は、各 law family に付随する witness 型 `W` と
 `bad : W -> Prop` によって定義する。
 
-`RequiredAxesAvailableAndZero sig L` は、`ArchitectureSignature` の required axis が
+`RequiredAxesAvailableAndZero L sig` は、`ArchitectureSignature` の required axis が
 測定済みで、かつ 0 であることとして定義する。
 `none` や未測定 axis は、lawfulness の証明では zero として扱わない。
 
@@ -248,12 +248,17 @@ AxisExact axis witnessFamily :=
 required axis 全体では、次を目標にする。
 
 ```text
-RequiredAxesAvailableAndZero sig L
+RequiredAxesAvailableAndZero L sig
   <-> NoRequiredObstruction A L
 ```
 
 この bridge が入ることで、`ArchitectureSignature` は単なる表示 schema ではなく、
 要求法則族に対する阻害証人の零性を表す多軸座標として扱える。
+Lean では、抽象 `LawFamily` に対して axis ごとの `AxisExact`、required witness
+cover、required axis 全体の
+`requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_axisExactFamily`
+を証明済みである。具体的な `ProjectionSound` / `LSPCompatible` などの
+law family への exactness 接続は、個別の proof obligation として残す。
 
 complete coverage は単なる強い仮定として放置しない。
 有限 component universe から component pair を列挙する、有限 diagram universe から
@@ -298,14 +303,21 @@ required diagram を列挙するなど、一部の law family では `CoversRequ
   required axis exactness を前提にした中心 bridge,
   `lawful_iff_requiredAxesAvailableAndZero_of_completeCoverage_and_requiredAxisExact`,
   [Issue #191](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/191)
+- `proved`: required Signature axis について、`MeasuredZero` と
+  `AvailableAndZero` を分離し、axis ごとの `AxisExact` と required witness cover
+  から `RequiredAxesAvailableAndZero <-> NoRequiredObstruction` を得る抽象 bridge,
+  `requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_axisExactFamily`,
+  [Issue #195](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/195)
 - `future proof obligation`: `ProjectionSound`, `LSPCompatible`, `WalkAcyclic` など具体的な
   lawfulness predicate と witness 不在の exactness bridge。
-- `future proof obligation`: required Signature axis の `AvailableAndZero` と witness 不在の exactness bridge。
+- `future proof obligation`: required Signature axis の abstract bridge を具体的な
+  projection / LSP / walk / nilpotence witness family に接続する定理。
 - `proved`: 抽象 `LawFamily` では、complete coverage 下での measured zero から
   global lawfulness への bridge,
   `lawViolationCount_eq_zero_iff_lawful`, `lawful_iff_noRequiredObstruction_of_completeCoverage`,
   [Issue #191](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/191)
-- `defined only`: witness family をまとめる signature schema。
+- `defined only`: witness family をまとめる signature schema と
+  `ArchitectureSignatureV1` axis classification。
 - `empirical hypothesis`: obstruction count と変更コスト・障害率・レビュー負荷の相関。
 
 次は初期 Lean proof の対象にしない。

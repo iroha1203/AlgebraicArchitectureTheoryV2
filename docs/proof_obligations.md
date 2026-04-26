@@ -62,9 +62,14 @@ zero-count bridge については `proved` である
 `RequiredAxesAvailableAndZero` を分離し、complete witness coverage と
 required axis exactness を前提にした中心 bridge を Lean で証明済みである
 ([Issue #191](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/191))。
+required axis exactness については、`MeasuredZero` と `AvailableAndZero` を
+分離し、axis ごとの `AxisExact` と required witness cover から
+`RequiredAxesAvailableAndZero <-> NoRequiredObstruction` を得る抽象 bridge も
+Lean で証明済みである
+([Issue #195](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/195))。
 ただし、アーキテクチャ零曲率定理全体、具体的な `ProjectionSound` /
 `LSPCompatible` / `WalkAcyclic` などの lawfulness predicate との exactness、
-required `ArchitectureSignature` axis との exactness は
+required `ArchitectureSignature` axis との具体 law family 接続は
 `future proof obligation` のまま扱う。
 
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
@@ -73,9 +78,9 @@ required `ArchitectureSignature` axis との exactness は
 `ProjectionSound`, `LSPCompatible`, `WalkAcyclic`, `LocalReplacementContract`
 など、obstruction framework とは独立に定義された lawfulness predicate と、
 各 witness family の阻害証人不在を bridge theorem で接続することである。
-さらに、required `ArchitectureSignature` axis の `AvailableAndZero` と
-阻害証人不在を exact に接続し、complete coverage を有限 universe から構成できる
-law family を増やすことを目標にする。
+さらに、required `ArchitectureSignature` axis の抽象 exactness bridge を
+具体 law family に接続し、complete coverage を有限 universe から構成できる law family
+を増やすことを目標にする。
 
 ## 基本 convention
 
