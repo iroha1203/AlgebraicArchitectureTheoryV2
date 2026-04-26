@@ -255,6 +255,7 @@ fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
     let after_validation = out_dir.join("after-validation.json");
     let after_snapshot = out_dir.join("after-snapshot.json");
     let pr_metadata = out_dir.join("pr-metadata.json");
+    let peer_pr_metadata = out_dir.join("peer-pr-metadata.json");
     let report = out_dir.join("signature-diff.json");
 
     run_sig0(&[
@@ -400,6 +401,41 @@ fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
         .to_string(),
     )
     .expect("PR metadata is written");
+    fs::write(
+        &peer_pr_metadata,
+        serde_json::json!({
+            "repository": {
+                "owner": "example",
+                "name": "service",
+                "defaultBranch": "main"
+            },
+            "pullRequest": {
+                "number": 78,
+                "author": "bob",
+                "createdAt": "2026-04-25T02:00:00Z",
+                "mergedAt": "2026-04-26T00:30:00Z",
+                "baseCommit": "before-sha",
+                "headCommit": "peer-sha",
+                "mergeCommit": null,
+                "labels": [],
+                "isBotGenerated": false
+            },
+            "prMetrics": {
+                "changedFiles": 1,
+                "changedLinesAdded": 2,
+                "changedLinesDeleted": 0,
+                "changedComponents": ["Formal.Arch.B"],
+                "reviewCommentCount": 0,
+                "reviewThreadCount": 0,
+                "reviewRoundCount": 0,
+                "firstReviewLatencyHours": null,
+                "approvalLatencyHours": null,
+                "mergeLatencyHours": null
+            }
+        })
+        .to_string(),
+    )
+    .expect("peer PR metadata is written");
 
     run_sig0(&[
         "diff",
@@ -417,6 +453,10 @@ fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
         after_sig0.to_str().expect("after sig0 path is utf-8"),
         "--pr-metadata",
         pr_metadata.to_str().expect("PR metadata path is utf-8"),
+        "--pr-metadata",
+        peer_pr_metadata
+            .to_str()
+            .expect("peer PR metadata path is utf-8"),
         "--out",
         report.to_str().expect("report path is utf-8"),
     ]);
@@ -441,6 +481,26 @@ fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
             .as_f64()
             .expect("confidence is number")
             > 0.5
+    );
+    assert_eq!(
+        json["attribution"]["candidates"][0]["confidenceLevel"],
+        "high"
+    );
+    assert_eq!(
+        json["attribution"]["candidates"][0]["matchedEdges"][0]["target"],
+        "Formal.Arch.C"
+    );
+    assert!(
+        !json["attribution"]["candidates"][0]["affectedAxes"]
+            .as_array()
+            .expect("affectedAxes is array")
+            .is_empty()
+    );
+    assert!(
+        !json["attribution"]["sharedWorsenedAxes"]
+            .as_array()
+            .expect("sharedWorsenedAxes is array")
+            .is_empty()
     );
 }
 

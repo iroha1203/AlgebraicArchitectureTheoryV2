@@ -894,9 +894,11 @@ Lean status の区分:
   で `sig0-extractor diff --before ... --after ...` alias としても提供する。
   `signature-diff-report-v0` は悪化・改善・変化なし・未評価の軸を分け、raw Sig0 JSON
   がある場合は増えた component / edge / policy violation を report する。PR metadata
-  を渡した場合の attribution は changed components と after revision SHA に基づく
-  confidence 付き原因候補であり、因果証明ではない。Lean status は
-  `empirical hypothesis` / tooling implementation である。
+  を渡した場合の attribution は [#159](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/159)
+  で changed components、after revision SHA、追加・削除 edge / policy violation endpoint
+  の対応から `high | medium | low | unknown` の confidence level 付き原因候補を出す。
+  複数 PR が同じ悪化軸に関与し得る場合は `sharedWorsenedAxes` に残す。これは因果証明
+  ではなく、Lean status は `empirical hypothesis` / tooling implementation である。
 - RelationComplexityObservation extractor rule set v0 は
   [#124](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/124)
   で `sig0-extractor relation-complexity --input ...` として実装済みである。

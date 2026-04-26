@@ -291,8 +291,9 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- snapshot \
 
 任意期間 diff は次で作る。`--before-sig0` / `--after-sig0` を渡すと、増えた
 component、edge、policy violation も report に入る。`--pr-metadata` を渡すと、
-PR の changed components と after revision SHA に基づく原因候補を confidence 付きで
-出す。複数 PR を候補にする場合は `--pr-metadata` を繰り返す。
+PR の changed components と after revision SHA に基づく原因候補を `high`,
+`medium`, `low`, `unknown` の confidence level 付きで出す。複数 PR を候補にする
+場合は `--pr-metadata` を繰り返す。
 
 ```bash
 cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- signature-diff \
@@ -315,7 +316,12 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- diff \
 ```
 
 report は `worsenedAxes`, `improvedAxes`, `unchangedAxes`, `unmeasuredAxes`,
-`evidenceDiff`, `attribution` を持つ。`validationSummary.result = fail` または
+`evidenceDiff`, `attribution` を持つ。`attribution.candidates[]` は
+`changedComponents`, `matchedComponents`, `matchedEdges`, `matchedPolicyViolations`,
+`affectedAxes` を含む。複数 PR が同じ悪化軸に関与する候補として残る場合は
+`attribution.sharedWorsenedAxes` にその軸を残す。これは因果証明ではなく、
+同期間の PR metadata と evidence diff に基づく調査開始点である。
+`validationSummary.result = fail` または
 `not_run` の snapshot、extractor / rule set / policy が一致しない比較は
 `comparisonStatus.primaryDiffEligible = false` とし、主要 diff から除外する。
 未評価軸は `unmeasuredAxes` に理由を残し、placeholder 0 を risk 0 として扱わない。
