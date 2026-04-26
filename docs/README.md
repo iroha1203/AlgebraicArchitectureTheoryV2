@@ -38,6 +38,13 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 `docs/design/` には、全体方針から切り出した個別 design、tooling protocol、empirical protocol を置く。
 
+## PRD
+
+- [PRD 一覧](prd/README.md)
+
+`docs/prd/` には、実装前または検討中の product requirement document を置く。
+PRD の内容は、そのまま証明済み主張とは扱わず、実装・設計メモ・proof obligation へ分解してから追跡する。
+
 ## Empirical pilot
 
 - [lean4-samples empirical pilot](empirical/lean4_samples_pilot/README.md):
