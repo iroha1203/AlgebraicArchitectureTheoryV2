@@ -304,6 +304,16 @@ cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- signature-diff \
   --out .lake/signature-current/diff-report.json
 ```
 
+`signature-diff` は `diff` alias でも呼び出せる。snapshot path は短縮形の
+`--before` / `--after` も使える。
+
+```bash
+cargo run --manifest-path tools/sig0-extractor/Cargo.toml -- diff \
+  --before .lake/signature-previous/snapshot.json \
+  --after .lake/signature-current/snapshot.json \
+  --out .lake/signature-current/diff-report.json
+```
+
 report は `worsenedAxes`, `improvedAxes`, `unchangedAxes`, `unmeasuredAxes`,
 `evidenceDiff`, `attribution` を持つ。`validationSummary.result = fail` または
 `not_run` の snapshot、extractor / rule set / policy が一致しない比較は
