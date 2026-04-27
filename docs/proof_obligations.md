@@ -886,6 +886,21 @@ Issue [#210](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 obstruction witness absence に接続する。`nilpotencyIndex` は引き続き required
 zero axis ではなく、matrix bridge 由来の diagnostic / extension axis として扱う。
 
+Issue [#211](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/211)
+では、boundary / abstraction policy の concrete Signature axis exactness を公開
+theorem として追加した。Lean では `BoundaryPolicySound` /
+`AbstractionPolicySound` を policy soundness predicate として定義し、
+`BoundaryPolicyObstruction` / `AbstractionPolicyObstruction` を有限
+component-pair witness 上の obstruction predicate として定義した。
+`boundaryViolationCountOfFinite_eq_zero_iff_no_boundaryPolicyObstruction` と
+`abstractionViolationCountOfFinite_eq_zero_iff_no_abstractionPolicyObstruction`
+は、それぞれ executable count が 0 であることと obstruction witness 不在を同値に
+する。`boundaryViolation_axisExact` と `abstractionViolation_axisExact` は
+`v1OfFiniteWithRequiredLawAxes` の required policy axis が available-and-zero で
+あることを、それぞれ `BoundaryPolicySound` / `AbstractionPolicySound` と同値に
+する。zero count から graph-level policy soundness へ戻す向きでは
+`ComponentUniverse.edgeClosed` による有限測定 universe coverage を使う。
+
 Issue [#83](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/83)
 では、v1 後半戦の子 Issue #87, #84, #85, #86 の決定を統合し、
 v0 互換軸、Lean core、matrix bridge、runtime / empirical extension の責務境界を

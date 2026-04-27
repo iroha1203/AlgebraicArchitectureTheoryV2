@@ -401,8 +401,21 @@ theorem を置き換えず、追加の axis または派生評価として接続
   `projectionSoundnessViolation_axisExact`,
   `lspViolationCount_axisExact`,
   [Issue #209](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/209)
+- `proved`: concrete required-law Signature entry point 上で、`.hasCycle` の
+  available-and-zero を `WalkAcyclic` および closed-walk obstruction witness 不在へ
+  接続する direct axis exactness theorem,
+  `hasCycle_axisExact`,
+  `hasCycle_axisExact_no_closedWalkObstruction`,
+  [Issue #210](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/210)
+- `proved`: concrete required-law Signature entry point 上で、
+  `.boundaryViolationCount` と `.abstractionViolationCount` の available-and-zero を
+  それぞれ `BoundaryPolicySound` / `AbstractionPolicySound` へ接続する direct axis
+  exactness theorem,
+  `boundaryViolation_axisExact`,
+  `abstractionViolation_axisExact`,
+  [Issue #211](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/211)
 - `future proof obligation`: required Signature axis の abstract bridge を具体的な
-  walk / policy / nilpotence witness family に接続する残りの theorem。
+  nilpotence witness family や追加 law family に接続する残りの theorem。
   特に `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
   executable index であり、`RequiredAxesAvailableAndZero` の zero-axis として読むには
   別途 axis interpretation / exactness theorem が必要である。

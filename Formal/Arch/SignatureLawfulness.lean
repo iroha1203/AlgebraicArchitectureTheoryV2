@@ -24,6 +24,50 @@ def PolicySound {C : Type u} (G : ArchGraph C)
     (allowed : C -> C -> Prop) : Prop :=
   ∀ {c d : C}, G.edge c d -> allowed c d
 
+/-- Boundary-policy soundness, kept separate from obstruction counting. -/
+def BoundaryPolicySound {C : Type u} (G : ArchGraph C)
+    (boundaryAllowed : C -> C -> Prop) : Prop :=
+  PolicySound G boundaryAllowed
+
+/-- Abstraction-policy soundness, kept separate from obstruction counting. -/
+def AbstractionPolicySound {C : Type u} (G : ArchGraph C)
+    (abstractionAllowed : C -> C -> Prop) : Prop :=
+  PolicySound G abstractionAllowed
+
+/-- Boundary-policy obstruction witness on one dependency pair. -/
+def BoundaryPolicyObstruction {C : Type u} (G : ArchGraph C)
+    (boundaryAllowed : C -> C -> Prop) (pair : C × C) : Prop :=
+  PolicyViolation G boundaryAllowed pair
+
+/-- Abstraction-policy obstruction witness on one dependency pair. -/
+def AbstractionPolicyObstruction {C : Type u} (G : ArchGraph C)
+    (abstractionAllowed : C -> C -> Prop) (pair : C × C) : Prop :=
+  PolicyViolation G abstractionAllowed pair
+
+theorem boundaryPolicySound_iff_no_boundaryPolicyObstruction
+    {C : Type u} {G : ArchGraph C} (boundaryAllowed : C -> C -> Prop) :
+    BoundaryPolicySound G boundaryAllowed ↔
+      ¬ ∃ pair : C × C, BoundaryPolicyObstruction G boundaryAllowed pair := by
+  constructor
+  · intro hSound hExists
+    rcases hExists with ⟨pair, hBad⟩
+    exact hBad.2 (hSound hBad.1)
+  · intro hNoObstruction c d hEdge
+    by_contra hNotAllowed
+    exact hNoObstruction ⟨(c, d), hEdge, hNotAllowed⟩
+
+theorem abstractionPolicySound_iff_no_abstractionPolicyObstruction
+    {C : Type u} {G : ArchGraph C} (abstractionAllowed : C -> C -> Prop) :
+    AbstractionPolicySound G abstractionAllowed ↔
+      ¬ ∃ pair : C × C, AbstractionPolicyObstruction G abstractionAllowed pair := by
+  constructor
+  · intro hSound hExists
+    rcases hExists with ⟨pair, hBad⟩
+    exact hBad.2 (hSound hBad.1)
+  · intro hNoObstruction c d hEdge
+    by_contra hNotAllowed
+    exact hNoObstruction ⟨(c, d), hEdge, hNotAllowed⟩
+
 /-- The five concrete required-law witnesses represented by Signature v1 axes. -/
 inductive ArchitectureRequiredLawWitness where
   | hasCycle
@@ -502,6 +546,100 @@ private theorem policyViolationCount_eq_zero_iff_no_obstruction
       (violationCount_eq_zero_iff_forall_not_bad).mpr hNoBad
     simpa [violationCount, violatingWitnesses, countWhere, PolicyViolation]
       using hZero
+
+theorem boundaryViolationCountOfFinite_eq_zero_iff_no_boundaryPolicyObstruction
+    {C : Type u} {G : ArchGraph C} [DecidableRel G.edge]
+    (U : ComponentUniverse G) (boundaryAllowed : C -> C -> Prop)
+    [DecidableRel boundaryAllowed] :
+    boundaryViolationCountOfFinite G U.components boundaryAllowed = 0 ↔
+      ¬ ∃ pair : C × C,
+        BoundaryPolicyObstruction G boundaryAllowed pair := by
+  simpa [boundaryViolationCountOfFinite, BoundaryPolicyObstruction]
+    using policyViolationCount_eq_zero_iff_no_obstruction U boundaryAllowed
+
+theorem abstractionViolationCountOfFinite_eq_zero_iff_no_abstractionPolicyObstruction
+    {C : Type u} {G : ArchGraph C} [DecidableRel G.edge]
+    (U : ComponentUniverse G) (abstractionAllowed : C -> C -> Prop)
+    [DecidableRel abstractionAllowed] :
+    abstractionViolationCountOfFinite G U.components abstractionAllowed = 0 ↔
+      ¬ ∃ pair : C × C,
+        AbstractionPolicyObstruction G abstractionAllowed pair := by
+  simpa [abstractionViolationCountOfFinite, AbstractionPolicyObstruction]
+    using policyViolationCount_eq_zero_iff_no_obstruction U abstractionAllowed
+
+theorem boundaryViolation_axisExact
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (U : ComponentUniverse G)
+    (boundaryAllowed abstractionAllowed : C -> C -> Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisAvailableAndZero
+        (v1OfFiniteWithRequiredLawAxes G π GA O U.components
+          boundaryAllowed abstractionAllowed)
+        .boundaryViolationCount ↔
+      BoundaryPolicySound G boundaryAllowed := by
+  constructor
+  · intro hAxis
+    have hZero :
+        boundaryViolationCountOfFinite G U.components boundaryAllowed = 0 := by
+      unfold ArchitectureSignatureV1.axisAvailableAndZero at hAxis
+      simpa [ArchitectureSignatureV1.axisValue, v1OfFiniteWithRequiredLawAxes,
+        v1CoreOfFinite, v0OfFinite, AvailableAndZero] using hAxis
+    change PolicySound G boundaryAllowed
+    exact (boundaryPolicySound_iff_no_boundaryPolicyObstruction
+      (G := G) boundaryAllowed).mpr
+        ((boundaryViolationCountOfFinite_eq_zero_iff_no_boundaryPolicyObstruction
+          U boundaryAllowed).mp hZero)
+  · intro hSound
+    have hZero :
+        boundaryViolationCountOfFinite G U.components boundaryAllowed = 0 :=
+      (boundaryViolationCountOfFinite_eq_zero_iff_no_boundaryPolicyObstruction
+        U boundaryAllowed).mpr
+        ((boundaryPolicySound_iff_no_boundaryPolicyObstruction
+          (G := G) boundaryAllowed).mp hSound)
+    unfold ArchitectureSignatureV1.axisAvailableAndZero
+    simp [ArchitectureSignatureV1.axisValue, v1OfFiniteWithRequiredLawAxes,
+      v1CoreOfFinite, v0OfFinite, AvailableAndZero, hZero]
+
+theorem abstractionViolation_axisExact
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (U : ComponentUniverse G)
+    (boundaryAllowed abstractionAllowed : C -> C -> Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisAvailableAndZero
+        (v1OfFiniteWithRequiredLawAxes G π GA O U.components
+          boundaryAllowed abstractionAllowed)
+        .abstractionViolationCount ↔
+      AbstractionPolicySound G abstractionAllowed := by
+  constructor
+  · intro hAxis
+    have hZero :
+        abstractionViolationCountOfFinite G U.components abstractionAllowed = 0 := by
+      unfold ArchitectureSignatureV1.axisAvailableAndZero at hAxis
+      simpa [ArchitectureSignatureV1.axisValue, v1OfFiniteWithRequiredLawAxes,
+        v1CoreOfFinite, v0OfFinite, AvailableAndZero] using hAxis
+    change PolicySound G abstractionAllowed
+    exact (abstractionPolicySound_iff_no_abstractionPolicyObstruction
+      (G := G) abstractionAllowed).mpr
+        ((abstractionViolationCountOfFinite_eq_zero_iff_no_abstractionPolicyObstruction
+          U abstractionAllowed).mp hZero)
+  · intro hSound
+    have hZero :
+        abstractionViolationCountOfFinite G U.components abstractionAllowed = 0 :=
+      (abstractionViolationCountOfFinite_eq_zero_iff_no_abstractionPolicyObstruction
+        U abstractionAllowed).mpr
+        ((abstractionPolicySound_iff_no_abstractionPolicyObstruction
+          (G := G) abstractionAllowed).mp hSound)
+    unfold ArchitectureSignatureV1.axisAvailableAndZero
+    simp [ArchitectureSignatureV1.axisValue, v1OfFiniteWithRequiredLawAxes,
+      v1CoreOfFinite, v0OfFinite, AvailableAndZero, hZero]
 
 private theorem availableAndZero_boundary_iff_no_obstruction
     {C : Type u} {A : Type v} {Obs : Type w}
