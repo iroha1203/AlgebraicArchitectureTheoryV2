@@ -272,9 +272,13 @@ axes を concrete `LawFamily` としてまとめ、`ArchitectureSignatureV1.axis
 
 したがって、現時点で Lean proved と呼べる範囲は、抽象 `LawFamily` の structural
 core と、selected required axes (`hasCycle`, projection, LSP, boundary,
-abstraction) に対する Signature-integrated theorem である。`nilpotencyIndex`,
-runtime / empirical metrics, numerical curvature は required zero axis ではなく、
-別の診断軸または future bridge work として扱う。
+abstraction) に対する Signature-integrated theorem である。今後この到達点を
+**static structural core の QED** と呼ぶ。具体的には
+`ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
+および `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` を指す。
+`nilpotencyIndex`, runtime / empirical metrics, numerical curvature、実コード
+extractor の完全性は required zero axis ではなく、別の診断軸、実証仮説、または
+future bridge work として扱う。
 
 Issue [#222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/222)
 では、この境界を full law universe policy として固定した。Lean 側の
@@ -310,8 +314,8 @@ incident scope / repair time / hotfix size との関係は empirical hypothesis 
 `none`、測定済みの `some 0`、risk 0 の主張は常に区別する。
 
 Issue [#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226)
-では、全体 theorem package を `ArchitectureZeroCurvatureTheoremPackage` として
-追加した。この package は
+では、static structural core の theorem package を
+`ArchitectureZeroCurvatureTheoremPackage` として追加した。この package は
 `RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` と
 `MatrixDiagnosticCorollaries X` を束ねる。Lean theorem
 `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` は、current
@@ -425,7 +429,7 @@ theorem を置き換えず、追加の axis または派生評価として接続
 - `proved`: concrete `ArchitectureWitness` family と selected required
   `ArchitectureSignatureV1` axes について、`ArchitectureLawful X` と
   `RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` を接続する
-  final Signature-integrated zero-curvature theorem,
+  static structural core の QED の中核となる Signature-integrated zero-curvature theorem,
   `architectureLawful_iff_requiredSignatureAxesZero`,
   [Issue #212](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/212)
 - `proved`: finite required witness / diagram list から coverage predicate を構成し、
@@ -494,7 +498,7 @@ theorem を置き換えず、追加の axis または派生評価として接続
   `runtimeBlastRadius`, Circuit Breaker coverage, policy-aware runtime metrics,
   incident / repair cost との関係は tooling / empirical protocol 側に残す,
   [Issue #225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)。
-- `defined only` / `proved`: full theorem package を
+- `defined only` / `proved`: static structural core の QED を読むための theorem package を
   `ArchitectureZeroCurvatureTheoremPackage` として追加し、current law-universe
   policy のもとで `ArchitectureLawful X` と theorem package が同値であることを
   `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` で証明した。
