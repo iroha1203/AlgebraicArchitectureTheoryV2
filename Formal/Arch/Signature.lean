@@ -76,6 +76,11 @@ theorem riskLE_antisymm {a b : ArchitectureSignature}
 def boolRisk (b : Bool) : Nat :=
   if b then 1 else 0
 
+/-- A Boolean risk is zero exactly when the source Boolean is false. -/
+theorem boolRisk_eq_zero_iff {b : Bool} :
+    boolRisk b = 0 ↔ b = false := by
+  cases b <;> simp [boolRisk]
+
 /-- Maximum of a finite list of natural-number measurements. -/
 def maxNatList (xs : List Nat) : Nat :=
   xs.foldl Nat.max 0
