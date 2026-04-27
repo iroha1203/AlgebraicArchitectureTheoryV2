@@ -302,10 +302,13 @@ universe を cover する。
    として接続する。
 7. `ArchitectureSignatureV1` の axis を witness family status に分類し、
    `MeasuredZero` と `AvailableAndZero` を分ける。
-8. axis ごとの `AxisExact` と、required axis 全体の
+8. selected required law axes を `hasCycle`, projection, LSP, boundary,
+   abstraction に固定し、required axis 用 constructor で concrete count を
+   `some count` として埋める。
+9. axis ごとの `AxisExact` と、required axis 全体の
    `RequiredAxesAvailableAndZero <-> NoRequiredObstruction` bridge を追加する。
-9. 有限 universe から `CoversRequired` を構成できる law family を増やす。
-10. 状態遷移履歴、effect boundary, replay / roundtrip / compensation law を
+10. 有限 universe から `CoversRequired` を構成できる law family を増やす。
+11. 状態遷移履歴、effect boundary, replay / roundtrip / compensation law を
    個別の `Expr` と `Semantics` として追加する。Lean status: `proved` /
    `defined only`。`StateTransitionExpr`, `EffectBoundaryExpr` は `defined only`、
    各 finite diagram family の `DiagramLawful <-> NoDiagramObstruction` bridge は

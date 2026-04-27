@@ -1,9 +1,10 @@
 import Formal.Arch.Graph
 import Formal.Arch.Lawfulness
+import Formal.Arch.LSP
 
 namespace Formal.Arch
 
-universe u
+universe u v w
 
 /--
 Initial architecture signature.
@@ -496,6 +497,35 @@ inductive ArchitectureSignatureV1Axis where
   | empiricalChangeCost
   deriving DecidableEq, Repr
 
+/--
+Selected v1 axes treated as required zero law axes by the current
+Signature-integrated lawfulness bridge.
+
+The selection is intentionally narrow. Structural propagation magnitudes,
+matrix indices, runtime exposure, and empirical cost axes remain diagnostics or
+future bridge work rather than required zero-law obligations.
+-/
+def selectedRequiredLawAxes : List ArchitectureSignatureV1Axis :=
+  [ .hasCycle
+  , .projectionSoundnessViolation
+  , .lspViolationCount
+  , .boundaryViolationCount
+  , .abstractionViolationCount
+  ]
+
+/-- Predicate form of `selectedRequiredLawAxes`. -/
+def IsSelectedRequiredLawAxis (axis : ArchitectureSignatureV1Axis) : Prop :=
+  axis ∈ selectedRequiredLawAxes
+
+theorem mem_selectedRequiredLawAxes_iff {axis : ArchitectureSignatureV1Axis} :
+    axis ∈ selectedRequiredLawAxes ↔
+      axis = .hasCycle ∨
+      axis = .projectionSoundnessViolation ∨
+      axis = .lspViolationCount ∨
+      axis = .boundaryViolationCount ∨
+      axis = .abstractionViolationCount := by
+  simp [selectedRequiredLawAxes]
+
 namespace ArchitectureSignatureV1
 
 /-- Read any Signature v1 axis as an optional natural-number metric. -/
@@ -627,6 +657,147 @@ def v1OfFinite {C : Type u} (G : ArchGraph C)
   runtimePropagation := none
   relationComplexity := none
   empiricalChangeCost := none
+
+/--
+Build a Signature v1 value with the selected required law axes populated.
+
+The selected required law axes are `hasCycle`, `projectionSoundnessViolation`,
+`lspViolationCount`, `boundaryViolationCount`, and `abstractionViolationCount`.
+Other axes such as `nilpotencyIndex`, propagation magnitudes, runtime exposure,
+and empirical costs are not required zero-law axes: they are structural,
+matrix, runtime, or empirical diagnostics whose zero value does not by itself
+state lawfulness for the selected law family.
+-/
+def v1OfFiniteWithRequiredLawAxes {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1 where
+  core := v1CoreOfFinite G components boundaryAllowed abstractionAllowed
+  weightedSccRisk := none
+  projectionSoundnessViolation :=
+    some (projectionSoundnessViolation G π GA components)
+  lspViolationCount := some (lspViolationCount π O components)
+  nilpotencyIndex := none
+  runtimePropagation := none
+  relationComplexity := none
+  empiricalChangeCost := none
+
+theorem axisValue_v1OfFiniteWithRequiredLawAxes_hasCycle
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisValue
+        (v1OfFiniteWithRequiredLawAxes G π GA O components
+          boundaryAllowed abstractionAllowed)
+        .hasCycle =
+      some (boolRisk (hasCycleBool G components)) := by
+  rfl
+
+theorem axisValue_v1OfFiniteWithRequiredLawAxes_projectionSoundnessViolation
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisValue
+        (v1OfFiniteWithRequiredLawAxes G π GA O components
+          boundaryAllowed abstractionAllowed)
+        .projectionSoundnessViolation =
+      some (projectionSoundnessViolation G π GA components) := by
+  rfl
+
+theorem axisValue_v1OfFiniteWithRequiredLawAxes_lspViolationCount
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisValue
+        (v1OfFiniteWithRequiredLawAxes G π GA O components
+          boundaryAllowed abstractionAllowed)
+        .lspViolationCount =
+      some (lspViolationCount π O components) := by
+  rfl
+
+theorem axisValue_v1OfFiniteWithRequiredLawAxes_boundaryViolationCount
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisValue
+        (v1OfFiniteWithRequiredLawAxes G π GA O components
+          boundaryAllowed abstractionAllowed)
+        .boundaryViolationCount =
+      some (boundaryViolationCountOfFinite G components boundaryAllowed) := by
+  rfl
+
+theorem axisValue_v1OfFiniteWithRequiredLawAxes_abstractionViolationCount
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisValue
+        (v1OfFiniteWithRequiredLawAxes G π GA O components
+          boundaryAllowed abstractionAllowed)
+        .abstractionViolationCount =
+      some (abstractionViolationCountOfFinite G components abstractionAllowed) := by
+  rfl
+
+theorem axisValue_v1OfFiniteWithRequiredLawAxes_nilpotencyIndex
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisValue
+        (v1OfFiniteWithRequiredLawAxes G π GA O components
+          boundaryAllowed abstractionAllowed)
+        .nilpotencyIndex =
+      none := by
+  rfl
+
+theorem axisValue_v1OfFiniteWithRequiredLawAxes_runtimePropagation
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisValue
+        (v1OfFiniteWithRequiredLawAxes G π GA O components
+          boundaryAllowed abstractionAllowed)
+        .runtimePropagation =
+      none := by
+  rfl
 
 /--
 Build a Signature v1 value with the Lean executable weighted SCC axis populated.

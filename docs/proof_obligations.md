@@ -78,7 +78,7 @@ Lean で証明済みである。残る中心的な `future proof obligation` は
 structural core である。抽象 `LawFamily`、complete witness coverage、
 required axis exactness を前提に、`Lawful` と
 `RequiredAxesAvailableAndZero` を接続する bridge は証明済みである。一方、
-`ArchitectureSignatureV1.axisValue` を projection / LSP / walk / nilpotence などの
+`ArchitectureSignatureV1.axisValue` を projection / LSP / walk / policy などの
 具体 law family valuation へ接続する theorem は、まだ `future proof obligation`
 として残る。
 
@@ -831,6 +831,21 @@ v0 signature を内側に持ち、`sccExcessSize`, `maxFanout`,
 `Option Nat` として保持する。`none` は未評価を意味し、risk 0 とは解釈しない。
 `v1CoreOfFinite` と `v1OfFinite` は finite component list からこの schema を
 構成する executable entry point である。
+
+Issue [#208](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/208)
+では、Signature-integrated lawfulness bridge で required zero law axis として
+扱う初期 scope を `hasCycle`, `projectionSoundnessViolation`,
+`lspViolationCount`, `boundaryViolationCount`, `abstractionViolationCount` に固定した。
+Lean では `selectedRequiredLawAxes` / `IsSelectedRequiredLawAxis` と、
+`v1OfFiniteWithRequiredLawAxes` を追加し、projection / LSP / boundary /
+abstraction の measured count を `some count` として埋める entry point を用意した。
+後続の axis exactness theorem が使うため、各 selected axis の
+`ArchitectureSignatureV1.axisValue` 計算補題も追加済みである。`nilpotencyIndex`,
+`fanoutRisk`, `maxDepth`, `reachableConeSize`, `weightedSccRisk`,
+`runtimePropagation`, `relationComplexity`, `empiricalChangeCost` は required zero
+law axis ではない。前半は構造量・伝播量または matrix bridge の診断軸であり、
+後半は runtime / empirical evidence に依存するため、`some 0` を要求する
+法則健全性の required axis と混同しない。
 
 Issue [#83](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/83)
 では、v1 後半戦の子 Issue #87, #84, #85, #86 の決定を統合し、
