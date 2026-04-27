@@ -276,6 +276,20 @@ abstraction) に対する Signature-integrated theorem である。`nilpotencyIn
 runtime / empirical metrics, numerical curvature は required zero axis ではなく、
 別の診断軸または future bridge work として扱う。
 
+Issue [#222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/222)
+では、この境界を full law universe policy として固定した。Lean 側の
+`ArchitectureLawUniverseCandidate` は、required law 5 件、LocalReplacement
+packaging、state-effect diagram laws、matrix / spectral diagnostics、runtime
+diagnostics、empirical axes を候補として列挙する。分類は
+`architectureLawCandidateRole` で行い、required law は
+`closedWalkAcyclicity`, `projectionSoundness`, `lspCompatibility`,
+`boundaryPolicySoundness`, `abstractionPolicySoundness` だけである。
+`localReplacementContract` と `stateEffectDiagramLaw` は derived corollary、
+`nilpotencyIndex`, `spectralRadius`, `runtimePropagation` は diagnostic axis、
+`relationComplexity`, `empiricalChangeCost` は empirical axis とする。
+この分類により、final theorem の `ArchitectureLawful` を拡張せずに、後続 theorem
+群で corollary / diagnostic bridge を追加できる。
+
 complete coverage は単なる強い仮定として放置しない。
 有限 component universe から component pair を列挙する、有限 diagram universe から
 required diagram を列挙するなど、一部の law family では `CoversRequired` を実際に
@@ -421,13 +435,17 @@ theorem を置き換えず、追加の axis または派生評価として接続
   `boundaryViolation_axisExact`,
   `abstractionViolation_axisExact`,
   [Issue #211](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/211)
-- `future proof obligation`: required Signature axis の abstract bridge を具体的な
-  nilpotence witness family や追加 law family に接続する残りの theorem。
-  特に `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
-  executable index であり、`RequiredAxesAvailableAndZero` の zero-axis として読むには
-  別途 axis interpretation / exactness theorem が必要である。
+- `defined only` / `proved`: full law universe policy を
+  `ArchitectureLawUniverseCandidate` と `ArchitectureLawCandidateRole` として
+  列挙し、required law が current final theorem の 5 条件に限られることを
+  `architectureLawCandidateRole_requiredLaw_iff` で証明した,
+  [Issue #222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/222)。
+- `future proof obligation`: full law universe policy に従い、derived corollary /
+  diagnostic axis を theorem index へ接続する残りの theorem。特に
+  `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
+  executable index であり、`RequiredAxesAvailableAndZero` の zero-axis ではない。
 - `defined only`: witness family をまとめる signature schema と
-  `ArchitectureSignatureV1` axis classification。
+  `ArchitectureSignatureV1` axis measurement classification。
 - `future design` / `empirical hypothesis`: 一般の数値 curvature metric を定義する
   観測値上の追加構造、集約規則、validation protocol,
   [Issue #194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)。
