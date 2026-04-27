@@ -101,6 +101,75 @@ def RequiredSignatureAxesAvailableAndZero (sig : ArchitectureSignatureV1) : Prop
     ArchitectureSignatureV1.axisAvailableAndZero sig axis
 
 /--
+The `hasCycle` Signature axis is exact for walk acyclicity on a finite
+component universe.
+
+`nilpotencyIndex` is not used here as a required zero axis; this theorem uses
+only the executable 0/1 `hasCycle` indicator and the finite-universe
+correctness theorem for closed walks.
+-/
+theorem hasCycle_axisExact
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (U : ComponentUniverse G)
+    (boundaryAllowed abstractionAllowed : C -> C -> Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisAvailableAndZero
+        (v1OfFiniteWithRequiredLawAxes G π GA O U.components
+          boundaryAllowed abstractionAllowed)
+        .hasCycle ↔
+      WalkAcyclic G := by
+  constructor
+  · intro hAxis hClosed
+    have hZero : boolRisk (hasCycleBool G U.components) = 0 := by
+      unfold ArchitectureSignatureV1.axisAvailableAndZero at hAxis
+      simpa [ArchitectureSignatureV1.axisValue, v1OfFiniteWithRequiredLawAxes,
+        v1CoreOfFinite, v0OfFinite, AvailableAndZero] using hAxis
+    have hNoCycle : hasCycleBool G U.components = false := by
+      cases h : hasCycleBool G U.components
+      · rfl
+      · simp [boolRisk, h] at hZero
+    have hCycle : hasCycleBool G U.components = true :=
+      (hasCycleBool_correct_under_finite_universe U).mpr hClosed
+    rw [hNoCycle] at hCycle
+    contradiction
+  · intro hWalkAcyclic
+    have hNoCycle : hasCycleBool G U.components = false := by
+      cases h : hasCycleBool G U.components
+      · rfl
+      · exact False.elim
+          (hWalkAcyclic
+            ((hasCycleBool_correct_under_finite_universe U).mp h))
+    unfold ArchitectureSignatureV1.axisAvailableAndZero
+    simp [ArchitectureSignatureV1.axisValue, v1OfFiniteWithRequiredLawAxes,
+      v1CoreOfFinite, v0OfFinite, boolRisk, hNoCycle, AvailableAndZero]
+
+/--
+The `hasCycle` Signature axis is also exact for absence of closed-walk
+obstruction witnesses.
+-/
+theorem hasCycle_axisExact_no_closedWalkObstruction
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (U : ComponentUniverse G)
+    (boundaryAllowed abstractionAllowed : C -> C -> Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisAvailableAndZero
+        (v1OfFiniteWithRequiredLawAxes G π GA O U.components
+          boundaryAllowed abstractionAllowed)
+        .hasCycle ↔
+      ∀ w : ClosedWalkWitness G, ¬ ClosedWalkBad w := by
+  exact Iff.trans
+    (hasCycle_axisExact G π GA O U boundaryAllowed abstractionAllowed)
+    walkAcyclic_iff_no_closedWalkObstruction
+
+/--
 The projection-soundness Signature axis is exact for the concrete required-law
 entry point. The reverse direction from zero count to graph-level obstruction
 absence uses the `ComponentUniverse.edgeClosed` coverage assumption.
