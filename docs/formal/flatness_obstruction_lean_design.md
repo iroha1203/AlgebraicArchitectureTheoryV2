@@ -265,16 +265,15 @@ cover、required axis 全体の
 を証明済みである。具体的な `ProjectionSound` / `LSPCompatible` /
 `WalkAcyclic` / `LocalReplacementContract` / finite diagram law family については、
 それぞれの witness 不在との exactness bridge を証明済みである。
-ただし、required Signature axis の抽象 bridge を、すべての具体 law family の
-axis valuation へ接続する theorem は今後の proof obligation として残す。
+さらに `Formal/Arch/SignatureLawfulness.lean` では、selected required Signature
+axes を concrete `LawFamily` としてまとめ、`ArchitectureSignatureV1.axisValue`
+の concrete valuation へ接続する final theorem を追加した。
 
-したがって、現時点で Lean proved と呼べるのは、アーキテクチャ零曲率定理の
-structural core である。すなわち、抽象 `LawFamily`、complete witness coverage、
-required axis exactness を前提に、`Lawful` と
-`RequiredAxesAvailableAndZero` を接続する bridge は証明済みである。一方、
-`ArchitectureSignatureV1.axisValue` を projection / LSP / walk / nilpotence などの
-具体 law family valuation へ接続する theorem は、まだ `future proof obligation`
-として残る。
+したがって、現時点で Lean proved と呼べる範囲は、抽象 `LawFamily` の structural
+core と、selected required axes (`hasCycle`, projection, LSP, boundary,
+abstraction) に対する Signature-integrated theorem である。`nilpotencyIndex`,
+runtime / empirical metrics, numerical curvature は required zero axis ではなく、
+別の診断軸または future bridge work として扱う。
 
 complete coverage は単なる強い仮定として放置しない。
 有限 component universe から component pair を列挙する、有限 diagram universe から
