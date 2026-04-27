@@ -70,17 +70,19 @@ Lean で証明済みである
 具体的な `ProjectionSound` / `LSPCompatible` / `WalkAcyclic` /
 `LocalReplacementContract` / finite diagram law family についても、それぞれの
 lawfulness predicate と obstruction witness 不在を接続する exactness bridge は
-Lean で証明済みである。残る中心的な `future proof obligation` は、required
-`ArchitectureSignature` axis の抽象 bridge を具体 law family の axis valuation へ
-接続する theorem である。
+Lean で証明済みである。Signature 側では、selected required axes を concrete
+count で埋める `v1OfFiniteWithRequiredLawAxes` と concrete law family の統合 bridge
+に加え、projection / LSP の direct axis exactness も Lean で証明済みである
+([Issue #209](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/209))。
 
 したがって、現時点で Lean proved と呼べるのは、アーキテクチャ零曲率定理の
 structural core である。抽象 `LawFamily`、complete witness coverage、
 required axis exactness を前提に、`Lawful` と
-`RequiredAxesAvailableAndZero` を接続する bridge は証明済みである。一方、
-`ArchitectureSignatureV1.axisValue` を projection / LSP / walk / policy などの
-具体 law family valuation へ接続する theorem は、まだ `future proof obligation`
-として残る。
+`RequiredAxesAvailableAndZero` を接続する bridge は証明済みである。さらに
+`ArchitectureSignatureV1.axisValue` のうち projection / LSP の concrete axis は、
+`NoProjectionObstruction` / `NoLSPObstruction` へ直接接続済みである。一方、
+hasCycle や boundary / abstraction policy の direct axis theorem、および
+final theorem の scope 整理は個別 Issue の `future proof obligation` として残る。
 
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
@@ -858,6 +860,18 @@ complete witness coverage と required axis exactness を構成した。最終 t
 `RequiredSignatureAxesAvailableAndZero (ArchitectureLawModel.signatureOf X)` の同値を
 証明する。`nilpotencyIndex`, runtime / empirical metrics, numerical curvature は
 required zero axis に含めず、診断軸または future bridge work として分離した。
+
+Issue [#209](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/209)
+では、projection / LSP の concrete Signature axis exactness を公開 theorem として
+追加した。`projectionSoundnessViolation_axisExact` は
+`v1OfFiniteWithRequiredLawAxes` の `.projectionSoundnessViolation` が
+available-and-zero であることと `NoProjectionObstruction` を同値にする。zero count
+から graph-level obstruction absence へ戻す向きでは `ComponentUniverse.edgeClosed`
+を使う。`lspViolationCount_axisExact` は `.lspViolationCount` と
+`NoLSPObstruction` を同値にし、zero count から pair-level obstruction absence へ
+戻す向きでは same-abstraction pair coverage を明示的に仮定する。schema-level の
+`ArchitectureSignatureV1.axisMeasurementClass` は既定分類のまま残し、concrete
+entry point 上の proved witness axis theorem と区別する。
 
 Issue [#83](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/83)
 では、v1 後半戦の子 Issue #87, #84, #85, #86 の決定を統合し、

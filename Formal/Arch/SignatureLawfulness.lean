@@ -100,6 +100,85 @@ def RequiredSignatureAxesAvailableAndZero (sig : ArchitectureSignatureV1) : Prop
   ∀ axis, IsSelectedRequiredLawAxis axis ->
     ArchitectureSignatureV1.axisAvailableAndZero sig axis
 
+/--
+The projection-soundness Signature axis is exact for the concrete required-law
+entry point. The reverse direction from zero count to graph-level obstruction
+absence uses the `ComponentUniverse.edgeClosed` coverage assumption.
+-/
+theorem projectionSoundnessViolation_axisExact
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (U : ComponentUniverse G)
+    (boundaryAllowed abstractionAllowed : C -> C -> Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    ArchitectureSignatureV1.axisAvailableAndZero
+        (v1OfFiniteWithRequiredLawAxes G π GA O U.components
+          boundaryAllowed abstractionAllowed)
+        .projectionSoundnessViolation ↔
+      NoProjectionObstruction G π GA := by
+  constructor
+  · intro hAxis
+    have hZero :
+        projectionSoundnessViolation G π GA U.components = 0 := by
+      unfold ArchitectureSignatureV1.axisAvailableAndZero at hAxis
+      simpa [ArchitectureSignatureV1.axisValue,
+        v1OfFiniteWithRequiredLawAxes, AvailableAndZero] using hAxis
+    exact projectionSound_iff_noProjectionObstruction.mp
+      (projectionSound_of_projectionSoundnessViolation_eq_zero
+        U.edgeClosed hZero)
+  · intro hNoObstruction
+    have hSound : ProjectionSound G π GA :=
+      projectionSound_iff_noProjectionObstruction.mpr hNoObstruction
+    have hZero :
+        projectionSoundnessViolation G π GA U.components = 0 :=
+      projectionSoundnessViolation_eq_zero_of_projectionSound
+        U.components hSound
+    unfold ArchitectureSignatureV1.axisAvailableAndZero
+    simp [ArchitectureSignatureV1.axisValue, v1OfFiniteWithRequiredLawAxes,
+      AvailableAndZero, hZero]
+
+/--
+The LSP Signature axis is exact for the concrete required-law entry point. The
+reverse direction from zero count to implementation-pair obstruction absence
+uses explicit same-abstraction pair coverage.
+-/
+theorem lspViolationCount_axisExact
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel G.edge] [DecidableRel GA.edge]
+    (U : ComponentUniverse G)
+    (boundaryAllowed abstractionAllowed : C -> C -> Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed]
+    (hPairClosed :
+      ∀ {x y : C}, π.expose x = π.expose y ->
+        x ∈ U.components ∧ y ∈ U.components) :
+    ArchitectureSignatureV1.axisAvailableAndZero
+        (v1OfFiniteWithRequiredLawAxes G π GA O U.components
+          boundaryAllowed abstractionAllowed)
+        .lspViolationCount ↔
+      NoLSPObstruction π O := by
+  constructor
+  · intro hAxis
+    have hZero : lspViolationCount π O U.components = 0 := by
+      unfold ArchitectureSignatureV1.axisAvailableAndZero at hAxis
+      simpa [ArchitectureSignatureV1.axisValue,
+        v1OfFiniteWithRequiredLawAxes, AvailableAndZero] using hAxis
+    exact lspCompatible_iff_noLSPObstruction.mp
+      (lspCompatible_of_lspViolationCount_eq_zero hPairClosed hZero)
+  · intro hNoObstruction
+    have hLSP : LSPCompatible π O :=
+      lspCompatible_iff_noLSPObstruction.mpr hNoObstruction
+    have hZero : lspViolationCount π O U.components = 0 :=
+      lspViolationCount_eq_zero_of_lspCompatible U.components hLSP
+    unfold ArchitectureSignatureV1.axisAvailableAndZero
+    simp [ArchitectureSignatureV1.axisValue, v1OfFiniteWithRequiredLawAxes,
+      AvailableAndZero, hZero]
+
 /-- The witness subfamily represented by each Signature v1 axis. -/
 def architectureWitnessForAxis :
     ArchitectureSignatureV1Axis -> ArchitectureRequiredLawWitness -> Prop
