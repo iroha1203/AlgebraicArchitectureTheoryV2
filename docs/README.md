@@ -31,6 +31,7 @@
 - [Lean 定義・定理索引](formal/lean_theorem_index.md): 現在 Lean に存在する主要な定義・定理の索引。
 - [Lean module 階層整理方針](formal/lean_module_organization.md): `Formal/Arch` 以下の責務分類、移動判断基準、当面の配置ルール。
 - [アーキテクチャ零曲率定理 Lean 化設計](formal/flatness_obstruction_lean_design.md): 数学草案を Lean の generic witness-count kernel / law diagram / finite zero-count bridge へ落とす設計。
+- [runtimePropagation 設計](design/runtime_propagation_design.md): runtime metric を static structural core から分け、0/1 runtime graph 上の zero bridge は将来の数学的コア拡張、extractor completeness と incident 相関は実用・実証層として扱う設計。
 
 Lean で証明済みの構造的事実、定義のみの概念、将来の証明義務、実証仮説は混同しない。
 

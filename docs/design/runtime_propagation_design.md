@@ -63,12 +63,50 @@ Lean 側では
 `none` は未評価を意味し、runtime risk 0 ではない。`some 0` は、測定済みの runtime
 graph において runtime edge の到達範囲が空であることを表す。
 
+## Lean proof roadmap
+
+runtime metrics のうち、数学的コアとして Lean 証明を狙う範囲は、0/1
+`RuntimeDependencyGraph` が既に与えられている場合の zero metric bridge である。
+実コード extractor が完全な runtime graph を生成することや、runtime 指標が incident
+scope / repair cost を説明することは、この theorem の外に置く。
+
+最初の proof obligation は次である。
+
+```text
+runtimePropagationOfFinite runtime components = 0
+  <-> NoRuntimeExposureObstruction runtime components
+```
+
+`NoRuntimeExposureObstruction` は、測定 universe 内に非自明な runtime reachable cone
+を持つ component が存在しないこととして定義する。既存の
+`reachableConeSizeOfFinite` bridge を再利用できるよう、obstruction witness は
+`(source, target)` pair と `Reachable runtime source target`、および `source != target`
+を持つ形を優先する。
+
+Circuit Breaker など policy-aware な指標は、raw graph の theorem を置き換えず、
+別入力の graph に対する同型の theorem として追加する。
+
+```text
+unprotectedRuntimeExposureRadius unprotectedRuntimeGraph components = 0
+  <-> NoUnprotectedRuntimeExposureObstruction unprotectedRuntimeGraph components
+```
+
+blast radius は runtime edge を逆向きに読んだ派生値であるため、Lean 化する場合は
+extractor の暗黙処理ではなく、edge reversal function または reverse runtime graph を
+明示的な入力にする。その場合の theorem も、reverse graph 上の reachable cone zero
+bridge として扱う。
+
+この runtime theorem package は、static structural core の QED に直接混ぜない。
+まず `ArchitectureRuntimeZeroCurvaturePackage` のような独立 package として、
+runtime obstruction / runtime metric zero bridge を育てる。
+
 ## required-law 境界
 
-全体零曲率理論では、runtime / empirical 系の軸を selected required law axis へ
-追加しない。Lean 側の full law universe policy では `runtimePropagation` は
+static structural core の QED では、runtime / empirical 系の軸を selected required law
+axis へ追加しない。Lean 側の full law universe policy では `runtimePropagation` は
 `diagnosticAxis`、`relationComplexity` と `empiricalChangeCost` は `empiricalAxis`
-である。したがって、`ArchitectureLawful` や
+である。runtime metrics の zero bridge は、将来の数学的コア拡張として
+static package とは別に扱う。したがって、`ArchitectureLawful` や
 `RequiredSignatureAxesZero` の成立条件として `runtimePropagation = some 0` を
 要求しない。
 
@@ -76,7 +114,7 @@ graph において runtime edge の到達範囲が空であることを表す。
 
 | 対象 | zero-curvature theorem での分類 | Lean status |
 | --- | --- | --- |
-| `runtimePropagation` / `runtimeExposureRadius` | 0/1 `RuntimeDependencyGraph` 上で測定できる diagnostic axis。required zero-law axis ではない | `defined only` |
+| `runtimePropagation` / `runtimeExposureRadius` | 0/1 `RuntimeDependencyGraph` 上で測定できる diagnostic axis。static required zero-law axis ではない。zero metric と runtime obstruction absence の bridge は future proof obligation | `defined only` / `future proof obligation` |
 | `runtimeBlastRadius` | reverse reachability 由来の tooling / analysis metric。Lean core field には入れない | `empirical hypothesis` |
 | `runtimeFanout` | runtime graph 上の局所集中を測る analysis-derived metric。v1 field には追加しない | `empirical hypothesis` |
 | `circuitBreakerCoverageRatio` | measured runtime pair に対する policy-aware coverage 指標 | `empirical hypothesis` |

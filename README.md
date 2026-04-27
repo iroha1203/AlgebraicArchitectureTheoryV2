@@ -112,7 +112,9 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 `ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
 と `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` を指します。
 この QED は runtime metrics、empirical hypotheses、一般数値 curvature、
-実コード extractor の完全性を含みません。詳細は
+実コード extractor の完全性を含みません。runtime metrics と一般数値 curvature は
+数学的コアの将来拡張として別 package で Lean 化し、extractor completeness と
+empirical hypotheses は実用・実証層として分けます。詳細は
 [Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)と
 [証明義務と実証仮説](docs/proof_obligations.md)を参照してください。
 

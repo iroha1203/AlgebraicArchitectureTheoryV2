@@ -25,7 +25,7 @@ Lean 側の出力 schema は、次の 2 層に分ける。
 | `projectionSoundnessViolation` | projection bridge の measured soundness violation count として扱い、exact projection とは分離する | `defined only` / `proved` |
 | `lspViolationCount` | behavioral extension の measured pair count として扱う | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上の matrix bridge entry point から埋める | `defined only` / `proved` |
-| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上の exposure radius として計算する。blast radius は reverse reachability 由来の tooling / analysis metric として分ける | `defined only` / `empirical hypothesis` |
+| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上の exposure radius として計算する。zero metric と runtime obstruction absence の bridge は future proof obligation とし、blast radius は reverse graph を明示する別 bridge または tooling / analysis metric として分ける | `defined only` / `future proof obligation` / `empirical hypothesis` |
 | `relationComplexity` | workflow observation から作る empirical extension として扱う | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データ検証の目的変数として扱う | `empirical hypothesis` |
 
@@ -46,7 +46,7 @@ Lean 側の出力 schema は、次の 2 層に分ける。
   で証明済みだが、empirical cost interpretation は後続課題とする。
 - `projectionSoundnessViolation` は soundness-only metric であり、`ProjectionComplete`
   の欠如や exact projection gap は別 refinement として扱う。
-- runtime edge metadata, timeout budget, retry policy, circuit breaker coverage は extractor / empirical tooling 側に残す。
+- 0/1 runtime graph 上の zero bridge は将来の Lean proof target だが、runtime edge metadata, timeout budget, retry policy, circuit breaker coverage の抽出完全性は extractor / empirical tooling 側に残す。
 - `relationComplexity` と `empiricalChangeCost` は実証プロトコル上の観測・目的変数として扱う。
 
 これにより、v1 は「測定済みの 0」と「未評価」を混同せず、Lean proof と empirical validation の責務境界を保ったまま拡張できる。
