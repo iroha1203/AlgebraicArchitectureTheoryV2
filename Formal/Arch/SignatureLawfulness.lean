@@ -1008,6 +1008,65 @@ theorem matrixDiagnosticCorollaries_of_requiredSignatureAxesZero
     ((architectureLawful_iff_requiredSignatureAxesZero X).mpr hZero)
 
 /--
+The full proved zero-curvature theorem package for the current law-universe
+policy.
+
+The package contains the final selected required-axis theorem together with the
+matrix diagnostic corollaries that follow from it. Runtime, empirical, and
+general numerical-curvature axes remain outside this proved package.
+-/
+noncomputable def ArchitectureZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed] :
+    Prop :=
+  RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X) ∧
+  MatrixDiagnosticCorollaries X
+
+/--
+Selected required architecture lawfulness gives the full proved theorem package.
+-/
+theorem architectureZeroCurvatureTheoremPackage_of_architectureLawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (hLawful : ArchitectureLawful X) :
+    ArchitectureZeroCurvatureTheoremPackage X := by
+  exact ⟨(architectureLawful_iff_requiredSignatureAxesZero X).mp hLawful,
+    matrixDiagnosticCorollaries_of_architectureLawful X hLawful⟩
+
+/--
+The full proved theorem package entails the selected required architecture laws.
+-/
+theorem architectureLawful_of_architectureZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (hPackage : ArchitectureZeroCurvatureTheoremPackage X) :
+    ArchitectureLawful X := by
+  exact (architectureLawful_iff_requiredSignatureAxesZero X).mpr hPackage.1
+
+/--
+Full proved zero-curvature theorem package for the current law-universe policy.
+-/
+theorem architectureLawful_iff_architectureZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed] :
+    ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X := by
+  constructor
+  · exact architectureZeroCurvatureTheoremPackage_of_architectureLawful X
+  · exact architectureLawful_of_architectureZeroCurvatureTheoremPackage X
+
+/--
 A local replacement contract is a derived corollary for the selected
 projection and LSP Signature axes.
 -/
@@ -1069,6 +1128,25 @@ theorem requiredSignatureAxesZero_of_localReplacementContract
     (hAbstraction : AbstractionPolicySound X.G X.abstractionAllowed) :
     RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X) := by
   exact (architectureLawful_iff_requiredSignatureAxesZero X).mp
+    (architectureLawful_of_localReplacementContract hWalk hLocal hBoundary
+      hAbstraction)
+
+/--
+Local replacement plus the remaining static laws gives the full proved
+zero-curvature theorem package.
+-/
+theorem architectureZeroCurvatureTheoremPackage_of_localReplacementContract
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (hWalk : WalkAcyclic X.G)
+    (hLocal : LocalReplacementContract X.G X.π X.GA X.O)
+    (hBoundary : BoundaryPolicySound X.G X.boundaryAllowed)
+    (hAbstraction : AbstractionPolicySound X.G X.abstractionAllowed) :
+    ArchitectureZeroCurvatureTheoremPackage X := by
+  exact architectureZeroCurvatureTheoremPackage_of_architectureLawful X
     (architectureLawful_of_localReplacementContract hWalk hLocal hBoundary
       hAbstraction)
 
