@@ -18,6 +18,8 @@ projection / LSP 系の derived corollary、Event Sourcing / Saga の state-effe
 独立した diagram-law bridge、`nilpotencyIndex`, `rho(A)`, `runtimePropagation` は
 診断軸、`relationComplexity`, `empiricalChangeCost` は empirical axis として扱う。
 したがって、これらを `some 0` の required zero-axis として final theorem に混ぜない。
+ただし `runtimePropagation` は、0/1 runtime graph が与えられた後の zero metric /
+obstruction absence bridge として、将来の数学的コア拡張にできる。
 
 ## 分類表
 
