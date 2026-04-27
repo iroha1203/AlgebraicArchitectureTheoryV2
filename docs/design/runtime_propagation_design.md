@@ -63,6 +63,31 @@ Lean 側では
 `none` は未評価を意味し、runtime risk 0 ではない。`some 0` は、測定済みの runtime
 graph において runtime edge の到達範囲が空であることを表す。
 
+## required-law 境界
+
+全体零曲率理論では、runtime / empirical 系の軸を selected required law axis へ
+追加しない。Lean 側の full law universe policy では `runtimePropagation` は
+`diagnosticAxis`、`relationComplexity` と `empiricalChangeCost` は `empiricalAxis`
+である。したがって、`ArchitectureLawful` や
+`RequiredSignatureAxesZero` の成立条件として `runtimePropagation = some 0` を
+要求しない。
+
+境界は次のように読む。
+
+| 対象 | zero-curvature theorem での分類 | Lean status |
+| --- | --- | --- |
+| `runtimePropagation` / `runtimeExposureRadius` | 0/1 `RuntimeDependencyGraph` 上で測定できる diagnostic axis。required zero-law axis ではない | `defined only` |
+| `runtimeBlastRadius` | reverse reachability 由来の tooling / analysis metric。Lean core field には入れない | `empirical hypothesis` |
+| `runtimeFanout` | runtime graph 上の局所集中を測る analysis-derived metric。v1 field には追加しない | `empirical hypothesis` |
+| `circuitBreakerCoverageRatio` | measured runtime pair に対する policy-aware coverage 指標 | `empirical hypothesis` |
+| `unprotectedRuntimeExposureRadius`, `unprotectedRuntimeBlastRadius` | coverage policy を反映した派生 runtime metric | `empirical hypothesis` |
+| incident scope / repair time / hotfix size との関係 | H5 empirical protocol で検証する反証可能な仮説 | `empirical hypothesis` |
+
+この分類により、runtime graph が未抽出で `runtimePropagation = none` の場合でも、
+selected required law theorem の証明義務は増えない。runtime evidence がある場合は
+diagnostic として `some n` を記録できるが、`some 0` は「測定済み 0」であって
+全体 lawfulness の追加条件ではない。
+
 ## Extractor 境界
 
 extractor / empirical tooling 側は、次の情報を保持する。

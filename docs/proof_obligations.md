@@ -148,6 +148,18 @@ diagnostic corollaries を得る。これは `nilpotencyIndex = some k` を
 available-and-zero axis と読む主張ではなく、selected required lawfulness から
 有限 adjacency matrix diagnostics が従うという bridge である。
 
+Issue [#225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)
+では、#222 の policy に従い、runtime / empirical 系の required-law 境界を
+明文化した。`runtimePropagation` は 0/1 `RuntimeDependencyGraph` 上の
+outgoing exposure radius として計算できる diagnostic axis であり、
+`ArchitectureLawful` や `RequiredSignatureAxesZero` の required zero-axis ではない。
+`runtimeBlastRadius` は reverse reachability 由来の tooling / analysis metric、
+Circuit Breaker coverage と `unprotectedRuntimeExposureRadius` /
+`unprotectedRuntimeBlastRadius` は policy-aware empirical extension、
+incident scope / repair time / hotfix size との関係は H5 empirical hypothesis として
+扱う。未抽出 `none`、測定済み `some 0`、risk 0 の解釈は区別し、runtime / empirical
+axis の未評価は Lean theorem packaging のブロッカーにしない。
+
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
 それだけでは中心定理の証明とは呼ばない。強い Lean proof は、
@@ -1054,6 +1066,14 @@ Issue [#126](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1
 H5 empirical protocol として固定した。`runtimeFanout` は v1 extension axis へ追加せず、
 analysis-derived metric として dataset / analysis metadata 側に保持する。
 詳細は [runtimePropagation 設計](design/runtime_propagation_design.md) に分離する。
+
+Issue [#225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)
+では、これらの runtime / empirical 軸が selected required law theorem の追加前提では
+ないことを再確認した。Lean theorem として扱う最小範囲は
+`runtimePropagationOfFinite` と `v1OfFiniteWithRuntimePropagation` の定義、および
+full law universe policy 上で `runtimePropagation` が `diagnosticAxis` に分類される
+ことまでである。blast radius、coverage policy、incident cost との関係は
+empirical hypothesis であり、#226 の theorem packaging をブロックしない。
 
 Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
 では、projection bridge の最小 Lean 定義を追加した。`projectionSoundnessViolation`
