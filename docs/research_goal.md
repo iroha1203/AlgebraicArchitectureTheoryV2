@@ -19,6 +19,9 @@
 Lean 側では、この主張を最初から数値的な曲率として定義しない。
 まず witness 型、bad predicate、測定候補 list、violation count からなる
 generic witness-count kernel と、有限測定 universe 上の零カウント橋渡しとして育てる。
+現在の Lean proved package では、selected required axes の零性と
+matrix diagnostics を `ArchitectureZeroCurvatureTheoremPackage` として束ねる。
+runtime / empirical / 一般数値 curvature は、この package の外側に残す。
 
 この中心定理候補の上で、より広い最終ゴールは次である。
 

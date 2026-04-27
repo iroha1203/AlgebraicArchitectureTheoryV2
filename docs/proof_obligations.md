@@ -108,7 +108,7 @@ required law, derived corollary, diagnostic axis, empirical axis を区別する
 混同しない。`nilpotencyIndex = none` も未評価または非 nilpotent を表し、risk 0
 とは読まない。
 
-後続 Issue の依存順は、#222 の policy を前提にする。まず
+零曲率 theorem 群は、#222 の policy を前提に次の順で整理した。まず
 [#223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/223) で
 LocalReplacement / state-effect laws を derived corollary として Signature 統合 theorem
 へ接続する条件を整理し、次に
@@ -118,7 +118,7 @@ evidence の境界は
 [#225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225) で
 扱い、最後に
 [#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226) で
-full theorem packaging と theorem index を完成する。
+full theorem packaging と theorem index を完成した。
 
 Issue [#223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/223)
 では、#222 の policy に従い、LocalReplacement と state-effect laws を required
@@ -159,6 +159,19 @@ Circuit Breaker coverage と `unprotectedRuntimeExposureRadius` /
 incident scope / repair time / hotfix size との関係は H5 empirical hypothesis として
 扱う。未抽出 `none`、測定済み `some 0`、risk 0 の解釈は区別し、runtime / empirical
 axis の未評価は Lean theorem packaging のブロッカーにしない。
+
+Issue [#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226)
+では、#222 から #225 までの方針と bridge を theorem package として束ねた。
+Lean では `ArchitectureZeroCurvatureTheoremPackage` を追加し、
+`RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` と
+`MatrixDiagnosticCorollaries X` を full proved package として読む。
+`architectureLawful_iff_architectureZeroCurvatureTheoremPackage` により、
+current law-universe policy ではこの package と `ArchitectureLawful X` が同値である。
+LocalReplacement から package へ進む入口は
+`architectureZeroCurvatureTheoremPackage_of_localReplacementContract` である。
+runtime / empirical / 一般数値 curvature はこの package に含めず、diagnostic /
+empirical boundary として残す。Lean status は theorem package の同値が `proved`、
+runtime / empirical boundary が `defined only` / `empirical hypothesis` である。
 
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、

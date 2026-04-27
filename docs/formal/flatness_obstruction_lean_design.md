@@ -309,6 +309,16 @@ incident scope / repair time / hotfix size との関係は empirical hypothesis 
 `runtimePropagation = some 0` や coverage ratio 0/1 条件を追加しない。未抽出の
 `none`、測定済みの `some 0`、risk 0 の主張は常に区別する。
 
+Issue [#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226)
+では、全体 theorem package を `ArchitectureZeroCurvatureTheoremPackage` として
+追加した。この package は
+`RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` と
+`MatrixDiagnosticCorollaries X` を束ねる。Lean theorem
+`architectureLawful_iff_architectureZeroCurvatureTheoremPackage` は、current
+law-universe policy のもとで `ArchitectureLawful X` とこの package が同値で
+あることを示す。runtime / empirical / 一般数値 curvature は package に含めず、
+diagnostic / empirical boundary として残す。
+
 complete coverage は単なる強い仮定として放置しない。
 有限 component universe から component pair を列挙する、有限 diagram universe から
 required diagram を列挙するなど、一部の law family では `CoversRequired` を実際に
@@ -484,6 +494,13 @@ theorem を置き換えず、追加の axis または派生評価として接続
   `runtimeBlastRadius`, Circuit Breaker coverage, policy-aware runtime metrics,
   incident / repair cost との関係は tooling / empirical protocol 側に残す,
   [Issue #225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)。
+- `defined only` / `proved`: full theorem package を
+  `ArchitectureZeroCurvatureTheoremPackage` として追加し、current law-universe
+  policy のもとで `ArchitectureLawful X` と theorem package が同値であることを
+  `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` で証明した。
+  LocalReplacement から package へ進む derived bridge も
+  `architectureZeroCurvatureTheoremPackage_of_localReplacementContract` で証明済みである,
+  [Issue #226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226)。
 - `defined only`: witness family をまとめる signature schema と
   `ArchitectureSignatureV1` axis measurement classification。
 - `future design` / `empirical hypothesis`: 一般の数値 curvature metric を定義する
