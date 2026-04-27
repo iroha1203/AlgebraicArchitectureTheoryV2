@@ -21,6 +21,16 @@
 LSP violation、状態遷移 law の破れ、effect leakage などは、
 それぞれの witness family として扱う。
 
+現在 Lean で **static structural core の QED** と呼ぶ範囲は、
+current law-universe policy 下の
+`ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
+および `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` である。
+この required law は closed-walk acyclicity、projection soundness、LSP compatibility、
+boundary policy soundness、abstraction policy soundness の五つに限る。
+state/effect laws は derived / separate bridge として扱い、runtime metrics、
+empirical hypotheses、一般数値 curvature、実コード extractor の完全性は
+この QED に含めない。
+
 この定理候補を支える基本主張は次である。
 
 > 設計原則は、アーキテクチャ不変量を保存・改善する変換クラスを誘導する。

@@ -105,10 +105,16 @@ Lean では、定義が明確で全称命題として扱える構造的事実を
 - `ArchitectureSignature` と componentwise risk order
 - signature v0 の finite-list executable metrics（有限リスト上で実行可能な指標）
 - executable metrics を `Walk` / `Reachable` に接続する proof-carrying finite component universe（証明付き有限測定 universe）
+- zero-curvature theorem package の static structural core
 
-アーキテクチャ零曲率定理に向けた generic witness-count kernel は、現時点では
-[Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)として整理しており、
-Lean 実装は今後の proof obligation として扱います。
+アーキテクチャ零曲率定理について、current law-universe policy 下の
+**static structural core の QED** は Lean で証明済みです。具体的には、
+`ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
+と `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` を指します。
+この QED は runtime metrics、empirical hypotheses、一般数値 curvature、
+実コード extractor の完全性を含みません。詳細は
+[Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)と
+[証明義務と実証仮説](docs/proof_obligations.md)を参照してください。
 
 ## 詳細ドキュメント
 

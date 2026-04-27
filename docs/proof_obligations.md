@@ -79,7 +79,8 @@ axis exactness も Lean で証明済みである
 [Issue #211](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/211))。
 
 したがって、現時点で Lean proved と呼べるのは、アーキテクチャ零曲率定理の
-structural core である。抽象 `LawFamily`、complete witness coverage、
+structural core である。今後この到達点を **static structural core の QED** と呼ぶ。
+抽象 `LawFamily`、complete witness coverage、
 required axis exactness を前提に、`Lawful` と
 `RequiredAxesAvailableAndZero` を接続する bridge は証明済みである。さらに
 `ArchitectureSignatureV1.axisValue` のうち projection / LSP の concrete axis は、
@@ -87,6 +88,9 @@ required axis exactness を前提に、`Lawful` と
 finite `ComponentUniverse` の coverage 下で `WalkAcyclic` および closed-walk
 obstruction absence へ直接接続済みである。boundary / abstraction policy axis も
 finite edge coverage 下で policy soundness へ接続済みである。
+Signature 統合後の QED の中心命題は
+`ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
+および `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` である。
 
 Issue [#222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/222)
 では、full law universe 候補を次の policy に固定した。Lean では
@@ -118,7 +122,7 @@ evidence の境界は
 [#225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225) で
 扱い、最後に
 [#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226) で
-full theorem packaging と theorem index を完成した。
+static structural core の theorem packaging と theorem index を完成した。
 
 Issue [#223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/223)
 では、#222 の policy に従い、LocalReplacement と state-effect laws を required
@@ -164,7 +168,7 @@ Issue [#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 では、#222 から #225 までの方針と bridge を theorem package として束ねた。
 Lean では `ArchitectureZeroCurvatureTheoremPackage` を追加し、
 `RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` と
-`MatrixDiagnosticCorollaries X` を full proved package として読む。
+`MatrixDiagnosticCorollaries X` を static structural core の QED package として読む。
 `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` により、
 current law-universe policy ではこの package と `ArchitectureLawful X` が同値である。
 LocalReplacement から package へ進む入口は
@@ -980,6 +984,13 @@ diagnostics、empirical axes を同じ候補表に載せる。`ArchitectureLawCa
 `relationComplexity`, `empiricalChangeCost` は empirical axis である。
 `some k` として得られる `nilpotencyIndex` は index 値であり、required zero-axis
 ではない。
+
+この #212 / #226 の到達点を QED と呼ぶ場合は、
+**static structural core の QED** と明記する。これは
+`ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
+と `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` の範囲を指し、
+runtime / empirical metrics、一般数値 curvature、実コード extractor の完全性を
+含まない。
 
 Issue [#224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224)
 では、この境界を保ったまま `MatrixDiagnosticCorollaries` を追加した。

@@ -19,9 +19,14 @@
 Lean 側では、この主張を最初から数値的な曲率として定義しない。
 まず witness 型、bad predicate、測定候補 list、violation count からなる
 generic witness-count kernel と、有限測定 universe 上の零カウント橋渡しとして育てる。
-現在の Lean proved package では、selected required axes の零性と
+現在の Lean proved package では、current law-universe policy 下の
+**static structural core の QED** として、selected required axes の零性と
 matrix diagnostics を `ArchitectureZeroCurvatureTheoremPackage` として束ねる。
-runtime / empirical / 一般数値 curvature は、この package の外側に残す。
+この QED が指す中心命題は
+`ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
+および `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` である。
+runtime / empirical / 一般数値 curvature、実コード extractor の完全性は、
+この package の外側に残す。
 
 この中心定理候補の上で、より広い最終ゴールは次である。
 
