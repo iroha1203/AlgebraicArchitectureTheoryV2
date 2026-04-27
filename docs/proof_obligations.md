@@ -157,12 +157,21 @@ Issue [#225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 明文化した。`runtimePropagation` は 0/1 `RuntimeDependencyGraph` 上の
 outgoing exposure radius として計算できる diagnostic axis であり、
 `ArchitectureLawful` や `RequiredSignatureAxesZero` の required zero-axis ではない。
-`runtimeBlastRadius` は reverse reachability 由来の tooling / analysis metric、
-Circuit Breaker coverage と `unprotectedRuntimeExposureRadius` /
-`unprotectedRuntimeBlastRadius` は policy-aware empirical extension、
-incident scope / repair time / hotfix size との関係は H5 empirical hypothesis として
-扱う。未抽出 `none`、測定済み `some 0`、risk 0 の解釈は区別し、runtime / empirical
-axis の未評価は Lean theorem packaging のブロッカーにしない。
+一方で、0/1 runtime graph が与えられた後の
+`runtimePropagationOfFinite = 0 <-> NoRuntimeExposureObstruction` 型の bridge は、
+将来の数学的コア拡張として Lean 証明対象にできる。この obstruction は、まず
+`reachesWithin runtime components components.length` ベースの measured / bounded
+obstruction として定義し、`some 0` は「測定 universe 内の `source != target` な
+runtime reachable cone が空」と読む。semantic `Reachable` ベースで述べる場合は、
+`ComponentUniverse` coverage / edge-closure 下で bounded search と `Reachable` を接続する
+bridge が必要である。`runtimeBlastRadius` は reverse runtime graph を明示的に与える
+場合の別 theorem 候補、Circuit Breaker coverage と
+`unprotectedRuntimeExposureRadius` / `unprotectedRuntimeBlastRadius` は policy-aware
+runtime package の候補として扱う。runtime edge metadata から 0/1 graph を作る
+extractor completeness と、incident scope / repair time / hotfix size との関係は
+H5 empirical hypothesis として分離する。未抽出 `none`、測定済み `some 0`、risk 0 の
+解釈は区別し、runtime / empirical axis の未評価は Lean theorem packaging のブロッカーに
+しない。
 
 Issue [#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226)
 では、#222 から #225 までの方針と bridge を theorem package として束ねた。
@@ -173,9 +182,10 @@ Lean では `ArchitectureZeroCurvatureTheoremPackage` を追加し、
 current law-universe policy ではこの package と `ArchitectureLawful X` が同値である。
 LocalReplacement から package へ進む入口は
 `architectureZeroCurvatureTheoremPackage_of_localReplacementContract` である。
-runtime / empirical / 一般数値 curvature はこの package に含めず、diagnostic /
-empirical boundary として残す。Lean status は theorem package の同値が `proved`、
-runtime / empirical boundary が `defined only` / `empirical hypothesis` である。
+runtime / empirical / 一般数値 curvature はこの package に含めず、別 package または
+実証層として残す。Lean status は theorem package の同値が `proved`、runtime metric
+と一般数値 curvature の zero bridge が `future proof obligation`、extractor
+completeness と empirical hypotheses が `empirical hypothesis` である。
 
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
@@ -221,12 +231,14 @@ Issue [#223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 `effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction` で証明済みである。
 
 Issue [#194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)
-では、数値的 curvature metric と empirical hypothesis を Lean proved core から
-派生層へ分離する。`Curv_A = Sem_A(p) - Sem_A(q)` 型の一般 metric は、
-観測値上の距離・差分・重み・集約規則と validation protocol が固まるまで
-`future design` / `empirical hypothesis` として扱う。これは obstruction witness
-zero-count theorem の代替ではなく、必要になった場合に追加 axis または派生評価として
-接続する。
+では、数値的 curvature metric を数学的コアの拡張として扱う。ただし、Lean theorem
+として狙うのは `curvature = 0 <-> DiagramCommutes` と
+`totalCurvature = 0 <-> no numerical curvature obstruction` の bridge であり、
+変更コスト・障害率・レビュー負荷との相関や重みの calibration は empirical
+hypothesis として分離する。`Curv_A = Sem_A(p) - Sem_A(q)` 型の一般 metric は、
+観測値上の zero-separating distance、非負集約、Signature axis への載せ方を固定してから
+`future proof obligation` として Lean 化する。これは obstruction witness zero-count
+theorem の代替ではなく、追加 axis または派生評価として接続する。
 
 ## 基本 convention
 
@@ -1093,11 +1105,18 @@ analysis-derived metric として dataset / analysis metadata 側に保持する
 
 Issue [#225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)
 では、これらの runtime / empirical 軸が selected required law theorem の追加前提では
-ないことを再確認した。Lean theorem として扱う最小範囲は
+ないことを再確認した。現時点で Lean に存在する最小範囲は
 `runtimePropagationOfFinite` と `v1OfFiniteWithRuntimePropagation` の定義、および
 full law universe policy 上で `runtimePropagation` が `diagnosticAxis` に分類される
-ことまでである。blast radius、coverage policy、incident cost との関係は
-empirical hypothesis であり、#226 の theorem packaging をブロックしない。
+ことまでである。次の Lean proof target は、0/1 graph 上の runtime exposure zero と
+runtime obstruction absence の bridge である。この obstruction は executable metric と
+同じ bounded search に合わせ、`reachesWithin G components components.length` ベースの
+measured obstruction として始める。semantic `Reachable` 版へ上げる場合は、
+`ComponentUniverse` coverage / edge-closure 下の `reachesWithin` / `Reachable` bridge を
+明示的に使う。blast radius、coverage policy を数学的に扱う場合も、reverse graph や
+unprotected graph を明示的な入力にした別 bridge として追加する。extractor completeness と
+incident cost との相関は empirical hypothesis であり、#226 の theorem packaging を
+ブロックしない。
 
 Issue [#62](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/62)
 では、projection bridge の最小 Lean 定義を追加した。`projectionSoundnessViolation`
@@ -1160,8 +1179,8 @@ Lean status の区分:
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み。`some k` は index 値であり、required zero-axis ではない | `defined only` / `proved` |
 | `rho(A)` | 行列解析上の伝播増幅指標として扱う。finite DAG では 0、finite closed walk では正になる bridge を証明済み | `proved` for `DAG -> rho(A)=0` / `proved` for cycle positivity / `empirical hypothesis` |
-| `numericCurvature` | 一般の観測値差分 `Sem_A(p) - Sem_A(q)` 型 metric は、観測値上の距離・重み・集約規則が固まるまで Lean core へ入れない派生候補 | `future design` / `empirical hypothesis` |
-| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime exposure radius として計算する。既存名は `runtimeExposureRadius` の互換名であり、blast radius は reverse reachability 由来の tooling / analysis metric として分ける | `defined only` / `empirical hypothesis` |
+| `numericCurvature` | 一般の観測値差分 `Sem_A(p) - Sem_A(q)` 型 metric は、zero-separating distance と非負集約を固定した上で `curvature = 0 <-> DiagramCommutes` bridge として Lean 化する。重み calibration や現実コストとの相関は empirical 側に残す | `future proof obligation` / `empirical hypothesis` |
+| `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime exposure radius として計算する。既存名は `runtimeExposureRadius` の互換名であり、zero metric と runtime obstruction absence の bridge は `reachesWithin` ベースの measured obstruction から始める future proof obligation。blast radius は reverse graph を明示する別 bridge または tooling / analysis metric として分ける | `defined only` / `future proof obligation` / `empirical hypothesis` |
 | `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データで検証する目的変数 | `empirical hypothesis` |
 

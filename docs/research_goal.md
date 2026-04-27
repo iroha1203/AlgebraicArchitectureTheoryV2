@@ -25,8 +25,12 @@ matrix diagnostics を `ArchitectureZeroCurvatureTheoremPackage` として束ね
 この QED が指す中心命題は
 `ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
 および `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` である。
-runtime / empirical / 一般数値 curvature、実コード extractor の完全性は、
-この package の外側に残す。
+runtime metrics と一般数値 curvature は、この package には含めないが、
+数学的コアの将来拡張として Lean 証明対象にできる。runtime 側では 0/1
+`RuntimeDependencyGraph` が与えられた後の zero metric / obstruction absence bridge、
+数値 curvature 側では `curvature = 0 <-> DiagramCommutes` bridge を狙う。
+一方、実コード extractor の完全性と empirical hypotheses は、中心定理そのものではなく、
+実用・検証・実証研究の層に残す。
 
 この中心定理候補の上で、より広い最終ゴールは次である。
 

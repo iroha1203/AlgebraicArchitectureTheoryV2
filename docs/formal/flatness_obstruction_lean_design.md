@@ -360,28 +360,95 @@ universe を cover する。
    `defined only`。`StateTransitionExpr`, `EffectBoundaryExpr` は `defined only`、
    各 finite diagram family の `DiagramLawful <-> NoDiagramObstruction` bridge は
    `proved`。
-11. 観測値に距離・重み・半環などを入れる必要が出た時点で、数値的 curvature metric を
-   派生定義として追加する。現時点では Issue
-   [#194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)
-   の設計整理として、Lean proved core から分離しておく。
+12. runtime metrics と一般数値 curvature は、実コード extractor や empirical
+   hypothesis とは分け、数学的コアの拡張として Lean 化する。まず runtime 側は
+   0/1 `RuntimeDependencyGraph` 上の obstruction / zero metric bridge、数値 curvature
+   側は `curvature = 0 <-> commutativity` bridge を証明対象にする。
 
 ## 数値 curvature metric の派生層
 
 数値 curvature metric は、zero-count bridge や required obstruction witness 不在の
-代替ではなく、それらの上に載る派生的な測定層である。`Formal/Arch/Curvature.lean`
+代替ではなく、それらの上に載る数学的コアの拡張である。ここで Lean theorem として
+狙うのは、現実の変更コストとの相関ではなく、数値的な 0 が diagram commutativity
+または obstruction absence と一致するという bridge である。`Formal/Arch/Curvature.lean`
 のような module は、少なくとも次の追加構造を固定してから導入する。
 
 - 観測値 `Obs` 上の差分・距離・同値など、diagram 非可換性を数値化する構造。
-- finite measured universe から数値を集約する方法。
+- `d x y = 0 <-> x = y` のような zero-separation law。
+- finite measured universe から非負値を集約する方法。`Nat` または `NNReal` のように、
+  総和が 0 なら各項が 0 である構造を優先する。
 - `none`、測定済み 0、測定済み非零を区別する Signature axis への載せ方。
-- 数値と変更コスト・障害率・レビュー負荷の関係を検証する empirical protocol。
+- 数値と変更コスト・障害率・レビュー負荷の関係を検証する empirical protocol。ただし
+  これは数学的コアの theorem ではなく、実証層で扱う。
 
-このため、`Curv_A = Sem_A(p) - Sem_A(q)` 型の一般 metric は現時点では
-`future proof obligation` ではなく `future design` / `empirical hypothesis` として
-扱う。Lean core の `proved` 対象は、有限 witness list、required diagram、
-lawfulness predicate、obstruction witness 不在、required axis zero の構造的 bridge
-である。数値 metric が必要になった場合も、既存の obstruction witness zero-count
-theorem を置き換えず、追加の axis または派生評価として接続する。
+最初の proof target は次である。
+
+```text
+curvature d p q = 0
+  <-> DiagramCommutes semantics p q
+  <-> no numerical curvature obstruction for (p, q)
+```
+
+finite universe 上の集約では、次を bridge theorem とする。
+
+```text
+totalCurvature measuredDiagrams = 0
+  <-> every measured diagram has curvature 0
+  <-> no measured numerical curvature obstruction
+```
+
+したがって、一般数値 curvature は `future proof obligation` として Lean 化できる。
+一方、curvature の大きさと変更コスト・障害率・レビュー負荷の関係、重みの calibration、
+現実 repository からの値の抽出完全性は `empirical hypothesis` / tooling validation
+として数学的コアから分離する。数値 metric が入っても、既存の obstruction witness
+zero-count theorem を置き換えず、追加の axis または派生評価として接続する。
+
+## runtime metrics の数学的コア拡張
+
+runtime metrics についても、Lean theorem と empirical / extractor 側の主張を分ける。
+数学的コアへ入れる対象は、0/1 `RuntimeDependencyGraph` が既に与えられたときの
+runtime obstruction と metric zero の bridge である。runtime edge metadata から
+0/1 graph を抽出する完全性、Circuit Breaker coverage が incident scope や repair time
+を下げるという主張は theorem 本体に含めない。
+
+最小 proof target は次である。
+
+```text
+runtimePropagationOfFinite runtime components = 0
+  <-> NoRuntimeExposureObstruction runtime components
+```
+
+ここで `NoRuntimeExposureObstruction` は、まず
+`reachesWithin runtime components components.length` ベースの measured / bounded
+obstruction として定義する。つまり、測定 universe 内の `source != target` な
+runtime reachable cone が空であることを `some 0` の意味にする。semantic
+`Reachable runtime source target` ベースの theorem として述べたい場合は、
+`ComponentUniverse` coverage / edge-closure の下で `reachesWithin` と `Reachable` を
+接続する bridge theorem を追加または再利用する。より policy-aware な拡張では、
+raw graph とは別に `unprotectedRuntimeGraph` を入力として受け取り、同じ形の theorem
+を証明する。
+
+```text
+unprotectedRuntimeExposureRadius unprotectedRuntimeGraph components = 0
+  <-> NoUnprotectedRuntimeExposureObstruction unprotectedRuntimeGraph components
+```
+
+必要なら blast 側も、reverse runtime graph を明示的な入力として受け取る別 theorem
+にする。reverse graph を extractor / tooling の暗黙処理にせず、Lean 側では
+`RuntimeDependencyGraph` と `ReverseRuntimeDependencyGraph` または edge reversal
+function の性質として扱う。
+
+runtime theorem package は、static structural core の theorem package へ直接混ぜず、
+まず次のような独立 package として育てる。
+
+```text
+ArchitectureRuntimeZeroCurvaturePackage
+  = RequiredRuntimeAxesZero runtimeSignature
+  ∧ RuntimeDiagnosticCorollaries
+```
+
+将来、static structural core、runtime core、numerical curvature core をまとめる場合も、
+extractor completeness と empirical hypotheses は含めない。
 
 ## 証明対象と非対象
 
@@ -491,12 +558,13 @@ theorem を置き換えず、追加の axis または派生評価として接続
   [Issue #224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224)。
   `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
   executable index であり、`RequiredAxesAvailableAndZero` の zero-axis ではない。
-- `defined only` / `empirical hypothesis`: runtime / empirical 系の required-law
+- `defined only` / `future proof obligation` / `empirical hypothesis`: runtime / empirical 系の required-law
   境界を固定する。`runtimePropagation` は 0/1 `RuntimeDependencyGraph` 上の
   exposure radius として定義済みの diagnostic axis であり、
   `ArchitectureLawful` や `RequiredSignatureAxesZero` の required zero-axis ではない。
-  `runtimeBlastRadius`, Circuit Breaker coverage, policy-aware runtime metrics,
-  incident / repair cost との関係は tooling / empirical protocol 側に残す,
+  0/1 graph 上の runtime zero bridge は future proof obligation とし、
+  extractor completeness と incident / repair cost との関係は tooling / empirical
+  protocol 側に残す,
   [Issue #225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)。
 - `defined only` / `proved`: static structural core の QED を読むための theorem package を
   `ArchitectureZeroCurvatureTheoremPackage` として追加し、current law-universe
@@ -507,9 +575,16 @@ theorem を置き換えず、追加の axis または派生評価として接続
   [Issue #226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226)。
 - `defined only`: witness family をまとめる signature schema と
   `ArchitectureSignatureV1` axis measurement classification。
-- `future design` / `empirical hypothesis`: 一般の数値 curvature metric を定義する
-  観測値上の追加構造、集約規則、validation protocol,
+- `future proof obligation`: 一般の数値 curvature metric について、観測値上の
+  zero-separating distance と非負集約を前提に
+  `curvature = 0 <-> DiagramCommutes` および
+  `totalCurvature = 0 <-> no numerical curvature obstruction` を証明する bridge,
   [Issue #194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)。
+- `future proof obligation`: 0/1 `RuntimeDependencyGraph` が与えられたとき、
+  runtime exposure / policy-aware runtime exposure の zero metric と runtime
+  obstruction absence を接続する bridge。
+- `empirical hypothesis`: 数値 curvature や runtime metrics と変更コスト・障害率・
+  レビュー負荷・incident scope の相関。
 - `empirical hypothesis`: obstruction count と変更コスト・障害率・レビュー負荷の相関。
 
 次は初期 Lean proof の対象にしない。
@@ -518,6 +593,7 @@ theorem を置き換えず、追加の axis または派生評価として接続
 - 変更波及や障害伝播が spectral mass によって支配されるという実証的主張。
 - runtime exposure / blast radius や Circuit Breaker coverage が incident scope,
   repair time, hotfix size を支配するという実証的主張。
-- 一般の観測値に対する `Sem_A(p) - Sem_A(q)` 型の数値 curvature。
+- 実コード extractor が完全な `RuntimeDependencyGraph` や numerical curvature input を
+  生成するという tooling correctness claim。
 
 これらは、必要な追加構造と empirical protocol が固まった後に、別 Issue として扱う。

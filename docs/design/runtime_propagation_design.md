@@ -61,14 +61,59 @@ Lean 側では
   のままにする。
 
 `none` は未評価を意味し、runtime risk 0 ではない。`some 0` は、測定済みの runtime
-graph において runtime edge の到達範囲が空であることを表す。
+graph において、測定 universe 内の `source != target` な runtime reachable cone が
+空であることを表す。これは単に「runtime edge がない」と読むより弱く、自己辺や
+測定 universe 外の runtime evidence とは区別する。
+
+## Lean proof roadmap
+
+runtime metrics のうち、数学的コアとして Lean 証明を狙う範囲は、0/1
+`RuntimeDependencyGraph` が既に与えられている場合の zero metric bridge である。
+実コード extractor が完全な runtime graph を生成することや、runtime 指標が incident
+scope / repair cost を説明することは、この theorem の外に置く。
+
+最初の proof obligation は次である。
+
+```text
+runtimePropagationOfFinite runtime components = 0
+  <-> NoRuntimeExposureObstruction runtime components
+```
+
+`NoRuntimeExposureObstruction` は、まず executable metric と同じ
+`reachesWithin runtime components components.length` ベースの measured / bounded
+obstruction として定義する。obstruction witness は
+`source ∈ components`, `target ∈ components`, `source != target` と、
+bounded search が到達を検出したことを持つ `(source, target)` pair にする。
+
+semantic `Reachable runtime source target` ベースの obstruction として述べたい場合は、
+`ComponentUniverse` coverage / edge-closure の下で `reachesWithin` と `Reachable` を
+接続する bridge theorem を別途使う。既存の finite bridge と同様に、executable
+metric の zero theorem と semantic graph theorem を同一視しない。
+
+Circuit Breaker など policy-aware な指標は、raw graph の theorem を置き換えず、
+別入力の graph に対する同型の theorem として追加する。
+
+```text
+unprotectedRuntimeExposureRadius unprotectedRuntimeGraph components = 0
+  <-> NoUnprotectedRuntimeExposureObstruction unprotectedRuntimeGraph components
+```
+
+blast radius は runtime edge を逆向きに読んだ派生値であるため、Lean 化する場合は
+extractor の暗黙処理ではなく、edge reversal function または reverse runtime graph を
+明示的な入力にする。その場合の theorem も、reverse graph 上の reachable cone zero
+bridge として扱う。
+
+この runtime theorem package は、static structural core の QED に直接混ぜない。
+まず `ArchitectureRuntimeZeroCurvaturePackage` のような独立 package として、
+runtime obstruction / runtime metric zero bridge を育てる。
 
 ## required-law 境界
 
-全体零曲率理論では、runtime / empirical 系の軸を selected required law axis へ
-追加しない。Lean 側の full law universe policy では `runtimePropagation` は
+static structural core の QED では、runtime / empirical 系の軸を selected required law
+axis へ追加しない。Lean 側の full law universe policy では `runtimePropagation` は
 `diagnosticAxis`、`relationComplexity` と `empiricalChangeCost` は `empiricalAxis`
-である。したがって、`ArchitectureLawful` や
+である。runtime metrics の zero bridge は、将来の数学的コア拡張として
+static package とは別に扱う。したがって、`ArchitectureLawful` や
 `RequiredSignatureAxesZero` の成立条件として `runtimePropagation = some 0` を
 要求しない。
 
@@ -76,7 +121,7 @@ graph において runtime edge の到達範囲が空であることを表す。
 
 | 対象 | zero-curvature theorem での分類 | Lean status |
 | --- | --- | --- |
-| `runtimePropagation` / `runtimeExposureRadius` | 0/1 `RuntimeDependencyGraph` 上で測定できる diagnostic axis。required zero-law axis ではない | `defined only` |
+| `runtimePropagation` / `runtimeExposureRadius` | 0/1 `RuntimeDependencyGraph` 上で測定できる diagnostic axis。static required zero-law axis ではない。zero metric と runtime obstruction absence の bridge は future proof obligation | `defined only` / `future proof obligation` |
 | `runtimeBlastRadius` | reverse reachability 由来の tooling / analysis metric。Lean core field には入れない | `empirical hypothesis` |
 | `runtimeFanout` | runtime graph 上の局所集中を測る analysis-derived metric。v1 field には追加しない | `empirical hypothesis` |
 | `circuitBreakerCoverageRatio` | measured runtime pair に対する policy-aware coverage 指標 | `empirical hypothesis` |
@@ -181,7 +226,9 @@ exposure / blast の最大値と欠損理由を分けて記録する。
 
 欠損値規約は raw metric と policy-aware metric で共通して、未抽出を risk 0 として
 扱わない。runtime evidence が未指定なら `runtimePropagation = none` / dataset 側
-`null`、runtime evidence 入力済みで edge set が空なら測定済みの `some 0` とする。
+`null` とする。runtime evidence 入力済みで edge set が空なら測定済みの `some 0` に
+なるが、`some 0` の意味は edge set empty に限らず、測定 universe 内の
+`source != target` な runtime reachable cone が空であることである。
 coverage metadata が不足している edge は `unknown` として扱い、policy-aware v0 では
 保守的に `unprotectedRuntimeGraph` 側に残す。
 
