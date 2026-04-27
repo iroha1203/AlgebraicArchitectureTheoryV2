@@ -61,7 +61,9 @@ Lean 側では
   のままにする。
 
 `none` は未評価を意味し、runtime risk 0 ではない。`some 0` は、測定済みの runtime
-graph において runtime edge の到達範囲が空であることを表す。
+graph において、測定 universe 内の `source != target` な runtime reachable cone が
+空であることを表す。これは単に「runtime edge がない」と読むより弱く、自己辺や
+測定 universe 外の runtime evidence とは区別する。
 
 ## Lean proof roadmap
 
@@ -77,11 +79,16 @@ runtimePropagationOfFinite runtime components = 0
   <-> NoRuntimeExposureObstruction runtime components
 ```
 
-`NoRuntimeExposureObstruction` は、測定 universe 内に非自明な runtime reachable cone
-を持つ component が存在しないこととして定義する。既存の
-`reachableConeSizeOfFinite` bridge を再利用できるよう、obstruction witness は
-`(source, target)` pair と `Reachable runtime source target`、および `source != target`
-を持つ形を優先する。
+`NoRuntimeExposureObstruction` は、まず executable metric と同じ
+`reachesWithin runtime components components.length` ベースの measured / bounded
+obstruction として定義する。obstruction witness は
+`source ∈ components`, `target ∈ components`, `source != target` と、
+bounded search が到達を検出したことを持つ `(source, target)` pair にする。
+
+semantic `Reachable runtime source target` ベースの obstruction として述べたい場合は、
+`ComponentUniverse` coverage / edge-closure の下で `reachesWithin` と `Reachable` を
+接続する bridge theorem を別途使う。既存の finite bridge と同様に、executable
+metric の zero theorem と semantic graph theorem を同一視しない。
 
 Circuit Breaker など policy-aware な指標は、raw graph の theorem を置き換えず、
 別入力の graph に対する同型の theorem として追加する。
@@ -219,7 +226,9 @@ exposure / blast の最大値と欠損理由を分けて記録する。
 
 欠損値規約は raw metric と policy-aware metric で共通して、未抽出を risk 0 として
 扱わない。runtime evidence が未指定なら `runtimePropagation = none` / dataset 側
-`null`、runtime evidence 入力済みで edge set が空なら測定済みの `some 0` とする。
+`null` とする。runtime evidence 入力済みで edge set が空なら測定済みの `some 0` に
+なるが、`some 0` の意味は edge set empty に限らず、測定 universe 内の
+`source != target` な runtime reachable cone が空であることである。
 coverage metadata が不足している edge は `unknown` として扱い、policy-aware v0 では
 保守的に `unprotectedRuntimeGraph` 側に残す。
 

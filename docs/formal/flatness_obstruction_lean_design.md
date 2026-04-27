@@ -418,10 +418,15 @@ runtimePropagationOfFinite runtime components = 0
   <-> NoRuntimeExposureObstruction runtime components
 ```
 
-ここで `NoRuntimeExposureObstruction` は、測定 universe 内で非自明な runtime
-reachable cone を持つ component が存在しないこととして定義する。より policy-aware
-な拡張では、raw graph とは別に `unprotectedRuntimeGraph` を入力として受け取り、
-同じ形の theorem を証明する。
+ここで `NoRuntimeExposureObstruction` は、まず
+`reachesWithin runtime components components.length` ベースの measured / bounded
+obstruction として定義する。つまり、測定 universe 内の `source != target` な
+runtime reachable cone が空であることを `some 0` の意味にする。semantic
+`Reachable runtime source target` ベースの theorem として述べたい場合は、
+`ComponentUniverse` coverage / edge-closure の下で `reachesWithin` と `Reachable` を
+接続する bridge theorem を追加または再利用する。より policy-aware な拡張では、
+raw graph とは別に `unprotectedRuntimeGraph` を入力として受け取り、同じ形の theorem
+を証明する。
 
 ```text
 unprotectedRuntimeExposureRadius unprotectedRuntimeGraph components = 0
