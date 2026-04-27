@@ -298,6 +298,17 @@ adjacency nilpotence、`nilpotencyIndexOfFinite X.U = some k`、および
 `spectralRadiusOfAdjacency X.U = 0` が従う。これは `nilpotencyIndex` や
 `spectralRadius` を required zero-axis に昇格するものではない。
 
+Issue [#225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)
+では、runtime / empirical 系の境界を固定する。`runtimePropagation` は
+0/1 `RuntimeDependencyGraph` 上の outgoing exposure radius として定義済みの
+diagnostic axis であり、selected required law theorem の zero-axis ではない。
+`runtimeBlastRadius` は reverse reachability 由来の tooling / analysis metric、
+Circuit Breaker coverage とその policy-aware 派生 metric は empirical extension、
+incident scope / repair time / hotfix size との関係は empirical hypothesis として
+扱う。したがって、`ArchitectureLawful` と `RequiredSignatureAxesZero` の同値に
+`runtimePropagation = some 0` や coverage ratio 0/1 条件を追加しない。未抽出の
+`none`、測定済みの `some 0`、risk 0 の主張は常に区別する。
+
 complete coverage は単なる強い仮定として放置しない。
 有限 component universe から component pair を列挙する、有限 diagram universe から
 required diagram を列挙するなど、一部の law family では `CoversRequired` を実際に
@@ -466,6 +477,13 @@ theorem を置き換えず、追加の axis または派生評価として接続
   [Issue #224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224)。
   `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
   executable index であり、`RequiredAxesAvailableAndZero` の zero-axis ではない。
+- `defined only` / `empirical hypothesis`: runtime / empirical 系の required-law
+  境界を固定する。`runtimePropagation` は 0/1 `RuntimeDependencyGraph` 上の
+  exposure radius として定義済みの diagnostic axis であり、
+  `ArchitectureLawful` や `RequiredSignatureAxesZero` の required zero-axis ではない。
+  `runtimeBlastRadius`, Circuit Breaker coverage, policy-aware runtime metrics,
+  incident / repair cost との関係は tooling / empirical protocol 側に残す,
+  [Issue #225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)。
 - `defined only`: witness family をまとめる signature schema と
   `ArchitectureSignatureV1` axis measurement classification。
 - `future design` / `empirical hypothesis`: 一般の数値 curvature metric を定義する
@@ -477,6 +495,8 @@ theorem を置き換えず、追加の axis または派生評価として接続
 
 - 任意のリスク評価が `ArchitectureSignature` を通して因子化するという完全な普遍性予想。
 - 変更波及や障害伝播が spectral mass によって支配されるという実証的主張。
+- runtime exposure / blast radius や Circuit Breaker coverage が incident scope,
+  repair time, hotfix size を支配するという実証的主張。
 - 一般の観測値に対する `Sem_A(p) - Sem_A(q)` 型の数値 curvature。
 
 これらは、必要な追加構造と empirical protocol が固まった後に、別 Issue として扱う。
