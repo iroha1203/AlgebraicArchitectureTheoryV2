@@ -415,6 +415,15 @@ theorem を置き換えず、追加の axis または派生評価として接続
   `effectRoundtripLawful_iff_noEffectRoundtripObstruction`,
   `effectCompensationLawful_iff_noEffectCompensationObstruction`,
   [Issue #193](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/193)
+- `proved`: LocalReplacement を required law に追加せず derived corollary として
+  selected required Signature axes および final zero-curvature theorem に接続する
+  bridge, および state-effect diagram laws を aggregate package と obstruction absence
+  の同値として束ねる bridge,
+  `localReplacementContract_requiredSignatureProjectionLSPAxes`,
+  `requiredSignatureAxesZero_of_localReplacementContract`,
+  `stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction`,
+  `effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction`,
+  [Issue #223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/223)
 - `proved`: concrete required-law Signature entry point 上で、
   `.projectionSoundnessViolation` と `.lspViolationCount` の available-and-zero を
   それぞれ `NoProjectionObstruction` / `NoLSPObstruction` へ接続する direct axis
@@ -441,7 +450,8 @@ theorem を置き換えず、追加の axis または派生評価として接続
   `architectureLawCandidateRole_requiredLaw_iff` で証明した,
   [Issue #222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/222)。
 - `future proof obligation`: full law universe policy に従い、derived corollary /
-  diagnostic axis を theorem index へ接続する残りの theorem。特に
+  diagnostic axis を theorem index へ接続する残りの theorem。LocalReplacement /
+  state-effect laws の derived corollary bridge は #223 で証明済みであり、特に
   `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
   executable index であり、`RequiredAxesAvailableAndZero` の zero-axis ではない。
 - `defined only`: witness family をまとめる signature schema と

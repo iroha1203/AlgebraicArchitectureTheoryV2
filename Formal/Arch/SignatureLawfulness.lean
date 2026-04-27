@@ -1,4 +1,5 @@
 import Formal.Arch.DependencyObstruction
+import Formal.Arch.LocalReplacement
 
 namespace Formal.Arch
 
@@ -956,6 +957,71 @@ theorem architectureLawful_iff_requiredSignatureAxesZero
     ArchitectureLawful X ↔
       RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X) := by
   exact architectureLawful_iff_requiredSignatureAxesAvailableAndZero X
+
+/--
+A local replacement contract is a derived corollary for the selected
+projection and LSP Signature axes.
+-/
+theorem localReplacementContract_requiredSignatureProjectionLSPAxes
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (hLocal : LocalReplacementContract X.G X.π X.GA X.O) :
+    ArchitectureSignatureV1.axisAvailableAndZero
+        (ArchitectureLawModel.signatureOf X)
+        .projectionSoundnessViolation ∧
+      ArchitectureSignatureV1.axisAvailableAndZero
+        (ArchitectureLawModel.signatureOf X)
+        .lspViolationCount := by
+  have hNoObstruction :
+      NoProjectionObstruction X.G X.π X.GA ∧ NoLSPObstruction X.π X.O :=
+    noProjectionObstruction_and_noLSPObstruction_of_localReplacementContract
+      hLocal
+  constructor
+  · exact (projectionSoundnessViolation_axisExact X.G X.π X.GA X.O X.U
+      X.boundaryAllowed X.abstractionAllowed).mpr hNoObstruction.1
+  · exact (lspViolationCount_axisExact X.G X.π X.GA X.O X.U
+      X.boundaryAllowed X.abstractionAllowed X.lspPairClosed).mpr
+      hNoObstruction.2
+
+/--
+Local replacement supplies the projection and LSP parts of `ArchitectureLawful`;
+the remaining static laws are the closed-walk and policy conditions.
+-/
+theorem architectureLawful_of_localReplacementContract
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs}
+    (hWalk : WalkAcyclic X.G)
+    (hLocal : LocalReplacementContract X.G X.π X.GA X.O)
+    (hBoundary : BoundaryPolicySound X.G X.boundaryAllowed)
+    (hAbstraction : AbstractionPolicySound X.G X.abstractionAllowed) :
+    ArchitectureLawful X := by
+  exact ⟨hWalk, projectionSound_of_localReplacementContract hLocal,
+    lspCompatible_of_observationFactorsThrough
+      (observationFactorsThrough_of_localReplacementContract hLocal),
+    hBoundary, hAbstraction⟩
+
+/--
+Derived zero-curvature bridge: a local replacement contract, closed-walk
+acyclicity, and the two policy laws imply that all selected required Signature
+axes are zero.
+-/
+theorem requiredSignatureAxesZero_of_localReplacementContract
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (hWalk : WalkAcyclic X.G)
+    (hLocal : LocalReplacementContract X.G X.π X.GA X.O)
+    (hBoundary : BoundaryPolicySound X.G X.boundaryAllowed)
+    (hAbstraction : AbstractionPolicySound X.G X.abstractionAllowed) :
+    RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X) := by
+  exact (architectureLawful_iff_requiredSignatureAxesZero X).mp
+    (architectureLawful_of_localReplacementContract hWalk hLocal hBoundary
+      hAbstraction)
 
 end ArchitectureSignature
 
