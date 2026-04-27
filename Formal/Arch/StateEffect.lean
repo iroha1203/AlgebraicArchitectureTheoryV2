@@ -316,4 +316,99 @@ theorem effectCompensationLawful_iff_noEffectCompensationObstruction
     EffectCompensationLawful sem cases ↔ NoEffectCompensationObstruction sem cases := by
   exact diagramLawfulByList_iff_noDiagramObstructionByList
 
+/--
+Aggregate lawfulness for the finite state-transition replay, roundtrip, and
+compensation law family.
+-/
+def StateTransitionLawFamilyLawful {State : Type u} {Event : Type v} {Obs : Type w}
+    (sem : Semantics (StateTransitionExpr State Event) Obs)
+    (replayCases : List (StateReplayCase State Event))
+    (roundtripCases : List (StateRoundtripCase State Event))
+    (compensationCases : List (StateCompensationCase State Event)) : Prop :=
+  StateReplayLawful sem replayCases ∧
+  StateRoundtripLawful sem roundtripCases ∧
+  StateCompensationLawful sem compensationCases
+
+/-- No obstruction witness exists for the aggregate state-transition law family. -/
+def NoStateTransitionLawFamilyObstruction {State : Type u} {Event : Type v} {Obs : Type w}
+    (sem : Semantics (StateTransitionExpr State Event) Obs)
+    (replayCases : List (StateReplayCase State Event))
+    (roundtripCases : List (StateRoundtripCase State Event))
+    (compensationCases : List (StateCompensationCase State Event)) : Prop :=
+  NoStateReplayObstruction sem replayCases ∧
+  NoStateRoundtripObstruction sem roundtripCases ∧
+  NoStateCompensationObstruction sem compensationCases
+
+/--
+The aggregate state-transition law family is lawful exactly when the replay,
+roundtrip, and compensation obstruction families are all absent.
+-/
+theorem stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction
+    {State : Type u} {Event : Type v} {Obs : Type w}
+    {sem : Semantics (StateTransitionExpr State Event) Obs}
+    {replayCases : List (StateReplayCase State Event)}
+    {roundtripCases : List (StateRoundtripCase State Event)}
+    {compensationCases : List (StateCompensationCase State Event)} :
+    StateTransitionLawFamilyLawful sem replayCases roundtripCases compensationCases ↔
+      NoStateTransitionLawFamilyObstruction sem replayCases roundtripCases
+        compensationCases := by
+  constructor
+  · intro hLawful
+    exact ⟨stateReplayLawful_iff_noStateReplayObstruction.mp hLawful.1,
+      stateRoundtripLawful_iff_noStateRoundtripObstruction.mp hLawful.2.1,
+      stateCompensationLawful_iff_noStateCompensationObstruction.mp hLawful.2.2⟩
+  · intro hNoObstruction
+    exact ⟨stateReplayLawful_iff_noStateReplayObstruction.mpr hNoObstruction.1,
+      stateRoundtripLawful_iff_noStateRoundtripObstruction.mpr hNoObstruction.2.1,
+      stateCompensationLawful_iff_noStateCompensationObstruction.mpr
+        hNoObstruction.2.2⟩
+
+/--
+Aggregate lawfulness for the finite effect-boundary replay, roundtrip, and
+compensation law family.
+-/
+def EffectBoundaryLawFamilyLawful {Effect : Type u} {Boundary : Type v} {Obs : Type w}
+    (sem : Semantics (EffectBoundaryExpr Effect Boundary) Obs)
+    (replayCases : List (EffectReplayCase Effect Boundary))
+    (roundtripCases : List (EffectRoundtripCase Effect Boundary))
+    (compensationCases : List (EffectCompensationCase Effect Boundary)) : Prop :=
+  EffectReplayLawful sem replayCases ∧
+  EffectRoundtripLawful sem roundtripCases ∧
+  EffectCompensationLawful sem compensationCases
+
+/-- No obstruction witness exists for the aggregate effect-boundary law family. -/
+def NoEffectBoundaryLawFamilyObstruction {Effect : Type u} {Boundary : Type v}
+    {Obs : Type w}
+    (sem : Semantics (EffectBoundaryExpr Effect Boundary) Obs)
+    (replayCases : List (EffectReplayCase Effect Boundary))
+    (roundtripCases : List (EffectRoundtripCase Effect Boundary))
+    (compensationCases : List (EffectCompensationCase Effect Boundary)) : Prop :=
+  NoEffectReplayObstruction sem replayCases ∧
+  NoEffectRoundtripObstruction sem roundtripCases ∧
+  NoEffectCompensationObstruction sem compensationCases
+
+/--
+The aggregate effect-boundary law family is lawful exactly when the replay,
+roundtrip, and compensation obstruction families are all absent.
+-/
+theorem effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction
+    {Effect : Type u} {Boundary : Type v} {Obs : Type w}
+    {sem : Semantics (EffectBoundaryExpr Effect Boundary) Obs}
+    {replayCases : List (EffectReplayCase Effect Boundary)}
+    {roundtripCases : List (EffectRoundtripCase Effect Boundary)}
+    {compensationCases : List (EffectCompensationCase Effect Boundary)} :
+    EffectBoundaryLawFamilyLawful sem replayCases roundtripCases compensationCases ↔
+      NoEffectBoundaryLawFamilyObstruction sem replayCases roundtripCases
+        compensationCases := by
+  constructor
+  · intro hLawful
+    exact ⟨effectReplayLawful_iff_noEffectReplayObstruction.mp hLawful.1,
+      effectRoundtripLawful_iff_noEffectRoundtripObstruction.mp hLawful.2.1,
+      effectCompensationLawful_iff_noEffectCompensationObstruction.mp hLawful.2.2⟩
+  · intro hNoObstruction
+    exact ⟨effectReplayLawful_iff_noEffectReplayObstruction.mpr hNoObstruction.1,
+      effectRoundtripLawful_iff_noEffectRoundtripObstruction.mpr hNoObstruction.2.1,
+      effectCompensationLawful_iff_noEffectCompensationObstruction.mpr
+        hNoObstruction.2.2⟩
+
 end Formal.Arch

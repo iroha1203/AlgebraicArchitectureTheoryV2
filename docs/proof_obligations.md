@@ -120,6 +120,21 @@ evidence の境界は
 [#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226) で
 full theorem packaging と theorem index を完成する。
 
+Issue [#223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/223)
+では、#222 の policy に従い、LocalReplacement と state-effect laws を required
+zero-axis へ追加せず derived corollary として theorem 群へ接続した。Lean では
+`localReplacementContract_requiredSignatureProjectionLSPAxes` により
+`LocalReplacementContract` から selected required Signature axes の projection /
+LSP が available-and-zero であることを得る。また
+`requiredSignatureAxesZero_of_localReplacementContract` により、closed-walk
+acyclicity と boundary / abstraction policy soundness を追加すれば
+`RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` が従う。
+state-effect 側は `StateTransitionLawFamilyLawful` と
+`EffectBoundaryLawFamilyLawful` を aggregate package とし、それぞれの obstruction
+absence との同値を
+`stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction` と
+`effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction` で証明した。
+
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
 それだけでは中心定理の証明とは呼ばない。強い Lean proof は、
@@ -152,6 +167,16 @@ diagram constructors は `defined only`、各 replay / roundtrip / compensation 
 `DiagramLawful <-> NoDiagramObstruction` bridge は `proved` である。これは required
 diagram family の受け皿であり、実コードベース抽出器の完全性、観測値上の距離、
 重み、半環、数値 curvature metric は主張しない。
+
+Issue [#223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/223)
+では、この state-effect API を aggregate law-family package として束ねる
+`StateTransitionLawFamilyLawful`,
+`NoStateTransitionLawFamilyObstruction`,
+`EffectBoundaryLawFamilyLawful`,
+`NoEffectBoundaryLawFamilyObstruction` を追加した。Lean status は `defined only` /
+`proved` で、aggregate package と obstruction absence の同値は
+`stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction` と
+`effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction` で証明済みである。
 
 Issue [#194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)
 では、数値的 curvature metric と empirical hypothesis を Lean proved core から
