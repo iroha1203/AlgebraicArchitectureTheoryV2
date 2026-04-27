@@ -959,6 +959,55 @@ theorem architectureLawful_iff_requiredSignatureAxesZero
   exact architectureLawful_iff_requiredSignatureAxesAvailableAndZero X
 
 /--
+Matrix diagnostics that follow from the selected required static laws.
+
+This package is deliberately a derived corollary, not part of
+`RequiredSignatureAxesZero`: `nilpotencyIndexOfFinite` returns an index value,
+and `spectralRadiusOfAdjacency` is a structural matrix diagnostic.
+-/
+noncomputable def MatrixDiagnosticCorollaries
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableRel X.G.edge] : Prop :=
+  AdjacencyNilpotent X.U ∧
+  (∃ k, nilpotencyIndexOfFinite X.U = some k) ∧
+  spectralRadiusOfAdjacency X.U = 0
+
+/--
+Selected required architecture lawfulness implies the matrix diagnostic
+corollaries: adjacency nilpotence, a populated executable nilpotency index, and
+zero structural spectral radius.
+-/
+theorem matrixDiagnosticCorollaries_of_architectureLawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableRel X.G.edge]
+    (hLawful : ArchitectureLawful X) :
+    MatrixDiagnosticCorollaries X := by
+  have hAcyclic : Acyclic X.G := acyclic_of_walkAcyclic hLawful.1
+  exact ⟨adjacencyNilpotent_of_acyclic X.U hAcyclic,
+    nilpotencyIndexOfFinite_isSome_of_acyclic X.U hAcyclic,
+    spectralRadiusOfAdjacency_eq_zero_of_acyclic X.U hAcyclic⟩
+
+/--
+Zero selected required Signature axes imply the matrix diagnostic corollaries.
+
+This is the theorem-package bridge for #224: nilpotency and spectral facts are
+read as diagnostics derived from zero curvature, not as additional required
+zero axes.
+-/
+theorem matrixDiagnosticCorollaries_of_requiredSignatureAxesZero
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (hZero : RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)) :
+    MatrixDiagnosticCorollaries X := by
+  exact matrixDiagnosticCorollaries_of_architectureLawful X
+    ((architectureLawful_iff_requiredSignatureAxesZero X).mpr hZero)
+
+/--
 A local replacement contract is a derived corollary for the selected
 projection and LSP Signature axes.
 -/

@@ -135,6 +135,19 @@ absence との同値を
 `stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction` と
 `effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction` で証明した。
 
+Issue [#224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224)
+では、#222 の policy に従い、nilpotency / spectral diagnostics を required
+zero-axis へ追加せず derived diagnostic corollary として theorem 群へ接続した。
+Lean では `MatrixDiagnosticCorollaries` を追加し、`ArchitectureLawful X` から
+adjacency nilpotence、`nilpotencyIndexOfFinite X.U = some k`、および
+`spectralRadiusOfAdjacency X.U = 0` が従うことを
+`matrixDiagnosticCorollaries_of_architectureLawful` で証明した。さらに
+`matrixDiagnosticCorollaries_of_requiredSignatureAxesZero` により、
+`RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` から同じ
+diagnostic corollaries を得る。これは `nilpotencyIndex = some k` を
+available-and-zero axis と読む主張ではなく、selected required lawfulness から
+有限 adjacency matrix diagnostics が従うという bridge である。
+
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
 それだけでは中心定理の証明とは呼ばない。強い Lean proof は、
@@ -942,6 +955,16 @@ diagnostics、empirical axes を同じ候補表に載せる。`ArchitectureLawCa
 `relationComplexity`, `empiricalChangeCost` は empirical axis である。
 `some k` として得られる `nilpotencyIndex` は index 値であり、required zero-axis
 ではない。
+
+Issue [#224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224)
+では、この境界を保ったまま `MatrixDiagnosticCorollaries` を追加した。
+`matrixDiagnosticCorollaries_of_requiredSignatureAxesZero` は selected required
+zero axes から adjacency nilpotence、executable `nilpotencyIndex` の populated
+entry、finite complex adjacency matrix の `rho(A)=0` を導く。反対に、
+`nilpotencyIndex` や `spectralRadius` を `ArchitectureLawful` の required law
+条件へ追加するものではない。閉 walk がある場合に `rho(A)>0` となる構造的
+theorem は既存の `spectralRadiusOfAdjacency_pos_of_hasClosedWalk` として残し、
+変更波及や障害伝播増幅との相関は empirical hypothesis で扱う。
 
 Issue [#209](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/209)
 では、projection / LSP の concrete Signature axis exactness を公開 theorem として
