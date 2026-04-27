@@ -101,6 +101,118 @@ def architectureRequiredWitness (_ : ArchitectureWitness) : Prop :=
 def architectureRequiredAxis (axis : ArchitectureSignatureV1Axis) : Prop :=
   IsSelectedRequiredLawAxis axis
 
+/--
+How a candidate law or metric participates in the full zero-curvature law
+universe.
+
+Only `requiredLaw` candidates are part of `ArchitectureLawful` and the final
+required-axis theorem. Corollaries and diagnostic or empirical axes may be
+connected by separate bridge theorems without changing the required-zero
+policy.
+-/
+inductive ArchitectureLawCandidateRole where
+  | requiredLaw
+  | derivedCorollary
+  | diagnosticAxis
+  | empiricalAxis
+  deriving DecidableEq, Repr
+
+/--
+Named candidates considered for the full architecture law universe.
+
+This list includes the current required witness family plus adjacent theorem
+families and extension axes that are intentionally kept outside the required
+zero-axis policy.
+-/
+inductive ArchitectureLawUniverseCandidate where
+  | closedWalkAcyclicity
+  | projectionSoundness
+  | lspCompatibility
+  | boundaryPolicySoundness
+  | abstractionPolicySoundness
+  | localReplacementContract
+  | stateEffectDiagramLaw
+  | nilpotencyIndex
+  | spectralRadius
+  | runtimePropagation
+  | relationComplexity
+  | empiricalChangeCost
+  deriving DecidableEq, Repr
+
+/-- The finite candidate universe tracked by the current design policy. -/
+def architectureFullLawUniverseCandidates :
+    List ArchitectureLawUniverseCandidate :=
+  [ .closedWalkAcyclicity
+  , .projectionSoundness
+  , .lspCompatibility
+  , .boundaryPolicySoundness
+  , .abstractionPolicySoundness
+  , .localReplacementContract
+  , .stateEffectDiagramLaw
+  , .nilpotencyIndex
+  , .spectralRadius
+  , .runtimePropagation
+  , .relationComplexity
+  , .empiricalChangeCost
+  ]
+
+/--
+Policy classification for each candidate in the full law universe.
+
+`localReplacementContract` is a packaging corollary over projection and LSP
+facts. `stateEffectDiagramLaw` already has its own diagram-law bridge and is
+not bundled into the static dependency final theorem. Matrix and runtime axes
+are diagnostics, while relation complexity and empirical change cost remain
+empirical axes.
+-/
+def architectureLawCandidateRole :
+    ArchitectureLawUniverseCandidate -> ArchitectureLawCandidateRole
+  | .closedWalkAcyclicity => .requiredLaw
+  | .projectionSoundness => .requiredLaw
+  | .lspCompatibility => .requiredLaw
+  | .boundaryPolicySoundness => .requiredLaw
+  | .abstractionPolicySoundness => .requiredLaw
+  | .localReplacementContract => .derivedCorollary
+  | .stateEffectDiagramLaw => .derivedCorollary
+  | .nilpotencyIndex => .diagnosticAxis
+  | .spectralRadius => .diagnosticAxis
+  | .runtimePropagation => .diagnosticAxis
+  | .relationComplexity => .empiricalAxis
+  | .empiricalChangeCost => .empiricalAxis
+
+/-- Required-law candidates are exactly the five witnesses in `ArchitectureLawful`. -/
+theorem architectureLawCandidateRole_requiredLaw_iff
+    {candidate : ArchitectureLawUniverseCandidate} :
+    architectureLawCandidateRole candidate =
+        ArchitectureLawCandidateRole.requiredLaw ↔
+      candidate = .closedWalkAcyclicity ∨
+      candidate = .projectionSoundness ∨
+      candidate = .lspCompatibility ∨
+      candidate = .boundaryPolicySoundness ∨
+      candidate = .abstractionPolicySoundness := by
+  cases candidate <;> simp [architectureLawCandidateRole]
+
+/--
+The current final theorem requires only selected Signature axes. Matrix,
+runtime, state-effect, and empirical candidates are not required-zero axes.
+-/
+theorem architectureLawCandidateRole_nonrequired_examples :
+    architectureLawCandidateRole .localReplacementContract =
+        ArchitectureLawCandidateRole.derivedCorollary ∧
+    architectureLawCandidateRole .stateEffectDiagramLaw =
+        ArchitectureLawCandidateRole.derivedCorollary ∧
+    architectureLawCandidateRole .nilpotencyIndex =
+        ArchitectureLawCandidateRole.diagnosticAxis ∧
+    architectureLawCandidateRole .spectralRadius =
+        ArchitectureLawCandidateRole.diagnosticAxis ∧
+    architectureLawCandidateRole .runtimePropagation =
+        ArchitectureLawCandidateRole.diagnosticAxis ∧
+    architectureLawCandidateRole .relationComplexity =
+        ArchitectureLawCandidateRole.empiricalAxis ∧
+    architectureLawCandidateRole .empiricalChangeCost =
+        ArchitectureLawCandidateRole.empiricalAxis := by
+  simp [architectureLawCandidateRole]
+
 /-- The concrete architecture data used by the Signature-integrated law bridge. -/
 structure ArchitectureLawModel (C : Type u) (A : Type v) (Obs : Type w) where
   G : ArchGraph C

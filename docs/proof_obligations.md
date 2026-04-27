@@ -72,9 +72,11 @@ Lean で証明済みである
 lawfulness predicate と obstruction witness 不在を接続する exactness bridge は
 Lean で証明済みである。Signature 側では、selected required axes を concrete
 count で埋める `v1OfFiniteWithRequiredLawAxes` と concrete law family の統合 bridge
-に加え、projection / LSP と hasCycle の direct axis exactness も Lean で証明済みである
+に加え、projection / LSP、hasCycle、boundary / abstraction policy の direct
+axis exactness も Lean で証明済みである
 ([Issue #209](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/209),
-[Issue #210](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/210))。
+[Issue #210](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/210),
+[Issue #211](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/211))。
 
 したがって、現時点で Lean proved と呼べるのは、アーキテクチャ零曲率定理の
 structural core である。抽象 `LawFamily`、complete witness coverage、
@@ -83,9 +85,40 @@ required axis exactness を前提に、`Lawful` と
 `ArchitectureSignatureV1.axisValue` のうち projection / LSP の concrete axis は、
 `NoProjectionObstruction` / `NoLSPObstruction` へ直接接続済みであり、hasCycle axis も
 finite `ComponentUniverse` の coverage 下で `WalkAcyclic` および closed-walk
-obstruction absence へ直接接続済みである。一方、
-boundary / abstraction policy の direct axis theorem、および
-final theorem の scope 整理は個別 Issue の `future proof obligation` として残る。
+obstruction absence へ直接接続済みである。boundary / abstraction policy axis も
+finite edge coverage 下で policy soundness へ接続済みである。
+
+Issue [#222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/222)
+では、full law universe 候補を次の policy に固定した。Lean では
+`ArchitectureLawUniverseCandidate`, `ArchitectureLawCandidateRole`,
+`architectureLawCandidateRole`, `architectureFullLawUniverseCandidates` を追加し、
+required law, derived corollary, diagnostic axis, empirical axis を区別する。
+
+| 候補 | 分類 | final theorem での扱い |
+| --- | --- | --- |
+| `closedWalkAcyclicity`, `projectionSoundness`, `lspCompatibility`, `boundaryPolicySoundness`, `abstractionPolicySoundness` | required law | `ArchitectureLawful` と `RequiredSignatureAxesZero` の対象 |
+| `localReplacementContract` | derived corollary | projection / LSP / representative stability を束ねる packaging theorem。required axis へは projection / LSP 経由で接続する |
+| `stateEffectDiagramLaw` | derived corollary | finite diagram law family の独立 bridge として扱う。静的依存 graph の final theorem には混ぜない |
+| `nilpotencyIndex`, `spectralRadius`, `runtimePropagation` | diagnostic axis | `some 0` を法則健全性条件として要求しない。matrix / runtime bridge は別 theorem として扱う |
+| `relationComplexity`, `empiricalChangeCost` | empirical axis | extractor output と実証プロトコルで扱う。Lean theorem の required law ではない |
+
+`nilpotencyIndex = some k` は、最初に adjacency matrix power が 0 になる index が
+測定できたことを表す値であり、0/1 の zero-axis ではない。`some 0` を要求すると
+空の伝播だけを許す不自然な条件になるため、`hasCycle = 0` や `WalkAcyclic` と
+混同しない。`nilpotencyIndex = none` も未評価または非 nilpotent を表し、risk 0
+とは読まない。
+
+後続 Issue の依存順は、#222 の policy を前提にする。まず
+[#223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/223) で
+LocalReplacement / state-effect laws を derived corollary として Signature 統合 theorem
+へ接続する条件を整理し、次に
+[#224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224) で
+nilpotency / spectral diagnostics を theorem 群へ接続する。runtime / empirical
+evidence の境界は
+[#225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225) で
+扱い、最後に
+[#226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226) で
+full theorem packaging と theorem index を完成する。
 
 証明強度は段階的に扱う。`violationCount bad xs = 0` と
 `forall w, w in xs -> not bad w` の同値は必要な共通補題だが、
@@ -869,6 +902,21 @@ complete witness coverage と required axis exactness を構成する。最終 t
 `RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` の同値を証明する。
 `nilpotencyIndex`, runtime / empirical metrics, numerical curvature は required zero
 axis に含めず、診断軸または future bridge work として分離した。
+
+Issue [#222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/222)
+では、この分離を full law universe policy として Lean 名付きで固定した。
+`ArchitectureLawUniverseCandidate` は、current required laws、LocalReplacement
+packaging、state-effect diagram laws、matrix / spectral diagnostics、runtime
+diagnostics、empirical axes を同じ候補表に載せる。`ArchitectureLawCandidateRole`
+と `architectureLawCandidateRole` は、それぞれを `requiredLaw`,
+`derivedCorollary`, `diagnosticAxis`, `empiricalAxis` に分類する。required law は
+`ArchitectureLawful` が直接要求する 5 条件だけであり、
+`architectureLawCandidateRole_requiredLaw_iff` がこの境界を Lean theorem として
+展開する。LocalReplacement と state-effect laws は derived corollary、
+`nilpotencyIndex`, `spectralRadius`, `runtimePropagation` は diagnostic axis、
+`relationComplexity`, `empiricalChangeCost` は empirical axis である。
+`some k` として得られる `nilpotencyIndex` は index 値であり、required zero-axis
+ではない。
 
 Issue [#209](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/209)
 では、projection / LSP の concrete Signature axis exactness を公開 theorem として
