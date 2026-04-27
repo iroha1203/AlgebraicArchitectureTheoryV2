@@ -77,6 +77,9 @@ inductive ArchitectureRequiredLawWitness where
   | abstractionPolicy
   deriving DecidableEq, Repr
 
+/-- Short public name for the concrete Signature-integrated witness family. -/
+abbrev ArchitectureWitness := ArchitectureRequiredLawWitness
+
 /-- The measured universe for the current required Signature law family. -/
 def architectureRequiredLawWitnesses : List ArchitectureRequiredLawWitness :=
   [ .hasCycle
@@ -85,6 +88,18 @@ def architectureRequiredLawWitnesses : List ArchitectureRequiredLawWitness :=
   , .boundaryPolicy
   , .abstractionPolicy
   ]
+
+/-- Public entry point for the measured architecture witness universe. -/
+def architectureMeasuredWitnesses : List ArchitectureWitness :=
+  architectureRequiredLawWitnesses
+
+/-- Every current architecture witness is a required witness. -/
+def architectureRequiredWitness (_ : ArchitectureWitness) : Prop :=
+  True
+
+/-- Selected Signature v1 axes used as required zero-law axes. -/
+def architectureRequiredAxis (axis : ArchitectureSignatureV1Axis) : Prop :=
+  IsSelectedRequiredLawAxis axis
 
 /-- The concrete architecture data used by the Signature-integrated law bridge. -/
 structure ArchitectureLawModel (C : Type u) (A : Type v) (Obs : Type w) where
@@ -130,6 +145,11 @@ def ArchitectureRequiredLawBad {C : Type u} {A : Type v} {Obs : Type w}
   | .abstractionPolicy =>
       ∃ pair : C × C, PolicyViolation X.G X.abstractionAllowed pair
 
+/-- Public entry point for concrete bad architecture witnesses. -/
+def architectureBad {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs) : ArchitectureWitness -> Prop :=
+  ArchitectureRequiredLawBad X
+
 /-- Architecture lawfulness represented by the selected required Signature axes. -/
 def ArchitectureLawful {C : Type u} {A : Type v} {Obs : Type w}
     (X : ArchitectureLawModel C A Obs) : Prop :=
@@ -143,6 +163,10 @@ def ArchitectureLawful {C : Type u} {A : Type v} {Obs : Type w}
 def RequiredSignatureAxesAvailableAndZero (sig : ArchitectureSignatureV1) : Prop :=
   ∀ axis, IsSelectedRequiredLawAxis axis ->
     ArchitectureSignatureV1.axisAvailableAndZero sig axis
+
+/-- Short public name for selected required Signature axes being available and zero. -/
+def RequiredSignatureAxesZero (sig : ArchitectureSignatureV1) : Prop :=
+  RequiredSignatureAxesAvailableAndZero sig
 
 /--
 The `hasCycle` Signature axis is exact for walk acyclicity on a finite
@@ -302,17 +326,21 @@ def architectureWitnessForAxis :
   | .abstractionViolationCount, .abstractionPolicy => True
   | _, _ => False
 
+/-- Public entry point for the witness subfamily represented by each axis. -/
+def witnessForAxis : ArchitectureSignatureV1Axis -> ArchitectureWitness -> Prop :=
+  architectureWitnessForAxis
+
 theorem mem_architectureRequiredLawWitnesses
     (witness : ArchitectureRequiredLawWitness) :
     witness ∈ architectureRequiredLawWitnesses := by
   cases witness <;> simp [architectureRequiredLawWitnesses]
 
-private theorem architectureLawful_iff_no_measured_bad
+theorem architectureLawful_iff_no_measured_bad
     {C : Type u} {A : Type v} {Obs : Type w}
     (X : ArchitectureLawModel C A Obs) :
     ArchitectureLawful X ↔
-      ∀ w, w ∈ architectureRequiredLawWitnesses ->
-        ¬ ArchitectureRequiredLawBad X w := by
+      ∀ w, w ∈ architectureMeasuredWitnesses ->
+        ¬ architectureBad X w := by
   constructor
   · intro hLawful witness _hMeasured
     rcases hLawful with ⟨hAcyclic, hProjection, hLSP, hBoundary,
@@ -356,14 +384,14 @@ theorem architectureLawFamily_completeWitnessCoverage :
     CompleteWitnessCoverage
       ({ Witness := ArchitectureRequiredLawWitness
          Axis := ArchitectureSignatureV1Axis
-         measured := architectureRequiredLawWitnesses
-         required := fun _ => True
-         bad := fun X => ArchitectureRequiredLawBad X
+         measured := architectureMeasuredWitnesses
+         required := architectureRequiredWitness
+         bad := fun X => architectureBad X
          lawful := fun X => ArchitectureLawful X
          lawful_iff_no_measured_bad := by
           intro X
           exact architectureLawful_iff_no_measured_bad X
-         requiredAxis := IsSelectedRequiredLawAxis } :
+         requiredAxis := architectureRequiredAxis } :
         LawFamily (ArchitectureLawModel C A Obs)) := by
   intro witness
   constructor
@@ -377,14 +405,14 @@ def architectureLawFamily (C : Type u) (A : Type v) (Obs : Type w) :
     LawFamily (ArchitectureLawModel C A Obs) where
   Witness := ArchitectureRequiredLawWitness
   Axis := ArchitectureSignatureV1Axis
-  measured := architectureRequiredLawWitnesses
-  required := fun _ => True
-  bad := fun X => ArchitectureRequiredLawBad X
+  measured := architectureMeasuredWitnesses
+  required := architectureRequiredWitness
+  bad := fun X => architectureBad X
   lawful := fun X => ArchitectureLawful X
   lawful_iff_no_measured_bad := by
     intro X
     exact architectureLawful_iff_no_measured_bad X
-  requiredAxis := IsSelectedRequiredLawAxis
+  requiredAxis := architectureRequiredAxis
 
 theorem architectureLawFamily_completeCoverage :
     CompleteWitnessCoverage (architectureLawFamily C A Obs) := by
@@ -803,6 +831,19 @@ theorem architectureLawful_iff_requiredSignatureAxesAvailableAndZero
   exact lawful_iff_requiredAxesAvailableAndZero_of_completeCoverage_and_requiredAxisExact
     (architectureLawFamily_completeCoverage (C := C) (A := A) (Obs := Obs))
     (architecture_requiredAxisExact X)
+
+/--
+Final zero-curvature theorem using the short `RequiredSignatureAxesZero` name.
+-/
+theorem architectureLawful_iff_requiredSignatureAxesZero
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed] :
+    ArchitectureLawful X ↔
+      RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X) := by
+  exact architectureLawful_iff_requiredSignatureAxesAvailableAndZero X
 
 end ArchitectureSignature
 

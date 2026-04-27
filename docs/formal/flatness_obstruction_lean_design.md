@@ -267,7 +267,8 @@ cover、required axis 全体の
 それぞれの witness 不在との exactness bridge を証明済みである。
 さらに `Formal/Arch/SignatureLawfulness.lean` では、selected required Signature
 axes を concrete `LawFamily` としてまとめ、`ArchitectureSignatureV1.axisValue`
-の concrete valuation へ接続する final theorem を追加した。
+の concrete valuation へ接続する final theorem
+`architectureLawful_iff_requiredSignatureAxesZero` を追加した。
 
 したがって、現時点で Lean proved と呼べる範囲は、抽象 `LawFamily` の structural
 core と、selected required axes (`hasCycle`, projection, LSP, boundary,
@@ -378,6 +379,12 @@ theorem を置き換えず、追加の axis または派生評価として接続
   global lawfulness への bridge,
   `lawViolationCount_eq_zero_iff_lawful`, `lawful_iff_noRequiredObstruction_of_completeCoverage`,
   [Issue #191](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/191)
+- `proved`: concrete `ArchitectureWitness` family と selected required
+  `ArchitectureSignatureV1` axes について、`ArchitectureLawful X` と
+  `RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` を接続する
+  final Signature-integrated zero-curvature theorem,
+  `architectureLawful_iff_requiredSignatureAxesZero`,
+  [Issue #212](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/212)
 - `proved`: finite required witness / diagram list から coverage predicate を構成し、
   finite component universe から ordered component-pair witness coverage を得る bridge,
   `coversWitnesses_requiredByList_self`,
