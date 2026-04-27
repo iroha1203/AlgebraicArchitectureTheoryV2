@@ -290,6 +290,14 @@ diagnostics、empirical axes を候補として列挙する。分類は
 この分類により、final theorem の `ArchitectureLawful` を拡張せずに、後続 theorem
 群で corollary / diagnostic bridge を追加できる。
 
+Issue [#224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224)
+では、その corollary / diagnostic bridge のうち matrix 側を
+`MatrixDiagnosticCorollaries` として束ねた。`ArchitectureLawful X` または
+`RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` から、finite
+adjacency nilpotence、`nilpotencyIndexOfFinite X.U = some k`、および
+`spectralRadiusOfAdjacency X.U = 0` が従う。これは `nilpotencyIndex` や
+`spectralRadius` を required zero-axis に昇格するものではない。
+
 complete coverage は単なる強い仮定として放置しない。
 有限 component universe から component pair を列挙する、有限 diagram universe から
 required diagram を列挙するなど、一部の law family では `CoversRequired` を実際に
@@ -449,9 +457,13 @@ theorem を置き換えず、追加の axis または派生評価として接続
   列挙し、required law が current final theorem の 5 条件に限られることを
   `architectureLawCandidateRole_requiredLaw_iff` で証明した,
   [Issue #222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/222)。
-- `future proof obligation`: full law universe policy に従い、derived corollary /
-  diagnostic axis を theorem index へ接続する残りの theorem。LocalReplacement /
-  state-effect laws の derived corollary bridge は #223 で証明済みであり、特に
+- `proved`: full law universe policy に従い、nilpotency / spectral diagnostics を
+  required zero-axis へ追加せず derived diagnostic corollary として theorem index
+  へ接続する bridge,
+  `MatrixDiagnosticCorollaries`,
+  `matrixDiagnosticCorollaries_of_architectureLawful`,
+  `matrixDiagnosticCorollaries_of_requiredSignatureAxesZero`,
+  [Issue #224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224)。
   `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
   executable index であり、`RequiredAxesAvailableAndZero` の zero-axis ではない。
 - `defined only`: witness family をまとめる signature schema と
