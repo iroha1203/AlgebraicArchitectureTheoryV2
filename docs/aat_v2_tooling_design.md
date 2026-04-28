@@ -249,6 +249,69 @@ Static split evidence:
 条件が欠けた場合は、`unknown` または `non_split` を evidence とともに返す。
 測定できない軸を `split` の根拠にしてはならない。
 
+### 3.4 Algebraic annotations
+
+AIR は、数学設計書の代数構造を optional annotation として保持できる。
+annotation がない場合は、static / runtime / semantic の通常診断へ fallback する。
+
+```text
+monoid annotation:
+  event sequence, pipeline composition, replay law などを表す。
+
+inverse / compensation annotation:
+  Saga, rollback, partial inverse, compensating action を表す。
+
+order / lattice annotation:
+  layer order, policy strength order, refinement / abstraction order を表す。
+
+category / functor annotation:
+  service composition, migration functor, API version natural transformation を表す。
+
+extension annotation:
+  split extension, non-split extension, feature quotient, embedding claim を表す。
+
+contract / quotient annotation:
+  observation factoring, interface contract, abstraction quotient を表す。
+```
+
+これらの annotation は、feature extension report の theorem applicability と
+repair suggestion の根拠として使う。ただし、annotation の存在だけで theorem の前提が
+満たされたとは扱わない。
+
+### 3.5 Gradual adoption path
+
+AAT tooling は、最初から全層の proof-carrying report を要求しない。
+導入は次の段階で進める。
+
+```text
+Level 0:
+  manual AIR / hand-written components.
+
+Level 1:
+  static graph extraction only.
+
+Level 2:
+  static graph + policy + Signature artifact.
+
+Level 3:
+  before / after diff を FeatureExtension として report する。
+
+Level 4:
+  runtime evidence と coverage metadata を統合する。
+
+Level 5:
+  semantic diagram / contract evidence を統合する。
+
+Level 6:
+  theorem precondition checker と claim taxonomy を CI に載せる。
+
+Level 7:
+  proof-carrying Feature Extension Report を PR review で使う。
+
+Level 8:
+  repair / synthesis / migration planning に接続する。
+```
+
 ## 4. Signature Artifact Layer
 
 AIR の前段には、軽量な Architecture Signature artifact layer を置く。
@@ -467,6 +530,57 @@ bounded-complete:
 unknown-completeness:
   witness が出ていないことを split の証拠には使わない。
 ```
+
+### 7.1 Report Soundness
+
+Report soundness は、Feature Extension Report が theorem package を正しく引用していることを
+保証する。
+
+```text
+ReportClaimsProved report claim
+  + TheoremReferenceValid report claim
+  + AllPreconditionsDischarged report claim
+  ->
+  ClaimHoldsInInterpretedArchitecture report claim
+```
+
+Report は、前提条件、coverage、exactness assumption、non-conclusions を省略してはならない。
+
+### 7.2 Witness Traceability
+
+Witness traceability は、report に出た obstruction witness が code location、
+runtime trace、policy rule、semantic contract、manual annotation のいずれかへ辿れることを
+要求する。
+
+```text
+ReportContainsWitness report w
+  + WitnessTraceableToEvidence air w evidence
+  ->
+  EvidenceSupportsWitness evidence w
+```
+
+traceability がない witness は、`ASSUMED` または `UNMEASURED` として表示し、
+`MEASURED` witness と混同しない。
+
+### 7.3 Coverage / Exactness Checker
+
+Coverage / Exactness Checker は、theorem precondition checker の前段で、
+測定 universe と extractor の限界を明示する。
+
+```text
+- component universe coverage checker
+- static dependency extraction coverage checker
+- runtime telemetry coverage checker
+- semantic diagram coverage checker
+- contract / test coverage checker
+- unsupported construct detector
+- stale evidence detector
+- AI session human-review checker
+```
+
+この checker の結果は、claim taxonomy と split status に直接反映する。
+たとえば coverage が不足している場合、non-split witness が出ていないことを
+split の証拠にしてはならない。
 
 ## 8. Extractor 方針
 
@@ -692,6 +806,48 @@ report:
 ```
 
 この例は、static split が成立しても semantic layer に obstruction が残りうることを示す。
+
+### 12.4 Benchmark suite
+
+benchmark suite は、数学設計書の canonical examples とツール設計書の extractor / report を
+接続する。
+
+```text
+- static split success example
+- static non-split hidden interaction example
+- runtime-only exposure example
+- semantic curvature / non-commuting diagram example
+- complexity transfer example
+- repair suggestion example
+- migration sequence example
+- synthesis success example
+- no-solution certificate example
+- unsupported construct / coverage gap example
+- AI session strict-mode example
+```
+
+各 benchmark は、input repository / AIR / Signature artifact / Feature Extension Report /
+expected claim classification を持つ。
+
+### 12.5 Standardization targets
+
+標準化対象は次である。
+
+```text
+- AIR schema
+- Architecture Signature artifact schema
+- obstruction witness schema
+- Feature Extension Report format
+- claim taxonomy
+- coverage / exactness metadata format
+- algebraic annotation format
+- operation trace format
+- repair suggestion format
+- synthesis constraint format
+- no-solution certificate format
+- benchmark suite format
+- CI integration protocol
+```
 
 ## 13. Roadmap
 

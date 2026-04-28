@@ -8,16 +8,20 @@
 
 1. [研究の最終ゴール](research_goal.md)
 2. [研究概要](aat_v2_overview.md)
-3. [アーキテクチャ零曲率定理 Lean 化設計](formal/flatness_obstruction_lean_design.md)
-4. [Paper-ready research note outline](research_note_outline.md)
-5. [設計原則の分類](design_principle_classification.md)
-6. [証明義務と実証仮説](proof_obligations.md)
-7. [Lean 定義・定理索引](formal/lean_theorem_index.md)
+3. [AAT v2 数学設計書](aat_v2_mathematical_design.md)
+4. [AAT v2 ツール設計書](aat_v2_tooling_design.md)
+5. [アーキテクチャ零曲率定理 Lean 化設計](formal/flatness_obstruction_lean_design.md)
+6. [Paper-ready research note outline](research_note_outline.md)
+7. [設計原則の分類](design_principle_classification.md)
+8. [証明義務と実証仮説](proof_obligations.md)
+9. [Lean 定義・定理索引](formal/lean_theorem_index.md)
 
 ## 全体文書
 
 - [研究概要](aat_v2_overview.md): アーキテクチャ零曲率定理を中心に置いた現在の理論構成、Signature v0/v1 の位置づけ。
 - [研究の最終ゴール](research_goal.md): アーキテクチャ零曲率定理を軸に、完成時に何を説明・測定できる状態を目指すか。
+- [AAT v2 数学設計書](aat_v2_mathematical_design.md): AAT を機能追加による architecture extension theory として整理し、split extension、obstruction witness、Architecture Extension Formula、homotopy skeleton、解析的 representation の責務境界を定義する。
+- [AAT v2 ツール設計書](aat_v2_tooling_design.md): Feature Extension Report、AIR、claim taxonomy、coverage metadata、AI session の厳格扱い、CI integration を定義する。
 - [Paper-ready research note outline](research_note_outline.md): 外部説明用 technical note / paper outline として、Lean proof、executable metric、empirical hypothesis の責務境界を圧縮した文書。
 - [設計原則の分類](design_principle_classification.md): SOLID, Layered, Clean Architecture, Event Sourcing, Saga, CRUD などの役割分担。
 - [証明義務と実証仮説](proof_obligations.md): 未解決の proof obligation と empirical hypothesis の台帳。
@@ -47,6 +51,10 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 `docs/prd/` には、実装前または検討中の product requirement document を置く。
 PRD の内容は、そのまま証明済み主張とは扱わず、実装・設計メモ・proof obligation へ分解してから追跡する。
+
+## Archive
+
+- [AAT v2 research requirements revised split](archive/aat_v2_research_requirements_revised_split.md): 数学設計書とツール設計書へ分割する前の原本。
 
 ## Empirical pilot
 
