@@ -628,6 +628,10 @@ ArchitectureFlatWithin U X'
 
 AAT は、対応する coverage と zero-reflection assumptions が明示的に discharge されない限り、
 bounded theorem package から global architecture flatness を推論しない。
+Global architecture flatness を述語として使う場合も、主語は bounded
+`ArchitectureFlatWithin` に残し、exhaustive coverage、exact observation、
+no-unmeasured required axis、non-conclusions を含む certificate からの completion
+corollary としてのみ読む。
 
 層別には次に分ける。
 
@@ -1329,6 +1333,8 @@ ZeroReflectingSum V :=
   の下でのみ証明する。
 - Fundamental Theorem of Architectural Flatness は、
   bounded theorem package として定義する。
+- Global flatness は primary theorem ではなく、coverage / exactness /
+  no-unmeasured-axis が閉じた certificate による completion corollary として扱う。
 ```
 
 ### 13.3 Feature Extension Core

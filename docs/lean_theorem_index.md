@@ -611,6 +611,16 @@ File: `Formal/Arch/Flatness.lean`
 | `runtimeFlatWithin_of_architectureFlatWithin` | `theorem` | bounded architecture flatness から runtime flatness を取り出す。 | `proved` |
 | `semanticFlatWithin_of_architectureFlatWithin` | `theorem` | bounded architecture flatness から semantic flatness を取り出す。 | `proved` |
 | `noUnmeasuredRequiredAxis_of_architectureFlatWithin` | `theorem` | bounded architecture flatness から coverage package を取り出す。 | `proved` |
+| `ExhaustiveFlatnessCoverage` | `def` | bounded flatness を global completion として読むための exhaustive coverage premise。`NoUnmeasuredRequiredAxis` を明示名で公開する。 | `defined only` |
+| `ExactFlatnessObservation` | `def` | selected static / runtime / semantic flatness evidence を bounded `ArchitectureFlatWithin` へまとめる exact observation bridge。extractor / telemetry completeness は主張しない。 | `defined only` |
+| `exactFlatnessObservation_of_exhaustiveCoverage` | `theorem` | exhaustive coverage から既存三層 flatness の exact-observation bridge を構成する。 | `proved` |
+| `GlobalFlatCertificate` | `structure` | `ArchitectureFlatWithin`、exhaustive coverage、exact observation、non-conclusions を束ね、global flatness を completion corollary として読むための certificate。 | `defined only` |
+| `ArchitectureFlat` | `def` | `GlobalFlatCertificate` の存在として定義される global completion predicate。primary theorem package ではない。 | `defined only` |
+| `GlobalFlatCertificate.architectureFlatWithin` | `theorem` | certificate から underlying bounded flatness を取り出す。 | `proved` |
+| `GlobalFlatCertificate.exhaustiveFlatnessCoverage` | `theorem` | certificate から exhaustive coverage premise を取り出す。 | `proved` |
+| `GlobalFlatCertificate.exactFlatnessObservation` | `theorem` | certificate から exact observation premise を取り出す。 | `proved` |
+| `GlobalFlatCertificate.nonConclusions_recorded` | `theorem` | certificate が記録する non-conclusions を取り出す。 | `proved` |
+| `globalFlat_of_within_exhaustive` | `theorem` | `ArchitectureFlatWithin` を、exhaustive coverage / exact observation / recorded non-conclusions 前提つきで `ArchitectureFlat` へ上げる completion corollary。 | `proved` |
 | `ExtensionCoverageComplete` | `def` | feature extension の core embedding、feature embedding、extended static edges、declared coverage assumptions が supplied extended universe で cover されること。 | `defined only` |
 | `StaticSplitExtensionCoverageComplete` | `def` | `StaticSplitExtension` 用の coverage package。 | `defined only` |
 | `coreEmbedding_mem_of_extensionCoverageComplete` | `theorem` | complete extension coverage から core embedding の universe membership を得る。 | `proved` |

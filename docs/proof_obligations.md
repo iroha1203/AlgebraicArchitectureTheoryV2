@@ -193,7 +193,8 @@ analysis とし、その他は必要データが揃う場合の exploratory anal
 数学設計書の中心 theorem 候補は、現時点では無条件の global theorem ではなく、
 coverage-aware / bounded theorem package として扱う。今後も
 `ArchitectureFlatWithin` を主語にし、global `ArchitectureFlat` は coverage /
-exactness / no-unmeasured-axis が閉じた場合の completion corollary として検討する。
+exactness / no-unmeasured-axis が閉じた場合の certificate-backed completion
+corollary として扱う。
 
 この方針により、AAT v2 は「アーキテクチャが無条件に良い」と主張するのではなく、
 どの universe、coverage、observation model、witness family の下で、どの不変量が
@@ -201,7 +202,7 @@ exactness / no-unmeasured-axis が閉じた場合の completion corollary とし
 
 | 領域 | 次の扱い | Lean status |
 | --- | --- | --- |
-| global flatness completion | `GlobalFlatCertificate` や `global_of_within_exhaustive` のような certificate theorem として検討する。global theorem を primary theorem にはしない。Issue [#308](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/308) | `future proof obligation` |
+| global flatness completion | `GlobalFlatCertificate`, `ArchitectureFlat`, `globalFlat_of_within_exhaustive` を certificate theorem として定義する。`ArchitectureFlatWithin` を primary theorem とし、global theorem は exhaustive coverage / exact observation / recorded non-conclusions がそろう場合の completion corollary に限る。Issue [#308](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/308) | `defined only` / `proved` for completion accessors |
 | claim / evidence boundary | `ClaimLevel`, `MeasurementBoundary`, `ArchitectureClaim` で `formal`, `tooling`, `empirical`, `hypothesis` の claim level と non-conclusions を明示する。tooling output と Lean theorem の境界、および unmeasured と measured-zero の区別を保つ。Issue [#309](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/309) | `defined only` / `proved` for boundary accessors |
 | weighted numerical curvature | 現在の zero-separating / finite measured curvature bridge を、positive weight や zero-reflecting weighted sum 前提つきの bounded theorem へ拡張する。cost correlation は empirical hypothesis に残す。Issue [#310](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/310) | `future proof obligation` |
 | complexity transfer beyond bounded package | 既存の bounded complexity transfer package を土台に、`transfer_or_gap` や `no_free_elimination_bounded` 型の theorem を検討する。global conservation / lower bound は将来拡張とする。Issue [#311](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/311) | `future proof obligation` |
