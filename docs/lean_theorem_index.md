@@ -248,7 +248,7 @@ File: `Formal/Arch/Operation.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
-| `ArchitectureOperationKind` | `inductive` | Phase A3 の最初の対象である `compose`, `replace`, `protect`, `repair` の operation family tag。 | `defined only` |
+| `ArchitectureOperationKind` | `inductive` | Phase A3 の最初の対象である `compose`, `replace`, `protect`, `reverse`, `repair` の operation family tag。 | `defined only` |
 | `ArchitectureOperationKind.label` | `def` | theorem package や docs から参照するための operation tag label。 | `defined only` |
 | `ProofObligation` | `structure` | formal universe、required laws、invariant family、witness universe、coverage / exactness、operation precondition、conclusion、non-conclusions を束ねる最小 schema。 | `defined only` |
 | `ProofObligation.AssumptionsHold` | `def` | proof obligation の visible assumptions をまとめる。 | `defined only` |
@@ -259,6 +259,7 @@ File: `Formal/Arch/Operation.lean`
 | `OperationProofObligation.compose` | `def` | `compose` operation 用 proof-obligation package constructor。 | `defined only` |
 | `OperationProofObligation.replace` | `def` | `replace` operation 用 proof-obligation package constructor。 | `defined only` |
 | `OperationProofObligation.protect` | `def` | `protect` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.reverse` | `def` | `reverse` operation 用 proof-obligation package constructor。 | `defined only` |
 | `OperationProofObligation.repair` | `def` | `repair` operation 用 proof-obligation package constructor。 | `defined only` |
 | `ArchitectureOperation` | `structure` | operation kind、source / target state、precondition、生成 proof obligation、operation tag 一致、前後 witness family、後段 witness から前段 witness への mapping と soundness field を束ねる。 | `defined only` |
 | `ArchitectureOperation.GeneratedObligation` | `def` | operation に紐づく generated proof obligation を取り出す。 | `defined only` |
@@ -266,6 +267,39 @@ File: `Formal/Arch/Operation.lean`
 | `ArchitectureOperation.PreconditionsHold` | `def` | operation と generated obligation の visible precondition をまとめる。 | `defined only` |
 | `ArchitectureOperation.witnessMapping_sound` | `theorem` | post-operation witness から pre-operation witness への片方向 mapping soundness を取り出す。 | `proved` |
 | `ArchitectureOperation.exists_sourceWitness_of_targetWitness` | `theorem` | post-operation witness があれば、対応する pre-operation witness が存在する。 | `proved` |
+
+## Concrete Graph Operation Kernel
+
+File: `Formal/Arch/OperationKernel.lean`
+
+Issue [#298](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/298)
+の対象範囲は、finite `ArchGraph` 上で扱える concrete graph transformation kernel を
+定義し、既存の `ArchitectureOperation` schema と接続することである。現段階では
+`reverse` と graph-level identity としての `protect` に限定し、無条件の全 operation laws、
+global flatness preservation、runtime / semantic protection の完全性は主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `ConcreteGraphOperation` | `structure` | finite `ArchGraph` 上の concrete operation kernel。operation kind、source / target、precondition、non-conclusion を束ねる。 | `defined only` |
+| `ConcreteGraphOperation.generatedProofObligation` | `def` | concrete operation から既存 `OperationProofObligation` schema へ接続する。 | `defined only` |
+| `ConcreteGraphOperation.toArchitectureOperation` | `def` | concrete operation を既存 `ArchitectureOperation` schema へ埋め込む。 | `defined only` |
+| `ConcreteGraphOperation.toArchitectureOperation_kind` | `theorem` | schema 埋め込みが operation tag を保存する。 | `proved` |
+| `ConcreteGraphOperation.toArchitectureOperation_source` | `theorem` | schema 埋め込みが source graph を保存する。 | `proved` |
+| `ConcreteGraphOperation.toArchitectureOperation_target` | `theorem` | schema 埋め込みが target graph を保存する。 | `proved` |
+| `ArchGraph.reverse` | `def` | dependency edge の向きを反転した graph を定義する。 | `defined only` |
+| `ArchGraph.reverse_edge_iff` | `theorem` | reversed graph の edge は元 graph の逆向き edge と同値である。 | `proved` |
+| `ArchGraph.reverse_reverse_edge_iff` | `theorem` | `reverse` を二回適用すると edge relation が元に戻る。 | `proved` |
+| `FiniteArchGraph.reverse` | `def` | finite component universe を保ったまま dependency edge を反転する。 | `defined only` |
+| `FiniteArchGraph.reverse_edge_iff` | `theorem` | finite reversed graph の edge は元 graph の逆向き edge と同値である。 | `proved` |
+| `FiniteArchGraph.reverse_reverse_edge_iff` | `theorem` | finite graph の `reverse` 二回適用が edge relation を復元する。 | `proved` |
+| `FiniteArchGraph.protect` | `def` | graph-level protect kernel を static graph の identity transform として定義する。 | `defined only` |
+| `FiniteArchGraph.protect_edge_iff` | `theorem` | graph-level protect kernel が edge relation を保存する。 | `proved` |
+| `ConcreteGraphOperation.reverse` | `def` | finite graph の concrete `reverse` operation。 | `defined only` |
+| `ConcreteGraphOperation.protect` | `def` | finite graph の concrete `protect` operation。 | `defined only` |
+| `ConcreteGraphOperation.reverse_kind` | `theorem` | concrete reverse operation が `reverse` tag を持つ。 | `proved` |
+| `ConcreteGraphOperation.protect_kind` | `theorem` | concrete protect operation が `protect` tag を持つ。 | `proved` |
+| `ConcreteGraphOperation.reverse_schema_kind` | `theorem` | concrete reverse の schema 埋め込みが `reverse` tag を持つ。 | `proved` |
+| `ConcreteGraphOperation.protect_schema_kind` | `theorem` | concrete protect の schema 埋め込みが `protect` tag を持つ。 | `proved` |
 
 ## Architecture Calculus Laws
 
