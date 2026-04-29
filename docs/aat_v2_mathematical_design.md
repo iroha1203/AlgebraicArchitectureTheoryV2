@@ -460,6 +460,41 @@ Event Sourcing:
   event sequence monoid と replay invariant。
 ```
 
+### 4.1 Design principle classification
+
+設計原則は、自然言語の slogan としてではなく、どの operation family と
+invariant family を導入するかで読む。
+
+| 設計原則 / パターン | operation / invariant の読み | 主に見る不変量 | 層 |
+| --- | --- | --- | --- |
+| SRP | 責務境界の分離と局所凝集性の保存 | 局所凝集性 | 局所契約層 |
+| OCP | 既存構造を壊さない extension operation | 拡張安定性 | 局所契約層 |
+| LSP | replacement operation に対する observational invariant | 置換可能性 | 局所契約層 |
+| ISP | interface projection の細分化 | インターフェース分離 | 局所契約層 |
+| DIP | concrete graph から abstraction graph への projection soundness | 抽象射影の整合性 | 局所契約層 |
+| Layered Architecture | ranking / layering を保存する dependency operation | 分解可能性、非循環性 | 大域構造層 |
+| Clean Architecture | boundary-preserving / inward-dependency operation | 境界保存 | 大域構造層 |
+| Event Sourcing | event sequence monoid と replay invariant | 履歴再構成性 | 状態遷移代数層 |
+| Saga | compensation / partial inverse を持つ state transition algebra | 局所回復性 | 状態遷移代数層 |
+| CRUD | 状態上書き relation の単純化 | 操作単純性、履歴喪失 | 状態遷移代数層 |
+| Circuit Breaker | runtime propagation を局所化する protection operation | 障害局所性 | 実行時依存層 |
+| Replicated Log | failure model 下の ordering / convergence operation | 条件付き収束性 | 分散収束層 |
+
+この分類は、SOLID を万能原理として扱わないためのものである。SOLID / DIP / LSP は
+局所契約層の不変量を扱うが、大域的な `Decomposable` や `StrictLayered` を単独では
+保証しない。Layered / Clean Architecture は大域構造層、Event Sourcing / Saga / CRUD は
+状態遷移代数層、Circuit Breaker / Replicated Log は実行時依存・分散収束層の
+不変量を扱う。
+
+SOLID-style local contracts と `Decomposable` の非含意、および strong DIP / LSP
+互換でも抽象層循環により `¬ Decomposable` となる反例は、Lean 側の
+`Formal/Arch/SolidCounterexample.lean` と
+[Lean 定義・定理索引](lean_theorem_index.md#solid-counterexamples) で追跡する。
+Event Sourcing / Saga / CRUD の測定設計は
+[relationComplexity 設計](design/relation_complexity_design.md) に分離し、
+Circuit Breaker coverage や runtime propagation は
+[runtimePropagation 設計](design/runtime_propagation_design.md) に分離する。
+
 この視点では、AAT の価値は「SOLID 違反を見つけること」ではない。
 
 ```text

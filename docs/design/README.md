@@ -12,7 +12,6 @@
 | [Signature snapshot store schema](signature_snapshot_store_schema.md) | tooling schema / empirical hypothesis | repository revision ごとの Signature snapshot を蓄積し、週次 scan や任意期間 diff に使う最小 store schema を固定する。 |
 | [boundary / abstraction policy v0 schema](boundary_abstraction_policy_schema.md) | tooling design / empirical hypothesis | boundary / abstraction violation count を測る policy file schema と counting unit を固定する。 |
 | [ComponentUniverse validation report v0](component_universe_validation_report.md) | tooling design / empirical hypothesis | extractor output と Lean `ComponentUniverse` の責務境界を検査する report schema と CLI contract を固定する。 |
-| [ArchitectureSignature v1 後半戦まとめ](signature_v1_wrapup.md) | Lean schema / design decision | v0 互換軸、v1 core、optional extension axis の責務境界をまとめる。 |
 | [relationComplexity 設計](relation_complexity_design.md) | tooling design / empirical hypothesis | 状態遷移代数層の複雑度を workflow observation として測る方針を整理する。 |
 | [runtimePropagation 設計](runtime_propagation_design.md) | Lean executable metric / future proof obligation / tooling boundary | 0/1 `RuntimeDependencyGraph` 上の exposure radius、runtime zero bridge、blast radius、runtime metadata の境界を整理する。 |
 | [Projection soundness と exact projection の使い分け](projection_exact_soundness.md) | Lean bridge design | `ProjectionSound` で足りる主張と `ProjectionExact` が必要な refinement を分ける。 |

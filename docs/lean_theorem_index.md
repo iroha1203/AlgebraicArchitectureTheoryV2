@@ -7,7 +7,7 @@
 この索引は手動管理である。Lean 定義・定理を追加、削除、rename する PR では、研究上参照する主要 API に影響がある場合にこの文書も更新する。
 
 `Formal/Arch` 以下の責務分類、file move の判断基準、当面の配置ルールは
-[Lean module 階層整理方針](lean_module_organization.md) に分離する。
+[Lean module 階層整理方針](formal/lean_module_organization.md) に分離する。
 
 ## Graph / Walk
 
@@ -720,4 +720,4 @@ File: `Formal/Arch/SolidCounterexample.lean`
 - extractor output が `ComponentUniverse` の完全な witness であるという主張。
 - `rho(A)` と変更波及・障害伝播コストの相関。
 
-これらは [証明義務と実証仮説](../proof_obligations.md) または [個別設計メモ](../design/README.md) で扱う。
+これらは [証明義務と実証仮説](proof_obligations.md) または [個別設計メモ](design/README.md) で扱う。

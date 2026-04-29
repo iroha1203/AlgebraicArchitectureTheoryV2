@@ -92,4 +92,4 @@ bridge theorem である。
 Issue #82 では、`projectionSoundnessViolation` を soundness-only metric として固定し、
 exact projection は抽象辺を具体依存由来として読むための refinement として分離する。
 `DIPCompatible` と `StrongDIPCompatible` の使い分けは
-[設計原則の分類](../design_principle_classification.md) と整合する。
+[AAT v2 数学設計書の Design principle classification](../aat_v2_mathematical_design.md#41-design-principle-classification) と整合する。
