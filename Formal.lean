@@ -31,3 +31,4 @@ import Formal.Arch.SignatureLawfulness
 import Formal.Arch.Flatness
 import Formal.Arch.ArchitectureExtensionFormula
 import Formal.Arch.AnalyticRepresentation
+import Formal.Arch.CertifiedArchitecture
