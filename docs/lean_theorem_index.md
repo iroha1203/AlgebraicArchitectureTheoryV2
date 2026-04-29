@@ -391,6 +391,36 @@ completeness、runtime / semantic universe completeness、または universe 外
 coverage assumptions を明示する `LawfulExtensionPreservesFlatness` として
 `Formal/Arch/Flatness.lean` で証明済みである。
 
+## Complexity Transfer
+
+File: `Formal/Arch/ComplexityTransfer.lean`
+
+Issue [#288](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/288)
+の対象範囲は、static complexity の削減が proof elimination なのか、runtime /
+semantic / policy axis への selected transfer witness なのかを返す bounded theorem
+package として整理することである。empirical cost 改善、global complexity
+conservation、selected witness universe 外の completeness は non-conclusions として
+扱う。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `ComplexityTransferTarget` | `inductive` | runtime / semantic / policy の selected transfer target axis。 | `defined only` |
+| `ComplexityTransferTarget.label` | `def` | documentation-facing な target label。 | `defined only` |
+| `ArchitectureTransform` | `structure` | selected transform の source / target と bounded-universe assumption、non-conclusions を束ねる schema。 | `defined only` |
+| `ArchitectureTransform.RecordsNonConclusions` | `def` | transform schema の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `SelectedComplexityMeasure` | `structure` | bounded measurement universe に相対化された natural-valued complexity measure。 | `defined only` |
+| `ReducesStaticComplexity` | `def` | selected static measure が transform target で source より小さいこと。 | `defined only` |
+| `RequirementSchema` | `structure` | selected requirement universe と satisfaction predicate を束ねる schema。 | `defined only` |
+| `PreservesRequirements` | `def` | selected requirements の satisfaction truth が source / target で一致すること。 | `defined only` |
+| `ComplexityTransferSchema` | `structure` | proof elimination predicate、target-indexed transfer witness、selected witness predicate、assumptions、non-conclusions を束ねる schema。 | `defined only` |
+| `ComplexityEliminatedByProof` | `def` | selected transform の complexity が proof により消去されたこと。 | `defined only` |
+| `ComplexityTransferredTo` | `def` | selected witness によって target axis への transfer を示すこと。 | `defined only` |
+| `ComplexityTransferredTo.has_selectedWitness` | `theorem` | transfer conclusion から selected witness の存在を取り出す。 | `proved` |
+| `BoundedComplexityTransferPackage` | `structure` | selected static reduction と requirement preservation から proof elimination または selected transfer witness を返す bounded theorem package。 | `defined only` |
+| `BoundedComplexityTransferPackage.complexityTransfer_alternative` | `theorem` | bounded theorem package から proof elimination / runtime transfer / semantic transfer / policy transfer の alternative を得る。 | `proved` |
+| `BoundedComplexityTransferPackage.RecordsNonConclusions` | `def` | complexity-transfer package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `BoundedComplexityTransferPackage.records_nonConclusions_iff` | `theorem` | recorded non-conclusion predicate が schema field と一致すること。 | `proved` |
+
 ## Architecture Path
 
 File: `Formal/Arch/ArchitecturePath.lean`
