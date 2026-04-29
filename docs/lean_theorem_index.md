@@ -246,6 +246,14 @@ runtime flatness、semantic flatness、または all feature steps の自動 lif
 
 File: `Formal/Arch/Operation.lean`
 
+Issues [#322](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/322)
+and [#327](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/327)
+audit this schema as the entry point for generated operation proof obligations.
+The useful accessors are the generated-obligation kind theorem, the combined
+precondition predicate, and the one-way witness mapping theorem; this package
+does not by itself assert any unconditional operation law or global flatness
+preservation.
+
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `ArchitectureOperationKind` | `inductive` | Phase A3 の最初の対象である `compose`, `replace`, `protect`, `reverse`, `repair` の operation family tag。 | `defined only` |
@@ -310,6 +318,10 @@ Issue [#279](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 bounded universe、compatibility、coverage、exactness、observation equivalence を明示する
 theorem package として扱うことである。global associativity、全 operation の冪等性、
 global flatness preservation は主張しない。
+Issues [#322](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/322)
+and [#327](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/327)
+reuse this section as the bounded law audit surface for compose / replace /
+protect / reverse / repair.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -389,6 +401,12 @@ Issue [#277](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 の対象範囲は、既存の local `RepairStepDecreases` から分離して、bounded finite repair、
 synthesis soundness、valid no-solution certificate soundness を schema として整理することである。
 solver が `none` を返すだけでは非存在を主張しない。
+Issues [#322](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/322)
+and [#327](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/327)
+audit the package-level entry points here: finite repair clears only the selected
+obstruction universe under explicit plan assumptions, synthesis soundness only
+reads back produced candidate soundness, and no-solution soundness requires a
+valid certificate.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -471,6 +489,14 @@ semantic / policy axis への selected transfer witness なのかを返す bound
 package として整理することである。empirical cost 改善、global complexity
 conservation、selected witness universe 外の completeness は non-conclusions として
 扱う。
+Issues [#323](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/323)
+and [#328](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/328)
+audit this section as the bounded complexity-transfer entry point.  The
+representative theorem is
+`BoundedComplexityTransferPackage.no_free_elimination_bounded`: when selected
+static reduction and requirement preservation hold, non-elimination by proof
+forces a selected runtime / semantic / policy transfer witness, not a global
+conservation or empirical cost theorem.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1143,6 +1169,12 @@ Issue [#280](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 map と、その strength predicate を分離して定義することである。zero-reflecting /
 obstruction-reflecting は coverage、witness completeness、semantic contract coverage に相対化し、
 witness absence だけから flatness を主張しない。
+Issues [#323](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/323)
+and [#328](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/328)
+audit this section as the representation bridge entry point.  The preserving
+directions move structural zero / obstruction facts into the analytic domain,
+while the reflecting directions require the recorded coverage and completeness
+assumptions before returning to structural facts.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
