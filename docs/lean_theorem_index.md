@@ -590,6 +590,13 @@ zero 性、実コード extractor completeness は主張しない。
 
 File: `Formal/Arch/Flatness.lean`
 
+#325 の監査対象範囲では、中心入口は次のように読む。
+
+- `ArchitectureFlatWithin` が primary な bounded / coverage-aware flatness predicate である。
+- `LawfulExtensionPreservesFlatness` は static split extension だけからではなく、extension coverage、static side conditions、runtime coverage / flatness、semantic coverage / flatness を明示前提として `ArchitectureFlatWithin` を構成する。
+- `LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` は `RuntimeSemanticSplitPreservation` により runtime / semantic flatness 前提を discharge する接続 corollary であり、runtime telemetry completeness、semantic universe completeness、extractor completeness は主張しない。
+- `ArchitectureFlat` は `GlobalFlatCertificate` による completion predicate であり、`globalFlat_of_within_exhaustive` の exhaustive coverage / exact observation / recorded non-conclusions 前提なしに bounded theorem package から昇格しない。
+
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `ArchitectureFlatnessModel` | `structure` | static / runtime / semantic の三層 flatness を一つの architecture model として束ねる。runtime policy と semantic required / measured diagram universe を明示し、未測定軸を zero と見なさない境界を置く。 | `defined only` |
