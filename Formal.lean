@@ -8,6 +8,7 @@ import Formal.Arch.Projection
 import Formal.Arch.Observation
 import Formal.Arch.LSP
 import Formal.Arch.LocalReplacement
+import Formal.Arch.FeatureExtension
 import Formal.Arch.Obstruction
 import Formal.Arch.Lawfulness
 import Formal.Arch.StateEffect
