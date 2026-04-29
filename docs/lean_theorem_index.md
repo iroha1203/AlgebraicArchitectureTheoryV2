@@ -475,9 +475,14 @@ conservation、selected witness universe 外の completeness は non-conclusions
 | `ComplexityTransferSchema` | `structure` | proof elimination predicate、target-indexed transfer witness、selected witness predicate、assumptions、non-conclusions を束ねる schema。 | `defined only` |
 | `ComplexityEliminatedByProof` | `def` | selected transform の complexity が proof により消去されたこと。 | `defined only` |
 | `ComplexityTransferredTo` | `def` | selected witness によって target axis への transfer を示すこと。 | `defined only` |
+| `ComplexityTransferredWithinSelectedTargets` | `def` | selected witness が runtime / semantic / policy のいずれかの bounded target axis へ移転すること。 | `defined only` |
+| `ComplexityTransferAlternative` | `def` | selected transform について proof elimination または selected target transfer の bounded alternative。 | `defined only` |
+| `ComplexityTransferResidualGap` | `def` | coverage / exactness が閉じていない residual gap を bounded diagnostic predicate として記録する。 | `defined only` |
 | `ComplexityTransferredTo.has_selectedWitness` | `theorem` | transfer conclusion から selected witness の存在を取り出す。 | `proved` |
 | `BoundedComplexityTransferPackage` | `structure` | selected static reduction と requirement preservation から proof elimination または selected transfer witness を返す bounded theorem package。 | `defined only` |
 | `BoundedComplexityTransferPackage.complexityTransfer_alternative` | `theorem` | bounded theorem package から proof elimination / runtime transfer / semantic transfer / policy transfer の alternative を得る。 | `proved` |
+| `BoundedComplexityTransferPackage.complexityTransfer_selectedAlternative` | `theorem` | bounded theorem package から named selected-target predicate を使った `ComplexityTransferAlternative` を得る。 | `proved` |
+| `BoundedComplexityTransferPackage.no_free_elimination_bounded` | `theorem` | selected static reduction と requirement preservation の下で proof elimination がなければ、runtime / semantic / policy の selected transfer witness がある。 | `proved` |
 | `BoundedComplexityTransferPackage.RecordsNonConclusions` | `def` | complexity-transfer package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `BoundedComplexityTransferPackage.records_nonConclusions_iff` | `theorem` | recorded non-conclusion predicate が schema field と一致すること。 | `proved` |
 

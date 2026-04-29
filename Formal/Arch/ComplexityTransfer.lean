@@ -119,6 +119,44 @@ def ComplexityTransferredTo
     (t : Transform) : Prop :=
   ∃ witness, S.selectedWitness witness ∧ S.transferWitness target t witness
 
+/--
+Transfer to one of the selected bounded diagnostic targets.
+
+This keeps the conclusion at the runtime / semantic / policy axis level and
+does not assert a global conservation law or lower bound.
+-/
+def ComplexityTransferredWithinSelectedTargets
+    {Transform : Type v} {Witness : Type z}
+    (S : ComplexityTransferSchema Transform Witness)
+    (t : Transform) : Prop :=
+  ComplexityTransferredTo S .runtime t ∨
+    ComplexityTransferredTo S .semantic t ∨
+    ComplexityTransferredTo S .policy t
+
+/--
+The bounded alternative returned by the complexity-transfer package.
+
+Either the selected complexity was eliminated by proof, or it was transferred
+to one of the selected bounded target axes.
+-/
+def ComplexityTransferAlternative
+    {Transform : Type v} {Witness : Type z}
+    (S : ComplexityTransferSchema Transform Witness)
+    (t : Transform) : Prop :=
+  ComplexityEliminatedByProof S t ∨
+    ComplexityTransferredWithinSelectedTargets S t
+
+/--
+Residual gap for the bounded complexity-transfer schema.
+
+This records that coverage or exactness is not closed.  It is a bounded
+diagnostic predicate, not a theorem claiming global complexity conservation.
+-/
+def ComplexityTransferResidualGap
+    {Transform : Type v} {Witness : Type z}
+    (S : ComplexityTransferSchema Transform Witness) : Prop :=
+  ¬ S.coverageAssumptions ∨ ¬ S.exactnessAssumptions
+
 namespace ComplexityTransferredTo
 
 variable {Transform : Type v} {Witness : Type z}
@@ -190,6 +228,41 @@ theorem complexityTransfer_alternative
       ComplexityTransferredTo S .semantic t ∨
       ComplexityTransferredTo S .policy t :=
   pkg.transferAlternative t hReduces hPreserves
+
+/--
+Bounded complexity-transfer alternative using the named selected-target
+predicate.
+-/
+theorem complexityTransfer_selectedAlternative
+    (pkg :
+      BoundedComplexityTransferPackage T staticMeasure requirements S)
+    (t : Transform)
+    (hReduces : ReducesStaticComplexity T staticMeasure t)
+    (hPreserves :
+      PreservesRequirements requirements (T.source t) (T.target t)) :
+    ComplexityTransferAlternative S t :=
+  pkg.transferAlternative t hReduces hPreserves
+
+/--
+No-free-elimination corollary for the bounded package.
+
+If selected static complexity decreases, selected requirements are preserved,
+and proof elimination is not available, then the package must expose a selected
+runtime, semantic, or policy transfer witness.
+-/
+theorem no_free_elimination_bounded
+    (pkg :
+      BoundedComplexityTransferPackage T staticMeasure requirements S)
+    (t : Transform)
+    (hReduces : ReducesStaticComplexity T staticMeasure t)
+    (hPreserves :
+      PreservesRequirements requirements (T.source t) (T.target t))
+    (hNotEliminated : ¬ ComplexityEliminatedByProof S t) :
+    ComplexityTransferredWithinSelectedTargets S t := by
+  rcases complexityTransfer_selectedAlternative
+      pkg t hReduces hPreserves with hEliminated | hTransferred
+  · exact False.elim (hNotEliminated hEliminated)
+  · exact hTransferred
 
 /-- The theorem package explicitly records its non-conclusion clause. -/
 def RecordsNonConclusions
