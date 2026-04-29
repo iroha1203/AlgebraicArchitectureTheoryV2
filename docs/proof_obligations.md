@@ -173,6 +173,33 @@ Lean status:
 - semantic diagram list の完全性や telemetry completeness は Lean theorem ではなく、
   tooling / empirical evidence の別前提として扱う。
 
+Issue [#247](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/247)
+では、architecture evolution を有限 path として扱う最小 core を
+`Formal.Arch.ArchitecturePath` に追加した。Lean では `ArchitecturePath Step X Y`
+が start / target state を型 index として保持し、`ApplyPath X p` は path の target
+state を返す。`PathHomotopy` は refl / symm / trans と、independent square swap、
+same external contract replacement、repair fill を生成規則として持つ。ただし、
+independence、external contract、repair fill の意味論は後続 theorem が与える
+predicate 引数として残し、full higher category / HoTT は導入しない。
+
+Lean status:
+
+- `defined only`: `ArchitecturePath`, `ArchitecturePath.ApplyPath`,
+  `ArchitecturePath.length`, `ArchitecturePath.append`,
+  `ArchitecturePath.InvariantHolds`, `ArchitecturePath.StepPreservesInvariant`,
+  `ArchitecturePath.EveryStepPreserves`, `ArchitecturePath.PathHomotopy`,
+  `ArchitecturePath.HomotopyInvariant`
+- `proved`: `ArchitecturePath.pathPreservesInvariant`,
+  `ArchitecturePath.architectureHomotopyInvariance`
+
+今後の proof obligation:
+
+- `PathHomotopy` の `IndependentSquare`, `SameExternalContract`, `RepairFill` を、
+  concrete な feature extension / refactoring / semantic diagram filling の theorem と
+  接続する。
+- homotopy invariant の非自明な事例、特に selected flatness や obstruction absence の
+  invariant package を別 Issue で構成する。
+
 | 候補 | 分類 | final theorem での扱い |
 | --- | --- | --- |
 | `closedWalkAcyclicity`, `projectionSoundness`, `lspCompatibility`, `boundaryPolicySoundness`, `abstractionPolicySoundness` | required law | `ArchitectureLawful` と `RequiredSignatureAxesZero` の対象 |
