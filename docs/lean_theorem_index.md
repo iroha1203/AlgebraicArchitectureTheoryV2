@@ -590,7 +590,8 @@ zero 性、実コード extractor completeness は主張しない。
 
 File: `Formal/Arch/Flatness.lean`
 
-#325 の監査対象範囲では、中心入口は次のように読む。
+#320 の Flatness / Feature Extension 統合 theorem package では、
+#325 の API 監査結果を踏まえ、中心入口を次のように読む。
 
 - `ArchitectureFlatWithin` が primary な bounded / coverage-aware flatness predicate である。
 - `LawfulExtensionPreservesFlatness` は static split extension だけからではなく、extension coverage、static side conditions、runtime coverage / flatness、semantic coverage / flatness を明示前提として `ArchitectureFlatWithin` を構成する。
