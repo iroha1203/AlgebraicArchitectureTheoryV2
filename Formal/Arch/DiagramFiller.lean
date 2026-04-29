@@ -45,9 +45,8 @@ A concrete non-fillability witness for a diagram.
 
 The `witness` field is intentionally domain-specific data supplied by the
 caller. The sound part of the witness is the constructive refutation of any
-diagram filler. A future bounded-completeness theorem may show that every
-non-fillable diagram has such a witness in a finite witness universe, but that
-claim is not built into this definition.
+diagram filler. Bounded completeness is stated separately, relative to a finite
+witness universe completeness premise, so it is not built into this definition.
 -/
 structure NonFillabilityWitness {State : Type u}
     {Step : State -> State -> Type v}
@@ -87,7 +86,7 @@ Soundness of non-fillability witnesses.
 
 This is the safe direction: once a concrete witness refutes every filler, the
 diagram is not fillable. The converse requires finite witness coverage and
-exactness assumptions, so it is deliberately left as a future proof obligation.
+exactness assumptions, represented by `WitnessUniverseComplete` below.
 -/
 theorem obstructionAsNonFillability_sound {State : Type u}
     {Step : State -> State -> Type v}
@@ -110,7 +109,7 @@ theorem obstructionAsNonFillability_sound {State : Type u}
   exact h.refutesFiller hFiller
 
 /--
-Bounded completeness premise for the future converse theorem.
+Bounded completeness premise for the converse theorem.
 
 This definition is a named assumption, not a theorem: it says a finite witness
 universe is complete enough to explain non-fillability of this diagram.
@@ -131,6 +130,36 @@ def WitnessUniverseComplete {State : Type u}
     ∃ witness : Witness, witness ∈ U ∧
       NonFillabilityWitnessFor
         IndependentSquare SameExternalContract RepairFill D witness
+
+/--
+Bounded completeness of obstruction-as-non-fillability.
+
+Under a finite witness-universe completeness premise, every non-fillable
+diagram has a selected non-fillability witness in that universe. This theorem
+does not assert global semantic completeness; all coverage is carried by
+`WitnessUniverseComplete`.
+-/
+theorem obstructionAsNonFillability_complete_bounded {State : Type u}
+    {Step : State -> State -> Type v}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {X Y : State} {D : ArchitectureDiagram Step X Y}
+    {Witness : Type w} {U : List Witness}
+    (hComplete :
+      WitnessUniverseComplete
+        IndependentSquare SameExternalContract RepairFill D U)
+    (hNonfillable :
+      ¬ DiagramFiller IndependentSquare SameExternalContract RepairFill D) :
+    ∃ witness : Witness, witness ∈ U ∧
+      NonFillabilityWitnessFor
+        IndependentSquare SameExternalContract RepairFill D witness :=
+  hComplete hNonfillable
 
 /-
 A small path skeleton for the canonical coupon/discount ordering example from

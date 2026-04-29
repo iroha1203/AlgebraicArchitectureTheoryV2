@@ -459,8 +459,13 @@ File: `Formal/Arch/DiagramFiller.lean`
 | `NonFillabilityWitness` | `structure` | domain-specific witness value と、任意の `DiagramFiller` を反駁する soundness 証拠を束ねる。 | `defined only` |
 | `NonFillabilityWitnessFor` | `def` | `NonFillabilityWitness` が特定の witness value `w` についての証人であること。 | `defined only` |
 | `obstructionAsNonFillability_sound` | `theorem` | `NonFillabilityWitnessFor D w` から `¬ DiagramFiller D` を得る片方向 soundness theorem。 | `proved` |
-| `WitnessUniverseComplete` | `def` | bounded completeness theorem 用の有限 witness universe 完全性前提。逆向き theorem 自体は未主張。 | `defined only` |
+| `WitnessUniverseComplete` | `def` | bounded completeness theorem 用の有限 witness universe 完全性前提。 | `defined only` |
+| `obstructionAsNonFillability_complete_bounded` | `theorem` | `WitnessUniverseComplete` と `¬ DiagramFiller D` から、有限 universe 内の `NonFillabilityWitnessFor D w` を得る bounded completeness theorem。 | `proved` |
 | `CouponDiscountExample.couponDiscountDiagram` | `def` | coupon と discount の順序依存例を、二つの operation order を持つ diagram skeleton として表す。 | `defined only` |
+
+Non-conclusions: bounded completeness は `WitnessUniverseComplete` に相対化される。
+global semantic completeness、finite universe 外の witness coverage、実コード extractor
+completeness は主張しない。
 
 ## Flatness
 
