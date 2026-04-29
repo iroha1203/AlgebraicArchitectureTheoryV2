@@ -257,6 +257,37 @@ File: `Formal/Arch/Operation.lean`
 | `ArchitectureOperation.witnessMapping_sound` | `theorem` | post-operation witness から pre-operation witness への片方向 mapping soundness を取り出す。 | `proved` |
 | `ArchitectureOperation.exists_sourceWitness_of_targetWitness` | `theorem` | post-operation witness があれば、対応する pre-operation witness が存在する。 | `proved` |
 
+## Architecture Calculus Laws
+
+File: `Formal/Arch/OperationLaws.lean`
+
+Issue [#279](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/279)
+の対象範囲は、Architecture Calculus law を無条件の algebraic law としてではなく、
+bounded universe、compatibility、coverage、exactness、observation equivalence を明示する
+theorem package として扱うことである。global associativity、全 operation の冪等性、
+global flatness preservation は主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `ArchitectureCalculusLawKind` | `inductive` | `identity`, `associativity`, `refinementAbstraction`, `protectionIdempotence`, `reverseInvolution`, `witnessMappingFunctoriality` の bounded law tag。 | `defined only` |
+| `ArchitectureCalculusLawKind.label` | `def` | documentation-facing な law tag label。 | `defined only` |
+| `ArchitectureCalculusLaw` | `structure` | law kind、operation kind、bounded universe、compatibility / coverage / exactness / observation equivalence、結論、soundness、non-conclusions を束ねる schema。 | `defined only` |
+| `ArchitectureCalculusLaw.AssumptionsHold` | `def` | bounded law package の visible assumptions をまとめる。 | `defined only` |
+| `ArchitectureCalculusLaw.RecordsNonConclusions` | `def` | law package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `ArchitectureCalculusLaw.conclusion_of_assumptions` | `theorem` | bounded assumptions から law conclusion を得る。 | `proved` |
+| `ArchitectureCalculusLaw.identityLaw` | `def` | selected operation kind に対する bounded identity law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.composeAssociativity` | `def` | `compose` operation 用 bounded associativity law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.replaceRefinementAbstraction` | `def` | `replace` operation 用 bounded refinement / abstraction law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.protectIdempotence` | `def` | `protect` operation 用 bounded idempotence law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.reverseInvolution` | `def` | selected operation kind に対する bounded reverse-involution law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.repairMonotonicity` | `def` | `repair` operation 用 bounded witness-mapping / monotonicity law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.identityLaw_kind` | `theorem` | identity law constructor が identity tag を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.composeAssociativity_operationKind` | `theorem` | compose associativity constructor が `compose` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.replaceRefinementAbstraction_operationKind` | `theorem` | replace refinement / abstraction constructor が `replace` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.protectIdempotence_operationKind` | `theorem` | protect idempotence constructor が `protect` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.reverseInvolution_kind` | `theorem` | reverse-involution constructor が reverse-involution tag を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.repairMonotonicity_operationKind` | `theorem` | repair monotonicity constructor が `repair` operation kind を持つこと。 | `proved` |
+
 ## Operation / Invariant Galois
 
 File: `Formal/Arch/OperationInvariant.lean`
@@ -305,6 +336,36 @@ File: `Formal/Arch/Repair.lean`
 
 Non-conclusions: repair theorem package は runtime flatness、semantic flatness、all obstruction removal、
 repair termination、finite repair、synthesis soundness、no-solution certificate soundness を主張しない。
+
+## Repair Synthesis
+
+File: `Formal/Arch/RepairSynthesis.lean`
+
+Issue [#277](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/277)
+の対象範囲は、既存の local `RepairStepDecreases` から分離して、bounded finite repair、
+synthesis soundness、valid no-solution certificate soundness を schema として整理することである。
+solver が `none` を返すだけでは非存在を主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `SelectedObstructionsCleared` | `def` | selected obstruction universe 内の witness が target state に存在しないこと。 | `defined only` |
+| `BoundedRepairPlan` | `structure` | finite bound、step bound、target measure zero、zero measure から selected witness absence への coverage bridge、non-conclusions を束ねる bounded repair plan schema。 | `defined only` |
+| `BoundedRepairPlan.finite_steps_within_initial_measure` | `theorem` | finite repair plan の step 数が initial selected measure bound 内にあることを取り出す。 | `proved` |
+| `BoundedRepairPlan.selectedObstructionsCleared` | `theorem` | bounded repair plan から selected obstruction universe の target clearing を得る。 | `proved` |
+| `BoundedRepairPlan.RecordsNonConclusions` | `def` | bounded repair plan の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `FiniteRepairPackage` | `structure` | bounded repair plan、coverage / exactness assumptions、non-conclusions を束ねる finite repair theorem package。 | `defined only` |
+| `FiniteRepairPackage.selectedObstructionsCleared` | `theorem` | finite repair package から selected obstruction universe の target clearing を得る。 | `proved` |
+| `FiniteRepairPackage.RecordsNonConclusions` | `def` | finite repair package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `SynthesisConstraintSystem` | `structure` | required constraint predicate と state satisfaction predicate を束ねる synthesis problem schema。 | `defined only` |
+| `ArchitectureSatisfies` | `def` | state が required constraints をすべて満たすこと。 | `defined only` |
+| `NoArchitectureSatisfies` | `def` | required constraints をすべて満たす architecture state が存在しないこと。 | `defined only` |
+| `SynthesisSoundnessPackage` | `structure` | produced candidate、candidate soundness、coverage / exactness assumptions、non-conclusions を束ねる synthesis soundness package。 | `defined only` |
+| `SynthesisSoundnessPackage.candidate_satisfies` | `theorem` | produced candidate が required constraints を満たすことを取り出す。 | `proved` |
+| `SynthesisSoundnessPackage.RecordsNonConclusions` | `def` | synthesis package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `NoSolutionCertificate` | `structure` | certificate value、valid predicate、valid certificate から no-solution conclusion への soundness、coverage / exactness assumptions、non-conclusions を束ねる。 | `defined only` |
+| `ValidNoSolutionCertificate` | `def` | no-solution certificate package の valid field を公開 predicate として読む。 | `defined only` |
+| `NoSolutionCertificate.sound_of_valid` | `theorem` | `ValidNoSolutionCertificate` から `NoArchitectureSatisfies` を得る。 | `proved` |
+| `NoSolutionCertificate.RecordsNonConclusions` | `def` | certificate package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 
 ## Architecture Extension Formula
 
@@ -850,6 +911,35 @@ File: `Formal/Arch/DependencyObstruction.lean`
 | `adjacencyNilpotent_iff_no_closedWalkObstruction` | `theorem` | finite universe 上で adjacency nilpotence と closed-walk obstruction witness 不在が一致する。 | `proved` |
 | `no_closedWalkObstruction_of_adjacencyNilpotent` | `theorem` | adjacency nilpotence から closed-walk obstruction witness 不在を得る。 | `proved` |
 | `adjacencyNilpotent_of_no_closedWalkObstruction` | `theorem` | closed-walk obstruction witness 不在から finite universe 上の adjacency nilpotence を得る。 | `proved` |
+
+## Analytic Representation
+
+File: `Formal/Arch/AnalyticRepresentation.lean`
+
+Issue [#280](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/280)
+の対象範囲は、Architecture Calculus / structural theorem から analytic layer への representation
+map と、その strength predicate を分離して定義することである。zero-reflecting /
+obstruction-reflecting は coverage、witness completeness、semantic contract coverage に相対化し、
+witness absence だけから flatness を主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `AnalyticRepresentation` | `structure` | architecture state から analytic domain への representation map、structural / analytic zero predicate、structural / analytic obstruction predicate、coverage / witness completeness / semantic contract coverage、non-conclusions を束ねる schema。 | `defined only` |
+| `AnalyticRepresentation.ZeroPreserving` | `def` | structural zero が analytic zero へ写ること。 | `defined only` |
+| `AnalyticRepresentation.ZeroReflecting` | `def` | coverage / completeness 前提の下で analytic zero から structural zero を得ること。 | `defined only` |
+| `AnalyticRepresentation.ObstructionPreserving` | `def` | structural obstruction witness が analytic obstruction witness へ写ること。 | `defined only` |
+| `AnalyticRepresentation.ObstructionReflecting` | `def` | coverage / completeness 前提の下で analytic obstruction witness から structural obstruction witness を得ること。 | `defined only` |
+| `AnalyticRepresentation.RecordsNonConclusions` | `def` | representation package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `AnalyticRepresentation.analyticZero_of_structuralZero` | `theorem` | `ZeroPreserving` から structural zero を analytic zero へ送る。 | `proved` |
+| `AnalyticRepresentation.structuralZero_of_analyticZero` | `theorem` | `ZeroReflecting` と coverage / completeness 前提から analytic zero を structural zero へ戻す。 | `proved` |
+| `AnalyticRepresentation.analyticObstruction_of_structuralObstruction` | `theorem` | `ObstructionPreserving` から structural obstruction witness を analytic obstruction witness へ送る。 | `proved` |
+| `AnalyticRepresentation.structuralObstruction_of_analyticObstruction` | `theorem` | `ObstructionReflecting` と coverage / completeness 前提から analytic obstruction witness を structural obstruction witness へ戻す。 | `proved` |
+| `ObstructionValuation` | `structure` | selected witness に対する `Nat` valuation、zero が witness absence を反映する条件、obstruction が positive valuation を与える条件、coverage assumptions、non-conclusions を束ねる。 | `defined only` |
+| `ObstructionValuation.NoSelectedObstruction` | `def` | selected valuation universe に obstruction witness が存在しないこと。 | `defined only` |
+| `ObstructionValuation.ZeroReflectingSum` | `def` | aggregate value 0 から selected obstruction witness absence を得る aggregate-level reflection predicate。 | `defined only` |
+| `ObstructionValuation.no_obstruction_of_value_zero` | `theorem` | individual witness value が 0 なら、その selected obstruction witness は存在しない。 | `proved` |
+| `ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum` | `theorem` | zero-reflecting aggregate value から selected obstruction witness absence を得る。 | `proved` |
+| `ObstructionValuation.RecordsNonConclusions` | `def` | valuation package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 
 ## SOLID Counterexamples
 
