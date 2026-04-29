@@ -25,3 +25,4 @@ import Formal.Arch.Matrix
 import Formal.Arch.DependencyObstruction
 import Formal.Arch.SignatureLawfulness
 import Formal.Arch.Flatness
+import Formal.Arch.ArchitectureExtensionFormula

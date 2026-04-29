@@ -280,18 +280,28 @@ repair termination、finite repair、synthesis soundness、no-solution certifica
 
 ## Architecture Extension Formula
 
-Issue [#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262)
-の `ArchitectureExtensionFormula_structural` は、現時点では `future proof obligation`
-であり、対応する Lean module / theorem はまだ存在しない。
+File: `Formal/Arch/ArchitectureExtensionFormula.lean`
 
-予定されている Lean 対象範囲は、`ExtensionCoverage`, `ExtensionObstructionWitness`,
-inherited core / feature local / interaction / lifting failure / filling failure /
-complexity transfer / residual coverage gap の classification predicate 群、および
-bounded classification theorem である。実装時にはこの節を File と API table へ更新する。
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `ExtensionCoverage` | `abbrev` | `Flatness.lean` の `ExtensionCoverageComplete` に、Architecture Extension Formula 用の公開名を与える。 | `defined only` |
+| `ExtensionObstructionClass` | `inductive` | inherited core / feature local / interaction / lifting failure / filling failure / complexity transfer / residual coverage gap の bounded classification class。 | `defined only` |
+| `ExtensionObstructionWitness` | `structure` | 抽象 witness payload と選択された `ExtensionObstructionClass` を束ねる。具体的な static / runtime / semantic / analytic witness family は後続 bridge で接続する。 | `defined only` |
+| `ClassifiedAsInheritedCore` | `def` | witness が embedded core 由来として分類されること。 | `defined only` |
+| `ClassifiedAsFeatureLocal` | `def` | witness が追加 feature 内部由来として分類されること。 | `defined only` |
+| `ClassifiedAsInteraction` | `def` | witness が feature/core interaction 境界由来として分類されること。 | `defined only` |
+| `ClassifiedAsLiftingFailure` | `def` | witness が selected feature step の lifting failure として分類されること。 | `defined only` |
+| `ClassifiedAsFillingFailure` | `def` | witness が required diagram の filling failure として分類されること。 | `defined only` |
+| `ClassifiedAsComplexityTransfer` | `def` | witness が complexity / analytic diagnostic axis への transfer として分類されること。 | `defined only` |
+| `ClassifiedAsResidualCoverageGap` | `def` | witness が residual evidence または bounded coverage gap として分類されること。 | `defined only` |
+| `ArchitectureExtensionFormula_structural` | `theorem` | bounded extension coverage の下で、任意の selected extension obstruction witness が 7 分類 predicate の少なくとも一つで cover されること。 | `proved` |
 
 Non-conclusions: 最初の theorem package は disjoint decomposition、global extractor
 completeness、runtime / semantic universe completeness、または universe 外の obstruction
-分類を主張しない。
+分類を主張しない。`LawfulExtensionPreservesFlatness` は runtime / semantic flatness と
+coverage assumptions が追加で必要なため、今回の theorem package には含めず Issue
+[#271](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/271)
+で扱う。
 
 ## Architecture Path
 
