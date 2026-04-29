@@ -522,6 +522,42 @@ File: `Formal/Arch/Flatness.lean`
 | `LawfulExtensionFlatnessModel` | `def` | static graph を `StaticSplitExtension` の extended graph に固定し、runtime / semantic evidence を明示引数として持つ bounded flatness model。 | `defined only` |
 | `LawfulExtensionPreservesFlatness` | `theorem` | extension coverage、runtime coverage / flatness、semantic coverage / flatness を明示前提として、lawful static split extension から bounded `ArchitectureFlatWithin` を構成する。 | `proved` |
 
+## Architecture Core / Certified Architecture
+
+File: `Formal/Arch/CertifiedArchitecture.lean`
+
+Issue [#287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/287)
+の対象範囲は、数学設計書 9 の `ArchitectureCore` / `CertifiedArchitecture`
+を既存の bounded flatness、finite `ComponentUniverse`、`ProofObligation`
+API に接続する proof-carrying schema として固定することである。
+実コード extractor の完全性、runtime telemetry の完全性、global semantic universe
+completeness は主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `RuntimeDependencyRole` | `inductive` | runtime dependency を raw / protected / forbidden / unprotected の selected role metadata として区別する。telemetry completeness は主張しない。 | `defined only` |
+| `ArchitectureCore` | `structure` | `ArchitectureFlatnessModel`、static `ComponentUniverse`、component equality / static edge / runtime edge / boundary policy / abstraction policy の decidability、runtime role、semantic required diagram decidability を束ねる最小 core。 | `defined only` |
+| `ArchitectureCore.toFlatnessModel` | `def` | proof-carrying wrapper から既存の flatness model を取り出す。 | `defined only` |
+| `ArchitectureCore.staticLawModel` | `def` | core の finite component universe から既存の `ArchitectureLawModel` を構成する。 | `defined only` |
+| `ArchitectureCore.measuredSemanticUniverse` | `def` | core が保持する measured semantic diagram universe を取り出す。 | `defined only` |
+| `ArchitectureCore.runtimeDependencyRole` | `def` | component pair に対する selected runtime dependency role を取り出す。 | `defined only` |
+| `ArchitectureCore.component_mem_staticUniverse` | `theorem` | core の `ComponentUniverse.covers` から component membership を取り出す。 | `proved` |
+| `ArchitectureCore.staticCoverageComplete` | `theorem` | core の static dependency evidence が `ComponentUniverse` で cover されることを取り出す。 | `proved` |
+| `ArchitectureLawRole` | `inductive` | law universe の required / optional / derived role tag。 | `defined only` |
+| `ArchitectureLawUniverse` | `structure` | finite law list と role assignment を束ねる。 | `defined only` |
+| `ArchitectureLawUniverse.Required` | `def` | law が finite universe に含まれ、required role を持つこと。 | `defined only` |
+| `ArchitectureLawUniverse.Optional` | `def` | law が finite universe に含まれ、optional role を持つこと。 | `defined only` |
+| `ArchitectureLawUniverse.Derived` | `def` | law が finite universe に含まれ、derived role を持つこと。 | `defined only` |
+| `ObstructionWitnessUniverse` | `structure` | bounded theorem package input としての finite obstruction witness universe。global obstruction enumeration は主張しない。 | `defined only` |
+| `ArchitectureTheoremPackage` | `structure` | 名前付き theorem package、対応する `ProofObligation`、明示的な non-conclusion record を束ねる。 | `defined only` |
+| `CertifiedArchitecture` | `structure` | core、law universe、invariant family、witness universe、theorem package list、listed package の discharge proof を束ねる certified architecture object。 | `defined only` |
+| `CertifiedArchitecture.theoremPackageObligations` | `def` | certified architecture が持つ theorem package から proof obligation list を取り出す。 | `defined only` |
+| `CertifiedArchitecture.ProofObligationDischargeSet` | `def` | listed theorem package がすべて discharged であること。 | `defined only` |
+| `CertifiedArchitecture.theoremPackage_discharged` | `theorem` | listed theorem package の discharge proof を取り出す accessor theorem。 | `proved` |
+| `CertifiedArchitecture.proofObligationDischargeSet` | `theorem` | certified architecture が proof-obligation discharge set を持つことを示す。 | `proved` |
+| `CertifiedArchitecture.theoremPackage_recordsNonConclusions` | `theorem` | listed theorem package が non-conclusions を記録していることを取り出す。 | `proved` |
+| `CertifiedArchitecture.theoremPackage_obligation_mem` | `theorem` | listed theorem package の obligation が induced obligation list に含まれること。 | `proved` |
+
 ## Obstruction Kernel
 
 File: `Formal/Arch/Obstruction.lean`
