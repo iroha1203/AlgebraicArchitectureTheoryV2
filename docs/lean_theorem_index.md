@@ -298,10 +298,9 @@ File: `Formal/Arch/ArchitectureExtensionFormula.lean`
 
 Non-conclusions: 最初の theorem package は disjoint decomposition、global extractor
 completeness、runtime / semantic universe completeness、または universe 外の obstruction
-分類を主張しない。`LawfulExtensionPreservesFlatness` は runtime / semantic flatness と
-coverage assumptions が追加で必要なため、今回の theorem package には含めず Issue
-[#271](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/271)
-で扱う。
+分類を主張しない。bounded flatness preservation は runtime / semantic flatness と
+coverage assumptions を明示する `LawfulExtensionPreservesFlatness` として
+`Formal/Arch/Flatness.lean` で証明済みである。
 
 ## Architecture Path
 
@@ -363,6 +362,8 @@ File: `Formal/Arch/Flatness.lean`
 | `extended_edge_mem_of_extensionCoverageComplete` | `theorem` | complete extension coverage から extended static edge endpoints の universe membership を得る。 | `proved` |
 | `policySound_of_staticSplitExtension` | `theorem` | compatible な static graph に対して、`StaticSplitExtension` の no-new-forbidden-edge 条件から policy soundness を得る。 | `proved` |
 | `staticFlatWithin_of_staticSplitExtension` | `theorem` | coverage-aware な静的範囲で、static split extension と残りの静的 law 前提から `StaticFlatWithin` を得る。runtime / semantic flatness は結論しない。 | `proved` |
+| `LawfulExtensionFlatnessModel` | `def` | static graph を `StaticSplitExtension` の extended graph に固定し、runtime / semantic evidence を明示引数として持つ bounded flatness model。 | `defined only` |
+| `LawfulExtensionPreservesFlatness` | `theorem` | extension coverage、runtime coverage / flatness、semantic coverage / flatness を明示前提として、lawful static split extension から bounded `ArchitectureFlatWithin` を構成する。 | `proved` |
 
 ## Obstruction Kernel
 
