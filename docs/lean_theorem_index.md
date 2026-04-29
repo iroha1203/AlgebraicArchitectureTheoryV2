@@ -9,6 +9,24 @@
 `Formal/Arch` 以下の責務分類、file move の判断基準、当面の配置ルールは
 [Lean module 階層整理方針](formal/lean_module_organization.md) に分離する。
 
+## 索引の読み方
+
+この索引は、数学設計書の theorem 候補をそのまま現在の Lean proved claim に
+昇格するための文書ではない。Lean 実装済み API の入口であり、Lean status と
+未解決 proof obligation の境界は
+[証明義務と実証仮説](proof_obligations.md) で管理する。
+
+各表の `Status` は declaration 単位の状態である。`proved` には、主定理だけでなく、
+schema field を取り出す accessor theorem、定義間の bridge theorem、有限例の
+example theorem、bounded completeness theorem が含まれる。研究上の主張として読む場合は、
+各節の Non-conclusions と `proof_obligations.md` の coverage / exactness assumptions を
+併せて確認する。
+
+特に `defined only` / `proved` が同じ領域に並ぶ場合、carrier schema は
+`defined only`、その schema に相対化された一部の theorem package が `proved` である。
+この区別により、数学設計書を純粋な設計書として保ちつつ、Lean source 側の作業状態を
+この索引と `proof_obligations.md` に分離する。
+
 ## Graph / Walk
 
 File: `Formal/Arch/Graph.lean`
@@ -74,6 +92,10 @@ File: `Formal/Arch/Layering.lean`
 ## Decomposable
 
 File: `Formal/Arch/Decomposable.lean`
+
+現在の Lean core における `Decomposable` は、`StrictLayered` と同義の
+static / strict-layer decomposability である。semantic contract、runtime protocol、
+event bus、pub-sub、局所化された相互再帰などを含む一般の分解可能性を主張しない。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |

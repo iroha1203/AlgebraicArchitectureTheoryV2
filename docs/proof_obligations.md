@@ -52,6 +52,37 @@ claim level は、証明状態とは別に次の境界として扱う。
 「測定された範囲では violation がない」と「全 universe で obstruction がない」を区別し、
 未測定軸を zero と読まないための non-conclusion を持つ。
 
+## Lean status の読み方
+
+`docs/aat_v2_mathematical_design.md` は純粋な数学設計書であり、Lean 実装の
+進捗状態、QED 境界、Issue 管理状態を持たせない。この文書と
+[Lean 定義・定理索引](lean_theorem_index.md) が、数学設計書に対応する
+作業状態と Lean API の読み方を管理する。
+
+したがって、数学設計書の theorem 候補は、そのまま現在の Lean proved claim とは
+読まない。現在の Lean proved claim は、各 theorem package が明示する universe、
+coverage assumptions、exactness assumptions、observation model、witness family に
+相対化して読む。
+
+`defined only` / `proved` が併記される領域では、通常、schema や carrier 定義は
+`defined only`、soundness bridge、bounded completeness theorem、accessor theorem、
+代表例 theorem の一部が `proved` であることを意味する。混同を避けるため、主要な
+theorem package は次の粒度で読む。
+
+| 粒度 | 意味 |
+| --- | --- |
+| Schema / carrier | 定義、構造体、predicate、measurement universe。単独では correctness claim ではない。 |
+| Soundness theorem | witness、metric zero、operation package などから、対応する obstruction 不在や lawfulness 方向の結論を得る片方向 theorem。 |
+| Bounded completeness theorem | coverage / exactness assumptions の下で、失敗や obstruction から selected witness を得る theorem。global completeness ではない。 |
+| Accessor theorem | theorem package や schema の field を取り出す API 健全性 theorem。研究上の主定理とは区別する。 |
+| Example / counterexample theorem | 有限 skeleton や canonical example 上で、定義の意図、非含意、境界を示す theorem。 |
+| Non-conclusion | theorem package が主張しない範囲。extractor completeness、runtime / semantic completeness、global flatness、empirical cost correlation など。 |
+
+このリポジトリ外の査読で Lean source を直接確認しない場合、`proved` の読みは
+この文書と [Lean 定義・定理索引](lean_theorem_index.md) が Lean source を正しく
+反映しているという前提つきである。Lean source の build、placeholder scan、
+`axiom` / `admit` / `sorry` / `unsafe` scan は PR 前チェックで別途確認する。
+
 ## 現在の QED 境界
 
 現時点で Lean proved と呼ぶ中核は、AAT v2 の **static structural core** である。
@@ -184,6 +215,22 @@ index が最終的な Lean API、残る non-conclusions、empirical boundary を
 | [#341](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/341) | coupon feature の static hidden dependency canonical example | `CouponStaticDependencyExample.goodStaticSplitFeatureExtension`, `hiddenDependencyWitness`, `hiddenDependencyWitnessExists`, `bad_not_selectedStaticSplitFeatureExtension`, `repairedStaticSplitFeatureExtension`, `repaired_selectedStaticSplitFeatureExtension` は索引済み。 | selected static hidden dependency witness に限る。runtime flatness、semantic flatness、extractor completeness は主張しない。 |
 | [#322](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/322) / [#327](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/327) | Architecture Calculus / Repair / Synthesis | `ArchitectureOperation.generatedObligation_kind`, `ArchitectureOperation.exists_sourceWitness_of_targetWitness`, `ArchitectureCalculusLaw.conclusion_of_assumptions`, `repairStepDecreases_of_admissible`, `BoundedRepairPlan.selectedObstructionsCleared`, `FiniteRepairPackage.selectedObstructionsCleared`, `SynthesisSoundnessPackage.candidate_satisfies`, `NoSolutionCertificate.sound_of_valid` を代表入口として索引済み。 | unconditional operation laws、solver completeness、global flatness preservation は主張しない。finite repair は selected obstruction universe と明示 plan assumptions に相対化する。 |
 | [#323](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/323) / [#328](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/328) | Analytic Representation / Complexity Transfer | `AnalyticRepresentation.analyticZero_of_structuralZero`, `AnalyticRepresentation.structuralZero_of_analyticZero`, `AnalyticRepresentation.analyticObstruction_of_structuralObstruction`, `AnalyticRepresentation.structuralObstruction_of_analyticObstruction`, `ObstructionValuation.no_obstruction_of_value_zero`, `ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum`, `BoundedComplexityTransferPackage.no_free_elimination_bounded` を代表入口として索引済み。 | analytic value だけから flatness を結論しない。empirical cost 改善、global complexity conservation、lower bound は無条件に主張しない。reflecting direction は coverage / completeness assumptions に相対化する。 |
+
+### Reviewer follow-up theorem / counterexample package
+
+Issue [#347](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/347)
+は、公開 docs に基づく数学的査読で提案された追加 theorem / counterexample の
+追跡親 Issue である。数学設計書には作業状態を混ぜず、この文書で Lean proof
+obligation として管理する。
+
+| Issue | 対象 | Lean status | 次の扱い |
+| --- | --- | --- | --- |
+| [#349](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/349) | StaticSplit の identity / composition theorem package | future proof obligation | identity extension と interface-compatible composition が static split を保存する条件付き theorem を追加する。 |
+| [#351](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/351) | 有限 acyclic graph から strict layering を構成する theorem | future proof obligation | finite universe / decidability / bounded reachability assumptions を明示し、現在の strict-layer decomposability の境界を補強する。 |
+| [#350](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/350) | selected witness universe の monotonicity theorem package | future proof obligation | universe inclusion 下で witness existence と no measured violation がどう保存されるかを定理化する。 |
+| [#352](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/352) | ProjectionExact と RepresentativeStable から quotient well-definedness への bridge | future proof obligation | soundness / completeness / representative stability から quotient-level dependency relation の well-definedness を得る条件を整理する。 |
+| [#348](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/348) | static flat だが semantic obstruction が残る canonical counterexample | future proof obligation | static split / static flatness だけでは semantic flatness や global flatness を含意しないことを example theorem として示す。 |
+| [#353](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/353) | repair が selected measure を減らしても別軸 obstruction が増える counterexample | future proof obligation | repair は selected measure の改善であり、全 axis の単調改善や global flatness preservation ではないことを counterexample で示す。 |
 
 ## Empirical Hypothesis Index
 
