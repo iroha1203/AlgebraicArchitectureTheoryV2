@@ -356,6 +356,28 @@ synthesize:
 すべての operation は、前提、保存される invariant、生成される proof obligation、
 witness mapping、non-conclusions を持つ。
 
+Issue [#265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/265)
+での最初の Lean 対象範囲は、`compose`, `replace`, `protect`, `repair` の
+operation tag、operation ごとの proof obligation package、precondition、
+non-conclusion、および後段 witness から前段 witness への片方向 witness mapping
+である。
+
+この段階の非目標は次である。
+
+- operation の具体的な graph 変換を定義すること。
+- `repair` が selected obstruction measure を減少させること。
+- `compose` の結合法則、`protect` の冪等性、`replace` の観測同値を証明すること。
+- runtime flatness、semantic flatness、extractor completeness を operation schema から
+  自動的に結論すること。
+
+Lean status: `ArchitectureOperationKind`, `ProofObligation`,
+`OperationProofObligation`, `ArchitectureOperation` は `defined only`。
+`ArchitectureOperation.witnessMapping_sound` と
+`ArchitectureOperation.exists_sourceWitness_of_targetWitness` は、与えられた
+`witnessMappingSound` field から片方向 witness mapping soundness を取り出す
+小定理として `proved`。`ArchitectureOperation.generatedObligation_kind` は、
+operation と生成された proof obligation の tag 一致を取り出す小定理として `proved`。
+
 ### 3.2 Calculus laws
 
 Architecture Calculus を単なる operation 一覧ではなく calculus とするため、

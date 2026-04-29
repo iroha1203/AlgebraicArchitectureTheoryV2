@@ -71,6 +71,7 @@ ArchitectureLawful X
 | Generic witness-count kernel / zero-count bridge | `proved` | [Lean 化設計](formal/flatness_obstruction_lean_design.md), [Lean theorem index](lean_theorem_index.md#flatness) |
 | Required law / axis exactness bridge | `proved` | [Lean theorem index](lean_theorem_index.md#signature-integrated-lawfulness) |
 | FeatureExtension / StaticSplitFeatureExtension | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#2-第一級対象-featureextension), [Lean theorem index](lean_theorem_index.md#feature-extension) |
+| ArchitectureOperation / ProofObligation schema | `defined only` / `proved` for schema accessor theorems | [AAT v2 数学設計書](aat_v2_mathematical_design.md#3-architecture-calculus), [Lean theorem index](lean_theorem_index.md#architecture-operation) |
 | ArchitecturePath / homotopy skeleton | `defined only` / `proved` | [Lean theorem index](lean_theorem_index.md#architecture-path) |
 | DiagramFiller / obstruction as non-fillability | `defined only` / `proved` / `future proof obligation` | [Lean theorem index](lean_theorem_index.md#diagram-filler) |
 | Projection / DIP bridge | `proved` for soundness bridges; exact projection refinements tracked separately | [Projection soundness と exact projection の使い分け](design/projection_exact_soundness.md), [Lean theorem index](lean_theorem_index.md#projection--dip) |
@@ -101,6 +102,7 @@ analysis とし、その他は必要データが揃う場合の exploratory anal
 | 静的依存と実行時依存の分離 | Lean core では `StaticDependencyGraph` と `RuntimeDependencyGraph` を graph role として分ける。edge metadata は tooling / empirical 側に置く。 |
 | runtime policy-aware metrics | raw runtime graph の theorem と、Circuit Breaker coverage / timeout / retry policy を反映した extension axis を分ける。 |
 | numerical curvature | finite diagram / zero-separating distance の proved bridge と、weighted / calibrated Signature axis や現実コストとの相関を分ける。 |
+| operation calculus laws | `compose`, `replace`, `protect`, `repair` の schema はあるが、結合法則、置換の観測同値、保護の冪等性、repair monotonicity は別 Issue の proof obligation として扱う。 |
 | extractor completeness | extractor output は tooling evidence であり、完全な proof-carrying universe とは同一視しない。 |
 | relation complexity | 状態遷移代数層の empirical metric として扱い、構成要素ベクトルを残す。単一スコアだけで設計を評価しない。 |
 
