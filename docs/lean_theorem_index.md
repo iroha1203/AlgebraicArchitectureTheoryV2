@@ -386,6 +386,21 @@ File: `Formal/Arch/ArchitectureExtensionFormula.lean`
 | `ExtensionCoverage` | `abbrev` | `Flatness.lean` の `ExtensionCoverageComplete` に、Architecture Extension Formula 用の公開名を与える。 | `defined only` |
 | `ExtensionObstructionClass` | `inductive` | inherited core / feature local / interaction / lifting failure / filling failure / complexity transfer / residual coverage gap の bounded classification class。 | `defined only` |
 | `ExtensionObstructionWitness` | `structure` | 抽象 witness payload と選択された `ExtensionObstructionClass` を束ねる。具体的な static / runtime / semantic / analytic witness family は後続 bridge で接続する。 | `defined only` |
+| `SelectedSplitExtension` | `def` | feature extension と selected split predicate を結び、global split completeness を固定しないための selected split predicate。 | `defined only` |
+| `SelectedExtensionObstructionWitness` | `def` | selected obstruction universe 内の `ExtensionObstructionWitness` であることを表す predicate。 | `defined only` |
+| `SelectedExtensionObstructionWitnessExists` | `def` | selected obstruction universe 内に witness が存在すること。 | `defined only` |
+| `SelectedExtensionWitnessSound` | `def` | selected witness が selected split predicate を反証する soundness 関係。 | `defined only` |
+| `SelectedExtensionWitnessComplete` | `def` | selected split 失敗から selected witness 存在を得る bounded completeness 関係。 | `defined only` |
+| `NonSplitExtensionWitnessPackage` | `structure` | selected split predicate、selected obstruction witness predicate、coverage / exactness assumptions、soundness、bounded completeness、non-conclusions を束ねる theorem package。 | `defined only` |
+| `NonSplitExtensionWitnessPackage.SplitPredicate` | `def` | package が対象にする selected split predicate を取り出す。 | `defined only` |
+| `NonSplitExtensionWitnessPackage.WitnessPredicate` | `def` | package が対象にする selected witness predicate を取り出す。 | `defined only` |
+| `NonSplitExtensionWitnessPackage.WitnessExists` | `def` | package の selected witness universe 内に witness が存在すること。 | `defined only` |
+| `NonSplitExtensionWitnessPackage.RecordsNonConclusions` | `def` | theorem package が明示的な non-conclusions を持つこと。 | `defined only` |
+| `NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness` | `theorem` | selected obstruction witness から selected split predicate の不成立を得る soundness theorem。 | `proved` |
+| `NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitnessExists` | `theorem` | selected witness 存在から selected split predicate の不成立を得る soundness-only theorem。 | `proved` |
+| `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension` | `theorem` | coverage / exactness assumptions の下で selected split 失敗から selected witness 存在を得る bounded completeness theorem。 | `proved` |
+| `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension` | `theorem` | coverage / exactness assumptions に相対化された selected witness 存在と selected split 失敗の同値。 | `proved` |
+| `NonSplitExtensionWitnessPackage.records_nonConclusions_iff` | `theorem` | recorded non-conclusion clause と package field が一致すること。 | `proved` |
 | `ClassifiedAsInheritedCore` | `def` | witness が embedded core 由来として分類されること。 | `defined only` |
 | `ClassifiedAsFeatureLocal` | `def` | witness が追加 feature 内部由来として分類されること。 | `defined only` |
 | `ClassifiedAsInteraction` | `def` | witness が feature/core interaction 境界由来として分類されること。 | `defined only` |
@@ -397,9 +412,10 @@ File: `Formal/Arch/ArchitectureExtensionFormula.lean`
 
 Non-conclusions: 最初の theorem package は disjoint decomposition、global extractor
 completeness、runtime / semantic universe completeness、または universe 外の obstruction
-分類を主張しない。bounded flatness preservation は runtime / semantic flatness と
-coverage assumptions を明示する `LawfulExtensionPreservesFlatness` として
-`Formal/Arch/Flatness.lean` で証明済みである。
+分類を主張しない。`NonSplitExtensionWitnessPackage` の同値版も package の
+coverage / exactness assumptions に相対化され、global witness completeness は主張しない。
+bounded flatness preservation は runtime / semantic flatness と coverage assumptions を明示する
+`LawfulExtensionPreservesFlatness` として `Formal/Arch/Flatness.lean` で証明済みである。
 
 ## Complexity Transfer
 
