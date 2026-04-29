@@ -98,6 +98,34 @@ Issue [#222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 `architectureLawCandidateRole`, `architectureFullLawUniverseCandidates` を追加し、
 required law, derived corollary, diagnostic axis, empirical axis を区別する。
 
+Issue [#243](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/243)
+では、AAT の feature extension 最小コアを、子 Issue
+[#244](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/244)-
+[#248](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/248)
+として段階実装した。Lean 側の package は `Formal.Arch.FeatureExtension`,
+`Formal.Arch.Flatness`, `Formal.Arch.ArchitecturePath`,
+`Formal.Arch.DiagramFiller` に分かれ、first-class feature addition schema、
+coverage-aware flatness、static split extension preservation、finite path calculus、
+diagram non-fillability soundness を最小核として提供する。
+
+Lean status:
+
+- `defined only`: feature extension schema、coverage-aware flatness predicates、
+  finite path / homotopy skeleton、diagram filler skeleton、bounded completeness 用の
+  coverage predicates
+- `proved`: embedding membership の基本 theorem、bounded flatness projection theorem、
+  static split extension からの `StaticFlatWithin` construction、
+  path invariant / homotopy invariant bridge、
+  `NonFillabilityWitnessFor D w -> ¬ DiagramFiller D` の soundness theorem
+
+残る境界:
+
+- runtime / semantic / full `ArchitectureFlatWithin` preservation は、static split
+  extension theorem からは結論しない。必要な runtime protection、semantic diagram
+  law、coverage / exactness assumptions は別 proof obligation として扱う。
+- diagram non-fillability の completeness は、finite witness universe と coverage /
+  exactness assumptions の下でのみ扱う。
+
 Issue [#244](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/244)
 では、feature addition を first-class operation として扱うための最小 Lean schema を
 `Formal.Arch.FeatureExtension` に追加した。Lean では `FeatureExtension` が core graph、
@@ -117,10 +145,10 @@ Lean status:
 
 今後の proof obligation:
 
-- `StaticSplitFeatureExtension` が `ArchitectureFlatWithin` / `StaticFlatWithin` を
-  保存する theorem は、coverage-aware flatness predicate を追加した後に
+- `StaticSplitFeatureExtension` が `StaticFlatWithin` を構成する最小 theorem は
   Issue [#246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/246)
-  で扱う。
+  で証明済みである。runtime / semantic flatness や full `ArchitectureFlatWithin`
+  の保存は、この静的 schema からは結論せず、別前提つきの将来課題として扱う。
 
 Issue [#245](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/245)
 では、coverage-aware な三層 flatness predicate を
