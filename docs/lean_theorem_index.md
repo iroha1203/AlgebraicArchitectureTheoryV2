@@ -348,6 +348,45 @@ File: `Formal/Arch/ArchitecturePath.lean`
 | `ArchitecturePath.HomotopyInvariant` | `def` | generated path homotopy の下で安定な invariant。endpoint と state universe は `ArchitecturePath` の index によって明示される。 | `defined only` |
 | `ArchitecturePath.architectureHomotopyInvariance` | `theorem` | `HomotopyInvariant` を homotopic path pair に適用する bridge theorem。 | `proved` |
 
+## Architecture Evolution
+
+File: `Formal/Arch/ArchitectureEvolution.lean`
+
+Issue [#278](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/278) の対象範囲は、既存
+`ArchitecturePath` の endpoint-indexed path を再利用し、その上に evolution-specific な
+transition tag、bounded flatness preservation、drift-obstruction reporting、migration plan
+schema を置くことである。global extractor completeness、全 obstruction coverage、任意の
+flatness predicate の自動保存は主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `ArchitectureTransitionKind` | `inductive` | `featureExtension`, `drift`, `repair`, `migration`, `policyUpdate`, `runtimeTopologyChange`, `semanticContractChange` の evolution transition tag。 | `defined only` |
+| `ArchitectureTransitionKind.label` | `def` | documentation-facing な transition tag label。 | `defined only` |
+| `ArchitectureTransition` | `structure` | source / target を型 index に持つ primitive transition。kind、lawful、coverage / exactness assumptions、non-conclusions を明示する。 | `defined only` |
+| `ArchitectureTransition.ApplyTransition` | `def` | transition を source state に適用した target state を返す endpoint projection。 | `defined only` |
+| `ArchitectureTransition.TransitionPreservesFlatness` | `def` | selected bounded flatness predicate が transition の source から target へ保存されること。 | `defined only` |
+| `ArchitectureTransition.RecordsNonConclusions` | `def` | transition package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `ArchitectureTransition.flatness_of_transitionPreservesFlatness` | `theorem` | `ArchitectureFlat X` と `TransitionPreservesFlatness t` から `ArchitectureFlat (ApplyTransition X t)` を得る single-step preservation theorem。 | `proved` |
+| `ArchitectureTransition.FeatureExtensionStep` | `def` | transition が feature-extension step tag を持つこと。 | `defined only` |
+| `ArchitectureTransition.DriftEvent` | `def` | transition が drift event tag を持つこと。 | `defined only` |
+| `ArchitectureTransition.RepairTransition` | `def` | transition が repair tag を持つこと。 | `defined only` |
+| `ArchitectureTransition.MigrationStep` | `def` | transition が migration tag を持つこと。 | `defined only` |
+| `ArchitectureTransition.PolicyUpdate` | `def` | transition が policy update tag を持つこと。 | `defined only` |
+| `ArchitectureTransition.RuntimeTopologyChange` | `def` | transition が runtime topology change tag を持つこと。 | `defined only` |
+| `ArchitectureTransition.SemanticContractChange` | `def` | transition が semantic contract change tag を持つこと。 | `defined only` |
+| `ArchitectureTransition.DriftObstructionSchema` | `structure` | selected introduced obstruction witness、reported witness predicate、drift reporting soundness、coverage / exactness / non-conclusions を束ねる bounded schema。 | `defined only` |
+| `ArchitectureTransition.IntroducesObstruction` | `def` | selected schema に相対化された introduced obstruction witness predicate。 | `defined only` |
+| `ArchitectureTransition.ReportedObstruction` | `def` | selected schema に相対化された reported obstruction witness predicate。 | `defined only` |
+| `ArchitectureTransition.reportedObstruction_of_drift` | `theorem` | `DriftEvent t` と `IntroducesObstruction t w` から `ReportedObstruction (ApplyTransition X t) w` を得る selected reporting soundness theorem。 | `proved` |
+| `ArchitectureEvolution` | `abbrev` | `ArchitectureTransition` を primitive step とする finite architecture evolution path。 | `defined only` |
+| `EveryTransition` | `def` | evolution sequence 上のすべての transition が selected predicate を満たすこと。 | `defined only` |
+| `MigrationSequence` | `def` | すべての selected transition が migration tag を持つ bounded migration plan。 | `defined only` |
+| `EveryStepLawful` | `def` | plan 上のすべての transition が local `lawful` field を満たすこと。 | `defined only` |
+| `TargetFlat` | `def` | selected bounded flatness predicate が plan の target で成り立つこと。 | `defined only` |
+| `EventuallyFlat` | `def` | plan が selected bounded flatness predicate を満たす target に到達すること。 | `defined only` |
+| `eventuallyFlat_of_targetFlat` | `theorem` | `MigrationSequence plan`, `EveryStepLawful plan`, `TargetFlat plan` から `EventuallyFlat plan` を得る bounded theorem package。 | `proved` |
+| `evolutionPathPreservesFlatness` | `theorem` | 既存 `ArchitecturePath.pathPreservesInvariant` を evolution-specific な `EventuallyFlat` 名へ bridge する theorem。 | `proved` |
+
 ## Diagram Filler
 
 File: `Formal/Arch/DiagramFiller.lean`

@@ -14,6 +14,7 @@ import Formal.Arch.OperationInvariant
 import Formal.Arch.Repair
 import Formal.Arch.SplitExtensionLifting
 import Formal.Arch.ArchitecturePath
+import Formal.Arch.ArchitectureEvolution
 import Formal.Arch.DiagramFiller
 import Formal.Arch.Obstruction
 import Formal.Arch.Lawfulness
