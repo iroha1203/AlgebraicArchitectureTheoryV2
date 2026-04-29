@@ -411,7 +411,7 @@ runtime obstruction と metric zero の bridge である。runtime edge metadata
 0/1 graph を抽出する完全性、Circuit Breaker coverage が incident scope や repair time
 を下げるという主張は theorem 本体に含めない。
 
-最小 proof target は次である。
+Issue #237 で証明した最小 bridge は次である。
 
 ```text
 runtimePropagationOfFinite runtime components = 0
@@ -580,9 +580,11 @@ extractor completeness と empirical hypotheses は含めない。
   `curvature = 0 <-> DiagramCommutes` および
   `totalCurvature = 0 <-> no numerical curvature obstruction` を証明する bridge,
   [Issue #194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)。
-- `future proof obligation`: 0/1 `RuntimeDependencyGraph` が与えられたとき、
-  runtime exposure / policy-aware runtime exposure の zero metric と runtime
-  obstruction absence を接続する bridge。
+- `proved`: 0/1 `RuntimeDependencyGraph` が与えられたとき、
+  runtime exposure zero metric と measured / bounded runtime obstruction absence を
+  接続する bridge。
+- `future proof obligation`: semantic `Reachable` 版、policy-aware runtime exposure、
+  blast radius 版の zero metric と obstruction absence を接続する bridge。
 - `empirical hypothesis`: 数値 curvature や runtime metrics と変更コスト・障害率・
   レビュー負荷・incident scope の相関。
 - `empirical hypothesis`: obstruction count と変更コスト・障害率・レビュー負荷の相関。
