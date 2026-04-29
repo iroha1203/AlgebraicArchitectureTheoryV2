@@ -356,9 +356,9 @@ synthesize:
 すべての operation は、前提、保存される invariant、生成される proof obligation、
 witness mapping、non-conclusions を持つ。
 
-この段階の非目標は次である。
+ArchitectureOperation schema だけから自動的に結論しないことは次である。
 
-- operation の具体的な graph 変換を定義すること。
+- すべての operation の具体的な graph 変換を一つの schema で定義すること。
 - `repair` が selected obstruction measure を減少させること。
 - `compose` の結合法則、`protect` の冪等性、`replace` の観測同値を証明すること。
 - runtime flatness、semantic flatness、extractor completeness を operation schema から
