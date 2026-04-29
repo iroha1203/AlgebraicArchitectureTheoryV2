@@ -175,6 +175,31 @@ analysis とし、その他は必要データが揃う場合の exploratory anal
 | extractor completeness | extractor output は tooling evidence であり、完全な proof-carrying universe とは同一視しない。 |
 | relation complexity | 状態遷移代数層の empirical metric として扱い、構成要素ベクトルを残す。単一スコアだけで設計を評価しない。 |
 
+## Bounded theorem package 強化ロードマップ
+
+数学設計書の中心 theorem 候補は、現時点では無条件の global theorem ではなく、
+coverage-aware / bounded theorem package として扱う。今後も
+`ArchitectureFlatWithin` を主語にし、global `ArchitectureFlat` は coverage /
+exactness / no-unmeasured-axis が閉じた場合の completion corollary として検討する。
+
+この方針により、AAT v2 は「アーキテクチャが無条件に良い」と主張するのではなく、
+どの universe、coverage、observation model、witness family の下で、どの不変量が
+保存・改善・移転されたかを明示する。
+
+| 領域 | 次の扱い | Lean status |
+| --- | --- | --- |
+| global flatness completion | `GlobalFlatCertificate` や `global_of_within_exhaustive` のような certificate theorem として検討する。global theorem を primary theorem にはしない。Issue [#308](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/308) | `future proof obligation` |
+| claim / evidence boundary | `formal`, `tooling`, `empirical`, `hypothesis` の claim level と non-conclusions を明示し、tooling output と Lean theorem の境界を保つ。Issue [#309](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/309) | `defined only` / `future proof obligation` |
+| weighted numerical curvature | 現在の zero-separating / finite measured curvature bridge を、positive weight や zero-reflecting weighted sum 前提つきの bounded theorem へ拡張する。cost correlation は empirical hypothesis に残す。Issue [#310](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/310) | `future proof obligation` |
+| complexity transfer beyond bounded package | 既存の bounded complexity transfer package を土台に、`transfer_or_gap` や `no_free_elimination_bounded` 型の theorem を検討する。global conservation / lower bound は将来拡張とする。Issue [#311](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/311) | `future proof obligation` |
+| cohomological obstruction candidate | AAT v2 core には混ぜず、`DiagramFiller` / `NonFillabilityWitness` / `PathHomotopy` と接続できる小さい experimental extension として隔離する。Issue [#312](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/312) | future extension |
+
+これらのタスクでは、実コード extractor の完全性、telemetry の完全性、empirical cost
+correlation、incident zero は Lean theorem として直接主張しない。必要な場合は
+bridge assumption、validation protocol、または empirical hypothesis として分離する。
+追跡親 Issue は [#307](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/307)
+である。
+
 ## 更新ルール
 
 - Lean theorem、定義、module path を追加・削除・rename した場合は、必要に応じて
