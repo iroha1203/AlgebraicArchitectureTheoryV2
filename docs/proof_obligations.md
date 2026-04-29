@@ -162,6 +162,24 @@ Issue [#296](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 | [#300](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/300) | Runtime / Semantic split preservation の bounded theorem package | `defined only` / `proved` | `RuntimeInteractionProtected`, `FeatureDiagramsCommute`, `RuntimeSemanticSplitPreservation`、runtime / semantic flatness discharge theorem、`LawfulExtensionPreservesFlatness` 接続 corollary は実装済み。runtime telemetry completeness、global semantic completeness、policy-aware runtime metrics は non-conclusions として扱う。 |
 | [#298](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/298) | ArchitectureOperation の concrete graph transformation kernel | `defined only` / `proved` | `ConcreteGraphOperation`、`ArchGraph.reverse`、`FiniteArchGraph.reverse`、graph-level identity としての `FiniteArchGraph.protect`、schema 接続 theorem、reverse involution / protect edge preservation theorem は実装済み。無条件の全 operation laws、global flatness preservation、runtime / semantic protection completeness は主張しない。 |
 
+### Mathematical design completion audit package
+
+Issue [#324](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/324)
+は、数学設計書そのものに作業状態を混ぜず、Lean theorem index とこの proof obligation
+index が最終的な Lean API、残る non-conclusions、empirical boundary を正しく分担しているかを
+同期するための索引である。
+
+現在の Lean source では、下表の theorem package は `docs/lean_theorem_index.md` に
+公開 API として索引済みである。残る仕上げ Issue は、新しい global theorem を要求するもの
+ではなく、入口 theorem、bounded / coverage assumptions、non-conclusions の読み方を
+監査する docs / theorem-package tracking として扱う。
+
+| Issue | 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- | --- |
+| [#321](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/321) / [#326](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/326) | Non-split witness / Architecture Extension Formula | `NonSplitExtensionWitnessPackage` の soundness、bounded completeness、同値 corollary と `ArchitectureExtensionFormula_structural` は索引済み。 | disjoint decomposition、global witness completeness、extractor completeness は主張しない。 |
+| [#322](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/322) / [#327](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/327) | Architecture Calculus / Repair / Synthesis | `ArchitectureOperation`, `ArchitectureCalculusLaw`, `RepairStep`, `BoundedRepairPlan`, `FiniteRepairPackage`, `SynthesisSoundnessPackage`, `NoSolutionCertificate.sound_of_valid` は索引済み。 | unconditional operation laws、solver completeness、global flatness preservation は主張しない。 |
+| [#323](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/323) / [#328](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/328) | Analytic Representation / Complexity Transfer | `AnalyticRepresentation`, `ObstructionValuation`, `ComplexityTransferSchema`, `BoundedComplexityTransferPackage.no_free_elimination_bounded` は索引済み。 | analytic value だけから flatness を結論しない。empirical cost 改善、global complexity conservation、lower bound は無条件に主張しない。 |
+
 ## Empirical Hypothesis Index
 
 Empirical hypotheses は Lean theorem ではない。初期 protocol では H1a と H3 を primary
