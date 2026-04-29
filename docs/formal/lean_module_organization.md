@@ -15,7 +15,7 @@ follow-up Issue / PR に分割し、`lake build` を通して進める。
 | Structural invariants | `Layering`, `Decomposable`, `Finite` | `StrictLayered`, `Acyclic`, `FinitePropagation`, finite `ComponentUniverse`, finite graph bridge theorem を扱う。 |
 | Category / projection | `Category`, `ThinCategory`, `Projection` | thin category と抽象射影、DIP / projection soundness / exactness を扱う。 |
 | Behavior | `Observation`, `LSP`, `LocalReplacement` | 観測同値、LSP、projection bridge と observation bridge を束ねる局所置換契約を扱う。 |
-| Architecture operations | `FeatureExtension`, `SplitExtensionLifting`, `ArchitecturePath`, `Flatness` | feature addition を first-class operation として扱う最小 schema、selected split extension lifting / section law、有限 evolution path / path homotopy skeleton、静的 split extension 条件、coverage-aware three-layer flatness predicate を扱う。 |
+| Architecture operations | `FeatureExtension`, `Operation`, `Repair`, `SplitExtensionLifting`, `ArchitecturePath`, `Flatness` | feature addition と operation / proof-obligation schema、selected repair measure decrease、selected split extension lifting / section law、有限 evolution path / path homotopy skeleton、静的 split extension 条件、coverage-aware three-layer flatness predicate を扱う。 |
 | Metrics / matrix / obstruction bridge | `Signature`, `Matrix`, `DependencyObstruction` | Architecture Signature v0/v1、finite executable metrics、adjacency matrix / nilpotence / spectral bridge、closed-walk obstruction exactness を扱う。 |
 | Examples / counterexamples | `SolidCounterexample` | SOLID-style local contract だけでは `Decomposable` が従わない反例を保持する。 |
 

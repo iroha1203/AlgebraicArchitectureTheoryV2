@@ -710,6 +710,15 @@ ExtensionObstructionMeasure X F X'' < ExtensionObstructionMeasure X F X'
 repair の成功は selected obstruction universe に限定して述べる。
 全 obstruction の完全除去を最初から主張しない。
 
+Issue [#266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/266)
+では、この主張を `SelectedObstructionUniverse`,
+`NonSplitExtensionWitness`, `AdmissibleRepairRule`, `RepairStep`,
+`RepairStepDecreases` として Lean 化した。証明済みの中心定理は、
+admissible repair rule と selected witness / repair step から selected
+obstruction measure の減少を得る
+`repairStepDecreases_of_admissible` である。これは runtime flatness、
+semantic flatness、all obstruction removal を結論しない bounded theorem である。
+
 ### 7.4 Complexity Transfer
 
 ある層の complexity が減っても、別層へ移るだけの場合がある。
@@ -1362,6 +1371,15 @@ ZeroReflectingSum V :=
 - synthesis soundness theorem
 - no-solution certificate soundness theorem
 ```
+
+Lean status: `SelectedObstructionUniverse`, `NonSplitExtensionWitness`,
+`ExtensionObstructionMeasure`, `RepairStep`, `RepairStepDecreases`,
+`AdmissibleRepairRule` は `defined only`。
+`repairStepDecreases_of_admissible` と
+`extensionObstructionMeasure_decreases_of_admissible` は、admissible repair rule
+から selected obstruction measure の減少を取り出す小定理として `proved`。
+repair termination、finite repair、synthesis soundness、no-solution certificate
+soundness は future proof obligation。
 
 ### Phase A5: Homotopy Skeleton and Extension Formula
 
