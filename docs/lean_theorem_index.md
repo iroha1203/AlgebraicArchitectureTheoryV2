@@ -461,17 +461,30 @@ File: `Formal/Arch/DiagramFiller.lean`
 | `obstructionAsNonFillability_sound` | `theorem` | `NonFillabilityWitnessFor D w` から `¬ DiagramFiller D` を得る片方向 soundness theorem。 | `proved` |
 | `WitnessUniverseComplete` | `def` | bounded completeness theorem 用の有限 witness universe 完全性前提。 | `defined only` |
 | `obstructionAsNonFillability_complete_bounded` | `theorem` | `WitnessUniverseComplete` と `¬ DiagramFiller D` から、有限 universe 内の `NonFillabilityWitnessFor D w` を得る bounded completeness theorem。 | `proved` |
+| `CouponDiscountExample.CouponState` | `inductive` | coupon / discount 順序依存例の有限状態 skeleton。 | `defined only` |
+| `CouponDiscountExample.CouponDiscountStep` | `inductive` | coupon-first / discount-first の二つの operation path を表す有限 step family。 | `defined only` |
+| `CouponDiscountExample.couponThenDiscount` | `def` | coupon を先に適用する selected operation path。 | `defined only` |
+| `CouponDiscountExample.discountThenCoupon` | `def` | discount を先に適用する selected operation path。 | `defined only` |
 | `CouponDiscountExample.couponDiscountDiagram` | `def` | coupon と discount の順序依存例を、二つの operation order を持つ diagram skeleton として表す。 | `defined only` |
+| `CouponDiscountExample.CouponDiscountWitness` | `inductive` | selected rounding-order obstruction witness。 | `defined only` |
+| `CouponDiscountExample.CouponDiscountStep.roundingCode` | `def` | coupon / discount step を selected rounding observation code へ写す。 | `defined only` |
 | `CouponDiscountExample.roundingTrace` | `def` | coupon / discount path の selected rounding-order observation を `Nat` trace として与える。 | `defined only` |
 | `CouponDiscountExample.RoundingIndependentSquare` | `def` | selected filler generator のうち rounding observation を保存する independent-square contract。 | `defined only` |
 | `CouponDiscountExample.RoundingSameExternalContract` | `def` | rounding observation を保存する same-contract replacement contract。 | `defined only` |
 | `CouponDiscountExample.RoundingRepairFill` | `def` | rounding observation を保存する selected repair fill contract。 | `defined only` |
 | `CouponDiscountExample.pathHomotopy_preserves_roundingTrace` | `theorem` | selected filler generator から生成される path homotopy が `roundingTrace` を保存することを示す。 | `proved` |
+| `CouponDiscountExample.couponThenDiscount_roundingTrace` | `theorem` | coupon-first path の selected rounding trace が `21` であることを計算する。 | `proved` |
+| `CouponDiscountExample.discountThenCoupon_roundingTrace` | `theorem` | discount-first path の selected rounding trace が `43` であることを計算する。 | `proved` |
 | `CouponDiscountExample.roundingOrder_refutes_selectedDiagramFiller` | `theorem` | `roundingOrder` witness が selected coupon / discount diagram filler を反駁する。 | `proved` |
+| `CouponDiscountExample.roundingOrderNonFillabilityWitness` | `def` | selected coupon / discount diagram 用の concrete `NonFillabilityWitness`。 | `defined only` |
 | `CouponDiscountExample.roundingOrder_nonFillabilityWitnessFor` | `theorem` | `CouponDiscountWitness.roundingOrder` が selected diagram の `NonFillabilityWitnessFor` であることを示す。 | `proved` |
 | `CouponDiscountExample.roundingOrderResidual` | `def` | selected coupon / discount diagram の semantic residual を `0/1` valuation として定義する。 | `defined only` |
+| `CouponDiscountExample.RoundingSemanticObstruction` | `def` | selected rounding-order residual が検出する semantic obstruction predicate。 | `defined only` |
 | `CouponDiscountExample.roundingOrderValuation` | `def` | selected rounding-order residual に相対化された `ObstructionValuation` package。 | `defined only` |
+| `CouponDiscountExample.couponDiscount_roundingOrderResidual_positive` | `theorem` | canonical coupon / discount diagram の selected residual が正であることを示す。 | `proved` |
+| `CouponDiscountExample.roundingOrderValuation_obstruction` | `theorem` | canonical coupon / discount diagram が selected rounding-order obstruction を持つことを示す。 | `proved` |
 | `CouponDiscountExample.roundingOrderValuation_positive` | `theorem` | canonical coupon / discount diagram で selected rounding-order valuation が positive になることを示す。 | `proved` |
+| `CouponDiscountExample.roundingOrderValuation_recordsNonConclusions` | `theorem` | selected valuation package が non-conclusion clause を記録していることを示す。 | `proved` |
 
 Non-conclusions: bounded completeness は `WitnessUniverseComplete` に相対化される。
 coupon / discount valuation は selected rounding-order residual に相対化される。
