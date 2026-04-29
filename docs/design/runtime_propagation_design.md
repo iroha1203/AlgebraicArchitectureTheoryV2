@@ -114,8 +114,8 @@ runtime obstruction / runtime metric zero bridge を育てる。
 static structural core の QED では、runtime / empirical 系の軸を selected required law
 axis へ追加しない。Lean 側の full law universe policy では `runtimePropagation` は
 `diagnosticAxis`、`relationComplexity` と `empiricalChangeCost` は `empiricalAxis`
-である。runtime metrics の zero bridge は、将来の数学的コア拡張として
-static package とは別に扱う。したがって、`ArchitectureLawful` や
+である。runtime metrics の zero bridge は、0/1 runtime graph 上の bounded bridge
+として証明済みだが、static required zero-law package とは別に扱う。したがって、`ArchitectureLawful` や
 `RequiredSignatureAxesZero` の成立条件として `runtimePropagation = some 0` を
 要求しない。
 
@@ -123,7 +123,7 @@ static package とは別に扱う。したがって、`ArchitectureLawful` や
 
 | 対象 | zero-curvature theorem での分類 | Lean status |
 | --- | --- | --- |
-| `runtimePropagation` / `runtimeExposureRadius` | 0/1 `RuntimeDependencyGraph` 上で測定できる diagnostic axis。static required zero-law axis ではない。zero metric と runtime obstruction absence の bridge は future proof obligation | `defined only` / `future proof obligation` |
+| `runtimePropagation` / `runtimeExposureRadius` | 0/1 `RuntimeDependencyGraph` 上で測定できる diagnostic axis。static required zero-law axis ではない。zero metric と runtime obstruction absence の bridge は bounded theorem として証明済み | `defined only` / `proved` |
 | `runtimeBlastRadius` | reverse reachability 由来の tooling / analysis metric。Lean core field には入れない | `empirical hypothesis` |
 | `runtimeFanout` | runtime graph 上の局所集中を測る analysis-derived metric。v1 field には追加しない | `empirical hypothesis` |
 | `circuitBreakerCoverageRatio` | measured runtime pair に対する policy-aware coverage 指標 | `empirical hypothesis` |
