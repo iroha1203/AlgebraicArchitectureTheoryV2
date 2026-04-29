@@ -215,6 +215,27 @@ File: `Formal/Arch/FeatureExtension.lean`
 | `staticExtensionWitnessExists_of_not_selectedStaticSplitExtension` | `theorem` | `StaticSplitFailureCoverage` 前提の下で、selected static split predicate の失敗から selected witness の存在を得る bounded completeness theorem。 | `proved` |
 | `staticExtensionWitnessExists_iff_not_selectedStaticSplitExtension` | `theorem` | selected coverage / exactness 前提に相対化された、selected witness 存在と selected static split 失敗の同値。 | `proved` |
 
+File: `Formal/Arch/FeatureExtensionExamples.lean`
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `CouponStaticDependencyExample.CoreComponent` | `inductive` | coupon feature extension 例の core 側有限 component skeleton。 | `defined only` |
+| `CouponStaticDependencyExample.FeatureComponent` | `inductive` | coupon feature extension 例の feature 側有限 component skeleton。 | `defined only` |
+| `CouponStaticDependencyExample.ExtendedComponent` | `inductive` | `CouponService`、`PaymentAdapter.internalCache` 相当、declared payment port を含む extended component skeleton。 | `defined only` |
+| `CouponStaticDependencyExample.goodExtension` | `def` | declared payment port 経由の good static extension。 | `defined only` |
+| `CouponStaticDependencyExample.badExtension` | `def` | `CouponService -> internalCache` の hidden dependency を含む bad static extension。 | `defined only` |
+| `CouponStaticDependencyExample.repairedExtension` | `def` | hidden direct edge を declared payment port 経由へ戻した repaired static extension。 | `defined only` |
+| `CouponStaticDependencyExample.goodStaticSplitFeatureExtension` | `def` | good extension が `StaticSplitFeatureExtension` を満たす bundled package。 | `defined only` |
+| `CouponStaticDependencyExample.good_selectedStaticSplitFeatureExtension` | `theorem` | good extension から selected static split predicate を得る。 | `proved` |
+| `CouponStaticDependencyExample.hiddenDependencyWitness` | `def` | bad extension の `CouponService -> PaymentAdapter.internalCache` 相当の unfactored boundary edge witness。 | `defined only` |
+| `CouponStaticDependencyExample.hiddenDependencyWitnessExists` | `theorem` | bad extension に selected static witness が存在することを示す。 | `proved` |
+| `CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension` | `theorem` | hidden dependency witness から selected static split failure を得る。 | `proved` |
+| `CouponStaticDependencyExample.repairedStaticSplitFeatureExtension` | `def` | repair 後 extension が `StaticSplitFeatureExtension` を満たす bundled package。 | `defined only` |
+| `CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension` | `theorem` | repair 後 extension で selected static split が回復することを示す。 | `proved` |
+
+Non-conclusions: coupon static canonical example は静的 split と selected hidden dependency
+witness に限る。runtime flatness、semantic flatness、extractor completeness は主張しない。
+
 ## Split Extension Lifting
 
 File: `Formal/Arch/SplitExtensionLifting.lean`

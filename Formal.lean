@@ -9,6 +9,7 @@ import Formal.Arch.Observation
 import Formal.Arch.LSP
 import Formal.Arch.LocalReplacement
 import Formal.Arch.FeatureExtension
+import Formal.Arch.FeatureExtensionExamples
 import Formal.Arch.Operation
 import Formal.Arch.OperationLaws
 import Formal.Arch.OperationInvariant
