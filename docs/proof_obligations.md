@@ -73,7 +73,7 @@ ArchitectureLawful X
 | --- | --- | --- |
 | Generic witness-count kernel / zero-count bridge | `proved` | [Lean 化設計](formal/flatness_obstruction_lean_design.md), [Lean theorem index](lean_theorem_index.md#flatness) |
 | Required law / axis exactness bridge | `proved` | [Lean theorem index](lean_theorem_index.md#signature-integrated-lawfulness) |
-| FeatureExtension / StaticSplitFeatureExtension | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#2-第一級対象-featureextension), [Lean theorem index](lean_theorem_index.md#feature-extension) |
+| FeatureExtension / StaticSplitFeatureExtension | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#2-第一級対象-featureextension), [Lean theorem index](lean_theorem_index.md#feature-extension), Issue [#299](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/299) |
 | SplitExtensionLifting / selected section law | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#83-split-extension-as-lifting-and-section), [Lean theorem index](lean_theorem_index.md#split-extension-lifting), Issue [#264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/264) |
 | ArchitectureOperation / ProofObligation schema | `defined only` / `proved` for schema accessor theorems | [AAT v2 数学設計書](aat_v2_mathematical_design.md#3-architecture-calculus), [Lean theorem index](lean_theorem_index.md#architecture-operation) |
 | Architecture Calculus laws | `defined only` / `proved` for bounded schema accessor theorems | [AAT v2 数学設計書](aat_v2_mathematical_design.md#32-calculus-laws), [Lean theorem index](lean_theorem_index.md#architecture-calculus-laws), Issue [#279](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/279) |
@@ -135,6 +135,19 @@ Issue [#284](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 | [#286](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/286) | Coupon feature extension example の semantic witness / valuation theorem | `defined only` / `proved` | coupon / discount path skeleton、`roundingTrace`、selected filler contracts、trace 計算 theorem、`roundingOrder_refutes_selectedDiagramFiller`, `roundingOrder_nonFillabilityWitnessFor`, `roundingOrderValuation_obstruction`, `roundingOrderValuation_positive`, `roundingOrderValuation_recordsNonConclusions` は実装済み。valuation は selected rounding-order residual に限られ、未測定 semantic axis の zero 性や実コード extractor completeness は主張しない。 |
 | [#288](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/288) | Complexity Transfer の bounded theorem package | `defined only` / `proved` | `ArchitectureTransform`, `SelectedComplexityMeasure`, `RequirementSchema`, `ComplexityTransferSchema`, `BoundedComplexityTransferPackage`, `complexityTransfer_alternative` は実装済み。empirical cost 改善、global complexity conservation、selected witness universe 外の completeness は non-conclusions として扱う。 |
 | [#287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/287) | ArchitectureCore / CertifiedArchitecture の proof-carrying schema | `defined only` / `proved` for accessor theorems | `ArchitectureCore`, `ArchitectureLawUniverse`, `ArchitectureTheoremPackage`, `CertifiedArchitecture` を実装済み。実コード extractor の完全性、runtime telemetry completeness、global semantic universe completeness は主張しない。 |
+
+### Split / operation / runtime-semantic follow-up task package
+
+Issue [#296](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/296)
+は、数学設計書に残る split / operation / runtime-semantic Lean 実装の親索引である。
+子 Issue の現在の扱いは次の通り。
+
+| Issue | 対象 | Lean status | 次の扱い |
+| --- | --- | --- | --- |
+| [#299](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/299) | Static split failure witness の coverage-aware diagnostic theorem | `defined only` / `proved` | `SelectedStaticSplitExtension`, `StaticExtensionWitness`, `StaticSplitFailureCoverage`, soundness theorem、bounded completeness theorem、coverage 相対の同値 theorem は実装済み。runtime flatness、semantic flatness、global extractor completeness は non-conclusions として扱う。 |
+| [#297](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/297) | `NonSplitExtensionWitness` の soundness / bounded completeness package | `future proof obligation` | `ExtensionObstructionWitness` と split 失敗を直接接続する theorem package は後続 Issue で扱う。 |
+| [#300](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/300) | Runtime / Semantic split preservation の bounded theorem package | `future proof obligation` | runtime interaction protection と semantic diagram preservation から bounded flatness を discharge する package は後続 Issue で扱う。 |
+| [#298](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/298) | ArchitectureOperation の concrete graph transformation kernel | `defined only` / `future proof obligation` | concrete graph transformation kernel は設計整理後に扱う。無条件の operation laws や global flatness preservation は主張しない。 |
 
 ## Empirical Hypothesis Index
 
