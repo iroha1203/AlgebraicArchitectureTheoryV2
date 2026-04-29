@@ -575,11 +575,14 @@ extractor completeness と empirical hypotheses は含めない。
   [Issue #226](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/226)。
 - `defined only`: witness family をまとめる signature schema と
   `ArchitectureSignatureV1` axis measurement classification。
-- `future proof obligation`: 一般の数値 curvature metric について、観測値上の
-  zero-separating distance と非負集約を前提に
-  `curvature = 0 <-> DiagramCommutes` および
-  `totalCurvature = 0 <-> no numerical curvature obstruction` を証明する bridge,
-  [Issue #194](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/194)。
+- `proved`: zero-separating distance 上の数値 curvature について、
+  `curvature = 0 <-> DiagramCommutes` を証明し、さらに有限な測定済み
+  diagram list 上の `Nat` 和として
+  `totalCurvature = 0 <-> no measured numerical curvature obstruction` を証明した,
+  [Issue #239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/239),
+  [Issue #240](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/240)。
+- `future proof obligation`: weighted curvature、Signature axis への載せ方、
+  およびより一般の集約構造での zero-reflection bridge。
 - `proved`: 0/1 `RuntimeDependencyGraph` が与えられたとき、
   runtime exposure zero metric と measured / bounded runtime obstruction absence を
   接続する bridge。
