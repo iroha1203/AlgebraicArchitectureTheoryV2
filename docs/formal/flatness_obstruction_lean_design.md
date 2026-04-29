@@ -3,8 +3,9 @@
 Lean status: `proved` core / `defined only` schema /
 `future proof obligation` / `empirical hypothesis`.
 
-この文書は [Flatness–Obstruction Conjecture](../math/Flatness–Obstruction%20Conjecture.md)
-を、数学面の草案として残したまま Lean 化するための設計メモである。
+この文書は、archive した
+[Flatness–Obstruction Conjecture](../archive/Flatness–Obstruction%20Conjecture.md)
+を歴史的な数学面の草案として参照しつつ、現在の Lean 化方針を整理する設計メモである。
 この中心定理候補を、研究本文では **アーキテクチャ零曲率定理** と呼ぶ。
 
 定理候補の日本語表現は次である。
@@ -100,7 +101,7 @@ zero-count bridge として実装する。
 
 当面は `Formal/Arch` 直下の flat layout を維持する。
 新規 module を追加する場合は、`Formal.lean` と
-[Lean 定義・定理索引](lean_theorem_index.md) を同じ PR で更新する。
+[Lean 定義・定理索引](../lean_theorem_index.md) を同じ PR で更新する。
 
 候補は次である。
 

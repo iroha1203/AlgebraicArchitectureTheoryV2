@@ -27,7 +27,7 @@
 
 また、品質評価は単一スコアに潰さず、循環、SCC、深さ、fanout、境界違反、抽象違反などの複数軸からなる `ArchitectureSignature` として扱います。
 
-最終的には、アーキテクチャレビューを「感想」から「診断」に変える理論とツールを目指します。つまり、設計原則が守る不変量、コードベース上で破れている不変量、その破れと変更波及・障害修正・レビューコストの関係を説明できる状態を目標にします。詳細は [研究の最終ゴール](docs/research_goal.md) にまとめています。
+最終的には、アーキテクチャレビューを「感想」から「診断」に変える理論とツールを目指します。つまり、設計原則が守る不変量、コードベース上で破れている不変量、その破れと変更波及・障害修正・レビューコストの関係を説明できる状態を目標にします。全体目標は [研究の全体目標](docs/research_goal.md) にまとめています。
 
 ## 研究方針
 
@@ -120,14 +120,13 @@ empirical hypotheses は実用・実証層として分けます。詳細は
 
 ## 詳細ドキュメント
 
-- [研究概要](docs/aat_v2_overview.md)
 - [docs 読み方](docs/README.md)
-- [研究の最終ゴール](docs/research_goal.md)
+- [研究の全体目標](docs/research_goal.md)
 - [アーキテクチャ零曲率定理 Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)
-- [設計原則の分類](docs/design_principle_classification.md)
+- [設計原則の分類](docs/aat_v2_mathematical_design.md#41-design-principle-classification)
 - [証明義務と実証仮説](docs/proof_obligations.md)
 - [個別設計メモ](docs/design/README.md)
-- [Lean 定義・定理索引](docs/formal/lean_theorem_index.md)
+- [Lean 定義・定理索引](docs/lean_theorem_index.md)
 
 ## リポジトリ構成
 
@@ -136,7 +135,7 @@ empirical hypotheses は実用・実証層として分けます。詳細は
 - `Formal/Arch`
   - 依存グラフ、到達可能性、層化、射影、観測、LSP、反例、signature などの Lean 定義と定理。
 - `docs`
-  - 研究概要、設計原則の分類、proof obligations、empirical hypotheses。
+  - 研究の全体目標、設計原則の分類、proof obligations、empirical hypotheses。
 - `Main.lean`
   - 実行ターゲット `aatv2` の最小 entry point。
 - `lakefile.toml`
