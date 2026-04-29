@@ -735,6 +735,11 @@ File: `Formal/Arch/Flatness.lean`
 | `featureEmbedding_mem_of_extensionCoverageComplete` | `theorem` | complete extension coverage から feature embedding の universe membership を得る。 | `proved` |
 | `extended_edge_mem_of_extensionCoverageComplete` | `theorem` | complete extension coverage から extended static edge endpoints の universe membership を得る。 | `proved` |
 | `policySound_of_staticSplitExtension` | `theorem` | compatible な static graph に対して、`StaticSplitExtension` の no-new-forbidden-edge 条件から policy soundness を得る。 | `proved` |
+| `boundaryPolicySound_of_staticSplitExtension` | `theorem` | compatible な static graph に対して、`StaticSplitExtension` 由来の boundary policy soundness を取り出す。acyclicity、projection、LSP、runtime / semantic flatness は結論しない。 | `proved` |
+| `abstractionPolicySound_of_staticSplitExtension` | `theorem` | compatible な static graph に対して、`StaticSplitExtension` 由来の abstraction policy soundness を取り出す。projection soundness 自体は別前提として残す。 | `proved` |
+| `lspCompatible_of_staticSplitObservationFactorsThrough` | `theorem` | static split 文脈で、明示的な `ObservationFactorsThrough` 前提から `LSPCompatible` を得る接続補題。 | `proved` |
+| `projectionSound_of_staticSplitProjectionExact` | `theorem` | static split の extended graph に対し、明示的な `ProjectionExact` 前提から `ProjectionSound` を得る bounded 補題。 | `proved` |
+| `projectionSound_of_staticSplitEdgeDecomposition` | `theorem` | compatible static graph の edge が static split の extended graph に分解され、その extended graph が projection sound なら、compatible graph の `ProjectionSound` を得る。 | `proved` |
 | `staticFlatWithin_of_staticSplitExtension` | `theorem` | coverage-aware な静的範囲で、static split extension と残りの静的 law 前提から `StaticFlatWithin` を得る。runtime / semantic flatness は結論しない。 | `proved` |
 | `LawfulExtensionFlatnessModel` | `def` | static graph を `StaticSplitExtension` の extended graph に固定し、runtime / semantic evidence を明示引数として持つ bounded flatness model。 | `defined only` |
 | `LawfulExtensionPreservesFlatness` | `theorem` | extension coverage、runtime coverage / flatness、semantic coverage / flatness を明示前提として、lawful static split extension から bounded `ArchitectureFlatWithin` を構成する。 | `proved` |
