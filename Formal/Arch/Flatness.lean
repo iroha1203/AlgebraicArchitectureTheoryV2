@@ -258,6 +258,125 @@ theorem noUnmeasuredRequiredAxis_of_architectureFlatWithin
   exact hFlat.1
 
 /--
+Exhaustive coverage premise for completing bounded architecture flatness.
+
+This is named separately from `ArchitectureFlatWithin` so that global
+completion corollaries expose the coverage assumption instead of hiding it in a
+primary theorem.
+-/
+def ExhaustiveFlatnessCoverage
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) : Prop :=
+  NoUnmeasuredRequiredAxis X U
+
+/--
+Exact observation premise for completing the selected static / runtime /
+semantic flatness evidence into bounded architecture flatness.
+
+The premise is still relative to `U` and the measured semantic list. It is a
+bridge assumption, not a claim of extractor or telemetry completeness.
+-/
+def ExactFlatnessObservation
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) : Prop :=
+  StaticFlatWithin X U ->
+  RuntimeFlatWithin X U ->
+  SemanticFlatWithin X ->
+  ArchitectureFlatWithin X U
+
+/-- Coverage discharges the exact-observation bridge for the existing layers. -/
+theorem exactFlatnessObservation_of_exhaustiveCoverage
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static}
+    (hCoverage : ExhaustiveFlatnessCoverage X U) :
+    ExactFlatnessObservation X U := by
+  intro hStatic hRuntime hSemantic
+  exact ⟨hCoverage, hStatic, hRuntime, hSemantic⟩
+
+/--
+Certificate for reading bounded flatness as completed global flatness.
+
+The certificate keeps the bounded theorem package primary: `flatWithin` is the
+proved architecture flatness statement, while `exhaustiveCoverage`,
+`exactObservation`, and `recordsNonConclusions` record the extra assumptions
+that justify exposing a global predicate.
+-/
+structure GlobalFlatCertificate
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) where
+  completionUniverse : ComponentUniverse X.static
+  flatWithin : ArchitectureFlatWithin X completionUniverse
+  exhaustiveCoverage : ExhaustiveFlatnessCoverage X completionUniverse
+  exactObservation : ExactFlatnessObservation X completionUniverse
+  nonConclusions : Prop
+  recordsNonConclusions : nonConclusions
+
+/--
+Global architecture flatness is a completion predicate backed by an explicit
+certificate. It is not the primary theorem package.
+-/
+def ArchitectureFlat
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) :
+    Prop :=
+  Nonempty (GlobalFlatCertificate X)
+
+namespace GlobalFlatCertificate
+
+/-- A global-flat certificate carries the underlying bounded flatness theorem. -/
+theorem architectureFlatWithin
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    (certificate : GlobalFlatCertificate X) :
+    ArchitectureFlatWithin X certificate.completionUniverse :=
+  certificate.flatWithin
+
+/-- A global-flat certificate exposes exhaustive coverage explicitly. -/
+theorem exhaustiveFlatnessCoverage
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    (certificate : GlobalFlatCertificate X) :
+    ExhaustiveFlatnessCoverage X certificate.completionUniverse :=
+  certificate.exhaustiveCoverage
+
+/-- A global-flat certificate exposes exact observation explicitly. -/
+theorem exactFlatnessObservation
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    (certificate : GlobalFlatCertificate X) :
+    ExactFlatnessObservation X certificate.completionUniverse :=
+  certificate.exactObservation
+
+/-- A global-flat certificate records the non-conclusions it does not prove. -/
+theorem nonConclusions_recorded
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    (certificate : GlobalFlatCertificate X) :
+    certificate.nonConclusions :=
+  certificate.recordsNonConclusions
+
+end GlobalFlatCertificate
+
+/--
+Completion corollary from bounded flatness to global flatness.
+
+The theorem deliberately requires exhaustive coverage, exact observation, and
+recorded non-conclusions as visible inputs; without those, the bounded
+`ArchitectureFlatWithin` theorem is not promoted.
+-/
+theorem globalFlat_of_within_exhaustive
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static}
+    (hWithin : ArchitectureFlatWithin X U)
+    (hCoverage : ExhaustiveFlatnessCoverage X U)
+    (hExact : ExactFlatnessObservation X U)
+    {nonConclusions : Prop}
+    (hNonConclusions : nonConclusions) :
+    ArchitectureFlat X :=
+  ⟨{
+    completionUniverse := U
+    flatWithin := hWithin
+    exhaustiveCoverage := hCoverage
+    exactObservation := hExact
+    nonConclusions := nonConclusions
+    recordsNonConclusions := hNonConclusions
+  }⟩
+
+/--
 Coverage for a feature extension relative to the extended architecture universe.
 
 This packages the minimum assumptions needed by later preservation theorems:
