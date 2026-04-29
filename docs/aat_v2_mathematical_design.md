@@ -980,6 +980,27 @@ SplitExtensionLifting:
 strict retraction は現実の architecture には強すぎることがある。
 初期 formalization では、observational retraction または selected projection law として扱う。
 
+Issue [#264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/264)
+での最初の Lean 対象範囲は、`FeatureSectionLaw`,
+`ObservationalCoreRetraction`, `SplitExtensionLiftingData`,
+`SelectedFeatureStep`, `CompatibleWithInterface`, `LiftsFeatureStep`,
+`PreservesCoreInvariants`, `SplitExtensionLifting` である。
+
+Lean status: section / retraction / compatibility schema は `defined only`。
+`SplitExtensionLiftingData.featureSection_observes` と
+`SplitExtensionLiftingData.coreRetraction_observes_coreEmbedding` は
+observation-relative law の accessor theorem として `proved`。
+`SplitExtensionLifting` は、selected split-extension lifting data、lawful selected
+feature step、interface compatibility から、section-induced extended step が存在し、
+selected core invariant を保存することを示す bounded theorem として `proved`。
+
+この段階の非目標は次である。
+
+- strict equality としての `q ∘ s = id` または `r ∘ i = id` を要求すること。
+- `X'` の全 component が `X` と `F` に一意分解されることを主張すること。
+- runtime flatness、semantic flatness、extractor completeness を結論すること。
+- selected universe 外のすべての feature step が自動的に lift することを主張すること。
+
 ### 8.4 Structural Architecture Extension Formula
 
 AAT の中心 theorem は、零曲率 theorem そのものではなく、

@@ -205,6 +205,33 @@ File: `Formal/Arch/FeatureExtension.lean`
 | `StaticSplitFeatureExtension` | `structure` | core edge preservation、declared interface factorization、forbidden static edge absence、policy preservation を束ねる静的 split extension schema。 | `defined only` |
 | `StaticSplitExtension` | `abbrev` | `StaticSplitFeatureExtension` の短縮名。 | `defined only` |
 
+## Split Extension Lifting
+
+File: `Formal/Arch/SplitExtensionLifting.lean`
+
+Issue [#264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/264)
+の対象範囲は、strict fibration ではなく observation model に相対化された
+feature section / core retraction と、selected feature step の bounded lifting である。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `FeatureSectionLaw` | `def` | `q ∘ s ≈ id` を、extended 側 `featureView` と feature 側 selected observation の一致として表す observation-relative section law。 | `defined only` |
+| `ObservationalCoreRetraction` | `def` | `r ∘ i ≈ id` を、embedded core に対する selected core observation の一致として表す retraction law。 | `defined only` |
+| `SplitExtensionLiftingData` | `structure` | `FeatureExtension`、feature observation、core observation、feature section、core retraction、section / retraction law、interface factorization、required invariant preservation を束ねる selected split-extension lifting schema。 | `defined only` |
+| `SplitExtensionLiftingData.featureSection_observes` | `theorem` | feature section law を accessor theorem として取り出す。 | `proved` |
+| `SplitExtensionLiftingData.coreRetraction_observes_coreEmbedding` | `theorem` | embedded core 上の observational core retraction law を accessor theorem として取り出す。 | `proved` |
+| `SelectedFeatureStep` | `structure` | selected feature state 間の feature step。 | `defined only` |
+| `LiftedExtensionStep` | `structure` | extended architecture 内の lifted endpoint pair。 | `defined only` |
+| `LawfulFeatureStep` | `def` | selected feature invariant を feature step が保存すること。 | `defined only` |
+| `CanonicalLiftedFeatureStep` | `def` | feature section によって feature step の endpoint を extended endpoint へ持ち上げる canonical lift。 | `defined only` |
+| `LiftsFeatureStep` | `def` | lifted step が section-induced endpoints を持ち、extended static edge として存在すること。 | `defined only` |
+| `PreservesCoreInvariants` | `def` | core retraction 後の selected core invariant を lifted step が保存すること。 | `defined only` |
+| `CompatibleWithInterface` | `structure` | selected step ごとの extended edge、interface factorization、coverage、core invariant preservation を束ねる compatibility package。 | `defined only` |
+| `SplitExtensionLifting` | `theorem` | selected split-extension lifting data、lawful feature step、interface compatibility から、lifting と core invariant preservation を満たす extended step の存在を得る。 | `proved` |
+
+Non-conclusions: `SplitExtensionLifting` は strict equality の section/retraction、全 component の一意分解、
+runtime flatness、semantic flatness、または all feature steps の自動 lifting を主張しない。
+
 ## Architecture Operation
 
 File: `Formal/Arch/Operation.lean`
