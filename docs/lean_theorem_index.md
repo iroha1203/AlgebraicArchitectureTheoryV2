@@ -492,6 +492,11 @@ coverage-style structural classification theorem.
 | `ExtensionCoverage` | `abbrev` | `Flatness.lean` の `ExtensionCoverageComplete` に、Architecture Extension Formula 用の公開名を与える。 | `defined only` |
 | `ExtensionObstructionClass` | `inductive` | inherited core / feature local / interaction / lifting failure / filling failure / complexity transfer / residual coverage gap の bounded classification class。 | `defined only` |
 | `ExtensionObstructionWitness` | `structure` | 抽象 witness payload と選択された `ExtensionObstructionClass` を束ねる。具体的な static / runtime / semantic / analytic witness family は後続 bridge で接続する。 | `defined only` |
+| `MultiLabelExtensionObstructionWitness` | `structure` | 抽象 witness payload と、複数の `ExtensionObstructionClass` を許す label predicate、少なくとも一つの selected label による coverage 証拠を束ねる。 | `defined only` |
+| `ExtensionObstructionWitness.toMultiLabel` | `def` | 既存 single-label witness を payload 不変のまま multi-label witness へ埋め込む。 | `defined only` |
+| `ExtensionObstructionWitness.toMultiLabel_witness` | `theorem` | single-label から multi-label への bridge が payload を保つことを示す。 | `proved` |
+| `ExtensionObstructionWitness.toMultiLabel_label_iff` | `theorem` | bridge 後の label predicate が元の `classifiesAs` と一致することを示す。 | `proved` |
+| `ExtensionObstructionWitness.toMultiLabel_classifiesAs` | `theorem` | bridge 後の multi-label witness が元の classification label を持つことを示す。 | `proved` |
 | `FillingFailureWitnessPayload` | `structure` | `NonFillabilityWitnessFor` を required diagram の filling failure payload として包む bridge witness。payload 単独では selected split failure を主張しない。 | `defined only` |
 | `fillingFailureExtensionObstructionWitness` | `def` | selected diagram non-fillability payload から `.fillingFailure` に分類された `ExtensionObstructionWitness` を構成する。 | `defined only` |
 | `SelectedSplitExtension` | `def` | feature extension と selected split predicate を結び、global split completeness を固定しないための selected split predicate。 | `defined only` |
@@ -524,6 +529,15 @@ coverage-style structural classification theorem.
 | `ClassifiedAsComplexityTransfer` | `def` | witness が complexity / analytic diagnostic axis への transfer として分類されること。 | `defined only` |
 | `ClassifiedAsResidualCoverageGap` | `def` | witness が residual evidence または bounded coverage gap として分類されること。 | `defined only` |
 | `ArchitectureExtensionFormula_structural` | `theorem` | bounded extension coverage の下で、任意の selected extension obstruction witness が 7 分類 predicate の少なくとも一つで cover されること。 | `proved` |
+| `MultiLabelClassifiedAsInheritedCore` | `def` | multi-label witness が embedded core 由来 label を持つこと。 | `defined only` |
+| `MultiLabelClassifiedAsFeatureLocal` | `def` | multi-label witness が追加 feature 内部由来 label を持つこと。 | `defined only` |
+| `MultiLabelClassifiedAsInteraction` | `def` | multi-label witness が feature/core interaction label を持つこと。 | `defined only` |
+| `MultiLabelClassifiedAsLiftingFailure` | `def` | multi-label witness が lifting failure label を持つこと。 | `defined only` |
+| `MultiLabelClassifiedAsFillingFailure` | `def` | multi-label witness が filling failure label を持つこと。 | `defined only` |
+| `fillingFailureExtensionObstructionWitness_multilabel_classified` | `theorem` | filling-failure bridge witness を multi-label layer に埋め込んでも `.fillingFailure` label が得られることを示す。 | `proved` |
+| `MultiLabelClassifiedAsComplexityTransfer` | `def` | multi-label witness が complexity / analytic transfer label を持つこと。 | `defined only` |
+| `MultiLabelClassifiedAsResidualCoverageGap` | `def` | multi-label witness が residual evidence / coverage gap label を持つこと。 | `defined only` |
+| `ArchitectureExtensionFormula_multilabel_structural` | `theorem` | bounded extension coverage の下で、任意の multi-label extension obstruction witness が 7 分類 predicate の少なくとも一つで cover されること。 | `proved` |
 
 Non-conclusions: 最初の theorem package は disjoint decomposition、global extractor
 completeness、runtime / semantic universe completeness、または universe 外の obstruction
@@ -534,9 +548,11 @@ diagram filling failure から split failure への接続は `FillingFailureRefu
 単独から `¬ SplitExtension` は結論しない。
 bounded flatness preservation は runtime / semantic flatness と coverage assumptions を明示する
 `LawfulExtensionPreservesFlatness` として `Formal/Arch/Flatness.lean` で証明済みである。
-このため `ArchitectureExtensionFormula_structural` は 7 分類の少なくとも一つに入ることを
+このため `ArchitectureExtensionFormula_structural` と
+`ArchitectureExtensionFormula_multilabel_structural` は 7 分類の少なくとも一つに入ることを
 述べる coverage theorem であり、分類が互いに素であることや全 obstruction universe の
-完全分類は結論しない。
+完全分類は結論しない。multi-label layer は同一 witness が複数 label を持つことを許し、
+single-label layer との bridge は payload preservation と元 label の保存だけを主張する。
 
 ## Complexity Transfer
 

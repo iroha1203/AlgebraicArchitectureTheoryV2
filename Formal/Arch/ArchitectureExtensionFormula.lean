@@ -44,6 +44,62 @@ structure ExtensionObstructionWitness
   classifiesAs : ExtensionObstructionClass
 
 /--
+Multi-label obstruction witness for the extended architecture.
+
+The label predicate is intentionally not forced to be singleton: the same
+payload may be an interaction witness and also a lifting or filling failure.
+The `covered` field only records that the selected label universe covers this
+witness by at least one Architecture Extension Formula class; it does not claim
+global witness completeness or disjointness.
+-/
+structure MultiLabelExtensionObstructionWitness
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (Witness : Type z) where
+  witness : Witness
+  labels : ExtensionObstructionClass -> Prop
+  covered : ∃ classification : ExtensionObstructionClass, labels classification
+
+namespace ExtensionObstructionWitness
+
+/--
+Embed the existing single-label witness into the multi-label layer.
+
+The bridge keeps the payload unchanged and selects exactly the original
+classification as its label predicate.
+-/
+def toMultiLabel
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    (witness : ExtensionObstructionWitness X Witness) :
+    MultiLabelExtensionObstructionWitness X Witness where
+  witness := witness.witness
+  labels := fun classification => witness.classifiesAs = classification
+  covered := ⟨witness.classifiesAs, rfl⟩
+
+@[simp]
+theorem toMultiLabel_witness
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    (witness : ExtensionObstructionWitness X Witness) :
+    witness.toMultiLabel.witness = witness.witness :=
+  rfl
+
+@[simp]
+theorem toMultiLabel_label_iff
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    (witness : ExtensionObstructionWitness X Witness)
+    (classification : ExtensionObstructionClass) :
+    witness.toMultiLabel.labels classification ↔
+      witness.classifiesAs = classification :=
+  Iff.rfl
+
+theorem toMultiLabel_classifiesAs
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    (witness : ExtensionObstructionWitness X Witness) :
+    witness.toMultiLabel.labels witness.classifiesAs :=
+  rfl
+
+end ExtensionObstructionWitness
+
+/--
 Payload bridge from semantic diagram non-fillability into the architecture
 extension obstruction universe.
 
@@ -490,6 +546,80 @@ def ClassifiedAsResidualCoverageGap
     (witness : ExtensionObstructionWitness X Witness) : Prop :=
   witness.classifiesAs = .residualCoverageGap
 
+/-- The multi-label witness is labeled as inherited from the embedded core. -/
+def MultiLabelClassifiedAsInheritedCore
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (_U : ComponentUniverse X.extended)
+    (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
+  witness.labels .inheritedCore
+
+/-- The multi-label witness is labeled as local to the added feature. -/
+def MultiLabelClassifiedAsFeatureLocal
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (_U : ComponentUniverse X.extended)
+    (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
+  witness.labels .featureLocal
+
+/-- The multi-label witness is labeled as a feature/core interaction. -/
+def MultiLabelClassifiedAsInteraction
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (_U : ComponentUniverse X.extended)
+    (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
+  witness.labels .interaction
+
+/-- The multi-label witness is labeled as a lifting failure. -/
+def MultiLabelClassifiedAsLiftingFailure
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (_U : ComponentUniverse X.extended)
+    (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
+  witness.labels .liftingFailure
+
+/-- The multi-label witness is labeled as a required diagram filling failure. -/
+def MultiLabelClassifiedAsFillingFailure
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (_U : ComponentUniverse X.extended)
+    (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
+  witness.labels .fillingFailure
+
+/--
+The multi-label bridge constructor for filling failures keeps the original
+single-label bridge classification available in the multi-label layer.
+-/
+theorem fillingFailureExtensionObstructionWitness_multilabel_classified
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    {State : Type u} {Step : State -> State -> Type v}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {A B : State} {D : ArchitectureDiagram Step A B}
+    {DiagramWitness : Type w}
+    (payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness) :
+    MultiLabelClassifiedAsFillingFailure X U
+      (fillingFailureExtensionObstructionWitness X payload).toMultiLabel :=
+  rfl
+
+/-- The multi-label witness is labeled as complexity or analytic transfer. -/
+def MultiLabelClassifiedAsComplexityTransfer
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (_U : ComponentUniverse X.extended)
+    (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
+  witness.labels .complexityTransfer
+
+/-- The multi-label witness is labeled as residual evidence or a coverage gap. -/
+def MultiLabelClassifiedAsResidualCoverageGap
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (_U : ComponentUniverse X.extended)
+    (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
+  witness.labels .residualCoverageGap
+
 /--
 Bounded structural architecture extension formula.
 
@@ -515,5 +645,35 @@ theorem ArchitectureExtensionFormula_structural
       ClassifiedAsInteraction, ClassifiedAsLiftingFailure,
       ClassifiedAsFillingFailure, ClassifiedAsComplexityTransfer,
       ClassifiedAsResidualCoverageGap]
+
+/--
+Multi-label structural architecture extension formula.
+
+Under the supplied bounded extension coverage premise, every multi-label
+extension obstruction witness is covered by at least one selected
+classification predicate. This remains a coverage theorem: labels may overlap,
+and no global witness completeness or disjoint decomposition is asserted.
+-/
+theorem ArchitectureExtensionFormula_multilabel_structural
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    (_hCoverage : ExtensionCoverage X U)
+    (witness : MultiLabelExtensionObstructionWitness X Witness) :
+    MultiLabelClassifiedAsInheritedCore X U witness ∨
+      MultiLabelClassifiedAsFeatureLocal X U witness ∨
+      MultiLabelClassifiedAsInteraction X U witness ∨
+      MultiLabelClassifiedAsLiftingFailure X U witness ∨
+      MultiLabelClassifiedAsFillingFailure X U witness ∨
+      MultiLabelClassifiedAsComplexityTransfer X U witness ∨
+      MultiLabelClassifiedAsResidualCoverageGap X U witness := by
+  rcases witness.covered with ⟨classification, hClassified⟩
+  cases classification <;>
+    simp [MultiLabelClassifiedAsInheritedCore,
+      MultiLabelClassifiedAsFeatureLocal,
+      MultiLabelClassifiedAsInteraction,
+      MultiLabelClassifiedAsLiftingFailure,
+      MultiLabelClassifiedAsFillingFailure,
+      MultiLabelClassifiedAsComplexityTransfer,
+      MultiLabelClassifiedAsResidualCoverageGap, hClassified]
 
 end Formal.Arch
