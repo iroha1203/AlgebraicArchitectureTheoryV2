@@ -520,6 +520,67 @@ theorem reachesWithin_eq_reachableBool_under_universe {C : Type u}
       (reachableBool_eq_true_iff.mp h)
 
 /--
+Under a finite component universe, measured bounded runtime exposure absence is
+equivalent to semantic `Reachable`-based runtime exposure absence.
+-/
+theorem noRuntimeExposureObstruction_iff_noSemanticRuntimeExposureObstruction_under_universe
+    {C : Type u} {G : RuntimeDependencyGraph C}
+    [DecidableEq C] [DecidableRel G.edge] (U : ComponentUniverse G) :
+    NoRuntimeExposureObstruction G U.components ↔
+      NoSemanticRuntimeExposureObstruction G U.components := by
+  constructor
+  · intro hMeasured source hSource target hTarget hNe hReach
+    have hBounded :
+        reachesWithin G U.components U.components.length source target = true :=
+      reachesWithin_complete_of_reachable_under_universe U hReach
+    have hFalse :
+        reachesWithin G U.components U.components.length source target = false :=
+      hMeasured source hSource target hTarget hNe
+    rw [hFalse] at hBounded
+    cases hBounded
+  · intro hSemantic source hSource target hTarget hNe
+    by_cases hBounded :
+        reachesWithin G U.components U.components.length source target = true
+    · exact False.elim
+        (hSemantic source hSource target hTarget hNe
+          (reachesWithin_sound hBounded))
+    · cases h :
+        reachesWithin G U.components U.components.length source target <;>
+        simp [h] at hBounded ⊢
+
+/--
+Under a finite component universe, runtime propagation zero is exactly semantic
+absence of runtime exposure obstruction.
+-/
+theorem runtimePropagationOfFinite_eq_zero_iff_noSemanticRuntimeExposureObstruction_under_universe
+    {C : Type u} {G : RuntimeDependencyGraph C}
+    [DecidableEq C] [DecidableRel G.edge] (U : ComponentUniverse G) :
+    runtimePropagationOfFinite G U.components = 0 ↔
+      NoSemanticRuntimeExposureObstruction G U.components := by
+  rw [runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction,
+    noRuntimeExposureObstruction_iff_noSemanticRuntimeExposureObstruction_under_universe U]
+
+/--
+For the v1 runtime extension constructor, `some 0` on the runtime propagation
+axis is equivalent to semantic runtime exposure absence under a runtime
+`ComponentUniverse`.
+-/
+theorem v1OfFiniteWithRuntimePropagation_runtimePropagation_eq_some_zero_iff_noSemanticRuntimeExposureObstruction_under_universe
+    {C : Type u}
+    (static : StaticDependencyGraph C)
+    (runtime : RuntimeDependencyGraph C)
+    [DecidableEq C]
+    [DecidableRel static.edge] [DecidableRel runtime.edge]
+    (U : ComponentUniverse runtime)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    (v1OfFiniteWithRuntimePropagation static runtime U.components
+      boundaryAllowed abstractionAllowed).runtimePropagation = some 0 ↔
+      NoSemanticRuntimeExposureObstruction runtime U.components := by
+  rw [v1OfFiniteWithRuntimePropagation_runtimePropagation_eq_some_zero_iff,
+    noRuntimeExposureObstruction_iff_noSemanticRuntimeExposureObstruction_under_universe U]
+
+/--
 Under a finite component universe, the executable bounded SCC size at `c`
 equals the graph-level mutual-reachability class size of `c`.
 -/

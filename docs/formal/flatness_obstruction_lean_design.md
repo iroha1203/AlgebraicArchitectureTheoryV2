@@ -585,9 +585,10 @@ extractor completeness と empirical hypotheses は含めない。
   およびより一般の集約構造での zero-reflection bridge。
 - `proved`: 0/1 `RuntimeDependencyGraph` が与えられたとき、
   runtime exposure zero metric と measured / bounded runtime obstruction absence を
-  接続する bridge。
-- `future proof obligation`: semantic `Reachable` 版、policy-aware runtime exposure、
-  blast radius 版の zero metric と obstruction absence を接続する bridge。
+  接続する bridge、および `ComponentUniverse` 下で semantic `Reachable` 版へ接続する
+  bridge。
+- `future proof obligation`: policy-aware runtime exposure、blast radius 版の zero metric と
+  obstruction absence を接続する bridge。
 - `empirical hypothesis`: 数値 curvature や runtime metrics と変更コスト・障害率・
   レビュー負荷・incident scope の相関。
 - `empirical hypothesis`: obstruction count と変更コスト・障害率・レビュー負荷の相関。
