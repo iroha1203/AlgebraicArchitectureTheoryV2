@@ -42,6 +42,29 @@ def NoNumericalCurvatureObstruction {Expr : Type u} {Obs : Type v}
   ∀ d, required d -> ¬ NumericalCurvatureObstruction metric sem d
 
 /--
+Total numerical curvature over a finite measured diagram universe.
+
+Duplicates are counted as repeated measurements, matching the finite executable
+metrics elsewhere in the signature layer.
+-/
+def totalCurvature {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    (sem : Semantics Expr Obs) : List (RequiredDiagram Expr) -> Nat
+  | [] => 0
+  | d :: ds => numericalCurvature metric sem d + totalCurvature metric sem ds
+
+/--
+No numerical curvature obstruction exists in the finite measured diagram
+universe. This is intentionally list-scoped: it does not claim that every
+semantic diagram has been measured.
+-/
+def NoMeasuredNumericalCurvatureObstruction {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    (sem : Semantics Expr Obs)
+    (measured : List (RequiredDiagram Expr)) : Prop :=
+  ∀ d, d ∈ measured -> ¬ NumericalCurvatureObstruction metric sem d
+
+/--
 Zero numerical curvature is exactly diagram commutativity.
 -/
 theorem numericalCurvature_eq_zero_iff_DiagramCommutes
@@ -123,5 +146,85 @@ theorem diagramLawful_iff_noNumericalCurvatureObstruction
   · intro hNoObstruction d hRequired
     exact (not_numericalCurvatureObstruction_iff_DiagramCommutes metric).mp
       (hNoObstruction d hRequired)
+
+/--
+Total numerical curvature is zero exactly when every measured diagram has zero
+curvature.
+-/
+theorem totalCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero
+    {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    {sem : Semantics Expr Obs}
+    {measured : List (RequiredDiagram Expr)} :
+    totalCurvature metric sem measured = 0 ↔
+      ∀ d, d ∈ measured -> numericalCurvature metric sem d = 0 := by
+  induction measured with
+  | nil =>
+      simp [totalCurvature]
+  | cons d ds ih =>
+      constructor
+      · intro hZero d' hMem
+        rw [totalCurvature] at hZero
+        have hHead : numericalCurvature metric sem d = 0 :=
+          Nat.eq_zero_of_add_eq_zero_right hZero
+        have hTail : totalCurvature metric sem ds = 0 :=
+          Nat.eq_zero_of_add_eq_zero_left hZero
+        simp only [List.mem_cons] at hMem
+        rcases hMem with hEq | hMem
+        · cases hEq
+          exact hHead
+        · exact ih.mp hTail d' hMem
+      · intro hAll
+        rw [totalCurvature]
+        have hHead : numericalCurvature metric sem d = 0 :=
+          hAll d (by simp)
+        have hTail : totalCurvature metric sem ds = 0 :=
+          ih.mpr (by
+            intro d' hMem
+            exact hAll d' (by simp [hMem]))
+        simp [hHead, hTail]
+
+/--
+Total numerical curvature is zero exactly when every measured diagram commutes.
+-/
+theorem totalCurvature_eq_zero_iff_forall_measured_DiagramCommutes
+    {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    {sem : Semantics Expr Obs}
+    {measured : List (RequiredDiagram Expr)} :
+    totalCurvature metric sem measured = 0 ↔
+      ∀ d, d ∈ measured -> DiagramCommutes sem d := by
+  constructor
+  · intro hZero d hMem
+    exact (numericalCurvature_eq_zero_iff_DiagramCommutes metric).mp
+      ((totalCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero
+        metric).mp hZero d hMem)
+  · intro hCommutes
+    exact
+      (totalCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero
+        metric).mpr (by
+          intro d hMem
+          exact numericalCurvature_eq_zero_of_DiagramCommutes metric
+            (hCommutes d hMem))
+
+/--
+Total numerical curvature is zero exactly when the measured diagram universe has
+no numerical curvature obstruction.
+-/
+theorem totalCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction
+    {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    {sem : Semantics Expr Obs}
+    {measured : List (RequiredDiagram Expr)} :
+    totalCurvature metric sem measured = 0 ↔
+      NoMeasuredNumericalCurvatureObstruction metric sem measured := by
+  rw [totalCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero]
+  constructor
+  · intro hZero d hMem hObstruction
+    exact hObstruction (hZero d hMem)
+  · intro hNoObstruction d hMem
+    by_cases hZero : numericalCurvature metric sem d = 0
+    · exact hZero
+    · exact False.elim (hNoObstruction d hMem hZero)
 
 end Formal.Arch

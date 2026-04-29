@@ -392,12 +392,15 @@ Issue [#239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 `NumericalCurvatureObstruction`, `NoNumericalCurvatureObstruction` を追加し、
 個別 diagram について `numericalCurvature = 0 <-> DiagramCommutes` と
 `DiagramLawful <-> NoNumericalCurvatureObstruction` の bridge を証明した。
-次の集約 target は
-`totalCurvature = 0 <-> no numerical curvature obstruction` の bridge であり、
+Issue [#240](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/240)
+では、有限な測定済み diagram list 上の `totalCurvature` と
+`NoMeasuredNumericalCurvatureObstruction` を追加し、
+`totalCurvature = 0 <-> every measured diagram has curvature 0` および
+`totalCurvature = 0 <-> NoMeasuredNumericalCurvatureObstruction` を証明した。
+この theorem は list-scoped であり、未測定 diagram を zero obstruction とは扱わない。
 変更コスト・障害率・レビュー負荷との相関や重みの calibration は empirical
-hypothesis として分離する。重み付き・集約済みの一般 metric と
-Signature axis への載せ方は `future proof obligation` として残す。
-これは obstruction witness zero-count
+hypothesis として分離する。重み付き・Signature axis への載せ方は
+`future proof obligation` として残す。これは obstruction witness zero-count
 theorem の代替ではなく、追加 axis または派生評価として接続する。
 
 ## 基本 convention
@@ -1342,7 +1345,7 @@ Lean status の区分:
 | `observationalDivergence`, `lspViolationCount` | 観測差分と measured LSP violation pair を数える behavioral extension | `defined only` / `proved` |
 | `nilpotencyIndex` | finite `ComponentUniverse` 上で最初の zero adjacency power を探す executable metric。acyclic graph では `some` になる bridge を証明済み。`some k` は index 値であり、required zero-axis ではない | `defined only` / `proved` |
 | `rho(A)` | 行列解析上の伝播増幅指標として扱う。finite DAG では 0、finite closed walk では正になる bridge を証明済み | `proved` for `DAG -> rho(A)=0` / `proved` for cycle positivity / `empirical hypothesis` |
-| `numericCurvature` | 個別 diagram では `ZeroSeparatingDistance` と `numericalCurvature` を追加し、`numericalCurvature = 0 <-> DiagramCommutes` および `DiagramLawful <-> NoNumericalCurvatureObstruction` を証明済み。非負集約、Signature axis への載せ方、重み calibration や現実コストとの相関は別層に残す | `proved` / `future proof obligation` / `empirical hypothesis` |
+| `numericCurvature` | 個別 diagram では `ZeroSeparatingDistance` と `numericalCurvature` を追加し、`numericalCurvature = 0 <-> DiagramCommutes` および `DiagramLawful <-> NoNumericalCurvatureObstruction` を証明済み。有限な測定済み diagram list 上では `totalCurvature = 0 <-> NoMeasuredNumericalCurvatureObstruction` を証明済み。Signature axis への載せ方、重み calibration や現実コストとの相関は別層に残す | `proved` / `future proof obligation` / `empirical hypothesis` |
 | `runtimePropagation` | 0/1 `RuntimeDependencyGraph` 上では `reachableConeSizeOfFinite` による runtime exposure radius として計算する。既存名は `runtimeExposureRadius` の互換名であり、zero metric と runtime obstruction absence の bridge は `reachesWithin` ベースの measured obstruction として証明済み。semantic `Reachable` 版、blast radius、policy-aware runtime exposure は別 bridge または tooling / analysis metric として分ける | `defined only` / `proved` / `future proof obligation` / `empirical hypothesis` |
 | `relationComplexity` | 状態遷移代数層の設計に依存する | `empirical hypothesis` |
 | `empiricalChangeCost` | 実データで検証する目的変数 | `empirical hypothesis` |
