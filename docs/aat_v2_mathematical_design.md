@@ -1064,14 +1064,18 @@ LawfulExtensionPreservesFlatness:
 Issue [#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262)
 の最初の Lean 対象範囲は、`ExtensionCoverage`, `ExtensionObstructionWitness`,
 classification predicate 群、および `ArchitectureExtensionFormula_structural`
-の bounded classification theorem である。
+の bounded classification theorem であり、`Formal/Arch/ArchitectureExtensionFormula.lean`
+で実装済みである。
 
-Lean status: `ArchitectureExtensionFormula_structural` と
-`LawfulExtensionPreservesFlatness` は `future proof obligation`。
+Lean status: `ArchitectureExtensionFormula_structural` は `proved`。
+`ExtensionCoverage`, `ExtensionObstructionWitness`, classification predicate 群は
+`defined only`。`LawfulExtensionPreservesFlatness` は `future proof obligation`。
 前提となる `ArchitectureOperation` / `ProofObligation` schema、repair step decreases、
 selected split-extension lifting はそれぞれ Issue #265, #266, #264 で Lean 化済みである。
-`LawfulExtensionPreservesFlatness` は #262 内で直接 corollary として切れる場合のみ証明し、
-coverage assumptions が大きくなる場合は後続 Issue に分割する。
+`LawfulExtensionPreservesFlatness` は runtime / semantic flatness と bounded coverage
+assumptions が追加で必要なため、#262 では直接 corollary とせず Issue
+[#271](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/271)
+で扱う。
 
 ### 8.5 Analytic representation layer
 
@@ -1408,7 +1412,9 @@ diagram filling / non-fillability witness soundness、selected split-extension l
 `defined only` / `proved` の theorem package として存在する。
 Architecture Extension Formula の structural classification theorem は Issue
 [#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262)
-の `future proof obligation` であり、coverage / classification theorem として扱う。
+で Lean 化済みであり、`ExtensionObstructionWitness` と classification predicate 群は
+`defined only`、`ArchitectureExtensionFormula_structural` は `proved`。この theorem は
+coverage / classification theorem として扱い、disjoint decomposition は主張しない。
 
 ### Phase A6: Representation Bridges
 
