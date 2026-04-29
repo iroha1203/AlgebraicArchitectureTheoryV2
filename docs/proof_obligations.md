@@ -195,10 +195,35 @@ Lean status:
 今後の proof obligation:
 
 - `PathHomotopy` の `IndependentSquare`, `SameExternalContract`, `RepairFill` を、
-  concrete な feature extension / refactoring / semantic diagram filling の theorem と
-  接続する。
+  concrete な feature extension / refactoring の theorem と接続する。
 - homotopy invariant の非自明な事例、特に selected flatness や obstruction absence の
   invariant package を別 Issue で構成する。
+
+Issue [#248](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/248)
+では、semantic curvature を数値ではなく diagram filling failure として扱う最小 core を
+`Formal.Arch.DiagramFiller` に追加した。Lean では `ArchitectureDiagram` が同じ
+start / target state を持つ左右の `ArchitecturePath` を束ね、`DiagramFiller` は
+既存の `PathHomotopy` によって左右 path が fillable であることを表す。
+`NonFillabilityWitness` は domain-specific witness value と filler の反駁を保持し、
+`obstructionAsNonFillability_sound` が
+`NonFillabilityWitnessFor D w -> ¬ DiagramFiller D` の片方向 soundness を証明する。
+coupon / discount の順序依存例は `CouponDiscountExample.couponDiscountDiagram` として
+path skeleton だけを置き、rounding-order witness の具体的意味論は後続 theorem に残す。
+
+Lean status:
+
+- `defined only`: `ArchitectureDiagram`, `DiagramFiller`,
+  `NonFillabilityWitness`, `NonFillabilityWitnessFor`,
+  `WitnessUniverseComplete`, `CouponDiscountExample.couponDiscountDiagram`
+- `proved`: `obstructionAsNonFillability_sound`
+
+今後の proof obligation:
+
+- `WitnessUniverseComplete` と coverage / exactness assumptions の下でのみ、
+  `¬ DiagramFiller D` から有限 witness universe 内の
+  `NonFillabilityWitnessFor D w` を得る bounded completeness theorem を扱う。
+- coupon / discount example に観測意味論と rounding-order witness を与え、
+  static lawfulness とは独立した semantic non-fillability witness として接続する。
 
 | 候補 | 分類 | final theorem での扱い |
 | --- | --- | --- |
