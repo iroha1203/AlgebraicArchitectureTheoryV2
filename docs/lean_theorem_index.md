@@ -278,6 +278,21 @@ File: `Formal/Arch/Repair.lean`
 Non-conclusions: repair theorem package は runtime flatness、semantic flatness、all obstruction removal、
 repair termination、finite repair、synthesis soundness、no-solution certificate soundness を主張しない。
 
+## Architecture Extension Formula
+
+Issue [#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262)
+の `ArchitectureExtensionFormula_structural` は、現時点では `future proof obligation`
+であり、対応する Lean module / theorem はまだ存在しない。
+
+予定されている Lean 対象範囲は、`ExtensionCoverage`, `ExtensionObstructionWitness`,
+inherited core / feature local / interaction / lifting failure / filling failure /
+complexity transfer / residual coverage gap の classification predicate 群、および
+bounded classification theorem である。実装時にはこの節を File と API table へ更新する。
+
+Non-conclusions: 最初の theorem package は disjoint decomposition、global extractor
+completeness、runtime / semantic universe completeness、または universe 外の obstruction
+分類を主張しない。
+
 ## Architecture Path
 
 File: `Formal/Arch/ArchitecturePath.lean`
