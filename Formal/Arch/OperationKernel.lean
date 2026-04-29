@@ -5,6 +5,29 @@ namespace Formal.Arch
 
 universe u
 
+/-- Two architecture graphs have the same dependency edge relation. -/
+def EdgeEquivalent {C : Type u} (G H : ArchGraph C) : Prop :=
+  ∀ c d : C, G.edge c d ↔ H.edge c d
+
+namespace EdgeEquivalent
+
+/-- Edge equivalence is reflexive. -/
+theorem refl {C : Type u} (G : ArchGraph C) : EdgeEquivalent G G :=
+  fun _ _ => Iff.rfl
+
+/-- Edge equivalence is symmetric. -/
+theorem symm {C : Type u} {G H : ArchGraph C}
+    (h : EdgeEquivalent G H) : EdgeEquivalent H G :=
+  fun c d => (h c d).symm
+
+/-- Edge equivalence is transitive. -/
+theorem trans {C : Type u} {G H K : ArchGraph C}
+    (hGH : EdgeEquivalent G H) (hHK : EdgeEquivalent H K) :
+    EdgeEquivalent G K :=
+  fun c d => Iff.trans (hGH c d) (hHK c d)
+
+end EdgeEquivalent
+
 /--
 Concrete graph-level transformation kernel for Architecture Calculus operations.
 
@@ -98,6 +121,45 @@ theorem reverse_reverse_edge_iff {C : Type u} (G : ArchGraph C) {c d : C} :
     (G.reverse.reverse).edge c d ↔ G.edge c d :=
   Iff.rfl
 
+/-- Compose two graphs on the same component type by taking edge union. -/
+def compose {C : Type u} (G H : ArchGraph C) : ArchGraph C where
+  edge c d := G.edge c d ∨ H.edge c d
+
+/-- Edges of a composed graph are exactly edges from either input graph. -/
+theorem compose_edge_iff {C : Type u} (G H : ArchGraph C) {c d : C} :
+    (G.compose H).edge c d ↔ G.edge c d ∨ H.edge c d :=
+  Iff.rfl
+
+/-- The left operand embeds into graph-level composition. -/
+theorem left_edgeSubset_compose {C : Type u} (G H : ArchGraph C) :
+    EdgeSubset G (G.compose H) :=
+  fun hEdge => Or.inl hEdge
+
+/-- The right operand embeds into graph-level composition. -/
+theorem right_edgeSubset_compose {C : Type u} (G H : ArchGraph C) :
+    EdgeSubset H (G.compose H) :=
+  fun hEdge => Or.inr hEdge
+
+/--
+Graph-level replacement chooses the replacement graph.
+
+Preservation claims are kept separate and must be proved from an explicit
+`EdgeEquivalent` precondition.
+-/
+def replace {C : Type u} (_G H : ArchGraph C) : ArchGraph C :=
+  H
+
+/-- Edges of a replacement graph are exactly the replacement target edges. -/
+theorem replace_edge_iff {C : Type u} (G H : ArchGraph C) {c d : C} :
+    (G.replace H).edge c d ↔ H.edge c d :=
+  Iff.rfl
+
+/-- Edge-equivalent replacement preserves the source edge relation. -/
+theorem replace_preserves_edges_of_edgeEquivalent {C : Type u}
+    (G H : ArchGraph C) (hEquiv : EdgeEquivalent G H) {c d : C} :
+    (G.replace H).edge c d ↔ G.edge c d :=
+  (hEquiv c d).symm
+
 end ArchGraph
 
 namespace FiniteArchGraph
@@ -138,6 +200,57 @@ theorem protect_edge_iff {C : Type u} (FG : FiniteArchGraph C) {c d : C} :
     FG.protect.graph.edge c d ↔ FG.graph.edge c d :=
   Iff.rfl
 
+/--
+Compose finite graphs by edge union while retaining the source graph's finite
+measurement universe.
+
+The retained universe is full over the component type, so it also covers edges
+introduced by the right operand.
+-/
+def compose {C : Type u} (FG FH : FiniteArchGraph C) : FiniteArchGraph C where
+  graph := FG.graph.compose FH.graph
+  componentUniverse :=
+    { components := FG.components
+      nodup := FG.nodup_components
+      covers := FG.covers_components
+      edgeClosed := ComponentUniverse.edgeClosed_of_covers FG.covers_components }
+
+/-- Edges of a composed finite graph are exactly edges from either input graph. -/
+theorem compose_edge_iff {C : Type u} (FG FH : FiniteArchGraph C) {c d : C} :
+    (FG.compose FH).graph.edge c d ↔
+      FG.graph.edge c d ∨ FH.graph.edge c d :=
+  Iff.rfl
+
+/-- The source finite graph embeds into graph-level finite composition. -/
+theorem left_edgeSubset_compose {C : Type u} (FG FH : FiniteArchGraph C) :
+    EdgeSubset FG.graph (FG.compose FH).graph :=
+  ArchGraph.left_edgeSubset_compose FG.graph FH.graph
+
+/-- The right finite graph embeds into graph-level finite composition. -/
+theorem right_edgeSubset_compose {C : Type u} (FG FH : FiniteArchGraph C) :
+    EdgeSubset FH.graph (FG.compose FH).graph :=
+  ArchGraph.right_edgeSubset_compose FG.graph FH.graph
+
+/--
+Replace a finite graph by another finite graph over the same component type.
+
+Preservation is intentionally relative to explicit equivalence assumptions.
+-/
+def replace {C : Type u} (_FG FH : FiniteArchGraph C) : FiniteArchGraph C :=
+  FH
+
+/-- Edges of a finite replacement are exactly the replacement target edges. -/
+theorem replace_edge_iff {C : Type u} (FG FH : FiniteArchGraph C) {c d : C} :
+    (FG.replace FH).graph.edge c d ↔ FH.graph.edge c d :=
+  Iff.rfl
+
+/-- Edge-equivalent finite replacement preserves the source edge relation. -/
+theorem replace_preserves_edges_of_edgeEquivalent {C : Type u}
+    (FG FH : FiniteArchGraph C) (hEquiv : EdgeEquivalent FG.graph FH.graph)
+    {c d : C} :
+    (FG.replace FH).graph.edge c d ↔ FG.graph.edge c d :=
+  (hEquiv c d).symm
+
 end FiniteArchGraph
 
 namespace ConcreteGraphOperation
@@ -160,6 +273,27 @@ def protect {C : Type u} (FG : FiniteArchGraph C) :
   precondition := True
   nonConclusion := True
 
+/-- Concrete `compose` graph operation using finite edge union. -/
+def compose {C : Type u} (FG FH : FiniteArchGraph C) :
+    ConcreteGraphOperation C where
+  kind := ArchitectureOperationKind.compose
+  source := FG
+  target := FG.compose FH
+  precondition := True
+  nonConclusion := True
+
+/--
+Concrete `replace` graph operation with edge equivalence as an explicit
+precondition.
+-/
+def replace {C : Type u} (FG FH : FiniteArchGraph C) :
+    ConcreteGraphOperation C where
+  kind := ArchitectureOperationKind.replace
+  source := FG
+  target := FG.replace FH
+  precondition := EdgeEquivalent FG.graph FH.graph
+  nonConclusion := True
+
 /-- The concrete reverse operation is connected to the `reverse` operation kind. -/
 theorem reverse_kind {C : Type u} (FG : FiniteArchGraph C) :
     (reverse FG).kind = ArchitectureOperationKind.reverse :=
@@ -168,6 +302,16 @@ theorem reverse_kind {C : Type u} (FG : FiniteArchGraph C) :
 /-- The concrete protect operation is connected to the `protect` operation kind. -/
 theorem protect_kind {C : Type u} (FG : FiniteArchGraph C) :
     (protect FG).kind = ArchitectureOperationKind.protect :=
+  rfl
+
+/-- The concrete compose operation is connected to the `compose` operation kind. -/
+theorem compose_kind {C : Type u} (FG FH : FiniteArchGraph C) :
+    (compose FG FH).kind = ArchitectureOperationKind.compose :=
+  rfl
+
+/-- The concrete replace operation is connected to the `replace` operation kind. -/
+theorem replace_kind {C : Type u} (FG FH : FiniteArchGraph C) :
+    (replace FG FH).kind = ArchitectureOperationKind.replace :=
   rfl
 
 /-- The schema embedding of concrete reverse keeps the `reverse` operation kind. -/
@@ -180,6 +324,18 @@ theorem reverse_schema_kind {C : Type u} (FG : FiniteArchGraph C) :
 theorem protect_schema_kind {C : Type u} (FG : FiniteArchGraph C) :
     (protect FG).toArchitectureOperation.kind =
       ArchitectureOperationKind.protect :=
+  rfl
+
+/-- The schema embedding of concrete compose keeps the `compose` operation kind. -/
+theorem compose_schema_kind {C : Type u} (FG FH : FiniteArchGraph C) :
+    (compose FG FH).toArchitectureOperation.kind =
+      ArchitectureOperationKind.compose :=
+  rfl
+
+/-- The schema embedding of concrete replace keeps the `replace` operation kind. -/
+theorem replace_schema_kind {C : Type u} (FG FH : FiniteArchGraph C) :
+    (replace FG FH).toArchitectureOperation.kind =
+      ArchitectureOperationKind.replace :=
   rfl
 
 end ConcreteGraphOperation
