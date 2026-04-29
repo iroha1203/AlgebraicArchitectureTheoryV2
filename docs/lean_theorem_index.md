@@ -546,6 +546,15 @@ File: `Formal/Arch/Flatness.lean`
 | `RuntimeFlatWithin` | `def` | measured runtime universe 内の runtime edge が runtime policy を満たすこと。 | `defined only` |
 | `SemanticCoverageComplete` | `def` | measured semantic diagram list が required semantic diagrams を cover すること。 | `defined only` |
 | `SemanticFlatWithin` | `def` | measured semantic diagram universe 内の diagram lawfulness。 | `defined only` |
+| `RuntimeInteractionProtected` | `def` | selected universe 内の runtime interaction が target runtime policy を満たす bounded runtime split premise。 | `defined only` |
+| `runtimeFlatWithin_of_runtimeInteractionProtected` | `theorem` | runtime coverage 前提の下で selected runtime protection から `RuntimeFlatWithin` を得る。 | `proved` |
+| `runtimeInteractionProtected_of_runtimeFlatWithin` | `theorem` | `RuntimeFlatWithin` を selected runtime protection として読み替える。 | `proved` |
+| `runtimeInteractionProtected_iff_runtimeFlatWithin` | `theorem` | runtime coverage 前提に相対化して selected runtime protection と `RuntimeFlatWithin` を同値にする。 | `proved` |
+| `FeatureDiagramsCommute` | `def` | selected measured semantic diagrams がすべて commute すること。global semantic completeness は含めない。 | `defined only` |
+| `semanticFlatWithin_of_featureDiagramsCommute` | `theorem` | semantic coverage 前提の下で selected diagram commutation から `SemanticFlatWithin` を得る。 | `proved` |
+| `featureDiagramsCommute_of_semanticFlatWithin` | `theorem` | `SemanticFlatWithin` を selected diagram commutation として読み替える。 | `proved` |
+| `featureDiagramsCommute_iff_semanticFlatWithin` | `theorem` | semantic coverage 前提に相対化して selected diagram commutation と `SemanticFlatWithin` を同値にする。 | `proved` |
+| `RuntimeSemanticSplitPreservation` | `structure` | runtime interaction protection と selected semantic diagram commutation を束ねる bounded runtime / semantic split preservation package。 | `defined only` |
 | `NoUnmeasuredRequiredAxis` | `def` | static / runtime / semantic の required evidence が bounded universes で測定済みであること。 | `defined only` |
 | `ArchitectureFlatWithin` | `def` | coverage-aware な bounded architecture flatness。coverage と三層 flatness を束ね、global extractor / telemetry / semantic universe completeness は主張しない。 | `defined only` |
 | `staticFlatWithin_of_architectureFlatWithin` | `theorem` | bounded architecture flatness から static flatness を取り出す。 | `proved` |
@@ -561,6 +570,7 @@ File: `Formal/Arch/Flatness.lean`
 | `staticFlatWithin_of_staticSplitExtension` | `theorem` | coverage-aware な静的範囲で、static split extension と残りの静的 law 前提から `StaticFlatWithin` を得る。runtime / semantic flatness は結論しない。 | `proved` |
 | `LawfulExtensionFlatnessModel` | `def` | static graph を `StaticSplitExtension` の extended graph に固定し、runtime / semantic evidence を明示引数として持つ bounded flatness model。 | `defined only` |
 | `LawfulExtensionPreservesFlatness` | `theorem` | extension coverage、runtime coverage / flatness、semantic coverage / flatness を明示前提として、lawful static split extension から bounded `ArchitectureFlatWithin` を構成する。 | `proved` |
+| `LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` | `theorem` | runtime / semantic split preservation package で `LawfulExtensionPreservesFlatness` の runtime / semantic flatness 前提を discharge する。 | `proved` |
 
 ## Architecture Core / Certified Architecture
 

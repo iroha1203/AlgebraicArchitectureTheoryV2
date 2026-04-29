@@ -101,6 +101,104 @@ def SemanticFlatWithin
   DiagramLawfulByList X.semantic X.measuredSemantic
 
 /--
+Selected runtime interaction protection.
+
+This is the bounded runtime split premise: every measured runtime interaction
+that appears in the selected universe satisfies the target runtime policy. It
+does not assert telemetry completeness outside `U`.
+-/
+def RuntimeInteractionProtected
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) : Prop :=
+  ∀ {src dst : C}, X.runtime.edge src dst ->
+    src ∈ U.components -> dst ∈ U.components -> X.runtimeAllowed src dst
+
+/--
+Runtime interaction protection discharges bounded runtime flatness once the
+selected runtime universe is the one used by the flatness model.
+-/
+theorem runtimeFlatWithin_of_runtimeInteractionProtected
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static}
+    (_hCoverage : RuntimeCoverageComplete X U)
+    (hProtected : RuntimeInteractionProtected X U) :
+    RuntimeFlatWithin X U := by
+  intro src dst hSrc hDst hEdge
+  exact hProtected hEdge hSrc hDst
+
+/-- Bounded runtime flatness can be read as selected runtime protection. -/
+theorem runtimeInteractionProtected_of_runtimeFlatWithin
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static}
+    (hFlat : RuntimeFlatWithin X U) :
+    RuntimeInteractionProtected X U := by
+  intro src dst hEdge hSrc hDst
+  exact hFlat hSrc hDst hEdge
+
+/-- Runtime protection and bounded runtime flatness are equivalent on `U`. -/
+theorem runtimeInteractionProtected_iff_runtimeFlatWithin
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static}
+    (hCoverage : RuntimeCoverageComplete X U) :
+    RuntimeInteractionProtected X U ↔ RuntimeFlatWithin X U := by
+  constructor
+  · exact runtimeFlatWithin_of_runtimeInteractionProtected hCoverage
+  · exact runtimeInteractionProtected_of_runtimeFlatWithin
+
+/--
+Selected semantic diagram preservation for a feature extension.
+
+The predicate is intentionally measured-list relative: it says that every
+selected semantic diagram commutes, without claiming that the list is globally
+complete.
+-/
+def FeatureDiagramsCommute
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) :
+    Prop :=
+  ∀ d, d ∈ X.measuredSemantic -> DiagramCommutes X.semantic d
+
+/--
+Selected semantic diagram preservation discharges bounded semantic flatness
+under the semantic coverage package used by full architecture flatness.
+-/
+theorem semanticFlatWithin_of_featureDiagramsCommute
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    (_hCoverage : SemanticCoverageComplete X)
+    (hCommute : FeatureDiagramsCommute X) :
+    SemanticFlatWithin X := by
+  intro d hMeasured
+  exact hCommute d hMeasured
+
+/-- Bounded semantic flatness can be read as selected diagram commutation. -/
+theorem featureDiagramsCommute_of_semanticFlatWithin
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    (hFlat : SemanticFlatWithin X) :
+    FeatureDiagramsCommute X := by
+  intro d hMeasured
+  exact hFlat d hMeasured
+
+/-- Semantic diagram commutation and bounded semantic flatness coincide. -/
+theorem featureDiagramsCommute_iff_semanticFlatWithin
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    (hCoverage : SemanticCoverageComplete X) :
+    FeatureDiagramsCommute X ↔ SemanticFlatWithin X := by
+  constructor
+  · exact semanticFlatWithin_of_featureDiagramsCommute hCoverage
+  · exact featureDiagramsCommute_of_semanticFlatWithin
+
+/--
+Runtime / semantic split preservation evidence for one bounded flatness model.
+
+Static split evidence remains in `StaticSplitExtension`; this package only
+bundles the runtime and semantic premises that discharge the non-static layers.
+-/
+structure RuntimeSemanticSplitPreservation
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) : Prop where
+  runtimeInteractionProtected : RuntimeInteractionProtected X U
+  featureDiagramsCommute : FeatureDiagramsCommute X
+
+/--
 All required axes have evidence in the supplied bounded universes.
 
 This is intentionally separate from zero/flatness predicates: missing runtime
@@ -354,5 +452,80 @@ theorem LawfulExtensionPreservesFlatness
       hLSP
   exact ⟨⟨hStaticCoverage, hRuntimeCoverage, hSemanticCoverage⟩,
     hStaticFlat, hRuntimeFlat, hSemanticFlat⟩
+
+/--
+Bounded flatness preservation with runtime / semantic split evidence.
+
+This corollary connects the selected runtime protection and selected semantic
+diagram commutation predicates to `LawfulExtensionPreservesFlatness`. Runtime
+coverage and semantic coverage remain explicit bounded assumptions.
+-/
+theorem LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {runtime : RuntimeDependencyGraph Extended}
+    {projection : InterfaceProjection Extended A}
+    {abstractStatic : AbstractGraph A}
+    {staticObservation : Observation Extended StaticObs}
+    {boundaryAllowed abstractionAllowed runtimeAllowed : Extended -> Extended -> Prop}
+    {semantic : Semantics SemanticExpr SemanticObs}
+    {requiredSemantic : RequiredDiagram SemanticExpr -> Prop}
+    {measuredSemantic : List (RequiredDiagram SemanticExpr)}
+    (U : ComponentUniverse S.extension.extended)
+    (hExtensionCoverage : StaticSplitExtensionCoverageComplete S U)
+    (hBoundaryAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        boundaryAllowed src dst)
+    (hAbstractionAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        abstractionAllowed src dst)
+    (hWalkAcyclic : WalkAcyclic S.extension.extended)
+    (hProjectionSound : ProjectionSound S.extension.extended projection abstractStatic)
+    (hLSP : LSPCompatible projection staticObservation)
+    (hRuntimeCoverage :
+      RuntimeCoverageComplete
+        (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+          boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic
+          measuredSemantic)
+        U)
+    (hSemanticCoverage : CoversRequired requiredSemantic measuredSemantic)
+    (hRuntimeSemantic :
+      RuntimeSemanticSplitPreservation
+        (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+          boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic
+          measuredSemantic)
+        U) :
+    ArchitectureFlatWithin
+      (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+        boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic measuredSemantic)
+      U := by
+  let X :=
+    LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+      boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic measuredSemantic
+  exact LawfulExtensionPreservesFlatness
+    (S := S)
+    (runtime := runtime)
+    (projection := projection)
+    (abstractStatic := abstractStatic)
+    (staticObservation := staticObservation)
+    (boundaryAllowed := boundaryAllowed)
+    (abstractionAllowed := abstractionAllowed)
+    (runtimeAllowed := runtimeAllowed)
+    (semantic := semantic)
+    (requiredSemantic := requiredSemantic)
+    (measuredSemantic := measuredSemantic)
+    U
+    hExtensionCoverage
+    hBoundaryAllowed
+    hAbstractionAllowed
+    hWalkAcyclic
+    hProjectionSound
+    hLSP
+    hRuntimeCoverage
+    (runtimeFlatWithin_of_runtimeInteractionProtected
+      (X := X) (U := U) hRuntimeCoverage
+      hRuntimeSemantic.runtimeInteractionProtected)
+    hSemanticCoverage
+    (semanticFlatWithin_of_featureDiagramsCommute
+      (X := X) hSemanticCoverage hRuntimeSemantic.featureDiagramsCommute)
 
 end Formal.Arch
