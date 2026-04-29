@@ -183,7 +183,7 @@ analysis とし、その他は必要データが揃う場合の exploratory anal
 | SOLID の形式化は一意ではない | AAT では操作的形式化として扱う。自然言語としての SOLID 全体の唯一の形式化は主張しない。 |
 | 静的依存と実行時依存の分離 | Lean core では `StaticDependencyGraph` と `RuntimeDependencyGraph` を graph role として分ける。edge metadata は tooling / empirical 側に置く。 |
 | runtime policy-aware metrics | raw runtime graph の theorem と、Circuit Breaker coverage / timeout / retry policy を反映した extension axis を分ける。 |
-| numerical curvature | finite diagram / zero-separating distance の proved bridge と、weighted / calibrated Signature axis や現実コストとの相関を分ける。 |
+| numerical curvature | finite diagram / zero-separating distance の proved bridge と、positive-weight bounded bridge を、calibrated Signature axis や現実コストとの相関から分ける。 |
 | unconditional operation calculus laws | `compose`, `replace`, `protect`, `repair` の bounded law package はあるが、無条件の結合法則、全 operation の冪等性、global flatness preservation は主張しない。 |
 | extractor completeness | extractor output は tooling evidence であり、完全な proof-carrying universe とは同一視しない。 |
 | relation complexity | 状態遷移代数層の empirical metric として扱い、構成要素ベクトルを残す。単一スコアだけで設計を評価しない。 |
@@ -204,7 +204,7 @@ corollary として扱う。
 | --- | --- | --- |
 | global flatness completion | `GlobalFlatCertificate`, `ArchitectureFlat`, `globalFlat_of_within_exhaustive` を certificate theorem として定義する。`ArchitectureFlatWithin` を primary theorem とし、global theorem は exhaustive coverage / exact observation / recorded non-conclusions がそろう場合の completion corollary に限る。Issue [#308](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/308) | `defined only` / `proved` for completion accessors |
 | claim / evidence boundary | `ClaimLevel`, `MeasurementBoundary`, `ArchitectureClaim` で `formal`, `tooling`, `empirical`, `hypothesis` の claim level と non-conclusions を明示する。tooling output と Lean theorem の境界、および unmeasured と measured-zero の区別を保つ。Issue [#309](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/309) | `defined only` / `proved` for boundary accessors |
-| weighted numerical curvature | 現在の zero-separating / finite measured curvature bridge を、positive weight や zero-reflecting weighted sum 前提つきの bounded theorem へ拡張する。cost correlation は empirical hypothesis に残す。Issue [#310](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/310) | `future proof obligation` |
+| weighted numerical curvature | `PositiveCurvatureWeightOn` と `totalWeightedCurvature` により、positive weight 前提つきで weighted aggregate zero と measured numerical curvature obstruction 不在を接続する。cost correlation は empirical hypothesis に残す。Issue [#310](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/310) | `defined only` / `proved` |
 | complexity transfer beyond bounded package | 既存の bounded complexity transfer package を土台に、`transfer_or_gap` や `no_free_elimination_bounded` 型の theorem を検討する。global conservation / lower bound は将来拡張とする。Issue [#311](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/311) | `future proof obligation` |
 | cohomological obstruction candidate | AAT v2 core には混ぜず、`DiagramFiller` / `NonFillabilityWitness` / `PathHomotopy` と接続できる小さい experimental extension として隔離する。Issue [#312](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/312) | future extension |
 

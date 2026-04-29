@@ -1311,6 +1311,10 @@ ZeroReflectingSum V :=
 ```
 
 この仮定なしに、`totalCurvature = 0` から全 diagram の `curvature = 0` を主張しない。
+`Nat` 値の重み付き aggregate では、測定 universe 内の各 diagram が正の重みを持つ
+場合に限り、weighted total の zero から各 diagram の zero を読み戻す。
+重みの calibration や開発コストとの相関は、この zero-reflection theorem とは別の
+tooling / empirical claim として扱う。
 
 ## 13. 形式化の分解
 

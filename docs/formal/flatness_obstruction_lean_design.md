@@ -582,8 +582,10 @@ extractor completeness と empirical hypotheses は含めない。
   `totalCurvature = 0 <-> no measured numerical curvature obstruction` を証明した,
   [Issue #239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/239),
   [Issue #240](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/240)。
-- `future proof obligation`: weighted curvature、Signature axis への載せ方、
-  およびより一般の集約構造での zero-reflection bridge。
+- `defined only` / `proved`: positive-weighted curvature について、
+  `totalWeightedCurvature = 0 <-> no measured numerical curvature obstruction`
+  を証明した。Signature axis への載せ方、およびより一般の集約構造での
+  zero-reflection bridge は future proof obligation として残す。
 - `proved`: 0/1 `RuntimeDependencyGraph` が与えられたとき、
   runtime exposure zero metric と measured / bounded runtime obstruction absence を
   接続する bridge、および `ComponentUniverse` 下で semantic `Reachable` 版へ接続する
