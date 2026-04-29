@@ -150,11 +150,26 @@ Lean status:
   `featureEmbedding_mem_of_extensionCoverageComplete`,
   `extended_edge_mem_of_extensionCoverageComplete`
 
+Issue [#246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/246)
+では、静的 split extension が coverage-aware な静的 flatness に接続する最小 theorem を
+`Formal.Arch.Flatness` に追加した。Lean では
+`policySound_of_staticSplitExtension` が compatible な static graph に対して
+`StaticSplitExtension` の no-new-forbidden-edge 条件から policy soundness を導き、
+`staticFlatWithin_of_staticSplitExtension` が `StaticFlatWithin` を構成する。
+この theorem は静的層だけを結論し、runtime flatness、semantic flatness、full
+`ArchitectureFlatWithin` は結論しない。walk acyclicity、projection soundness、
+LSP compatibility は、`StaticSplitExtension` の責務ではないため明示前提として残す。
+
+Lean status:
+
+- `proved`: `policySound_of_staticSplitExtension`,
+  `staticFlatWithin_of_staticSplitExtension`
+
 今後の proof obligation:
 
-- `StaticSplitFeatureExtension` が `StaticFlatWithin` / `ArchitectureFlatWithin` を
-  保存する theorem は Issue [#246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/246)
-  で扱う。
+- `StaticSplitFeatureExtension` から runtime / semantic flatness や full
+  `ArchitectureFlatWithin` を導く theorem は、この静的 theorem からは導かない。
+  必要な coverage、runtime protection、semantic diagram law は別 Issue で扱う。
 - semantic diagram list の完全性や telemetry completeness は Lean theorem ではなく、
   tooling / empirical evidence の別前提として扱う。
 

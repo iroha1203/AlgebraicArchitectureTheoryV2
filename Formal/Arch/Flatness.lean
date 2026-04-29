@@ -206,4 +206,55 @@ theorem extended_edge_mem_of_extensionCoverageComplete
     src ∈ U.components ∧ dst ∈ U.components :=
   hCoverage.2.2.1 hEdge
 
+/--
+Static split-extension policy soundness for a compatible static graph.
+
+The split extension supplies only the static edge-policy part. Other static
+laws, such as acyclicity, projection soundness, and LSP compatibility, remain
+separate assumptions of the flatness theorem below.
+-/
+theorem policySound_of_staticSplitExtension
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {G : ArchGraph Extended} {allowed : Extended -> Extended -> Prop}
+    (hEdges :
+      ∀ {src dst : Extended}, G.edge src dst ->
+        S.extension.extended.edge src dst)
+    (hAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        allowed src dst) :
+    ArchitectureSignature.PolicySound G allowed := by
+  intro src dst hEdge
+  exact hAllowed (S.noNewForbiddenStaticEdge (hEdges hEdge))
+
+/--
+Static split extensions preserve coverage-aware static flatness.
+
+This theorem is deliberately static-only: it concludes `StaticFlatWithin`, not
+runtime, semantic, or full `ArchitectureFlatWithin`. The non-policy static laws
+are explicit premises because the static split-extension schema only controls
+new forbidden static edges.
+-/
+theorem staticFlatWithin_of_staticSplitExtension
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {X : ArchitectureFlatnessModel Extended A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static}
+    (hCoverage : StaticCoverageComplete X U)
+    (hEdges :
+      ∀ {src dst : Extended}, X.static.edge src dst ->
+        S.extension.extended.edge src dst)
+    (hBoundaryAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        X.boundaryAllowed src dst)
+    (hAbstractionAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        X.abstractionAllowed src dst)
+    (hWalkAcyclic : WalkAcyclic X.static)
+    (hProjectionSound : ProjectionSound X.static X.projection X.abstractStatic)
+    (hLSP : LSPCompatible X.projection X.staticObservation) :
+    StaticFlatWithin X U := by
+  have _hStaticCoverage : StaticCoverageComplete X U := hCoverage
+  refine ⟨hWalkAcyclic, hProjectionSound, hLSP, ?_, ?_⟩
+  · exact policySound_of_staticSplitExtension S hEdges hBoundaryAllowed
+  · exact policySound_of_staticSplitExtension S hEdges hAbstractionAllowed
+
 end Formal.Arch
