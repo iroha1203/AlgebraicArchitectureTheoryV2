@@ -122,6 +122,42 @@ Lean status:
   Issue [#246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/246)
   で扱う。
 
+Issue [#245](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/245)
+では、coverage-aware な三層 flatness predicate を
+`Formal.Arch.Flatness` に追加した。Lean では `ArchitectureFlatnessModel` が
+static / runtime / semantic の各層を束ね、`ArchitectureFlatWithin X U` が
+`NoUnmeasuredRequiredAxis X U` と `StaticFlatWithin X U`,
+`RuntimeFlatWithin X U`, `SemanticFlatWithin X` を要求する。runtime dependency
+evidence と semantic diagram universe の coverage は、それぞれ
+`RuntimeCoverageComplete` と `SemanticCoverageComplete` として明示されるため、
+未測定 runtime edge や未列挙 semantic diagram を zero obstruction として扱わない。
+feature extension 側の後続 theorem 用には `ExtensionCoverageComplete` と
+`StaticSplitExtensionCoverageComplete` を追加した。
+
+Lean status:
+
+- `defined only`: `ArchitectureFlatnessModel`, `StaticCoverageComplete`,
+  `StaticFlatWithin`, `RuntimeCoverageComplete`, `RuntimeFlatWithin`,
+  `SemanticCoverageComplete`, `SemanticFlatWithin`, `NoUnmeasuredRequiredAxis`,
+  `ArchitectureFlatWithin`, `ExtensionCoverageComplete`,
+  `StaticSplitExtensionCoverageComplete`
+- `proved`: `staticCoverageComplete_of_componentUniverse`,
+  `staticFlatWithin_of_architectureFlatWithin`,
+  `runtimeFlatWithin_of_architectureFlatWithin`,
+  `semanticFlatWithin_of_architectureFlatWithin`,
+  `noUnmeasuredRequiredAxis_of_architectureFlatWithin`,
+  `coreEmbedding_mem_of_extensionCoverageComplete`,
+  `featureEmbedding_mem_of_extensionCoverageComplete`,
+  `extended_edge_mem_of_extensionCoverageComplete`
+
+今後の proof obligation:
+
+- `StaticSplitFeatureExtension` が `StaticFlatWithin` / `ArchitectureFlatWithin` を
+  保存する theorem は Issue [#246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/246)
+  で扱う。
+- semantic diagram list の完全性や telemetry completeness は Lean theorem ではなく、
+  tooling / empirical evidence の別前提として扱う。
+
 | 候補 | 分類 | final theorem での扱い |
 | --- | --- | --- |
 | `closedWalkAcyclicity`, `projectionSoundness`, `lspCompatibility`, `boundaryPolicySoundness`, `abstractionPolicySoundness` | required law | `ArchitectureLawful` と `RequiredSignatureAxesZero` の対象 |

@@ -18,3 +18,4 @@ import Formal.Arch.Finite
 import Formal.Arch.Matrix
 import Formal.Arch.DependencyObstruction
 import Formal.Arch.SignatureLawfulness
+import Formal.Arch.Flatness
