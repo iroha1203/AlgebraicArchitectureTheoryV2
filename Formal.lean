@@ -10,8 +10,10 @@ import Formal.Arch.LSP
 import Formal.Arch.LocalReplacement
 import Formal.Arch.FeatureExtension
 import Formal.Arch.Operation
+import Formal.Arch.OperationLaws
 import Formal.Arch.OperationInvariant
 import Formal.Arch.Repair
+import Formal.Arch.RepairSynthesis
 import Formal.Arch.SplitExtensionLifting
 import Formal.Arch.ArchitecturePath
 import Formal.Arch.ArchitectureEvolution
@@ -28,3 +30,4 @@ import Formal.Arch.DependencyObstruction
 import Formal.Arch.SignatureLawfulness
 import Formal.Arch.Flatness
 import Formal.Arch.ArchitectureExtensionFormula
+import Formal.Arch.AnalyticRepresentation
