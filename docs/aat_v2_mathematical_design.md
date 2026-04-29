@@ -591,12 +591,12 @@ non-commuting diagram witness が残る。
 - 実コード extractor が完全であること
 - telemetry が完全であること
 - obstruction が必ず incident を起こすこと
-- AAT report が必ず開発コストを下げること
+- AAT の診断表示が必ず開発コストを下げること
 - AI が生成したコードが正しいこと
 - 全ての refactoring が architecture flatness を保存すること
 ```
 
-これらはツール設計書の tooling boundary または empirical validation の対象である。
+これらは形式体系の外側にある適用上の境界または経験的検証の対象である。
 
 ## 7. 中心 theorem 候補
 
@@ -663,7 +663,7 @@ SemanticFlat X'
 ```
 
 完全な同値には、witness universe の coverage / exactness 仮定が必要である。
-とくに、tooling が soundness-only の場合に安全に言えるのは片方向である。
+とくに、witness construction が soundness-only の場合に安全に言えるのは片方向である。
 
 ```lean
 ExtensionObstructionWitness X F X' w →
@@ -768,15 +768,14 @@ TargetFlat (Last plan) →
 EventuallyFlat plan
 ```
 
-この evolution view により、AAT は一回の PR だけでなく、継続的な機能追加による
+この evolution view により、AAT は単発の変更だけでなく、継続的な機能追加による
 architecture expansion history を扱える。
 
-## 8. Architecture Extension Formula and Homotopy Skeleton
+## 8. Homotopy Skeleton and Architecture Paths
 
 零曲率 theorem package は、lawful architecture state を特徴づける基礎 theorem
 package である。AAT の中心は、その状態を機能追加の下でどう保存・変形・修復するかにある。
 
-この章は、AAT v2 の optional extension ではない。
 ここでは、flatness、split extension、repair、complexity transfer、no-solution
 certificate を、feature addition の下で統合する theorem layer を定義する。
 
@@ -792,7 +791,7 @@ certificate を、feature addition の下で統合する theorem layer を定義
 ```
 
 この章でいう homotopy は、最初から HoTT や高次圏論を全面導入するという意味ではない。
-短期的には、有限な path calculus、有限な diagram filling calculus、rewrite rule で生成される
+最小モデルでは、有限な path calculus、有限な diagram filling calculus、rewrite rule で生成される
 path equivalence として扱う。
 
 ### 8.1 Architecture paths
@@ -868,7 +867,9 @@ ArchitectureHomotopyInvariance:
   I (ApplyPath X p) ↔ I (ApplyPath X q)
 ```
 
-### 8.2 Diagram filling and obstruction
+## 9. Diagram Filling and Split Extension
+
+### 9.1 Diagram filling and obstruction
 
 Semantic curvature は、最初から数値としてではなく、diagram filling failure として扱う。
 
@@ -909,7 +910,7 @@ ObstructionAsNonFillability_complete_bounded:
   ∃ w ∈ U, NonFillabilityWitnessFor D w
 ```
 
-### 8.3 Split extension as lifting and section
+### 9.2 Split extension as lifting and section
 
 `FeatureExtension X F X'` は、次の fibration-like extension として読む。
 
@@ -920,7 +921,7 @@ ExistingCore X
 ```
 
 ただし、最初から本物の fibration と呼ばない。
-短期的には、選択された feature operation に対する lifting property として扱う。
+最小モデルでは、選択された feature operation に対する lifting property として扱う。
 
 ```text
 ExtensionSequence X F X' :=
@@ -963,7 +964,7 @@ SplitExtensionLifting:
 ```
 
 strict retraction は現実の architecture には強すぎることがある。
-初期 formalization では、observational retraction または selected projection law として扱う。
+最小形式化では、observational retraction または selected projection law として扱う。
 
 この段階の非目標は次である。
 
@@ -972,7 +973,7 @@ strict retraction は現実の architecture には強すぎることがある。
 - runtime flatness、semantic flatness、extractor completeness を結論すること。
 - selected universe 外のすべての feature step が自動的に lift することを主張すること。
 
-### 8.4 Structural Architecture Extension Formula
+## 10. Structural Architecture Extension Formula
 
 AAT の中心 theorem は、零曲率 theorem そのものではなく、
 機能追加の下で obstruction がどこから生じるかを分解する theorem package である。
@@ -1023,7 +1024,9 @@ LawfulExtensionPreservesFlatness:
 `ArchitectureFlatWithin U X'` は、universe `U` で観測・証明できる範囲の flatness である。
 実コード extractor、telemetry、semantic diagram universe の完全性を暗黙に仮定しない。
 
-### 8.5 Analytic representation layer
+## 11. Analytic Representation and Canonical Example
+
+### 11.1 Analytic representation layer
 
 解析的表現は、理論コアではなく Architecture Extension Formula の representation として扱う。
 
@@ -1057,10 +1060,10 @@ Signature(X')
 ```
 
 この式は、representation map、valuation structure、decomposition certificate、
-coverage assumptions が明示された場合にのみ `PROVED` claim として扱う。
+coverage assumptions が明示された場合にのみ定理として扱う。
 測定値だけから architecture flatness や split extension を直接主張してはならない。
 
-### 8.6 Representation strength
+### 11.2 Representation strength
 
 解析的 representation は、何を反映するかによって分類する。
 
@@ -1082,7 +1085,7 @@ obstruction-reflecting:
 extractor coverage、witness universe completeness、semantic contract coverage を
 明示した theorem package の下でのみ主張する。
 
-初期 tooling は conservative approximation でよい。
+有限観測モデルでは conservative approximation でよい。
 
 ```text
 - witness が出たら obstruction として扱う。
@@ -1090,7 +1093,7 @@ extractor coverage、witness universe completeness、semantic contract coverage 
 - unmeasured axis を zero とみなさない。
 ```
 
-### 8.7 Canonical example: Coupon feature extension
+### 11.3 Canonical example: Coupon feature extension
 
 coupon feature は、extension / lifting / filling / analytic representation を一つの小例で
 説明できる。
@@ -1170,10 +1173,9 @@ runtime_exposure = none
 semantic_curvature = none or measured δ
 ```
 
-`none` は `0` ではない。未測定の runtime / semantic axis は、claim taxonomy 上
-`UNMEASURED` として扱う。
+`none` は `0` ではない。未測定の runtime / semantic axis は、未測定の軸として扱う。
 
-### 8.8 Non-goals of the homotopy / analytic extension
+### 11.4 Non-goals of the homotopy / analytic extension
 
 この章は、次を主張しない。
 
@@ -1187,12 +1189,12 @@ semantic_curvature = none or measured δ
 - Architecture Extension Formula が物理的な保存則であること
 ```
 
-初期 formal target は、有限な path / diagram / witness universe において、
+最小形式化対象は、有限な path / diagram / witness universe において、
 split extension、lifting、non-fillability、selected valuation theorem を証明することである。
 
-## 9. 型体系
+## 12. 型体系
 
-### 9.1 ArchitectureCore
+### 12.1 ArchitectureCore
 
 `ArchitectureCore` は、AAT の最小の数学的対象である。
 
@@ -1220,7 +1222,7 @@ ArchitectureCore :=
 - semantic diagram universe は有限な diagram set として扱えること。
 ```
 
-### 9.2 CertifiedArchitecture
+### 12.2 CertifiedArchitecture
 
 `CertifiedArchitecture` は、形式的証明を運ぶ architecture object である。
 
@@ -1241,10 +1243,10 @@ CertifiedArchitecture :=
 - witness universe は有限性を仮定できる範囲を明示すること。
 - theorem package は前提条件と結論を明示すること。
 - proof obligation は operation ごとに生成されること。
-- theorem package はツール設計書の report から参照可能な名前を持つこと。
+- theorem package は外部の解析表示から参照可能な名前を持つこと。
 ```
 
-### 9.3 Proof obligation schema
+### 12.3 Proof obligation schema
 
 各 theorem package と operation は、次の proof obligation schema を持つ。
 
@@ -1266,7 +1268,7 @@ ProofObligation :=
 結論しない。測定されていない軸、仮定した前提、対象外の universe を theorem package から
 隠してはならない。
 
-### 9.4 Abstract Obstruction Valuation
+### 12.4 Abstract Obstruction Valuation
 
 数学設計書では、抽象的な obstruction valuation を扱う。
 
@@ -1284,9 +1286,9 @@ ZeroReflectingSum V :=
 
 この仮定なしに、`totalCurvature = 0` から全 diagram の `curvature = 0` を主張しない。
 
-## 10. 形式化ロードマップ
+## 13. 形式化の分解
 
-### Phase A0: 型境界の固定
+### 13.1 型境界の固定
 
 ```text
 - ArchitectureCore / CertifiedArchitecture の定義を固定する。
@@ -1294,7 +1296,7 @@ ZeroReflectingSum V :=
 - 形式的境界を明文化する。
 ```
 
-### Phase A1: Three-layer flatness core
+### 13.2 Three-layer flatness core
 
 ```text
 - Static Zero Bridge の bounded version を証明する。
@@ -1307,7 +1309,7 @@ ZeroReflectingSum V :=
   bounded theorem package として定義する。
 ```
 
-### Phase A2: Feature Extension Core
+### 13.3 Feature Extension Core
 
 ```text
 - FeatureExtension / SplitFeatureExtension の最小 schema を定義する。
@@ -1315,7 +1317,7 @@ ZeroReflectingSum V :=
 - split extension が selected invariants を保存する小 theorem を証明する。
 ```
 
-### Phase A3: Architecture Calculus Core
+### 13.4 Architecture Calculus Core
 
 ```text
 - compose / replace / protect / repair を優先して operation schema を定義する。
@@ -1324,7 +1326,7 @@ ZeroReflectingSum V :=
 - complexity transfer を tracking する。
 ```
 
-### Phase A4: Repair and Synthesis
+### 13.5 Repair and Synthesis
 
 ```text
 - repair step decreases theorem
@@ -1334,7 +1336,7 @@ ZeroReflectingSum V :=
 - no-solution certificate soundness theorem
 ```
 
-### Phase A5: Homotopy Skeleton and Extension Formula
+### 13.6 Homotopy Skeleton and Extension Formula
 
 ```text
 - finite architecture path core を定義する。
@@ -1347,7 +1349,7 @@ ZeroReflectingSum V :=
 この theorem package は coverage / classification theorem として扱い、
 disjoint decomposition は主張しない。
 
-### Phase A6: Representation Bridges
+### 13.7 Representation Bridges
 
 ```text
 - split / non-split extension examples
@@ -1357,19 +1359,19 @@ disjoint decomposition は主張しない。
 - selected repair example の valuation decrease theorem
 ```
 
-### Long-term research
+### 13.8 拡張候補
 
 ```text
 - zero-reflecting bridge
 - obstruction-reflecting bridge
 - lower bound theorem
 - conservation / transfer law beyond bounded examples
-- cohomological obstruction candidate は長期研究として扱う。
+- cohomological obstruction candidate は拡張候補として扱う。
 ```
 
-## 11. 成功基準
+## 14. 理論上の到達条件
 
-短期成功:
+基礎条件:
 
 ```text
 - AAT の主語が incident ではなく feature extension であることが明確。
@@ -1378,7 +1380,7 @@ disjoint decomposition は主張しない。
 - Architecture Calculus が feature addition を扱うための体系として定義されている。
 ```
 
-中期成功:
+発展条件:
 
 ```text
 - SplitFeatureExtension の小 theorem が形式証明できる。
@@ -1388,17 +1390,17 @@ disjoint decomposition は主張しない。
 - finite path / diagram filling の最小 theorem が形式証明できる。
 ```
 
-長期成功:
+拡張条件:
 
 ```text
-- feature addition が split するかどうかを theorem package と report で説明できる。
+- feature addition が split するかどうかを theorem package と解析表示で説明できる。
 - Architecture Extension Formula によって obstruction の由来を分類できる。
 - analytic signature が構造の representation として theorem package に接続される。
 - repair / synthesis / no-solution certificate が小さい universe で動く。
 - AAT が設計パターンを operation と invariant の閉包として統一的に扱える。
 ```
 
-## 12. 非目標
+## 15. 非目標
 
 数学設計書は次を目標としない。
 
@@ -1407,7 +1409,7 @@ disjoint decomposition は主張しない。
 - 任意の新機能追加が安全であることを証明する。
 - 実コード extractor の完全性を仮定なしに主張する。
 - incident zero を証明する。
-- empirical improvement を formal theorem として扱う。
+- 経験的改善を formal theorem として扱う。
 - 人間の設計判断を不要にする。
 ```
 
