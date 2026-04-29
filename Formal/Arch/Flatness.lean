@@ -444,6 +444,95 @@ theorem policySound_of_staticSplitExtension
   exact hAllowed (S.noNewForbiddenStaticEdge (hEdges hEdge))
 
 /--
+Boundary-policy soundness supplied by a static split extension.
+
+This is only the boundary-policy component. It does not infer acyclicity,
+projection soundness, LSP compatibility, runtime flatness, or semantic
+flatness.
+-/
+theorem boundaryPolicySound_of_staticSplitExtension
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {G : ArchGraph Extended} {boundaryAllowed : Extended -> Extended -> Prop}
+    (hEdges :
+      ∀ {src dst : Extended}, G.edge src dst ->
+        S.extension.extended.edge src dst)
+    (hBoundaryAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        boundaryAllowed src dst) :
+    ArchitectureSignature.PolicySound G boundaryAllowed :=
+  policySound_of_staticSplitExtension S hEdges hBoundaryAllowed
+
+/--
+Abstraction-policy soundness supplied by a static split extension.
+
+This is only the abstraction-policy component. Projection soundness itself
+remains a separate premise, because static split policy soundness does not
+identify abstract graph edges.
+-/
+theorem abstractionPolicySound_of_staticSplitExtension
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {G : ArchGraph Extended} {abstractionAllowed : Extended -> Extended -> Prop}
+    (hEdges :
+      ∀ {src dst : Extended}, G.edge src dst ->
+        S.extension.extended.edge src dst)
+    (hAbstractionAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        abstractionAllowed src dst) :
+    ArchitectureSignature.PolicySound G abstractionAllowed :=
+  policySound_of_staticSplitExtension S hEdges hAbstractionAllowed
+
+/--
+Static-split-friendly LSP bridge from observation factorization.
+
+The static split package is a context marker here: the LSP conclusion comes
+from the explicit `ObservationFactorsThrough` premise, not from static split
+evidence alone.
+-/
+theorem lspCompatible_of_staticSplitObservationFactorsThrough
+    (_S : StaticSplitExtension Core Feature Extended FeatureView)
+    {projection : InterfaceProjection Extended A}
+    {staticObservation : Observation Extended StaticObs}
+    (hFactors : ObservationFactorsThrough projection staticObservation) :
+    LSPCompatible projection staticObservation :=
+  lspCompatible_of_observationFactorsThrough hFactors
+
+/--
+Exact projection gives projection soundness for the extended static graph of a
+static split extension.
+
+This theorem is intentionally bounded by the supplied exactness premise; a
+`StaticSplitExtension` alone does not determine the abstract graph.
+-/
+theorem projectionSound_of_staticSplitProjectionExact
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {projection : InterfaceProjection Extended A}
+    {abstractStatic : AbstractGraph A}
+    (hExact : ProjectionExact S.extension.extended projection abstractStatic) :
+    ProjectionSound S.extension.extended projection abstractStatic :=
+  projectionSound_of_projectionExact hExact
+
+/--
+Projection soundness transfers to a compatible static graph whose edges
+decompose through the static split extension's extended graph.
+
+The edge-decomposition premise is explicit, so this theorem does not claim
+that every graph over `Extended` is covered by the static split extension.
+-/
+theorem projectionSound_of_staticSplitEdgeDecomposition
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {G : ArchGraph Extended}
+    {projection : InterfaceProjection Extended A}
+    {abstractStatic : AbstractGraph A}
+    (hEdges :
+      ∀ {src dst : Extended}, G.edge src dst ->
+        S.extension.extended.edge src dst)
+    (hProjectionSound :
+      ProjectionSound S.extension.extended projection abstractStatic) :
+    ProjectionSound G projection abstractStatic := by
+  intro src dst hEdge
+  exact hProjectionSound (hEdges hEdge)
+
+/--
 Static split extensions preserve coverage-aware static flatness.
 
 This theorem is deliberately static-only: it concludes `StaticFlatWithin`, not
@@ -471,8 +560,8 @@ theorem staticFlatWithin_of_staticSplitExtension
     StaticFlatWithin X U := by
   have _hStaticCoverage : StaticCoverageComplete X U := hCoverage
   refine ⟨hWalkAcyclic, hProjectionSound, hLSP, ?_, ?_⟩
-  · exact policySound_of_staticSplitExtension S hEdges hBoundaryAllowed
-  · exact policySound_of_staticSplitExtension S hEdges hAbstractionAllowed
+  · exact boundaryPolicySound_of_staticSplitExtension S hEdges hBoundaryAllowed
+  · exact abstractionPolicySound_of_staticSplitExtension S hEdges hAbstractionAllowed
 
 /--
 Flatness model induced by a static split extension and explicit runtime /
