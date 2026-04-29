@@ -717,6 +717,13 @@ PreservesRequirements X X' →
 現場で「設計が良くなった」と見える変更が、実は runtime coordination や semantic drift に
 複雑性を押し出しているだけかどうかを判定する。
 
+この theorem は bounded package として読む。すなわち、selected static measure、
+selected requirements、selected witness universe が固定されている場合に限り、
+proof elimination でなければ runtime / semantic / policy のいずれかの selected
+target へ complexity が移転した、と主張する。
+coverage や exactness が閉じていない場合は residual gap として残し、global
+complexity conservation や lower bound はこの主張に含めない。
+
 ### 7.5 No-solution Certificate
 
 要求が強すぎる場合、lawful architecture が存在しないことを certificate で支える。
