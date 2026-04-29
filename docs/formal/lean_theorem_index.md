@@ -296,6 +296,23 @@ File: `Formal/Arch/Obstruction.lean`
 | `no_required_DiagramBad_of_coversRequired_and_diagramViolationCount_eq_zero` | `theorem` | complete coverage と diagram violation count 0 から、required diagram obstruction witness が存在しないことを得る。 | `proved` |
 | `requiredDiagramCommutes_of_coversRequired_and_diagramViolationCount_eq_zero` | `theorem` | `[DecidableEq Obs]` の下で、complete coverage と diagram violation count 0 から required diagram の可換性を得る。 | `proved` |
 
+## Numerical Curvature
+
+File: `Formal/Arch/Curvature.lean`
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `ZeroSeparatingDistance` | `structure` | 観測値上の `Nat` 値距離と、`distance x y = 0 ↔ x = y` の zero-separation law を束ねる。 | `defined only` |
+| `numericalCurvature` | `def` | required diagram の両辺の観測意味論間の距離として数値 curvature を定義する。 | `defined only` |
+| `NumericalCurvatureObstruction` | `def` | diagram の数値 curvature が非零であることを obstruction witness として表す。 | `defined only` |
+| `NoNumericalCurvatureObstruction` | `def` | required diagram family に数値 curvature obstruction が存在しないこと。 | `defined only` |
+| `numericalCurvature_eq_zero_iff_DiagramCommutes` | `theorem` | zero-separating distance の下で、数値 curvature 0 と diagram commutativity が一致する。 | `proved` |
+| `numericalCurvature_eq_zero_of_DiagramCommutes` | `theorem` | 可換な diagram は数値 curvature が 0 である。 | `proved` |
+| `DiagramCommutes_of_numericalCurvature_eq_zero` | `theorem` | 数値 curvature 0 から diagram commutativity を得る。 | `proved` |
+| `numericalCurvatureObstruction_iff_DiagramBad` | `theorem` | 数値 curvature obstruction と既存の `DiagramBad` predicate が一致する。 | `proved` |
+| `not_numericalCurvatureObstruction_iff_DiagramCommutes` | `theorem` | 個別 diagram で、数値 curvature obstruction 不在と可換性が一致する。 | `proved` |
+| `diagramLawful_iff_noNumericalCurvatureObstruction` | `theorem` | required diagram family の lawfulness と数値 curvature obstruction 不在を接続する。 | `proved` |
+
 ## Lawfulness Bridge
 
 File: `Formal/Arch/Lawfulness.lean`
@@ -686,9 +703,9 @@ File: `Formal/Arch/SolidCounterexample.lean`
 次は意図的に Lean core へ混ぜていない。
 
 - `Decomposable` の定義への acyclicity, finite propagation, nilpotence, spectral conditions の混入。
-- 一般の `Sem_A(p) - Sem_A(q)` 型の数値 curvature metric。
-  `Formal/Arch/Curvature.lean` は、観測値上の差分・距離・重み・集約規則が固まるまで
-  意図的に追加しない。
+- 重み付き・集約済みの一般 `Sem_A(p) - Sem_A(q)` 型の数値 curvature metric。
+  `Formal/Arch/Curvature.lean` は、個別 diagram の zero-separating distance bridge だけを
+  含み、重み・集約規則・empirical cost model はまだ導入しない。
 - `relationComplexity`, `runtimePropagation`, `empiricalChangeCost` の実証相関。
 - extractor output が `ComponentUniverse` の完全な witness であるという主張。
 - `rho(A)` と変更波及・障害伝播コストの相関。
