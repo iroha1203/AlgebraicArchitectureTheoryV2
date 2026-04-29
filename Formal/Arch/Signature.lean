@@ -89,6 +89,83 @@ def maxNatList (xs : List Nat) : Nat :=
 def countWhere {α : Type u} (xs : List α) (p : α → Bool) : Nat :=
   (xs.filter p).length
 
+/-- A filtered count is zero exactly when every measured entry fails the predicate. -/
+theorem countWhere_eq_zero_iff_forall_false {α : Type u} {xs : List α}
+    {p : α → Bool} :
+    countWhere xs p = 0 ↔ ∀ x, x ∈ xs → p x = false := by
+  unfold countWhere
+  induction xs with
+  | nil =>
+      simp
+  | cons x xs ih =>
+      cases hx : p x <;> simp [hx, ih]
+
+/-- Folding `Nat.max` never decreases its accumulator. -/
+private theorem acc_le_foldl_max (xs : List Nat) (acc : Nat) :
+    acc ≤ xs.foldl Nat.max acc := by
+  induction xs generalizing acc with
+  | nil =>
+      exact Nat.le_refl _
+  | cons x xs ih =>
+      exact Nat.le_trans (Nat.le_max_left acc x) (ih (Nat.max acc x))
+
+/-- Every element of a finite list is bounded by a `Nat.max` fold. -/
+private theorem le_foldl_max_of_mem {n acc : Nat} :
+    ∀ {xs : List Nat}, n ∈ xs → n ≤ xs.foldl Nat.max acc := by
+  intro xs hMem
+  induction xs generalizing n acc with
+  | nil =>
+      cases hMem
+  | cons x xs ih =>
+      simp at hMem
+      cases hMem with
+      | inl hn =>
+          subst n
+          exact Nat.le_trans (Nat.le_max_right acc x)
+            (acc_le_foldl_max xs (Nat.max acc x))
+      | inr hTail =>
+          exact ih (acc := Nat.max acc x) hTail
+
+/-- Every element of a finite list is bounded by `maxNatList`. -/
+private theorem le_maxNatList_of_mem {xs : List Nat} {n : Nat}
+    (hMem : n ∈ xs) : n ≤ maxNatList xs := by
+  simpa [maxNatList] using (le_foldl_max_of_mem (acc := 0) hMem)
+
+private theorem foldl_max_le_of_forall_le {bound : Nat} :
+    ∀ (xs : List Nat) (acc : Nat),
+      acc ≤ bound → (∀ n, n ∈ xs → n ≤ bound) →
+        xs.foldl Nat.max acc ≤ bound := by
+  intro xs
+  induction xs with
+  | nil =>
+      intro acc hAcc _hAll
+      exact hAcc
+  | cons x xs ih =>
+      intro acc hAcc hAll
+      apply ih
+      · exact (Nat.max_le).2 ⟨hAcc, hAll x (by simp)⟩
+      · intro n hn
+        exact hAll n (by simp [hn])
+
+private theorem maxNatList_le_of_forall_le {xs : List Nat} {bound : Nat}
+    (hAll : ∀ n, n ∈ xs → n ≤ bound) : maxNatList xs ≤ bound := by
+  simpa [maxNatList] using
+    foldl_max_le_of_forall_le xs 0 (Nat.zero_le bound) hAll
+
+/-- A finite maximum is zero exactly when every measured value is zero. -/
+theorem maxNatList_eq_zero_iff_forall_eq_zero {xs : List Nat} :
+    maxNatList xs = 0 ↔ ∀ n, n ∈ xs → n = 0 := by
+  constructor
+  · intro hZero n hMem
+    exact Nat.eq_zero_of_le_zero (by
+      rw [← hZero]
+      exact le_maxNatList_of_mem hMem)
+  · intro hAll
+    exact Nat.eq_zero_of_le_zero
+      (maxNatList_le_of_forall_le (by
+        intro n hMem
+        exact Nat.le_of_eq (hAll n hMem)))
+
 /--
 All ordered component pairs from a finite component universe.
 
@@ -351,6 +428,26 @@ def reachableConeSizeAt {C : Type u} (G : ArchGraph C)
     decide (c ≠ d) && reachesWithin G components components.length c d)
 
 /--
+A strict bounded reachable cone has size zero exactly when no distinct measured
+target is reachable from the source within the same bounded search.
+-/
+theorem reachableConeSizeAt_eq_zero_iff_no_strict_reachable {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    {components : List C} {source : C} :
+    reachableConeSizeAt G components source = 0 ↔
+      ∀ target, target ∈ components → source ≠ target →
+        reachesWithin G components components.length source target = false := by
+  rw [reachableConeSizeAt, countWhere_eq_zero_iff_forall_false]
+  constructor
+  · intro hZero target hTarget hNe
+    have hBad := hZero target hTarget
+    simpa [decide_eq_true hNe] using hBad
+  · intro hNoReach target hTarget
+    by_cases hNe : source ≠ target
+    · simp [decide_eq_true hNe, hNoReach target hTarget hNe]
+    · simp [hNe]
+
+/--
 Signature v1 core reachable-cone metric.
 
 This is the maximum strict bounded reachable cone size over the supplied finite
@@ -360,6 +457,31 @@ def reachableConeSizeOfFinite {C : Type u} (G : ArchGraph C)
     [DecidableEq C] [DecidableRel G.edge]
     (components : List C) : Nat :=
   maxNatList (components.map (fun c => reachableConeSizeAt G components c))
+
+/--
+The finite reachable-cone metric is zero exactly when no measured source has a
+distinct measured bounded-reachable target.
+-/
+theorem reachableConeSizeOfFinite_eq_zero_iff_no_strict_reachable {C : Type u}
+    {G : ArchGraph C} [DecidableEq C] [DecidableRel G.edge]
+    {components : List C} :
+    reachableConeSizeOfFinite G components = 0 ↔
+      ∀ source, source ∈ components →
+        ∀ target, target ∈ components → source ≠ target →
+          reachesWithin G components components.length source target = false := by
+  rw [reachableConeSizeOfFinite, maxNatList_eq_zero_iff_forall_eq_zero]
+  constructor
+  · intro hZero source hSource
+    have hAt : reachableConeSizeAt G components source = 0 := by
+      exact hZero (reachableConeSizeAt G components source)
+        (List.mem_map.mpr ⟨source, hSource, rfl⟩)
+    exact (reachableConeSizeAt_eq_zero_iff_no_strict_reachable
+      (G := G) (components := components) (source := source)).mp hAt
+  · intro hNoReach n hMem
+    rcases List.mem_map.mp hMem with ⟨source, hSource, rfl⟩
+    exact (reachableConeSizeAt_eq_zero_iff_no_strict_reachable
+      (G := G) (components := components) (source := source)).mpr
+        (hNoReach source hSource)
 
 /--
 The v0 fanout risk is exactly the number of measured dependency edges.
@@ -840,6 +962,33 @@ def runtimePropagationOfFinite {C : Type u} (G : RuntimeDependencyGraph C)
   reachableConeSizeOfFinite G components
 
 /--
+Measured absence of runtime exposure obstruction.
+
+This predicate uses the same bounded search and finite measurement universe as
+`runtimePropagationOfFinite`: no distinct measured target is reachable from any
+measured source within `components.length` fuel.
+-/
+def NoRuntimeExposureObstruction {C : Type u} (G : RuntimeDependencyGraph C)
+    [DecidableEq C] [DecidableRel G.edge]
+    (components : List C) : Prop :=
+  ∀ source, source ∈ components →
+    ∀ target, target ∈ components → source ≠ target →
+      reachesWithin G components components.length source target = false
+
+/--
+Runtime propagation zero is exactly absence of measured bounded runtime
+exposure obstruction.
+-/
+theorem runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction
+    {C : Type u} {G : RuntimeDependencyGraph C}
+    [DecidableEq C] [DecidableRel G.edge] {components : List C} :
+    runtimePropagationOfFinite G components = 0 ↔
+      NoRuntimeExposureObstruction G components := by
+  simpa [runtimePropagationOfFinite, NoRuntimeExposureObstruction] using
+    (reachableConeSizeOfFinite_eq_zero_iff_no_strict_reachable
+      (G := G) (components := components))
+
+/--
 Build a Signature v1 value and populate the runtime propagation extension axis.
 
 The core axes are still computed from the static dependency graph. The runtime
@@ -863,6 +1012,26 @@ def v1OfFiniteWithRuntimePropagation {C : Type u}
   runtimePropagation := some (runtimePropagationOfFinite runtime components)
   relationComplexity := none
   empiricalChangeCost := none
+
+/--
+For the v1 runtime extension constructor, `some 0` on the runtime propagation
+axis means exactly that the measured bounded runtime exposure obstruction is
+absent. This remains separate from the required zero-law axes.
+-/
+theorem v1OfFiniteWithRuntimePropagation_runtimePropagation_eq_some_zero_iff
+    {C : Type u}
+    (static : StaticDependencyGraph C)
+    (runtime : RuntimeDependencyGraph C)
+    [DecidableEq C]
+    [DecidableRel static.edge] [DecidableRel runtime.edge]
+    (components : List C)
+    (boundaryAllowed abstractionAllowed : C → C → Prop)
+    [DecidableRel boundaryAllowed] [DecidableRel abstractionAllowed] :
+    (v1OfFiniteWithRuntimePropagation static runtime components
+      boundaryAllowed abstractionAllowed).runtimePropagation = some 0 ↔
+      NoRuntimeExposureObstruction runtime components := by
+  simp [v1OfFiniteWithRuntimePropagation,
+    runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction]
 
 namespace Examples
 
