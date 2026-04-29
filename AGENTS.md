@@ -61,6 +61,9 @@
 - `docs` の研究主張を変更する場合は、対応する Lean status を明確にする。
 - Lean status は、proved, defined only, future proof obligation, empirical hypothesis を区別する。
 - Lean で証明済みの主張と、実証研究で検証する主張を混同しない。
+- `docs/aat_v2_mathematical_design.md` は数学面の第一級設計書として扱い、Lean status、Issue 番号、実装済み API の進捗管理を本文に混ぜない。
+- Lean status や Issue との対応は `docs/proof_obligations.md` と `docs/lean_theorem_index.md` で管理する。
+- 数学設計書には、数学的な定義・定理候補・非目標・設計上の境界を記述し、実装済み / 証明済み / 未着手といった作業状態は別文書へ分離する。
 - `proof_obligations.md` は GitHub Issues への索引としても使う。
 - theorem や定義を追加した場合は、必要に応じて `docs/proof_obligations.md` の Lean status を更新する。
 - 研究の大目標は「設計原則はアーキテクチャ不変量を保存・改善する操作であり、品質は不変量の破れを多軸シグネチャとして評価する」ことである。この主張と矛盾する説明を追加しない。

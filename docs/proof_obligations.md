@@ -21,6 +21,9 @@ Lean theorem index、個別 design / empirical protocol へ委任する。
 
 この文書は GitHub Issues の完全な複製ではない。研究上の文脈に必要な status と
 参照先だけを置く。
+`docs/aat_v2_mathematical_design.md` は数学面の第一級設計書として扱い、
+Lean 実装 status や Issue 管理状態はこの文書と
+[Lean 定義・定理索引](lean_theorem_index.md) で管理する。
 
 ## Status 語彙
 
