@@ -65,6 +65,33 @@ def NoMeasuredNumericalCurvatureObstruction {Expr : Type u} {Obs : Type v}
   ∀ d, d ∈ measured -> ¬ NumericalCurvatureObstruction metric sem d
 
 /--
+Positive weights on the finite measured diagram universe.
+
+This is the bounded exactness assumption needed to read a weighted aggregate
+zero as zero curvature for every measured diagram. Diagrams outside the measured
+list remain unclaimed.
+-/
+def PositiveCurvatureWeightOn {Expr : Type u}
+    (measured : List (RequiredDiagram Expr))
+    (weight : RequiredDiagram Expr -> Nat) : Prop :=
+  ∀ d, d ∈ measured -> 0 < weight d
+
+/--
+Weighted numerical curvature over a finite measured diagram universe.
+
+The weight function is supplied by the caller so that calibration and empirical
+cost models stay outside the formal bridge.
+-/
+def totalWeightedCurvature {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    (sem : Semantics Expr Obs)
+    (weight : RequiredDiagram Expr -> Nat) : List (RequiredDiagram Expr) -> Nat
+  | [] => 0
+  | d :: ds =>
+      weight d * numericalCurvature metric sem d +
+        totalWeightedCurvature metric sem weight ds
+
+/--
 Zero numerical curvature is exactly diagram commutativity.
 -/
 theorem numericalCurvature_eq_zero_iff_DiagramCommutes
@@ -219,6 +246,111 @@ theorem totalCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction
     totalCurvature metric sem measured = 0 ↔
       NoMeasuredNumericalCurvatureObstruction metric sem measured := by
   rw [totalCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero]
+  constructor
+  · intro hZero d hMem hObstruction
+    exact hObstruction (hZero d hMem)
+  · intro hNoObstruction d hMem
+    by_cases hZero : numericalCurvature metric sem d = 0
+    · exact hZero
+    · exact False.elim (hNoObstruction d hMem hZero)
+
+/--
+Weighted total numerical curvature is zero exactly when every measured diagram
+has zero curvature, provided every measured diagram has a positive weight.
+-/
+theorem totalWeightedCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero
+    {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    {sem : Semantics Expr Obs}
+    {weight : RequiredDiagram Expr -> Nat}
+    {measured : List (RequiredDiagram Expr)}
+    (hPositive : PositiveCurvatureWeightOn measured weight) :
+    totalWeightedCurvature metric sem weight measured = 0 ↔
+      ∀ d, d ∈ measured -> numericalCurvature metric sem d = 0 := by
+  induction measured with
+  | nil =>
+      simp [totalWeightedCurvature]
+  | cons d ds ih =>
+      constructor
+      · intro hZero d' hMem
+        rw [totalWeightedCurvature] at hZero
+        have hHeadWeighted :
+            weight d * numericalCurvature metric sem d = 0 :=
+          Nat.eq_zero_of_add_eq_zero_right hZero
+        have hTail :
+            totalWeightedCurvature metric sem weight ds = 0 :=
+          Nat.eq_zero_of_add_eq_zero_left hZero
+        have hHead : numericalCurvature metric sem d = 0 := by
+          have hWeightNe : weight d ≠ 0 :=
+            Nat.ne_of_gt (hPositive d (by simp))
+          rcases (Nat.mul_eq_zero.mp hHeadWeighted) with hWeightZero | hCurvatureZero
+          · exact False.elim (hWeightNe hWeightZero)
+          · exact hCurvatureZero
+        have hPositiveTail : PositiveCurvatureWeightOn ds weight := by
+          intro d'' hMemTail
+          exact hPositive d'' (by simp [hMemTail])
+        simp only [List.mem_cons] at hMem
+        rcases hMem with hEq | hMem
+        · cases hEq
+          exact hHead
+        · exact (ih hPositiveTail).mp hTail d' hMem
+      · intro hAll
+        rw [totalWeightedCurvature]
+        have hHead : numericalCurvature metric sem d = 0 :=
+          hAll d (by simp)
+        have hTail :
+            totalWeightedCurvature metric sem weight ds = 0 := by
+          have hPositiveTail : PositiveCurvatureWeightOn ds weight := by
+            intro d' hMem
+            exact hPositive d' (by simp [hMem])
+          exact (ih hPositiveTail).mpr (by
+            intro d' hMem
+            exact hAll d' (by simp [hMem]))
+        simp [hHead, hTail]
+
+/--
+Weighted total numerical curvature is zero exactly when every measured diagram
+commutes, under the same positive-weight boundedness assumption.
+-/
+theorem totalWeightedCurvature_eq_zero_iff_forall_measured_DiagramCommutes
+    {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    {sem : Semantics Expr Obs}
+    {weight : RequiredDiagram Expr -> Nat}
+    {measured : List (RequiredDiagram Expr)}
+    (hPositive : PositiveCurvatureWeightOn measured weight) :
+    totalWeightedCurvature metric sem weight measured = 0 ↔
+      ∀ d, d ∈ measured -> DiagramCommutes sem d := by
+  constructor
+  · intro hZero d hMem
+    exact (numericalCurvature_eq_zero_iff_DiagramCommutes metric).mp
+      ((totalWeightedCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero
+        metric hPositive).mp hZero d hMem)
+  · intro hCommutes
+    exact
+      (totalWeightedCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero
+        metric hPositive).mpr (by
+          intro d hMem
+          exact numericalCurvature_eq_zero_of_DiagramCommutes metric
+            (hCommutes d hMem))
+
+/--
+Weighted total numerical curvature is zero exactly when the measured diagram
+universe has no numerical curvature obstruction, provided measured weights are
+positive. This theorem remains list-scoped and does not assert unmeasured
+diagram coverage or empirical cost correlation.
+-/
+theorem totalWeightedCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction
+    {Expr : Type u} {Obs : Type v}
+    (metric : ZeroSeparatingDistance Obs)
+    {sem : Semantics Expr Obs}
+    {weight : RequiredDiagram Expr -> Nat}
+    {measured : List (RequiredDiagram Expr)}
+    (hPositive : PositiveCurvatureWeightOn measured weight) :
+    totalWeightedCurvature metric sem weight measured = 0 ↔
+      NoMeasuredNumericalCurvatureObstruction metric sem measured := by
+  rw [totalWeightedCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero
+    metric hPositive]
   constructor
   · intro hZero d hMem hObstruction
     exact hObstruction (hZero d hMem)

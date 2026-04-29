@@ -729,6 +729,8 @@ File: `Formal/Arch/Curvature.lean`
 | `NoNumericalCurvatureObstruction` | `def` | required diagram family に数値 curvature obstruction が存在しないこと。 | `defined only` |
 | `totalCurvature` | `def` | 有限な測定済み diagram list 上で、各 diagram の数値 curvature を `Nat` 和として集約する。 | `defined only` |
 | `NoMeasuredNumericalCurvatureObstruction` | `def` | 測定済み diagram list 内に数値 curvature obstruction が存在しないこと。未測定 diagram には主張しない。 | `defined only` |
+| `PositiveCurvatureWeightOn` | `def` | 測定済み diagram list 上で各 diagram の重みが正であること。重み付き aggregate から各局所 curvature zero へ戻す bounded exactness 前提。 | `defined only` |
+| `totalWeightedCurvature` | `def` | 有限な測定済み diagram list 上で、`weight d * numericalCurvature d` を合計する。calibration や empirical cost model は外部に残す。 | `defined only` |
 | `numericalCurvature_eq_zero_iff_DiagramCommutes` | `theorem` | zero-separating distance の下で、数値 curvature 0 と diagram commutativity が一致する。 | `proved` |
 | `numericalCurvature_eq_zero_of_DiagramCommutes` | `theorem` | 可換な diagram は数値 curvature が 0 である。 | `proved` |
 | `DiagramCommutes_of_numericalCurvature_eq_zero` | `theorem` | 数値 curvature 0 から diagram commutativity を得る。 | `proved` |
@@ -738,6 +740,9 @@ File: `Formal/Arch/Curvature.lean`
 | `totalCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero` | `theorem` | 有限測定 universe 上で、合計 curvature 0 と各 measured diagram の curvature 0 が一致する。 | `proved` |
 | `totalCurvature_eq_zero_iff_forall_measured_DiagramCommutes` | `theorem` | 有限測定 universe 上で、合計 curvature 0 と各 measured diagram の可換性が一致する。 | `proved` |
 | `totalCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction` | `theorem` | 有限測定 universe 上で、合計 curvature 0 と measured numerical curvature obstruction 不在が一致する。 | `proved` |
+| `totalWeightedCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero` | `theorem` | 測定済み diagram が正の重みを持つ場合、重み付き合計 curvature 0 と各 measured diagram の curvature 0 が一致する。 | `proved` |
+| `totalWeightedCurvature_eq_zero_iff_forall_measured_DiagramCommutes` | `theorem` | 正の重み付き有限測定 universe 上で、重み付き合計 curvature 0 と各 measured diagram の可換性が一致する。 | `proved` |
+| `totalWeightedCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction` | `theorem` | 正の重み付き有限測定 universe 上で、重み付き合計 curvature 0 と measured numerical curvature obstruction 不在が一致する。未測定 diagram や empirical cost correlation は主張しない。 | `proved` |
 
 ## Lawfulness Bridge
 
