@@ -98,6 +98,30 @@ Issue [#222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 `architectureLawCandidateRole`, `architectureFullLawUniverseCandidates` を追加し、
 required law, derived corollary, diagnostic axis, empirical axis を区別する。
 
+Issue [#244](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/244)
+では、feature addition を first-class operation として扱うための最小 Lean schema を
+`Formal.Arch.FeatureExtension` に追加した。Lean では `FeatureExtension` が core graph、
+feature graph、extended graph、`coreEmbedding`、`featureEmbedding`、observation model
+相対の `featureView`、coverage / proof obligation の placeholders を束ねる。
+`StaticSplitFeatureExtension` は静的核として、core edge preservation、
+declared interface factorization、forbidden static edge absence、embedding policy
+preservation を明示する。
+
+Lean status:
+
+- `defined only`: `FeatureExtension`, `StaticSplitFeatureExtension`,
+  `StaticSplitExtension`, `CoreEdgesPreserved`, `DeclaredInterfaceFactorization`,
+  `NoNewForbiddenStaticEdge`, `EmbeddingPolicyPreserved`
+- `proved`: `FeatureExtension.featureOwned_featureEmbedding`,
+  `FeatureExtension.coreEmbedded_coreEmbedding`
+
+今後の proof obligation:
+
+- `StaticSplitFeatureExtension` が `ArchitectureFlatWithin` / `StaticFlatWithin` を
+  保存する theorem は、coverage-aware flatness predicate を追加した後に
+  Issue [#246](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/246)
+  で扱う。
+
 | 候補 | 分類 | final theorem での扱い |
 | --- | --- | --- |
 | `closedWalkAcyclicity`, `projectionSoundness`, `lspCompatibility`, `boundaryPolicySoundness`, `abstractionPolicySoundness` | required law | `ArchitectureLawful` と `RequiredSignatureAxesZero` の対象 |
