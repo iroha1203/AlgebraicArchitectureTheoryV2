@@ -137,6 +137,145 @@ structure ArchitectureTheoremPackage (State : Type s) (Witness : Type t) where
   recordsNonConclusions : obligation.RecordsNonConclusions
 
 /--
+Claim levels used by proof-carrying architecture reports.
+
+Only `formal` is intended to be backed by Lean theorem-package discharge.
+Tooling output, empirical evidence, and research hypotheses remain separate
+claim levels.
+-/
+inductive ClaimLevel where
+  | formal
+  | tooling
+  | empirical
+  | hypothesis
+  deriving DecidableEq, Repr
+
+namespace ClaimLevel
+
+/-- The claim is a formal Lean theorem-package claim. -/
+def IsFormal (level : ClaimLevel) : Prop :=
+  level = ClaimLevel.formal
+
+/-- The claim is supported by tooling-side evidence. -/
+def IsTooling (level : ClaimLevel) : Prop :=
+  level = ClaimLevel.tooling
+
+/-- The claim is supported by empirical validation. -/
+def IsEmpirical (level : ClaimLevel) : Prop :=
+  level = ClaimLevel.empirical
+
+/-- The claim is a research hypothesis rather than a theorem. -/
+def IsHypothesis (level : ClaimLevel) : Prop :=
+  level = ClaimLevel.hypothesis
+
+end ClaimLevel
+
+/--
+Measurement boundary for report claims.
+
+`unmeasured` is intentionally distinct from `measuredZero`; the latter is the
+only zero-like measurement status.
+-/
+inductive MeasurementBoundary where
+  | measuredZero
+  | measuredNonzero
+  | unmeasured
+  | outOfScope
+  deriving DecidableEq, Repr
+
+namespace MeasurementBoundary
+
+/-- The measured value is explicitly zero. -/
+def IsMeasuredZero (boundary : MeasurementBoundary) : Prop :=
+  boundary = MeasurementBoundary.measuredZero
+
+/-- The axis or claim has not been measured. -/
+def IsUnmeasured (boundary : MeasurementBoundary) : Prop :=
+  boundary = MeasurementBoundary.unmeasured
+
+/-- Unmeasured evidence is not the same as measured zero. -/
+theorem unmeasured_not_measuredZero :
+    ¬ IsMeasuredZero MeasurementBoundary.unmeasured := by
+  intro h
+  cases h
+
+end MeasurementBoundary
+
+/--
+Architecture claim schema used to keep Lean theorem claims, tooling output,
+empirical evidence, and hypotheses separated.
+
+A formal claim may reference a theorem package; tooling and empirical fields
+are evidence boundaries, not automatic Lean proofs.  The `nonConclusions`
+field records what the claim explicitly does not establish.
+-/
+structure ArchitectureClaim (State : Type s) (Witness : Type t) where
+  level : ClaimLevel
+  statement : Prop
+  theoremPackage : Option (ArchitectureTheoremPackage State Witness)
+  toolingEvidence : Prop
+  empiricalEvidence : Prop
+  hypothesisContext : Prop
+  measurementBoundary : MeasurementBoundary
+  nonConclusions : Prop
+
+namespace ArchitectureClaim
+
+variable {State : Type s} {Witness : Type t}
+
+/-- The claim explicitly records what it does not establish. -/
+def RecordsNonConclusions (claim : ArchitectureClaim State Witness) : Prop :=
+  claim.nonConclusions
+
+/-- The claim is classified as formal. -/
+def IsFormal (claim : ArchitectureClaim State Witness) : Prop :=
+  claim.level = ClaimLevel.formal
+
+/-- The claim carries a referenced theorem package. -/
+def HasFormalPackage (claim : ArchitectureClaim State Witness) : Prop :=
+  ∃ package, claim.theoremPackage = some package
+
+/-- The claim is tooling-only and carries no formal theorem package. -/
+def ToolingOnly (claim : ArchitectureClaim State Witness) : Prop :=
+  claim.level = ClaimLevel.tooling ∧ claim.theoremPackage = none
+
+/-- The claim's measurement boundary is explicitly measured zero. -/
+def IsMeasuredZero (claim : ArchitectureClaim State Witness) : Prop :=
+  MeasurementBoundary.IsMeasuredZero claim.measurementBoundary
+
+/-- The claim's measurement boundary is unmeasured. -/
+def IsUnmeasured (claim : ArchitectureClaim State Witness) : Prop :=
+  MeasurementBoundary.IsUnmeasured claim.measurementBoundary
+
+/-- The recorded non-conclusion predicate is exactly the schema field. -/
+theorem records_nonConclusions_iff (claim : ArchitectureClaim State Witness) :
+    claim.RecordsNonConclusions ↔ claim.nonConclusions := by
+  rfl
+
+/-- Tooling-only claims do not carry a formal theorem package. -/
+theorem toolingOnly_no_formalPackage
+    (claim : ArchitectureClaim State Witness)
+    (hTooling : claim.ToolingOnly) :
+    ¬ claim.HasFormalPackage := by
+  intro hPackage
+  rcases hPackage with ⟨package, hPackage⟩
+  rw [hTooling.2] at hPackage
+  cases hPackage
+
+/-- An unmeasured claim boundary cannot be used as measured-zero evidence. -/
+theorem unmeasured_not_measuredZero
+    (claim : ArchitectureClaim State Witness)
+    (hUnmeasured : claim.IsUnmeasured) :
+    ¬ claim.IsMeasuredZero := by
+  intro hZero
+  unfold IsUnmeasured MeasurementBoundary.IsUnmeasured at hUnmeasured
+  unfold IsMeasuredZero MeasurementBoundary.IsMeasuredZero at hZero
+  rw [hUnmeasured] at hZero
+  exact MeasurementBoundary.unmeasured_not_measuredZero hZero
+
+end ArchitectureClaim
+
+/--
 Certified architecture object carrying law, invariant, witness, theorem-package,
 and proof-obligation discharge data for one `ArchitectureCore`.
 

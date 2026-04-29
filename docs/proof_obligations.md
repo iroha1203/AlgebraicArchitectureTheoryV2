@@ -39,6 +39,19 @@ Lean 実装 status や Issue 管理状態はこの文書と
 Tooling output、extractor output、AI generated code、未測定軸は、それだけで
 `proved` にはならない。`unmeasured` と測定済み 0 も区別する。
 
+claim level は、証明状態とは別に次の境界として扱う。
+
+| Claim level | 扱い |
+| --- | --- |
+| `formal` | Lean theorem package と明示された前提の discharge によって支えられる claim。 |
+| `tooling` | extractor、policy checker、CI report、validation report などの tooling-side evidence による claim。Lean theorem ではない。 |
+| `empirical` | dataset、pilot、統計解析、case study による claim。Lean proof のブロッカーではない。 |
+| `hypothesis` | 研究仮説または将来検証する設計仮説。証明済み claim として扱わない。 |
+
+`nonConclusions` は claim level に関係なく必須である。特に `tooling` claim は、
+「測定された範囲では violation がない」と「全 universe で obstruction がない」を区別し、
+未測定軸を zero と読まないための non-conclusion を持つ。
+
 ## 現在の QED 境界
 
 現時点で Lean proved と呼ぶ中核は、AAT v2 の **static structural core** である。
@@ -189,7 +202,7 @@ exactness / no-unmeasured-axis が閉じた場合の completion corollary とし
 | 領域 | 次の扱い | Lean status |
 | --- | --- | --- |
 | global flatness completion | `GlobalFlatCertificate` や `global_of_within_exhaustive` のような certificate theorem として検討する。global theorem を primary theorem にはしない。Issue [#308](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/308) | `future proof obligation` |
-| claim / evidence boundary | `formal`, `tooling`, `empirical`, `hypothesis` の claim level と non-conclusions を明示し、tooling output と Lean theorem の境界を保つ。Issue [#309](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/309) | `defined only` / `future proof obligation` |
+| claim / evidence boundary | `ClaimLevel`, `MeasurementBoundary`, `ArchitectureClaim` で `formal`, `tooling`, `empirical`, `hypothesis` の claim level と non-conclusions を明示する。tooling output と Lean theorem の境界、および unmeasured と measured-zero の区別を保つ。Issue [#309](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/309) | `defined only` / `proved` for boundary accessors |
 | weighted numerical curvature | 現在の zero-separating / finite measured curvature bridge を、positive weight や zero-reflecting weighted sum 前提つきの bounded theorem へ拡張する。cost correlation は empirical hypothesis に残す。Issue [#310](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/310) | `future proof obligation` |
 | complexity transfer beyond bounded package | 既存の bounded complexity transfer package を土台に、`transfer_or_gap` や `no_free_elimination_bounded` 型の theorem を検討する。global conservation / lower bound は将来拡張とする。Issue [#311](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/311) | `future proof obligation` |
 | cohomological obstruction candidate | AAT v2 core には混ぜず、`DiagramFiller` / `NonFillabilityWitness` / `PathHomotopy` と接続できる小さい experimental extension として隔離する。Issue [#312](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/312) | future extension |
