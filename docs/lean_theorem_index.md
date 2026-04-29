@@ -257,6 +257,34 @@ File: `Formal/Arch/Operation.lean`
 | `ArchitectureOperation.witnessMapping_sound` | `theorem` | post-operation witness から pre-operation witness への片方向 mapping soundness を取り出す。 | `proved` |
 | `ArchitectureOperation.exists_sourceWitness_of_targetWitness` | `theorem` | post-operation witness があれば、対応する pre-operation witness が存在する。 | `proved` |
 
+## Operation / Invariant Galois
+
+File: `Formal/Arch/OperationInvariant.lean`
+
+Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
+の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
+Galois 対応である。ここでは `T ⊆ Ops(S) ↔ S ⊆ Inv(T)` のみを証明し、
+束同型、完全分類、または選択 universe 外の保存性は主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `PreservesInvariant` | `def` | operation の source で invariant が成り立つなら target でも成り立つ、という保存関係。 | `defined only` |
+| `Ops` | `def` | invariant family `S` のすべてを保存する operation family。 | `defined only` |
+| `Inv` | `def` | operation family `T` のすべてによって保存される invariant family。 | `defined only` |
+| `PredicateSubset` | `def` | predicate family 間の包含関係。 | `defined only` |
+| `ClosedInvariantSet` | `def` | `S = Inv(Ops(S))` としての保存閉包。 | `defined only` |
+| `ClosedOperationSet` | `def` | `T = Ops(Inv(T))` としての保存閉包。 | `defined only` |
+| `operationInvariant_galois` | `theorem` | 保存関係から `T ⊆ Ops(S) ↔ S ⊆ Inv(T)` を得る弱い Galois 対応。 | `proved` |
+| `DesignPattern` | `structure` | operation family、invariant family、両方向の closure law、non-conclusion clause を束ねる schema。 | `defined only` |
+| `DesignPattern.operations_subset_ops` | `theorem` | design pattern から operation-to-invariant closure law を取り出す。 | `proved` |
+| `DesignPattern.invariants_subset_inv` | `theorem` | design pattern から invariant-to-operation closure law を取り出す。 | `proved` |
+| `DesignPattern.closure_law` | `theorem` | design pattern が保持する二つの closure law を pair として取り出す。 | `proved` |
+| `DesignPattern.RecordsNonConclusions` | `def` | design pattern schema の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `DesignPattern.records_nonConclusions_iff` | `theorem` | recorded non-conclusion clause と schema field が一致すること。 | `proved` |
+
+Non-conclusions: この theorem package は operation / invariant の束同型、設計パターンの完全分類、
+または selected preservation relation の外側にある runtime / semantic / empirical 性質の保存を主張しない。
+
 ## Repair
 
 File: `Formal/Arch/Repair.lean`

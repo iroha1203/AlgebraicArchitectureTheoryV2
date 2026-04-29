@@ -10,6 +10,7 @@ import Formal.Arch.LSP
 import Formal.Arch.LocalReplacement
 import Formal.Arch.FeatureExtension
 import Formal.Arch.Operation
+import Formal.Arch.OperationInvariant
 import Formal.Arch.Repair
 import Formal.Arch.SplitExtensionLifting
 import Formal.Arch.ArchitecturePath
