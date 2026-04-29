@@ -1023,23 +1023,26 @@ ArchitectureExtensionFormula_structural:
     ∨ ClassifiedAsResidualCoverageGap U X F X' w
 ```
 
-この theorem の corollary として、lawful split extension は flatness を保存する。
+この classification theorem と split extension の lawfulness package から、bounded な
+flatness preservation を読む。
 
 ```lean
 LawfulExtensionPreservesFlatness:
-  ArchitectureFlat X →
-  FeatureFlat F →
-  SplitExtension X F X' →
+  StaticSplitExtension X F X' →
   ExtensionCoverageComplete U X F X' →
-  NoInteractionWitness U X F X' →
-  NoLiftFailure U X F X' →
-  NoFillFailure U X F X' →
-  NoUnaccountedTransfer U X F X' →
+  StaticFlatnessSideConditions U X' →
+  RuntimeCoverageComplete U X' →
+  RuntimeFlatWithin U X' →
+  SemanticCoverageComplete X' →
+  SemanticFlatWithin X' →
   ArchitectureFlatWithin U X'
 ```
 
 `ArchitectureFlatWithin U X'` は、universe `U` で観測・証明できる範囲の flatness である。
-実コード extractor、telemetry、semantic diagram universe の完全性を暗黙に仮定しない。
+static split extension は新しい forbidden static edge を作らないことを保証するが、
+acyclicity、projection soundness、LSP compatibility、runtime flatness、semantic flatness は
+明示前提として扱う。実コード extractor、telemetry、semantic diagram universe の完全性を
+暗黙に仮定しない。
 
 ## 11. Analytic Representation and Canonical Example
 
