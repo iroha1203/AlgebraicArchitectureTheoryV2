@@ -204,6 +204,16 @@ File: `Formal/Arch/FeatureExtension.lean`
 | `EmbeddingPolicyPreserved` | `def` | core 側 policy が embedding 後の extended policy として保存されること。 | `defined only` |
 | `StaticSplitFeatureExtension` | `structure` | core edge preservation、declared interface factorization、forbidden static edge absence、policy preservation を束ねる静的 split extension schema。 | `defined only` |
 | `StaticSplitExtension` | `abbrev` | `StaticSplitFeatureExtension` の短縮名。 | `defined only` |
+| `SelectedStaticSplitExtension` | `structure` | 固定された feature extension と policy parameters に対し、静的 split の4条件を unbundled predicate として束ねる。runtime / semantic / extractor completeness は含めない。 | `defined only` |
+| `selectedStaticSplitExtension_of_staticSplitFeatureExtension` | `theorem` | 既存の bundled `StaticSplitFeatureExtension` から selected static split predicate を得る。 | `proved` |
+| `staticSplitFeatureExtension_of_selectedStaticSplitExtension` | `def` | selected static split predicate を既存の bundled schema に戻す。 | `defined only` |
+| `StaticExtensionWitness` | `inductive` | core edge preservation、declared interface factorization、no-new-forbidden-edge、embedding policy preservation の失敗を表す selected static diagnostic witness family。 | `defined only` |
+| `StaticExtensionWitnessExists` | `def` | selected static diagnostic witness が存在すること。 | `defined only` |
+| `StaticSplitFailureCoverage` | `def` | selected static split 失敗が selected witness family で cover されるという bounded coverage / exactness 前提。global completeness は主張しない。 | `defined only` |
+| `not_selectedStaticSplitExtension_of_staticExtensionWitness` | `theorem` | selected static witness が対応する selected static split predicate を反証する soundness theorem。 | `proved` |
+| `not_selectedStaticSplitExtension_of_staticExtensionWitnessExists` | `theorem` | selected static witness の存在から selected static split predicate の不成立を得る。 | `proved` |
+| `staticExtensionWitnessExists_of_not_selectedStaticSplitExtension` | `theorem` | `StaticSplitFailureCoverage` 前提の下で、selected static split predicate の失敗から selected witness の存在を得る bounded completeness theorem。 | `proved` |
+| `staticExtensionWitnessExists_iff_not_selectedStaticSplitExtension` | `theorem` | selected coverage / exactness 前提に相対化された、selected witness 存在と selected static split 失敗の同値。 | `proved` |
 
 ## Split Extension Lifting
 

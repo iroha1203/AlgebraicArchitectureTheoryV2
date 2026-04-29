@@ -122,4 +122,191 @@ structure StaticSplitFeatureExtension (Core : Type u) (Feature : Type v)
 abbrev StaticSplitExtension :=
   StaticSplitFeatureExtension
 
+/--
+Selected static split condition for a fixed feature extension and fixed policy
+parameters.
+
+This predicate is the unbundled form of `StaticSplitFeatureExtension`: it is
+useful when diagnostic theorems need to talk about failure of one selected
+static split package without claiming runtime, semantic, or extractor
+completeness.
+-/
+structure SelectedStaticSplitExtension
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (declaredInterface : Extended -> Prop)
+    (coreAllowedStaticEdge : Core -> Core -> Prop)
+    (extendedAllowedStaticEdge : Extended -> Extended -> Prop) : Prop where
+  coreEdgesPreserved : CoreEdgesPreserved X
+  declaredInterfaceFactorization :
+    DeclaredInterfaceFactorization X declaredInterface
+  noNewForbiddenStaticEdge :
+    NoNewForbiddenStaticEdge X.extended extendedAllowedStaticEdge
+  policyPreserved :
+    EmbeddingPolicyPreserved X coreAllowedStaticEdge extendedAllowedStaticEdge
+
+/-- The bundled static split schema supplies the selected static split predicate. -/
+theorem selectedStaticSplitExtension_of_staticSplitFeatureExtension
+    (S : StaticSplitFeatureExtension Core Feature Extended FeatureView) :
+    SelectedStaticSplitExtension S.extension S.declaredInterface
+      S.coreAllowedStaticEdge S.extendedAllowedStaticEdge :=
+  ⟨S.coreEdgesPreserved, S.declaredInterfaceFactorization,
+    S.noNewForbiddenStaticEdge, S.policyPreserved⟩
+
+/-- A selected static split predicate can be bundled back into the existing schema. -/
+def staticSplitFeatureExtension_of_selectedStaticSplitExtension
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (declaredInterface : Extended -> Prop)
+    (coreAllowedStaticEdge : Core -> Core -> Prop)
+    (extendedAllowedStaticEdge : Extended -> Extended -> Prop)
+    (hSplit :
+      SelectedStaticSplitExtension X declaredInterface coreAllowedStaticEdge
+        extendedAllowedStaticEdge) :
+    StaticSplitFeatureExtension Core Feature Extended FeatureView where
+  extension := X
+  declaredInterface := declaredInterface
+  coreAllowedStaticEdge := coreAllowedStaticEdge
+  extendedAllowedStaticEdge := extendedAllowedStaticEdge
+  coreEdgesPreserved := hSplit.coreEdgesPreserved
+  declaredInterfaceFactorization := hSplit.declaredInterfaceFactorization
+  noNewForbiddenStaticEdge := hSplit.noNewForbiddenStaticEdge
+  policyPreserved := hSplit.policyPreserved
+
+/--
+Selected diagnostic witnesses for failure of the static split package.
+
+The constructors mirror the current Lean static split kernel: core edge
+preservation, declared interface factorization, no-new-forbidden-edge, and
+embedding policy preservation. They are intentionally static-only.
+-/
+inductive StaticExtensionWitness
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (declaredInterface : Extended -> Prop)
+    (coreAllowedStaticEdge : Core -> Core -> Prop)
+    (extendedAllowedStaticEdge : Extended -> Extended -> Prop) where
+  | missingCoreEdge (src dst : Core)
+      (coreEdge : X.core.edge src dst)
+      (missingExtendedEdge :
+        ¬ X.extended.edge (X.coreEmbedding src) (X.coreEmbedding dst))
+  | unfactoredBoundaryEdge (src dst : Extended)
+      (extendedEdge : X.extended.edge src dst)
+      (crossesBoundary : CrossesFeatureCoreBoundary X src dst)
+      (missingDeclaredFactor :
+        ¬ EdgeFactorsThroughDeclaredInterface X.extended declaredInterface src dst)
+  | forbiddenStaticEdge (src dst : Extended)
+      (extendedEdge : X.extended.edge src dst)
+      (forbidden : ¬ extendedAllowedStaticEdge src dst)
+  | embeddingPolicyBroken (src dst : Core)
+      (coreAllowed : coreAllowedStaticEdge src dst)
+      (extendedForbidden :
+        ¬ extendedAllowedStaticEdge (X.coreEmbedding src) (X.coreEmbedding dst))
+
+/-- Selected static witness existence, kept separate from any global universe. -/
+def StaticExtensionWitnessExists
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (declaredInterface : Extended -> Prop)
+    (coreAllowedStaticEdge : Core -> Core -> Prop)
+    (extendedAllowedStaticEdge : Extended -> Extended -> Prop) : Prop :=
+  Nonempty
+    (StaticExtensionWitness X declaredInterface coreAllowedStaticEdge
+      extendedAllowedStaticEdge)
+
+/--
+Coverage/exactness premise for the selected static diagnostic universe.
+
+This is a bounded assumption: it states that the selected static witness family
+covers failures of the selected static split predicate. It does not assert that
+all runtime, semantic, or extractor-level failures are represented.
+-/
+def StaticSplitFailureCoverage
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (declaredInterface : Extended -> Prop)
+    (coreAllowedStaticEdge : Core -> Core -> Prop)
+    (extendedAllowedStaticEdge : Extended -> Extended -> Prop) : Prop :=
+  ¬ SelectedStaticSplitExtension X declaredInterface coreAllowedStaticEdge
+      extendedAllowedStaticEdge ->
+    StaticExtensionWitnessExists X declaredInterface coreAllowedStaticEdge
+      extendedAllowedStaticEdge
+
+/--
+A selected static witness is sound: it refutes the corresponding selected
+static split predicate.
+-/
+theorem not_selectedStaticSplitExtension_of_staticExtensionWitness
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {declaredInterface : Extended -> Prop}
+    {coreAllowedStaticEdge : Core -> Core -> Prop}
+    {extendedAllowedStaticEdge : Extended -> Extended -> Prop}
+    (witness :
+      StaticExtensionWitness X declaredInterface coreAllowedStaticEdge
+        extendedAllowedStaticEdge) :
+    ¬ SelectedStaticSplitExtension X declaredInterface coreAllowedStaticEdge
+      extendedAllowedStaticEdge := by
+  intro hSplit
+  cases witness with
+  | missingCoreEdge src dst coreEdge missingExtendedEdge =>
+      exact missingExtendedEdge (hSplit.coreEdgesPreserved coreEdge)
+  | unfactoredBoundaryEdge src dst extendedEdge crossesBoundary missingDeclaredFactor =>
+      exact missingDeclaredFactor
+        (hSplit.declaredInterfaceFactorization extendedEdge crossesBoundary)
+  | forbiddenStaticEdge src dst extendedEdge forbidden =>
+      exact forbidden (hSplit.noNewForbiddenStaticEdge extendedEdge)
+  | embeddingPolicyBroken src dst coreAllowed extendedForbidden =>
+      exact extendedForbidden (hSplit.policyPreserved coreAllowed)
+
+/-- Soundness-only form for selected static witness existence. -/
+theorem not_selectedStaticSplitExtension_of_staticExtensionWitnessExists
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {declaredInterface : Extended -> Prop}
+    {coreAllowedStaticEdge : Core -> Core -> Prop}
+    {extendedAllowedStaticEdge : Extended -> Extended -> Prop}
+    (hWitness :
+      StaticExtensionWitnessExists X declaredInterface coreAllowedStaticEdge
+        extendedAllowedStaticEdge) :
+    ¬ SelectedStaticSplitExtension X declaredInterface coreAllowedStaticEdge
+      extendedAllowedStaticEdge := by
+  rcases hWitness with ⟨witness⟩
+  exact not_selectedStaticSplitExtension_of_staticExtensionWitness witness
+
+/--
+Bounded completeness: under the selected coverage/exactness premise, a failure
+of the selected static split predicate has a selected static witness.
+-/
+theorem staticExtensionWitnessExists_of_not_selectedStaticSplitExtension
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {declaredInterface : Extended -> Prop}
+    {coreAllowedStaticEdge : Core -> Core -> Prop}
+    {extendedAllowedStaticEdge : Extended -> Extended -> Prop}
+    (hCoverage :
+      StaticSplitFailureCoverage X declaredInterface coreAllowedStaticEdge
+        extendedAllowedStaticEdge)
+    (hNonSplit :
+      ¬ SelectedStaticSplitExtension X declaredInterface coreAllowedStaticEdge
+        extendedAllowedStaticEdge) :
+    StaticExtensionWitnessExists X declaredInterface coreAllowedStaticEdge
+      extendedAllowedStaticEdge :=
+  hCoverage hNonSplit
+
+/--
+Soundness plus bounded completeness for the selected static witness universe.
+
+The equivalence is relative to `StaticSplitFailureCoverage`; it is not a global
+claim about unmeasured runtime edges, semantic diagrams, or extractor
+completeness.
+-/
+theorem staticExtensionWitnessExists_iff_not_selectedStaticSplitExtension
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {declaredInterface : Extended -> Prop}
+    {coreAllowedStaticEdge : Core -> Core -> Prop}
+    {extendedAllowedStaticEdge : Extended -> Extended -> Prop}
+    (hCoverage :
+      StaticSplitFailureCoverage X declaredInterface coreAllowedStaticEdge
+        extendedAllowedStaticEdge) :
+    StaticExtensionWitnessExists X declaredInterface coreAllowedStaticEdge
+        extendedAllowedStaticEdge ↔
+      ¬ SelectedStaticSplitExtension X declaredInterface coreAllowedStaticEdge
+        extendedAllowedStaticEdge := by
+  constructor
+  · exact not_selectedStaticSplitExtension_of_staticExtensionWitnessExists
+  · exact staticExtensionWitnessExists_of_not_selectedStaticSplitExtension hCoverage
+
 end Formal.Arch
