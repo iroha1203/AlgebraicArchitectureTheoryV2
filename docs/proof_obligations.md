@@ -71,6 +71,7 @@ ArchitectureLawful X
 | Generic witness-count kernel / zero-count bridge | `proved` | [Lean 化設計](formal/flatness_obstruction_lean_design.md), [Lean theorem index](lean_theorem_index.md#flatness) |
 | Required law / axis exactness bridge | `proved` | [Lean theorem index](lean_theorem_index.md#signature-integrated-lawfulness) |
 | FeatureExtension / StaticSplitFeatureExtension | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#2-第一級対象-featureextension), [Lean theorem index](lean_theorem_index.md#feature-extension) |
+| SplitExtensionLifting / selected section law | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#83-split-extension-as-lifting-and-section), [Lean theorem index](lean_theorem_index.md#split-extension-lifting), Issue [#264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/264) |
 | ArchitectureOperation / ProofObligation schema | `defined only` / `proved` for schema accessor theorems | [AAT v2 数学設計書](aat_v2_mathematical_design.md#3-architecture-calculus), [Lean theorem index](lean_theorem_index.md#architecture-operation) |
 | ArchitecturePath / homotopy skeleton | `defined only` / `proved` | [Lean theorem index](lean_theorem_index.md#architecture-path) |
 | DiagramFiller / obstruction as non-fillability | `defined only` / `proved` / `future proof obligation` | [Lean theorem index](lean_theorem_index.md#diagram-filler) |
