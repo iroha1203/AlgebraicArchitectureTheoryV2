@@ -415,6 +415,13 @@ solver が `none` を返すだけでは非存在を主張しない。
 
 File: `Formal/Arch/ArchitectureExtensionFormula.lean`
 
+Issues [#321](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/321)
+and [#326](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/326)
+audit this package as the Lean entry point for mathematical design sections 7.2,
+9, and 10.  The package separates the soundness direction, the bounded
+completeness direction under explicit coverage / exactness assumptions, and the
+coverage-style structural classification theorem.
+
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `ExtensionCoverage` | `abbrev` | `Flatness.lean` の `ExtensionCoverageComplete` に、Architecture Extension Formula 用の公開名を与える。 | `defined only` |
@@ -450,6 +457,9 @@ completeness、runtime / semantic universe completeness、または universe 外
 coverage / exactness assumptions に相対化され、global witness completeness は主張しない。
 bounded flatness preservation は runtime / semantic flatness と coverage assumptions を明示する
 `LawfulExtensionPreservesFlatness` として `Formal/Arch/Flatness.lean` で証明済みである。
+このため `ArchitectureExtensionFormula_structural` は 7 分類の少なくとも一つに入ることを
+述べる coverage theorem であり、分類が互いに素であることや全 obstruction universe の
+完全分類は結論しない。
 
 ## Complexity Transfer
 
