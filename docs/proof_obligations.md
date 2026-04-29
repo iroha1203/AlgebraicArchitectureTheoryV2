@@ -74,6 +74,7 @@ ArchitectureLawful X
 | SplitExtensionLifting / selected section law | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#83-split-extension-as-lifting-and-section), [Lean theorem index](lean_theorem_index.md#split-extension-lifting), Issue [#264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/264) |
 | ArchitectureOperation / ProofObligation schema | `defined only` / `proved` for schema accessor theorems | [AAT v2 数学設計書](aat_v2_mathematical_design.md#3-architecture-calculus), [Lean theorem index](lean_theorem_index.md#architecture-operation) |
 | Repair step decreases / selected obstruction measure | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#73-repair-as-re-splitting), [Lean theorem index](lean_theorem_index.md#repair), Issue [#266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/266) |
+| Structural Architecture Extension Formula / obstruction classification | `future proof obligation` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#84-structural-architecture-extension-formula), [Lean theorem index](lean_theorem_index.md#architecture-extension-formula), Issue [#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262) |
 | ArchitecturePath / homotopy skeleton | `defined only` / `proved` | [Lean theorem index](lean_theorem_index.md#architecture-path) |
 | DiagramFiller / obstruction as non-fillability | `defined only` / `proved` / `future proof obligation` | [Lean theorem index](lean_theorem_index.md#diagram-filler) |
 | Projection / DIP bridge | `proved` for soundness bridges; exact projection refinements tracked separately | [Projection soundness と exact projection の使い分け](design/projection_exact_soundness.md), [Lean theorem index](lean_theorem_index.md#projection--dip) |
@@ -81,6 +82,23 @@ ArchitectureLawful X
 | Matrix / nilpotence / spectral bridge | `proved` for finite structural bridges; cost interpretation is empirical | [spectral radius bridge 設計](design/spectral_radius_bridge.md), [Lean theorem index](lean_theorem_index.md#matrix-bridge) |
 | Runtime propagation | `defined only` / `proved` for 0/1 runtime graph zero bridge; policy-aware coverage is separate | [runtimePropagation 設計](design/runtime_propagation_design.md), [Lean theorem index](lean_theorem_index.md#finite-universe--bridge-theorems) |
 | SOLID-style counterexamples | `proved` for current Lean examples | [Lean theorem index](lean_theorem_index.md#solid-counterexamples) |
+
+### Architecture Calculus / Extension Formula task package
+
+Issue [#261](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/261)
+は、Architecture Calculus から Structural Architecture Extension Formula へ進む
+Lean 証明タスクの親索引である。子 Issue の現在の扱いは次の通り。
+
+| Issue | 対象 | Lean status | 次の扱い |
+| --- | --- | --- | --- |
+| [#265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/265) | `ArchitectureOperation` / `ProofObligation` schema と witness mapping theorem | `defined only` / `proved` | 完了済み。実装済み API は [Lean theorem index](lean_theorem_index.md#architecture-operation) を参照する。 |
+| [#266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/266) | repair step decreases theorem / selected obstruction measure | `defined only` / `proved` | 完了済み。実装済み API は [Lean theorem index](lean_theorem_index.md#repair) を参照する。 |
+| [#264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/264) | SplitExtensionLifting / selected section law | `defined only` / `proved` | 完了済み。実装済み API は [Lean theorem index](lean_theorem_index.md#split-extension-lifting) を参照する。 |
+| [#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262) | `ArchitectureExtensionFormula_structural` classification theorem | `future proof obligation` | 次に着手する Lean proof task。`ExtensionCoverage`, `ExtensionObstructionWitness`, classification predicate 群、bounded classification theorem を追加する。 |
+
+#262 は disjoint decomposition ではなく coverage / classification theorem として扱う。
+`LawfulExtensionPreservesFlatness` は #262 内で corollary として切れる場合のみ証明し、
+前提が大きい場合は後続 Issue に分割する。
 
 ## Empirical Hypothesis Index
 
