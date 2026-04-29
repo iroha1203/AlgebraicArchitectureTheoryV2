@@ -445,6 +445,8 @@ coverage-style structural classification theorem.
 | `ExtensionCoverage` | `abbrev` | `Flatness.lean` の `ExtensionCoverageComplete` に、Architecture Extension Formula 用の公開名を与える。 | `defined only` |
 | `ExtensionObstructionClass` | `inductive` | inherited core / feature local / interaction / lifting failure / filling failure / complexity transfer / residual coverage gap の bounded classification class。 | `defined only` |
 | `ExtensionObstructionWitness` | `structure` | 抽象 witness payload と選択された `ExtensionObstructionClass` を束ねる。具体的な static / runtime / semantic / analytic witness family は後続 bridge で接続する。 | `defined only` |
+| `FillingFailureWitnessPayload` | `structure` | `NonFillabilityWitnessFor` を required diagram の filling failure payload として包む bridge witness。payload 単独では selected split failure を主張しない。 | `defined only` |
+| `fillingFailureExtensionObstructionWitness` | `def` | selected diagram non-fillability payload から `.fillingFailure` に分類された `ExtensionObstructionWitness` を構成する。 | `defined only` |
 | `SelectedSplitExtension` | `def` | feature extension と selected split predicate を結び、global split completeness を固定しないための selected split predicate。 | `defined only` |
 | `SelectedExtensionObstructionWitness` | `def` | selected obstruction universe 内の `ExtensionObstructionWitness` であることを表す predicate。 | `defined only` |
 | `SelectedExtensionObstructionWitnessExists` | `def` | selected obstruction universe 内に witness が存在すること。 | `defined only` |
@@ -465,6 +467,13 @@ coverage-style structural classification theorem.
 | `ClassifiedAsInteraction` | `def` | witness が feature/core interaction 境界由来として分類されること。 | `defined only` |
 | `ClassifiedAsLiftingFailure` | `def` | witness が selected feature step の lifting failure として分類されること。 | `defined only` |
 | `ClassifiedAsFillingFailure` | `def` | witness が required diagram の filling failure として分類されること。 | `defined only` |
+| `fillingFailureExtensionObstructionWitness_classified` | `theorem` | bridge constructor で作った witness が `ClassifiedAsFillingFailure` を満たすことを示す。 | `proved` |
+| `FillingFailureRefutesSplit` | `def` | selected filling-failure payload が selected split predicate を反駁するための明示 premise。`NonFillabilityWitnessFor` 単独では split failure を結論しない。 | `defined only` |
+| `not_selectedSplitExtension_of_fillingFailurePayload` | `theorem` | `FillingFailureRefutesSplit` 前提の下で selected payload から selected split failure を得る bounded soundness theorem。 | `proved` |
+| `FillingFailureBridgePackage` | `structure` | selected filling-failure payload universe、coverage / exactness assumptions、split refutation premise、bounded completeness、non-conclusions を束ねる bridge package。 | `defined only` |
+| `FillingFailureBridgePackage.SelectedWitness` | `def` | bridge package が誘導する `.fillingFailure` 分類済み selected extension witness predicate。 | `defined only` |
+| `FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage` | `def` | filling-failure bridge package を generic `NonSplitExtensionWitnessPackage` へ埋め込む。 | `defined only` |
+| `FillingFailureBridgePackage.selectedExtensionObstructionWitnessExists_of_selectedPayloadExists` | `theorem` | selected payload の存在から generic package 側の selected obstruction witness 存在を構成する。 | `proved` |
 | `ClassifiedAsComplexityTransfer` | `def` | witness が complexity / analytic diagnostic axis への transfer として分類されること。 | `defined only` |
 | `ClassifiedAsResidualCoverageGap` | `def` | witness が residual evidence または bounded coverage gap として分類されること。 | `defined only` |
 | `ArchitectureExtensionFormula_structural` | `theorem` | bounded extension coverage の下で、任意の selected extension obstruction witness が 7 分類 predicate の少なくとも一つで cover されること。 | `proved` |
@@ -473,6 +482,9 @@ Non-conclusions: 最初の theorem package は disjoint decomposition、global e
 completeness、runtime / semantic universe completeness、または universe 外の obstruction
 分類を主張しない。`NonSplitExtensionWitnessPackage` の同値版も package の
 coverage / exactness assumptions に相対化され、global witness completeness は主張しない。
+diagram filling failure から split failure への接続は `FillingFailureRefutesSplit` または
+`FillingFailureBridgePackage` の明示 premise に相対化され、`NonFillabilityWitnessFor`
+単独から `¬ SplitExtension` は結論しない。
 bounded flatness preservation は runtime / semantic flatness と coverage assumptions を明示する
 `LawfulExtensionPreservesFlatness` として `Formal/Arch/Flatness.lean` で証明済みである。
 このため `ArchitectureExtensionFormula_structural` は 7 分類の少なくとも一つに入ることを

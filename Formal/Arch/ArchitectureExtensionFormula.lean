@@ -1,4 +1,5 @@
 import Formal.Arch.Flatness
+import Formal.Arch.DiagramFiller
 
 namespace Formal.Arch
 
@@ -41,6 +42,57 @@ structure ExtensionObstructionWitness
     (Witness : Type z) where
   witness : Witness
   classifiesAs : ExtensionObstructionClass
+
+/--
+Payload bridge from semantic diagram non-fillability into the architecture
+extension obstruction universe.
+
+The payload carries a concrete `NonFillabilityWitnessFor` for one required
+diagram. It does not by itself refute a selected split predicate; that bounded
+connection is supplied by `FillingFailureBridgePackage` below.
+-/
+structure FillingFailureWitnessPayload {State : Type u}
+    {Step : State -> State -> Type v}
+    (IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop)
+    (SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop)
+    (RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop)
+    {X Y : State} (D : ArchitectureDiagram Step X Y)
+    (DiagramWitness : Type w) : Type (max u v w) where
+  witness : DiagramWitness
+  nonFillability :
+    NonFillabilityWitnessFor
+      IndependentSquare SameExternalContract RepairFill D witness
+
+/--
+Turn a selected diagram non-fillability payload into an abstract extension
+obstruction witness classified as `fillingFailure`.
+-/
+def fillingFailureExtensionObstructionWitness
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    {State : Type u} {Step : State -> State -> Type v}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {A B : State} {D : ArchitectureDiagram Step A B}
+    {DiagramWitness : Type w}
+    (payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness) :
+    ExtensionObstructionWitness X
+      (FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness) where
+  witness := payload
+  classifiesAs := .fillingFailure
 
 /--
 Selected split predicate for one feature extension.
@@ -227,6 +279,202 @@ def ClassifiedAsFillingFailure
     (_U : ComponentUniverse X.extended)
     (witness : ExtensionObstructionWitness X Witness) : Prop :=
   witness.classifiesAs = .fillingFailure
+
+/--
+The bridge constructor always lands in the `fillingFailure` classification.
+-/
+theorem fillingFailureExtensionObstructionWitness_classified
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    {State : Type u} {Step : State -> State -> Type v}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {A B : State} {D : ArchitectureDiagram Step A B}
+    {DiagramWitness : Type w}
+    (payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness) :
+    ClassifiedAsFillingFailure X U
+      (fillingFailureExtensionObstructionWitness X payload) :=
+  rfl
+
+/--
+Bounded premise connecting selected filling-failure payloads to a selected
+split predicate.
+
+This is intentionally a premise: a `NonFillabilityWitnessFor` refutes diagram
+fillability, but it refutes the chosen split notion only when the surrounding
+extension package supplies that interpretation.
+-/
+def FillingFailureRefutesSplit
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (splitPredicate : Prop)
+    {State : Type u} {Step : State -> State -> Type v}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {A B : State} {D : ArchitectureDiagram Step A B}
+    {DiagramWitness : Type w}
+    (selectedPayload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness ->
+        Prop) : Prop :=
+  ∀ {payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness},
+    selectedPayload payload -> ¬ SelectedSplitExtension X splitPredicate
+
+/--
+Soundness from a selected filling-failure payload to non-split, relative to the
+explicit `FillingFailureRefutesSplit` premise.
+-/
+theorem not_selectedSplitExtension_of_fillingFailurePayload
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {splitPredicate : Prop}
+    {State : Type u} {Step : State -> State -> Type v}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {A B : State} {D : ArchitectureDiagram Step A B}
+    {DiagramWitness : Type w}
+    {selectedPayload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness ->
+        Prop}
+    (hRefutes :
+      FillingFailureRefutesSplit X splitPredicate selectedPayload)
+    {payload :
+      FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness}
+    (hSelected : selectedPayload payload) :
+    ¬ SelectedSplitExtension X splitPredicate :=
+  hRefutes hSelected
+
+/--
+Bounded bridge package from selected diagram filling failures to the generic
+`NonSplitExtensionWitnessPackage`.
+
+The completeness field is relative to a selected payload universe and explicit
+coverage / exactness assumptions. It does not claim global semantic diagram
+coverage or that every split failure is a filling failure.
+-/
+structure FillingFailureBridgePackage
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    {State : Type u} {Step : State -> State -> Type v}
+    (IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop)
+    (SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop)
+    (RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop)
+    {A B : State} (D : ArchitectureDiagram Step A B)
+    (DiagramWitness : Type w) where
+  splitPredicate : Prop
+  selectedPayload :
+    FillingFailureWitnessPayload
+      IndependentSquare SameExternalContract RepairFill D DiagramWitness ->
+      Prop
+  coverageExactnessAssumptions : Prop
+  fillingFailureRefutesSplit :
+    FillingFailureRefutesSplit X splitPredicate selectedPayload
+  boundedCompleteness :
+    coverageExactnessAssumptions ->
+      ¬ SelectedSplitExtension X splitPredicate ->
+        ∃ payload :
+          FillingFailureWitnessPayload
+            IndependentSquare SameExternalContract RepairFill D DiagramWitness,
+          selectedPayload payload
+  nonConclusions : Prop
+
+namespace FillingFailureBridgePackage
+
+variable {X : FeatureExtension Core Feature Extended FeatureView}
+variable {State : Type u} {Step : State -> State -> Type v}
+variable {IndependentSquare :
+  (W X Y Z : State) ->
+    Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+variable {SameExternalContract :
+  (X Y : State) -> Step X Y -> Step X Y -> Prop}
+variable {RepairFill :
+  (X Y : State) -> ArchitecturePath Step X Y ->
+    ArchitecturePath Step X Y -> Prop}
+variable {A B : State} {D : ArchitectureDiagram Step A B}
+variable {DiagramWitness : Type w}
+
+/-- Selected extension witnesses induced by the filling-failure bridge package. -/
+def SelectedWitness
+    (P :
+      FillingFailureBridgePackage X
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness)
+    (witness :
+      ExtensionObstructionWitness X
+        (FillingFailureWitnessPayload
+          IndependentSquare SameExternalContract RepairFill D DiagramWitness)) :
+    Prop :=
+  witness.classifiesAs = .fillingFailure ∧ P.selectedPayload witness.witness
+
+/--
+The filling-failure bridge package embeds into the generic non-split witness
+package.
+-/
+def toNonSplitExtensionWitnessPackage
+    (P :
+      FillingFailureBridgePackage X
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness) :
+    NonSplitExtensionWitnessPackage X
+      (FillingFailureWitnessPayload
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness) where
+  splitPredicate := P.splitPredicate
+  selectedWitness := P.SelectedWitness
+  coverageExactnessAssumptions := P.coverageExactnessAssumptions
+  soundness := by
+    intro witness hSelected
+    exact P.fillingFailureRefutesSplit hSelected.2
+  boundedCompleteness := by
+    intro hCoverage hNonSplit
+    rcases P.boundedCompleteness hCoverage hNonSplit with
+      ⟨payload, hSelectedPayload⟩
+    exact ⟨fillingFailureExtensionObstructionWitness X payload,
+      rfl, hSelectedPayload⟩
+  nonConclusions := P.nonConclusions
+
+/--
+Connection corollary: selected filling-failure payload existence gives a
+selected generic extension obstruction witness.
+-/
+theorem selectedExtensionObstructionWitnessExists_of_selectedPayloadExists
+    (P :
+      FillingFailureBridgePackage X
+        IndependentSquare SameExternalContract RepairFill D DiagramWitness)
+    (hPayload :
+      ∃ payload :
+        FillingFailureWitnessPayload
+          IndependentSquare SameExternalContract RepairFill D DiagramWitness,
+        P.selectedPayload payload) :
+    (P.toNonSplitExtensionWitnessPackage).WitnessExists := by
+  rcases hPayload with ⟨payload, hSelectedPayload⟩
+  exact ⟨fillingFailureExtensionObstructionWitness X payload,
+    rfl, hSelectedPayload⟩
+
+end FillingFailureBridgePackage
 
 /-- The witness records transfer into a complexity or analytic diagnostic axis. -/
 def ClassifiedAsComplexityTransfer
