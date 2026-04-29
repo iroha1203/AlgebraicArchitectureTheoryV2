@@ -976,6 +976,18 @@ def NoRuntimeExposureObstruction {C : Type u} (G : RuntimeDependencyGraph C)
       reachesWithin G components components.length source target = false
 
 /--
+Semantic absence of runtime exposure obstruction.
+
+This predicate uses propositional `Reachable` rather than the executable
+bounded search. Bridges to finite metrics require a `ComponentUniverse`.
+-/
+def NoSemanticRuntimeExposureObstruction {C : Type u}
+    (G : RuntimeDependencyGraph C) (components : List C) : Prop :=
+  ∀ source, source ∈ components →
+    ∀ target, target ∈ components → source ≠ target →
+      ¬ Reachable G source target
+
+/--
 Runtime propagation zero is exactly absence of measured bounded runtime
 exposure obstruction.
 -/

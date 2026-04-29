@@ -237,7 +237,11 @@ coverage metadata が不足している edge は `unknown` として扱い、pol
 - `runtimePropagationOfFinite`: exposure radius として `defined only`
 - `v1OfFiniteWithRuntimePropagation`: `defined only`
 - `NoRuntimeExposureObstruction`: measured / bounded obstruction predicate として `defined only`
+- `NoSemanticRuntimeExposureObstruction`: `Reachable` ベースの semantic obstruction predicate として `defined only`
 - `runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction`: `proved`
+- `noRuntimeExposureObstruction_iff_noSemanticRuntimeExposureObstruction_under_universe`: `proved`
+- `runtimePropagationOfFinite_eq_zero_iff_noSemanticRuntimeExposureObstruction_under_universe`: `proved`
+- `v1OfFiniteWithRuntimePropagation_runtimePropagation_eq_some_zero_iff_noSemanticRuntimeExposureObstruction_under_universe`: `proved`
 - `runtimeBlastRadius`: tooling / analysis-derived metric / `empirical hypothesis`
 - runtime edge metadata から 0/1 graph への projection rule:
   `runtime-edge-projection-v0` tooling implementation / `empirical hypothesis`
