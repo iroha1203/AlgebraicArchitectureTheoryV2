@@ -1069,13 +1069,13 @@ classification predicate 群、および `ArchitectureExtensionFormula_structura
 
 Lean status: `ArchitectureExtensionFormula_structural` は `proved`。
 `ExtensionCoverage`, `ExtensionObstructionWitness`, classification predicate 群は
-`defined only`。`LawfulExtensionPreservesFlatness` は `future proof obligation`。
+`defined only`。`LawfulExtensionPreservesFlatness` は `proved`。
 前提となる `ArchitectureOperation` / `ProofObligation` schema、repair step decreases、
 selected split-extension lifting はそれぞれ Issue #265, #266, #264 で Lean 化済みである。
 `LawfulExtensionPreservesFlatness` は runtime / semantic flatness と bounded coverage
-assumptions が追加で必要なため、#262 では直接 corollary とせず Issue
+assumptions を明示する bounded corollary として Issue
 [#271](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/271)
-で扱う。
+で Lean 化済みである。
 
 ### 8.5 Analytic representation layer
 

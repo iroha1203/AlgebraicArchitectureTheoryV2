@@ -257,4 +257,102 @@ theorem staticFlatWithin_of_staticSplitExtension
   · exact policySound_of_staticSplitExtension S hEdges hBoundaryAllowed
   · exact policySound_of_staticSplitExtension S hEdges hAbstractionAllowed
 
+/--
+Flatness model induced by a static split extension and explicit runtime /
+semantic evidence.
+
+The static graph is exactly the extended graph of the split extension. Runtime
+and semantic layers remain supplied evidence rather than inferred telemetry or
+global semantic completeness.
+-/
+def LawfulExtensionFlatnessModel
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    (runtime : RuntimeDependencyGraph Extended)
+    (projection : InterfaceProjection Extended A)
+    (abstractStatic : AbstractGraph A)
+    (staticObservation : Observation Extended StaticObs)
+    (boundaryAllowed abstractionAllowed runtimeAllowed : Extended -> Extended -> Prop)
+    (semantic : Semantics SemanticExpr SemanticObs)
+    (requiredSemantic : RequiredDiagram SemanticExpr -> Prop)
+    (measuredSemantic : List (RequiredDiagram SemanticExpr)) :
+    ArchitectureFlatnessModel Extended A StaticObs SemanticExpr SemanticObs where
+  static := S.extension.extended
+  runtime := runtime
+  projection := projection
+  abstractStatic := abstractStatic
+  staticObservation := staticObservation
+  boundaryAllowed := boundaryAllowed
+  abstractionAllowed := abstractionAllowed
+  runtimeAllowed := runtimeAllowed
+  semantic := semantic
+  requiredSemantic := requiredSemantic
+  measuredSemantic := measuredSemantic
+
+/--
+Bounded flatness preservation for a lawful static split extension.
+
+This corollary is deliberately coverage-aware: extension coverage, runtime
+coverage, and semantic coverage are explicit premises. It does not assume global
+extractor completeness, telemetry completeness, or semantic universe
+completeness outside the supplied bounded evidence.
+-/
+theorem LawfulExtensionPreservesFlatness
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {runtime : RuntimeDependencyGraph Extended}
+    {projection : InterfaceProjection Extended A}
+    {abstractStatic : AbstractGraph A}
+    {staticObservation : Observation Extended StaticObs}
+    {boundaryAllowed abstractionAllowed runtimeAllowed : Extended -> Extended -> Prop}
+    {semantic : Semantics SemanticExpr SemanticObs}
+    {requiredSemantic : RequiredDiagram SemanticExpr -> Prop}
+    {measuredSemantic : List (RequiredDiagram SemanticExpr)}
+    (U : ComponentUniverse S.extension.extended)
+    (_hExtensionCoverage : StaticSplitExtensionCoverageComplete S U)
+    (hBoundaryAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        boundaryAllowed src dst)
+    (hAbstractionAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        abstractionAllowed src dst)
+    (hWalkAcyclic : WalkAcyclic S.extension.extended)
+    (hProjectionSound : ProjectionSound S.extension.extended projection abstractStatic)
+    (hLSP : LSPCompatible projection staticObservation)
+    (hRuntimeCoverage :
+      RuntimeCoverageComplete
+        (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+          boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic
+          measuredSemantic)
+        U)
+    (hRuntimeFlat :
+      RuntimeFlatWithin
+        (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+          boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic
+          measuredSemantic)
+        U)
+    (hSemanticCoverage : CoversRequired requiredSemantic measuredSemantic)
+    (hSemanticFlat : DiagramLawfulByList semantic measuredSemantic) :
+    ArchitectureFlatWithin
+      (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+        boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic measuredSemantic)
+      U := by
+  let X :=
+    LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+      boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic measuredSemantic
+  have hStaticCoverage : StaticCoverageComplete X U :=
+    staticCoverageComplete_of_componentUniverse X U
+  have hStaticFlat : StaticFlatWithin X U :=
+    staticFlatWithin_of_staticSplitExtension
+      (S := S)
+      (X := X)
+      (U := U)
+      hStaticCoverage
+      (fun hEdge => hEdge)
+      hBoundaryAllowed
+      hAbstractionAllowed
+      hWalkAcyclic
+      hProjectionSound
+      hLSP
+  exact ⟨⟨hStaticCoverage, hRuntimeCoverage, hSemanticCoverage⟩,
+    hStaticFlat, hRuntimeFlat, hSemanticFlat⟩
+
 end Formal.Arch
