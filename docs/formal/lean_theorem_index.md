@@ -181,6 +181,12 @@ Files: `Formal/Arch/Observation.lean`, `Formal/Arch/LSP.lean`, `Formal/Arch/Loca
 
 ## Feature Extension
 
+Issue [#243](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/243)
+の feature extension 最小コアは、`FeatureExtension`、`Flatness`,
+`ArchitecturePath`, `DiagramFiller` の四つの module に分かれる。この節以降は、
+first-class feature addition schema、coverage-aware flatness、有限 path calculus、
+semantic diagram filler の順に、Lean 上で参照できる主要 API を索引する。
+
 File: `Formal/Arch/FeatureExtension.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
