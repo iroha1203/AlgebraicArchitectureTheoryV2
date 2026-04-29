@@ -356,12 +356,6 @@ synthesize:
 すべての operation は、前提、保存される invariant、生成される proof obligation、
 witness mapping、non-conclusions を持つ。
 
-Issue [#265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/265)
-での最初の Lean 対象範囲は、`compose`, `replace`, `protect`, `repair` の
-operation tag、operation ごとの proof obligation package、precondition、
-non-conclusion、および後段 witness から前段 witness への片方向 witness mapping
-である。
-
 この段階の非目標は次である。
 
 - operation の具体的な graph 変換を定義すること。
@@ -369,14 +363,6 @@ non-conclusion、および後段 witness から前段 witness への片方向 wi
 - `compose` の結合法則、`protect` の冪等性、`replace` の観測同値を証明すること。
 - runtime flatness、semantic flatness、extractor completeness を operation schema から
   自動的に結論すること。
-
-Lean status: `ArchitectureOperationKind`, `ProofObligation`,
-`OperationProofObligation`, `ArchitectureOperation` は `defined only`。
-`ArchitectureOperation.witnessMapping_sound` と
-`ArchitectureOperation.exists_sourceWitness_of_targetWitness` は、与えられた
-`witnessMappingSound` field から片方向 witness mapping soundness を取り出す
-小定理として `proved`。`ArchitectureOperation.generatedObligation_kind` は、
-operation と生成された proof obligation の tag 一致を取り出す小定理として `proved`。
 
 ### 3.2 Calculus laws
 
@@ -509,9 +495,8 @@ invariant family を導入するかで読む。
 不変量を扱う。
 
 SOLID-style local contracts と `Decomposable` の非含意、および strong DIP / LSP
-互換でも抽象層循環により `¬ Decomposable` となる反例は、Lean 側の
-`Formal/Arch/SolidCounterexample.lean` と
-[Lean 定義・定理索引](lean_theorem_index.md#solid-counterexamples) で追跡する。
+互換でも抽象層循環により `¬ Decomposable` となる反例は、AAT における
+局所契約層と大域構造層の分離を示す基本反例として扱う。
 Event Sourcing / Saga / CRUD の測定設計は
 [relationComplexity 設計](design/relation_complexity_design.md) に分離し、
 Circuit Breaker coverage や runtime propagation は
@@ -710,15 +695,6 @@ ExtensionObstructionMeasure X F X'' < ExtensionObstructionMeasure X F X'
 repair の成功は selected obstruction universe に限定して述べる。
 全 obstruction の完全除去を最初から主張しない。
 
-Issue [#266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/266)
-では、この主張を `SelectedObstructionUniverse`,
-`NonSplitExtensionWitness`, `AdmissibleRepairRule`, `RepairStep`,
-`RepairStepDecreases` として Lean 化した。証明済みの中心定理は、
-admissible repair rule と selected witness / repair step から selected
-obstruction measure の減少を得る
-`repairStepDecreases_of_admissible` である。これは runtime flatness、
-semantic flatness、all obstruction removal を結論しない bounded theorem である。
-
 ### 7.4 Complexity Transfer
 
 ある層の complexity が減っても、別層へ移るだけの場合がある。
@@ -834,7 +810,7 @@ ArchitecturePath:
   finite sequence of ArchitectureStep
 ```
 
-最小の Lean target は次である。
+最小の形式化対象は次である。
 
 ```lean
 ArchitecturePath X Y
@@ -989,20 +965,6 @@ SplitExtensionLifting:
 strict retraction は現実の architecture には強すぎることがある。
 初期 formalization では、observational retraction または selected projection law として扱う。
 
-Issue [#264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/264)
-での最初の Lean 対象範囲は、`FeatureSectionLaw`,
-`ObservationalCoreRetraction`, `SplitExtensionLiftingData`,
-`SelectedFeatureStep`, `CompatibleWithInterface`, `LiftsFeatureStep`,
-`PreservesCoreInvariants`, `SplitExtensionLifting` である。
-
-Lean status: section / retraction / compatibility schema は `defined only`。
-`SplitExtensionLiftingData.featureSection_observes` と
-`SplitExtensionLiftingData.coreRetraction_observes_coreEmbedding` は
-observation-relative law の accessor theorem として `proved`。
-`SplitExtensionLifting` は、selected split-extension lifting data、lawful selected
-feature step、interface compatibility から、section-induced extended step が存在し、
-selected core invariant を保存することを示す bounded theorem として `proved`。
-
 この段階の非目標は次である。
 
 - strict equality としての `q ∘ s = id` または `r ∘ i = id` を要求すること。
@@ -1060,22 +1022,6 @@ LawfulExtensionPreservesFlatness:
 
 `ArchitectureFlatWithin U X'` は、universe `U` で観測・証明できる範囲の flatness である。
 実コード extractor、telemetry、semantic diagram universe の完全性を暗黙に仮定しない。
-
-Issue [#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262)
-の最初の Lean 対象範囲は、`ExtensionCoverage`, `ExtensionObstructionWitness`,
-classification predicate 群、および `ArchitectureExtensionFormula_structural`
-の bounded classification theorem であり、`Formal/Arch/ArchitectureExtensionFormula.lean`
-で実装済みである。
-
-Lean status: `ArchitectureExtensionFormula_structural` は `proved`。
-`ExtensionCoverage`, `ExtensionObstructionWitness`, classification predicate 群は
-`defined only`。`LawfulExtensionPreservesFlatness` は `proved`。
-前提となる `ArchitectureOperation` / `ProofObligation` schema、repair step decreases、
-selected split-extension lifting はそれぞれ Issue #265, #266, #264 で Lean 化済みである。
-`LawfulExtensionPreservesFlatness` は runtime / semantic flatness と bounded coverage
-assumptions を明示する bounded corollary として Issue
-[#271](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/271)
-で Lean 化済みである。
 
 ### 8.5 Analytic representation layer
 
@@ -1388,15 +1334,6 @@ ZeroReflectingSum V :=
 - no-solution certificate soundness theorem
 ```
 
-Lean status: `SelectedObstructionUniverse`, `NonSplitExtensionWitness`,
-`ExtensionObstructionMeasure`, `RepairStep`, `RepairStepDecreases`,
-`AdmissibleRepairRule` は `defined only`。
-`repairStepDecreases_of_admissible` と
-`extensionObstructionMeasure_decreases_of_admissible` は、admissible repair rule
-から selected obstruction measure の減少を取り出す小定理として `proved`。
-repair termination、finite repair、synthesis soundness、no-solution certificate
-soundness は future proof obligation。
-
 ### Phase A5: Homotopy Skeleton and Extension Formula
 
 ```text
@@ -1407,14 +1344,8 @@ soundness は future proof obligation。
 - Architecture Extension Formula の structural classification theorem を証明する。
 ```
 
-Lean status: finite architecture path core、generated path homotopy、
-diagram filling / non-fillability witness soundness、selected split-extension lifting は
-`defined only` / `proved` の theorem package として存在する。
-Architecture Extension Formula の structural classification theorem は Issue
-[#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262)
-で Lean 化済みであり、`ExtensionObstructionWitness` と classification predicate 群は
-`defined only`、`ArchitectureExtensionFormula_structural` は `proved`。この theorem は
-coverage / classification theorem として扱い、disjoint decomposition は主張しない。
+この theorem package は coverage / classification theorem として扱い、
+disjoint decomposition は主張しない。
 
 ### Phase A6: Representation Bridges
 
