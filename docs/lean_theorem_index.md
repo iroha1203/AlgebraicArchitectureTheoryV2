@@ -462,10 +462,21 @@ File: `Formal/Arch/DiagramFiller.lean`
 | `WitnessUniverseComplete` | `def` | bounded completeness theorem 用の有限 witness universe 完全性前提。 | `defined only` |
 | `obstructionAsNonFillability_complete_bounded` | `theorem` | `WitnessUniverseComplete` と `¬ DiagramFiller D` から、有限 universe 内の `NonFillabilityWitnessFor D w` を得る bounded completeness theorem。 | `proved` |
 | `CouponDiscountExample.couponDiscountDiagram` | `def` | coupon と discount の順序依存例を、二つの operation order を持つ diagram skeleton として表す。 | `defined only` |
+| `CouponDiscountExample.roundingTrace` | `def` | coupon / discount path の selected rounding-order observation を `Nat` trace として与える。 | `defined only` |
+| `CouponDiscountExample.RoundingIndependentSquare` | `def` | selected filler generator のうち rounding observation を保存する independent-square contract。 | `defined only` |
+| `CouponDiscountExample.RoundingSameExternalContract` | `def` | rounding observation を保存する same-contract replacement contract。 | `defined only` |
+| `CouponDiscountExample.RoundingRepairFill` | `def` | rounding observation を保存する selected repair fill contract。 | `defined only` |
+| `CouponDiscountExample.pathHomotopy_preserves_roundingTrace` | `theorem` | selected filler generator から生成される path homotopy が `roundingTrace` を保存することを示す。 | `proved` |
+| `CouponDiscountExample.roundingOrder_refutes_selectedDiagramFiller` | `theorem` | `roundingOrder` witness が selected coupon / discount diagram filler を反駁する。 | `proved` |
+| `CouponDiscountExample.roundingOrder_nonFillabilityWitnessFor` | `theorem` | `CouponDiscountWitness.roundingOrder` が selected diagram の `NonFillabilityWitnessFor` であることを示す。 | `proved` |
+| `CouponDiscountExample.roundingOrderResidual` | `def` | selected coupon / discount diagram の semantic residual を `0/1` valuation として定義する。 | `defined only` |
+| `CouponDiscountExample.roundingOrderValuation` | `def` | selected rounding-order residual に相対化された `ObstructionValuation` package。 | `defined only` |
+| `CouponDiscountExample.roundingOrderValuation_positive` | `theorem` | canonical coupon / discount diagram で selected rounding-order valuation が positive になることを示す。 | `proved` |
 
 Non-conclusions: bounded completeness は `WitnessUniverseComplete` に相対化される。
-global semantic completeness、finite universe 外の witness coverage、実コード extractor
-completeness は主張しない。
+coupon / discount valuation は selected rounding-order residual に相対化される。
+global semantic completeness、finite universe 外の witness coverage、未測定 semantic axis の
+zero 性、実コード extractor completeness は主張しない。
 
 ## Flatness
 

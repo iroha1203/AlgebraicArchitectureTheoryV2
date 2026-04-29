@@ -82,7 +82,7 @@ ArchitectureLawful X
 | Repair termination / synthesis / no-solution certificate | `defined only` / `proved` for bounded schema accessor theorems | [AAT v2 数学設計書](aat_v2_mathematical_design.md#75-no-solution-certificate), [Lean theorem index](lean_theorem_index.md#repair-synthesis), Issue [#277](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/277) |
 | Structural Architecture Extension Formula / obstruction classification | `defined only` / `proved` | [AAT v2 数学設計書](aat_v2_mathematical_design.md#84-structural-architecture-extension-formula), [Lean theorem index](lean_theorem_index.md#architecture-extension-formula), Issue [#262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/262) |
 | ArchitecturePath / homotopy skeleton | `defined only` / `proved` | [Lean theorem index](lean_theorem_index.md#architecture-path) |
-| DiagramFiller / obstruction as non-fillability | `defined only` / `proved` | [Lean theorem index](lean_theorem_index.md#diagram-filler), Issue [#285](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/285) |
+| DiagramFiller / obstruction as non-fillability | `defined only` / `proved` | [Lean theorem index](lean_theorem_index.md#diagram-filler), Issues [#285](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/285), [#286](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/286) |
 | Projection / DIP bridge | `proved` for soundness bridges; exact projection refinements tracked separately | [Projection soundness と exact projection の使い分け](design/projection_exact_soundness.md), [Lean theorem index](lean_theorem_index.md#projection--dip) |
 | Observation / LSP bridge | `proved` for finite violation-count bridges | [Observation bridge と projection bridge の関係](design/observation_projection_bridge.md), [Lean theorem index](lean_theorem_index.md#observation--lsp) |
 | Matrix / nilpotence / spectral bridge | `proved` for finite structural bridges; cost interpretation is empirical | [spectral radius bridge 設計](design/spectral_radius_bridge.md), [Lean theorem index](lean_theorem_index.md#matrix-bridge) |
@@ -122,6 +122,19 @@ Issue [#275](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 | [#277](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/277) | repair termination / synthesis / no-solution certificate soundness | `defined only` / `proved` | `BoundedRepairPlan`, `FiniteRepairPackage`, `SynthesisConstraintSystem`, `SynthesisSoundnessPackage`, `NoSolutionCertificate`, `ValidNoSolutionCertificate`, `NoSolutionCertificate.sound_of_valid` は実装済み。solver が `none` を返すだけでは非存在を主張しない。 |
 | [#278](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/278) | ArchitectureEvolution transition theorem package | `defined only` / `proved` | `ArchitectureTransition`, `ArchitectureEvolution`, `TransitionPreservesFlatness`, `DriftObstructionSchema`, `MigrationSequence`, `EveryStepLawful`, `EventuallyFlat` は実装済み。実装済み API は [Lean theorem index](lean_theorem_index.md#architecture-evolution) を参照する。transition schema は bounded flatness predicate と selected witness reporting に相対化され、global extractor completeness や全 obstruction coverage は non-conclusions として扱う。 |
 | [#280](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/280) | AnalyticRepresentation bridge と representation strength | `defined only` / `proved` | `AnalyticRepresentation`, `ZeroPreserving`, `ZeroReflecting`, `ObstructionPreserving`, `ObstructionReflecting`, `ObstructionValuation`, `ZeroReflectingSum` は実装済み。zero-reflecting / obstruction-reflecting は coverage、witness completeness、semantic contract coverage に相対化し、witness absence だけから flatness を主張しない。 |
+
+### Mathematical design follow-up task package
+
+Issue [#284](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/284)
+は、数学設計書に残る小さな Lean theorem package の親索引である。
+子 Issue の現在の扱いは次の通り。
+
+| Issue | 対象 | Lean status | 次の扱い |
+| --- | --- | --- | --- |
+| [#285](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/285) | `NonFillabilityWitness` の bounded completeness theorem | `defined only` / `proved` | `WitnessUniverseComplete` と `obstructionAsNonFillability_complete_bounded` は実装済み。bounded completeness は有限 witness universe 完全性前提に相対化され、global semantic completeness は主張しない。 |
+| [#286](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/286) | Coupon feature extension example の semantic witness / valuation theorem | `defined only` / `proved` | `roundingTrace`, selected filler contracts、`roundingOrder_refutes_selectedDiagramFiller`, `roundingOrder_nonFillabilityWitnessFor`, `roundingOrderValuation_positive` は実装済み。valuation は selected rounding-order residual に限られ、未測定 semantic axis の zero 性や実コード extractor completeness は主張しない。 |
+| [#288](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/288) | Complexity Transfer の bounded theorem package | `future proof obligation` | bounded assumptions と selected transfer theorem package を後続で定義・証明する。 |
+| [#287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/287) | ArchitectureCore / CertifiedArchitecture の proof-carrying schema | `future proof obligation` | 実コード extractor の完全性ではなく、proof-carrying measurement universe としての schema を後続で定義する。 |
 
 ## Empirical Hypothesis Index
 
