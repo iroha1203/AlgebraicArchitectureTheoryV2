@@ -857,7 +857,7 @@ File: `Formal/Arch/SignatureLawfulness.lean`
 2. `architectureLawful_iff_requiredSignatureAxesZero` を static structural core の QED の主 theorem として読む。
 3. LocalReplacement / state-effect laws は `localReplacementContract_requiredSignatureProjectionLSPAxes`, `requiredSignatureAxesZero_of_localReplacementContract`, `stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction`, `effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction` で derived corollary として読む。
 4. nilpotency / spectral diagnostics は `MatrixDiagnosticCorollaries` と `matrixDiagnosticCorollaries_of_requiredSignatureAxesZero` で読む。
-5. package は `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` を入口にし、static structural core の QED として読む。runtime / empirical / numerical curvature は「現在 Lean に入れていないもの」の境界として読む。
+5. package は `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` を入口にし、static structural core の QED として読む。runtime / empirical axis はこの package に含めず、numerical curvature は別の bounded diagram bridge として読む。
 
 ## State Transition / Effect Boundary Laws
 
@@ -1172,10 +1172,10 @@ File: `Formal/Arch/SolidCounterexample.lean`
 次は意図的に Lean core へ混ぜていない。
 
 - `Decomposable` の定義への acyclicity, finite propagation, nilpotence, spectral conditions の混入。
-- 重み付き・より一般の `Sem_A(p) - Sem_A(q)` 型の数値 curvature metric。
-  `Formal/Arch/Curvature.lean` は、zero-separating distance の個別 diagram bridge と
-  有限測定 list 上の `Nat` total bridge までを含み、重み・Signature axis 化・
-  empirical cost model はまだ導入しない。
+- より一般の `Sem_A(p) - Sem_A(q)` 型の数値 curvature metric。
+  `Formal/Arch/Curvature.lean` は、zero-separating distance の個別 diagram bridge、
+  有限測定 list 上の `Nat` total bridge、正の重みに相対化された weighted total bridge
+  までを含む。Signature axis 化、重み calibration、empirical cost model はまだ導入しない。
 - `relationComplexity`, `runtimePropagation`, `empiricalChangeCost` の実証相関。
 - extractor output が `ComponentUniverse` の完全な witness であるという主張。
 - `rho(A)` と変更波及・障害伝播コストの相関。
