@@ -89,20 +89,24 @@ split しないならどの obstruction が原因かを、
 
 ## 2. Claim Taxonomy
 
-Report 内の claim は次のいずれかに分類する。
+Report 内の claim は、Lean 側の `ClaimLevel` と対応する evidence boundary として
+次のいずれかに分類する。
 
 ```text
-PROVED:
+FORMAL / PROVED:
   数学設計書の theorem package により、明示された前提の下で証明された claim。
 
-MEASURED:
+TOOLING / MEASURED:
   extractor / telemetry / policy / test / annotation により測定された claim。
 
-ASSUMED:
+TOOLING / ASSUMED:
   theorem または report の前提として置いた claim。
 
 EMPIRICAL:
   dataset / case study / statistical analysis による経験的 claim。
+
+HYPOTHESIS:
+  将来検証する研究仮説または設計仮説。
 
 UNMEASURED:
   測定されていない。安全とは解釈しない。
@@ -110,6 +114,12 @@ UNMEASURED:
 OUT_OF_SCOPE:
   指定された theorem package / extractor / report の対象外。
 ```
+
+既存 report 表示の `PROVED`, `MEASURED`, `ASSUMED`, `EMPIRICAL`,
+`UNMEASURED`, `OUT_OF_SCOPE` は UI 表示名として残してよい。ただし内部的には
+`formal`, `tooling`, `empirical`, `hypothesis` の claim level と、
+`measuredZero`, `measuredNonzero`, `unmeasured`, `outOfScope` の measurement boundary
+を分けて保持する。
 
 禁止規則:
 
@@ -120,6 +130,8 @@ OUT_OF_SCOPE:
 - AI generated を architecture lawful とみなさない。
 - MEASURED nonzero を repair 必須と断定しない。
 - PROVED claim の前提条件を report から隠さない。
+- tooling output を Lean theorem とみなさない。
+- nonConclusions を report から落とさない。
 ```
 
 ## 3. AIR: Architecture Intermediate Representation
@@ -435,7 +447,10 @@ diagrams: list
 operation: optional string
 evidence: list
 theorem_reference: optional string
+claim_level: formal | tooling | empirical | hypothesis
 claim_classification: PROVED | MEASURED | ASSUMED | EMPIRICAL | UNMEASURED | OUT_OF_SCOPE
+measurement_boundary: measuredZero | measuredNonzero | unmeasured | outOfScope
+non_conclusions: list
 repair_candidates: list
 ```
 
@@ -475,7 +490,13 @@ evidence:
     path: src/coupon/CouponService.ts
     symbol: CouponService.calculate
 theorem_reference: StaticSplitFeatureExtension
+claim_level: tooling
 claim_classification: MEASURED
+measurement_boundary: measuredNonzero
+non_conclusions:
+  - runtime flatness is not concluded
+  - semantic flatness is not concluded
+  - absence of other unmeasured witnesses is not concluded
 repair_candidates:
   - introduce CouponPort and route dependency through declared interface
   - move cache access behind PaymentPort contract
@@ -802,7 +823,12 @@ report:
   split_status: unknown
   semantic_witness:
     kind: non_commuting_diagram
+    claim_level: tooling
     claim_classification: MEASURED
+    measurement_boundary: measuredNonzero
+    non_conclusions:
+      - global semantic flatness is not concluded
+      - unmeasured semantic diagrams are not treated as commuting
 ```
 
 この例は、static split が成立しても semantic layer に obstruction が残りうることを示す。

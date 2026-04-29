@@ -650,6 +650,25 @@ completeness は主張しない。
 | `ArchitectureLawUniverse.Derived` | `def` | law が finite universe に含まれ、derived role を持つこと。 | `defined only` |
 | `ObstructionWitnessUniverse` | `structure` | bounded theorem package input としての finite obstruction witness universe。global obstruction enumeration は主張しない。 | `defined only` |
 | `ArchitectureTheoremPackage` | `structure` | 名前付き theorem package、対応する `ProofObligation`、明示的な non-conclusion record を束ねる。 | `defined only` |
+| `ClaimLevel` | `inductive` | architecture report claim を `formal` / `tooling` / `empirical` / `hypothesis` に分類する claim level。 | `defined only` |
+| `ClaimLevel.IsFormal` | `def` | claim level が Lean theorem-package claim であること。 | `defined only` |
+| `ClaimLevel.IsTooling` | `def` | claim level が tooling-side evidence claim であること。 | `defined only` |
+| `ClaimLevel.IsEmpirical` | `def` | claim level が empirical validation claim であること。 | `defined only` |
+| `ClaimLevel.IsHypothesis` | `def` | claim level が research hypothesis であること。 | `defined only` |
+| `MeasurementBoundary` | `inductive` | report claim の測定境界を measured zero / measured nonzero / unmeasured / out of scope に分ける。 | `defined only` |
+| `MeasurementBoundary.IsMeasuredZero` | `def` | boundary が明示的な measured zero であること。 | `defined only` |
+| `MeasurementBoundary.IsUnmeasured` | `def` | boundary が unmeasured であること。 | `defined only` |
+| `MeasurementBoundary.unmeasured_not_measuredZero` | `theorem` | unmeasured boundary は measured zero ではないこと。 | `proved` |
+| `ArchitectureClaim` | `structure` | theorem package reference、tooling / empirical / hypothesis evidence、measurement boundary、non-conclusions を持つ claim schema。 | `defined only` |
+| `ArchitectureClaim.RecordsNonConclusions` | `def` | architecture claim の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `ArchitectureClaim.IsFormal` | `def` | architecture claim が formal level であること。 | `defined only` |
+| `ArchitectureClaim.HasFormalPackage` | `def` | architecture claim が theorem package reference を持つこと。 | `defined only` |
+| `ArchitectureClaim.ToolingOnly` | `def` | architecture claim が tooling-only で theorem package を持たないこと。 | `defined only` |
+| `ArchitectureClaim.IsMeasuredZero` | `def` | architecture claim の measurement boundary が measured zero であること。 | `defined only` |
+| `ArchitectureClaim.IsUnmeasured` | `def` | architecture claim の measurement boundary が unmeasured であること。 | `defined only` |
+| `ArchitectureClaim.records_nonConclusions_iff` | `theorem` | recorded non-conclusion predicate と claim field が一致すること。 | `proved` |
+| `ArchitectureClaim.toolingOnly_no_formalPackage` | `theorem` | tooling-only claim は formal theorem package reference を持たないこと。 | `proved` |
+| `ArchitectureClaim.unmeasured_not_measuredZero` | `theorem` | unmeasured claim boundary は measured-zero evidence ではないこと。 | `proved` |
 | `CertifiedArchitecture` | `structure` | core、law universe、invariant family、witness universe、theorem package list、listed package の discharge proof を束ねる certified architecture object。 | `defined only` |
 | `CertifiedArchitecture.theoremPackageObligations` | `def` | certified architecture が持つ theorem package から proof obligation list を取り出す。 | `defined only` |
 | `CertifiedArchitecture.ProofObligationDischargeSet` | `def` | listed theorem package がすべて discharged であること。 | `defined only` |

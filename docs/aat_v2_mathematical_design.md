@@ -1268,6 +1268,28 @@ ProofObligation :=
 結論しない。測定されていない軸、仮定した前提、対象外の universe を theorem package から
 隠してはならない。
 
+proof obligation の外側で report や theorem package を読む場合、claim には
+次の evidence boundary を持たせる。
+
+```text
+ArchitectureClaim :=
+  level : ClaimLevel
+  + statement
+  + theoremPackage?
+  + toolingEvidence
+  + empiricalEvidence
+  + hypothesisContext
+  + measurementBoundary : measuredZero | measuredNonzero | unmeasured | outOfScope
+  + nonConclusions
+```
+
+`formal` claim だけが Lean theorem package の discharge によって支えられる。
+`tooling` claim は extractor / checker / CI report の evidence であり、それだけでは
+Lean theorem にならない。`empirical` claim は dataset や case study の主張であり、
+`hypothesis` claim は将来検証する研究仮説である。
+`measurementBoundary = unmeasured` は `measuredZero` ではない。未測定軸を zero と読む
+主張は、theorem package の結論にも non-conclusion の外側にも置かない。
+
 ### 12.4 Abstract Obstruction Valuation
 
 数学設計書では、抽象的な obstruction valuation を扱う。
