@@ -921,6 +921,12 @@ ObstructionAsNonFillability_complete_bounded:
   ∃ w ∈ U, NonFillabilityWitnessFor D w
 ```
 
+発展的な cohomological obstruction は、この core theorem package には入れない。
+core が扱う obstruction は、選択された finite witness universe に相対化された
+diagram filling failure と bounded completeness である。cohomological な表示を導入する場合も、
+まず `PathHomotopy`、`DiagramFiller`、`NonFillabilityWitness` へ戻す forgetful bridge を持つ
+experimental extension として扱い、core module 側に追加依存を持ち込まない。
+
 ### 9.2 Split extension as lifting and section
 
 `FeatureExtension X F X'` は、次の fibration-like extension として読む。
@@ -1406,6 +1412,17 @@ disjoint decomposition は主張しない。
 - lower bound theorem
 - conservation / transfer law beyond bounded examples
 - cohomological obstruction candidate は拡張候補として扱う。
+```
+
+cohomological obstruction candidate は、AAT v2 core の theorem package ではなく
+future experimental extension として隔離する。最小の exit criteria は次である。
+
+```text
+- core Lean module から cohomological extension への import 依存を追加しない。
+- toy model は finite path / diagram filling calculus 上で閉じる。
+- cohomological witness は `NonFillabilityWitness` へ戻せる forgetful bridge を持つ。
+- `PathHomotopy` が同値とみなす path を cohomological 表示が区別しない条件を明示する。
+- global obstruction completeness や classification は主張せず、bounded witness universe に相対化する。
 ```
 
 ## 14. 理論上の到達条件
