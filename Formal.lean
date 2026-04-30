@@ -31,6 +31,7 @@ import Formal.Arch.Matrix
 import Formal.Arch.DependencyObstruction
 import Formal.Arch.SignatureLawfulness
 import Formal.Arch.Flatness
+import Formal.Arch.StaticSemanticCounterexample
 import Formal.Arch.ArchitectureExtensionFormula
 import Formal.Arch.AnalyticRepresentation
 import Formal.Arch.CertifiedArchitecture
