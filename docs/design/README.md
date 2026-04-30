@@ -17,3 +17,4 @@
 | [Projection soundness と exact projection の使い分け](projection_exact_soundness.md) | Lean bridge design | `ProjectionSound` で足りる主張と `ProjectionExact` が必要な refinement を分ける。 |
 | [Observation bridge と projection bridge の関係](observation_projection_bridge.md) | Lean bridge design / proved packaging | projection bridge と observation bridge を局所契約層で並列に扱い、`LocalReplacementContract` の包装定理との接続を整理する。 |
 | [spectral radius bridge 設計](spectral_radius_bridge.md) | Lean bridge / empirical boundary | `rho(A)` の構造的 theorem と変更・障害コストの empirical claim を分離する。 |
+| [Architecture Calculus catalog placement](architecture_calculus_catalog_placement.md) | Lean API placement / future proof obligation | 第3章 operation catalog を concrete graph kernel、contract / observation schema、runtime / semantic package、repair / synthesis package へ配置する。 |
