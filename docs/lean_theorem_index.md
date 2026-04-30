@@ -279,6 +279,9 @@ File: `Formal/Arch/FeatureExtensionExamples.lean`
 | `CouponStaticDependencyExample.repairedExtension` | `def` | hidden direct edge を declared payment port 経由へ戻した repaired static extension。 | `defined only` |
 | `CouponStaticDependencyExample.goodStaticSplitFeatureExtension` | `def` | good extension が `StaticSplitFeatureExtension` を満たす bundled package。 | `defined only` |
 | `CouponStaticDependencyExample.good_selectedStaticSplitFeatureExtension` | `theorem` | good extension から selected static split predicate を得る。 | `proved` |
+| `CouponStaticDependencyExample.featureObservation` | `def` | coupon feature の selected feature observation。 | `defined only` |
+| `CouponStaticDependencyExample.extensionOf_featureViewSound` | `theorem` | coupon extension family の declared feature embedding が selected feature observation と一致して観測されることを示す。 | `proved` |
+| `CouponStaticDependencyExample.good_featureObservationCoverage` | `theorem` | good coupon extension が feature-owned representative による selected feature observation coverage を持つことを示す。 | `proved` |
 | `CouponStaticDependencyExample.hiddenDependencyWitness` | `def` | bad extension の `CouponService -> PaymentAdapter.internalCache` 相当の unfactored boundary edge witness。 | `defined only` |
 | `CouponStaticDependencyExample.hiddenDependencyWitnessExists` | `theorem` | bad extension に selected static witness が存在することを示す。 | `proved` |
 | `CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension` | `theorem` | hidden dependency witness から selected static split failure を得る。 | `proved` |
@@ -293,16 +296,25 @@ witness に限る。runtime flatness、semantic flatness、extractor completenes
 File: `Formal/Arch/SplitExtensionLifting.lean`
 
 Issue [#264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/264)
+と Issue [#372](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/372)
 の対象範囲は、strict fibration ではなく observation model に相対化された
-feature section / core retraction と、selected feature step の bounded lifting である。
+feature section / core retraction、featureView law package、selected feature step の bounded lifting である。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `FeatureSectionLaw` | `def` | `q ∘ s ≈ id` を、extended 側 `featureView` と feature 側 selected observation の一致として表す observation-relative section law。 | `defined only` |
+| `FeatureViewSound` | `def` | declared `featureEmbedding` 後の component が selected feature observation と一致して観測されることを表す observation-relative soundness。 | `defined only` |
+| `FeatureObservationCoverage` | `def` | 各 feature observation が feature-owned extended representative を持つことを表す selected coverage。global split completeness は主張しない。 | `defined only` |
+| `FeatureViewSectionPackage` | `structure` | selected `featureView` section と `FeatureSectionLaw` を公開語彙として束ねる package。 | `defined only` |
+| `FeatureViewSectionPackage.featureSection_observes` | `theorem` | `FeatureViewSectionPackage` から selected feature observation law を accessor theorem として取り出す。 | `proved` |
+| `featureObservationCoverage_of_featureViewSound` | `theorem` | `FeatureViewSound` から feature-owned representative による selected coverage を得る。 | `proved` |
+| `featureViewSectionPackage_of_featureViewSound` | `def` | sound な declared `featureEmbedding` を `FeatureViewSectionPackage` として束ねる。 | `defined only` |
 | `ObservationalCoreRetraction` | `def` | `r ∘ i ≈ id` を、embedded core に対する selected core observation の一致として表す retraction law。 | `defined only` |
 | `SplitExtensionLiftingData` | `structure` | `FeatureExtension`、feature observation、core observation、feature section、core retraction、section / retraction law、interface factorization、required invariant preservation を束ねる selected split-extension lifting schema。 | `defined only` |
 | `SplitExtensionLiftingData.featureSection_observes` | `theorem` | feature section law を accessor theorem として取り出す。 | `proved` |
 | `SplitExtensionLiftingData.coreRetraction_observes_coreEmbedding` | `theorem` | embedded core 上の observational core retraction law を accessor theorem として取り出す。 | `proved` |
+| `SplitExtensionLiftingData.featureViewSectionPackage` | `def` | lifting data の feature-section 部分を公開 `FeatureViewSectionPackage` として取り出す。 | `defined only` |
+| `SplitExtensionLiftingData.featureViewSectionPackage_observes` | `theorem` | lifting data 由来の公開 section package が selected feature observation law を満たすことを示す。 | `proved` |
 | `SelectedFeatureStep` | `structure` | selected feature state 間の feature step。 | `defined only` |
 | `LiftedExtensionStep` | `structure` | extended architecture 内の lifted endpoint pair。 | `defined only` |
 | `LawfulFeatureStep` | `def` | selected feature invariant を feature step が保存すること。 | `defined only` |
