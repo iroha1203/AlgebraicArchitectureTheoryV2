@@ -942,8 +942,13 @@ File: `Formal/Arch/Flatness.lean`
 | `projectionSound_of_staticSplitEdgeDecomposition` | `theorem` | compatible static graph の edge が static split の extended graph に分解され、その extended graph が projection sound なら、compatible graph の `ProjectionSound` を得る。 | `proved` |
 | `staticFlatWithin_of_staticSplitExtension` | `theorem` | coverage-aware な静的範囲で、static split extension と残りの静的 law 前提から `StaticFlatWithin` を得る。runtime / semantic flatness は結論しない。 | `proved` |
 | `LawfulExtensionFlatnessModel` | `def` | static graph を `StaticSplitExtension` の extended graph に固定し、runtime / semantic evidence を明示引数として持つ bounded flatness model。 | `defined only` |
+| `SplitFeatureExtensionWithinNonConclusions` | `def` | bounded split feature extension package が global `ArchitectureFlat`、extractor completeness、runtime / semantic completeness を自動導出しないことを記録する marker。 | `defined only` |
+| `SplitFeatureExtensionWithin` | `structure` | `StaticSplitExtension`、extension coverage、static side conditions、runtime / semantic split evidence、non-conclusions を束ねる bounded public package。 | `defined only` |
+| `splitFeatureExtensionWithin_of_runtimeSemanticSplitPreservation` | `def` | 既存の runtime / semantic split preservation evidence から `SplitFeatureExtensionWithin` を構成する入口。 | `defined only` |
+| `splitFeatureExtensionWithin_recordsNonConclusions` | `theorem` | `SplitFeatureExtensionWithin` から記録済み non-conclusions を取り出す。 | `proved` |
 | `LawfulExtensionPreservesFlatness` | `theorem` | extension coverage、runtime coverage / flatness、semantic coverage / flatness を明示前提として、lawful static split extension から bounded `ArchitectureFlatWithin` を構成する。 | `proved` |
 | `LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` | `theorem` | runtime / semantic split preservation package で `LawfulExtensionPreservesFlatness` の runtime / semantic flatness 前提を discharge する。 | `proved` |
+| `architectureFlatWithin_of_splitFeatureExtensionWithin` | `theorem` | `SplitFeatureExtensionWithin` から induced flatness model の bounded `ArchitectureFlatWithin` を得る public preservation theorem。 | `proved` |
 
 ## Architecture Core / Certified Architecture
 
