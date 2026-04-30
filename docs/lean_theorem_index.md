@@ -89,6 +89,12 @@ File: `Formal/Arch/Layering.lean`
 | `acyclic_iff_walkAcyclic` | `theorem` | acyclicity と walk acyclicity の同値。 | `proved` |
 | `finitePropagation_of_strictLayered` | `theorem` | `StrictLayered -> FinitePropagation`。 | `proved` |
 
+有限 universe と decidable edge relation を明示した逆向き bridge は
+`Formal/Arch/Finite.lean` の `ComponentUniverse.strictLayered_of_acyclic` と
+`FiniteArchGraph.strictLayered_of_acyclic` として索引する。これは static graph
+layering の theorem であり、semantic contract や runtime protocol の一般的な
+decomposability を結論しない。
+
 ## Decomposable
 
 File: `Formal/Arch/Decomposable.lean`
@@ -96,6 +102,9 @@ File: `Formal/Arch/Decomposable.lean`
 現在の Lean core における `Decomposable` は、`StrictLayered` と同義の
 static / strict-layer decomposability である。semantic contract、runtime protocol、
 event bus、pub-sub、局所化された相互再帰などを含む一般の分解可能性を主張しない。
+有限 acyclic graph からこの static decomposability に戻る方向は、
+`ComponentUniverse.strictLayered_of_acyclic` / `FiniteArchGraph.strictLayered_of_acyclic`
+により、finite universe と decidable edge relation の前提に相対化して扱う。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
