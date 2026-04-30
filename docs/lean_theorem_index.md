@@ -432,7 +432,7 @@ law packages.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
-| `ArchitectureCalculusLawKind` | `inductive` | `identity`, `associativity`, `refinementAbstraction`, `protectionIdempotence`, `reverseInvolution`, `witnessMappingFunctoriality` の bounded law tag。 | `defined only` |
+| `ArchitectureCalculusLawKind` | `inductive` | `identity`, `associativity`, `edgeUnion`, `refinementAbstraction`, `edgeEquivalence`, `protectionIdempotence`, `reverseInvolution`, `witnessMappingFunctoriality`, `synthesisSoundness`, `noSolutionSoundness` の bounded law tag。 | `defined only` |
 | `ArchitectureCalculusLawKind.label` | `def` | documentation-facing な law tag label。 | `defined only` |
 | `ArchitectureCalculusLaw` | `structure` | law kind、operation kind、bounded universe、compatibility / coverage / exactness / observation equivalence、結論、soundness、non-conclusions を束ねる schema。 | `defined only` |
 | `ArchitectureCalculusLaw.AssumptionsHold` | `def` | bounded law package の visible assumptions をまとめる。 | `defined only` |
@@ -440,16 +440,43 @@ law packages.
 | `ArchitectureCalculusLaw.conclusion_of_assumptions` | `theorem` | bounded assumptions から law conclusion を得る。 | `proved` |
 | `ArchitectureCalculusLaw.identityLaw` | `def` | selected operation kind に対する bounded identity law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.composeAssociativity` | `def` | `compose` operation 用 bounded associativity law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.composeEdgeUnion` | `def` | `compose` operation 用 bounded concrete edge-union law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.replaceRefinementAbstraction` | `def` | `replace` operation 用 bounded refinement / abstraction law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.replaceEdgeEquivalence` | `def` | `replace` operation 用 bounded concrete edge-equivalence law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.protectIdempotence` | `def` | `protect` operation 用 bounded idempotence law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.reverseInvolution` | `def` | selected operation kind に対する bounded reverse-involution law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.repairMonotonicity` | `def` | `repair` operation 用 bounded witness-mapping / monotonicity law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.identityLaw_kind` | `theorem` | identity law constructor が identity tag を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.composeAssociativity_operationKind` | `theorem` | compose associativity constructor が `compose` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.composeEdgeUnion_operationKind` | `theorem` | compose edge-union constructor が `compose` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.replaceRefinementAbstraction_operationKind` | `theorem` | replace refinement / abstraction constructor が `replace` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.replaceEdgeEquivalence_operationKind` | `theorem` | replace edge-equivalence constructor が `replace` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.protectIdempotence_operationKind` | `theorem` | protect idempotence constructor が `protect` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.reverseInvolution_kind` | `theorem` | reverse-involution constructor が reverse-involution tag を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.repairMonotonicity_operationKind` | `theorem` | repair monotonicity constructor が `repair` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.finiteComposeEdgeUnionLaw` | `def` | finite `compose` graph kernel の edge-union theorem を bounded law package として包む entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.finiteComposeEdgeUnionLaw_operationKind` | `theorem` | finite compose edge-union law package が `compose` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.finiteComposeEdgeUnionLaw_conclusion` | `theorem` | bounded assumptions から finite compose の edge-union theorem を得る。 | `proved` |
+| `ArchitectureCalculusLaw.finiteReplaceEdgeEquivalenceLaw` | `def` | `EdgeEquivalent` precondition に相対化した finite `replace` edge preservation を bounded law package として包む entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.finiteReplaceEdgeEquivalenceLaw_operationKind` | `theorem` | finite replace edge-equivalence law package が `replace` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.finiteReplaceEdgeEquivalenceLaw_conclusion` | `theorem` | bounded assumptions から edge-equivalent finite replacement の source-edge preservation を得る。 | `proved` |
+| `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw` | `def` | graph-level identity としての finite `protect` を bounded idempotence law package として包む entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw_operationKind` | `theorem` | finite protect idempotence law package が `protect` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw_conclusion` | `theorem` | bounded assumptions から finite protect idempotence を得る。 | `proved` |
+| `ArchitectureCalculusLaw.finiteReverseInvolutionLaw` | `def` | finite `reverse` double-application theorem を bounded reverse-involution law package として包む entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.finiteReverseInvolutionLaw_operationKind` | `theorem` | finite reverse involution law package が `reverse` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.finiteReverseInvolutionLaw_conclusion` | `theorem` | bounded assumptions から finite double-reverse edge restoration を得る。 | `proved` |
+| `ArchitectureCalculusLaw.repairStepDecreasesLaw` | `def` | selected obstruction universe、selected witness、admissible rule、repair step に相対化した repair monotonicity を bounded law package として包む entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.repairStepDecreasesLaw_operationKind` | `theorem` | repair monotonicity law package が `repair` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.repairStepDecreasesLaw_conclusion` | `theorem` | bounded assumptions から selected obstruction measure decrease を得る。 | `proved` |
+| `ArchitectureCalculusLaw.synthesisCandidateSoundnessLaw` | `def` | produced candidate の `SynthesisSoundnessPackage` を bounded `synthesize` law package として包む entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.synthesisCandidateSoundnessLaw_operationKind` | `theorem` | synthesis candidate soundness law package が `synthesize` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.synthesisCandidateSoundnessLaw_conclusion` | `theorem` | bounded assumptions から produced candidate が required constraints を満たすことを得る。 | `proved` |
+| `ArchitectureCalculusLaw.noSolutionCertificateSoundnessLaw` | `def` | valid no-solution certificate の soundness を bounded `synthesize` law package として包む entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.noSolutionCertificateSoundnessLaw_operationKind` | `theorem` | no-solution certificate soundness law package が `synthesize` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.noSolutionCertificateSoundnessLaw_conclusion` | `theorem` | valid certificate と bounded assumptions から satisfying architecture の非存在を得る。 | `proved` |
+
+Non-conclusions: concrete entrypoint は selected finite graph kernel、selected obstruction universe、または explicit synthesis package に相対化された theorem を包むだけであり、無条件の associativity、全 operation の冪等性、global flatness preservation、solver completeness、all obstruction removal は主張しない。
 
 ## Operation / Invariant Galois
 
