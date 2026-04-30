@@ -296,6 +296,14 @@ The useful accessors are the generated-obligation kind theorem, the combined
 precondition predicate, and the one-way witness mapping theorem; this package
 does not by itself assert any unconditional operation law or global flatness
 preservation.
+Issue [#359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/359)
+records where each Chapter 3 operation lives after the public tag / proof
+obligation schema: [Architecture Calculus catalog placement](design/architecture_calculus_catalog_placement.md).
+Only `compose`, `replace`, `protect`, and `reverse` currently have concrete
+finite graph kernels. `refine`, `abstract`, `split`, `merge`, `isolate`,
+`migrate`, `contract`, and `synthesize` are routed to contract / observation,
+runtime / semantic, repair, or synthesis theorem packages instead of a uniform
+graph transform.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -416,6 +424,11 @@ Issues [#322](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 and [#327](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/327)
 reuse this section as the bounded law audit surface for compose / replace /
 protect / reverse / repair.
+Issue [#360](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/360)
+continues from the placement decision in
+[Architecture Calculus catalog placement](design/architecture_calculus_catalog_placement.md)
+by adding concrete graph / repair / synthesis entrypoints for selected bounded
+law packages.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
