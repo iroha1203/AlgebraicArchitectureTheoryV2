@@ -1,4 +1,4 @@
-import Formal.Arch.FeatureExtension
+import Formal.Arch.SplitExtensionLifting
 
 namespace Formal.Arch
 
@@ -49,6 +49,9 @@ def featureEmbedding : FeatureComponent -> ExtendedComponent
   | .couponService => .couponService
 
 def featureView : Observation ExtendedComponent FeatureView where
+  observe := fun _ => .coupon
+
+def featureObservation : Observation FeatureComponent FeatureView where
   observe := fun _ => .coupon
 
 def declaredInterface (x : ExtendedComponent) : Prop :=
@@ -115,6 +118,17 @@ def badExtension :
 def repairedExtension :
     FeatureExtension CoreComponent FeatureComponent ExtendedComponent FeatureView :=
   extensionOf repairedGraph
+
+theorem extensionOf_featureViewSound (G : ArchGraph ExtendedComponent) :
+    FeatureViewSound (extensionOf G) featureObservation := by
+  intro f
+  cases f
+  rfl
+
+theorem good_featureObservationCoverage :
+    FeatureObservationCoverage goodExtension featureObservation :=
+  featureObservationCoverage_of_featureViewSound
+    (extensionOf_featureViewSound goodGraph)
 
 theorem no_core_edge {src dst : CoreComponent} :
     ¬ coreGraph.edge src dst := by
