@@ -36,3 +36,4 @@ import Formal.Arch.ArchitectureExtensionFormula
 import Formal.Arch.AnalyticRepresentation
 import Formal.Arch.CertifiedArchitecture
 import Formal.Arch.ComplexityTransfer
+import Formal.Arch.RepairTransferCounterexample

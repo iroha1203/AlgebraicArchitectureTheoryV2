@@ -714,6 +714,39 @@ conservation or empirical cost theorem.
 | `BoundedComplexityTransferPackage.RecordsNonConclusions` | `def` | complexity-transfer package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `BoundedComplexityTransferPackage.records_nonConclusions_iff` | `theorem` | recorded non-conclusion predicate が schema field と一致すること。 | `proved` |
 
+## Repair Transfer Counterexample
+
+File: `Formal/Arch/RepairTransferCounterexample.lean`
+
+Issue [#353](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/353)
+の対象範囲は、repair step が selected obstruction measure を減少させても、
+別の diagnostic axis で obstruction / transferred complexity が増える可能性を
+最小 skeleton として固定することである。これは repair theorem が selected measure に
+相対化されており、全 axis の単調改善や global flatness preservation を主張しないことを
+Lean 側の counterexample package として記録する。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `RepairTransferCounterexample.RepairState` | `inductive` | static witness を持つ `entangled` と、static repair 後の `repaired` の 2 状態 skeleton。 | `defined only` |
+| `RepairTransferCounterexample.RepairWitness` | `inductive` | selected static witness `staticLeak` と別軸 witness `runtimeBackpressure`。 | `defined only` |
+| `RepairTransferCounterexample.selectedStaticUniverse` | `def` | selected static obstruction universe。measure は `entangled = 1`, `repaired = 0`。 | `defined only` |
+| `RepairTransferCounterexample.runtimeAxisUniverse` | `def` | runtime diagnostic axis。measure は `entangled = 0`, `repaired = 1`。 | `defined only` |
+| `RepairTransferCounterexample.staticRepairStep` | `def` | selected static repair step skeleton。 | `defined only` |
+| `RepairTransferCounterexample.selectedRepairStep_decreases` | `theorem` | concrete repair step で selected static measure が減少する。 | `proved` |
+| `RepairTransferCounterexample.selectedRepairStep_decreases_of_admissible` | `theorem` | 既存 `AdmissibleRepairRule` API から同じ selected-measure decrease を得る bridge。 | `proved` |
+| `RepairTransferCounterexample.runtimeAxisMeasure_increases` | `theorem` | 同じ endpoint で runtime-axis measure が `0 -> 1` に増える。 | `proved` |
+| `RepairTransferCounterexample.runtimeAxis_noMeasuredViolation_before` | `theorem` | repair 前の runtime measured witness universe には violation がない。 | `proved` |
+| `RepairTransferCounterexample.runtimeAxis_measuredViolation_after` | `theorem` | repair 後には runtime measured violation witness が存在する。 | `proved` |
+| `RepairTransferCounterexample.runtimeAxisViolationCount_before` | `theorem` | repair 前の runtime measured violation count は 0。 | `proved` |
+| `RepairTransferCounterexample.runtimeAxisViolationCount_after` | `theorem` | repair 後の runtime measured violation count は 1。 | `proved` |
+| `RepairTransferCounterexample.selectedRepairStep_not_all_axes_nonincreasing` | `theorem` | selected static repair endpoint は selected+runtime 全軸の nonincreasing step ではない。 | `proved` |
+| `RepairTransferCounterexample.staticSplitRepair_reducesStaticComplexity` | `theorem` | 同じ step を `ReducesStaticComplexity` として complexity-transfer schema に接続する。 | `proved` |
+| `RepairTransferCounterexample.staticSplitRepair_not_eliminated_by_proof` | `theorem` | この skeleton では proof elimination ではないことを selected schema 上で記録する。 | `proved` |
+| `RepairTransferCounterexample.staticSplitRepair_transfers_runtime` | `theorem` | runtime target への selected transfer witness が存在する。 | `proved` |
+| `RepairTransferCounterexample.repairComplexityTransfer_records_nonConclusion` | `theorem` | repair が全 axis 単調改善ではない non-conclusion を schema field として記録する。 | `proved` |
+| `RepairTransferCounterexample.RepairTransferCounterexamplePackage` | `structure` | selected decrease、runtime increase、violation count、runtime transfer、non-conclusion を束ねる package。 | `defined only` |
+| `RepairTransferCounterexample.counterexamplePackage` | `def` | Issue #353 の concrete counterexample package。 | `defined only` |
+
 ## Architecture Path
 
 File: `Formal/Arch/ArchitecturePath.lean`
