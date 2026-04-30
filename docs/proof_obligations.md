@@ -194,6 +194,22 @@ Issue [#296](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 | [#338](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/338) | StaticSplit 由来の中間 preservation corollary | `proved` | `boundaryPolicySound_of_staticSplitExtension`, `abstractionPolicySound_of_staticSplitExtension`, `lspCompatible_of_staticSplitObservationFactorsThrough`, `projectionSound_of_staticSplitProjectionExact`, `projectionSound_of_staticSplitEdgeDecomposition` を実装済み。static split だけで acyclicity、projection soundness、LSP、runtime / semantic flatness、global flatness が出るとは主張しない。 |
 | [#298](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/298) / [#339](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/339) | ArchitectureOperation の concrete graph transformation kernel | `defined only` / `proved` | `ConcreteGraphOperation`、`ArchGraph.reverse`、`FiniteArchGraph.reverse`、graph-level identity としての `FiniteArchGraph.protect`、edge union としての `ArchGraph.compose` / `FiniteArchGraph.compose`、edge equivalence precondition に相対化した `ArchGraph.replace` / `FiniteArchGraph.replace`、schema 接続 theorem、reverse involution / protect edge preservation / compose edge subset / replacement edge equivalence theorem は実装済み。無条件の全 operation laws、global flatness preservation、runtime / semantic preservation completeness は主張しない。 |
 
+### Architecture Calculus Chapter 3 completion package
+
+Issue [#356](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/356)
+は、第3章 Architecture Calculus の operation catalog、operation role、proof obligation、
+calculus law を Lean public API として揃えるための親索引である。数学設計書には
+作業状態を混ぜず、この文書と
+[Lean theorem index](lean_theorem_index.md#architecture-operation) で Lean status と
+残る non-conclusions を管理する。
+
+| Issue | 対象 | Lean status | 次の扱い |
+| --- | --- | --- | --- |
+| [#357](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/357) | `ArchitectureOperationKind` と `OperationProofObligation` の第3章 catalog 対応 | `defined only` / `proved` for existing schema accessor theorems | `compose`, `refine`, `abstract`, `replace`, `split`, `merge`, `isolate`, `protect`, `migrate`, `reverse`, `contract`, `repair`, `synthesize` の tag と proof-obligation constructor は実装済み。これらの tag / constructor だけから preservation、improvement、runtime / semantic completeness、global flatness preservation は主張しない。 |
+| [#358](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/358) | operation role schema | future proof obligation | Preserve / Reflect / Improve / Localize / Translate / Transfer / Assume を theorem package から参照できる schema として整理する。 |
+| [#359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/359) | full catalog の concrete / semantic / runtime kernel 配置 | design / future proof obligation | operation ごとに graph-level kernel、contract / observation schema、runtime / semantic package、synthesis package の配置を分ける。 |
+| [#360](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/360) | calculus law package と concrete theorem の接続 | future proof obligation | bounded `ArchitectureCalculusLaw` entrypoint と concrete graph / repair / synthesis theorem との接続を拡張する。 |
+
 ### Mathematical design completion audit package
 
 Issue [#324](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/324)
