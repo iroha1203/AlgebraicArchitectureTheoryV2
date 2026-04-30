@@ -975,8 +975,15 @@ File: `Formal/Arch/Obstruction.lean`
 | --- | --- | --- | --- |
 | `violatingWitnesses` | `def` | 有限な測定 witness list から、`bad` predicate を満たす阻害証人を取り出す。 | `defined only` |
 | `violationCount` | `def` | `violatingWitnesses` の長さとして measured obstruction count を数える。 | `defined only` |
+| `WitnessUniverseIncluded` | `def` | 一方の有限 measured witness universe が他方に含まれる set-like inclusion 条件。重複を同一視しないため count 単調性は別前提を要する。 | `defined only` |
+| `MeasuredViolationExists` | `def` | 測定 universe 内に `bad` witness が存在すること。 | `defined only` |
+| `NoMeasuredViolation` | `def` | 測定 universe 内に `bad` witness が存在しないこと。 | `defined only` |
 | `mem_violatingWitnesses_iff` | `theorem` | `violatingWitnesses` の membership が、測定対象であり `bad` を満たすことと一致する。 | `proved` |
 | `violationCount_eq_zero_iff_forall_not_bad` | `theorem` | `violationCount bad xs = 0` と、すべての測定 witness が `bad` でないことの同値。 | `proved` |
+| `mem_violatingWitnesses_of_witnessUniverseIncluded` | `theorem` | measured universe inclusion 下で、small 側の violating witness membership が large 側へ保存される。 | `proved` |
+| `measuredViolationExists_of_witnessUniverseIncluded` | `theorem` | measured universe inclusion 下で、witness existence が small から large へ保存される。 | `proved` |
+| `noMeasuredViolation_of_witnessUniverseIncluded` | `theorem` | large 側に measured violation がなければ、included な small 側にも measured violation がない。 | `proved` |
+| `violationCount_eq_zero_of_witnessUniverseIncluded` | `theorem` | large 側の measured violation count 0 が、included な small 側の count 0 を含意する。 | `proved` |
 | `CoversWitnesses` | `def` | required witness がすべて measured list に含まれる一方向 coverage 条件。 | `defined only` |
 | `RequiredByList` | `def` | 有限 list を、その list が列挙する required witness predicate として使う。 | `defined only` |
 | `coversWitnesses_of_requiredByList_subset` | `theorem` | required list が measured list に含まれるなら、finite required universe の coverage が得られる。 | `proved` |
