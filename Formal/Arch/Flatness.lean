@@ -392,6 +392,105 @@ def ExtensionCoverageComplete
     src ∈ U.components ∧ dst ∈ U.components) ∧
   X.coverageAssumptions
 
+/--
+Selected witnesses for failure of `ExtensionCoverageComplete`.
+
+These witnesses are coverage-only diagnostics: they record missing measured
+components, uncovered extended edge endpoints, or failure of the declared
+coverage assumptions. They are intentionally separate from
+`StaticExtensionWitness`, which diagnoses static split law failures.
+-/
+inductive ExtensionCoverageWitness
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended) where
+  | missingCoreEmbedding (c : Core)
+      (missing : X.coreEmbedding c ∉ U.components)
+  | missingFeatureEmbedding (f : Feature)
+      (missing : X.featureEmbedding f ∉ U.components)
+  | uncoveredExtendedEdge (src dst : Extended)
+      (extendedEdge : X.extended.edge src dst)
+      (missingEndpoint : src ∉ U.components ∨ dst ∉ U.components)
+  | coverageAssumptionsFailure
+      (missingCoverageAssumptions : ¬ X.coverageAssumptions)
+
+/-- Selected coverage witness existence, separate from static split diagnostics. -/
+def ExtensionCoverageWitnessExists
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended) : Prop :=
+  Nonempty (ExtensionCoverageWitness X U)
+
+/--
+Coverage/exactness premise for the selected extension-coverage diagnostic
+universe.
+
+This is bounded to the supplied `ComponentUniverse`. It does not claim extractor
+completeness, global split completeness, or runtime / semantic flatness.
+-/
+def ExtensionCoverageFailureCoverage
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended) : Prop :=
+  ¬ ExtensionCoverageComplete X U -> ExtensionCoverageWitnessExists X U
+
+/--
+A selected coverage witness is sound: it refutes the corresponding complete
+extension coverage package.
+-/
+theorem not_extensionCoverageComplete_of_extensionCoverageWitness
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {U : ComponentUniverse X.extended}
+    (witness : ExtensionCoverageWitness X U) :
+    ¬ ExtensionCoverageComplete X U := by
+  intro hCoverage
+  cases witness with
+  | missingCoreEmbedding c missing =>
+      exact missing (hCoverage.1 c)
+  | missingFeatureEmbedding f missing =>
+      exact missing (hCoverage.2.1 f)
+  | uncoveredExtendedEdge src dst extendedEdge missingEndpoint =>
+      have hEndpoints := hCoverage.2.2.1 extendedEdge
+      cases missingEndpoint with
+      | inl missingSrc =>
+          exact missingSrc hEndpoints.1
+      | inr missingDst =>
+          exact missingDst hEndpoints.2
+  | coverageAssumptionsFailure missingCoverageAssumptions =>
+      exact missingCoverageAssumptions hCoverage.2.2.2
+
+/-- Soundness-only form for selected extension-coverage witness existence. -/
+theorem not_extensionCoverageComplete_of_extensionCoverageWitnessExists
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {U : ComponentUniverse X.extended}
+    (hWitness : ExtensionCoverageWitnessExists X U) :
+    ¬ ExtensionCoverageComplete X U := by
+  rcases hWitness with ⟨witness⟩
+  exact not_extensionCoverageComplete_of_extensionCoverageWitness witness
+
+/--
+Bounded completeness: under the selected coverage/exactness premise, a failure
+of `ExtensionCoverageComplete` has a selected coverage witness.
+-/
+theorem extensionCoverageWitnessExists_of_not_extensionCoverageComplete
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {U : ComponentUniverse X.extended}
+    (hFailureCoverage : ExtensionCoverageFailureCoverage X U)
+    (hNonCoverage : ¬ ExtensionCoverageComplete X U) :
+    ExtensionCoverageWitnessExists X U :=
+  hFailureCoverage hNonCoverage
+
+/--
+Soundness plus bounded completeness for the selected extension-coverage witness
+universe.
+-/
+theorem extensionCoverageWitnessExists_iff_not_extensionCoverageComplete
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {U : ComponentUniverse X.extended}
+    (hFailureCoverage : ExtensionCoverageFailureCoverage X U) :
+    ExtensionCoverageWitnessExists X U ↔ ¬ ExtensionCoverageComplete X U := by
+  constructor
+  · exact not_extensionCoverageComplete_of_extensionCoverageWitnessExists
+  · exact extensionCoverageWitnessExists_of_not_extensionCoverageComplete
+      hFailureCoverage
+
 /-- Coverage for the static split-extension wrapper. -/
 def StaticSplitExtensionCoverageComplete
     (S : StaticSplitExtension Core Feature Extended FeatureView)
