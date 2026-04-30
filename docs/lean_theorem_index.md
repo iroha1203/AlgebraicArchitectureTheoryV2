@@ -814,6 +814,40 @@ coupon / discount valuation は selected rounding-order residual に相対化さ
 global semantic completeness、finite universe 外の witness coverage、未測定 semantic axis の
 zero 性、実コード extractor completeness は主張しない。
 
+## Static / Semantic Counterexample
+
+File: `Formal/Arch/StaticSemanticCounterexample.lean`
+
+Issue [#348](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/348)
+の canonical counterexample は、repaired coupon static skeleton で selected static split
+と bounded static flatness が成立しても、coupon / discount の selected semantic
+diagram obstruction が残り、`SemanticFlatWithin` や global `ArchitectureFlat` は
+結論できないことを Lean theorem として固定する。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `StaticSemanticCounterexample.SelectedCouponOrder` | `inductive` | coupon-first / discount-first の selected semantic order expression。 | `defined only` |
+| `StaticSemanticCounterexample.selectedCouponOrderSemantics` | `def` | 既存 `CouponDiscountExample.roundingTrace` を selected semantic expression の観測値として使う。 | `defined only` |
+| `StaticSemanticCounterexample.selectedCouponDiscountDiagram` | `def` | coupon-first と discount-first を比較する selected required semantic diagram。 | `defined only` |
+| `StaticSemanticCounterexample.selectedCouponDiscount_semanticCoverage` | `theorem` | selected diagram が measured semantic universe に cover されていることを示す。 | `proved` |
+| `StaticSemanticCounterexample.selectedCouponDiscount_not_commutes` | `theorem` | selected coupon / discount diagram が commute しないことを、`21 ≠ 43` の trace 計算から示す。 | `proved` |
+| `StaticSemanticCounterexample.repairedUniverse` | `def` | repaired coupon static graph 用の finite `ComponentUniverse`。 | `defined only` |
+| `StaticSemanticCounterexample.repaired_strictLayering` | `theorem` | repaired coupon static graph が strict layer assignment を持つことを示す。 | `proved` |
+| `StaticSemanticCounterexample.repaired_walkAcyclic` | `theorem` | strict layering から repaired coupon static graph の `WalkAcyclic` を得る。 | `proved` |
+| `StaticSemanticCounterexample.canonicalFlatnessModel` | `def` | repaired static graph と selected coupon / discount semantic diagram を束ねた flatness model。 | `defined only` |
+| `StaticSemanticCounterexample.repaired_staticSplit` | `theorem` | repaired coupon extension が selected static split を満たすことを再公開する。 | `proved` |
+| `StaticSemanticCounterexample.canonical_staticFlatWithin` | `theorem` | canonical model が finite universe 相対で `StaticFlatWithin` を満たすことを示す。 | `proved` |
+| `StaticSemanticCounterexample.canonical_not_semanticFlatWithin` | `theorem` | selected semantic obstruction により `SemanticFlatWithin` が成り立たないことを示す。 | `proved` |
+| `StaticSemanticCounterexample.canonical_not_architectureFlatWithin` | `theorem` | repaired universe 相対の `ArchitectureFlatWithin` が成り立たないことを示す。 | `proved` |
+| `StaticSemanticCounterexample.canonical_not_architectureFlat` | `theorem` | global completion predicate `ArchitectureFlat` が成り立たないことを示す。 | `proved` |
+| `StaticSemanticCounterexample.staticFlat_with_semanticObstruction` | `theorem` | `StaticFlatWithin` と `¬ SemanticFlatWithin` を同時に持つ counterexample package。 | `proved` |
+| `StaticSemanticCounterexample.staticFlat_not_architectureFlat` | `theorem` | `StaticFlatWithin` と `¬ ArchitectureFlat` を同時に持つ counterexample package。 | `proved` |
+
+Non-conclusions: この counterexample は selected repaired static skeleton と selected
+rounding-order semantic diagram に相対化される。static split / static flatness から
+runtime flatness、semantic flatness、global `ArchitectureFlat`、または extractor
+completeness は結論しない。
+
 ## Flatness
 
 File: `Formal/Arch/Flatness.lean`
