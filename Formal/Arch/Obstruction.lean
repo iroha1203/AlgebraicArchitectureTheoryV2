@@ -18,6 +18,26 @@ def violationCount {W : Type u} (bad : W -> Prop) [DecidablePred bad]
   (violatingWitnesses bad xs).length
 
 /--
+One finite measured witness universe is included in another.
+
+This is set-like inclusion over the measured list. It does not identify or
+deduplicate witnesses, so duplicate-sensitive count monotonicity needs stronger
+list-shape assumptions and is not encoded by this predicate.
+-/
+def WitnessUniverseIncluded {W : Type u} (small large : List W) : Prop :=
+  ∀ w, w ∈ small -> w ∈ large
+
+/-- There is a measured witness satisfying the obstruction predicate. -/
+def MeasuredViolationExists {W : Type u} (bad : W -> Prop)
+    (xs : List W) : Prop :=
+  ∃ w, w ∈ xs ∧ bad w
+
+/-- No measured witness in the supplied universe satisfies the obstruction predicate. -/
+def NoMeasuredViolation {W : Type u} (bad : W -> Prop)
+    (xs : List W) : Prop :=
+  ∀ w, w ∈ xs -> ¬ bad w
+
+/--
 Membership in the violating witness list is exactly membership in the measured
 universe plus the obstruction predicate.
 -/
@@ -52,6 +72,57 @@ theorem violationCount_eq_zero_iff_forall_not_bad {W : Type u}
           intro w hw
           exact hNoBad w (by simp [hw])
         simp [hx, ih hxs]
+
+/--
+If the measured universe is enlarged, an existing bad witness remains measured.
+-/
+theorem mem_violatingWitnesses_of_witnessUniverseIncluded {W : Type u}
+    {bad : W -> Prop} [DecidablePred bad] {small large : List W}
+    (hIncluded : WitnessUniverseIncluded small large) {w : W}
+    (hMem : w ∈ violatingWitnesses bad small) :
+    w ∈ violatingWitnesses bad large := by
+  rw [mem_violatingWitnesses_iff] at hMem ⊢
+  exact ⟨hIncluded w hMem.1, hMem.2⟩
+
+/--
+Witness existence is monotone under measured-universe enlargement.
+-/
+theorem measuredViolationExists_of_witnessUniverseIncluded {W : Type u}
+    {bad : W -> Prop} {small large : List W}
+    (hIncluded : WitnessUniverseIncluded small large)
+    (hExists : MeasuredViolationExists bad small) :
+    MeasuredViolationExists bad large := by
+  rcases hExists with ⟨w, hMem, hBad⟩
+  exact ⟨w, hIncluded w hMem, hBad⟩
+
+/--
+Absence of measured violations is contravariantly preserved by inclusion:
+if the larger measured universe has no bad witness, neither does the smaller
+one.
+-/
+theorem noMeasuredViolation_of_witnessUniverseIncluded {W : Type u}
+    {bad : W -> Prop} {small large : List W}
+    (hIncluded : WitnessUniverseIncluded small large)
+    (hNoLarge : NoMeasuredViolation bad large) :
+    NoMeasuredViolation bad small := by
+  intro w hMem hBad
+  exact hNoLarge w (hIncluded w hMem) hBad
+
+/--
+Zero measured violation count is contravariantly preserved by inclusion.
+
+The direction is intentionally from larger zero to smaller zero. The converse
+would require additional coverage assumptions and is not a global completeness
+claim.
+-/
+theorem violationCount_eq_zero_of_witnessUniverseIncluded {W : Type u}
+    {bad : W -> Prop} [DecidablePred bad] {small large : List W}
+    (hIncluded : WitnessUniverseIncluded small large)
+    (hZeroLarge : violationCount bad large = 0) :
+    violationCount bad small = 0 := by
+  exact violationCount_eq_zero_iff_forall_not_bad.mpr
+    (noMeasuredViolation_of_witnessUniverseIncluded hIncluded
+      (violationCount_eq_zero_iff_forall_not_bad.mp hZeroLarge))
 
 /--
 The measured witness list covers every required witness.
