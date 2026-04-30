@@ -299,7 +299,7 @@ preservation.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
-| `ArchitectureOperationKind` | `inductive` | Phase A3 の最初の対象である `compose`, `replace`, `protect`, `reverse`, `repair` の operation family tag。 | `defined only` |
+| `ArchitectureOperationKind` | `inductive` | 第3章 catalog の `compose`, `refine`, `abstract`, `replace`, `split`, `merge`, `isolate`, `protect`, `migrate`, `reverse`, `contract`, `repair`, `synthesize` を表す operation family tag。 | `defined only` |
 | `ArchitectureOperationKind.label` | `def` | theorem package や docs から参照するための operation tag label。 | `defined only` |
 | `ProofObligation` | `structure` | formal universe、required laws、invariant family、witness universe、coverage / exactness、operation precondition、conclusion、non-conclusions を束ねる最小 schema。 | `defined only` |
 | `ProofObligation.AssumptionsHold` | `def` | proof obligation の visible assumptions をまとめる。 | `defined only` |
@@ -308,10 +308,18 @@ preservation.
 | `ProofObligation.discharged_of_conclusion` | `theorem` | conclusion が直接与えられれば obligation は discharge できる。 | `proved` |
 | `OperationProofObligation` | `structure` | operation kind ごとに生成される proof obligation、precondition、non-conclusion を束ねる。 | `defined only` |
 | `OperationProofObligation.compose` | `def` | `compose` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.refine` | `def` | `refine` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.abstract` | `def` | `abstract` operation 用 proof-obligation package constructor。 | `defined only` |
 | `OperationProofObligation.replace` | `def` | `replace` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.split` | `def` | `split` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.merge` | `def` | `merge` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.isolate` | `def` | `isolate` operation 用 proof-obligation package constructor。 | `defined only` |
 | `OperationProofObligation.protect` | `def` | `protect` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.migrate` | `def` | `migrate` operation 用 proof-obligation package constructor。 | `defined only` |
 | `OperationProofObligation.reverse` | `def` | `reverse` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.contract` | `def` | `contract` operation 用 proof-obligation package constructor。 | `defined only` |
 | `OperationProofObligation.repair` | `def` | `repair` operation 用 proof-obligation package constructor。 | `defined only` |
+| `OperationProofObligation.synthesize` | `def` | `synthesize` operation 用 proof-obligation package constructor。 | `defined only` |
 | `ArchitectureOperation` | `structure` | operation kind、source / target state、precondition、生成 proof obligation、operation tag 一致、前後 witness family、後段 witness から前段 witness への mapping と soundness field を束ねる。 | `defined only` |
 | `ArchitectureOperation.GeneratedObligation` | `def` | operation に紐づく generated proof obligation を取り出す。 | `defined only` |
 | `ArchitectureOperation.generatedObligation_kind` | `theorem` | operation と generated proof obligation の operation tag が一致することを取り出す。 | `proved` |
