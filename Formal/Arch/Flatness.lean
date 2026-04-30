@@ -595,6 +595,131 @@ def LawfulExtensionFlatnessModel
   measuredSemantic := measuredSemantic
 
 /--
+Recorded non-conclusions for the public split feature extension package.
+
+This marker keeps the bounded package from being read as global flatness,
+extractor completeness, or automatic runtime / semantic completeness.
+-/
+def SplitFeatureExtensionWithinNonConclusions
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    (_U : ComponentUniverse S.extension.extended) : Prop :=
+  True
+
+/--
+Public bounded package for a split feature extension within a selected
+component universe.
+
+The package is intentionally a thin wrapper around existing static split,
+coverage, and runtime / semantic evidence. It records all assumptions needed
+to conclude `ArchitectureFlatWithin` for the induced flatness model, while
+leaving global `ArchitectureFlat`, extractor completeness, and unmeasured
+runtime / semantic axes outside the conclusion.
+-/
+structure SplitFeatureExtensionWithin
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    (runtime : RuntimeDependencyGraph Extended)
+    (projection : InterfaceProjection Extended A)
+    (abstractStatic : AbstractGraph A)
+    (staticObservation : Observation Extended StaticObs)
+    (boundaryAllowed abstractionAllowed runtimeAllowed : Extended -> Extended -> Prop)
+    (semantic : Semantics SemanticExpr SemanticObs)
+    (requiredSemantic : RequiredDiagram SemanticExpr -> Prop)
+    (measuredSemantic : List (RequiredDiagram SemanticExpr))
+    (U : ComponentUniverse S.extension.extended) : Prop where
+  extensionCoverage : StaticSplitExtensionCoverageComplete S U
+  boundaryPolicyCompatible :
+    ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+      boundaryAllowed src dst
+  abstractionPolicyCompatible :
+    ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+      abstractionAllowed src dst
+  walkAcyclic : WalkAcyclic S.extension.extended
+  projectionSound : ProjectionSound S.extension.extended projection abstractStatic
+  lspCompatible : LSPCompatible projection staticObservation
+  runtimeCoverage :
+    RuntimeCoverageComplete
+      (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+        boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic
+        measuredSemantic)
+      U
+  semanticCoverage : CoversRequired requiredSemantic measuredSemantic
+  runtimeSemanticPreservation :
+    RuntimeSemanticSplitPreservation
+      (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+        boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic
+        measuredSemantic)
+      U
+  recordsNonConclusions : SplitFeatureExtensionWithinNonConclusions S U
+
+/-- Constructor-style entrypoint for the public bounded split package. -/
+def splitFeatureExtensionWithin_of_runtimeSemanticSplitPreservation
+    (S : StaticSplitExtension Core Feature Extended FeatureView)
+    {runtime : RuntimeDependencyGraph Extended}
+    {projection : InterfaceProjection Extended A}
+    {abstractStatic : AbstractGraph A}
+    {staticObservation : Observation Extended StaticObs}
+    {boundaryAllowed abstractionAllowed runtimeAllowed : Extended -> Extended -> Prop}
+    {semantic : Semantics SemanticExpr SemanticObs}
+    {requiredSemantic : RequiredDiagram SemanticExpr -> Prop}
+    {measuredSemantic : List (RequiredDiagram SemanticExpr)}
+    (U : ComponentUniverse S.extension.extended)
+    (hExtensionCoverage : StaticSplitExtensionCoverageComplete S U)
+    (hBoundaryAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        boundaryAllowed src dst)
+    (hAbstractionAllowed :
+      ∀ {src dst : Extended}, S.extendedAllowedStaticEdge src dst ->
+        abstractionAllowed src dst)
+    (hWalkAcyclic : WalkAcyclic S.extension.extended)
+    (hProjectionSound : ProjectionSound S.extension.extended projection abstractStatic)
+    (hLSP : LSPCompatible projection staticObservation)
+    (hRuntimeCoverage :
+      RuntimeCoverageComplete
+        (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+          boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic
+          measuredSemantic)
+        U)
+    (hSemanticCoverage : CoversRequired requiredSemantic measuredSemantic)
+    (hRuntimeSemantic :
+      RuntimeSemanticSplitPreservation
+        (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+          boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic
+          measuredSemantic)
+        U) :
+    SplitFeatureExtensionWithin S runtime projection abstractStatic staticObservation
+      boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic measuredSemantic
+      U where
+  extensionCoverage := hExtensionCoverage
+  boundaryPolicyCompatible := hBoundaryAllowed
+  abstractionPolicyCompatible := hAbstractionAllowed
+  walkAcyclic := hWalkAcyclic
+  projectionSound := hProjectionSound
+  lspCompatible := hLSP
+  runtimeCoverage := hRuntimeCoverage
+  semanticCoverage := hSemanticCoverage
+  runtimeSemanticPreservation := hRuntimeSemantic
+  recordsNonConclusions := trivial
+
+/-- The public bounded split package records its non-conclusions explicitly. -/
+theorem splitFeatureExtensionWithin_recordsNonConclusions
+    {S : StaticSplitExtension Core Feature Extended FeatureView}
+    {runtime : RuntimeDependencyGraph Extended}
+    {projection : InterfaceProjection Extended A}
+    {abstractStatic : AbstractGraph A}
+    {staticObservation : Observation Extended StaticObs}
+    {boundaryAllowed abstractionAllowed runtimeAllowed : Extended -> Extended -> Prop}
+    {semantic : Semantics SemanticExpr SemanticObs}
+    {requiredSemantic : RequiredDiagram SemanticExpr -> Prop}
+    {measuredSemantic : List (RequiredDiagram SemanticExpr)}
+    {U : ComponentUniverse S.extension.extended}
+    (hSplit :
+      SplitFeatureExtensionWithin S runtime projection abstractStatic staticObservation
+        boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic measuredSemantic
+        U) :
+    SplitFeatureExtensionWithinNonConclusions S U :=
+  hSplit.recordsNonConclusions
+
+/--
 Bounded flatness preservation for a lawful static split extension.
 
 This corollary is deliberately coverage-aware: extension coverage, runtime
@@ -735,5 +860,54 @@ theorem LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation
     hSemanticCoverage
     (semanticFlatWithin_of_featureDiagramsCommute
       (X := X) hSemanticCoverage hRuntimeSemantic.featureDiagramsCommute)
+
+/--
+Public bounded preservation theorem for `SplitFeatureExtensionWithin`.
+
+This is an alias-style theorem package: it reuses
+`LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` and
+therefore does not add new global completeness assumptions.
+-/
+theorem architectureFlatWithin_of_splitFeatureExtensionWithin
+    {S : StaticSplitExtension Core Feature Extended FeatureView}
+    {runtime : RuntimeDependencyGraph Extended}
+    {projection : InterfaceProjection Extended A}
+    {abstractStatic : AbstractGraph A}
+    {staticObservation : Observation Extended StaticObs}
+    {boundaryAllowed abstractionAllowed runtimeAllowed : Extended -> Extended -> Prop}
+    {semantic : Semantics SemanticExpr SemanticObs}
+    {requiredSemantic : RequiredDiagram SemanticExpr -> Prop}
+    {measuredSemantic : List (RequiredDiagram SemanticExpr)}
+    {U : ComponentUniverse S.extension.extended}
+    (hSplit :
+      SplitFeatureExtensionWithin S runtime projection abstractStatic staticObservation
+        boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic measuredSemantic
+        U) :
+    ArchitectureFlatWithin
+      (LawfulExtensionFlatnessModel S runtime projection abstractStatic staticObservation
+        boundaryAllowed abstractionAllowed runtimeAllowed semantic requiredSemantic measuredSemantic)
+      U :=
+  LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation
+    (S := S)
+    (runtime := runtime)
+    (projection := projection)
+    (abstractStatic := abstractStatic)
+    (staticObservation := staticObservation)
+    (boundaryAllowed := boundaryAllowed)
+    (abstractionAllowed := abstractionAllowed)
+    (runtimeAllowed := runtimeAllowed)
+    (semantic := semantic)
+    (requiredSemantic := requiredSemantic)
+    (measuredSemantic := measuredSemantic)
+    U
+    hSplit.extensionCoverage
+    hSplit.boundaryPolicyCompatible
+    hSplit.abstractionPolicyCompatible
+    hSplit.walkAcyclic
+    hSplit.projectionSound
+    hSplit.lspCompatible
+    hSplit.runtimeCoverage
+    hSplit.semanticCoverage
+    hSplit.runtimeSemanticPreservation
 
 end Formal.Arch
