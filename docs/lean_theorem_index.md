@@ -301,6 +301,8 @@ preservation.
 | --- | --- | --- | --- |
 | `ArchitectureOperationKind` | `inductive` | 第3章 catalog の `compose`, `refine`, `abstract`, `replace`, `split`, `merge`, `isolate`, `protect`, `migrate`, `reverse`, `contract`, `repair`, `synthesize` を表す operation family tag。 | `defined only` |
 | `ArchitectureOperationKind.label` | `def` | theorem package や docs から参照するための operation tag label。 | `defined only` |
+| `ArchitectureOperationRole` | `inductive` | 第3章の Preserve / Reflect / Improve / Localize / Translate / Transfer / Assume に対応する operation role tag。 | `defined only` |
+| `ArchitectureOperationRole.label` | `def` | theorem package や docs から参照するための operation role label。 | `defined only` |
 | `ProofObligation` | `structure` | formal universe、required laws、invariant family、witness universe、coverage / exactness、operation precondition、conclusion、non-conclusions を束ねる最小 schema。 | `defined only` |
 | `ProofObligation.AssumptionsHold` | `def` | proof obligation の visible assumptions をまとめる。 | `defined only` |
 | `ProofObligation.Discharged` | `def` | visible assumptions から conclusion が得られること。 | `defined only` |
@@ -326,6 +328,21 @@ preservation.
 | `ArchitectureOperation.PreconditionsHold` | `def` | operation と generated obligation の visible precondition をまとめる。 | `defined only` |
 | `ArchitectureOperation.witnessMapping_sound` | `theorem` | post-operation witness から pre-operation witness への片方向 mapping soundness を取り出す。 | `proved` |
 | `ArchitectureOperation.exists_sourceWitness_of_targetWitness` | `theorem` | post-operation witness があれば、対応する pre-operation witness が存在する。 | `proved` |
+| `OperationRoleSchema` | `structure` | selected `ArchitectureOperation` に role tag、selected invariant、role-specific assumptions、bounded conclusion、non-conclusion を付与する schema。 | `defined only` |
+| `OperationRoleSchema.operationKind` | `def` | role package が参照する operation kind を取り出す。 | `defined only` |
+| `OperationRoleSchema.HasRole` | `def` | role package が特定 role tag を持つことを predicate として表す。 | `defined only` |
+| `OperationRoleSchema.AssumptionsHold` | `def` | operation precondition と role-specific assumptions をまとめる。 | `defined only` |
+| `OperationRoleSchema.Discharged` | `def` | visible assumptions から bounded role conclusion が得られること。 | `defined only` |
+| `OperationRoleSchema.RecordsNonConclusions` | `def` | role package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `OperationRoleSchema.preserve` | `def` | Preserve role package constructor。 | `defined only` |
+| `OperationRoleSchema.reflect` | `def` | Reflect role package constructor。 | `defined only` |
+| `OperationRoleSchema.improve` | `def` | Improve role package constructor。 | `defined only` |
+| `OperationRoleSchema.localize` | `def` | Localize role package constructor。 | `defined only` |
+| `OperationRoleSchema.translate` | `def` | Translate role package constructor。 | `defined only` |
+| `OperationRoleSchema.transfer` | `def` | Transfer role package constructor。 | `defined only` |
+| `OperationRoleSchema.assume` | `def` | Assume role package constructor。 | `defined only` |
+| `OperationRoleSchema.discharged_of_conclusion` | `theorem` | bounded role conclusion が直接与えられれば role package は discharge できる。 | `proved` |
+| `OperationRoleSchema.generatedObligation_kind` | `theorem` | role package が参照する operation と generated proof obligation の operation tag が一致する。 | `proved` |
 
 ## Concrete Graph Operation Kernel
 
