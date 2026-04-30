@@ -236,6 +236,15 @@ File: `Formal/Arch/FeatureExtension.lean`
 | `SelectedStaticSplitExtension` | `structure` | 固定された feature extension と policy parameters に対し、静的 split の4条件を unbundled predicate として束ねる。runtime / semantic / extractor completeness は含めない。 | `defined only` |
 | `selectedStaticSplitExtension_of_staticSplitFeatureExtension` | `theorem` | 既存の bundled `StaticSplitFeatureExtension` から selected static split predicate を得る。 | `proved` |
 | `staticSplitFeatureExtension_of_selectedStaticSplitExtension` | `def` | selected static split predicate を既存の bundled schema に戻す。 | `defined only` |
+| `identityFeatureExtension` | `def` | no-feature の identity extension。extended graph は元の core graph と同一で、feature component を追加しない。 | `defined only` |
+| `identityFeatureExtension_coreEdgesPreserved` | `theorem` | identity extension では core edge preservation が反射的に成立する。 | `proved` |
+| `identityFeatureExtension_not_crossesFeatureCoreBoundary` | `theorem` | no-feature identity extension では feature/core boundary crossing が存在しない。 | `proved` |
+| `identityStaticSplitFeatureExtension` | `def` | 既存 graph が selected static policy を満たす前提から identity static split package を構成する。 | `defined only` |
+| `selectedStaticSplitExtension_identity` | `theorem` | identity static split package から selected static split predicate を得る。 | `proved` |
+| `composeFeatureExtension` | `def` | 二段の feature extension を、第一段の extended component を第二段の core として読む合成 schema。 | `defined only` |
+| `StaticSplitCompositionAssumptions` | `structure` | static split composition に必要な graph compatibility、interface factorization、policy transport 前提を束ねる。 | `defined only` |
+| `staticSplitFeatureExtension_compose` | `def` | 明示された compatibility 前提の下で、二段の static split extension から合成 static split package を構成する。 | `defined only` |
+| `selectedStaticSplitExtension_compose` | `theorem` | 明示された compatibility 前提の下で、合成 extension が selected static split predicate を満たす。 | `proved` |
 | `StaticExtensionWitness` | `inductive` | core edge preservation、declared interface factorization、no-new-forbidden-edge、embedding policy preservation の失敗を表す selected static diagnostic witness family。 | `defined only` |
 | `StaticExtensionWitnessExists` | `def` | selected static diagnostic witness が存在すること。 | `defined only` |
 | `StaticSplitFailureCoverage` | `def` | selected static split 失敗が selected witness family で cover されるという bounded coverage / exactness 前提。global completeness は主張しない。 | `defined only` |
@@ -243,6 +252,11 @@ File: `Formal/Arch/FeatureExtension.lean`
 | `not_selectedStaticSplitExtension_of_staticExtensionWitnessExists` | `theorem` | selected static witness の存在から selected static split predicate の不成立を得る。 | `proved` |
 | `staticExtensionWitnessExists_of_not_selectedStaticSplitExtension` | `theorem` | `StaticSplitFailureCoverage` 前提の下で、selected static split predicate の失敗から selected witness の存在を得る bounded completeness theorem。 | `proved` |
 | `staticExtensionWitnessExists_iff_not_selectedStaticSplitExtension` | `theorem` | selected coverage / exactness 前提に相対化された、selected witness 存在と selected static split 失敗の同値。 | `proved` |
+
+Non-conclusions: `staticSplitFeatureExtension_compose` は graph compatibility、
+interface factorization、policy transport を明示前提とする bounded な composition law である。
+runtime flatness、semantic flatness、global `ArchitectureFlat`、extractor completeness、
+無条件の global composition law は主張しない。
 
 File: `Formal/Arch/FeatureExtensionExamples.lean`
 
