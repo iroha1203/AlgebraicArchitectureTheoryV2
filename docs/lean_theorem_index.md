@@ -942,6 +942,13 @@ File: `Formal/Arch/Flatness.lean`
 | `GlobalFlatCertificate.nonConclusions_recorded` | `theorem` | certificate が記録する non-conclusions を取り出す。 | `proved` |
 | `globalFlat_of_within_exhaustive` | `theorem` | `ArchitectureFlatWithin` を、exhaustive coverage / exact observation / recorded non-conclusions 前提つきで `ArchitectureFlat` へ上げる completion corollary。 | `proved` |
 | `ExtensionCoverageComplete` | `def` | feature extension の core embedding、feature embedding、extended static edges、declared coverage assumptions が supplied extended universe で cover されること。 | `defined only` |
+| `ExtensionCoverageWitness` | `inductive` | `ExtensionCoverageComplete` の失敗を、core embedding 未測定、feature embedding 未測定、extended edge endpoint 未測定、declared coverage assumption failure として表す selected coverage diagnostic witness family。`StaticExtensionWitness` とは別の coverage-only 診断である。 | `defined only` |
+| `ExtensionCoverageWitnessExists` | `def` | selected extension-coverage witness が存在すること。 | `defined only` |
+| `ExtensionCoverageFailureCoverage` | `def` | `ExtensionCoverageComplete` 失敗が selected coverage witness family で cover されるという bounded coverage / exactness 前提。extractor completeness や runtime / semantic flatness は主張しない。 | `defined only` |
+| `not_extensionCoverageComplete_of_extensionCoverageWitness` | `theorem` | selected coverage witness が対応する `ExtensionCoverageComplete` を反証する soundness theorem。 | `proved` |
+| `not_extensionCoverageComplete_of_extensionCoverageWitnessExists` | `theorem` | selected coverage witness の存在から `ExtensionCoverageComplete` の不成立を得る。 | `proved` |
+| `extensionCoverageWitnessExists_of_not_extensionCoverageComplete` | `theorem` | `ExtensionCoverageFailureCoverage` 前提の下で、`ExtensionCoverageComplete` の失敗から selected coverage witness の存在を得る bounded completeness theorem。 | `proved` |
+| `extensionCoverageWitnessExists_iff_not_extensionCoverageComplete` | `theorem` | selected coverage / exactness 前提に相対化された、selected coverage witness 存在と `ExtensionCoverageComplete` 失敗の同値。 | `proved` |
 | `StaticSplitExtensionCoverageComplete` | `def` | `StaticSplitExtension` 用の coverage package。 | `defined only` |
 | `coreEmbedding_mem_of_extensionCoverageComplete` | `theorem` | complete extension coverage から core embedding の universe membership を得る。 | `proved` |
 | `featureEmbedding_mem_of_extensionCoverageComplete` | `theorem` | complete extension coverage から feature embedding の universe membership を得る。 | `proved` |
