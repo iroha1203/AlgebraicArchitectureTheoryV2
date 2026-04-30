@@ -225,6 +225,20 @@ Issue [#243](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 first-class feature addition schema、coverage-aware flatness、有限 path calculus、
 semantic diagram filler の順に、Lean 上で参照できる主要 API を索引する。
 
+FeatureExtension 周辺の公開 API は、責務ごとに次の module へ分離している。
+`FeatureExtension.lean` は first-class feature addition と静的 split predicate、
+`SplitExtensionLifting.lean` は observation-relative な featureView / section law、
+`Flatness.lean` は extension coverage witness と bounded flatness preservation package
+を担当する。この分離により、static split、feature observation、coverage failure、
+runtime / semantic split evidence を混同しない。
+
+| 設計語彙 | Lean 入口 | Status | 境界 |
+| --- | --- | --- | --- |
+| Static split feature extension | `StaticSplitFeatureExtension`, `SelectedStaticSplitExtension`, `StaticExtensionWitness` | `defined only` / `proved` | selected static split law とその witness に限る。runtime / semantic flatness、extractor completeness は主張しない。 |
+| featureView observation law | `FeatureViewSound`, `FeatureObservationCoverage`, `FeatureViewSectionPackage` | `defined only` / `proved` | selected observation model に相対化する。strict equality、全 component の一意分解、global split completeness は主張しない。 |
+| Extension coverage failure | `ExtensionCoverageWitness`, `ExtensionCoverageFailureCoverage` | `defined only` / `proved` | supplied `ComponentUniverse` 上の coverage-only 診断であり、static split law failure とは別に扱う。 |
+| SplitFeatureExtensionWithin preservation package | `SplitFeatureExtensionWithin`, `architectureFlatWithin_of_splitFeatureExtensionWithin` | `defined only` / `proved` | extension coverage、static side conditions、runtime / semantic split evidence を明示前提にした bounded `ArchitectureFlatWithin` への入口であり、global `ArchitectureFlat` へは昇格しない。 |
+
 File: `Formal/Arch/FeatureExtension.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
