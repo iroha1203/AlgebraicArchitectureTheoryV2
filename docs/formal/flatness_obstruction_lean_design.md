@@ -559,13 +559,13 @@ extractor completeness と empirical hypotheses は含めない。
   [Issue #224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/224)。
   `nilpotencyIndex` は `some k` として最初の zero adjacency power を返す
   executable index であり、`RequiredAxesAvailableAndZero` の zero-axis ではない。
-- `defined only` / `future proof obligation` / `empirical hypothesis`: runtime / empirical 系の required-law
+- `defined only` / `proved` / `empirical hypothesis`: runtime / empirical 系の required-law
   境界を固定する。`runtimePropagation` は 0/1 `RuntimeDependencyGraph` 上の
   exposure radius として定義済みの diagnostic axis であり、
   `ArchitectureLawful` や `RequiredSignatureAxesZero` の required zero-axis ではない。
-  0/1 graph 上の runtime zero bridge は future proof obligation とし、
-  extractor completeness と incident / repair cost との関係は tooling / empirical
-  protocol 側に残す,
+  0/1 graph 上の runtime zero bridge は proved bridge として扱い、
+  policy-aware runtime exposure、blast radius、extractor completeness と
+  incident / repair cost との関係は tooling / empirical protocol 側に残す,
   [Issue #225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/225)。
 - `defined only` / `proved`: static structural core の QED を読むための theorem package を
   `ArchitectureZeroCurvatureTheoremPackage` として追加し、current law-universe
