@@ -151,6 +151,13 @@ File: `Formal/Arch/Projection.lean`
 | `projectionComplete_of_projectionExact` | `theorem` | exact projection から completeness を得る。 | `proved` |
 | `projectedConcreteEdge_of_projectionComplete` | `theorem` | completeness から抽象 edge の具体 edge witness を得る。 | `proved` |
 | `abstractEdge_iff_projectedConcreteEdge_of_projectionExact` | `theorem` | exact projection の下で抽象 edge と投影された具体 edge witness が同値。 | `proved` |
+| `strongDIPCompatible_of_projectionExact_representativeStable` | `theorem` | `ProjectionExact` と `RepresentativeStable` を bundled `StrongDIPCompatible` へまとめる。 | `proved` |
+| `projectionExact_of_strongDIPCompatible` | `theorem` | `StrongDIPCompatible` から exact projection を取り出す。 | `proved` |
+| `representativeStable_of_strongDIPCompatible` | `theorem` | `StrongDIPCompatible` から representative stability を取り出す。 | `proved` |
+| `quotientWellDefined_of_projectionExact_representativeStable` | `theorem` | exact projection と representative stability から quotient well-definedness を得る。 | `proved` |
+| `quotientWellDefined_of_strongDIPCompatible` | `theorem` | strong DIP compatibility から quotient well-definedness を得る。 | `proved` |
+| `projectedDeps_iff_abstractEdge_of_projectionExact_representativeStable` | `theorem` | exact projection と representative stability の下で、選択代表の `ProjectedDeps` と abstract edge が同値になる。 | `proved` |
+| `projectedDeps_iff_abstractEdge_of_strongDIPCompatible` | `theorem` | strong DIP compatibility の下で、選択代表の projected dependency を abstract edge として読む。 | `proved` |
 | `dipCompatible_of_strongDIPCompatible` | `theorem` | strong DIP compatible なら DIP compatible。 | `proved` |
 | `respectsProjection_id` | `theorem` | identity projection は元の graph を respect する。 | `proved` |
 | `quotientWellDefined_id` | `theorem` | identity projection は quotient well-defined。 | `proved` |

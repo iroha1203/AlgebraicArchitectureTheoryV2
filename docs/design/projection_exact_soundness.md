@@ -45,6 +45,8 @@ executable metric である。
 - 抽象グラフ上で見つかった循環や経路が、具体依存の witness を持つという主張。
 - 「抽象グラフに余分な設計上の依存がない」という診断。
 - `StrongDIPCompatible` から `DIPCompatible` へ降りる refinement の説明。
+- `ProjectionExact` と `RepresentativeStable` の下で、選択代表の
+  `ProjectedDeps` を abstract edge と同値に読む主張。
 
 ただし、exact projection が成り立っても、抽象グラフ自体の非循環性や
 `Decomposable` は従わない。抽象層の循環を排除するには Layered などの大域構造制約が
@@ -61,6 +63,10 @@ executable metric である。
 - `projectionSound_of_projectionSoundnessViolation_eq_zero`
 - `projectedConcreteEdge_of_projectionComplete`
 - `abstractEdge_iff_projectedConcreteEdge_of_projectionExact`
+- `strongDIPCompatible_of_projectionExact_representativeStable`
+- `quotientWellDefined_of_projectionExact_representativeStable`
+- `projectedDeps_iff_abstractEdge_of_projectionExact_representativeStable`
+- `projectedDeps_iff_abstractEdge_of_strongDIPCompatible`
 
 Issue #107 では、次の片方向 witness theorem を追加した。
 
@@ -82,6 +88,19 @@ ProjectionExact G π GA ->
 
 これは exact projection を「抽象辺集合と投影された具体辺集合の一致」として読む
 bridge theorem である。
+
+Issue #352 では、exact projection に representative stability を足した
+quotient-level bridge を追加した。
+
+```text
+ProjectionExact G π GA ->
+  RepresentativeStable G π ->
+    ProjectedDeps G π c a <-> GA.edge (π.expose c) a
+```
+
+この theorem は、completeness で抽象辺の具体 witness を取り、representative stability
+で witness 側の代表から選択代表 `c` へ dependency を移す。したがって
+`ProjectionSound` だけから completeness や quotient exactness を推論するものではない。
 
 抽象循環や抽象経路を具体 witness へ持ち上げる theorem は、上の edge-level bridge の
 後続に置く。これは path / walk 側の構造を使うため、projection bridge だけの Issue には

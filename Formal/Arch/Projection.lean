@@ -272,6 +272,89 @@ def StrongDIPCompatible {C : Type u} {A : Type v}
     (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) : Prop :=
   ProjectionExact G π GA ∧ RepresentativeStable G π
 
+/--
+Exact projection plus representative stability gives the bundled strong-DIP
+condition.  This is the explicit bridge used when a quotient-level dependency
+relation must be exact and independent of the chosen concrete representative.
+-/
+theorem strongDIPCompatible_of_projectionExact_representativeStable
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (hExact : ProjectionExact G π GA)
+    (hStable : RepresentativeStable G π) :
+    StrongDIPCompatible G π GA :=
+  ⟨hExact, hStable⟩
+
+/-- Strong-DIP compatibility includes exact projection. -/
+theorem projectionExact_of_strongDIPCompatible {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : StrongDIPCompatible G π GA) : ProjectionExact G π GA :=
+  h.1
+
+/-- Strong-DIP compatibility includes representative stability. -/
+theorem representativeStable_of_strongDIPCompatible {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : StrongDIPCompatible G π GA) : RepresentativeStable G π :=
+  h.2
+
+/--
+Representative stability is exactly the quotient well-definedness predicate
+used by the current projection kernel.
+-/
+theorem quotientWellDefined_of_projectionExact_representativeStable
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (_hExact : ProjectionExact G π GA)
+    (hStable : RepresentativeStable G π) :
+    QuotientWellDefined G π :=
+  hStable
+
+/-- Strong-DIP compatibility gives quotient well-definedness. -/
+theorem quotientWellDefined_of_strongDIPCompatible {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : StrongDIPCompatible G π GA) : QuotientWellDefined G π :=
+  representativeStable_of_strongDIPCompatible h
+
+/--
+Under exact projection and representative stability, a concrete
+representative's projected dependencies are exactly the outgoing abstract
+dependencies of its abstraction.
+
+The reverse direction uses completeness to choose some concrete representative
+of the abstract source, then uses representative stability to move that
+dependency to the selected representative `c`.
+-/
+theorem projectedDeps_iff_abstractEdge_of_projectionExact_representativeStable
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (hExact : ProjectionExact G π GA)
+    (hStable : RepresentativeStable G π)
+    {c : C} {a : A} :
+    ProjectedDeps G π c a ↔ GA.edge (π.expose c) a := by
+  constructor
+  · rintro ⟨d, hEdge, hd⟩
+    have hAbstract : GA.edge (π.expose c) (π.expose d) :=
+      projectionSound_of_projectionExact hExact hEdge
+    simpa [hd] using hAbstract
+  · intro hAbstract
+    rcases projectionComplete_of_projectionExact hExact hAbstract with
+      ⟨c', d, hc', hd, hEdge⟩
+    have hProjected : ProjectedDeps G π c' a := ⟨d, hEdge, hd⟩
+    exact (hStable hc' a).mp hProjected
+
+/--
+Strong-DIP compatibility identifies projected dependencies of any selected
+representative with outgoing edges in the exact abstract graph.
+-/
+theorem projectedDeps_iff_abstractEdge_of_strongDIPCompatible
+    {C : Type u} {A : Type v}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : StrongDIPCompatible G π GA) {c : C} {a : A} :
+    ProjectedDeps G π c a ↔ GA.edge (π.expose c) a :=
+  projectedDeps_iff_abstractEdge_of_projectionExact_representativeStable
+    (projectionExact_of_strongDIPCompatible h)
+    (representativeStable_of_strongDIPCompatible h)
+
 /-- Exact DIP refines the current strong operational DIP condition. -/
 theorem dipCompatible_of_strongDIPCompatible {C : Type u} {A : Type v}
     {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
