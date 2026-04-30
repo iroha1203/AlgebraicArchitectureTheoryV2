@@ -45,6 +45,38 @@ def label : ArchitectureOperationKind -> String
 end ArchitectureOperationKind
 
 /--
+Chapter 3 role tags for how an operation is meant to relate invariants,
+obstruction witnesses, measures, or assumptions across an architecture change.
+
+These tags are metadata for theorem packages.  A role tag alone does not prove
+preservation, reflection, improvement, localization, translation, transfer, or
+assumption discharge.
+-/
+inductive ArchitectureOperationRole where
+  | preserve
+  | reflect
+  | improve
+  | localize
+  | translate
+  | transfer
+  | assume
+  deriving DecidableEq, Repr
+
+namespace ArchitectureOperationRole
+
+/-- Human-readable operation-role label used by documentation-facing packages. -/
+def label : ArchitectureOperationRole -> String
+  | preserve => "preserve"
+  | reflect => "reflect"
+  | improve => "improve"
+  | localize => "localize"
+  | translate => "translate"
+  | transfer => "transfer"
+  | assume => "assume"
+
+end ArchitectureOperationRole
+
+/--
 Minimal proof-obligation schema for an architecture operation theorem package.
 
 `nonConclusions` is an explicit field: a theorem package must record what it
@@ -258,5 +290,145 @@ theorem exists_sourceWitness_of_targetWitness
   ⟨op.witnessMap w, op.witnessMapping_sound h⟩
 
 end ArchitectureOperation
+
+/--
+Bounded schema recording a selected role for an architecture operation.
+
+The schema is intentionally descriptive: it records the selected invariant,
+visible role-specific assumptions, the intended bounded conclusion, and explicit
+non-conclusions.  The role tag and schema do not automatically discharge the
+conclusion; downstream theorem packages must prove `Discharged`.
+-/
+structure OperationRoleSchema
+    (State : Type u) (BeforeWitness : Type v) (AfterWitness : Type w) where
+  operation : ArchitectureOperation State BeforeWitness AfterWitness
+  role : ArchitectureOperationRole
+  selectedInvariant : State -> Prop
+  roleAssumptions : Prop
+  roleConclusion : Prop
+  nonConclusion : Prop
+
+namespace OperationRoleSchema
+
+variable {State : Type u} {BeforeWitness : Type v} {AfterWitness : Type w}
+
+/-- The operation kind whose theorem package carries this role. -/
+def operationKind
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) :
+    ArchitectureOperationKind :=
+  R.operation.kind
+
+/-- Predicate form used by theorem packages that select a role tag. -/
+def HasRole
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (role : ArchitectureOperationRole) : Prop :=
+  R.role = role
+
+/-- Visible assumptions for using the role package. -/
+def AssumptionsHold
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) : Prop :=
+  R.operation.PreconditionsHold ∧ R.roleAssumptions
+
+/-- The bounded role conclusion is discharged under the visible assumptions. -/
+def Discharged
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) : Prop :=
+  R.AssumptionsHold -> R.roleConclusion
+
+/-- The role package explicitly records claims it does not make. -/
+def RecordsNonConclusions
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) : Prop :=
+  R.nonConclusion
+
+/-- Build a role package for a selected operation role. -/
+def ofRole
+    (operation : ArchitectureOperation State BeforeWitness AfterWitness)
+    (role : ArchitectureOperationRole)
+    (selectedInvariant : State -> Prop)
+    (roleAssumptions roleConclusion nonConclusion : Prop) :
+    OperationRoleSchema State BeforeWitness AfterWitness :=
+  { operation
+    role
+    selectedInvariant
+    roleAssumptions
+    roleConclusion
+    nonConclusion }
+
+/-- Role package for preservation claims. -/
+def preserve
+    (operation : ArchitectureOperation State BeforeWitness AfterWitness)
+    (selectedInvariant : State -> Prop)
+    (roleAssumptions roleConclusion nonConclusion : Prop) :
+    OperationRoleSchema State BeforeWitness AfterWitness :=
+  ofRole operation ArchitectureOperationRole.preserve selectedInvariant
+    roleAssumptions roleConclusion nonConclusion
+
+/-- Role package for reflection claims. -/
+def reflect
+    (operation : ArchitectureOperation State BeforeWitness AfterWitness)
+    (selectedInvariant : State -> Prop)
+    (roleAssumptions roleConclusion nonConclusion : Prop) :
+    OperationRoleSchema State BeforeWitness AfterWitness :=
+  ofRole operation ArchitectureOperationRole.reflect selectedInvariant
+    roleAssumptions roleConclusion nonConclusion
+
+/-- Role package for selected-measure improvement claims. -/
+def improve
+    (operation : ArchitectureOperation State BeforeWitness AfterWitness)
+    (selectedInvariant : State -> Prop)
+    (roleAssumptions roleConclusion nonConclusion : Prop) :
+    OperationRoleSchema State BeforeWitness AfterWitness :=
+  ofRole operation ArchitectureOperationRole.improve selectedInvariant
+    roleAssumptions roleConclusion nonConclusion
+
+/-- Role package for boundary-localization claims. -/
+def localize
+    (operation : ArchitectureOperation State BeforeWitness AfterWitness)
+    (selectedInvariant : State -> Prop)
+    (roleAssumptions roleConclusion nonConclusion : Prop) :
+    OperationRoleSchema State BeforeWitness AfterWitness :=
+  ofRole operation ArchitectureOperationRole.localize selectedInvariant
+    roleAssumptions roleConclusion nonConclusion
+
+/-- Role package for cross-layer translation claims. -/
+def translate
+    (operation : ArchitectureOperation State BeforeWitness AfterWitness)
+    (selectedInvariant : State -> Prop)
+    (roleAssumptions roleConclusion nonConclusion : Prop) :
+    OperationRoleSchema State BeforeWitness AfterWitness :=
+  ofRole operation ArchitectureOperationRole.translate selectedInvariant
+    roleAssumptions roleConclusion nonConclusion
+
+/-- Role package for complexity-transfer claims. -/
+def transfer
+    (operation : ArchitectureOperation State BeforeWitness AfterWitness)
+    (selectedInvariant : State -> Prop)
+    (roleAssumptions roleConclusion nonConclusion : Prop) :
+    OperationRoleSchema State BeforeWitness AfterWitness :=
+  ofRole operation ArchitectureOperationRole.transfer selectedInvariant
+    roleAssumptions roleConclusion nonConclusion
+
+/-- Role package for explicit assumption boundaries. -/
+def assume
+    (operation : ArchitectureOperation State BeforeWitness AfterWitness)
+    (selectedInvariant : State -> Prop)
+    (roleAssumptions roleConclusion nonConclusion : Prop) :
+    OperationRoleSchema State BeforeWitness AfterWitness :=
+  ofRole operation ArchitectureOperationRole.assume selectedInvariant
+    roleAssumptions roleConclusion nonConclusion
+
+/-- A direct conclusion proof discharges the bounded role package. -/
+theorem discharged_of_conclusion
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (h : R.roleConclusion) : R.Discharged := by
+  intro _hAssumptions
+  exact h
+
+/-- The schema keeps the generated proof-obligation kind aligned with the operation. -/
+theorem generatedObligation_kind
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) :
+    R.operation.generatedProofObligation.kind = R.operationKind :=
+  R.operation.generatedObligation_kind
+
+end OperationRoleSchema
 
 end Formal.Arch
