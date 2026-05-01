@@ -105,6 +105,15 @@ extractor の暗黙処理ではなく、edge reversal function または reverse
 明示的な入力にする。その場合の theorem も、reverse graph 上の reachable cone zero
 bridge として扱う。
 
+Lean core では、この境界を graph-level bridge として切る。`ArchGraph.reachable_reverse_iff`
+は reverse graph の reachability を source graph の incoming reachability と同値にし、
+`ArchGraph.reverseReachableCone` / `ArchGraph.mem_reverseReachableCone_iff` は測定 list
+内の strict reverse cone を upstream impact cone として読む。有限 universe 上では
+`FiniteArchGraph.reverse_reachableConeSizeAt_eq_reverseReachableConeSize_under_universe` が
+executable bounded reachable-cone metric と graph-level reverse cone size を接続する。
+ここから incident scope、telemetry completeness、extractor completeness、修正コスト相関は
+結論しない。
+
 この runtime theorem package は、static structural core の QED に直接混ぜない。
 まず `ArchitectureRuntimeZeroCurvaturePackage` のような独立 package として、
 runtime obstruction / runtime metric zero bridge を育てる。
@@ -124,7 +133,7 @@ axis へ追加しない。Lean 側の full law universe policy では `runtimePr
 | 対象 | zero-curvature theorem での分類 | Lean status |
 | --- | --- | --- |
 | `runtimePropagation` / `runtimeExposureRadius` | 0/1 `RuntimeDependencyGraph` 上で測定できる diagnostic axis。static required zero-law axis ではない。zero metric と runtime obstruction absence の bridge は bounded theorem として証明済み | `defined only` / `proved` |
-| `runtimeBlastRadius` | reverse reachability 由来の tooling / analysis metric。Lean core field には入れない | `empirical hypothesis` |
+| `runtimeBlastRadius` | reverse reachability 由来の tooling / analysis metric。Lean core field には入れない。reverse cone と incoming reachability の graph-level bridge は Lean で証明済みだが、incident scope や cost correlation は empirical claim として残す | graph bridge は `defined only` / `proved`、相関は `empirical hypothesis` |
 | `runtimeFanout` | runtime graph 上の局所集中を測る analysis-derived metric。v1 field には追加しない | `empirical hypothesis` |
 | `circuitBreakerCoverageRatio` | measured runtime pair に対する policy-aware coverage 指標 | `empirical hypothesis` |
 | `unprotectedRuntimeExposureRadius`, `unprotectedRuntimeBlastRadius` | coverage policy を反映した派生 runtime metric | `empirical hypothesis` |
