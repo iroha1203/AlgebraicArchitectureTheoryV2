@@ -8,6 +8,11 @@ Lean status: `design` / `future proof obligation`.
 operation tag だけから保存性、改善、runtime / semantic completeness、global flatness
 preservation を主張しない。
 
+この文書の `既存 Lean API` 欄は、API の配置先を示す。`proved` status の分類は
+`docs/proof_obligations.md` と `docs/lean_theorem_index.md` で管理し、schema /
+accessor theorem / bounded bridge / substantive theorem を区別する。配置表に名前が
+載ることは、無条件の operation law や global flatness preservation の証明を意味しない。
+
 ## 配置原則
 
 - finite `ArchGraph` 上で辺関係として意味が閉じる operation だけを concrete graph

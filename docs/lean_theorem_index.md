@@ -363,6 +363,15 @@ finite graph kernels. `refine`, `abstract`, `split`, `merge`, `isolate`,
 runtime / semantic, repair, or synthesis theorem packages instead of a uniform
 graph transform.
 
+この節の status 分類は次の通りである。
+
+| API 群 | 読み方 | ここで `proved` と読める範囲 | 読まない範囲 |
+| --- | --- | --- | --- |
+| operation / role tag | schema / carrier | tag constructor と label が theorem package から参照できる。 | tag だけから preservation、improvement、localization、operation law は出ない。 |
+| `OperationProofObligation` constructor | schema / carrier | operation ごとの obligation package を explicit precondition と non-conclusion つきで構成できる。 | constructor が存在するだけでは obligation discharge ではない。 |
+| `ArchitectureOperation.*` theorem | accessor theorem / witness bridge | generated-obligation kind の一致と、post-to-pre witness mapping の片方向 soundness。 | global flatness preservation、semantic completeness、逆向き witness completeness。 |
+| `OperationRoleSchema.*` theorem | accessor theorem / bounded discharge wrapper | role package kind の一致と、明示的に与えた bounded conclusion からの discharge。 | 非 preserve role の結論は role tag から推論しない。bridge は別 Issue で扱う。 |
+
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `ArchitectureOperationKind` | `inductive` | 第3章 catalog の `compose`, `refine`, `abstract`, `replace`, `split`, `merge`, `isolate`, `protect`, `migrate`, `reverse`, `contract`, `repair`, `synthesize` を表す operation family tag。 | `defined only` |
@@ -498,6 +507,16 @@ not reuse the `replace` law wrapper.
 Issue [#410](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/410)
 adds a bounded `migrate` package for staged migration paths, compatibility
 windows, and old/new observation equivalence.
+
+この節の status 分類は次の通りである。
+
+| API 群 | 読み方 | ここで `proved` と読める範囲 | 読まない範囲 |
+| --- | --- | --- | --- |
+| `ArchitectureCalculusLawKind`, `ArchitectureCalculusLaw` | schema / carrier | bounded law package が law kind、operation kind、explicit assumptions、conclusion、non-conclusions を名前づける。 | law tag は無条件の algebraic law ではない。 |
+| generic constructor accessor | accessor theorem | constructor が意図した law kind / operation kind を保持する。 | それだけで concrete graph equality、observation preservation、flatness は証明しない。 |
+| concrete finite graph entrypoint | schema bridge / substantive theorem | selected finite graph kernel が、明示前提の下で edge-union、edge-equivalence、protect-idempotence、reverse-involution の結論を discharge する。 | uniform operation law と global flatness preservation。 |
+| observation / runtime / migration entrypoint | schema bridge / substantive theorem | selected projection、observation、runtime、compatibility window、migration assumptions から下表の bounded conclusion を得る。 | runtime telemetry completeness、semantic completeness、extractor completeness、empirical cost claim。 |
+| repair / synthesis entrypoint | schema bridge / substantive theorem | selected obstruction universe、admissible rule、produced candidate、valid certificate 前提から bounded repair / synthesis conclusion を得る。 | solver completeness と all obstruction removal。 |
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
