@@ -609,7 +609,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -626,6 +626,13 @@ Galois 対応である。Issue [#383](https://github.com/iroha1203/AlgebraicArch
 DIP compatibility を selected invariant family とし、`LocalReplacementContract`
 から得られる既存 theorem により closure law を構成する。局所契約層から
 `Decomposable` / `StrictLayered` を結論しないことは non-conclusion として記録する。
+Issue [#403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/403)
+では、大域構造層の代表例として Layered / Clean Architecture を
+`DesignPattern` schema に接続した。ここでは edge-subset restriction を
+operation family とし、`StrictLayered`、`Decomposable`、boundary policy soundness、
+abstraction policy soundness を selected invariant family として扱う。層名 convention
+の完全分類、runtime / semantic decomposability、global flatness preservation は
+non-conclusion として記録する。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -678,10 +685,32 @@ DIP compatibility を selected invariant family とし、`LocalReplacementContra
 | `localContractDesignPattern` | `def` | `LocalReplacementContract` を局所契約層の representative `DesignPattern` schema として束ねる。 | `defined only` |
 | `localContractDesignPattern_closure_law` | `theorem` | 局所契約層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
 | `localContractDesignPattern_records_nonConclusion` | `theorem` | 局所契約層 `DesignPattern` が global layering non-conclusion を記録する。 | `proved` |
+| `StructuralLayerState` | `structure` | 大域構造層の state として dependency graph を束ねる。 | `defined only` |
+| `StructuralRestrictionOperation` | `structure` | source / target state と `EdgeSubset target.G source.G` を持つ proof-carrying structural operation。 | `defined only` |
+| `structuralRestrictionOperationSource` | `def` | structural restriction operation の source state を取り出す。 | `defined only` |
+| `structuralRestrictionOperationTarget` | `def` | structural restriction operation の target state を取り出す。 | `defined only` |
+| `StructuralLayerInvariant` | `inductive` | 大域構造層の selected invariant axis として strict layered、decomposable、boundary policy soundness、abstraction policy soundness を列挙する。 | `defined only` |
+| `structuralLayerInvariantHolds` | `def` | `StructuralLayerInvariant` を fixed boundary / abstraction policy に相対化して `StructuralLayerState` 上の predicate として評価する。 | `defined only` |
+| `structuralLayerInvariantFamily` | `def` | 大域構造層で選択する invariant family。 | `defined only` |
+| `structuralRestrictionOperationFamily` | `def` | proof-carrying structural restriction operation family。 | `defined only` |
+| `structuralRestrictionOperation_preserves_strictLayered` | `theorem` | edge-subset restriction が `StrictLayered` を保存する。 | `proved` |
+| `structuralRestrictionOperation_preserves_decomposable` | `theorem` | edge-subset restriction が `Decomposable` を保存する。 | `proved` |
+| `structuralRestrictionOperation_preserves_boundaryPolicySound` | `theorem` | edge-subset restriction が boundary policy soundness を保存する。 | `proved` |
+| `structuralRestrictionOperation_preserves_abstractionPolicySound` | `theorem` | edge-subset restriction が abstraction policy soundness を保存する。 | `proved` |
+| `structuralRestrictionOperation_preserves_structuralLayerInvariant` | `theorem` | proof-carrying structural restriction operation が selected global structural invariants を保存する。 | `proved` |
+| `structuralRestrictionOperationFamily_subset_ops` | `theorem` | structural restriction operation family が selected invariant family の `Ops` に含まれる。 | `proved` |
+| `structuralLayerInvariantFamily_subset_inv` | `theorem` | selected structural invariants が structural operation family により保存される `Inv` に含まれる。 | `proved` |
+| `StructuralLayerNonConclusionClause` | `inductive` | 大域構造層の non-conclusion clause として layer convention classification、runtime / semantic decomposability、global flatness preservation を列挙する。 | `defined only` |
+| `StructuralLayerNonConclusion` | `def` | 大域構造層の non-conclusion clause を記録する predicate。 | `defined only` |
+| `structuralLayer_nonConclusion` | `theorem` | 大域構造層の non-conclusion clause が記録されることを示す。 | `proved` |
+| `structuralLayerDesignPattern` | `def` | Layered / Clean Architecture を大域構造層の representative `DesignPattern` schema として束ねる。 | `defined only` |
+| `structuralLayerDesignPattern_closure_law` | `theorem` | 大域構造層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `structuralLayerDesignPattern_records_nonConclusion` | `theorem` | 大域構造層 `DesignPattern` が structural non-conclusion clauses を記録する。 | `proved` |
 
 Non-conclusions: この theorem package は operation / invariant の束同型、設計パターンの完全分類、
 selected preservation relation の外側にある runtime / semantic / empirical 性質の保存、
-または局所契約層からの無条件の `Decomposable` / `StrictLayered` を主張しない。
+局所契約層からの無条件の `Decomposable` / `StrictLayered`、層名 convention の完全分類、
+runtime / semantic decomposability、または global flatness preservation を主張しない。
 
 ## Repair
 
