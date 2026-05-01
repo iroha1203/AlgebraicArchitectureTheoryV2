@@ -609,7 +609,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-File: `Formal/Arch/OperationInvariant.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -619,7 +619,13 @@ Galois 対応である。Issue [#383](https://github.com/iroha1203/AlgebraicArch
 では、`OperationRoleSchema` の preserve role package を selected invariant に相対化して
 `PreservesInvariant` / `Ops` へ接続する bridge を追加した。ここでは
 `T ⊆ Ops(S) ↔ S ⊆ Inv(T)` と、それから誘導される selected preservation relation 上の閉包性のみを
-証明し、束同型、完全分類、または選択 universe 外の保存性は主張しない。
+証明し、束同型、完全分類、または選択 universe 外の保存性は主張しない。Issue
+[#385](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/385)
+では、局所契約層の代表例として `LocalReplacementContract` を
+`DesignPattern` schema に接続した。ここでは projection soundness、LSP compatibility、
+DIP compatibility を selected invariant family とし、`LocalReplacementContract`
+から得られる既存 theorem により closure law を構成する。局所契約層から
+`Decomposable` / `StrictLayered` を結論しないことは non-conclusion として記録する。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -653,9 +659,29 @@ Galois 対応である。Issue [#383](https://github.com/iroha1203/AlgebraicArch
 | `DesignPattern.closure_law` | `theorem` | design pattern が保持する二つの closure law を pair として取り出す。 | `proved` |
 | `DesignPattern.RecordsNonConclusions` | `def` | design pattern schema の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `DesignPattern.records_nonConclusions_iff` | `theorem` | recorded non-conclusion clause と schema field が一致すること。 | `proved` |
+| `LocalContractState` | `structure` | concrete graph、interface projection、abstract graph、observation を同じ局所契約 state として束ねる。 | `defined only` |
+| `LocalReplacementOperation` | `structure` | source / target state と target 側の `LocalReplacementContract` を持つ proof-carrying operation。 | `defined only` |
+| `localReplacementOperationSource` | `def` | 局所置換 operation の source state を取り出す。 | `defined only` |
+| `localReplacementOperationTarget` | `def` | 局所置換 operation の target state を取り出す。 | `defined only` |
+| `LocalContractInvariant` | `inductive` | 局所契約層の selected invariant axis として projection soundness、LSP compatibility、DIP compatibility を列挙する。 | `defined only` |
+| `localContractInvariantHolds` | `def` | `LocalContractInvariant` を `LocalContractState` 上の predicate として評価する。 | `defined only` |
+| `localContractInvariantFamily` | `def` | 局所契約層で選択する invariant family。 | `defined only` |
+| `localReplacementOperationFamily` | `def` | proof-carrying local replacement operation family。 | `defined only` |
+| `localReplacementOperation_preserves_projectionSound` | `theorem` | `LocalReplacementContract` から target state の projection soundness を得る。 | `proved` |
+| `localReplacementOperation_preserves_lspCompatible` | `theorem` | `LocalReplacementContract` から target state の `LSPCompatible` を得る。 | `proved` |
+| `localReplacementOperation_preserves_dipCompatible` | `theorem` | `LocalReplacementContract` から target state の `DIPCompatible` を得る。 | `proved` |
+| `localReplacementOperation_preserves_localContractInvariant` | `theorem` | proof-carrying local replacement operation が selected local contract invariants を保存する。 | `proved` |
+| `localReplacementOperationFamily_subset_ops` | `theorem` | local replacement operation family が selected invariant family の `Ops` に含まれる。 | `proved` |
+| `localContractInvariantFamily_subset_inv` | `theorem` | selected local contract invariants が local replacement operation family により保存される `Inv` に含まれる。 | `proved` |
+| `LocalContractLayerNonConclusion` | `def` | local contract layer から無条件の `Decomposable` / `StrictLayered` theorem を結論しないことを記録する predicate。 | `defined only` |
+| `localContractLayer_nonConclusion` | `theorem` | strong abstract-cycle counterexample により、local contract layer の global layering non-conclusion を証明する。 | `proved` |
+| `localContractDesignPattern` | `def` | `LocalReplacementContract` を局所契約層の representative `DesignPattern` schema として束ねる。 | `defined only` |
+| `localContractDesignPattern_closure_law` | `theorem` | 局所契約層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `localContractDesignPattern_records_nonConclusion` | `theorem` | 局所契約層 `DesignPattern` が global layering non-conclusion を記録する。 | `proved` |
 
 Non-conclusions: この theorem package は operation / invariant の束同型、設計パターンの完全分類、
-または selected preservation relation の外側にある runtime / semantic / empirical 性質の保存を主張しない。
+selected preservation relation の外側にある runtime / semantic / empirical 性質の保存、
+または局所契約層からの無条件の `Decomposable` / `StrictLayered` を主張しない。
 
 ## Repair
 

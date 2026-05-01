@@ -24,6 +24,7 @@ import Formal.Arch.Lawfulness
 import Formal.Arch.StateEffect
 import Formal.Arch.Curvature
 import Formal.Arch.SolidCounterexample
+import Formal.Arch.LocalContractDesignPattern
 import Formal.Arch.Signature
 import Formal.Arch.Finite
 import Formal.Arch.OperationKernel
