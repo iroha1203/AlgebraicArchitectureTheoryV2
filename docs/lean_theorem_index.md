@@ -615,9 +615,11 @@ Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
 Galois 対応である。Issue [#383](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/383)
 では、この対応から使う `Ops` / `Inv` の反単調性と closure operator API も
-証明済み API として追加した。ここでは `T ⊆ Ops(S) ↔ S ⊆ Inv(T)` と
-それから誘導される selected preservation relation 上の閉包性のみを証明し、
-束同型、完全分類、または選択 universe 外の保存性は主張しない。
+証明済み API として追加した。Issue [#384](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/384)
+では、`OperationRoleSchema` の preserve role package を selected invariant に相対化して
+`PreservesInvariant` / `Ops` へ接続する bridge を追加した。ここでは
+`T ⊆ Ops(S) ↔ S ⊆ Inv(T)` と、それから誘導される selected preservation relation 上の閉包性のみを
+証明し、束同型、完全分類、または選択 universe 外の保存性は主張しない。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -636,6 +638,15 @@ Galois 対応である。Issue [#383](https://github.com/iroha1203/AlgebraicArch
 | `ops_inv_monotone` | `theorem` | operation closure `Ops ∘ Inv` が monotone であることを得る。 | `proved` |
 | `inv_ops_idempotent` | `theorem` | invariant closure `Inv ∘ Ops` が predicate extensionality 上 idempotent であることを得る。 | `proved` |
 | `ops_inv_idempotent` | `theorem` | operation closure `Ops ∘ Inv` が predicate extensionality 上 idempotent であることを得る。 | `proved` |
+| `OperationRoleSchema.operationInvariantSource` | `def` | role package を operation/invariant Galois 側の operation として読むため、underlying `ArchitectureOperation.source` を source map として取り出す。 | `defined only` |
+| `OperationRoleSchema.operationInvariantTarget` | `def` | role package を operation/invariant Galois 側の operation として読むため、underlying `ArchitectureOperation.target` を target map として取り出す。 | `defined only` |
+| `OperationRoleSchema.stateInvariantHolds` | `def` | bridge で使う invariant を、同じ state universe 上の predicate として評価する。 | `defined only` |
+| `OperationRoleSchema.operationInvariantSource_eq` | `theorem` | Galois bridge の source map が underlying `ArchitectureOperation.source` と一致することを示す。 | `proved` |
+| `OperationRoleSchema.operationInvariantTarget_eq` | `theorem` | Galois bridge の target map が underlying `ArchitectureOperation.target` と一致することを示す。 | `proved` |
+| `OperationRoleSchema.RoleConclusionIsSelectedPreservation` | `def` | preserve role の bounded conclusion が selected invariant の source-to-target preservation である、という明示的な bridge 前提。 | `defined only` |
+| `OperationRoleSchema.preservesInvariant_of_discharged_preserve` | `theorem` | preserve role package が discharge 済みで、bounded conclusion が selected preservation なら `PreservesInvariant` を得る。 | `proved` |
+| `OperationRoleSchema.ops_mem_selectedInvariant_of_discharged_preserve` | `theorem` | discharge 済み preserve role package を、その selected invariant singleton family に対する `Ops` member として読む。 | `proved` |
+| `OperationRoleSchema.operationFamily_subset_ops_of_preserves_selected` | `theorem` | selected operation family の各 role package が selected invariant family を保存するなら、その operation family は `Ops(S)` に含まれる。 | `proved` |
 | `DesignPattern` | `structure` | operation family、invariant family、両方向の closure law、non-conclusion clause を束ねる schema。 | `defined only` |
 | `DesignPattern.operations_subset_ops` | `theorem` | design pattern から operation-to-invariant closure law を取り出す。 | `proved` |
 | `DesignPattern.invariants_subset_inv` | `theorem` | design pattern から invariant-to-operation closure law を取り出す。 | `proved` |
