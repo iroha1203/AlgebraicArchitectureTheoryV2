@@ -1,11 +1,13 @@
 import Formal.Arch.OperationKernel
 import Formal.Arch.LocalReplacement
+import Formal.Arch.Flatness
+import Formal.Arch.Reachability
 import Formal.Arch.Repair
 import Formal.Arch.RepairSynthesis
 
 namespace Formal.Arch
 
-universe u v r c
+universe u v r c q
 
 /--
 Bounded Architecture Calculus law tags.
@@ -22,6 +24,7 @@ inductive ArchitectureCalculusLawKind where
   | externalContractPreservation
   | explicitContractSoundness
   | protectionIdempotence
+  | runtimeLocalization
   | reverseInvolution
   | witnessMappingFunctoriality
   | synthesisSoundness
@@ -40,6 +43,7 @@ def label : ArchitectureCalculusLawKind -> String
   | externalContractPreservation => "externalContractPreservation"
   | explicitContractSoundness => "explicitContractSoundness"
   | protectionIdempotence => "protectionIdempotence"
+  | runtimeLocalization => "runtimeLocalization"
   | reverseInvolution => "reverseInvolution"
   | witnessMappingFunctoriality => "witnessMappingFunctoriality"
   | synthesisSoundness => "synthesisSoundness"
@@ -347,6 +351,36 @@ def protectIdempotence
   sound := sound
   nonConclusions := nonConclusions
 
+/--
+Constructor for a bounded runtime-localization law package.
+
+The operation kind is explicit so the same runtime package can be used for
+`isolate` and policy-aware `protect`, while keeping the operation tag visible.
+-/
+def runtimeLocalization
+    (operationKind : ArchitectureOperationKind)
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    ArchitectureCalculusLaw State Witness where
+  law := ArchitectureCalculusLawKind.runtimeLocalization
+  operationKind := operationKind
+  boundedUniverse := boundedUniverse
+  compatibilityAssumptions := compatibilityAssumptions
+  coverageAssumptions := coverageAssumptions
+  exactnessAssumptions := exactnessAssumptions
+  observationEquivalence := observationEquivalence
+  conclusion := conclusion
+  sound := sound
+  nonConclusions := nonConclusions
+
 /-- Constructor for a bounded reverse-involution law package. -/
 def reverseInvolution
     (operationKind : ArchitectureOperationKind)
@@ -577,6 +611,25 @@ theorem protectIdempotence_operationKind
         ArchitectureOperationKind.protect :=
   rfl
 
+theorem runtimeLocalization_operationKind
+    (operationKind : ArchitectureOperationKind)
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    (runtimeLocalization (State := State) (Witness := Witness)
+      operationKind boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions sound).operationKind =
+        operationKind :=
+  rfl
+
 theorem reverseInvolution_kind
     (operationKind : ArchitectureOperationKind)
     (boundedUniverse compatibilityAssumptions coverageAssumptions
@@ -634,8 +687,7 @@ def finiteComposeEdgeUnionLaw
         FG.graph.edge c d ∨ FH.graph.edge c d)
     True
     (by
-      intro _ _ _ _ _
-      intro c d
+      intro _ _ _ _ _ c d
       exact FiniteArchGraph.compose_edge_iff FG FH)
 
 /-- The finite compose edge-union entrypoint keeps the `compose` operation tag. -/
@@ -779,8 +831,7 @@ def finiteReplaceEdgeEquivalenceLaw
     (∀ c d : C, (FG.replace FH).graph.edge c d ↔ FG.graph.edge c d)
     True
     (by
-      intro _ hEquiv _ _ _
-      intro c d
+      intro _ hEquiv _ _ _ c d
       exact FiniteArchGraph.replace_preserves_edges_of_edgeEquivalent
         FG FH hEquiv)
 
@@ -1275,6 +1326,157 @@ theorem contractExplicitizationLaw_conclusion
 
 end MergeContractEntrypoints
 
+section RuntimeLocalizationEntrypoints
+
+variable {C : Type u} {A : Type v} {StaticObs : Type r}
+  {SemanticExpr : Type q} {SemanticObs : Type c}
+
+/--
+Selected boundary-relative runtime path localization.
+
+Every measured runtime path whose endpoints are in the selected component
+universe stays endpoint-localized to the selected region.  This is a bounded
+premise; it does not assert telemetry completeness outside `U`.
+-/
+def RuntimePathLocalizedWithin
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) (region : C -> Prop) : Prop :=
+  ∀ {src dst : C}, Reachable X.runtime src dst ->
+    src ∈ U.components -> dst ∈ U.components -> region src ∧ region dst
+
+/--
+Policy-aware runtime protection contract for a selected region.
+
+The contract bundles path localization with `RuntimeInteractionProtected`.
+Policy mechanisms such as timeout, fallback, queue, bulkhead, or circuit
+breaker labels remain outside the static graph identity kernel.
+-/
+def RuntimeProtectionContract
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) (region : C -> Prop) : Prop :=
+  RuntimePathLocalizedWithin X U region ∧ RuntimeInteractionProtected X U
+
+/-- A runtime protection contract includes selected path localization. -/
+theorem runtimePathLocalized_of_runtimeProtectionContract
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static} {region : C -> Prop}
+    (h : RuntimeProtectionContract X U region) :
+    RuntimePathLocalizedWithin X U region :=
+  h.1
+
+/-- A runtime protection contract includes selected runtime interaction protection. -/
+theorem runtimeInteractionProtected_of_runtimeProtectionContract
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static} {region : C -> Prop}
+    (h : RuntimeProtectionContract X U region) :
+    RuntimeInteractionProtected X U :=
+  h.2
+
+/-- Policy-aware runtime protection discharges bounded runtime flatness on `U`. -/
+theorem runtimeFlatWithin_of_runtimeProtectionContract
+    {X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs}
+    {U : ComponentUniverse X.static} {region : C -> Prop}
+    (hCoverage : RuntimeCoverageComplete X U)
+    (h : RuntimeProtectionContract X U region) :
+    RuntimeFlatWithin X U :=
+  runtimeFlatWithin_of_runtimeInteractionProtected hCoverage
+    (runtimeInteractionProtected_of_runtimeProtectionContract h)
+
+/--
+Bounded law package for `isolate` as runtime path localization.
+
+The conclusion exposes only selected path localization and bounded runtime
+flatness from explicit runtime coverage and protection premises.  Runtime
+telemetry completeness, semantic diagram completeness, and global protection
+idempotence remain non-conclusions.
+-/
+def isolateRuntimeLocalizationLaw
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) (region : C -> Prop) :
+    ArchitectureCalculusLaw
+      (ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) PUnit :=
+  runtimeLocalization ArchitectureOperationKind.isolate
+    True
+    (RuntimePathLocalizedWithin X U region)
+    (RuntimeCoverageComplete X U)
+    (RuntimeInteractionProtected X U)
+    True
+    (RuntimePathLocalizedWithin X U region ∧ RuntimeFlatWithin X U)
+    True
+    (by
+      intro _ hLocalized hCoverage hProtected _
+      exact ⟨hLocalized,
+        runtimeFlatWithin_of_runtimeInteractionProtected hCoverage hProtected⟩)
+
+/-- The isolate runtime localization package keeps the `isolate` operation tag. -/
+theorem isolateRuntimeLocalizationLaw_operationKind
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) (region : C -> Prop) :
+    (isolateRuntimeLocalizationLaw X U region).operationKind =
+      ArchitectureOperationKind.isolate :=
+  rfl
+
+/--
+The isolate runtime localization package exposes selected path localization and
+bounded runtime flatness from its visible assumptions.
+-/
+theorem isolateRuntimeLocalizationLaw_conclusion
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) (region : C -> Prop)
+    (h : (isolateRuntimeLocalizationLaw X U region).AssumptionsHold) :
+    RuntimePathLocalizedWithin X U region ∧ RuntimeFlatWithin X U :=
+  conclusion_of_assumptions (isolateRuntimeLocalizationLaw X U region) h
+
+/--
+Bounded law package for policy-aware `protect`.
+
+This connects the runtime policy package to bounded runtime flatness while
+keeping the graph-level `protect` identity kernel separate.
+-/
+def protectRuntimeProtectionLaw
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) (region : C -> Prop) :
+    ArchitectureCalculusLaw
+      (ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) PUnit :=
+  runtimeLocalization ArchitectureOperationKind.protect
+    True
+    (RuntimeProtectionContract X U region)
+    (RuntimeCoverageComplete X U)
+    True
+    True
+    (RuntimePathLocalizedWithin X U region ∧
+      RuntimeInteractionProtected X U ∧
+      RuntimeFlatWithin X U)
+    True
+    (by
+      intro _ hContract hCoverage _ _
+      exact ⟨runtimePathLocalized_of_runtimeProtectionContract hContract,
+        runtimeInteractionProtected_of_runtimeProtectionContract hContract,
+        runtimeFlatWithin_of_runtimeProtectionContract hCoverage hContract⟩)
+
+/-- The protect runtime protection package keeps the `protect` operation tag. -/
+theorem protectRuntimeProtectionLaw_operationKind
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) (region : C -> Prop) :
+    (protectRuntimeProtectionLaw X U region).operationKind =
+      ArchitectureOperationKind.protect :=
+  rfl
+
+/--
+The protect runtime protection package exposes selected path localization,
+runtime interaction protection, and bounded runtime flatness.
+-/
+theorem protectRuntimeProtectionLaw_conclusion
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs)
+    (U : ComponentUniverse X.static) (region : C -> Prop)
+    (h : (protectRuntimeProtectionLaw X U region).AssumptionsHold) :
+    RuntimePathLocalizedWithin X U region ∧
+      RuntimeInteractionProtected X U ∧
+      RuntimeFlatWithin X U :=
+  conclusion_of_assumptions (protectRuntimeProtectionLaw X U region) h
+
+end RuntimeLocalizationEntrypoints
+
 section ConcreteGraphEntrypoints
 
 variable {C : Type u}
@@ -1291,8 +1493,7 @@ def finiteProtectIdempotenceLaw
     (∀ c d : C, FG.protect.protect.graph.edge c d ↔ FG.protect.graph.edge c d)
     True
     (by
-      intro _ _ _ _ _
-      intro c d
+      intro _ _ _ _ _ c d
       exact FiniteArchGraph.protect_edge_iff FG.protect)
 
 /-- The finite protect idempotence entrypoint keeps the `protect` operation tag. -/
@@ -1320,8 +1521,7 @@ def finiteReverseInvolutionLaw
     (∀ c d : C, FG.reverse.reverse.graph.edge c d ↔ FG.graph.edge c d)
     True
     (by
-      intro _ _ _ _ _
-      intro c d
+      intro _ _ _ _ _ c d
       exact FiniteArchGraph.reverse_reverse_edge_iff FG)
 
 /-- The finite reverse involution entrypoint keeps the `reverse` operation tag. -/
