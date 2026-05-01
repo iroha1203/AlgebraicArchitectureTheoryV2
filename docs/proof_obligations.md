@@ -134,6 +134,48 @@ ArchitectureLawful X
 | Analytic representation bridge / strength | `defined only` / `proved` for representation-strength accessor theorems | [AAT v2 数学設計書](aat_v2_mathematical_design.md#85-analytic-representation-layer), [Lean theorem index](lean_theorem_index.md#analytic-representation), Issue [#280](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/280) |
 | SOLID-style counterexamples | `proved` for current Lean examples | [Lean theorem index](lean_theorem_index.md#solid-counterexamples) |
 
+### Design principle classification boundary
+
+Issue [#386](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/386)
+は、数学設計書 4.1 の design principle classification を、Lean で
+`DesignPattern` として証明する範囲、Lean schema 候補、future proof obligation、
+empirical hypothesis に分ける設計境界として扱う。数学設計書本文には作業状態を
+混ぜず、この表を status 管理の入口にする。
+
+| 設計原則 / pattern | 層 | 現在の Lean status | `DesignPattern` として証明する範囲 | docs-only / empirical に残す範囲 |
+| --- | --- | --- | --- | --- |
+| SRP | 局所契約層 | future proof obligation | 責務境界を選択 witness / invariant family として定義した後の local cohesion preservation。 | 自然言語としての SRP 全体、責務の意味的発見、組織的 ownership の良し悪し。 |
+| OCP | 局所契約層 | `defined only` / `proved` via feature extension packages | 既存 core edge / policy / selected observation を壊さない bounded extension package。 | 任意の拡張が安全であるという主張、未測定 runtime / semantic axis の保存。 |
+| LSP | 局所契約層 | `proved` for selected observation bridges | `LocalContractInvariant.lspCompatible` と `localContractDesignPattern` の selected invariant。 | すべての behavioral semantics の完全な置換可能性。 |
+| ISP | 局所契約層 | future proof obligation | interface projection の細分化を selected projection / observation boundary として定義した後の preservation。 | 自然言語としての interface 粒度最適性、API usability。 |
+| DIP | 局所契約層 | `proved` for projection / local contract bridges | `LocalContractInvariant.projectionSound` / `dipCompatible` と `localContractDesignPattern` の selected invariant。 | abstraction choice の完全性、すべての runtime / semantic dependency の捕捉。 |
+| Layered Architecture | 大域構造層 | `defined only` / `proved` for `StrictLayered`, `Decomposable`, edge-subset preservation | ranking / layering を保存する dependency operation family と、`StrictLayered` / `Decomposable` invariant family。次の Lean 化最小候補は Issue [#403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/403)。 | 層名や実務 convention の完全分類、runtime protocol や semantic contract の decomposability。 |
+| Clean Architecture | 大域構造層 | `defined only` / `proved` for boundary / abstraction policy packages | boundary-preserving / inward-dependency operation family と selected boundary / abstraction invariant family。Layered と合わせて Issue [#403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/403) で扱う。 | すべての framework 境界、effect leakage、組織境界の網羅的検出。 |
+| Event Sourcing | 状態遷移代数層 | empirical hypothesis / future proof obligation | event sequence monoid、replay invariant、projection law を state transition schema として定義した後に限定する。 | 現時点では [relationComplexity 設計](design/relation_complexity_design.md) と pilot dataset 側で測る。実コード event log の完全性は主張しない。 |
+| Saga | 状態遷移代数層 | empirical hypothesis / future proof obligation | compensation / weak recovery law を state transition algebra として定義した後に限定する。 | 補償が逆射であるという主張、全 failure mode の網羅、運用回復コストの証明。 |
+| CRUD | 状態遷移代数層 | empirical hypothesis | overwrite relation と履歴喪失 risk を relation-complexity axis として測る。 | CRUD が常に単純または悪いという単一評価、監査・復旧要件の意味的完全性。 |
+| Circuit Breaker | 実行時依存層 | `defined only` / `proved` for bounded runtime protection packages; policy-aware metrics are empirical | `RuntimeInteractionProtected` / `RuntimePathLocalizedWithin` など selected runtime protection invariant を持つ `protect` / `isolate` pattern。次の Lean 化最小候補は Issue [#404](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/404)。 | incident reduction、障害修正コスト低下、telemetry completeness、policy-aware coverage の empirical validation。 |
+| Replicated Log | 分散収束層 | future proof obligation / empirical hypothesis | failure model、quorum、ordering、convergence predicate を定義した後の conditional convergence pattern。 | 無条件の可用性・分断耐性・収束性、特定実装の protocol correctness 全体。 |
+
+次に Lean 化する最小候補は、既存 API から bounded theorem package を組みやすい
+次の 2 系統に絞る。
+
+1. 大域構造層: Layered / Clean Architecture を、`StrictLayered` /
+   `Decomposable`、boundary policy、abstraction policy の selected invariant
+   family として `DesignPattern` schema へ接続する
+   (Issue [#403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/403))。
+2. 実行時依存層: Circuit Breaker そのものの経験的効果ではなく、
+   `protect` / `isolate` の bounded runtime protection package を selected
+   runtime invariant family として `DesignPattern` schema へ接続する
+   (Issue [#404](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/404))。
+
+Event Sourcing / Saga / CRUD は、state transition algebra の Lean carrier と
+law family が未定義であるため、現時点では `DesignPattern` theorem にしない。
+Replicated Log も failure model と convergence semantics が未定義であるため、
+docs-only / future proof obligation に残す。いずれも、将来 Issue 化する場合は
+operation family、invariant family、closure law、non-conclusions を一つずつ
+分離できる粒度にする。
+
 ### Architecture Calculus / Extension Formula task package
 
 Issue [#261](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/261)
