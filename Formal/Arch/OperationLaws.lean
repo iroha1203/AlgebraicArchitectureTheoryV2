@@ -1,4 +1,5 @@
 import Formal.Arch.OperationKernel
+import Formal.Arch.LocalReplacement
 import Formal.Arch.Repair
 import Formal.Arch.RepairSynthesis
 
@@ -504,6 +505,109 @@ theorem finiteReplaceEdgeEquivalenceLaw_conclusion
     (h : (finiteReplaceEdgeEquivalenceLaw FG FH).AssumptionsHold) :
     ∀ c d : C, (FG.replace FH).graph.edge c d ↔ FG.graph.edge c d :=
   conclusion_of_assumptions (finiteReplaceEdgeEquivalenceLaw FG FH) h
+
+end ConcreteGraphEntrypoints
+
+section LocalReplacementEntrypoints
+
+variable {C : Type u} {A : Type v} {Obs : Type r}
+
+/--
+Bounded law package connecting a local replacement contract to projection and
+observation preservation.
+
+This is the contract/observation side of `replace`; it is separate from the
+finite graph-kernel entrypoint based on `EdgeEquivalent`.
+-/
+def localReplacementPreservationLaw
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs) :
+    ArchitectureCalculusLaw (ArchGraph C) PUnit :=
+  replaceRefinementAbstraction
+    True True True
+    (LocalReplacementContract G π GA O)
+    True
+    (ProjectionSound G π GA ∧ LSPCompatible π O)
+    True
+    (by
+      intro _ _ _ hLocal _
+      exact ⟨projectionSound_of_localReplacementContract hLocal,
+        lspCompatible_of_observationFactorsThrough
+          (observationFactorsThrough_of_localReplacementContract hLocal)⟩)
+
+/-- The local replacement preservation entrypoint keeps the `replace` operation tag. -/
+theorem localReplacementPreservationLaw_operationKind
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs) :
+    (localReplacementPreservationLaw G π GA O).operationKind =
+      ArchitectureOperationKind.replace :=
+  rfl
+
+/--
+The local replacement preservation entrypoint exposes projection soundness and
+observation preservation from its bounded assumptions.
+-/
+theorem localReplacementPreservationLaw_conclusion
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    (h : (localReplacementPreservationLaw G π GA O).AssumptionsHold) :
+    ProjectionSound G π GA ∧ LSPCompatible π O :=
+  conclusion_of_assumptions (localReplacementPreservationLaw G π GA O) h
+
+/--
+Bounded law package connecting a local replacement contract to zero selected
+projection and LSP violation counts on finite measurement universes.
+-/
+def localReplacementViolationZeroLaw
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableRel G.edge] [DecidableRel GA.edge] [DecidableEq A] [DecidableEq Obs]
+    (components implementations : List C) :
+    ArchitectureCalculusLaw (ArchGraph C) PUnit :=
+  replaceRefinementAbstraction
+    True True True
+    (LocalReplacementContract G π GA O)
+    True
+    (projectionSoundnessViolation G π GA components = 0 ∧
+      lspViolationCount π O implementations = 0)
+    True
+    (by
+      intro _ _ _ hLocal _
+      exact violationCounts_eq_zero_of_localReplacementContract
+        components implementations hLocal)
+
+/-- The local replacement zero-violation entrypoint keeps the `replace` operation tag. -/
+theorem localReplacementViolationZeroLaw_operationKind
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableRel G.edge] [DecidableRel GA.edge] [DecidableEq A] [DecidableEq Obs]
+    (components implementations : List C) :
+    (localReplacementViolationZeroLaw G π GA O
+      components implementations).operationKind =
+      ArchitectureOperationKind.replace :=
+  rfl
+
+/--
+The local replacement zero-violation entrypoint exposes finite selected
+projection and LSP counts as zero from its bounded assumptions.
+-/
+theorem localReplacementViolationZeroLaw_conclusion
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    [DecidableRel G.edge] [DecidableRel GA.edge] [DecidableEq A] [DecidableEq Obs]
+    (components implementations : List C)
+    (h : (localReplacementViolationZeroLaw G π GA O
+      components implementations).AssumptionsHold) :
+    projectionSoundnessViolation G π GA components = 0 ∧
+      lspViolationCount π O implementations = 0 :=
+  conclusion_of_assumptions
+    (localReplacementViolationZeroLaw G π GA O components implementations) h
+
+end LocalReplacementEntrypoints
+
+section ConcreteGraphEntrypoints
+
+variable {C : Type u}
 
 /--
 Bounded law package connecting graph-level `protect` identity to idempotence on
