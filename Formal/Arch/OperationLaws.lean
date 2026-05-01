@@ -473,6 +473,119 @@ theorem finiteComposeEdgeUnionLaw_conclusion
   conclusion_of_assumptions (finiteComposeEdgeUnionLaw FG FH) h
 
 /--
+Selected compatibility assumptions for interface-mediated finite composition.
+
+These assumptions say the three input graphs project soundly to the declared
+interface graph, and that the interface graph itself stays inside the declared
+interface boundary.  They are premises for the bounded law package, not facts
+derived from the `compose` tag.
+-/
+structure InterfaceMediatedComposeCompatibility
+    {A : Type v}
+    (FG FH FK : FiniteArchGraph C) (π : InterfaceProjection C A)
+    (GI : AbstractGraph A) (declaredInterface : A -> Prop) : Prop where
+  leftProjectionSound : ProjectionSound FG.graph π GI
+  middleProjectionSound : ProjectionSound FH.graph π GI
+  rightProjectionSound : ProjectionSound FK.graph π GI
+  interfaceEdgeClosed :
+    ∀ {a b : A}, GI.edge a b -> declaredInterface a ∧ declaredInterface b
+
+/--
+Coverage assumption for interface-mediated composition.
+
+The selected projection exposes every component through the declared interface
+boundary.  This is intentionally stronger than finite-list coverage and keeps
+the interface boundary explicit.
+-/
+def InterfaceMediatedComposeCoverage
+    {A : Type v} (π : InterfaceProjection C A)
+    (declaredInterface : A -> Prop) : Prop :=
+  ∀ c : C, declaredInterface (π.expose c)
+
+/--
+Selected exactness assumptions for the two associated finite compositions.
+
+Exactness is required only for the chosen interface graph and selected
+association pair.  This does not assert global projection completeness for all
+future compositions.
+-/
+structure InterfaceMediatedComposeExact
+    {A : Type v}
+    (FG FH FK : FiniteArchGraph C) (π : InterfaceProjection C A)
+    (GI : AbstractGraph A) : Prop where
+  leftAssociatedExact :
+    ProjectionExact ((FG.compose FH).compose FK).graph π GI
+  rightAssociatedExact :
+    ProjectionExact (FG.compose (FH.compose FK)).graph π GI
+
+/--
+External observation equivalence selected for an interface-mediated compose
+associativity package.
+-/
+def InterfaceMediatedComposeObserved
+    {Obs : Type r} (O : Observation (FiniteArchGraph C) Obs)
+    (FG FH FK : FiniteArchGraph C) : Prop :=
+  ObservationallyEquivalent O ((FG.compose FH).compose FK)
+    (FG.compose (FH.compose FK))
+
+/--
+Bounded theorem package for declared-interface-mediated `compose`
+associativity.
+
+The conclusion combines the finite graph-kernel edge equivalence with the
+selected external observation equivalence assumption.  Runtime / semantic
+completeness, global flatness preservation, and unconditional associativity for
+all operation tags remain non-conclusions.
+-/
+def interfaceMediatedComposeAssociativityLaw
+    {A : Type v} {Obs : Type r}
+    (FG FH FK : FiniteArchGraph C) (π : InterfaceProjection C A)
+    (GI : AbstractGraph A) (declaredInterface : A -> Prop)
+    (O : Observation (FiniteArchGraph C) Obs) :
+    ArchitectureCalculusLaw (FiniteArchGraph C) PUnit :=
+  composeAssociativity
+    True
+    (InterfaceMediatedComposeCompatibility FG FH FK π GI declaredInterface)
+    (InterfaceMediatedComposeCoverage π declaredInterface)
+    (InterfaceMediatedComposeExact FG FH FK π GI)
+    (InterfaceMediatedComposeObserved O FG FH FK)
+    (EdgeEquivalent ((FG.compose FH).compose FK).graph
+        (FG.compose (FH.compose FK)).graph ∧
+      InterfaceMediatedComposeObserved O FG FH FK)
+    True
+    (by
+      intro _ _ _ _ hObserved
+      exact ⟨FiniteArchGraph.compose_assoc_edgeEquivalent FG FH FK, hObserved⟩)
+
+/-- The interface-mediated compose associativity package keeps the `compose` tag. -/
+theorem interfaceMediatedComposeAssociativityLaw_operationKind
+    {A : Type v} {Obs : Type r}
+    (FG FH FK : FiniteArchGraph C) (π : InterfaceProjection C A)
+    (GI : AbstractGraph A) (declaredInterface : A -> Prop)
+    (O : Observation (FiniteArchGraph C) Obs) :
+    (interfaceMediatedComposeAssociativityLaw FG FH FK π GI declaredInterface O).operationKind =
+      ArchitectureOperationKind.compose :=
+  rfl
+
+/--
+The interface-mediated compose associativity package exposes finite edge
+associativity plus the selected external observation equivalence from its
+bounded assumptions.
+-/
+theorem interfaceMediatedComposeAssociativityLaw_conclusion
+    {A : Type v} {Obs : Type r}
+    (FG FH FK : FiniteArchGraph C) (π : InterfaceProjection C A)
+    (GI : AbstractGraph A) (declaredInterface : A -> Prop)
+    (O : Observation (FiniteArchGraph C) Obs)
+    (h : (interfaceMediatedComposeAssociativityLaw
+      FG FH FK π GI declaredInterface O).AssumptionsHold) :
+    EdgeEquivalent ((FG.compose FH).compose FK).graph
+        (FG.compose (FH.compose FK)).graph ∧
+      InterfaceMediatedComposeObserved O FG FH FK :=
+  conclusion_of_assumptions
+    (interfaceMediatedComposeAssociativityLaw FG FH FK π GI declaredInterface O) h
+
+/--
 Bounded law package connecting edge-equivalent finite `replace` to preservation
 of the source edge relation.
 -/
