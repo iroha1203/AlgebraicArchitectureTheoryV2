@@ -1,3 +1,5 @@
+import Formal.Arch.Operation
+
 namespace Formal.Arch
 
 universe u v w
@@ -180,6 +182,110 @@ theorem ops_inv_idempotent
   · intro hOp
     exact ops_inv_extensive source target holds
       (Ops source target holds (Inv source target holds T)) op hOp
+
+namespace OperationRoleSchema
+
+variable {State : Type u} {BeforeWitness : Type v} {AfterWitness : Type w}
+
+/--
+Source map used when an `OperationRoleSchema` is viewed as an operation in the
+operation/invariant Galois package.
+-/
+def operationInvariantSource
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) : State :=
+  R.operation.source
+
+/--
+Target map used when an `OperationRoleSchema` is viewed as an operation in the
+operation/invariant Galois package.
+-/
+def operationInvariantTarget
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) : State :=
+  R.operation.target
+
+/-- In this bridge, selected invariants are predicates on the same state universe. -/
+def stateInvariantHolds (I : State -> Prop) (state : State) : Prop :=
+  I state
+
+/-- The Galois-package source map is exactly the underlying architecture operation source. -/
+theorem operationInvariantSource_eq
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) :
+    operationInvariantSource R = R.operation.source :=
+  rfl
+
+/-- The Galois-package target map is exactly the underlying architecture operation target. -/
+theorem operationInvariantTarget_eq
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) :
+    operationInvariantTarget R = R.operation.target :=
+  rfl
+
+/--
+The bounded conclusion shape required to read a preserve role package as
+selected-invariant preservation.
+
+This is an explicit bridge assumption: a preserve role tag by itself still does
+not imply preservation.
+-/
+def RoleConclusionIsSelectedPreservation
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) : Prop :=
+  R.roleConclusion =
+    (R.selectedInvariant R.operation.source ->
+      R.selectedInvariant R.operation.target)
+
+/--
+A discharged preserve role package whose bounded conclusion is selected
+source-to-target preservation yields `PreservesInvariant` for the selected
+invariant.
+-/
+theorem preservesInvariant_of_discharged_preserve
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (hRole : R.HasRole ArchitectureOperationRole.preserve)
+    (hConclusion : R.RoleConclusionIsSelectedPreservation)
+    (hDischarged : R.Discharged)
+    (hAssumptions : R.AssumptionsHold) :
+    PreservesInvariant operationInvariantSource operationInvariantTarget
+      stateInvariantHolds R R.selectedInvariant := by
+  have _hRoleBoundary : R.HasRole ArchitectureOperationRole.preserve := hRole
+  intro hSource
+  have h : R.roleConclusion := hDischarged hAssumptions
+  rw [hConclusion] at h
+  exact h hSource
+
+/--
+A discharged preserve role package is an `Ops` member for the singleton selected
+invariant family associated with that package.
+-/
+theorem ops_mem_selectedInvariant_of_discharged_preserve
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (hRole : R.HasRole ArchitectureOperationRole.preserve)
+    (hConclusion : R.RoleConclusionIsSelectedPreservation)
+    (hDischarged : R.Discharged)
+    (hAssumptions : R.AssumptionsHold) :
+    Ops operationInvariantSource operationInvariantTarget stateInvariantHolds
+      (fun I => I = R.selectedInvariant) R := by
+  intro I hI
+  rw [hI]
+  exact preservesInvariant_of_discharged_preserve R hRole hConclusion
+    hDischarged hAssumptions
+
+/--
+If every selected operation role package preserves every selected invariant,
+then the selected operation family is contained in `Ops(S)`.
+-/
+theorem operationFamily_subset_ops_of_preserves_selected
+    (T : OperationRoleSchema State BeforeWitness AfterWitness -> Prop)
+    (S : (State -> Prop) -> Prop)
+    (hPreserves :
+      ∀ R, T R ->
+        ∀ I, S I ->
+          PreservesInvariant operationInvariantSource operationInvariantTarget
+            stateInvariantHolds R I) :
+    PredicateSubset T
+      (Ops operationInvariantSource operationInvariantTarget stateInvariantHolds S) := by
+  intro R hR I hI
+  exact hPreserves R hR I hI
+
+end OperationRoleSchema
 
 /--
 A design pattern as a selected operation family and invariant family equipped
