@@ -189,6 +189,64 @@ def replaceRefinementAbstraction
   sound := sound
   nonConclusions := nonConclusions
 
+/--
+Constructor for a bounded `refine` observation-equivalence law package.
+
+This is separate from `replaceRefinementAbstraction`: the package records a
+refinement-side contract and observation bridge for the `refine` operation tag.
+-/
+def refineObservationEquivalence
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    ArchitectureCalculusLaw State Witness where
+  law := ArchitectureCalculusLawKind.refinementAbstraction
+  operationKind := ArchitectureOperationKind.refine
+  boundedUniverse := boundedUniverse
+  compatibilityAssumptions := compatibilityAssumptions
+  coverageAssumptions := coverageAssumptions
+  exactnessAssumptions := exactnessAssumptions
+  observationEquivalence := observationEquivalence
+  conclusion := conclusion
+  sound := sound
+  nonConclusions := nonConclusions
+
+/--
+Constructor for a bounded `abstract` observation-equivalence law package.
+
+This records the abstraction-side projection exactness and selected external
+observation equivalence without claiming strict equality or global completeness.
+-/
+def abstractObservationEquivalence
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    ArchitectureCalculusLaw State Witness where
+  law := ArchitectureCalculusLawKind.refinementAbstraction
+  operationKind := ArchitectureOperationKind.abstract
+  boundedUniverse := boundedUniverse
+  compatibilityAssumptions := compatibilityAssumptions
+  coverageAssumptions := coverageAssumptions
+  exactnessAssumptions := exactnessAssumptions
+  observationEquivalence := observationEquivalence
+  conclusion := conclusion
+  sound := sound
+  nonConclusions := nonConclusions
+
 /-- Constructor for the bounded concrete `replace` edge-equivalence law package. -/
 def replaceEdgeEquivalence
     (boundedUniverse compatibilityAssumptions coverageAssumptions
@@ -357,6 +415,42 @@ theorem replaceRefinementAbstraction_operationKind
       exactnessAssumptions observationEquivalence conclusion
       nonConclusions sound).operationKind =
         ArchitectureOperationKind.replace :=
+  rfl
+
+theorem refineObservationEquivalence_operationKind
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    (refineObservationEquivalence (State := State) (Witness := Witness)
+      boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions sound).operationKind =
+        ArchitectureOperationKind.refine :=
+  rfl
+
+theorem abstractObservationEquivalence_operationKind
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    (abstractObservationEquivalence (State := State) (Witness := Witness)
+      boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions sound).operationKind =
+        ArchitectureOperationKind.abstract :=
   rfl
 
 theorem replaceEdgeEquivalence_operationKind
@@ -717,6 +811,193 @@ theorem localReplacementViolationZeroLaw_conclusion
     (localReplacementViolationZeroLaw G π GA O components implementations) h
 
 end LocalReplacementEntrypoints
+
+section RefinementAbstractionEntrypoints
+
+variable {C : Type u} {A : Type v} {Obs : Type r} {StateObs : Type c}
+
+/--
+Selected projection contract for a refinement.
+
+It uses the current operational DIP bridge: projection soundness plus
+representative stability.  Completeness is deliberately not included here.
+-/
+def RefinementProjectionContract
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) :
+    Prop :=
+  DIPCompatible G π GA
+
+/--
+Selected observation contract for a refinement.
+
+The component observation must factor through the selected interface
+projection.  This is the assumption from which LSP-style observation
+preservation is derived.
+-/
+def RefinementObservationContract
+    (π : InterfaceProjection C A) (O : Observation C Obs) : Prop :=
+  ObservationFactorsThrough π O
+
+/--
+Selected projection contract for abstraction.
+
+Abstraction uses exact projection plus representative stability for the chosen
+quotient/interface, but only as an explicit premise for this package.
+-/
+def AbstractionProjectionContract
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A) :
+    Prop :=
+  StrongDIPCompatible G π GA
+
+/--
+Selected observation contract for abstraction.
+
+As with refinement, component observations are required to factor through the
+selected interface projection.
+-/
+def AbstractionObservationContract
+    (π : InterfaceProjection C A) (O : Observation C Obs) : Prop :=
+  ObservationFactorsThrough π O
+
+/--
+The external observation equivalence expected after abstracting a selected
+refinement back to the original architecture.
+-/
+def RefinementAbstractionObserved
+    (O : Observation (ArchGraph C) StateObs)
+    (source abstracted : ArchGraph C) : Prop :=
+  ObservationallyEquivalent O abstracted source
+
+/-- A refinement projection contract includes projection soundness. -/
+theorem projectionSound_of_refinementProjectionContract
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : RefinementProjectionContract G π GA) :
+    ProjectionSound G π GA :=
+  h.1
+
+/-- A refinement observation contract yields LSP-compatible observations. -/
+theorem lspCompatible_of_refinementObservationContract
+    {π : InterfaceProjection C A} {O : Observation C Obs}
+    (h : RefinementObservationContract π O) :
+    LSPCompatible π O :=
+  lspCompatible_of_observationFactorsThrough h
+
+/-- An abstraction projection contract includes exact projection. -/
+theorem projectionExact_of_abstractionProjectionContract
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    (h : AbstractionProjectionContract G π GA) :
+    ProjectionExact G π GA :=
+  projectionExact_of_strongDIPCompatible h
+
+/-- An abstraction observation contract yields LSP-compatible observations. -/
+theorem lspCompatible_of_abstractionObservationContract
+    {π : InterfaceProjection C A} {O : Observation C Obs}
+    (h : AbstractionObservationContract π O) :
+    LSPCompatible π O :=
+  lspCompatible_of_observationFactorsThrough h
+
+/--
+Bounded law package for the `refine` side of a refinement/abstraction pair.
+
+The conclusion exposes only projection soundness and selected observation
+preservation from explicit refinement contracts.  It does not assert strict
+equality, unique decomposition, or global projection completeness.
+-/
+def refinementObservationEquivalenceLaw
+    (refined : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs) :
+    ArchitectureCalculusLaw (ArchGraph C) PUnit :=
+  refineObservationEquivalence
+    True
+    (RefinementProjectionContract refined π GA)
+    True True
+    (RefinementObservationContract π O)
+    (ProjectionSound refined π GA ∧ LSPCompatible π O)
+    True
+    (by
+      intro _ hProjection _ _ hObservation
+      exact ⟨projectionSound_of_refinementProjectionContract hProjection,
+        lspCompatible_of_refinementObservationContract hObservation⟩)
+
+/-- The refinement observation-equivalence package keeps the `refine` tag. -/
+theorem refinementObservationEquivalenceLaw_operationKind
+    (refined : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs) :
+    (refinementObservationEquivalenceLaw refined π GA O).operationKind =
+      ArchitectureOperationKind.refine :=
+  rfl
+
+/--
+The refinement observation-equivalence package exposes projection soundness and
+LSP-compatible observations from its bounded assumptions.
+-/
+theorem refinementObservationEquivalenceLaw_conclusion
+    (refined : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    (h : (refinementObservationEquivalenceLaw refined π GA O).AssumptionsHold) :
+    ProjectionSound refined π GA ∧ LSPCompatible π O :=
+  conclusion_of_assumptions
+    (refinementObservationEquivalenceLaw refined π GA O) h
+
+/--
+Bounded law package for abstracting a selected refinement back to its external
+interface.
+
+The conclusion combines exact projection, selected LSP-compatible observation,
+and the external observation equivalence assumption.  Runtime / semantic
+completeness, strict equality, and global projection completeness remain
+non-conclusions.
+-/
+def abstractionObservationEquivalenceLaw
+    (source abstracted : ArchGraph C) (π : InterfaceProjection C A)
+    (GA : AbstractGraph A) (componentObservation : Observation C Obs)
+    (externalObservation : Observation (ArchGraph C) StateObs) :
+    ArchitectureCalculusLaw (ArchGraph C) PUnit :=
+  abstractObservationEquivalence
+    True
+    (AbstractionObservationContract π componentObservation)
+    True
+    (AbstractionProjectionContract abstracted π GA)
+    (RefinementAbstractionObserved externalObservation source abstracted)
+    (ProjectionExact abstracted π GA ∧
+      LSPCompatible π componentObservation ∧
+      RefinementAbstractionObserved externalObservation source abstracted)
+    True
+    (by
+      intro _ hObservation _ hProjection hExternal
+      exact ⟨projectionExact_of_abstractionProjectionContract hProjection,
+        lspCompatible_of_abstractionObservationContract hObservation,
+        hExternal⟩)
+
+/-- The abstraction observation-equivalence package keeps the `abstract` tag. -/
+theorem abstractionObservationEquivalenceLaw_operationKind
+    (source abstracted : ArchGraph C) (π : InterfaceProjection C A)
+    (GA : AbstractGraph A) (componentObservation : Observation C Obs)
+    (externalObservation : Observation (ArchGraph C) StateObs) :
+    (abstractionObservationEquivalenceLaw source abstracted π GA
+      componentObservation externalObservation).operationKind =
+      ArchitectureOperationKind.abstract :=
+  rfl
+
+/--
+The abstraction observation-equivalence package exposes exact projection,
+selected observation preservation, and external observation equivalence from
+its bounded assumptions.
+-/
+theorem abstractionObservationEquivalenceLaw_conclusion
+    (source abstracted : ArchGraph C) (π : InterfaceProjection C A)
+    (GA : AbstractGraph A) (componentObservation : Observation C Obs)
+    (externalObservation : Observation (ArchGraph C) StateObs)
+    (h : (abstractionObservationEquivalenceLaw source abstracted π GA
+      componentObservation externalObservation).AssumptionsHold) :
+    ProjectionExact abstracted π GA ∧
+      LSPCompatible π componentObservation ∧
+      RefinementAbstractionObserved externalObservation source abstracted :=
+  conclusion_of_assumptions
+    (abstractionObservationEquivalenceLaw source abstracted π GA
+      componentObservation externalObservation) h
+
+end RefinementAbstractionEntrypoints
 
 section ConcreteGraphEntrypoints
 
