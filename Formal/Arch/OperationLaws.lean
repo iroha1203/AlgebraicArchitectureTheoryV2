@@ -4,6 +4,7 @@ import Formal.Arch.Flatness
 import Formal.Arch.Reachability
 import Formal.Arch.Repair
 import Formal.Arch.RepairSynthesis
+import Formal.Arch.ArchitectureEvolution
 
 namespace Formal.Arch
 
@@ -25,6 +26,7 @@ inductive ArchitectureCalculusLawKind where
   | explicitContractSoundness
   | protectionIdempotence
   | runtimeLocalization
+  | migrationCompatibility
   | reverseInvolution
   | witnessMappingFunctoriality
   | synthesisSoundness
@@ -44,6 +46,7 @@ def label : ArchitectureCalculusLawKind -> String
   | explicitContractSoundness => "explicitContractSoundness"
   | protectionIdempotence => "protectionIdempotence"
   | runtimeLocalization => "runtimeLocalization"
+  | migrationCompatibility => "migrationCompatibility"
   | reverseInvolution => "reverseInvolution"
   | witnessMappingFunctoriality => "witnessMappingFunctoriality"
   | synthesisSoundness => "synthesisSoundness"
@@ -381,6 +384,30 @@ def runtimeLocalization
   sound := sound
   nonConclusions := nonConclusions
 
+/-- Constructor for the bounded `migrate` compatibility law package. -/
+def migrationCompatibility
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    ArchitectureCalculusLaw State Witness where
+  law := ArchitectureCalculusLawKind.migrationCompatibility
+  operationKind := ArchitectureOperationKind.migrate
+  boundedUniverse := boundedUniverse
+  compatibilityAssumptions := compatibilityAssumptions
+  coverageAssumptions := coverageAssumptions
+  exactnessAssumptions := exactnessAssumptions
+  observationEquivalence := observationEquivalence
+  conclusion := conclusion
+  sound := sound
+  nonConclusions := nonConclusions
+
 /-- Constructor for a bounded reverse-involution law package. -/
 def reverseInvolution
     (operationKind : ArchitectureOperationKind)
@@ -628,6 +655,24 @@ theorem runtimeLocalization_operationKind
       exactnessAssumptions observationEquivalence conclusion
       nonConclusions sound).operationKind =
         operationKind :=
+  rfl
+
+theorem migrationCompatibility_operationKind
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    (migrationCompatibility (State := State) (Witness := Witness)
+      boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions sound).operationKind =
+        ArchitectureOperationKind.migrate :=
   rfl
 
 theorem reverseInvolution_kind
@@ -1476,6 +1521,116 @@ theorem protectRuntimeProtectionLaw_conclusion
   conclusion_of_assumptions (protectRuntimeProtectionLaw X U region) h
 
 end RuntimeLocalizationEntrypoints
+
+section MigrationEntrypoints
+
+variable {Obs : Type r}
+
+/--
+The selected staged path premise for a migration theorem package.
+
+Every step must be tagged as a migration and satisfy its local lawfulness field.
+This is a bounded protocol premise, not a consequence of the `migrate` tag.
+-/
+def StagedMigrationPath
+    {X Y : State} (plan : ArchitectureEvolution State X Y) : Prop :=
+  MigrationSequence plan ∧ EveryStepLawful plan
+
+/--
+Selected compatibility window for a migration plan.
+
+The window predicate is required at the endpoints and at every primitive step
+boundary in the plan.  It does not assert telemetry, semantic, or extractor
+completeness outside the selected path.
+-/
+def MigrationCompatibilityWindow
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (compatible : State -> Prop) : Prop :=
+  compatible X ∧ compatible Y ∧
+    EveryTransition plan (fun X Y _t => compatible X ∧ compatible Y)
+
+/-- Selected old/new observation equivalence for a migration package. -/
+def MigrationObserved
+    (O : Observation State Obs) (old new : State) : Prop :=
+  ObservationallyEquivalent O old new
+
+/--
+Explicit non-conclusion marker for bounded migration packages.
+
+This records that the package does not assert runtime telemetry completeness,
+semantic completeness, or global flatness preservation.
+-/
+def MigrationNonConclusions : Prop :=
+  True
+
+/-- A staged migration contract exposes its migration path premise. -/
+theorem migrationSequence_of_stagedMigrationPath
+    {X Y : State} {plan : ArchitectureEvolution State X Y}
+    (h : StagedMigrationPath plan) :
+    MigrationSequence plan :=
+  h.1
+
+/-- A staged migration contract exposes per-step lawfulness. -/
+theorem everyStepLawful_of_stagedMigrationPath
+    {X Y : State} {plan : ArchitectureEvolution State X Y}
+    (h : StagedMigrationPath plan) :
+    EveryStepLawful plan :=
+  h.2
+
+/--
+Bounded law package for `migrate`.
+
+The conclusion exposes only the staged migration path, the selected
+compatibility window, and the old/new observation equivalence supplied as
+explicit assumptions.
+-/
+def migrateObservationEquivalenceLaw
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (compatible : State -> Prop) (O : Observation State Obs) :
+    ArchitectureCalculusLaw State PUnit :=
+  migrationCompatibility
+    True
+    (StagedMigrationPath plan)
+    (MigrationCompatibilityWindow plan compatible)
+    True
+    (MigrationObserved O X Y)
+    (StagedMigrationPath plan ∧
+      MigrationCompatibilityWindow plan compatible ∧
+      MigrationObserved O X Y)
+    MigrationNonConclusions
+    (by
+      intro _ hStaged hWindow _ hObserved
+      exact ⟨hStaged, hWindow, hObserved⟩)
+
+/-- The migration observation-equivalence package keeps the `migrate` tag. -/
+theorem migrateObservationEquivalenceLaw_operationKind
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (compatible : State -> Prop) (O : Observation State Obs) :
+    (migrateObservationEquivalenceLaw plan compatible O).operationKind =
+      ArchitectureOperationKind.migrate :=
+  rfl
+
+/--
+The migration package exposes only its bounded migration path, compatibility
+window, and selected old/new observation equivalence.
+-/
+theorem migrateObservationEquivalenceLaw_conclusion
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (compatible : State -> Prop) (O : Observation State Obs)
+    (h : (migrateObservationEquivalenceLaw plan compatible O).AssumptionsHold) :
+    StagedMigrationPath plan ∧
+      MigrationCompatibilityWindow plan compatible ∧
+      MigrationObserved O X Y :=
+  conclusion_of_assumptions (migrateObservationEquivalenceLaw plan compatible O) h
+
+/-- The migration package records the explicit migration non-conclusions. -/
+theorem migrateObservationEquivalenceLaw_recordsNonConclusions
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (compatible : State -> Prop) (O : Observation State Obs) :
+    (migrateObservationEquivalenceLaw plan compatible O).RecordsNonConclusions :=
+  trivial
+
+end MigrationEntrypoints
 
 section ConcreteGraphEntrypoints
 

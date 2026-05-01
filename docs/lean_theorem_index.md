@@ -495,10 +495,13 @@ compatibility, coverage, exactness, and observation equivalence kept explicit.
 Issue [#378](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/378)
 adds separate `refine` / `abstract` observation-equivalence packages so they do
 not reuse the `replace` law wrapper.
+Issue [#410](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/410)
+adds a bounded `migrate` package for staged migration paths, compatibility
+windows, and old/new observation equivalence.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
-| `ArchitectureCalculusLawKind` | `inductive` | `identity`, `associativity`, `edgeUnion`, `refinementAbstraction`, `edgeEquivalence`, `externalContractPreservation`, `explicitContractSoundness`, `protectionIdempotence`, `runtimeLocalization`, `reverseInvolution`, `witnessMappingFunctoriality`, `synthesisSoundness`, `noSolutionSoundness` の bounded law tag。 | `defined only` |
+| `ArchitectureCalculusLawKind` | `inductive` | `identity`, `associativity`, `edgeUnion`, `refinementAbstraction`, `edgeEquivalence`, `externalContractPreservation`, `explicitContractSoundness`, `protectionIdempotence`, `runtimeLocalization`, `migrationCompatibility`, `reverseInvolution`, `witnessMappingFunctoriality`, `synthesisSoundness`, `noSolutionSoundness` の bounded law tag。 | `defined only` |
 | `ArchitectureCalculusLawKind.label` | `def` | documentation-facing な law tag label。 | `defined only` |
 | `ArchitectureCalculusLaw` | `structure` | law kind、operation kind、bounded universe、compatibility / coverage / exactness / observation equivalence、結論、soundness、non-conclusions を束ねる schema。 | `defined only` |
 | `ArchitectureCalculusLaw.AssumptionsHold` | `def` | bounded law package の visible assumptions をまとめる。 | `defined only` |
@@ -515,6 +518,7 @@ not reuse the `replace` law wrapper.
 | `ArchitectureCalculusLaw.contractExplicitizationSoundness` | `def` | `contract` operation 用 bounded explicitization-soundness law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.protectIdempotence` | `def` | `protect` operation 用 bounded idempotence law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.runtimeLocalization` | `def` | `isolate` / policy-aware `protect` など、selected runtime region に相対化した bounded runtime-localization law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.migrationCompatibility` | `def` | `migrate` operation 用 bounded migration compatibility law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.reverseInvolution` | `def` | selected operation kind に対する bounded reverse-involution law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.repairMonotonicity` | `def` | `repair` operation 用 bounded witness-mapping / monotonicity law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.identityLaw_kind` | `theorem` | identity law constructor が identity tag を持つこと。 | `proved` |
@@ -528,6 +532,7 @@ not reuse the `replace` law wrapper.
 | `ArchitectureCalculusLaw.contractExplicitizationSoundness_operationKind` | `theorem` | contract explicitization-soundness constructor が `contract` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.protectIdempotence_operationKind` | `theorem` | protect idempotence constructor が `protect` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.runtimeLocalization_operationKind` | `theorem` | runtime-localization constructor が指定された operation kind を保持すること。 | `proved` |
+| `ArchitectureCalculusLaw.migrationCompatibility_operationKind` | `theorem` | migration-compatibility constructor が `migrate` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.reverseInvolution_kind` | `theorem` | reverse-involution constructor が reverse-involution tag を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.repairMonotonicity_operationKind` | `theorem` | repair monotonicity constructor が `repair` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.finiteComposeEdgeUnionLaw` | `def` | finite `compose` graph kernel の edge-union theorem を bounded law package として包む entrypoint。 | `defined only` |
@@ -589,6 +594,16 @@ not reuse the `replace` law wrapper.
 | `ArchitectureCalculusLaw.protectRuntimeProtectionLaw` | `def` | policy-aware `protect` を selected path localization、`RuntimeInteractionProtected`、bounded runtime flatness に接続する bounded entrypoint。 | `defined only` |
 | `ArchitectureCalculusLaw.protectRuntimeProtectionLaw_operationKind` | `theorem` | protect runtime-protection package が `protect` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.protectRuntimeProtectionLaw_conclusion` | `theorem` | bounded assumptions から selected path localization、runtime interaction protection、`RuntimeFlatWithin` を得る。 | `proved` |
+| `ArchitectureCalculusLaw.StagedMigrationPath` | `def` | selected evolution plan の全 step が migration tag を持ち、各 step の local lawfulness field を満たす staged migration premise。 | `defined only` |
+| `ArchitectureCalculusLaw.MigrationCompatibilityWindow` | `def` | selected compatibility predicate が migration plan の endpoints と各 primitive step boundary で成り立つこと。telemetry / semantic / extractor completeness は含めない。 | `defined only` |
+| `ArchitectureCalculusLaw.MigrationObserved` | `def` | old architecture と new architecture が selected observation で同値であること。 | `defined only` |
+| `ArchitectureCalculusLaw.MigrationNonConclusions` | `def` | bounded migration package が runtime telemetry completeness、semantic completeness、global flatness preservation を主張しないことを記録する marker。 | `defined only` |
+| `ArchitectureCalculusLaw.migrationSequence_of_stagedMigrationPath` | `theorem` | staged migration premise から `MigrationSequence` を取り出す。 | `proved` |
+| `ArchitectureCalculusLaw.everyStepLawful_of_stagedMigrationPath` | `theorem` | staged migration premise から `EveryStepLawful` を取り出す。 | `proved` |
+| `ArchitectureCalculusLaw.migrateObservationEquivalenceLaw` | `def` | staged migration path、compatibility window、old / new observation equivalence を explicit assumptions として束ねる bounded `migrate` entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.migrateObservationEquivalenceLaw_operationKind` | `theorem` | migration observation-equivalence package が `migrate` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.migrateObservationEquivalenceLaw_conclusion` | `theorem` | bounded assumptions から staged migration path、compatibility window、selected old/new observation equivalence を得る。 | `proved` |
+| `ArchitectureCalculusLaw.migrateObservationEquivalenceLaw_recordsNonConclusions` | `theorem` | bounded migration package が migration non-conclusions を記録していること。 | `proved` |
 | `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw` | `def` | graph-level identity としての finite `protect` を bounded idempotence law package として包む entrypoint。 | `defined only` |
 | `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw_operationKind` | `theorem` | finite protect idempotence law package が `protect` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw_conclusion` | `theorem` | bounded assumptions から finite protect idempotence を得る。 | `proved` |
