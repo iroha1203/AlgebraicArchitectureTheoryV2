@@ -77,6 +77,110 @@ theorem operationInvariant_galois
   · intro hS op hOp I hI
     exact hS I hI op hOp
 
+/-- `Ops` is antitone in the selected invariant family. -/
+theorem Ops_antitone
+    {State : Type u} {Operation : Type v} {Invariant : Type w}
+    (source target : Operation -> State)
+    (holds : Invariant -> State -> Prop)
+    {S₁ S₂ : Invariant -> Prop}
+    (hS : PredicateSubset S₁ S₂) :
+    PredicateSubset (Ops source target holds S₂)
+      (Ops source target holds S₁) := by
+  intro op hOp I hI
+  exact hOp I (hS I hI)
+
+/-- `Inv` is antitone in the selected operation family. -/
+theorem Inv_antitone
+    {State : Type u} {Operation : Type v} {Invariant : Type w}
+    (source target : Operation -> State)
+    (holds : Invariant -> State -> Prop)
+    {T₁ T₂ : Operation -> Prop}
+    (hT : PredicateSubset T₁ T₂) :
+    PredicateSubset (Inv source target holds T₂)
+      (Inv source target holds T₁) := by
+  intro I hI op hOp
+  exact hI op (hT op hOp)
+
+/-- Every selected invariant is preserved by the operations that preserve all selected invariants. -/
+theorem inv_ops_extensive
+    {State : Type u} {Operation : Type v} {Invariant : Type w}
+    (source target : Operation -> State)
+    (holds : Invariant -> State -> Prop)
+    (S : Invariant -> Prop) :
+    PredicateSubset S (Inv source target holds (Ops source target holds S)) := by
+  intro I hI op hOp
+  exact hOp I hI
+
+/-- Every selected operation preserves all invariants preserved by the selected operations. -/
+theorem ops_inv_extensive
+    {State : Type u} {Operation : Type v} {Invariant : Type w}
+    (source target : Operation -> State)
+    (holds : Invariant -> State -> Prop)
+    (T : Operation -> Prop) :
+    PredicateSubset T (Ops source target holds (Inv source target holds T)) := by
+  intro op hOp I hI
+  exact hI op hOp
+
+/-- The invariant closure `Inv ∘ Ops` is monotone. -/
+theorem inv_ops_monotone
+    {State : Type u} {Operation : Type v} {Invariant : Type w}
+    (source target : Operation -> State)
+    (holds : Invariant -> State -> Prop)
+    {S₁ S₂ : Invariant -> Prop}
+    (hS : PredicateSubset S₁ S₂) :
+    PredicateSubset
+      (Inv source target holds (Ops source target holds S₁))
+      (Inv source target holds (Ops source target holds S₂)) := by
+  exact Inv_antitone source target holds (Ops_antitone source target holds hS)
+
+/-- The operation closure `Ops ∘ Inv` is monotone. -/
+theorem ops_inv_monotone
+    {State : Type u} {Operation : Type v} {Invariant : Type w}
+    (source target : Operation -> State)
+    (holds : Invariant -> State -> Prop)
+    {T₁ T₂ : Operation -> Prop}
+    (hT : PredicateSubset T₁ T₂) :
+    PredicateSubset
+      (Ops source target holds (Inv source target holds T₁))
+      (Ops source target holds (Inv source target holds T₂)) := by
+  exact Ops_antitone source target holds (Inv_antitone source target holds hT)
+
+/-- The invariant closure `Inv ∘ Ops` is idempotent up to predicate extensionality. -/
+theorem inv_ops_idempotent
+    {State : Type u} {Operation : Type v} {Invariant : Type w}
+    (source target : Operation -> State)
+    (holds : Invariant -> State -> Prop)
+    (S : Invariant -> Prop) :
+    Inv source target holds
+        (Ops source target holds (Inv source target holds (Ops source target holds S))) =
+      Inv source target holds (Ops source target holds S) := by
+  funext I
+  apply propext
+  constructor
+  · intro hI op hOp
+    exact hI op (ops_inv_extensive source target holds (Ops source target holds S) op hOp)
+  · intro hI
+    exact inv_ops_extensive source target holds
+      (Inv source target holds (Ops source target holds S)) I hI
+
+/-- The operation closure `Ops ∘ Inv` is idempotent up to predicate extensionality. -/
+theorem ops_inv_idempotent
+    {State : Type u} {Operation : Type v} {Invariant : Type w}
+    (source target : Operation -> State)
+    (holds : Invariant -> State -> Prop)
+    (T : Operation -> Prop) :
+    Ops source target holds
+        (Inv source target holds (Ops source target holds (Inv source target holds T))) =
+      Ops source target holds (Inv source target holds T) := by
+  funext op
+  apply propext
+  constructor
+  · intro hOp I hI
+    exact hOp I (inv_ops_extensive source target holds (Inv source target holds T) I hI)
+  · intro hOp
+    exact ops_inv_extensive source target holds
+      (Ops source target holds (Inv source target holds T)) op hOp
+
 /--
 A design pattern as a selected operation family and invariant family equipped
 with the preservation closure law used by the weak Galois correspondence.
