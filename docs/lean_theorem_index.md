@@ -609,7 +609,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -633,6 +633,14 @@ operation family とし、`StrictLayered`、`Decomposable`、boundary policy sou
 abstraction policy soundness を selected invariant family として扱う。層名 convention
 の完全分類、runtime / semantic decomposability、global flatness preservation は
 non-conclusion として記録する。
+Issue [#404](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/404)
+では、実行時依存層の代表例として `protect` / `isolate` の bounded runtime
+protection package を `DesignPattern` schema に接続した。ここでは selected path
+localization、`RuntimeInteractionProtected`、bounded `RuntimeFlatWithin` を
+selected invariant family とし、`isolateRuntimeLocalizationLaw` /
+`protectRuntimeProtectionLaw` の bounded assumptions から closure law を構成する。
+incident reduction、障害修正コスト低下、runtime telemetry completeness、
+policy-aware coverage completeness は non-conclusion として記録する。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -706,11 +714,36 @@ non-conclusion として記録する。
 | `structuralLayerDesignPattern` | `def` | Layered / Clean Architecture を大域構造層の representative `DesignPattern` schema として束ねる。 | `defined only` |
 | `structuralLayerDesignPattern_closure_law` | `theorem` | 大域構造層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
 | `structuralLayerDesignPattern_records_nonConclusion` | `theorem` | 大域構造層 `DesignPattern` が structural non-conclusion clauses を記録する。 | `proved` |
+| `RuntimeProtectionState` | `structure` | runtime flatness model、selected `ComponentUniverse`、selected region を実行時依存層 state として束ねる。 | `defined only` |
+| `RuntimeProtectionOperation` | `inductive` | `isolateRuntimeLocalizationLaw` または `protectRuntimeProtectionLaw` の bounded assumptions を持つ proof-carrying runtime operation。 | `defined only` |
+| `runtimeProtectionOperationSource` | `def` | runtime protection operation の source state を取り出す。 | `defined only` |
+| `runtimeProtectionOperationTarget` | `def` | runtime protection operation の target state を取り出す。 | `defined only` |
+| `RuntimeProtectionInvariant` | `inductive` | 実行時依存層の selected invariant axis として path localization、runtime interaction protection、bounded runtime flatness を列挙する。 | `defined only` |
+| `runtimeProtectionInvariantHolds` | `def` | `RuntimeProtectionInvariant` を `RuntimeProtectionState` 上の predicate として評価する。 | `defined only` |
+| `runtimeProtectionInvariantFamily` | `def` | 実行時依存層で選択する invariant family。 | `defined only` |
+| `runtimeProtectionOperationFamily` | `def` | proof-carrying `isolate` / `protect` runtime operation family。 | `defined only` |
+| `runtimeProtectionOperation_isolate_preserves_pathLocalized` | `theorem` | `isolateRuntimeLocalizationLaw` から target state の selected path localization を得る。 | `proved` |
+| `runtimeProtectionOperation_isolate_preserves_interactionProtected` | `theorem` | `isolateRuntimeLocalizationLaw` の bounded assumptions から target state の `RuntimeInteractionProtected` を得る。 | `proved` |
+| `runtimeProtectionOperation_isolate_preserves_runtimeFlat` | `theorem` | `isolateRuntimeLocalizationLaw` から target state の bounded `RuntimeFlatWithin` を得る。 | `proved` |
+| `runtimeProtectionOperation_protect_preserves_pathLocalized` | `theorem` | `protectRuntimeProtectionLaw` から target state の selected path localization を得る。 | `proved` |
+| `runtimeProtectionOperation_protect_preserves_interactionProtected` | `theorem` | `protectRuntimeProtectionLaw` から target state の `RuntimeInteractionProtected` を得る。 | `proved` |
+| `runtimeProtectionOperation_protect_preserves_runtimeFlat` | `theorem` | `protectRuntimeProtectionLaw` から target state の bounded `RuntimeFlatWithin` を得る。 | `proved` |
+| `runtimeProtectionOperation_preserves_runtimeProtectionInvariant` | `theorem` | proof-carrying runtime protection operation が selected runtime protection invariants を保存する。 | `proved` |
+| `runtimeProtectionOperationFamily_subset_ops` | `theorem` | runtime protection operation family が selected invariant family の `Ops` に含まれる。 | `proved` |
+| `runtimeProtectionInvariantFamily_subset_inv` | `theorem` | selected runtime protection invariants が runtime operation family により保存される `Inv` に含まれる。 | `proved` |
+| `RuntimeProtectionNonConclusionClause` | `inductive` | 実行時依存層の non-conclusion clause として incident reduction、repair cost reduction、runtime telemetry completeness、policy-aware coverage completeness を列挙する。 | `defined only` |
+| `RuntimeProtectionNonConclusion` | `def` | 実行時依存層の non-conclusion clause を記録する predicate。 | `defined only` |
+| `runtimeProtection_nonConclusion` | `theorem` | 実行時依存層の non-conclusion clause が記録されることを示す。 | `proved` |
+| `runtimeProtectionDesignPattern` | `def` | `protect` / `isolate` を実行時依存層の representative `DesignPattern` schema として束ねる。 | `defined only` |
+| `runtimeProtectionDesignPattern_closure_law` | `theorem` | 実行時依存層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `runtimeProtectionDesignPattern_records_nonConclusion` | `theorem` | 実行時依存層 `DesignPattern` が runtime protection non-conclusion clauses を記録する。 | `proved` |
 
 Non-conclusions: この theorem package は operation / invariant の束同型、設計パターンの完全分類、
 selected preservation relation の外側にある runtime / semantic / empirical 性質の保存、
 局所契約層からの無条件の `Decomposable` / `StrictLayered`、層名 convention の完全分類、
-runtime / semantic decomposability、または global flatness preservation を主張しない。
+runtime / semantic decomposability、global flatness preservation、incident reduction、
+障害修正コスト低下、runtime telemetry completeness、または policy-aware coverage completeness
+を主張しない。
 
 ## Repair
 
