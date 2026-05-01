@@ -31,6 +31,28 @@ theorem observationFactorsThrough_of_localReplacementContract
     (h : LocalReplacementContract G π GA O) : ObservationFactorsThrough π O :=
   h.2
 
+/-- A local replacement contract gives observation preservation on each abstraction fiber. -/
+theorem lspCompatible_of_localReplacementContract
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    {O : Observation C Obs}
+    (h : LocalReplacementContract G π GA O) : LSPCompatible π O :=
+  lspCompatible_of_observationFactorsThrough
+    (observationFactorsThrough_of_localReplacementContract h)
+
+/--
+A local replacement contract preserves selected observations between
+implementations exposed through the same interface.
+-/
+theorem observationallyEquivalent_of_localReplacementContract
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {G : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    {O : Observation C Obs} {x y : C}
+    (h : LocalReplacementContract G π GA O)
+    (hInterface : π.expose x = π.expose y) :
+    ObservationallyEquivalent O x y :=
+  lspCompatible_of_localReplacementContract h hInterface
+
 /--
 Unfolding a local replacement contract through projection-obstruction
 exactness keeps the representative-stability and observation-factorization
