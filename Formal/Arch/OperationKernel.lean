@@ -121,6 +121,59 @@ theorem reverse_reverse_edge_iff {C : Type u} (G : ArchGraph C) {c d : C} :
     (G.reverse.reverse).edge c d ↔ G.edge c d :=
   Iff.rfl
 
+/--
+Reachability in a reversed graph is exactly reachability in the opposite
+direction in the source graph.
+-/
+theorem reachable_reverse_iff {C : Type u} (G : ArchGraph C) {c d : C} :
+    Reachable G.reverse c d ↔ Reachable G d c := by
+  constructor
+  · intro h
+    induction h with
+    | refl c =>
+        exact Reachable.refl c
+    | step hEdge _hRest ih =>
+        exact Reachable.trans ih (Reachable.of_edge (G := G) hEdge)
+  · intro h
+    induction h with
+    | refl c =>
+        exact Reachable.refl c
+    | step hEdge _hRest ih =>
+        exact Reachable.trans ih (Reachable.of_edge (G := G.reverse) hEdge)
+
+/--
+The strict reverse-reachability cone of `c` inside a supplied finite
+measurement list.
+
+With the repository convention `edge source target` meaning "source depends on
+target", this is the graph-level upstream-impact cone of `c`. Incident-scope
+and telemetry-completeness claims remain outside this definition.
+-/
+noncomputable def reverseReachableCone {C : Type u} (G : ArchGraph C)
+    [DecidableEq C]
+    (components : List C) (c : C) : List C :=
+  ArchitectureSignature.reachableCone G.reverse components c
+
+/-- Graph-level strict reverse-reachability cone size inside a finite list. -/
+noncomputable def reverseReachableConeSize {C : Type u} (G : ArchGraph C)
+    [DecidableEq C]
+    (components : List C) (c : C) : Nat :=
+  (reverseReachableCone G components c).length
+
+/--
+Membership in the reverse-reachability cone is exactly source-graph reachability
+to the selected component.
+-/
+theorem mem_reverseReachableCone_iff {C : Type u} {G : ArchGraph C}
+    [DecidableEq C]
+    {components : List C} {c d : C} :
+    d ∈ G.reverseReachableCone components c ↔
+      d ∈ components ∧ c ≠ d ∧ Reachable G d c := by
+  classical
+  simpa [reverseReachableCone, reachable_reverse_iff] using
+    (ArchitectureSignature.mem_reachableCone_iff (G := G.reverse)
+      (components := components) (c := c) (d := d))
+
 /-- Compose two graphs on the same component type by taking edge union. -/
 def compose {C : Type u} (G H : ArchGraph C) : ArchGraph C where
   edge c d := G.edge c d ∨ H.edge c d
@@ -203,6 +256,20 @@ theorem reverse_edge_iff {C : Type u} (FG : FiniteArchGraph C) {c d : C} :
 theorem reverse_reverse_edge_iff {C : Type u} (FG : FiniteArchGraph C) {c d : C} :
     FG.reverse.reverse.graph.edge c d ↔ FG.graph.edge c d :=
   Iff.rfl
+
+/--
+On a finite graph, the executable bounded cone of the reversed graph agrees
+with the graph-level reverse-reachability cone.
+-/
+theorem reverse_reachableConeSizeAt_eq_reverseReachableConeSize_under_universe
+    {C : Type u} (FG : FiniteArchGraph C)
+    [DecidableEq C] [DecidableRel FG.reverse.graph.edge] (c : C) :
+    ArchitectureSignature.reachableConeSizeAt FG.reverse.graph FG.components c =
+      FG.graph.reverseReachableConeSize FG.components c := by
+  classical
+  simpa [ArchGraph.reverseReachableConeSize, ArchGraph.reverseReachableCone] using
+    (ArchitectureSignature.reachableConeSizeAt_eq_reachableConeSize_under_universe
+      (G := FG.reverse.graph) FG.reverse.componentUniverse c)
 
 /--
 Protect is the graph-level identity transform at this kernel layer.
