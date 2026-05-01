@@ -140,6 +140,24 @@ theorem right_edgeSubset_compose {C : Type u} (G H : ArchGraph C) :
     EdgeSubset H (G.compose H) :=
   fun hEdge => Or.inr hEdge
 
+/-- Graph-level edge-union composition is associative up to edge equivalence. -/
+theorem compose_assoc_edgeEquivalent {C : Type u} (G H K : ArchGraph C) :
+    EdgeEquivalent ((G.compose H).compose K) (G.compose (H.compose K)) := by
+  intro c d
+  constructor
+  · intro hEdge
+    rcases hEdge with hLeft | hK
+    · rcases hLeft with hG | hH
+      · exact Or.inl hG
+      · exact Or.inr (Or.inl hH)
+    · exact Or.inr (Or.inr hK)
+  · intro hEdge
+    rcases hEdge with hG | hRight
+    · exact Or.inl (Or.inl hG)
+    · rcases hRight with hH | hK
+      · exact Or.inl (Or.inr hH)
+      · exact Or.inr hK
+
 /--
 Graph-level replacement chooses the replacement graph.
 
@@ -230,6 +248,13 @@ theorem left_edgeSubset_compose {C : Type u} (FG FH : FiniteArchGraph C) :
 theorem right_edgeSubset_compose {C : Type u} (FG FH : FiniteArchGraph C) :
     EdgeSubset FH.graph (FG.compose FH).graph :=
   ArchGraph.right_edgeSubset_compose FG.graph FH.graph
+
+/-- Finite edge-union composition is associative up to edge equivalence. -/
+theorem compose_assoc_edgeEquivalent {C : Type u}
+    (FG FH FK : FiniteArchGraph C) :
+    EdgeEquivalent ((FG.compose FH).compose FK).graph
+      (FG.compose (FH.compose FK)).graph :=
+  ArchGraph.compose_assoc_edgeEquivalent FG.graph FH.graph FK.graph
 
 /--
 Replace a finite graph by another finite graph over the same component type.
