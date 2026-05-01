@@ -269,6 +269,162 @@ theorem ops_mem_selectedInvariant_of_discharged_preserve
     hDischarged hAssumptions
 
 /--
+The bounded conclusion shape required to read a reflect role package as
+post-operation witness reflection back to the source witness universe.
+-/
+def RoleConclusionIsSelectedReflection
+    (R : OperationRoleSchema State BeforeWitness AfterWitness) : Prop :=
+  R.roleConclusion =
+    (∀ w, R.operation.targetWitness w -> ∃ v, R.operation.sourceWitness v)
+
+/--
+A discharged reflect role package whose bounded conclusion is selected witness
+reflection yields a source witness for every selected target witness.
+-/
+theorem sourceWitness_exists_of_discharged_reflect
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (hRole : R.HasRole ArchitectureOperationRole.reflect)
+    (hConclusion : R.RoleConclusionIsSelectedReflection)
+    (hDischarged : R.Discharged)
+    (hAssumptions : R.AssumptionsHold)
+    {w : AfterWitness} (hTarget : R.operation.targetWitness w) :
+    ∃ v : BeforeWitness, R.operation.sourceWitness v := by
+  have _hRoleBoundary : R.HasRole ArchitectureOperationRole.reflect := hRole
+  have h : R.roleConclusion := hDischarged hAssumptions
+  rw [hConclusion] at h
+  exact h w hTarget
+
+/--
+The bounded conclusion shape required to read an improve role package through a
+selected source-to-target relation.
+-/
+def RoleConclusionIsSelectedImprovement
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (improves : State -> State -> Prop) : Prop :=
+  R.roleConclusion = improves R.operation.source R.operation.target
+
+/--
+A discharged improve role package yields the selected improvement relation when
+that relation is exactly the package's bounded conclusion.
+-/
+theorem selectedImprovement_of_discharged_improve
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (improves : State -> State -> Prop)
+    (hRole : R.HasRole ArchitectureOperationRole.improve)
+    (hConclusion : R.RoleConclusionIsSelectedImprovement improves)
+    (hDischarged : R.Discharged)
+    (hAssumptions : R.AssumptionsHold) :
+    improves R.operation.source R.operation.target := by
+  have _hRoleBoundary : R.HasRole ArchitectureOperationRole.improve := hRole
+  have h : R.roleConclusion := hDischarged hAssumptions
+  rw [hConclusion] at h
+  exact h
+
+/--
+The bounded conclusion shape required to read a localize role package through a
+selected source-to-target localization relation.
+-/
+def RoleConclusionIsSelectedLocalization
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (localizes : State -> State -> Prop) : Prop :=
+  R.roleConclusion = localizes R.operation.source R.operation.target
+
+/--
+A discharged localize role package yields the selected localization relation
+when that relation is exactly the package's bounded conclusion.
+-/
+theorem selectedLocalization_of_discharged_localize
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (localizes : State -> State -> Prop)
+    (hRole : R.HasRole ArchitectureOperationRole.localize)
+    (hConclusion : R.RoleConclusionIsSelectedLocalization localizes)
+    (hDischarged : R.Discharged)
+    (hAssumptions : R.AssumptionsHold) :
+    localizes R.operation.source R.operation.target := by
+  have _hRoleBoundary : R.HasRole ArchitectureOperationRole.localize := hRole
+  have h : R.roleConclusion := hDischarged hAssumptions
+  rw [hConclusion] at h
+  exact h
+
+/--
+The bounded conclusion shape required to read a translate role package through
+a selected source-to-target translation relation.
+-/
+def RoleConclusionIsSelectedTranslation
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (translates : State -> State -> Prop) : Prop :=
+  R.roleConclusion = translates R.operation.source R.operation.target
+
+/--
+A discharged translate role package yields the selected translation relation
+when that relation is exactly the package's bounded conclusion.
+-/
+theorem selectedTranslation_of_discharged_translate
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (translates : State -> State -> Prop)
+    (hRole : R.HasRole ArchitectureOperationRole.translate)
+    (hConclusion : R.RoleConclusionIsSelectedTranslation translates)
+    (hDischarged : R.Discharged)
+    (hAssumptions : R.AssumptionsHold) :
+    translates R.operation.source R.operation.target := by
+  have _hRoleBoundary : R.HasRole ArchitectureOperationRole.translate := hRole
+  have h : R.roleConclusion := hDischarged hAssumptions
+  rw [hConclusion] at h
+  exact h
+
+/--
+The bounded conclusion shape required to read a transfer role package through a
+selected source-to-target transfer relation.
+-/
+def RoleConclusionIsSelectedTransfer
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (transfers : State -> State -> Prop) : Prop :=
+  R.roleConclusion = transfers R.operation.source R.operation.target
+
+/--
+A discharged transfer role package yields the selected transfer relation when
+that relation is exactly the package's bounded conclusion.
+-/
+theorem selectedTransfer_of_discharged_transfer
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (transfers : State -> State -> Prop)
+    (hRole : R.HasRole ArchitectureOperationRole.transfer)
+    (hConclusion : R.RoleConclusionIsSelectedTransfer transfers)
+    (hDischarged : R.Discharged)
+    (hAssumptions : R.AssumptionsHold) :
+    transfers R.operation.source R.operation.target := by
+  have _hRoleBoundary : R.HasRole ArchitectureOperationRole.transfer := hRole
+  have h : R.roleConclusion := hDischarged hAssumptions
+  rw [hConclusion] at h
+  exact h
+
+/--
+The bounded conclusion shape required to read an assume role package as a
+selected explicit assumption boundary.
+-/
+def RoleConclusionIsSelectedAssumption
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (assumption : Prop) : Prop :=
+  R.roleConclusion = assumption
+
+/--
+A discharged assume role package yields the selected explicit assumption when
+that assumption is exactly the package's bounded conclusion.
+-/
+theorem selectedAssumption_of_discharged_assume
+    (R : OperationRoleSchema State BeforeWitness AfterWitness)
+    (assumption : Prop)
+    (hRole : R.HasRole ArchitectureOperationRole.assume)
+    (hConclusion : R.RoleConclusionIsSelectedAssumption assumption)
+    (hDischarged : R.Discharged)
+    (hAssumptions : R.AssumptionsHold) :
+    assumption := by
+  have _hRoleBoundary : R.HasRole ArchitectureOperationRole.assume := hRole
+  have h : R.roleConclusion := hDischarged hAssumptions
+  rw [hConclusion] at h
+  exact h
+
+/--
 If every selected operation role package preserves every selected invariant,
 then the selected operation family is contained in `Ops(S)`.
 -/

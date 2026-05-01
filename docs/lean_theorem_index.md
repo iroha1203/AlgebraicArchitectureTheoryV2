@@ -370,7 +370,7 @@ graph transform.
 | operation / role tag | schema / carrier | tag constructor と label が theorem package から参照できる。 | tag だけから preservation、improvement、localization、operation law は出ない。 |
 | `OperationProofObligation` constructor | schema / carrier | operation ごとの obligation package を explicit precondition と non-conclusion つきで構成できる。 | constructor が存在するだけでは obligation discharge ではない。 |
 | `ArchitectureOperation.*` theorem | accessor theorem / witness bridge | generated-obligation kind の一致と、post-to-pre witness mapping の片方向 soundness。 | global flatness preservation、semantic completeness、逆向き witness completeness。 |
-| `OperationRoleSchema.*` theorem | accessor theorem / bounded discharge wrapper | role package kind の一致と、明示的に与えた bounded conclusion からの discharge。 | 非 preserve role の結論は role tag から推論しない。bridge は別 Issue で扱う。 |
+| `OperationRoleSchema.*` theorem | accessor theorem / bounded discharge wrapper / role bridge | role package kind の一致、明示的に与えた bounded conclusion からの discharge、preserve / non-preserve role を selected invariant / witness / relation / assumption 境界として読む bridge。 | role tag だけから preservation、reflection、improvement、localization、translation、transfer、assumption discharge は推論しない。 |
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -660,7 +660,10 @@ Galois 対応である。Issue [#383](https://github.com/iroha1203/AlgebraicArch
 では、この対応から使う `Ops` / `Inv` の反単調性と closure operator API も
 証明済み API として追加した。Issue [#384](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/384)
 では、`OperationRoleSchema` の preserve role package を selected invariant に相対化して
-`PreservesInvariant` / `Ops` へ接続する bridge を追加した。ここでは
+`PreservesInvariant` / `Ops` へ接続する bridge を追加した。Issue
+[#411](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/411)
+では、非 preserve role package を explicit witness reflection、source-to-target
+relation、または assumption boundary に相対化して読む bounded bridge を追加した。ここでは
 `T ⊆ Ops(S) ↔ S ⊆ Inv(T)` と、それから誘導される selected preservation relation 上の閉包性のみを
 証明し、束同型、完全分類、または選択 universe 外の保存性は主張しない。Issue
 [#385](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/385)
@@ -710,6 +713,18 @@ policy-aware coverage completeness は non-conclusion として記録する。
 | `OperationRoleSchema.RoleConclusionIsSelectedPreservation` | `def` | preserve role の bounded conclusion が selected invariant の source-to-target preservation である、という明示的な bridge 前提。 | `defined only` |
 | `OperationRoleSchema.preservesInvariant_of_discharged_preserve` | `theorem` | preserve role package が discharge 済みで、bounded conclusion が selected preservation なら `PreservesInvariant` を得る。 | `proved` |
 | `OperationRoleSchema.ops_mem_selectedInvariant_of_discharged_preserve` | `theorem` | discharge 済み preserve role package を、その selected invariant singleton family に対する `Ops` member として読む。 | `proved` |
+| `OperationRoleSchema.RoleConclusionIsSelectedReflection` | `def` | reflect role の bounded conclusion が post-operation witness から pre-operation witness の存在を返す witness reflection である、という明示的な bridge 前提。 | `defined only` |
+| `OperationRoleSchema.sourceWitness_exists_of_discharged_reflect` | `theorem` | reflect role package が discharge 済みで、bounded conclusion が selected witness reflection なら target witness から source witness の存在を得る。 | `proved` |
+| `OperationRoleSchema.RoleConclusionIsSelectedImprovement` | `def` | improve role の bounded conclusion が selected source-to-target relation である、という明示的な bridge 前提。 | `defined only` |
+| `OperationRoleSchema.selectedImprovement_of_discharged_improve` | `theorem` | improve role package が discharge 済みで、bounded conclusion が selected relation ならその relation を得る。 | `proved` |
+| `OperationRoleSchema.RoleConclusionIsSelectedLocalization` | `def` | localize role の bounded conclusion が selected source-to-target localization relation である、という明示的な bridge 前提。 | `defined only` |
+| `OperationRoleSchema.selectedLocalization_of_discharged_localize` | `theorem` | localize role package が discharge 済みで、bounded conclusion が selected localization relation ならその relation を得る。 | `proved` |
+| `OperationRoleSchema.RoleConclusionIsSelectedTranslation` | `def` | translate role の bounded conclusion が selected source-to-target translation relation である、という明示的な bridge 前提。 | `defined only` |
+| `OperationRoleSchema.selectedTranslation_of_discharged_translate` | `theorem` | translate role package が discharge 済みで、bounded conclusion が selected translation relation ならその relation を得る。 | `proved` |
+| `OperationRoleSchema.RoleConclusionIsSelectedTransfer` | `def` | transfer role の bounded conclusion が selected source-to-target transfer relation である、という明示的な bridge 前提。 | `defined only` |
+| `OperationRoleSchema.selectedTransfer_of_discharged_transfer` | `theorem` | transfer role package が discharge 済みで、bounded conclusion が selected transfer relation ならその relation を得る。 | `proved` |
+| `OperationRoleSchema.RoleConclusionIsSelectedAssumption` | `def` | assume role の bounded conclusion が selected explicit assumption boundary である、という明示的な bridge 前提。 | `defined only` |
+| `OperationRoleSchema.selectedAssumption_of_discharged_assume` | `theorem` | assume role package が discharge 済みで、bounded conclusion が selected assumption ならその assumption を得る。 | `proved` |
 | `OperationRoleSchema.operationFamily_subset_ops_of_preserves_selected` | `theorem` | selected operation family の各 role package が selected invariant family を保存するなら、その operation family は `Ops(S)` に含まれる。 | `proved` |
 | `DesignPattern` | `structure` | operation family、invariant family、両方向の closure law、non-conclusion clause を束ねる schema。 | `defined only` |
 | `DesignPattern.operations_subset_ops` | `theorem` | design pattern から operation-to-invariant closure law を取り出す。 | `proved` |
