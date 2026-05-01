@@ -498,7 +498,7 @@ not reuse the `replace` law wrapper.
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
-| `ArchitectureCalculusLawKind` | `inductive` | `identity`, `associativity`, `edgeUnion`, `refinementAbstraction`, `edgeEquivalence`, `protectionIdempotence`, `reverseInvolution`, `witnessMappingFunctoriality`, `synthesisSoundness`, `noSolutionSoundness` の bounded law tag。 | `defined only` |
+| `ArchitectureCalculusLawKind` | `inductive` | `identity`, `associativity`, `edgeUnion`, `refinementAbstraction`, `edgeEquivalence`, `externalContractPreservation`, `explicitContractSoundness`, `protectionIdempotence`, `reverseInvolution`, `witnessMappingFunctoriality`, `synthesisSoundness`, `noSolutionSoundness` の bounded law tag。 | `defined only` |
 | `ArchitectureCalculusLawKind.label` | `def` | documentation-facing な law tag label。 | `defined only` |
 | `ArchitectureCalculusLaw` | `structure` | law kind、operation kind、bounded universe、compatibility / coverage / exactness / observation equivalence、結論、soundness、non-conclusions を束ねる schema。 | `defined only` |
 | `ArchitectureCalculusLaw.AssumptionsHold` | `def` | bounded law package の visible assumptions をまとめる。 | `defined only` |
@@ -511,6 +511,8 @@ not reuse the `replace` law wrapper.
 | `ArchitectureCalculusLaw.refineObservationEquivalence` | `def` | `refine` operation 用 bounded observation-equivalence law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.abstractObservationEquivalence` | `def` | `abstract` operation 用 bounded observation-equivalence law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.replaceEdgeEquivalence` | `def` | `replace` operation 用 bounded concrete edge-equivalence law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.mergeExternalContractPreservation` | `def` | `merge` operation 用 bounded external-contract preservation law package constructor。 | `defined only` |
+| `ArchitectureCalculusLaw.contractExplicitizationSoundness` | `def` | `contract` operation 用 bounded explicitization-soundness law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.protectIdempotence` | `def` | `protect` operation 用 bounded idempotence law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.reverseInvolution` | `def` | selected operation kind に対する bounded reverse-involution law package constructor。 | `defined only` |
 | `ArchitectureCalculusLaw.repairMonotonicity` | `def` | `repair` operation 用 bounded witness-mapping / monotonicity law package constructor。 | `defined only` |
@@ -521,6 +523,8 @@ not reuse the `replace` law wrapper.
 | `ArchitectureCalculusLaw.refineObservationEquivalence_operationKind` | `theorem` | refine observation-equivalence constructor が `refine` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.abstractObservationEquivalence_operationKind` | `theorem` | abstract observation-equivalence constructor が `abstract` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.replaceEdgeEquivalence_operationKind` | `theorem` | replace edge-equivalence constructor が `replace` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.mergeExternalContractPreservation_operationKind` | `theorem` | merge external-contract preservation constructor が `merge` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.contractExplicitizationSoundness_operationKind` | `theorem` | contract explicitization-soundness constructor が `contract` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.protectIdempotence_operationKind` | `theorem` | protect idempotence constructor が `protect` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.reverseInvolution_kind` | `theorem` | reverse-involution constructor が reverse-involution tag を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.repairMonotonicity_operationKind` | `theorem` | repair monotonicity constructor が `repair` operation kind を持つこと。 | `proved` |
@@ -558,6 +562,20 @@ not reuse the `replace` law wrapper.
 | `ArchitectureCalculusLaw.abstractionObservationEquivalenceLaw` | `def` | `abstract` を exact projection、selected observation preservation、external observation equivalence に接続する bounded entrypoint。 | `defined only` |
 | `ArchitectureCalculusLaw.abstractionObservationEquivalenceLaw_operationKind` | `theorem` | abstraction observation-equivalence package が `abstract` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.abstractionObservationEquivalenceLaw_conclusion` | `theorem` | bounded assumptions から exact projection、`LSPCompatible`、external observation equivalence を得る。 | `proved` |
+| `ArchitectureCalculusLaw.MergedBoundaryContract` | `def` | merged boundary の selected external contract として `StrongDIPCompatible` と `ObservationFactorsThrough` を束ねる。 | `defined only` |
+| `ArchitectureCalculusLaw.projectionExact_of_mergedBoundaryContract` | `theorem` | merged-boundary contract から exact projection を得る。 | `proved` |
+| `ArchitectureCalculusLaw.representativeStable_of_mergedBoundaryContract` | `theorem` | merged-boundary contract から representative stability を得る。 | `proved` |
+| `ArchitectureCalculusLaw.observationFactorsThrough_of_mergedBoundaryContract` | `theorem` | merged-boundary contract から observation factorization を得る。 | `proved` |
+| `ArchitectureCalculusLaw.lspCompatible_of_mergedBoundaryContract` | `theorem` | merged-boundary contract から selected external observation preservation を得る。 | `proved` |
+| `ArchitectureCalculusLaw.ExplicitContractSound` | `def` | concrete implicit expectation が interface-level explicit contract の pullback と一致することを表す soundness predicate。 | `defined only` |
+| `ArchitectureCalculusLaw.observationFactorsThrough_of_explicitContractSound` | `theorem` | explicit contract soundness から observation factorization を得る。 | `proved` |
+| `ArchitectureCalculusLaw.lspCompatible_of_explicitContractSound` | `theorem` | explicit contract soundness から selected observation preservation を得る。 | `proved` |
+| `ArchitectureCalculusLaw.mergeExternalContractPreservationLaw` | `def` | `merge` を exact projection、representative stability、selected external observation preservation に接続する bounded entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.mergeExternalContractPreservationLaw_operationKind` | `theorem` | merge external-contract package が `merge` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.mergeExternalContractPreservationLaw_conclusion` | `theorem` | bounded assumptions から exact projection、representative stability、`LSPCompatible` を得る。 | `proved` |
+| `ArchitectureCalculusLaw.contractExplicitizationLaw` | `def` | `contract` を exact projection、representative stability、observation factorization、selected observation preservation に接続する bounded entrypoint。 | `defined only` |
+| `ArchitectureCalculusLaw.contractExplicitizationLaw_operationKind` | `theorem` | contract explicitization package が `contract` operation kind を持つこと。 | `proved` |
+| `ArchitectureCalculusLaw.contractExplicitizationLaw_conclusion` | `theorem` | bounded assumptions から exact projection、representative stability、observation factorization、`LSPCompatible` を得る。 | `proved` |
 | `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw` | `def` | graph-level identity としての finite `protect` を bounded idempotence law package として包む entrypoint。 | `defined only` |
 | `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw_operationKind` | `theorem` | finite protect idempotence law package が `protect` operation kind を持つこと。 | `proved` |
 | `ArchitectureCalculusLaw.finiteProtectIdempotenceLaw_conclusion` | `theorem` | bounded assumptions から finite protect idempotence を得る。 | `proved` |

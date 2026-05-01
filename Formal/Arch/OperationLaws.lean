@@ -19,6 +19,8 @@ inductive ArchitectureCalculusLawKind where
   | edgeUnion
   | refinementAbstraction
   | edgeEquivalence
+  | externalContractPreservation
+  | explicitContractSoundness
   | protectionIdempotence
   | reverseInvolution
   | witnessMappingFunctoriality
@@ -35,6 +37,8 @@ def label : ArchitectureCalculusLawKind -> String
   | edgeUnion => "edgeUnion"
   | refinementAbstraction => "refinementAbstraction"
   | edgeEquivalence => "edgeEquivalence"
+  | externalContractPreservation => "externalContractPreservation"
+  | explicitContractSoundness => "explicitContractSoundness"
   | protectionIdempotence => "protectionIdempotence"
   | reverseInvolution => "reverseInvolution"
   | witnessMappingFunctoriality => "witnessMappingFunctoriality"
@@ -271,6 +275,54 @@ def replaceEdgeEquivalence
   sound := sound
   nonConclusions := nonConclusions
 
+/-- Constructor for the bounded `merge` external-contract preservation law package. -/
+def mergeExternalContractPreservation
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    ArchitectureCalculusLaw State Witness where
+  law := ArchitectureCalculusLawKind.externalContractPreservation
+  operationKind := ArchitectureOperationKind.merge
+  boundedUniverse := boundedUniverse
+  compatibilityAssumptions := compatibilityAssumptions
+  coverageAssumptions := coverageAssumptions
+  exactnessAssumptions := exactnessAssumptions
+  observationEquivalence := observationEquivalence
+  conclusion := conclusion
+  sound := sound
+  nonConclusions := nonConclusions
+
+/-- Constructor for the bounded `contract` explicitization-soundness law package. -/
+def contractExplicitizationSoundness
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    ArchitectureCalculusLaw State Witness where
+  law := ArchitectureCalculusLawKind.explicitContractSoundness
+  operationKind := ArchitectureOperationKind.contract
+  boundedUniverse := boundedUniverse
+  compatibilityAssumptions := compatibilityAssumptions
+  coverageAssumptions := coverageAssumptions
+  exactnessAssumptions := exactnessAssumptions
+  observationEquivalence := observationEquivalence
+  conclusion := conclusion
+  sound := sound
+  nonConclusions := nonConclusions
+
 /-- Constructor for the bounded `protect` idempotence law package. -/
 def protectIdempotence
     (boundedUniverse compatibilityAssumptions coverageAssumptions
@@ -469,6 +521,42 @@ theorem replaceEdgeEquivalence_operationKind
       exactnessAssumptions observationEquivalence conclusion
       nonConclusions sound).operationKind =
         ArchitectureOperationKind.replace :=
+  rfl
+
+theorem mergeExternalContractPreservation_operationKind
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    (mergeExternalContractPreservation (State := State) (Witness := Witness)
+      boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions sound).operationKind =
+        ArchitectureOperationKind.merge :=
+  rfl
+
+theorem contractExplicitizationSoundness_operationKind
+    (boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions : Prop)
+    (sound :
+      boundedUniverse ->
+      compatibilityAssumptions ->
+      coverageAssumptions ->
+      exactnessAssumptions ->
+      observationEquivalence ->
+      conclusion) :
+    (contractExplicitizationSoundness (State := State) (Witness := Witness)
+      boundedUniverse compatibilityAssumptions coverageAssumptions
+      exactnessAssumptions observationEquivalence conclusion
+      nonConclusions sound).operationKind =
+        ArchitectureOperationKind.contract :=
   rfl
 
 theorem protectIdempotence_operationKind
@@ -998,6 +1086,194 @@ theorem abstractionObservationEquivalenceLaw_conclusion
       componentObservation externalObservation) h
 
 end RefinementAbstractionEntrypoints
+
+section MergeContractEntrypoints
+
+variable {C : Type u} {A : Type v} {Obs : Type r}
+
+/--
+Selected contract for a merged boundary.
+
+The merged boundary must have exact projection and representative stability for
+the selected interface, and its external observation must factor through that
+interface.  This is an explicit premise, not a consequence of the `merge` tag.
+-/
+def MergedBoundaryContract
+    (merged : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs) : Prop :=
+  StrongDIPCompatible merged π GA ∧ ObservationFactorsThrough π O
+
+/-- A merged-boundary contract includes exact projection. -/
+theorem projectionExact_of_mergedBoundaryContract
+    {merged : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    {O : Observation C Obs}
+    (h : MergedBoundaryContract merged π GA O) :
+    ProjectionExact merged π GA :=
+  projectionExact_of_strongDIPCompatible h.1
+
+/-- A merged-boundary contract includes representative stability. -/
+theorem representativeStable_of_mergedBoundaryContract
+    {merged : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    {O : Observation C Obs}
+    (h : MergedBoundaryContract merged π GA O) :
+    RepresentativeStable merged π :=
+  representativeStable_of_strongDIPCompatible h.1
+
+/-- A merged-boundary contract includes observation factorization. -/
+theorem observationFactorsThrough_of_mergedBoundaryContract
+    {merged : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    {O : Observation C Obs}
+    (h : MergedBoundaryContract merged π GA O) :
+    ObservationFactorsThrough π O :=
+  h.2
+
+/-- A merged-boundary contract preserves selected external observations. -/
+theorem lspCompatible_of_mergedBoundaryContract
+    {merged : ArchGraph C} {π : InterfaceProjection C A} {GA : AbstractGraph A}
+    {O : Observation C Obs}
+    (h : MergedBoundaryContract merged π GA O) :
+    LSPCompatible π O :=
+  lspCompatible_of_observationFactorsThrough
+    (observationFactorsThrough_of_mergedBoundaryContract h)
+
+/--
+Soundness predicate for making an implicit expectation explicit.
+
+The explicit contract is an observation on the selected interface.  Soundness
+says the concrete expectation is exactly the pullback of that interface-level
+contract along the projection.
+-/
+def ExplicitContractSound
+    (π : InterfaceProjection C A) (implicitExpectation : Observation C Obs)
+    (explicitContract : Observation A Obs) : Prop :=
+  ∀ c : C,
+    implicitExpectation.observe c = explicitContract.observe (π.expose c)
+
+/-- A sound explicit contract gives observation factorization. -/
+theorem observationFactorsThrough_of_explicitContractSound
+    {π : InterfaceProjection C A} {implicitExpectation : Observation C Obs}
+    {explicitContract : Observation A Obs}
+    (h : ExplicitContractSound π implicitExpectation explicitContract) :
+    ObservationFactorsThrough π implicitExpectation :=
+  ⟨explicitContract.observe, h⟩
+
+/-- A sound explicit contract gives LSP-compatible selected observations. -/
+theorem lspCompatible_of_explicitContractSound
+    {π : InterfaceProjection C A} {implicitExpectation : Observation C Obs}
+    {explicitContract : Observation A Obs}
+    (h : ExplicitContractSound π implicitExpectation explicitContract) :
+    LSPCompatible π implicitExpectation :=
+  lspCompatible_of_observationFactorsThrough
+    (observationFactorsThrough_of_explicitContractSound h)
+
+/--
+Bounded law package for `merge` external-contract preservation.
+
+The conclusion exposes exact projection, representative stability, and selected
+observation preservation from the explicit merged-boundary contract.  It does
+not assert extractor completeness, semantic completeness, or global flatness.
+-/
+def mergeExternalContractPreservationLaw
+    (merged : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs) :
+    ArchitectureCalculusLaw (ArchGraph C) PUnit :=
+  mergeExternalContractPreservation
+    True True True
+    (MergedBoundaryContract merged π GA O)
+    True
+    (ProjectionExact merged π GA ∧
+      RepresentativeStable merged π ∧
+      LSPCompatible π O)
+    True
+    (by
+      intro _ _ _ hContract _
+      exact ⟨projectionExact_of_mergedBoundaryContract hContract,
+        representativeStable_of_mergedBoundaryContract hContract,
+        lspCompatible_of_mergedBoundaryContract hContract⟩)
+
+/-- The merge external-contract package keeps the `merge` operation tag. -/
+theorem mergeExternalContractPreservationLaw_operationKind
+    (merged : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs) :
+    (mergeExternalContractPreservationLaw merged π GA O).operationKind =
+      ArchitectureOperationKind.merge :=
+  rfl
+
+/--
+The merge package exposes exact projection, representative stability, and
+selected observation preservation from its bounded assumptions.
+-/
+theorem mergeExternalContractPreservationLaw_conclusion
+    (merged : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (O : Observation C Obs)
+    (h : (mergeExternalContractPreservationLaw merged π GA O).AssumptionsHold) :
+    ProjectionExact merged π GA ∧
+      RepresentativeStable merged π ∧
+      LSPCompatible π O :=
+  conclusion_of_assumptions
+    (mergeExternalContractPreservationLaw merged π GA O) h
+
+/--
+Bounded law package for `contract` explicitization soundness.
+
+The conclusion exposes exact projection, representative stability, observation
+factorization, and selected observation preservation.  The explicit contract is
+only sound for the selected projection and observation model; semantic
+completeness and global flatness remain non-conclusions.
+-/
+def contractExplicitizationLaw
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (implicitExpectation : Observation C Obs)
+    (explicitContract : Observation A Obs) :
+    ArchitectureCalculusLaw (ArchGraph C) PUnit :=
+  contractExplicitizationSoundness
+    True True True
+    (StrongDIPCompatible G π GA)
+    (ExplicitContractSound π implicitExpectation explicitContract)
+    (ProjectionExact G π GA ∧
+      RepresentativeStable G π ∧
+      ObservationFactorsThrough π implicitExpectation ∧
+      LSPCompatible π implicitExpectation)
+    True
+    (by
+      intro _ _ _ hProjection hExplicit
+      have hFactors :
+          ObservationFactorsThrough π implicitExpectation :=
+        observationFactorsThrough_of_explicitContractSound hExplicit
+      exact ⟨projectionExact_of_strongDIPCompatible hProjection,
+        representativeStable_of_strongDIPCompatible hProjection,
+        hFactors,
+        lspCompatible_of_observationFactorsThrough hFactors⟩)
+
+/-- The contract explicitization package keeps the `contract` operation tag. -/
+theorem contractExplicitizationLaw_operationKind
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (implicitExpectation : Observation C Obs)
+    (explicitContract : Observation A Obs) :
+    (contractExplicitizationLaw G π GA
+      implicitExpectation explicitContract).operationKind =
+      ArchitectureOperationKind.contract :=
+  rfl
+
+/--
+The contract package exposes exact projection, representative stability,
+observation factorization, and selected observation preservation from its
+bounded assumptions.
+-/
+theorem contractExplicitizationLaw_conclusion
+    (G : ArchGraph C) (π : InterfaceProjection C A) (GA : AbstractGraph A)
+    (implicitExpectation : Observation C Obs)
+    (explicitContract : Observation A Obs)
+    (h : (contractExplicitizationLaw G π GA
+      implicitExpectation explicitContract).AssumptionsHold) :
+    ProjectionExact G π GA ∧
+      RepresentativeStable G π ∧
+      ObservationFactorsThrough π implicitExpectation ∧
+      LSPCompatible π implicitExpectation :=
+  conclusion_of_assumptions
+    (contractExplicitizationLaw G π GA implicitExpectation explicitContract) h
+
+end MergeContractEntrypoints
 
 section ConcreteGraphEntrypoints
 
