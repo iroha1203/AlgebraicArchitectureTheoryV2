@@ -1222,8 +1222,8 @@ docs-facing な公開入口として整理する作業である。
 | 8.1 | Architecture paths | `ArchitecturePath`, `ArchitecturePath.append`, `ArchitecturePath.append_assoc`, `ArchitecturePath.length_append`, `ArchitecturePath.everyStepPreserves_append`, `ArchitecturePath.pathPreservesInvariant` | `defined only` / `proved` | endpoint-indexed な有限 path calculus。path count や walk-length metric semantics はこの API の範囲外。 |
 | 8.1 | Generated path homotopy | `ArchitecturePath.PathHomotopy`, `ArchitecturePath.PathHomotopy.cons_congr`, `ArchitecturePath.PathHomotopy.append_left`, `ArchitecturePath.PathHomotopy.append_right`, `ArchitecturePath.HomotopyInvariant`, `ArchitecturePath.architectureHomotopyInvariance` | `defined only` / `proved` | supplied contracts 上の generated relation と文脈閉包。HoTT / 高次圏論の completeness は主張しない。 |
 | 8 | Selected observation invariance | `ArchitecturePath.PathHomotopy.observation_eq_append`, `ArchitecturePath.PathHomotopy.observation_eq`, `CouponDiscountExample.pathHomotopy_preserves_roundingTrace_append`, `CouponDiscountExample.pathHomotopy_preserves_roundingTrace` | `proved` | generator preservation と context congruence の明示前提下での selected observation 保存。全 observation axis の保存ではない。 |
-| 8 | Diagram filler | `ArchitectureDiagram`, `DiagramFiller`, `CouponDiscountExample.couponDiscountDiagram`, `CouponDiscountExample.roundingOrder_refutes_selectedDiagramFiller` | `defined only` / `proved` | finite path calculus 上の diagram fillability。global semantic completeness は主張しない。 |
-| 8 | Obstruction as non-fillability | `NonFillabilityWitness`, `NonFillabilityWitnessFor`, `obstructionAsNonFillability_sound`, `WitnessUniverseComplete`, `obstructionAsNonFillability_complete_bounded`, `CouponDiscountExample.roundingOrder_nonFillabilityWitnessFor`, `CouponDiscountExample.roundingOrderValuation_positive` | `defined only` / `proved` | soundness と、`WitnessUniverseComplete` に相対化された bounded completeness に限る。extractor completeness や full witness coverage は主張しない。 |
+| 8 | Diagram filler | `ArchitectureDiagram`, `DiagramFiller`, `diagramFiller_observation_eq`, `observationDifference_refutesDiagramFiller`, `CouponDiscountExample.couponDiscountDiagram`, `CouponDiscountExample.roundingOrder_refutes_selectedDiagramFiller` | `defined only` / `proved` | finite path calculus 上の diagram fillability。selected observation 差分による refutation は generator preservation 前提に相対化される。global semantic completeness は主張しない。 |
+| 8 | Obstruction as non-fillability | `NonFillabilityWitness`, `NonFillabilityWitnessFor`, `obstructionAsNonFillability_sound`, `observationDifference_nonFillabilityWitnessFor`, `WitnessUniverseComplete`, `obstructionAsNonFillability_complete_bounded`, `CouponDiscountExample.roundingOrder_nonFillabilityWitnessFor`, `CouponDiscountExample.roundingOrderValuation_positive` | `defined only` / `proved` | soundness と、`WitnessUniverseComplete` に相対化された bounded completeness に限る。extractor completeness や full witness coverage は主張しない。 |
 
 ### Chapter 8 schematic name correspondence
 
@@ -1234,7 +1234,8 @@ docs-facing な公開入口として整理する作業である。
 | `Obs p = Obs q for homotopic paths` | `ArchitecturePath.PathHomotopy.observation_eq_append`, `ArchitecturePath.PathHomotopy.observation_eq` | generator-preservation と context-congruence assumptions に相対化した selected observation preservation。 |
 | coupon / discount selected observation preservation | `CouponDiscountExample.pathHomotopy_preserves_roundingTrace_append`, `CouponDiscountExample.pathHomotopy_preserves_roundingTrace` | 一般 selected observation theorem の coupon / discount 特殊化。 |
 | `DiagramFiller D` | `ArchitectureDiagram`, `DiagramFiller` | generated path homotopy による finite semantic diagram fillability。 |
-| `NonFillabilityWitness D w` | `NonFillabilityWitness`, `NonFillabilityWitnessFor`, `obstructionAsNonFillability_sound` | selected diagram と witness value に対する sound non-fillability witness。 |
+| `Obs D.lhs ≠ Obs D.rhs` refutes `DiagramFiller D` | `diagramFiller_observation_eq`, `observationDifference_refutesDiagramFiller` | selected observation を各 generator が保存する明示前提の下で、diagram filler の不在を示す。 |
+| `NonFillabilityWitness D w` | `NonFillabilityWitness`, `NonFillabilityWitnessFor`, `obstructionAsNonFillability_sound`, `observationDifference_nonFillabilityWitnessFor` | selected diagram と witness value に対する sound non-fillability witness。 |
 | bounded completeness for non-fillability witnesses | `WitnessUniverseComplete`, `obstructionAsNonFillability_complete_bounded` | finite witness-universe completeness premise を明示した場合だけ成立する逆向き。 |
 
 Non-conclusions: この統合入口は、既存の finite path calculus と bounded diagram witness API
@@ -1320,6 +1321,9 @@ File: `Formal/Arch/Evolution/DiagramFiller.lean`
 | `NonFillabilityWitness` | `structure` | domain-specific witness value と、任意の `DiagramFiller` を反駁する soundness 証拠を束ねる。 | `defined only` |
 | `NonFillabilityWitnessFor` | `def` | `NonFillabilityWitness` が特定の witness value `w` についての証人であること。 | `defined only` |
 | `obstructionAsNonFillability_sound` | `theorem` | `NonFillabilityWitnessFor D w` から `¬ DiagramFiller D` を得る片方向 soundness theorem。 | `proved` |
+| `diagramFiller_observation_eq` | `theorem` | observation-preserving generator 前提の下で、`DiagramFiller D` から `Obs D.lhs = Obs D.rhs` を得る。 | `proved` |
+| `observationDifference_refutesDiagramFiller` | `theorem` | `Obs D.lhs ≠ Obs D.rhs` から、selected observation を保存する generator で作る `DiagramFiller D` が存在しないことを示す。 | `proved` |
+| `observationDifference_nonFillabilityWitnessFor` | `theorem` | selected observation 差分を、caller-selected witness value の `NonFillabilityWitnessFor` として package する。 | `proved` |
 | `WitnessUniverseComplete` | `def` | bounded completeness theorem 用の有限 witness universe 完全性前提。 | `defined only` |
 | `obstructionAsNonFillability_complete_bounded` | `theorem` | `WitnessUniverseComplete` と `¬ DiagramFiller D` から、有限 universe 内の `NonFillabilityWitnessFor D w` を得る bounded completeness theorem。 | `proved` |
 | `CouponDiscountExample.CouponState` | `inductive` | coupon / discount 順序依存例の有限状態 skeleton。 | `defined only` |
