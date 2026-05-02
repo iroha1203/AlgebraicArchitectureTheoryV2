@@ -244,6 +244,34 @@ def PreservesCoreInvariants
     coreInvariant (e.coreRetraction liftedStep.target)
 
 /--
+The lifted source endpoint has the selected observation of the feature-step
+source whenever the step is lifted through the selected section.
+-/
+theorem liftedFeatureStep_source_observes
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (hLift : LiftsFeatureStep e featureStep liftedStep) :
+    e.extension.featureView.observe liftedStep.source =
+      e.featureObservation.observe featureStep.source := by
+  rw [hLift.1]
+  exact e.featureSection_observes featureStep.source
+
+/--
+The lifted target endpoint has the selected observation of the feature-step
+target whenever the step is lifted through the selected section.
+-/
+theorem liftedFeatureStep_target_observes
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (hLift : LiftsFeatureStep e featureStep liftedStep) :
+    e.extension.featureView.observe liftedStep.target =
+      e.featureObservation.observe featureStep.target := by
+  rw [hLift.2.1]
+  exact e.featureSection_observes featureStep.target
+
+/--
 Compatibility assumptions for a selected feature step.
 
 This is deliberately local to the selected step: it records the required
@@ -313,6 +341,121 @@ theorem coreInvariantPreserved_holds
 end CompatibleWithInterface
 
 /--
+Reusable conclusion package for a selected split-extension lifting.
+
+The package keeps the lifted-step fact, the feature-side lawfulness, and the
+core-side invariant preservation together so downstream theorem packages can
+reuse them without reconstructing the original lifting proof.
+-/
+structure SplitExtensionLiftingPreservationPackage
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView)
+    (featureInvariant : Feature -> Prop)
+    (coreInvariant : Core -> Prop)
+    (featureStep : SelectedFeatureStep Feature)
+    (liftedStep : LiftedExtensionStep Extended) : Prop where
+  liftsFeatureStep :
+    LiftsFeatureStep e featureStep liftedStep
+  featureInvariantPreserved :
+    LawfulFeatureStep featureInvariant featureStep
+  preservesCoreInvariants :
+    PreservesCoreInvariants e coreInvariant liftedStep
+
+namespace SplitExtensionLiftingPreservationPackage
+
+variable {Core : Type u} {Feature : Type v} {Extended : Type w}
+  {FeatureView : Type q} {CoreView : Type r}
+
+/-- The package exposes the lifted-step fact. -/
+theorem liftsFeatureStep_holds
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureInvariant : Feature -> Prop} {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (p :
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep) :
+    LiftsFeatureStep e featureStep liftedStep :=
+  p.liftsFeatureStep
+
+/-- The lifted source observes as the source of the selected feature step. -/
+theorem liftedFeatureSource_observes
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureInvariant : Feature -> Prop} {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (p :
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep) :
+    e.extension.featureView.observe liftedStep.source =
+      e.featureObservation.observe featureStep.source :=
+  liftedFeatureStep_source_observes p.liftsFeatureStep
+
+/-- The lifted target observes as the target of the selected feature step. -/
+theorem liftedFeatureTarget_observes
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureInvariant : Feature -> Prop} {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (p :
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep) :
+    e.extension.featureView.observe liftedStep.target =
+      e.featureObservation.observe featureStep.target :=
+  liftedFeatureStep_target_observes p.liftsFeatureStep
+
+/-- The package exposes feature-side invariant preservation. -/
+theorem featureInvariantPreserved_holds
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureInvariant : Feature -> Prop} {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (p :
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep) :
+    LawfulFeatureStep featureInvariant featureStep :=
+  p.featureInvariantPreserved
+
+/-- A lawful lifted package maps a source feature invariant to the target one. -/
+theorem featureInvariant_target_of_source
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureInvariant : Feature -> Prop} {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (p :
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep) :
+    featureInvariant featureStep.source ->
+      featureInvariant featureStep.target :=
+  p.featureInvariantPreserved
+
+/-- The package exposes core-side invariant preservation. -/
+theorem coreInvariantPreserved_holds
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureInvariant : Feature -> Prop} {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (p :
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep) :
+    PreservesCoreInvariants e coreInvariant liftedStep :=
+  p.preservesCoreInvariants
+
+/-- A lawful lifted package maps a source core invariant to the target one. -/
+theorem coreInvariant_target_of_source
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureInvariant : Feature -> Prop} {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    {liftedStep : LiftedExtensionStep Extended}
+    (p :
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep) :
+    coreInvariant (e.coreRetraction liftedStep.source) ->
+      coreInvariant (e.coreRetraction liftedStep.target) :=
+  p.preservesCoreInvariants
+
+end SplitExtensionLiftingPreservationPackage
+
+/--
 Selected split-extension lifting theorem.
 
 Given split-extension lifting data, a lawful selected feature step, and local
@@ -332,5 +475,26 @@ theorem SplitExtensionLifting
   · exact ⟨rfl, rfl, hCompatible.liftedEdge⟩
   · intro hCore
     exact hCompatible.coreInvariantPreserved hCore
+
+/--
+Selected split-extension lifting theorem with the feature-side and core-side
+preservation facts packaged for downstream theorem reuse.
+-/
+theorem SplitExtensionLifting_preservationPackage
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView)
+    {featureInvariant : Feature -> Prop} {coreInvariant : Core -> Prop}
+    (featureStep : SelectedFeatureStep Feature)
+    (hLawfulFeatureStep : LawfulFeatureStep featureInvariant featureStep)
+    (hCompatible : CompatibleWithInterface e coreInvariant featureStep) :
+    ∃ liftedStep : LiftedExtensionStep Extended,
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep := by
+  refine ⟨CanonicalLiftedFeatureStep e featureStep, ?_⟩
+  exact
+    { liftsFeatureStep := ⟨rfl, rfl, hCompatible.liftedEdge⟩
+      featureInvariantPreserved := hLawfulFeatureStep
+      preservesCoreInvariants := by
+        intro hCore
+        exact hCompatible.coreInvariantPreserved hCore }
 
 end Formal.Arch

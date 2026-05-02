@@ -339,12 +339,23 @@ feature section / core retraction、featureView law package、selected feature s
 | `CanonicalLiftedFeatureStep` | `def` | feature section によって feature step の endpoint を extended endpoint へ持ち上げる canonical lift。 | `defined only` |
 | `LiftsFeatureStep` | `def` | lifted step が section-induced endpoints を持ち、extended static edge として存在すること。 | `defined only` |
 | `PreservesCoreInvariants` | `def` | core retraction 後の selected core invariant を lifted step が保存すること。 | `defined only` |
+| `liftedFeatureStep_source_observes` | `theorem` | `LiftsFeatureStep` から lifted source endpoint の selected feature observation を feature step source の observation として読み替える。 | `proved` |
+| `liftedFeatureStep_target_observes` | `theorem` | `LiftsFeatureStep` から lifted target endpoint の selected feature observation を feature step target の observation として読み替える。 | `proved` |
 | `CompatibleWithInterface` | `structure` | selected step ごとの extended edge、interface factorization、coverage、core invariant preservation を束ねる compatibility package。 | `defined only` |
 | `CompatibleWithInterface.liftedEdge_holds` | `theorem` | compatibility package から selected step の lifted extended edge を accessor theorem として取り出す。 | `proved` |
 | `CompatibleWithInterface.interfaceFactorization_holds` | `theorem` | compatibility package から declared-interface factorization assumption を selected step 単位で取り出す。 | `proved` |
 | `CompatibleWithInterface.coverageAssumptions_holds` | `theorem` | compatibility package から selected coverage assumptions を accessor theorem として取り出す。 | `proved` |
 | `CompatibleWithInterface.coreInvariantPreserved_holds` | `theorem` | compatibility package から selected core invariant preservation assumption を accessor theorem として取り出す。 | `proved` |
 | `SplitExtensionLifting` | `theorem` | selected split-extension lifting data、lawful feature step、interface compatibility から、lifting と core invariant preservation を満たす extended step の存在を得る。 | `proved` |
+| `SplitExtensionLiftingPreservationPackage` | `structure` | lifted-step fact、feature-side invariant preservation、core-side invariant preservation を後続 theorem package 用に束ねる conclusion package。 | `defined only` |
+| `SplitExtensionLiftingPreservationPackage.liftsFeatureStep_holds` | `theorem` | conclusion package から lifted-step fact を取り出す。 | `proved` |
+| `SplitExtensionLiftingPreservationPackage.liftedFeatureSource_observes` | `theorem` | conclusion package から lifted source endpoint の selected feature observation law を取り出す。 | `proved` |
+| `SplitExtensionLiftingPreservationPackage.liftedFeatureTarget_observes` | `theorem` | conclusion package から lifted target endpoint の selected feature observation law を取り出す。 | `proved` |
+| `SplitExtensionLiftingPreservationPackage.featureInvariantPreserved_holds` | `theorem` | conclusion package から feature-side invariant preservation を取り出す。 | `proved` |
+| `SplitExtensionLiftingPreservationPackage.featureInvariant_target_of_source` | `theorem` | source feature invariant から target feature invariant を得る package accessor。 | `proved` |
+| `SplitExtensionLiftingPreservationPackage.coreInvariantPreserved_holds` | `theorem` | conclusion package から core-side invariant preservation を取り出す。 | `proved` |
+| `SplitExtensionLiftingPreservationPackage.coreInvariant_target_of_source` | `theorem` | lifted source の core invariant から lifted target の core invariant を得る package accessor。 | `proved` |
+| `SplitExtensionLifting_preservationPackage` | `theorem` | selected split-extension lifting data、lawful feature step、interface compatibility から、feature/core preservation を束ねた conclusion package の存在を得る。 | `proved` |
 
 Non-conclusions: `SplitExtensionLifting` は strict equality の section/retraction、全 component の一意分解、
 runtime flatness、semantic flatness、または all feature steps の自動 lifting を主張しない。
