@@ -936,14 +936,19 @@ Issue [#421](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4
 `Chapter7TheoremPackages.Candidate.schematicCorrespondences` で安定化する。
 この対応表は docs-facing metadata であり、既存 bounded package の薄い読み替えに留める。
 
-| 設計書 | 候補 | 代表 Lean entrypoint | Status |
-| --- | --- | --- | --- |
-| 7.1 | Split Extension Preservation | `SplitFeatureExtensionWithin`, `architectureFlatWithin_of_splitFeatureExtensionWithin`, `LawfulExtensionPreservesFlatness`, `LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` | `defined only` / `proved` |
-| 7.2 | Non-split Extension Witness | `NonSplitExtensionWitnessPackage`, `NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension` | `defined only` / `proved` |
-| 7.3 | Repair as Re-splitting | `SelectedObstructionUniverse`, `AdmissibleRepairRule`, `repairStepDecreases_of_admissible`, `extensionObstructionMeasure_decreases_of_admissible` | `defined only` / `proved` |
-| 7.4 | Complexity Transfer | `BoundedComplexityTransferPackage`, `BoundedComplexityTransferPackage.complexityTransfer_selectedAlternative`, `BoundedComplexityTransferPackage.no_free_elimination_bounded` | `defined only` / `proved` |
-| 7.5 | No-solution Certificate | `NoSolutionCertificate`, `ValidNoSolutionCertificate`, `NoSolutionCertificate.sound_of_valid` | `defined only` / `proved` |
-| 7.6 | Architecture Evolution | `ArchitectureTransition`, `ArchitectureEvolution`, `ArchitectureTransition.flatness_of_transitionPreservesFlatness`, `ArchitectureTransition.reportedObstruction_of_drift`, `eventuallyFlat_of_targetFlat`, `evolutionPathPreservesFlatness` | `defined only` / `proved` |
+Issue [#422](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/422)
+は、この節と `proof_obligations.md` 側の対応を、第7章の統合・命名・索引 status
+として閉じる作業である。以下の表は `Chapter7TheoremPackages.Candidate`
+の代表 entrypoint と non-conclusion boundary を docs index 側へ展開したものである。
+
+| 設計書 | 候補 | 代表 Lean entrypoint | Status | Bounded reading / non-conclusion boundary |
+| --- | --- | --- | --- | --- |
+| 7.1 | Split Extension Preservation | `SplitFeatureExtensionWithin`, `architectureFlatWithin_of_splitFeatureExtensionWithin`, `LawfulExtensionPreservesFlatness`, `LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` | `defined only` / `proved` | coverage-aware `ArchitectureFlatWithin` への入口。global flatness や extractor completeness は主張しない。 |
+| 7.2 | Non-split Extension Witness | `NonSplitExtensionWitnessPackage`, `NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension` | `defined only` / `proved` | soundness と、明示的な coverage / exactness assumptions 下の bounded completeness に限る。 |
+| 7.3 | Repair as Re-splitting | `SelectedObstructionUniverse`, `AdmissibleRepairRule`, `repairStepDecreases_of_admissible`, `extensionObstructionMeasure_decreases_of_admissible` | `defined only` / `proved` | selected obstruction measure の decrease。全 obstruction removal や termination は結論しない。 |
+| 7.4 | Complexity Transfer | `BoundedComplexityTransferPackage`, `BoundedComplexityTransferPackage.complexityTransfer_selectedAlternative`, `BoundedComplexityTransferPackage.no_free_elimination_bounded` | `defined only` / `proved` | selected runtime / semantic / policy target への transfer witness。global conservation や empirical cost theorem は主張しない。 |
+| 7.5 | No-solution Certificate | `NoSolutionCertificate`, `ValidNoSolutionCertificate`, `NoSolutionCertificate.sound_of_valid` | `defined only` / `proved` | valid certificate soundness。solver failure だけでは no-solution proof にならない。 |
+| 7.6 | Architecture Evolution | `ArchitectureTransition`, `ArchitectureEvolution`, `ArchitectureTransition.flatness_of_transitionPreservesFlatness`, `ArchitectureTransition.reportedObstruction_of_drift`, `eventuallyFlat_of_targetFlat`, `evolutionPathPreservesFlatness` | `defined only` / `proved` | selected transition / migration path に相対化する。全 transition の自動 preservation は主張しない。 |
 
 ### Chapter 7 schematic name correspondence
 
