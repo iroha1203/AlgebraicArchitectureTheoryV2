@@ -1185,6 +1185,46 @@ Lean 側の counterexample package として記録する。
 | `RepairTransferCounterexample.RepairTransferCounterexamplePackage` | `structure` | selected decrease、runtime increase、violation count、runtime transfer、non-conclusion を束ねる package。 | `defined only` |
 | `RepairTransferCounterexample.counterexamplePackage` | `def` | Issue #353 の concrete counterexample package。 | `defined only` |
 
+## Chapter 8 Homotopy Skeleton Entrypoint
+
+File: `Formal/Arch/Evolution/Chapter8HomotopySkeleton.lean`
+
+Issue [#451](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/451)
+は、第8章 Homotopy Skeleton の有限 path calculus、generated path homotopy、
+selected observation invariance、diagram filler / non-fillability witness API を
+docs-facing な公開入口として整理する作業である。
+
+`Chapter8HomotopySkeleton.Candidate` は docs-facing な候補名、設計書の節番号、
+代表 Lean declaration 名、schematic name correspondence、non-conclusion boundary
+を束ねる軽量 API である。この module は既存 API を横断 import / metadata として
+索引するだけであり、global semantic completeness、HoTT / 高次圏論の completeness、
+実コード extractor completeness、全 observation axis の保存を新たに主張しない。
+
+| 設計書 | 候補 | 代表 Lean entrypoint | Status | Bounded reading / non-conclusion boundary |
+| --- | --- | --- | --- | --- |
+| 8.1 | Architecture paths | `ArchitecturePath`, `ArchitecturePath.append`, `ArchitecturePath.append_assoc`, `ArchitecturePath.length_append`, `ArchitecturePath.everyStepPreserves_append`, `ArchitecturePath.pathPreservesInvariant` | `defined only` / `proved` | endpoint-indexed な有限 path calculus。path count や walk-length metric semantics はこの API の範囲外。 |
+| 8.1 | Generated path homotopy | `ArchitecturePath.PathHomotopy`, `ArchitecturePath.PathHomotopy.cons_congr`, `ArchitecturePath.PathHomotopy.append_left`, `ArchitecturePath.PathHomotopy.append_right`, `ArchitecturePath.HomotopyInvariant`, `ArchitecturePath.architectureHomotopyInvariance` | `defined only` / `proved` | supplied contracts 上の generated relation と文脈閉包。HoTT / 高次圏論の completeness は主張しない。 |
+| 8 | Selected observation invariance | `ArchitecturePath.PathHomotopy.observation_eq_append`, `ArchitecturePath.PathHomotopy.observation_eq`, `CouponDiscountExample.pathHomotopy_preserves_roundingTrace_append`, `CouponDiscountExample.pathHomotopy_preserves_roundingTrace` | `proved` | generator preservation と context congruence の明示前提下での selected observation 保存。全 observation axis の保存ではない。 |
+| 8 | Diagram filler | `ArchitectureDiagram`, `DiagramFiller`, `CouponDiscountExample.couponDiscountDiagram`, `CouponDiscountExample.roundingOrder_refutes_selectedDiagramFiller` | `defined only` / `proved` | finite path calculus 上の diagram fillability。global semantic completeness は主張しない。 |
+| 8 | Obstruction as non-fillability | `NonFillabilityWitness`, `NonFillabilityWitnessFor`, `obstructionAsNonFillability_sound`, `WitnessUniverseComplete`, `obstructionAsNonFillability_complete_bounded`, `CouponDiscountExample.roundingOrder_nonFillabilityWitnessFor`, `CouponDiscountExample.roundingOrderValuation_positive` | `defined only` / `proved` | soundness と、`WitnessUniverseComplete` に相対化された bounded completeness に限る。extractor completeness や full witness coverage は主張しない。 |
+
+### Chapter 8 schematic name correspondence
+
+| 設計書の schematic name | 対応する Lean API | 読み替え |
+| --- | --- | --- |
+| `ArchitecturePath Step X Y` | `ArchitecturePath`, `ArchitecturePath.append`, `ArchitecturePath.length`, `ArchitecturePath.length_append` | explicit primitive step family 上の finite endpoint-indexed path calculus。 |
+| `PathHomotopy p q` | `ArchitecturePath.PathHomotopy`, `ArchitecturePath.PathHomotopy.cons_congr`, `ArchitecturePath.PathHomotopy.append_left`, `ArchitecturePath.PathHomotopy.append_right` | supplied generator contracts で生成され、selected finite path context で閉じる relation。 |
+| `Obs p = Obs q for homotopic paths` | `ArchitecturePath.PathHomotopy.observation_eq_append`, `ArchitecturePath.PathHomotopy.observation_eq` | generator-preservation と context-congruence assumptions に相対化した selected observation preservation。 |
+| coupon / discount selected observation preservation | `CouponDiscountExample.pathHomotopy_preserves_roundingTrace_append`, `CouponDiscountExample.pathHomotopy_preserves_roundingTrace` | 一般 selected observation theorem の coupon / discount 特殊化。 |
+| `DiagramFiller D` | `ArchitectureDiagram`, `DiagramFiller` | generated path homotopy による finite semantic diagram fillability。 |
+| `NonFillabilityWitness D w` | `NonFillabilityWitness`, `NonFillabilityWitnessFor`, `obstructionAsNonFillability_sound` | selected diagram と witness value に対する sound non-fillability witness。 |
+| bounded completeness for non-fillability witnesses | `WitnessUniverseComplete`, `obstructionAsNonFillability_complete_bounded` | finite witness-universe completeness premise を明示した場合だけ成立する逆向き。 |
+
+Non-conclusions: この統合入口は、既存の finite path calculus と bounded diagram witness API
+を索引するだけである。global semantic completeness、HoTT / 高次圏論の完全性、
+全 observation axis の保存、finite universe 外の witness coverage、
+実コード extractor completeness は結論しない。
+
 ## Architecture Path
 
 File: `Formal/Arch/Evolution/ArchitecturePath.lean`
