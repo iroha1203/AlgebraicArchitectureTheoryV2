@@ -3,7 +3,7 @@ import Formal.Arch.Signature.AnalyticRepresentation
 
 namespace Formal.Arch
 
-universe u v w
+universe u v w x
 
 /--
 A semantic architecture diagram is a pair of finite architecture paths with the
@@ -161,6 +161,172 @@ theorem obstructionAsNonFillability_complete_bounded {State : Type u}
       NonFillabilityWitnessFor
         IndependentSquare SameExternalContract RepairFill D witness :=
   hComplete hNonfillable
+
+/--
+A diagram filler preserves any selected path observation whose generators
+preserve that observation.
+
+This is the diagram-facing wrapper around
+`ArchitecturePath.PathHomotopy.observation_eq`. It is intentionally relative to
+explicit generator-preservation and context-congruence assumptions.
+-/
+theorem diagramFiller_observation_eq {State : Type u}
+    {Step : State -> State -> Type v}
+    {α : Type x}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {Obs : {X Y : State} -> ArchitecturePath Step X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : State}
+        (a : Step W X) (b : Step X Z) (c : Step W Y) (d : Step Y Z)
+        (rest : ArchitecturePath Step Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : State} (s t : Step X Y)
+        (rest : ArchitecturePath Step Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : State} {p q : ArchitecturePath Step X Y},
+        RepairFill X Y p q ->
+          (suffix : ArchitecturePath Step Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : State} (step : Step X Y)
+        {p q : ArchitecturePath Step Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q))
+    {X Y : State} {D : ArchitectureDiagram Step X Y}
+    (hFiller :
+      DiagramFiller IndependentSquare SameExternalContract RepairFill D) :
+    Obs D.lhs = Obs D.rhs := by
+  exact
+    ArchitecturePath.PathHomotopy.observation_eq
+      (Step := Step) (Obs := Obs)
+      hIndependentSquare hSameExternalContract hRepairFill hConsContext
+      hFiller
+
+/--
+If a selected observation distinguishes the two sides of a diagram, then no
+filler built from observation-preserving generators can exist.
+-/
+theorem observationDifference_refutesDiagramFiller {State : Type u}
+    {Step : State -> State -> Type v}
+    {α : Type x}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {Obs : {X Y : State} -> ArchitecturePath Step X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : State}
+        (a : Step W X) (b : Step X Z) (c : Step W Y) (d : Step Y Z)
+        (rest : ArchitecturePath Step Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : State} (s t : Step X Y)
+        (rest : ArchitecturePath Step Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : State} {p q : ArchitecturePath Step X Y},
+        RepairFill X Y p q ->
+          (suffix : ArchitecturePath Step Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : State} (step : Step X Y)
+        {p q : ArchitecturePath Step Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q))
+    {X Y : State} {D : ArchitectureDiagram Step X Y}
+    (hDifference : Obs D.lhs ≠ Obs D.rhs) :
+    ¬ DiagramFiller IndependentSquare SameExternalContract RepairFill D := by
+  intro hFiller
+  exact hDifference
+    (diagramFiller_observation_eq
+      (Step := Step) (Obs := Obs)
+      hIndependentSquare hSameExternalContract hRepairFill hConsContext
+      hFiller)
+
+/--
+An observation difference can be packaged as a concrete
+`NonFillabilityWitnessFor` for a caller-selected witness value.
+
+The witness value remains domain-specific; this theorem only supplies the
+sound refutation carried by the selected observation difference.
+-/
+theorem observationDifference_nonFillabilityWitnessFor {State : Type u}
+    {Step : State -> State -> Type v}
+    {α : Type x}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {Obs : {X Y : State} -> ArchitecturePath Step X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : State}
+        (a : Step W X) (b : Step X Z) (c : Step W Y) (d : Step Y Z)
+        (rest : ArchitecturePath Step Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (ArchitecturePath.cons a (ArchitecturePath.cons b rest)) =
+              Obs (ArchitecturePath.cons c (ArchitecturePath.cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : State} (s t : Step X Y)
+        (rest : ArchitecturePath Step Y Z),
+          SameExternalContract X Y s t ->
+            Obs (ArchitecturePath.cons s rest) =
+              Obs (ArchitecturePath.cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : State} {p q : ArchitecturePath Step X Y},
+        RepairFill X Y p q ->
+          (suffix : ArchitecturePath Step Y Z) ->
+            Obs (ArchitecturePath.append p suffix) =
+              Obs (ArchitecturePath.append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : State} (step : Step X Y)
+        {p q : ArchitecturePath Step Y Z},
+          Obs p = Obs q ->
+            Obs (ArchitecturePath.cons step p) =
+              Obs (ArchitecturePath.cons step q))
+    {X Y : State} {D : ArchitectureDiagram Step X Y}
+    {Witness : Type w} (witness : Witness)
+    (hDifference : Obs D.lhs ≠ Obs D.rhs) :
+    NonFillabilityWitnessFor
+      IndependentSquare SameExternalContract RepairFill D witness := by
+  exact
+    ⟨{ witness := witness,
+       refutesFiller := by
+        intro hFiller
+        exact
+          observationDifference_refutesDiagramFiller
+            (Step := Step) (Obs := Obs)
+            hIndependentSquare hSameExternalContract hRepairFill hConsContext
+            hDifference hFiller },
+      rfl⟩
 
 /-
 A small path skeleton for the canonical coupon/discount ordering example from
@@ -326,11 +492,26 @@ theorem roundingOrder_refutes_selectedDiagramFiller :
     ¬ DiagramFiller
       RoundingIndependentSquare RoundingSameExternalContract RoundingRepairFill
       couponDiscountDiagram := by
-  intro hFiller
-  have hTrace := pathHomotopy_preserves_roundingTrace hFiller
-  change roundingTrace couponThenDiscount = roundingTrace discountThenCoupon at hTrace
-  rw [couponThenDiscount_roundingTrace, discountThenCoupon_roundingTrace] at hTrace
-  exact (by decide : (21 : Nat) ≠ 43) hTrace
+  exact
+    observationDifference_refutesDiagramFiller
+      (Step := CouponDiscountStep) (Obs := roundingTrace)
+      (by
+        intro _ _ _ _ _ a b c d rest hIndependent
+        exact hIndependent rest)
+      (by
+        intro _ _ _ s t rest hSame
+        exact hSame rest)
+      (by
+        intro _ _ _ _ _ hRepair suffix
+        exact hRepair suffix)
+      (by
+        intro _ _ _ step _ _ hEq
+        simp [roundingTrace, hEq])
+      (by
+        change roundingTrace couponThenDiscount ≠
+          roundingTrace discountThenCoupon
+        rw [couponThenDiscount_roundingTrace, discountThenCoupon_roundingTrace]
+        decide)
 
 /-- Concrete non-fillability witness for the selected coupon/discount diagram. -/
 def roundingOrderNonFillabilityWitness :
@@ -347,7 +528,27 @@ theorem roundingOrder_nonFillabilityWitnessFor :
     NonFillabilityWitnessFor
       RoundingIndependentSquare RoundingSameExternalContract RoundingRepairFill
       couponDiscountDiagram CouponDiscountWitness.roundingOrder := by
-  exact ⟨roundingOrderNonFillabilityWitness, rfl⟩
+  exact
+    observationDifference_nonFillabilityWitnessFor
+      (Step := CouponDiscountStep) (Obs := roundingTrace)
+      (by
+        intro _ _ _ _ _ a b c d rest hIndependent
+        exact hIndependent rest)
+      (by
+        intro _ _ _ s t rest hSame
+        exact hSame rest)
+      (by
+        intro _ _ _ _ _ hRepair suffix
+        exact hRepair suffix)
+      (by
+        intro _ _ _ step _ _ hEq
+        simp [roundingTrace, hEq])
+      CouponDiscountWitness.roundingOrder
+      (by
+        change roundingTrace couponThenDiscount ≠
+          roundingTrace discountThenCoupon
+        rw [couponThenDiscount_roundingTrace, discountThenCoupon_roundingTrace]
+        decide)
 
 /-- Selected semantic residual for the coupon/discount diagram. -/
 def roundingOrderResidual

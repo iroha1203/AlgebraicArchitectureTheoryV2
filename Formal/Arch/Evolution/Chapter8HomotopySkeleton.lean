@@ -77,12 +77,15 @@ def representativeDeclarations : Candidate -> List String
   | diagramFiller =>
       ["ArchitectureDiagram",
        "DiagramFiller",
+       "diagramFiller_observation_eq",
+       "observationDifference_refutesDiagramFiller",
        "CouponDiscountExample.couponDiscountDiagram",
        "CouponDiscountExample.roundingOrder_refutes_selectedDiagramFiller"]
   | obstructionAsNonFillability =>
       ["NonFillabilityWitness",
        "NonFillabilityWitnessFor",
        "obstructionAsNonFillability_sound",
+       "observationDifference_nonFillabilityWitnessFor",
        "WitnessUniverseComplete",
        "obstructionAsNonFillability_complete_bounded",
        "CouponDiscountExample.roundingOrder_nonFillabilityWitnessFor",
@@ -138,13 +141,21 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "DiagramFiller"],
          reading :=
           "finite semantic diagram fillability via generated path homotopy",
-         status := "defined only" }]
+         status := "defined only" },
+       { schematic := "Obs D.lhs != Obs D.rhs refutes DiagramFiller D",
+         leanDeclarations :=
+          ["diagramFiller_observation_eq",
+           "observationDifference_refutesDiagramFiller"],
+         reading :=
+          "selected observation difference refutes fillability when the supplied filler generators preserve that observation",
+         status := "proved" }]
   | obstructionAsNonFillability =>
       [{ schematic := "NonFillabilityWitness D w",
          leanDeclarations :=
           ["NonFillabilityWitness",
            "NonFillabilityWitnessFor",
-           "obstructionAsNonFillability_sound"],
+           "obstructionAsNonFillability_sound",
+           "observationDifference_nonFillabilityWitnessFor"],
          reading :=
           "sound non-fillability witness for one selected diagram and witness value",
          status := "defined only / proved" },
