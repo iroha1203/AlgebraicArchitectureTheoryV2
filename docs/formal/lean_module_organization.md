@@ -4,21 +4,22 @@ Lean status: `defined only` / module organization / docs and API design.
 
 この文書は Issue [#138](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/138)
 の責務分類を引き継ぎ、Issue [#423](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/423)
-以降で `Formal/Arch` を段階的にサブディレクトリ化するための facade / import 方針を固定する。
+以降で `Formal/Arch` を段階的にサブディレクトリ化し、最終的に canonical path へ一本化する
+ための import 方針を固定する。
 数学的定義、theorem statement、Lean status の読みは変更しない。
 
 ## 方針
 
-`Formal/Arch` 直下は public facade / compatibility layer として残す。
+`Formal/Arch` 直下の import-only facade は削除し、実体 module の canonical path へ一本化する。
 
 - 新しい実体 module は責務別のサブディレクトリへ移す。
-- 既存の `Formal.Arch.<Module>` は、当面は同名 facade module として残し、移動先を import する。
-- `Formal.lean` は public entry point として、既存 facade を import し続ける。
+- 旧 `Formal.Arch.<Module>` import path は互換 API として維持しない。
+- `Formal.lean` は public entry point として残し、canonical path を import する。
 - 新規コードと docs の主参照先は、移動後の canonical path を使う。
-- 互換 facade の削除は、この段階移行とは別 Issue として、下流 import の確認後に扱う。
 
-この方針により、既存利用者は `Formal.Arch.<Module>` import をすぐ変更しなくてもよい。
-一方で、移動後の責務構造は canonical path として docs / theorem index に反映する。
+この方針により、`Formal/Arch` 直下のファイル数を削減し、責務構造を file system 上でも
+直接読めるようにする。既存利用者が全体を import する場合は `import Formal` を使い、
+個別 module を import する場合は canonical path を使う。
 
 ## サブディレクトリ構成
 
@@ -34,8 +35,8 @@ Lean status: `defined only` / module organization / docs and API design.
 | `Formal/Arch/Evolution` | `ArchitecturePath`, `ArchitectureEvolution`, `DiagramFiller`, `Chapter7TheoremPackages` | path / evolution / diagram filler と、Chapter 7 の docs-facing theorem package entrypoint。 |
 | `Formal/Arch/Examples` | `SolidCounterexample`, `StaticSemanticCounterexample` | reader-facing counterexample / example。 |
 
-この表は現在の canonical path を表す。互換性のため、`Formal/Arch` 直下には import-only
-facade module を残す。ただし、数学的主張や theorem 名の変更を file move と混ぜない。
+この表は現在の canonical path を表す。`Formal/Arch` 直下の import-only facade は残さない。
+ただし、数学的主張や theorem 名の変更を file move と混ぜない。
 
 ## 移行状況
 
@@ -46,30 +47,21 @@ facade module を残す。ただし、数学的主張や theorem 名の変更を
 2. Issue [#426](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/426):
    `Core`, `Law`, `Signature`, `Extension`, `Operation` を依存グラフに沿って小さく移した。
 3. Issue [#427](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/427):
-   `docs/lean_theorem_index.md` と `docs/proof_obligations.md` の path / status を実配置へ同期する。
+   `docs/lean_theorem_index.md` と `docs/proof_obligations.md` の path / status を実配置へ同期した。
+4. Issue [#444](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/444):
+   `Formal/Arch` 直下の import-only facade を削除し、canonical path へ一本化する。
 
 依存中心に近い module は broad import の影響が大きいため、`Graph`, `Reachability`,
-`Finite`, `Signature`, `Flatness`, `Operation*` は facade を保ちながら canonical path へ
-移している。
+`Finite`, `Signature`, `Flatness`, `Operation*` は段階的に canonical path へ移した。
 
-## facade module の作り方
+## import ルール
 
-既存 module `Formal/Arch/Foo.lean` を `Formal/Arch/<Group>/Foo.lean` へ移す場合は、
-原則として次の形にする。
-
-```lean
-import Formal.Arch.<Group>.Foo
-```
-
-facade module には定義や theorem を追加しない。移動先 module に namespace と実装を置き、
-facade は旧 import path の互換性だけを担う。
-
-移動後の import ルールは次の通り。
+移動後の import ルールは次の通りである。
 
 - moved implementation 同士は canonical path を import する。
-- 既存 facade は互換性のために canonical path だけを import する。
-- `Formal.lean` は public facade を import し、全体 import の互換性を保つ。
-- docs では、移行 PR の時点で canonical path と facade path の関係を明記する。
+- `Formal.lean` は canonical path を import し、全体 import の入口を保つ。
+- docs では canonical path を主参照先にする。
+- `Formal/Arch` 直下に旧 path 互換の import-only facade は置かない。
 
 ## docs 更新ルール
 
@@ -77,7 +69,7 @@ file move を含む PR では、少なくとも次を確認する。
 
 - `Formal.lean`: public import entry point と import 順序。
 - moved Lean files: `import Formal.Arch.<Module>` から canonical path への更新。
-- facade Lean files: 旧 path 互換の import-only module になっていること。
+- `Formal/Arch` 直下に不要な import-only facade が残っていないこと。
 - `docs/lean_theorem_index.md`: `File:` / `Files:` の path と section name。
 - `docs/proof_obligations.md`: status ledger / proof obligation index に影響する path。
 - `docs/README.md` と `docs/design/*.md`: Lean module path を参照する箇所。
@@ -113,8 +105,9 @@ Lean import に影響しないことを確認したうえで、`lake build Forma
 
 ## #423 系 Issue の結論
 
-Issue #424 では、`Formal/Arch` 直下に互換 facade を残す方針を採用した。
+Issue #424 では、段階移行中の互換性のため `Formal/Arch` 直下に facade を残す方針を採用した。
 Issue #425 と Issue #426 では、実体 module を leaf から core へ段階的に canonical
-subdirectory へ移した。`Formal.lean` は public facade を import し続け、docs /
-theorem index は canonical path を主参照先として扱う。完全移動や facade 削除は、
-この段階移行の完了後に別 Issue として判断する。
+subdirectory へ移した。Issue #427 では docs / theorem index を canonical path へ同期した。
+Issue #444 では、整理の最終段階として `Formal/Arch` 直下の import-only facade を削除し、
+`Formal.lean` と内部 import を canonical path に一本化する。以後、旧 `Formal.Arch.<Module>`
+import path は互換 API として維持しない。

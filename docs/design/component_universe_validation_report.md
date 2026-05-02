@@ -97,7 +97,7 @@ report は単一 JSON document とし、schema version を必須にする。
       "count": 2,
       "examples": [
         {
-          "source": "Formal.Arch.Matrix",
+          "source": "Formal.Arch.Core.Matrix",
           "target": "Mathlib.Data.Matrix.Basic",
           "evidence": "import Mathlib.Data.Matrix.Basic"
         }

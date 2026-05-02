@@ -52,16 +52,16 @@ schema は明示的に versioned にする。
   "componentKind": "lean-module",
   "components": [
     {
-      "id": "Formal.Arch.Signature",
+      "id": "Formal.Arch.Signature.Signature",
       "path": "Formal/Arch/Signature/Signature.lean"
     }
   ],
   "edges": [
     {
-      "source": "Formal.Arch.Finite",
-      "target": "Formal.Arch.Signature",
+      "source": "Formal.Arch.Core.Finite",
+      "target": "Formal.Arch.Signature.Signature",
       "kind": "import",
-      "evidence": "import Formal.Arch.Signature"
+      "evidence": "import Formal.Arch.Signature.Signature"
     }
   ],
   "policies": {
@@ -90,8 +90,8 @@ schema は明示的に versioned にする。
 ```
 
 edge の向きは `source` が依存元、`target` が依存先である。たとえば
-`Formal.Arch.Finite` が `Formal.Arch.Signature` を import する場合、
-`Formal.Arch.Finite -> Formal.Arch.Signature` と記録する。この向きは
+`Formal.Arch.Core.Finite` が `Formal.Arch.Signature.Signature` を import する場合、
+`Formal.Arch.Core.Finite -> Formal.Arch.Signature.Signature` と記録する。この向きは
 `ArchGraph.edge source target` と合わせる。
 
 `policies.boundaryAllowed` と `policies.abstractionAllowed` は v0 では空でもよい。

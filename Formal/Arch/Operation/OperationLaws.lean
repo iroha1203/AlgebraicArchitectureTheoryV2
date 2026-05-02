@@ -2,9 +2,9 @@ import Formal.Arch.Operation.OperationKernel
 import Formal.Arch.Law.LocalReplacement
 import Formal.Arch.Extension.Flatness
 import Formal.Arch.Core.Reachability
-import Formal.Arch.Repair
-import Formal.Arch.RepairSynthesis
-import Formal.Arch.ArchitectureEvolution
+import Formal.Arch.Repair.Repair
+import Formal.Arch.Repair.RepairSynthesis
+import Formal.Arch.Evolution.ArchitectureEvolution
 
 namespace Formal.Arch
 
