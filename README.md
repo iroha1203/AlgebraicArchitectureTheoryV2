@@ -4,138 +4,92 @@
 
 ## 大目標
 
-本プロジェクトの中心主張は次の通りです。
+AAT v2 の目標は、機能追加によってソフトウェアアーキテクチャがどのように拡大し、
+どの不変量を保存し、どの obstruction を導入するかを、証明・測定・仮定・実証を
+分離して診断できる理論とツールチェーンを作ることです。
 
-> **アーキテクチャ零曲率定理**
->
-> 有限な法則宇宙と完全被覆の下で、アーキテクチャが法則健全であることは、
-> 要求法則族に対する有限な阻害証人が存在しないこと、すなわち
-> `ArchitectureSignature` の要求阻害軸がすべて零であることと同値である。
+中心的な問いは次です。
 
-これは現在の中心定理候補であり、Lean 側ではまず generic witness-count kernel、
-可換図式の特殊例、有限測定 universe 上の零カウント橋渡しとして形式化します。
-数値的な curvature は最初から仮定せず、観測値に距離・重みなどの追加構造を入れた後の
-派生 metric として扱います。
+```text
+この feature addition は、既存 architecture を lawful に拡大しているか。
+split しない場合、どの obstruction witness がそれを妨げているか。
+```
 
-この定理候補を支える研究上の基本主張は次の通りです。
+より短く言えば、目標はアーキテクチャレビューを「感想」から「診断」に近づけることです。
 
-> 設計原則は、アーキテクチャ不変量を保存・改善する操作である。
->
-> アーキテクチャ品質は、不変量の破れを多軸シグネチャとして評価する。
+この目標を支える基本的な見方は次です。
 
-ここでいう「設計原則」は、単なる経験則ではなく、依存構造・抽象化・観測可能な振る舞い・境界保存などの不変量に作用する操作として扱います。
+- 設計原則は、アーキテクチャ不変量を保存・改善する操作として読む。
+- アーキテクチャ品質は、不変量の破れを単一スコアではなく多軸シグネチャとして評価する。
+- Lean で証明する主張、tooling が測定する主張、実証研究で検証する仮説を混同しない。
 
-また、品質評価は単一スコアに潰さず、循環、SCC、深さ、fanout、境界違反、抽象違反などの複数軸からなる `ArchitectureSignature` として扱います。
-
-最終的には、アーキテクチャレビューを「感想」から「診断」に変える理論とツールを目指します。つまり、設計原則が守る不変量、コードベース上で破れている不変量、その破れと変更波及・障害修正・レビューコストの関係を説明できる状態を目標にします。全体目標は [研究の全体目標](docs/research_goal.md) にまとめています。
+全体像は [研究の全体目標](docs/research_goal.md) を source of truth とします。
 
 ## 研究方針
 
-V2 では、次の四つの層を分けて進めます。
+AAT v2 は、数学的中核、Lean 形式化、tooling、実証研究を分けて扱います。
 
-1. **法則と阻害証人**
-   - 法則宇宙、要求法則族、阻害証人、完全被覆を分けて定義する。
-   - 可換図式の非可換性は、有限 witness / zero-count bridge の重要な特殊例として扱う。
+| 層 | 扱うもの | Source of truth |
+| --- | --- | --- |
+| 数学的中核 | feature extension、operation、invariant、obstruction witness、proof obligation、中心 theorem 候補 | [AAT v2 数学設計書](docs/aat_v2_mathematical_design.md) |
+| Lean 形式化 | 前提を明示できる構造的命題、finite universe、lawfulness bridge、bounded theorem package | [証明義務と実証仮説](docs/proof_obligations.md), [Lean 定義・定理索引](docs/lean_theorem_index.md) |
+| Tooling | AIR、extractor、measured Signature、coverage / exactness metadata、Feature Extension Report、CI policy | [AAT v2 ツール設計書](docs/aat_v2_tooling_design.md) |
+| 実証研究 | Signature と変更波及、レビューコスト、incident scope、障害修正コストとの関係 | [Signature 実証プロトコル](docs/design/empirical_protocol.md), `docs/empirical/` |
 
-2. **構文的構造**
-   - コンポーネントを頂点、依存関係を有向辺として表す。
-   - `Walk`, `Reachable`, thin category, projection, observation を基礎概念にする。
+README は詳細な theorem 一覧や進捗台帳を重複して持ちません。
+現在の Lean status、non-conclusion boundary、未解決 proof obligation は
+[証明義務と実証仮説](docs/proof_obligations.md) と
+[Lean 定義・定理索引](docs/lean_theorem_index.md) で管理します。
 
-3. **設計原則の分類**
-   - SOLID, Layered Architecture, Clean Architecture などを、どの不変量を保証・保存・改善するかで分類する。
-   - SOLID は局所契約層、Layered は大域構造層として扱い、役割を混同しない。
+## 進捗の読み方
 
-4. **定量評価**
-   - 不変量の破れを `ArchitectureSignature` として多軸評価する。
-   - 実証的な相関は Lean の定理ではなく、別途 empirical hypothesis（実証仮説）として扱う。
+- Lean status、proof obligation、empirical hypothesis:
+  [証明義務と実証仮説](docs/proof_obligations.md)
+- 実装済み Lean API:
+  [Lean 定義・定理索引](docs/lean_theorem_index.md)
+- module 配置と import 方針:
+  [Lean module 階層整理方針](docs/formal/lean_module_organization.md)
+- GitHub Issue の状態、優先度、milestone:
+  GitHub Issues
 
-Lean では、定義が明確で全称命題として扱える構造的事実を証明します。現実コードベースにおける変更コストや障害修正時間との相関は、実証研究の仮説として分離します。
+## Lean 形式化の読み方
 
-## フェーズ
+現在 Lean 側に存在する主要な定義・定理は
+[Lean 定義・定理索引](docs/lean_theorem_index.md) を参照してください。
 
-現在のタスク管理は GitHub Issues / Milestones に移行しています。大まかな進行順は次の通りです。
+定理名、bounded reading、non-conclusion boundary は
+[証明義務と実証仮説](docs/proof_obligations.md) と
+[Lean 定義・定理索引](docs/lean_theorem_index.md) で確認できます。
 
-1. **Finite Universe Bridge**
-   - finite-list executable metrics（有限リスト上で実行可能な指標）を、証明付きの有限 universe（測定対象の有限集合）と接続する。
-   - `ComponentUniverse` / `FiniteArchGraph` の役割分担を整理する。
-
-2. **Path and Reachability Correctness**
-   - `Walk` から `Path` / `SimpleWalk` を分離する。
-   - 有限 universe 上で `Reachable` なら bounded path が存在することを証明する。
-   - `hasCycleBool` と `HasClosedWalk` の有限 universe 上の対応を証明する。
-
-3. **Cycle, SCC and Depth Correctness**
-   - `sccSizeAt` と相互到達可能性の同値類を接続する。
-   - acyclic finite graph 上の depth 指標を正当化する。
-
-4. **Signature v0 Stabilization**
-   - `ArchitectureSignature` v0 の各軸を安定化する。
-   - `fanoutRisk` を `totalFanout` として扱い、`maxFanout` は将来の局所集中軸として分離する。
-
-5. **Layering Equivalence**
-   - `Acyclic + finite vertices -> StrictLayered` を証明する。
-   - `Decomposable := StrictLayered` のもとで、分解可能性と非循環性の関係を整理する。
-
-6. **Projection / Observation Invariants**
-   - DIP, Strong DIP, projection exactness, representative stability の役割を整理する。
-   - observation factorization と LSP の関係を発展させる。
-   - SOLID を局所契約層として形式化し、それだけでは `Decomposable` が従わないことを明確にする。
-
-7. **Path and Matrix Foundations**
-   - adjacency matrix, nilpotence, DAG との bridge を作る。
-   - spectral radius など解析的指標はこの後半フェーズで扱う。
-
-8. **Empirical Signature Extraction**
-   - 実コードベースから signature を抽出する tooling を検討する。
-   - `ArchitectureSignature` と変更波及・レビューコスト・障害修正時間などの相関を検証する。
-
-## 現在の Lean 形式化
-
-初期形式化には、次の要素が含まれています。
-
-- 依存グラフ `ArchGraph`
-- walk と到達可能性 `Walk`, `Reachable`
-- 到達可能性から作る thin component category
-- strict layering, decomposability, acyclicity, finite propagation
-- `Decomposable G := StrictLayered G`
-- projection soundness / completeness / exactness
-- representative stability と strong operational DIP
-- observation, observation factorization, LSP compatibility
-- SOLID 風局所条件だけでは decomposability が従わない反例
-- `ArchitectureSignature` と componentwise risk order
-- signature v0 の finite-list executable metrics（有限リスト上で実行可能な指標）
-- executable metrics を `Walk` / `Reachable` に接続する proof-carrying finite component universe（証明付き有限測定 universe）
-- zero-curvature theorem package の static structural core
-
-アーキテクチャ零曲率定理について、current law-universe policy 下の
-**static structural core の QED** は Lean で証明済みです。具体的には、
-`ArchitectureLawful X ↔ RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)`
-と `ArchitectureLawful X ↔ ArchitectureZeroCurvatureTheoremPackage X` を指します。
-この QED は runtime metrics、empirical hypotheses、一般数値 curvature、
-実コード extractor の完全性を含みません。runtime metrics と一般数値 curvature は
-数学的コアの将来拡張として別 package で Lean 化し、extractor completeness と
-empirical hypotheses は実用・実証層として分けます。詳細は
-[Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)と
-[証明義務と実証仮説](docs/proof_obligations.md)を参照してください。
+アーキテクチャ零曲率定理の static structural core は Lean で証明済みですが、
+runtime metrics、empirical hypotheses、一般数値 curvature、実コード extractor の完全性は
+この QED には含めません。詳細な theorem 名と境界は
+[証明義務と実証仮説](docs/proof_obligations.md) と
+[Lean 定義・定理索引](docs/lean_theorem_index.md) を参照してください。
 
 ## 詳細ドキュメント
 
 - [docs 読み方](docs/README.md)
 - [研究の全体目標](docs/research_goal.md)
+- [AAT v2 数学設計書](docs/aat_v2_mathematical_design.md)
+- [AAT v2 ツール設計書](docs/aat_v2_tooling_design.md)
 - [アーキテクチャ零曲率定理 Lean 化設計](docs/formal/flatness_obstruction_lean_design.md)
+- [Lean module 階層整理方針](docs/formal/lean_module_organization.md)
 - [設計原則の分類](docs/aat_v2_mathematical_design.md#41-design-principle-classification)
 - [証明義務と実証仮説](docs/proof_obligations.md)
-- [個別設計メモ](docs/design/README.md)
 - [Lean 定義・定理索引](docs/lean_theorem_index.md)
+- [個別設計メモ](docs/design/README.md)
+- [Signature 実証プロトコル](docs/design/empirical_protocol.md)
 
 ## リポジトリ構成
 
 - `Formal.lean`
-  - Lean ライブラリの root module。
+  - Lean ライブラリの public entry point。
 - `Formal/Arch`
-  - 依存グラフ、到達可能性、層化、射影、観測、LSP、反例、signature などの Lean 定義と定理。
+  - `Core`, `Law`, `Signature`, `Extension`, `Operation`, `Patterns`, `Repair`, `Evolution`, `Examples` に分けた Lean 形式化。
+  - 詳細な module 構成は [Lean module 階層整理方針](docs/formal/lean_module_organization.md) を参照。
 - `docs`
-  - 研究の全体目標、設計原則の分類、proof obligations、empirical hypotheses。
+  - 第一級設計書、Lean status、proof obligations、tooling design、個別 design、empirical protocol。
 - `Main.lean`
   - 実行ターゲット `aatv2` の最小 entry point。
 - `lakefile.toml`
@@ -162,24 +116,10 @@ Algebraic Architecture Theory V2
 - Lean ソースに `axiom`, `admit`, `sorry`, `unsafe` を導入しない。
 - 未証明の主張は `docs/proof_obligations.md` または GitHub Issues に明示する。
 - Lean で証明済みの主張、定義のみの概念、将来の証明義務、実証仮説を混同しない。
-- `proof_obligations.md` は今後、GitHub Issues への索引としても使う。
+- `proof_obligations.md` は GitHub Issues への索引としても使う。
 
 ## タスク管理
 
-未解決課題は GitHub Issues で管理します。Issue は研究の依存構造に沿って milestone に割り当てます。
-
-主な label:
-
-- `type:definition`
-- `type:lean-proof`
-- `type:docs`
-- `type:research-hypothesis`
-- `type:tooling`
-- `area:finite-universe`
-- `area:reachability`
-- `area:signature`
-- `area:scc-depth`
-- `area:layering`
-- `area:projection-observation`
-- `area:path-matrix`
-- `area:empirical`
+未解決課題は GitHub Issues で管理します。Issue は研究の依存構造に沿って milestone と
+`type:*`, `area:*`, `priority:*`, `status:*` label で整理します。
+README には Issue 一覧を重複して持たせません。
