@@ -3,96 +3,116 @@
 Lean status: `defined only` / module organization / docs and API design.
 
 この文書は Issue [#138](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/138)
-の設計決定である。現時点では `Formal/Arch` 以下のファイル移動は行わず、責務分類と
-当面の配置ルールを明文化する。実際の import path 変更は、必要になった時点で単独の
-follow-up Issue / PR に分割し、`lake build` を通して進める。
+の責務分類を引き継ぎ、Issue [#423](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/423)
+以降で `Formal/Arch` を段階的にサブディレクトリ化するための facade / import 方針を固定する。
+数学的定義、theorem statement、Lean status の読みは変更しない。
 
-## 現行 module の責務分類
+## 方針
 
-| 責務層 | 現行 module | 役割 |
+`Formal/Arch` 直下は public facade / compatibility layer として残す。
+
+- 新しい実体 module は責務別のサブディレクトリへ移す。
+- 既存の `Formal.Arch.<Module>` は、当面は同名 facade module として残し、移動先を import する。
+- `Formal.lean` は public entry point として、既存 facade を import し続ける。
+- 新規コードと docs の主参照先は、移動後の canonical path を使う。
+- 互換 facade の削除は、この段階移行とは別 Issue として、下流 import の確認後に扱う。
+
+この方針により、既存利用者は `Formal.Arch.<Module>` import をすぐ変更しなくてもよい。
+一方で、移動後の責務構造は canonical path として docs / theorem index に反映する。
+
+## 推奨サブディレクトリ構成
+
+| 将来 path | 対象 module | 役割 |
 | --- | --- | --- |
-| Core graph theory | `Graph`, `Reachability` | `ArchGraph`, `Walk`, `SimpleWalk` / `Path`, `Reachable` を定義する最小基盤。 |
-| Structural invariants | `Layering`, `Decomposable`, `Finite` | `StrictLayered`, `Acyclic`, `FinitePropagation`, finite `ComponentUniverse`, finite graph bridge theorem を扱う。 |
-| Category / projection | `Category`, `ThinCategory`, `Projection` | thin category と抽象射影、DIP / projection soundness / exactness を扱う。 |
-| Behavior | `Observation`, `LSP`, `LocalReplacement` | 観測同値、LSP、projection bridge と observation bridge を束ねる局所置換契約を扱う。 |
-| Architecture operations | `FeatureExtension`, `Operation`, `Repair`, `SplitExtensionLifting`, `ArchitecturePath`, `Flatness` | feature addition と operation / proof-obligation schema、selected repair measure decrease、selected split extension lifting / section law、有限 evolution path / path homotopy skeleton、静的 split extension 条件、coverage-aware three-layer flatness predicate を扱う。 |
-| Metrics / matrix / obstruction bridge | `Signature`, `Matrix`, `DependencyObstruction` | Architecture Signature v0/v1、finite executable metrics、adjacency matrix / nilpotence / spectral bridge、closed-walk obstruction exactness を扱う。 |
-| Examples / counterexamples | `SolidCounterexample` | SOLID-style local contract だけでは `Decomposable` が従わない反例を保持する。 |
+| `Formal/Arch/Core` | `Graph`, `Reachability`, `Layering`, `Decomposable`, `Finite`, `Category`, `ThinCategory`, `Matrix` | graph、walk / reachability、strict layering、finite universe、thin category、finite matrix bridge の基盤。 |
+| `Formal/Arch/Law` | `Projection`, `Observation`, `LSP`, `LocalReplacement`, `Lawfulness`, `StateEffect` | projection / observation / LSP / local replacement と、lawfulness・state effect の bounded law schema。 |
+| `Formal/Arch/Signature` | `Signature`, `SignatureLawfulness`, `Obstruction`, `DependencyObstruction`, `Curvature`, `AnalyticRepresentation`, `ComplexityTransfer` | Architecture Signature、obstruction witness、curvature、analytic representation、complexity-transfer witness の診断軸。 |
+| `Formal/Arch/Extension` | `FeatureExtension`, `FeatureExtensionExamples`, `SplitExtensionLifting`, `Flatness`, `ArchitectureExtensionFormula`, `CertifiedArchitecture` | feature extension、split lifting、flatness、extension formula、proof-carrying architecture core。 |
+| `Formal/Arch/Operation` | `Operation`, `OperationKernel`, `OperationLaws`, `OperationInvariant` | operation schema、finite operation kernel、bounded calculus laws、operation / invariant bridge。 |
+| `Formal/Arch/Patterns` | `LocalContractDesignPattern`, `SRPDesignPattern`, `ISPDesignPattern`, `StructuralDesignPattern`, `RuntimeProtectionDesignPattern`, `StateTransitionDesignPattern`, `EventSourcingSagaDesignPattern`, `ReplicatedLogDesignPattern` | design pattern を selected operation / invariant family として読む bounded theorem package。 |
+| `Formal/Arch/Repair` | `Repair`, `RepairSynthesis`, `RepairTransferCounterexample` | repair step、synthesis / no-solution certificate、repair transfer の境界例。 |
+| `Formal/Arch/Evolution` | `ArchitecturePath`, `ArchitectureEvolution`, `DiagramFiller`, `Chapter7TheoremPackages` | path / evolution / diagram filler と、Chapter 7 の docs-facing theorem package entrypoint。 |
+| `Formal/Arch/Examples` | `SolidCounterexample`, `StaticSemanticCounterexample` | reader-facing counterexample / example。 |
 
-この分類は reader-facing な責務整理であり、現時点の Lean import path は
-`Formal.Arch.<Module>` の flat layout のまま維持する。
+この表は移動先の初期案である。実際の PR では依存関係により、対象 module をさらに小さく
+分割してよい。ただし、数学的主張や theorem 名の変更を file move と混ぜない。
 
-## 変更しない判断
+## 移行順
 
-短期的には `Formal/Arch` 直下の flat layout を維持する。理由は次の通り。
+移行は leaf module から core module へ進める。
 
-- module 数はまだ少なく、`Formal.lean` と `docs/lean_theorem_index.md` で入口を把握できる。
-- file move は import path を変え、下流 import、docs link、theorem index の同時更新を要求する。
-- 現在の主要課題は theorem / docs / empirical tooling の安定化であり、階層移動そのものは新しい theorem を増やさない。
-- `Formal.Arch.Signature` と `Formal.Arch.Matrix` は多くの前提 module を参照するため、移動 PR の blast radius が相対的に大きい。
+1. Issue [#425](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/425):
+   `Patterns`, `Repair`, `Evolution`, `Examples` へ leaf module を移す。
+2. Issue [#426](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/426):
+   `Core`, `Law`, `Signature`, `Extension`, `Operation` を依存グラフに沿って小さく移す。
+3. Issue [#427](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/427):
+   `docs/lean_theorem_index.md` と `docs/proof_obligations.md` の path / status を実配置へ同期する。
 
-したがって Issue #138 では、移動を実施せず、責務分類・移動判断基準・配置ルールを固定する。
+依存中心に近い module は broad import の影響が大きい。`Graph`, `Reachability`, `Finite`,
+`Signature`, `Flatness`, `Operation*` は、leaf 移動後に単独または小さい束で移す。
 
-## 将来移動する判断基準
+## facade module の作り方
 
-次のいずれかが起きた場合に、subdirectory 化を follow-up Issue として検討する。
+既存 module `Formal/Arch/Foo.lean` を `Formal/Arch/<Group>/Foo.lean` へ移す場合は、
+原則として次の形にする。
 
-- `Formal/Arch` 直下の module が増え、theorem index の reader-facing section と import path の対応が分かりにくくなった。
-- core graph theory と metric / empirical bridge の依存方向を import path でも明示する必要が出た。
-- paper-ready research note で、Lean API の提示順と module path の対応が読者の理解を妨げる。
-- downstream code が `Formal.Arch` 全体 import ではなく特定責務層だけを import する需要を持つ。
+```lean
+import Formal.Arch.<Group>.Foo
+```
 
-移動する場合の候補は次である。
+facade module には定義や theorem を追加しない。移動先 module に namespace と実装を置き、
+facade は旧 import path の互換性だけを担う。
 
-| 将来 path 候補 | 対象 module |
-| --- | --- |
-| `Formal/Arch/Core` | `Graph`, `Reachability`, `Layering`, `Decomposable`, `Finite` |
-| `Formal/Arch/Category` | `Category`, `ThinCategory`, `Projection` |
-| `Formal/Arch/Behavior` | `Observation`, `LSP`, `LocalReplacement` |
-| `Formal/Arch/Operations` | `FeatureExtension`, `SplitExtensionLifting`, `Flatness` |
-| `Formal/Arch/Metrics` | `Signature`, `Matrix` |
-| `Formal/Arch/Examples` | `SolidCounterexample` |
+移動後の import ルールは次の通り。
 
-ただし `Projection` は category / behavior / metrics の境界にある。移動時は、
-projection soundness を category-side abstraction bridge として置くか、
-behavior と同じ local-contract 層へ置くかをその PR で明示する。
+- moved implementation 同士は canonical path を import する。
+- 既存 facade は互換性のために canonical path だけを import する。
+- `Formal.lean` は public facade を import し、全体 import の互換性を保つ。
+- docs では、移行 PR の時点で canonical path と facade path の関係を明記する。
 
-## import path 変更の影響範囲
+## docs 更新ルール
 
-実際に file move する PR では、少なくとも次を同時に更新する。
+file move を含む PR では、少なくとも次を確認する。
 
-- `Formal.lean`: public import entry point の順序と path。
-- moved Lean files: `import Formal.Arch.<Module>` 参照。
+- `Formal.lean`: public import entry point と import 順序。
+- moved Lean files: `import Formal.Arch.<Module>` から canonical path への更新。
+- facade Lean files: 旧 path 互換の import-only module になっていること。
 - `docs/lean_theorem_index.md`: `File:` / `Files:` の path と section name。
-- `docs/proof_obligations.md`: status ledger / proof obligation index に影響する項目。
-- `docs/research_goal.md` と `docs/design/*.md`: Lean module path を参照する箇所。
-- downstream imports: repository 内の `Formal.Arch.<Module>` import と、必要なら README の例。
+- `docs/proof_obligations.md`: status ledger / proof obligation index に影響する path。
+- `docs/README.md` と `docs/design/*.md`: Lean module path を参照する箇所。
 
-file move PR は docs-only PR と混ぜない。移動 PR では Lean の定義や theorem statement を
-原則として変更せず、path 更新と `lake build` に焦点を絞る。
+`docs/aat_v2_mathematical_design.md` は数学面の第一級設計書であり、作業状態や移行 status を
+混ぜない。module path の進捗管理はこの文書、`docs/proof_obligations.md`、
+`docs/lean_theorem_index.md` で扱う。
+
+## PR 前チェック
+
+Lean module を移動する PR では、必ず次を実行する。
+
+- `lake build Formal`
+- `git diff --check`
+- hidden / bidirectional Unicode scan
+- Lean ソースに対する `axiom` / `admit` / `sorry` / `unsafe` scan
+
+docs-only の方針更新 PR でも、`git diff --check` と hidden / bidirectional Unicode scan は実行する。
+Lean import に影響しないことを確認したうえで、`lake build Formal` は必要に応じて実行する。
 
 ## 当面の命名・配置ルール
 
-- graph の基礎構造は `Graph` / `Reachability` に置く。
-- `Decomposable G := StrictLayered G` は `Decomposable` に置き、acyclicity,
-  finite propagation, nilpotence, spectral conditions を定義へ混ぜない。
-- finite universe と graph-level bridge theorem は `Finite` に置く。
-- Signature の executable metric 定義は `Signature` に置き、graph-level correctness theorem は
-  必要に応じて `Finite` または該当 bridge module に置く。
-- adjacency matrix / nilpotence / spectral radius の bridge は `Matrix` に置く。
-- projection / DIP の定義と theorem は `Projection` に置く。
-- observation / LSP / local replacement は `Observation`, `LSP`, `LocalReplacement` に分ける。
-- feature addition / split extension の operation schema は `FeatureExtension` に置く。
-- selected split extension lifting / section law は `SplitExtensionLifting` に置く。
-- finite architecture path と path homotopy skeleton は `ArchitecturePath` に置く。
-- coverage-aware three-layer flatness predicate と extension coverage package は `Flatness` に置く。
-- counterexample は theorem の補助例であっても、reader-facing example として
-  `SolidCounterexample` に隔離する。
-- 新規 module を追加する場合は、`Formal.lean`、`docs/lean_theorem_index.md`、
-  必要なら `docs/proof_obligations.md` を同じ PR で更新する。
+- `Decomposable G := StrictLayered G` は維持し、acyclicity, finite propagation,
+  nilpotence, spectral conditions を `Decomposable` の定義へ混ぜない。
+- `ComponentCategory` は thin category として path count / walk length を忘れる。
+- 定量指標は `Walk`, `Path`, finite metrics, adjacency matrix, または将来の
+  free-category construction 側で扱う。
+- executable metrics は有限な測定 universe 上の計算として定義し、graph-level facts との
+  接続は別 theorem として証明する。
+- `ComponentUniverse` は proof-carrying measurement universe として扱い、実コード抽出器の
+  完全性を直接主張しない。
+- Architecture Signature は単一スコアではなく、多軸診断として扱う。
 
-## #138 の結論
+## #424 の結論
 
-Issue #138 では、現行 layout を維持する。subdirectory 化は今すぐ行わない。
-ただし、この文書の責務分類を当面の reader-facing module map とし、将来の file move は
-単独 Issue / PR で扱う。
+Issue #424 では、`Formal/Arch` 直下に互換 facade を残す方針を採用する。
+実体 module は leaf から core へ段階的に canonical subdirectory へ移し、各段階で
+docs path と `lake build Formal` を確認する。完全移動や facade 削除は、この段階移行の
+完了後に別 Issue として判断する。
