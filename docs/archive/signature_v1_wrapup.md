@@ -33,10 +33,10 @@ Lean 側の出力 schema は、次の 2 層に分ける。
 
 | Issue | 決定内容 | 反映先 |
 | --- | --- | --- |
-| #87 | `ArchitectureSignatureV1Core` / `ArchitectureSignatureV1` の 2 層 schema に固定する | `Formal/Arch/Signature.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
-| #84 | `weightedSccRisk` は component weight を入力にした SCC excess contribution の合計とする | `Formal/Arch/Signature.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
-| #85 | `nilpotencyIndex` は matrix bridge 由来の optional extension axis とし、`rho(A)` とは分離する | `Formal/Arch/Matrix.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
-| #86 / #163 | `runtimePropagation` は初期 metric を exposure 側の `runtimePropagationRadius` に固定し、blast radius と runtime metadata は tooling / analysis 側に残す | `Formal/Arch/Signature.lean`, `docs/design/runtime_propagation_design.md`, `docs/proof_obligations.md` |
+| #87 | `ArchitectureSignatureV1Core` / `ArchitectureSignatureV1` の 2 層 schema に固定する | `Formal/Arch/Signature/Signature.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
+| #84 | `weightedSccRisk` は component weight を入力にした SCC excess contribution の合計とする | `Formal/Arch/Signature/Signature.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
+| #85 | `nilpotencyIndex` は matrix bridge 由来の optional extension axis とし、`rho(A)` とは分離する | `Formal/Arch/Core/Matrix.lean`, `docs/proof_obligations.md`, `docs/aat_v2_overview.md` |
+| #86 / #163 | `runtimePropagation` は初期 metric を exposure 側の `runtimePropagationRadius` に固定し、blast radius と runtime metadata は tooling / analysis 側に残す | `Formal/Arch/Signature/Signature.lean`, `docs/design/runtime_propagation_design.md`, `docs/proof_obligations.md` |
 
 ## 残る境界
 

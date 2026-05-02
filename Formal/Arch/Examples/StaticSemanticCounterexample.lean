@@ -1,6 +1,6 @@
-import Formal.Arch.FeatureExtensionExamples
+import Formal.Arch.Extension.FeatureExtensionExamples
 import Formal.Arch.Evolution.DiagramFiller
-import Formal.Arch.Flatness
+import Formal.Arch.Extension.Flatness
 
 namespace Formal.Arch
 

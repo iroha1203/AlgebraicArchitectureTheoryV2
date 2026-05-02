@@ -22,17 +22,17 @@ The repository is not initialized as a Git repository yet.
 Important files:
 
 - `Formal.lean`: Lean library root.
-- `Formal/Arch/Category.lean`: local minimal `SmallCategory`.
-- `Formal/Arch/Graph.lean`: `ArchGraph`, `Walk`, `Walk.length`.
-- `Formal/Arch/Reachability.lean`: `Reachable`, transitivity, walk-to-reachability.
-- `Formal/Arch/ThinCategory.lean`: `ComponentCategory`, thinness.
-- `Formal/Arch/Layering.lean`: `StrictLayered`, `Acyclic`, `WalkAcyclic`, `FinitePropagation`.
-- `Formal/Arch/Decomposable.lean`: initial definition `Decomposable G := StrictLayered G`, four-layer example.
-- `Formal/Arch/Projection.lean`: `InterfaceProjection`, `ProjectionSound`, `ProjectionComplete`, `ProjectionExact`, `RepresentativeStable`, `DIPCompatible`, `StrongDIPCompatible`.
-- `Formal/Arch/Observation.lean`: `Observation`, `ObservationallyEquivalent`, equivalence-style lemmas.
-- `Formal/Arch/LSP.lean`: `LSPCompatible`, `ObservationFactorsThrough`, and factorization-implies-LSP.
+- `Formal/Arch/Core/Category.lean`: local minimal `SmallCategory`.
+- `Formal/Arch/Core/Graph.lean`: `ArchGraph`, `Walk`, `Walk.length`.
+- `Formal/Arch/Core/Reachability.lean`: `Reachable`, transitivity, walk-to-reachability.
+- `Formal/Arch/Core/ThinCategory.lean`: `ComponentCategory`, thinness.
+- `Formal/Arch/Core/Layering.lean`: `StrictLayered`, `Acyclic`, `WalkAcyclic`, `FinitePropagation`.
+- `Formal/Arch/Core/Decomposable.lean`: initial definition `Decomposable G := StrictLayered G`, four-layer example.
+- `Formal/Arch/Law/Projection.lean`: `InterfaceProjection`, `ProjectionSound`, `ProjectionComplete`, `ProjectionExact`, `RepresentativeStable`, `DIPCompatible`, `StrongDIPCompatible`.
+- `Formal/Arch/Law/Observation.lean`: `Observation`, `ObservationallyEquivalent`, equivalence-style lemmas.
+- `Formal/Arch/Law/LSP.lean`: `LSPCompatible`, `ObservationFactorsThrough`, and factorization-implies-LSP.
 - `Formal/Arch/SolidCounterexample.lean`: cycle counterexamples, including `StrongAbstractCycleComponent`.
-- `Formal/Arch/Signature.lean`: `ArchitectureSignature` and componentwise risk order.
+- `Formal/Arch/Signature/Signature.lean`: `ArchitectureSignature` and componentwise risk order.
 - `docs/research_goal.md`: research goal and overview entry point.
 - `docs/design_principle_classification.md`: design-principle classification.
 - `docs/proof_obligations.md`: Lean proof obligations vs empirical hypotheses.

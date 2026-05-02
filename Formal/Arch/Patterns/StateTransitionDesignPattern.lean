@@ -1,5 +1,5 @@
-import Formal.Arch.OperationInvariant
-import Formal.Arch.StateEffect
+import Formal.Arch.Operation.OperationInvariant
+import Formal.Arch.Law.StateEffect
 
 namespace Formal.Arch
 

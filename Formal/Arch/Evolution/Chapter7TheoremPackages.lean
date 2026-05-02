@@ -1,8 +1,8 @@
-import Formal.Arch.Flatness
-import Formal.Arch.ArchitectureExtensionFormula
+import Formal.Arch.Extension.Flatness
+import Formal.Arch.Extension.ArchitectureExtensionFormula
 import Formal.Arch.Repair.Repair
 import Formal.Arch.Repair.RepairSynthesis
-import Formal.Arch.ComplexityTransfer
+import Formal.Arch.Signature.ComplexityTransfer
 import Formal.Arch.Evolution.ArchitectureEvolution
 
 /-!
