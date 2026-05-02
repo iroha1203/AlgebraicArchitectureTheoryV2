@@ -36,6 +36,39 @@ def append : {X Y Z : State} ->
   | _, _, _, nil _, q => q
   | _, _, _, cons step rest, q => cons step (append rest q)
 
+/-- Appending an empty path on the right leaves a path unchanged. -/
+@[simp] theorem append_nil {X Y : State} (p : ArchitecturePath Step X Y) :
+    append p (nil Y) = p := by
+  induction p with
+  | nil X => rfl
+  | cons step rest ih =>
+      simp [append, ih]
+
+/-- Appending a path to an empty path on the left leaves it unchanged. -/
+@[simp] theorem nil_append {X Y : State} (p : ArchitecturePath Step X Y) :
+    append (nil X) p = p :=
+  rfl
+
+/-- Architecture path append is associative. -/
+@[simp] theorem append_assoc {W X Y Z : State}
+    (p : ArchitecturePath Step W X) (q : ArchitecturePath Step X Y)
+    (r : ArchitecturePath Step Y Z) :
+    append (append p q) r = append p (append q r) := by
+  induction p with
+  | nil W => rfl
+  | cons step rest ih =>
+      simp [append, ih]
+
+/-- Path length is additive under append. -/
+@[simp] theorem length_append {X Y Z : State}
+    (p : ArchitecturePath Step X Y) (q : ArchitecturePath Step Y Z) :
+    length (append p q) = length p + length q := by
+  induction p with
+  | nil X =>
+      simp [append, length]
+  | cons step rest ih =>
+      simp [append, length, ih, Nat.add_assoc, Nat.add_comm]
+
 /-- `InvariantHolds I X` says architecture invariant `I` holds at state `X`. -/
 def InvariantHolds (I : State -> Prop) (X : State) : Prop :=
   I X
@@ -51,6 +84,17 @@ def EveryStepPreserves : {X Y : State} ->
   | _, _, nil _, _I => True
   | _, _, cons step rest, I =>
       StepPreservesInvariant I step ∧ EveryStepPreserves rest I
+
+/-- Stepwise invariant preservation over an appended path splits by segment. -/
+@[simp] theorem everyStepPreserves_append {I : State -> Prop} {X Y Z : State}
+    (p : ArchitecturePath Step X Y) (q : ArchitecturePath Step Y Z) :
+    EveryStepPreserves (append p q) I ↔
+      EveryStepPreserves p I ∧ EveryStepPreserves q I := by
+  induction p with
+  | nil X =>
+      simp [append, EveryStepPreserves]
+  | cons step rest ih =>
+      simp [append, EveryStepPreserves, ih, and_assoc]
 
 /-- If every step preserves an invariant, the whole path preserves it. -/
 theorem pathPreservesInvariant {I : State -> Prop} :

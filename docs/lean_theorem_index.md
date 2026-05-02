@@ -1195,9 +1195,14 @@ File: `Formal/Arch/Evolution/ArchitecturePath.lean`
 | `ArchitecturePath.ApplyPath` | `def` | path を start state に適用した target state を返す endpoint projection。 | `defined only` |
 | `ArchitecturePath.length` | `def` | path に含まれる primitive architecture step 数。 | `defined only` |
 | `ArchitecturePath.append` | `def` | endpoint が一致する二つの architecture path を連結する。 | `defined only` |
+| `ArchitecturePath.append_nil` | `theorem` | 右側に empty path を append しても path は変わらない。 | `proved` |
+| `ArchitecturePath.nil_append` | `theorem` | 左側の empty path に path を append すると元の path になる。 | `proved` |
+| `ArchitecturePath.append_assoc` | `theorem` | endpoint-indexed architecture path の append が結合的である。 | `proved` |
+| `ArchitecturePath.length_append` | `theorem` | append した path の長さは左右 path の長さの和になる。 | `proved` |
 | `ArchitecturePath.InvariantHolds` | `def` | state predicate としての architecture invariant が特定 state で成り立つこと。 | `defined only` |
 | `ArchitecturePath.StepPreservesInvariant` | `def` | primitive step が invariant を source から target へ保存すること。 | `defined only` |
 | `ArchitecturePath.EveryStepPreserves` | `def` | path 上のすべての primitive step が invariant を保存すること。 | `defined only` |
+| `ArchitecturePath.everyStepPreserves_append` | `theorem` | append した path 上の stepwise preservation は、左右 segment の preservation に分解できる。 | `proved` |
 | `ArchitecturePath.pathPreservesInvariant` | `theorem` | すべての step が invariant を保存するなら、path 全体も start から target へ invariant を保存する。 | `proved` |
 | `ArchitecturePath.PathHomotopy` | `inductive` | refl / symm / trans と、independent square swap、same external contract replacement、repair fill で生成される有限 path homotopy relation。 | `defined only` |
 | `ArchitecturePath.HomotopyInvariant` | `def` | generated path homotopy の下で安定な invariant。endpoint と state universe は `ArchitecturePath` の index によって明示される。 | `defined only` |
