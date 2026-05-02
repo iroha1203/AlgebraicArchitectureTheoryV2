@@ -1052,8 +1052,9 @@ valid certificate.
 
 File: `Formal/Arch/Extension/ArchitectureExtensionFormula.lean`
 
-Issues [#321](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/321)
-and [#326](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/326)
+Issues [#321](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/321),
+[#326](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/326),
+and [#458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/458)
 audit this package as the Lean entry point for mathematical design sections 7.2,
 9, and 10.  The package separates the soundness direction, the bounded
 completeness direction under explicit coverage / exactness assumptions, and the
@@ -1099,6 +1100,11 @@ coverage-style structural classification theorem.
 | `FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage` | `def` | filling-failure bridge package を generic `NonSplitExtensionWitnessPackage` へ埋め込む。 | `defined only` |
 | `FillingFailureBridgePackage.selectedExtensionObstructionWitnessExists_of_selectedPayloadExists` | `theorem` | selected payload の存在から generic package 側の selected obstruction witness 存在を構成する。 | `proved` |
 | `ClassifiedAsComplexityTransfer` | `def` | witness が complexity / analytic diagnostic axis への transfer として分類されること。 | `defined only` |
+| `ComplexityTransferWitnessPayload` | `structure` | `ComplexityTransferredTo` の selected target axis と selected transfer witness を、第10章の `.complexityTransfer` bridge payload として包む。 | `defined only` |
+| `complexityTransferExtensionObstructionWitness` | `def` | selected complexity-transfer payload から `.complexityTransfer` に分類された `ExtensionObstructionWitness` を構成する。 | `defined only` |
+| `complexityTransferExtensionObstructionWitness_classified` | `theorem` | bridge constructor で作った witness が `ClassifiedAsComplexityTransfer` を満たすことを示す。 | `proved` |
+| `complexityTransferExtensionObstructionWitnessExists_of_transferredTo` | `theorem` | target-specific な `ComplexityTransferredTo` conclusion から、分類済み complexity-transfer witness の存在を得る。 | `proved` |
+| `complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination` | `theorem` | `BoundedComplexityTransferPackage.no_free_elimination_bounded` の conclusion を、第10章の `.complexityTransfer` 分類 witness 存在へ接続する代表 bridge。 | `proved` |
 | `ClassifiedAsResidualCoverageGap` | `def` | witness が residual evidence または bounded coverage gap として分類されること。 | `defined only` |
 | `ArchitectureExtensionFormula_structural` | `theorem` | bounded extension coverage の下で、任意の selected extension obstruction witness が 7 分類 predicate の少なくとも一つで cover されること。 | `proved` |
 | `MultiLabelClassifiedAsInheritedCore` | `def` | multi-label witness が embedded core 由来 label を持つこと。 | `defined only` |
@@ -1108,6 +1114,7 @@ coverage-style structural classification theorem.
 | `MultiLabelClassifiedAsFillingFailure` | `def` | multi-label witness が filling failure label を持つこと。 | `defined only` |
 | `fillingFailureExtensionObstructionWitness_multilabel_classified` | `theorem` | filling-failure bridge witness を multi-label layer に埋め込んでも `.fillingFailure` label が得られることを示す。 | `proved` |
 | `MultiLabelClassifiedAsComplexityTransfer` | `def` | multi-label witness が complexity / analytic transfer label を持つこと。 | `defined only` |
+| `complexityTransferExtensionObstructionWitness_multilabel_classified` | `theorem` | complexity-transfer bridge witness を multi-label layer に埋め込んでも `.complexityTransfer` label が得られることを示す。 | `proved` |
 | `MultiLabelClassifiedAsResidualCoverageGap` | `def` | multi-label witness が residual evidence / coverage gap label を持つこと。 | `defined only` |
 | `ArchitectureExtensionFormula_multilabel_structural` | `theorem` | bounded extension coverage の下で、任意の multi-label extension obstruction witness が 7 分類 predicate の少なくとも一つで cover されること。 | `proved` |
 
@@ -1125,6 +1132,10 @@ bounded flatness preservation は runtime / semantic flatness と coverage assum
 述べる coverage theorem であり、分類が互いに素であることや全 obstruction universe の
 完全分類は結論しない。multi-label layer は同一 witness が複数 label を持つことを許し、
 single-label layer との bridge は payload preservation と元 label の保存だけを主張する。
+complexity-transfer bridge は `ComplexityTransferredTo` または
+`BoundedComplexityTransferPackage.no_free_elimination_bounded` の selected witness を
+`.complexityTransfer` に分類するだけであり、global complexity conservation や empirical
+cost 改善は追加しない。
 
 ## Complexity Transfer
 

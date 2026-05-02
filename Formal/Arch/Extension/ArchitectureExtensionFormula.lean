@@ -1,5 +1,6 @@
 import Formal.Arch.Extension.Flatness
 import Formal.Arch.Evolution.DiagramFiller
+import Formal.Arch.Signature.ComplexityTransfer
 
 namespace Formal.Arch
 
@@ -539,6 +540,126 @@ def ClassifiedAsComplexityTransfer
     (witness : ExtensionObstructionWitness X Witness) : Prop :=
   witness.classifiesAs = .complexityTransfer
 
+/--
+Payload bridge from a selected complexity-transfer witness into the
+Architecture Extension Formula obstruction universe.
+
+The payload keeps the target axis and selected transfer witness explicit. It
+does not assert global complexity conservation, empirical cost improvement, or
+completeness outside the selected witness universe.
+-/
+structure ComplexityTransferWitnessPayload
+    {Transform : Type v} {Witness : Type z}
+    (S : ComplexityTransferSchema Transform Witness)
+    (target : ComplexityTransferTarget)
+    (t : Transform) : Type (max v z) where
+  witness : Witness
+  selectedWitness : S.selectedWitness witness
+  transferWitness : S.transferWitness target t witness
+
+/--
+Turn a selected complexity-transfer payload into an abstract extension
+obstruction witness classified as `complexityTransfer`.
+-/
+def complexityTransferExtensionObstructionWitness
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    {Transform : Type v} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (payload : ComplexityTransferWitnessPayload S target t) :
+    ExtensionObstructionWitness X
+      (ComplexityTransferWitnessPayload S target t) where
+  witness := payload
+  classifiesAs := .complexityTransfer
+
+/--
+The complexity-transfer bridge constructor always lands in the
+`complexityTransfer` classification.
+-/
+theorem complexityTransferExtensionObstructionWitness_classified
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    {Transform : Type v} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (payload : ComplexityTransferWitnessPayload S target t) :
+    ClassifiedAsComplexityTransfer X U
+      (complexityTransferExtensionObstructionWitness X payload) :=
+  rfl
+
+/--
+A target-specific `ComplexityTransferredTo` conclusion gives a classified
+Architecture Extension Formula witness.
+-/
+theorem complexityTransferExtensionObstructionWitnessExists_of_transferredTo
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    {Transform : Type v} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (hTransfer : ComplexityTransferredTo S target t) :
+    ∃ payload : ComplexityTransferWitnessPayload S target t,
+      ClassifiedAsComplexityTransfer X U
+        (complexityTransferExtensionObstructionWitness X payload) := by
+  rcases hTransfer with ⟨witness, hSelected, hAtTarget⟩
+  let payload : ComplexityTransferWitnessPayload S target t :=
+    { witness := witness
+      selectedWitness := hSelected
+      transferWitness := hAtTarget }
+  exact ⟨payload,
+    complexityTransferExtensionObstructionWitness_classified X U payload⟩
+
+/--
+Representative bridge from the bounded complexity-transfer package into the
+Architecture Extension Formula classification layer.
+
+If the selected static reduction preserves selected requirements and is not
+eliminated by proof, the bounded package exposes a runtime, semantic, or policy
+transfer payload classified as `complexityTransfer`.
+-/
+theorem complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    {State : Type u} {Transform : Type v} {Requirement : Type w}
+    {Witness : Type z}
+    {T : ArchitectureTransform State Transform}
+    {staticMeasure : SelectedComplexityMeasure State}
+    {requirements : RequirementSchema State Requirement}
+    {S : ComplexityTransferSchema Transform Witness}
+    (pkg : BoundedComplexityTransferPackage T staticMeasure requirements S)
+    (t : Transform)
+    (hReduces : ReducesStaticComplexity T staticMeasure t)
+    (hPreserves :
+      PreservesRequirements requirements (T.source t) (T.target t))
+    (hNotEliminated : ¬ ComplexityEliminatedByProof S t) :
+    ∃ target : ComplexityTransferTarget,
+      ∃ payload : ComplexityTransferWitnessPayload S target t,
+        ClassifiedAsComplexityTransfer X U
+          (complexityTransferExtensionObstructionWitness X payload) := by
+  have hTransferred :
+      ComplexityTransferredWithinSelectedTargets S t :=
+    BoundedComplexityTransferPackage.no_free_elimination_bounded
+      pkg t hReduces hPreserves hNotEliminated
+  rcases hTransferred with hRuntime | hSemantic | hPolicy
+  · rcases hRuntime with ⟨witness, hSelected, hAtTarget⟩
+    let payload : ComplexityTransferWitnessPayload S .runtime t :=
+      { witness := witness
+        selectedWitness := hSelected
+        transferWitness := hAtTarget }
+    exact ⟨.runtime, payload, rfl⟩
+  · rcases hSemantic with ⟨witness, hSelected, hAtTarget⟩
+    let payload : ComplexityTransferWitnessPayload S .semantic t :=
+      { witness := witness
+        selectedWitness := hSelected
+        transferWitness := hAtTarget }
+    exact ⟨.semantic, payload, rfl⟩
+  · rcases hPolicy with ⟨witness, hSelected, hAtTarget⟩
+    let payload : ComplexityTransferWitnessPayload S .policy t :=
+      { witness := witness
+        selectedWitness := hSelected
+        transferWitness := hAtTarget }
+    exact ⟨.policy, payload, rfl⟩
+
 /-- The witness remains as residual evidence or a bounded coverage gap. -/
 def ClassifiedAsResidualCoverageGap
     (X : FeatureExtension Core Feature Extended FeatureView)
@@ -612,6 +733,21 @@ def MultiLabelClassifiedAsComplexityTransfer
     (_U : ComponentUniverse X.extended)
     (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
   witness.labels .complexityTransfer
+
+/--
+The multi-label bridge keeps a complexity-transfer bridge witness labeled as
+`complexityTransfer`.
+-/
+theorem complexityTransferExtensionObstructionWitness_multilabel_classified
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    {Transform : Type v} {Witness : Type z}
+    {S : ComplexityTransferSchema Transform Witness}
+    {target : ComplexityTransferTarget} {t : Transform}
+    (payload : ComplexityTransferWitnessPayload S target t) :
+    MultiLabelClassifiedAsComplexityTransfer X U
+      (complexityTransferExtensionObstructionWitness X payload).toMultiLabel :=
+  rfl
 
 /-- The multi-label witness is labeled as residual evidence or a coverage gap. -/
 def MultiLabelClassifiedAsResidualCoverageGap
