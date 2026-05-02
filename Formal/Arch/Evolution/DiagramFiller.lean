@@ -267,34 +267,22 @@ theorem pathHomotopy_preserves_roundingTrace_append
     ∀ {Z : CouponState} (suffix : ArchitecturePath CouponDiscountStep Y Z),
       roundingTrace (ArchitecturePath.append p suffix) =
         roundingTrace (ArchitecturePath.append q suffix) := by
-  induction h with
-  | refl p =>
-      intro _ suffix
-      rfl
-  | symm _ ih =>
-      intro _ suffix
-      exact Eq.symm (ih suffix)
-  | trans _ _ ihLeft ihRight =>
-      intro _ suffix
-      exact Eq.trans (ihLeft suffix) (ihRight suffix)
-  | swapIndependent a b c d rest hIndependent =>
-      intro _ suffix
-      simpa [ArchitecturePath.append] using
-        hIndependent (ArchitecturePath.append rest suffix)
-  | replaceBySameContract s t rest hSame =>
-      intro _ suffix
-      simpa [ArchitecturePath.append] using
-        hSame (ArchitecturePath.append rest suffix)
-  | repairFill hRepair =>
-      intro _ suffix
-      exact hRepair suffix
-  | consCongr step _ ih =>
-      intro _ suffix
-      simp [ArchitecturePath.append, roundingTrace, ih suffix]
-  | appendRightCongr suffix _ ih =>
-      intro _ suffix'
-      simpa [ArchitecturePath.append_assoc] using
-        ih (ArchitecturePath.append suffix suffix')
+  exact
+    ArchitecturePath.PathHomotopy.observation_eq_append
+      (Step := CouponDiscountStep) (Obs := roundingTrace)
+      (by
+        intro _ _ _ _ _ a b c d rest hIndependent
+        exact hIndependent rest)
+      (by
+        intro _ _ _ s t rest hSame
+        exact hSame rest)
+      (by
+        intro _ _ _ _ _ hRepair suffix
+        exact hRepair suffix)
+      (by
+        intro _ _ _ step _ _ hEq
+        simp [roundingTrace, hEq])
+      h
 
 /-- The selected filler generators preserve the rounding observation. -/
 theorem pathHomotopy_preserves_roundingTrace
@@ -304,8 +292,22 @@ theorem pathHomotopy_preserves_roundingTrace
         RoundingIndependentSquare RoundingSameExternalContract
         RoundingRepairFill p q) :
     roundingTrace p = roundingTrace q := by
-  simpa using
-    pathHomotopy_preserves_roundingTrace_append h (ArchitecturePath.nil Y)
+  exact
+    ArchitecturePath.PathHomotopy.observation_eq
+      (Step := CouponDiscountStep) (Obs := roundingTrace)
+      (by
+        intro _ _ _ _ _ a b c d rest hIndependent
+        exact hIndependent rest)
+      (by
+        intro _ _ _ s t rest hSame
+        exact hSame rest)
+      (by
+        intro _ _ _ _ _ hRepair suffix
+        exact hRepair suffix)
+      (by
+        intro _ _ _ step _ _ hEq
+        simp [roundingTrace, hEq])
+      h
 
 theorem couponThenDiscount_roundingTrace :
     roundingTrace couponThenDiscount = 21 :=

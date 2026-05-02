@@ -1208,6 +1208,8 @@ File: `Formal/Arch/Evolution/ArchitecturePath.lean`
 | `ArchitecturePath.PathHomotopy.cons_congr` | `theorem` | homotopic な tail path の前に同じ primitive step を付けても homotopy が保たれる。 | `proved` |
 | `ArchitecturePath.PathHomotopy.append_left` | `theorem` | homotopic な path pair の左側に同じ prefix path を append しても homotopy が保たれる。 | `proved` |
 | `ArchitecturePath.PathHomotopy.append_right` | `theorem` | homotopic な path pair の右側に同じ suffix path を append しても homotopy が保たれる。 | `proved` |
+| `ArchitecturePath.PathHomotopy.observation_eq_append` | `theorem` | independent-square / same-contract / repair-fill generator と shared head context が selected path observation を保存する前提から、homotopic path pair の任意 suffix context で observation が一致することを示す。 | `proved` |
+| `ArchitecturePath.PathHomotopy.observation_eq` | `theorem` | explicit generator-preservation 前提に相対化して、`PathHomotopy p q` から selected path observation `Obs p = Obs q` を得る。 | `proved` |
 | `ArchitecturePath.HomotopyInvariant` | `def` | generated path homotopy の下で安定な invariant。endpoint と state universe は `ArchitecturePath` の index によって明示される。 | `defined only` |
 | `ArchitecturePath.architectureHomotopyInvariance` | `theorem` | `HomotopyInvariant` を homotopic path pair に適用する bridge theorem。 | `proved` |
 
@@ -1274,8 +1276,8 @@ File: `Formal/Arch/Evolution/DiagramFiller.lean`
 | `CouponDiscountExample.RoundingIndependentSquare` | `def` | selected filler generator のうち rounding observation を保存する independent-square contract。 | `defined only` |
 | `CouponDiscountExample.RoundingSameExternalContract` | `def` | rounding observation を保存する same-contract replacement contract。 | `defined only` |
 | `CouponDiscountExample.RoundingRepairFill` | `def` | rounding observation を任意の suffix context で保存する selected repair fill contract。 | `defined only` |
-| `CouponDiscountExample.pathHomotopy_preserves_roundingTrace_append` | `theorem` | selected filler generator から生成される path homotopy が、任意の suffix context で `roundingTrace` を保存することを示す。 | `proved` |
-| `CouponDiscountExample.pathHomotopy_preserves_roundingTrace` | `theorem` | selected filler generator から生成される path homotopy が `roundingTrace` を保存することを示す。 | `proved` |
+| `CouponDiscountExample.pathHomotopy_preserves_roundingTrace_append` | `theorem` | `ArchitecturePath.PathHomotopy.observation_eq_append` の特殊化として、selected filler generator から生成される path homotopy が任意 suffix context で `roundingTrace` を保存することを示す。 | `proved` |
+| `CouponDiscountExample.pathHomotopy_preserves_roundingTrace` | `theorem` | `ArchitecturePath.PathHomotopy.observation_eq` の特殊化として、selected filler generator から生成される path homotopy が `roundingTrace` を保存することを示す。 | `proved` |
 | `CouponDiscountExample.couponThenDiscount_roundingTrace` | `theorem` | coupon-first path の selected rounding trace が `21` であることを計算する。 | `proved` |
 | `CouponDiscountExample.discountThenCoupon_roundingTrace` | `theorem` | discount-first path の selected rounding trace が `43` であることを計算する。 | `proved` |
 | `CouponDiscountExample.roundingOrder_refutes_selectedDiagramFiller` | `theorem` | `roundingOrder` witness が selected coupon / discount diagram filler を反駁する。 | `proved` |
