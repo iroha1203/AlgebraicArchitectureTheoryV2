@@ -1,5 +1,5 @@
 import Formal.Arch.Evolution.ArchitecturePath
-import Formal.Arch.AnalyticRepresentation
+import Formal.Arch.Signature.AnalyticRepresentation
 
 namespace Formal.Arch
 

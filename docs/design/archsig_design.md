@@ -53,7 +53,7 @@ schema は明示的に versioned にする。
   "components": [
     {
       "id": "Formal.Arch.Signature",
-      "path": "Formal/Arch/Signature.lean"
+      "path": "Formal/Arch/Signature/Signature.lean"
     }
   ],
   "edges": [

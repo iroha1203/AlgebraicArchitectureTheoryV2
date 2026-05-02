@@ -20,9 +20,9 @@ Lean status: `defined only` / module organization / docs and API design.
 この方針により、既存利用者は `Formal.Arch.<Module>` import をすぐ変更しなくてもよい。
 一方で、移動後の責務構造は canonical path として docs / theorem index に反映する。
 
-## 推奨サブディレクトリ構成
+## サブディレクトリ構成
 
-| 将来 path | 対象 module | 役割 |
+| canonical path | 対象 module | 役割 |
 | --- | --- | --- |
 | `Formal/Arch/Core` | `Graph`, `Reachability`, `Layering`, `Decomposable`, `Finite`, `Category`, `ThinCategory`, `Matrix` | graph、walk / reachability、strict layering、finite universe、thin category、finite matrix bridge の基盤。 |
 | `Formal/Arch/Law` | `Projection`, `Observation`, `LSP`, `LocalReplacement`, `Lawfulness`, `StateEffect` | projection / observation / LSP / local replacement と、lawfulness・state effect の bounded law schema。 |
@@ -34,8 +34,8 @@ Lean status: `defined only` / module organization / docs and API design.
 | `Formal/Arch/Evolution` | `ArchitecturePath`, `ArchitectureEvolution`, `DiagramFiller`, `Chapter7TheoremPackages` | path / evolution / diagram filler と、Chapter 7 の docs-facing theorem package entrypoint。 |
 | `Formal/Arch/Examples` | `SolidCounterexample`, `StaticSemanticCounterexample` | reader-facing counterexample / example。 |
 
-この表は移動先の初期案である。実際の PR では依存関係により、対象 module をさらに小さく
-分割してよい。ただし、数学的主張や theorem 名の変更を file move と混ぜない。
+この表は現在の canonical path を表す。互換性のため、`Formal/Arch` 直下には import-only
+facade module を残す。ただし、数学的主張や theorem 名の変更を file move と混ぜない。
 
 ## 移行順
 

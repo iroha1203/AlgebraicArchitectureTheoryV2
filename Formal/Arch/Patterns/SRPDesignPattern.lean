@@ -1,5 +1,5 @@
-import Formal.Arch.Graph
-import Formal.Arch.OperationInvariant
+import Formal.Arch.Core.Graph
+import Formal.Arch.Operation.OperationInvariant
 
 namespace Formal.Arch
 

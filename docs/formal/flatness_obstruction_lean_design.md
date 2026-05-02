@@ -107,9 +107,9 @@ zero-count bridge として実装する。
 
 | module 候補 | 役割 |
 | --- | --- |
-| `Formal/Arch/Obstruction.lean` | generic witness-count kernel, finite witness list, zero-count bridge, diagram obstruction の最小特殊例。 |
+| `Formal/Arch/Signature/Obstruction.lean` | generic witness-count kernel, finite witness list, zero-count bridge, diagram obstruction の最小特殊例。 |
 | `Formal/Arch/Law.lean` | `RequiredDiagram`, `LawUniverse`, `DiagramCommutes` などを分離したくなった場合の law 側 module。初期段階では必須ではない。 |
-| `Formal/Arch/Curvature.lean` | 観測値に距離・差分・重みを入れた後の派生 metric。初期段階では追加しない。 |
+| `Formal/Arch/Signature/Curvature.lean` | 観測値に距離・差分・重みを入れた後の派生 metric。初期段階では追加しない。 |
 
 最初の実装では `Law.lean` と `Obstruction.lean` を分けず、
 小さな `Obstruction.lean` から始めてもよい。`Curvature.lean` は名前の印象が強いので、
@@ -266,7 +266,7 @@ cover、required axis 全体の
 を証明済みである。具体的な `ProjectionSound` / `LSPCompatible` /
 `WalkAcyclic` / `LocalReplacementContract` / finite diagram law family については、
 それぞれの witness 不在との exactness bridge を証明済みである。
-さらに `Formal/Arch/SignatureLawfulness.lean` では、selected required Signature
+さらに `Formal/Arch/Signature/SignatureLawfulness.lean` では、selected required Signature
 axes を concrete `LawFamily` としてまとめ、`ArchitectureSignatureV1.axisValue`
 の concrete valuation へ接続する final theorem
 `architectureLawful_iff_requiredSignatureAxesZero` を追加した。
@@ -371,7 +371,7 @@ universe を cover する。
 数値 curvature metric は、zero-count bridge や required obstruction witness 不在の
 代替ではなく、それらの上に載る数学的コアの拡張である。ここで Lean theorem として
 狙うのは、現実の変更コストとの相関ではなく、数値的な 0 が diagram commutativity
-または obstruction absence と一致するという bridge である。`Formal/Arch/Curvature.lean`
+または obstruction absence と一致するという bridge である。`Formal/Arch/Signature/Curvature.lean`
 のような module は、少なくとも次の追加構造を固定してから導入する。
 
 - 観測値 `Obs` 上の差分・距離・同値など、diagram 非可換性を数値化する構造。

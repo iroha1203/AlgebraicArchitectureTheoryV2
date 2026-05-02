@@ -1,5 +1,5 @@
-import Formal.Arch.Decomposable
-import Formal.Arch.LSP
+import Formal.Arch.Core.Decomposable
+import Formal.Arch.Law.LSP
 
 namespace Formal.Arch
 

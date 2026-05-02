@@ -1,5 +1,5 @@
-import Formal.Arch.OperationInvariant
-import Formal.Arch.OperationLaws
+import Formal.Arch.Operation.OperationInvariant
+import Formal.Arch.Operation.OperationLaws
 
 namespace Formal.Arch
 

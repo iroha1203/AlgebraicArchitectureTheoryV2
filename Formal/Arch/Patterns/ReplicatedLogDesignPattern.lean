@@ -1,4 +1,4 @@
-import Formal.Arch.OperationInvariant
+import Formal.Arch.Operation.OperationInvariant
 
 namespace Formal.Arch
 

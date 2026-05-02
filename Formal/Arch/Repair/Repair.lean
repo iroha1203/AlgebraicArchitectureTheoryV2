@@ -1,4 +1,4 @@
-import Formal.Arch.Operation
+import Formal.Arch.Operation.Operation
 
 namespace Formal.Arch
 

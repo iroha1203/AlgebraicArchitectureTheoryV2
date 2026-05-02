@@ -1,5 +1,5 @@
-import Formal.Arch.LocalReplacement
-import Formal.Arch.OperationInvariant
+import Formal.Arch.Law.LocalReplacement
+import Formal.Arch.Operation.OperationInvariant
 import Formal.Arch.Examples.SolidCounterexample
 
 namespace Formal.Arch

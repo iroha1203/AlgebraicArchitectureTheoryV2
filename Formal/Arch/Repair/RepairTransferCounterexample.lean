@@ -1,6 +1,6 @@
-import Formal.Arch.Obstruction
+import Formal.Arch.Signature.Obstruction
 import Formal.Arch.Repair.Repair
-import Formal.Arch.ComplexityTransfer
+import Formal.Arch.Signature.ComplexityTransfer
 
 namespace Formal.Arch
 

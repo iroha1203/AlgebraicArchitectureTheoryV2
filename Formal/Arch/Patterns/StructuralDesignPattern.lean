@@ -1,6 +1,6 @@
-import Formal.Arch.Decomposable
-import Formal.Arch.OperationInvariant
-import Formal.Arch.SignatureLawfulness
+import Formal.Arch.Core.Decomposable
+import Formal.Arch.Operation.OperationInvariant
+import Formal.Arch.Signature.SignatureLawfulness
 
 namespace Formal.Arch
 

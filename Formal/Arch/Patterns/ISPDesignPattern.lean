@@ -1,5 +1,5 @@
-import Formal.Arch.LSP
-import Formal.Arch.OperationInvariant
+import Formal.Arch.Law.LSP
+import Formal.Arch.Operation.OperationInvariant
 
 namespace Formal.Arch
 
