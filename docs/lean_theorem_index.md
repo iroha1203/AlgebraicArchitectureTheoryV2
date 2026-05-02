@@ -652,7 +652,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -690,10 +690,14 @@ policy-aware coverage completeness は non-conclusion として記録する。
 Issue [#418](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/418)
 では、状態遷移代数層の入口として `StateTransitionCarrier` と
 `stateTransitionDesignPattern` を追加した。ここでは replay / roundtrip /
-compensation の selected finite law cases を invariant family として扱い、
-Event Sourcing / Saga 固有 theorem package は後続 Issue [#416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/416)
-に残す。CRUD の一般 theorem 化、extractor completeness、実コード event log completeness、
+compensation の selected finite law cases を invariant family として扱う。
+CRUD の一般 theorem 化、extractor completeness、実コード event log completeness、
 運用コスト改善は non-conclusion として記録する。
+Issue [#416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/416)
+では、Event Sourcing と Saga を状態遷移代数層の固有 `DesignPattern` package として
+追加した。Event Sourcing は event sequence monoid、selected replay law、selected
+projection law に相対化し、Saga は compensation を一般逆射ではなく selected weak
+recovery law として扱う。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1482,7 +1486,7 @@ File: `Formal/Arch/SignatureLawfulness.lean`
 
 ## State Transition / Effect Boundary Laws
 
-Files: `Formal/Arch/StateEffect.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`
+Files: `Formal/Arch/StateEffect.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1522,6 +1526,27 @@ Files: `Formal/Arch/StateEffect.lean`, `Formal/Arch/StateTransitionDesignPattern
 | `stateTransitionDesignPattern` | `def` | 状態遷移代数層を `DesignPattern` schema に接続する入口。 | `defined only` |
 | `stateTransitionDesignPattern_closure_law` | `theorem` | 状態遷移代数層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
 | `stateTransitionDesignPattern_records_nonConclusion` | `theorem` | extractor completeness、event log completeness、運用コスト改善、CRUD 一般 theorem 化を non-conclusion として記録する。 | `proved` |
+| `EventSequenceMonoidLawful` | `def` | Event Sourcing の event sequence を finite list monoid として読む selected law predicate。 | `defined only` |
+| `eventSequenceMonoidLawful` | `theorem` | finite event sequence の empty / append / associativity law を証明する。 | `proved` |
+| `StateProjectionCase` | `structure` | Event Sourcing projection law の finite selected case。 | `defined only` |
+| `StateProjectionLawful` | `def` | carrier の projection が同じ event sequence の replay observation と一致する selected law。 | `defined only` |
+| `EventSourcingPatternState` | `structure` | carrier、selected replay cases、selected projection cases を束ねる Event Sourcing state。 | `defined only` |
+| `EventSourcingOperation` | `structure` | source / target state と target 側 replay / projection lawfulness を持つ proof-carrying operation。 | `defined only` |
+| `eventSourcingOperation_toStateTransitionOperation` | `def` | Event Sourcing operation を汎用 `StateTransitionOperation` として読む bridge。 | `defined only` |
+| `eventSourcingOperation_stateTransitionClosure` | `theorem` | Event Sourcing operation を汎用状態遷移 closure law に接続する。 | `proved` |
+| `EventSourcingInvariant` | `inductive` | event sequence monoid、replay law、projection law、aggregate lawfulness を selected invariant axis として列挙する。 | `defined only` |
+| `eventSourcingDesignPattern` | `def` | Event Sourcing を `DesignPattern` schema に接続する theorem package。 | `defined only` |
+| `eventSourcingDesignPattern_closure_law` | `theorem` | Event Sourcing `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `eventSourcingDesignPattern_records_nonConclusion` | `theorem` | extractor completeness、event log completeness、projection completeness、運用コスト改善を non-conclusion として記録する。 | `proved` |
+| `SagaPatternState` | `structure` | carrier と selected compensation cases を束ねる Saga state。 | `defined only` |
+| `SagaWeakRecoveryLawful` | `def` | Saga compensation を selected weak recovery law として読む predicate。 | `defined only` |
+| `SagaOperation` | `structure` | source / target state と target 側 weak recovery lawfulness を持つ proof-carrying operation。 | `defined only` |
+| `sagaOperation_toStateTransitionOperation` | `def` | Saga operation を汎用 `StateTransitionOperation` として読む bridge。 | `defined only` |
+| `sagaOperation_stateTransitionClosure` | `theorem` | Saga operation を汎用状態遷移 closure law に接続する。 | `proved` |
+| `SagaInvariant` | `inductive` | compensation weak recovery と aggregate lawfulness を selected invariant axis として列挙する。 | `defined only` |
+| `sagaDesignPattern` | `def` | Saga を `DesignPattern` schema に接続する theorem package。 | `defined only` |
+| `sagaDesignPattern_closure_law` | `theorem` | Saga `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `sagaDesignPattern_records_nonConclusion` | `theorem` | 補償の一般逆射性、全 failure mode coverage、運用回復コスト改善、extractor completeness を non-conclusion として記録する。 | `proved` |
 | `EffectBoundaryLawFamilyLawful` | `def` | effect-boundary replay / roundtrip / compensation law family の aggregate lawfulness。 | `defined only` |
 | `NoEffectBoundaryLawFamilyObstruction` | `def` | effect-boundary replay / roundtrip / compensation law family の aggregate obstruction absence。 | `defined only` |
 | `effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction` | `theorem` | effect-boundary law family package の lawfulness と obstruction absence を接続する。 | `proved` |
