@@ -652,7 +652,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/SRPDesignPattern.lean`, `Formal/Arch/ISPDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`, `Formal/Arch/ReplicatedLogDesignPattern.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/Patterns/LocalContractDesignPattern.lean`, `Formal/Arch/Patterns/SRPDesignPattern.lean`, `Formal/Arch/Patterns/ISPDesignPattern.lean`, `Formal/Arch/Patterns/StructuralDesignPattern.lean`, `Formal/Arch/Patterns/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/Patterns/StateTransitionDesignPattern.lean`, `Formal/Arch/Patterns/EventSourcingSagaDesignPattern.lean`, `Formal/Arch/Patterns/ReplicatedLogDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -918,7 +918,7 @@ runtime / semantic decomposability、global flatness preservation、incident red
 
 ## Chapter 7 Theorem Package Entrypoints
 
-File: `Formal/Arch/Chapter7TheoremPackages.lean`
+File: `Formal/Arch/Evolution/Chapter7TheoremPackages.lean`
 
 Issue [#420](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/420)
 は、第7章 7.1〜7.6 の中心 theorem 候補に対応する既存 bounded theorem package を、
@@ -976,7 +976,7 @@ solver completeness、empirical cost 改善、global complexity conservation は
 
 ## Repair
 
-File: `Formal/Arch/Repair.lean`
+File: `Formal/Arch/Repair/Repair.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -997,7 +997,7 @@ repair termination、finite repair、synthesis soundness、no-solution certifica
 
 ## Repair Synthesis
 
-File: `Formal/Arch/RepairSynthesis.lean`
+File: `Formal/Arch/Repair/RepairSynthesis.lean`
 
 Issue [#277](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/277)
 の対象範囲は、既存の local `RepairStepDecreases` から分離して、bounded finite repair、
@@ -1154,7 +1154,7 @@ conservation or empirical cost theorem.
 
 ## Repair Transfer Counterexample
 
-File: `Formal/Arch/RepairTransferCounterexample.lean`
+File: `Formal/Arch/Repair/RepairTransferCounterexample.lean`
 
 Issue [#353](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/353)
 の対象範囲は、repair step が selected obstruction measure を減少させても、
@@ -1187,7 +1187,7 @@ Lean 側の counterexample package として記録する。
 
 ## Architecture Path
 
-File: `Formal/Arch/ArchitecturePath.lean`
+File: `Formal/Arch/Evolution/ArchitecturePath.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1205,7 +1205,7 @@ File: `Formal/Arch/ArchitecturePath.lean`
 
 ## Architecture Evolution
 
-File: `Formal/Arch/ArchitectureEvolution.lean`
+File: `Formal/Arch/Evolution/ArchitectureEvolution.lean`
 
 Issue [#278](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/278) の対象範囲は、既存
 `ArchitecturePath` の endpoint-indexed path を再利用し、その上に evolution-specific な
@@ -1244,7 +1244,7 @@ flatness predicate の自動保存は主張しない。
 
 ## Diagram Filler
 
-File: `Formal/Arch/DiagramFiller.lean`
+File: `Formal/Arch/Evolution/DiagramFiller.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1287,7 +1287,7 @@ zero 性、実コード extractor completeness は主張しない。
 
 ## Static / Semantic Counterexample
 
-File: `Formal/Arch/StaticSemanticCounterexample.lean`
+File: `Formal/Arch/Examples/StaticSemanticCounterexample.lean`
 
 Issue [#348](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/348)
 の canonical counterexample は、repaired coupon static skeleton で selected static split
@@ -1626,7 +1626,7 @@ File: `Formal/Arch/SignatureLawfulness.lean`
 
 ## State Transition / Effect Boundary Laws
 
-Files: `Formal/Arch/StateEffect.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`
+Files: `Formal/Arch/StateEffect.lean`, `Formal/Arch/Patterns/StateTransitionDesignPattern.lean`, `Formal/Arch/Patterns/EventSourcingSagaDesignPattern.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1946,7 +1946,7 @@ assumptions before returning to structural facts.
 
 ## SOLID Counterexamples
 
-File: `Formal/Arch/SolidCounterexample.lean`
+File: `Formal/Arch/Examples/SolidCounterexample.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
