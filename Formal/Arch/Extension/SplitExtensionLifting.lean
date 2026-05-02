@@ -162,6 +162,18 @@ theorem coreRetraction_observes_coreEmbedding
       e.coreObservation.observe c :=
   e.observationalCoreRetraction c
 
+/-- The lifting data records declared-interface factorization for the extension. -/
+theorem interfaceFactorization_holds
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView) :
+    e.extension.interactionFactorsThroughDeclaredInterfaces :=
+  e.interfaceFactorization
+
+/-- The lifting data records preservation of the required extension invariants. -/
+theorem preservesRequiredInvariants_holds
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView) :
+    e.extension.preservesRequiredInvariants :=
+  e.preservesRequiredInvariants
+
 /--
 Expose the feature-section part of lifting data as the public featureView
 section package.
@@ -253,6 +265,52 @@ structure CompatibleWithInterface
   coreInvariantPreserved :
     coreInvariant (e.coreRetraction (e.featureSection featureStep.source)) ->
       coreInvariant (e.coreRetraction (e.featureSection featureStep.target))
+
+namespace CompatibleWithInterface
+
+variable {Core : Type u} {Feature : Type v} {Extended : Type w}
+  {FeatureView : Type q} {CoreView : Type r}
+
+/-- The selected compatible step supplies the lifted extended edge. -/
+theorem liftedEdge_holds
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (h : CompatibleWithInterface e coreInvariant featureStep) :
+    e.extension.extended.edge
+      (e.featureSection featureStep.source)
+      (e.featureSection featureStep.target) :=
+  h.liftedEdge
+
+/-- The selected compatible step carries declared-interface factorization. -/
+theorem interfaceFactorization_holds
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (h : CompatibleWithInterface e coreInvariant featureStep) :
+    e.extension.interactionFactorsThroughDeclaredInterfaces :=
+  h.interfaceFactorization
+
+/-- The selected compatible step carries the required coverage assumptions. -/
+theorem coverageAssumptions_holds
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (h : CompatibleWithInterface e coreInvariant featureStep) :
+    e.extension.coverageAssumptions :=
+  h.coverageAssumptions
+
+/-- The selected compatible step preserves the chosen core invariant. -/
+theorem coreInvariantPreserved_holds
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (h : CompatibleWithInterface e coreInvariant featureStep) :
+    coreInvariant (e.coreRetraction (e.featureSection featureStep.source)) ->
+      coreInvariant (e.coreRetraction (e.featureSection featureStep.target)) :=
+  h.coreInvariantPreserved
+
+end CompatibleWithInterface
 
 /--
 Selected split-extension lifting theorem.

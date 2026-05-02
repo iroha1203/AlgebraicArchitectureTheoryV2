@@ -329,6 +329,8 @@ feature section / core retraction、featureView law package、selected feature s
 | `SplitExtensionLiftingData` | `structure` | `FeatureExtension`、feature observation、core observation、feature section、core retraction、section / retraction law、interface factorization、required invariant preservation を束ねる selected split-extension lifting schema。 | `defined only` |
 | `SplitExtensionLiftingData.featureSection_observes` | `theorem` | feature section law を accessor theorem として取り出す。 | `proved` |
 | `SplitExtensionLiftingData.coreRetraction_observes_coreEmbedding` | `theorem` | embedded core 上の observational core retraction law を accessor theorem として取り出す。 | `proved` |
+| `SplitExtensionLiftingData.interfaceFactorization_holds` | `theorem` | lifting data から declared-interface factorization assumption を accessor theorem として取り出す。 | `proved` |
+| `SplitExtensionLiftingData.preservesRequiredInvariants_holds` | `theorem` | lifting data から required invariant preservation assumption を accessor theorem として取り出す。 | `proved` |
 | `SplitExtensionLiftingData.featureViewSectionPackage` | `def` | lifting data の feature-section 部分を公開 `FeatureViewSectionPackage` として取り出す。 | `defined only` |
 | `SplitExtensionLiftingData.featureViewSectionPackage_observes` | `theorem` | lifting data 由来の公開 section package が selected feature observation law を満たすことを示す。 | `proved` |
 | `SelectedFeatureStep` | `structure` | selected feature state 間の feature step。 | `defined only` |
@@ -338,6 +340,10 @@ feature section / core retraction、featureView law package、selected feature s
 | `LiftsFeatureStep` | `def` | lifted step が section-induced endpoints を持ち、extended static edge として存在すること。 | `defined only` |
 | `PreservesCoreInvariants` | `def` | core retraction 後の selected core invariant を lifted step が保存すること。 | `defined only` |
 | `CompatibleWithInterface` | `structure` | selected step ごとの extended edge、interface factorization、coverage、core invariant preservation を束ねる compatibility package。 | `defined only` |
+| `CompatibleWithInterface.liftedEdge_holds` | `theorem` | compatibility package から selected step の lifted extended edge を accessor theorem として取り出す。 | `proved` |
+| `CompatibleWithInterface.interfaceFactorization_holds` | `theorem` | compatibility package から declared-interface factorization assumption を selected step 単位で取り出す。 | `proved` |
+| `CompatibleWithInterface.coverageAssumptions_holds` | `theorem` | compatibility package から selected coverage assumptions を accessor theorem として取り出す。 | `proved` |
+| `CompatibleWithInterface.coreInvariantPreserved_holds` | `theorem` | compatibility package から selected core invariant preservation assumption を accessor theorem として取り出す。 | `proved` |
 | `SplitExtensionLifting` | `theorem` | selected split-extension lifting data、lawful feature step、interface compatibility から、lifting と core invariant preservation を満たす extended step の存在を得る。 | `proved` |
 
 Non-conclusions: `SplitExtensionLifting` は strict equality の section/retraction、全 component の一意分解、
