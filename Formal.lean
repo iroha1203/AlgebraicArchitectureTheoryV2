@@ -19,6 +19,7 @@ import Formal.Arch.Extension.SplitExtensionLifting
 import Formal.Arch.Evolution.ArchitecturePath
 import Formal.Arch.Evolution.ArchitectureEvolution
 import Formal.Arch.Evolution.DiagramFiller
+import Formal.Arch.Evolution.Chapter8HomotopySkeleton
 import Formal.Arch.Signature.Obstruction
 import Formal.Arch.Law.Lawfulness
 import Formal.Arch.Law.StateEffect
