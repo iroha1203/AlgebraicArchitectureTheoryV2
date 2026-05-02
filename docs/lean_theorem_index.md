@@ -1054,7 +1054,8 @@ File: `Formal/Arch/Extension/ArchitectureExtensionFormula.lean`
 
 Issues [#321](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/321),
 [#326](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/326),
-and [#458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/458)
+[#458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/458),
+and [#459](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/459)
 audit this package as the Lean entry point for mathematical design sections 7.2,
 9, and 10.  The package separates the soundness direction, the bounded
 completeness direction under explicit coverage / exactness assumptions, and the
@@ -1105,7 +1106,13 @@ coverage-style structural classification theorem.
 | `complexityTransferExtensionObstructionWitness_classified` | `theorem` | bridge constructor で作った witness が `ClassifiedAsComplexityTransfer` を満たすことを示す。 | `proved` |
 | `complexityTransferExtensionObstructionWitnessExists_of_transferredTo` | `theorem` | target-specific な `ComplexityTransferredTo` conclusion から、分類済み complexity-transfer witness の存在を得る。 | `proved` |
 | `complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination` | `theorem` | `BoundedComplexityTransferPackage.no_free_elimination_bounded` の conclusion を、第10章の `.complexityTransfer` 分類 witness 存在へ接続する代表 bridge。 | `proved` |
+| `ResidualCoverageGapWitnessPayload` | `structure` | selected `ExtensionCoverageWitness` を、第10章の `.residualCoverageGap` bridge payload として包む。coverage-only 診断であり、static split law failure や runtime / semantic flatness failure は主張しない。 | `defined only` |
+| `residualCoverageGapExtensionObstructionWitness` | `def` | selected extension-coverage diagnostic payload から `.residualCoverageGap` に分類された `ExtensionObstructionWitness` を構成する。 | `defined only` |
 | `ClassifiedAsResidualCoverageGap` | `def` | witness が residual evidence または bounded coverage gap として分類されること。 | `defined only` |
+| `residualCoverageGapExtensionObstructionWitness_classified` | `theorem` | bridge constructor で作った witness が `ClassifiedAsResidualCoverageGap` を満たすことを示す。 | `proved` |
+| `not_extensionCoverage_of_residualCoverageGapPayload` | `theorem` | residual-coverage payload から、その bounded `ExtensionCoverage` premise の不成立を得る。 | `proved` |
+| `residualCoverageGapExtensionObstructionWitnessExists_of_extensionCoverageWitnessExists` | `theorem` | selected coverage witness 存在から、分類済み residual-coverage-gap witness の存在を得る。 | `proved` |
+| `residualCoverageGapExtensionObstructionWitnessExists_of_not_extensionCoverage` | `theorem` | `ExtensionCoverageFailureCoverage` 前提の下で、`ExtensionCoverage` 失敗を `.residualCoverageGap` 分類 witness 存在へ接続する代表 bridge。 | `proved` |
 | `ArchitectureExtensionFormula_structural` | `theorem` | bounded extension coverage の下で、任意の selected extension obstruction witness が 7 分類 predicate の少なくとも一つで cover されること。 | `proved` |
 | `MultiLabelClassifiedAsInheritedCore` | `def` | multi-label witness が embedded core 由来 label を持つこと。 | `defined only` |
 | `MultiLabelClassifiedAsFeatureLocal` | `def` | multi-label witness が追加 feature 内部由来 label を持つこと。 | `defined only` |
@@ -1116,6 +1123,7 @@ coverage-style structural classification theorem.
 | `MultiLabelClassifiedAsComplexityTransfer` | `def` | multi-label witness が complexity / analytic transfer label を持つこと。 | `defined only` |
 | `complexityTransferExtensionObstructionWitness_multilabel_classified` | `theorem` | complexity-transfer bridge witness を multi-label layer に埋め込んでも `.complexityTransfer` label が得られることを示す。 | `proved` |
 | `MultiLabelClassifiedAsResidualCoverageGap` | `def` | multi-label witness が residual evidence / coverage gap label を持つこと。 | `defined only` |
+| `residualCoverageGapExtensionObstructionWitness_multilabel_classified` | `theorem` | residual-coverage bridge witness を multi-label layer に埋め込んでも `.residualCoverageGap` label が得られることを示す。 | `proved` |
 | `ArchitectureExtensionFormula_multilabel_structural` | `theorem` | bounded extension coverage の下で、任意の multi-label extension obstruction witness が 7 分類 predicate の少なくとも一つで cover されること。 | `proved` |
 
 Non-conclusions: 最初の theorem package は disjoint decomposition、global extractor
@@ -1136,6 +1144,9 @@ complexity-transfer bridge は `ComplexityTransferredTo` または
 `BoundedComplexityTransferPackage.no_free_elimination_bounded` の selected witness を
 `.complexityTransfer` に分類するだけであり、global complexity conservation や empirical
 cost 改善は追加しない。
+residual-coverage bridge は selected `ExtensionCoverageWitness` を `.residualCoverageGap`
+に分類するだけであり、static split law failure、runtime / semantic flatness failure、
+extractor completeness、または coverage witness universe 外の completeness は追加しない。
 
 ## Complexity Transfer
 
