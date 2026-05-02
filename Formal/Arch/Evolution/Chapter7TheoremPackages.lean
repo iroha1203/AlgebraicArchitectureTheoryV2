@@ -79,7 +79,9 @@ def representativeDeclarations : Candidate -> List String
   | complexityTransfer =>
       ["BoundedComplexityTransferPackage",
        "BoundedComplexityTransferPackage.complexityTransfer_selectedAlternative",
-       "BoundedComplexityTransferPackage.no_free_elimination_bounded"]
+       "BoundedComplexityTransferPackage.no_free_elimination_bounded",
+       "complexityTransferExtensionObstructionWitness",
+       "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination"]
   | noSolutionCertificate =>
       ["NoSolutionCertificate",
        "ValidNoSolutionCertificate",
@@ -173,9 +175,13 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          leanDeclarations :=
           ["BoundedComplexityTransferPackage",
            "BoundedComplexityTransferPackage.complexityTransfer_selectedAlternative",
-           "BoundedComplexityTransferPackage.no_free_elimination_bounded"],
+           "BoundedComplexityTransferPackage.no_free_elimination_bounded",
+           "ComplexityTransferWitnessPayload",
+           "complexityTransferExtensionObstructionWitness",
+           "complexityTransferExtensionObstructionWitness_classified",
+           "complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination"],
          reading :=
-          "bounded alternative: proof elimination or selected runtime / semantic / policy transfer",
+          "bounded alternative plus bridge into the Architecture Extension Formula complexity-transfer classification",
          status := "defined only / proved" }]
   | noSolutionCertificate =>
       [{ schematic := "ProducesNoSolutionCertificate C cert",
