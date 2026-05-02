@@ -246,11 +246,55 @@ def RoundingSameExternalContract
     roundingTrace (ArchitecturePath.cons s rest) =
       roundingTrace (ArchitecturePath.cons t rest)
 
-/-- Selected repair fills are exactly those that preserve rounding observation. -/
+/--
+Selected repair fills are exactly those that preserve rounding observation in
+every suffix context.
+-/
 def RoundingRepairFill
     (X Y : CouponState)
     (p q : ArchitecturePath CouponDiscountStep X Y) : Prop :=
-  roundingTrace p = roundingTrace q
+  ∀ {Z : CouponState} (suffix : ArchitecturePath CouponDiscountStep Y Z),
+    roundingTrace (ArchitecturePath.append p suffix) =
+      roundingTrace (ArchitecturePath.append q suffix)
+
+/-- The selected filler generators preserve the rounding observation in every suffix context. -/
+theorem pathHomotopy_preserves_roundingTrace_append
+    {X Y : CouponState} {p q : ArchitecturePath CouponDiscountStep X Y}
+    (h :
+      ArchitecturePath.PathHomotopy
+        RoundingIndependentSquare RoundingSameExternalContract
+        RoundingRepairFill p q) :
+    ∀ {Z : CouponState} (suffix : ArchitecturePath CouponDiscountStep Y Z),
+      roundingTrace (ArchitecturePath.append p suffix) =
+        roundingTrace (ArchitecturePath.append q suffix) := by
+  induction h with
+  | refl p =>
+      intro _ suffix
+      rfl
+  | symm _ ih =>
+      intro _ suffix
+      exact Eq.symm (ih suffix)
+  | trans _ _ ihLeft ihRight =>
+      intro _ suffix
+      exact Eq.trans (ihLeft suffix) (ihRight suffix)
+  | swapIndependent a b c d rest hIndependent =>
+      intro _ suffix
+      simpa [ArchitecturePath.append] using
+        hIndependent (ArchitecturePath.append rest suffix)
+  | replaceBySameContract s t rest hSame =>
+      intro _ suffix
+      simpa [ArchitecturePath.append] using
+        hSame (ArchitecturePath.append rest suffix)
+  | repairFill hRepair =>
+      intro _ suffix
+      exact hRepair suffix
+  | consCongr step _ ih =>
+      intro _ suffix
+      simp [ArchitecturePath.append, roundingTrace, ih suffix]
+  | appendRightCongr suffix _ ih =>
+      intro _ suffix'
+      simpa [ArchitecturePath.append_assoc] using
+        ih (ArchitecturePath.append suffix suffix')
 
 /-- The selected filler generators preserve the rounding observation. -/
 theorem pathHomotopy_preserves_roundingTrace
@@ -260,16 +304,8 @@ theorem pathHomotopy_preserves_roundingTrace
         RoundingIndependentSquare RoundingSameExternalContract
         RoundingRepairFill p q) :
     roundingTrace p = roundingTrace q := by
-  induction h with
-  | refl p => rfl
-  | symm _ ih => exact Eq.symm ih
-  | trans _ _ ihLeft ihRight => exact Eq.trans ihLeft ihRight
-  | swapIndependent a b c d rest hIndependent =>
-      exact hIndependent rest
-  | replaceBySameContract s t rest hSame =>
-      exact hSame rest
-  | repairFill hRepair =>
-      exact hRepair
+  simpa using
+    pathHomotopy_preserves_roundingTrace_append h (ArchitecturePath.nil Y)
 
 theorem couponThenDiscount_roundingTrace :
     roundingTrace couponThenDiscount = 21 :=

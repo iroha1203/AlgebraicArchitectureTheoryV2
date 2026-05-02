@@ -148,6 +148,86 @@ inductive PathHomotopy
   | repairFill {X Y : State} {p q : ArchitecturePath Step X Y} :
       RepairFill X Y p q ->
         PathHomotopy IndependentSquare SameExternalContract RepairFill p q
+  | consCongr {X Y Z : State}
+      (step : Step X Y) {p q : ArchitecturePath Step Y Z} :
+      PathHomotopy IndependentSquare SameExternalContract RepairFill p q ->
+        PathHomotopy IndependentSquare SameExternalContract RepairFill
+          (cons step p) (cons step q)
+  | appendRightCongr {X Y Z : State}
+      {p q : ArchitecturePath Step X Y}
+      (suffix : ArchitecturePath Step Y Z) :
+      PathHomotopy IndependentSquare SameExternalContract RepairFill p q ->
+        PathHomotopy IndependentSquare SameExternalContract RepairFill
+          (append p suffix) (append q suffix)
+
+namespace PathHomotopy
+
+/-- Path homotopy is closed under adding a shared head step. -/
+theorem cons_congr
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {X Y Z : State} (step : Step X Y)
+    {p q : ArchitecturePath Step Y Z}
+    (hHomotopy :
+      PathHomotopy (Step := Step)
+        IndependentSquare SameExternalContract RepairFill p q) :
+    PathHomotopy (Step := Step)
+      IndependentSquare SameExternalContract RepairFill
+        (cons step p) (cons step q) :=
+  PathHomotopy.consCongr step hHomotopy
+
+/-- Path homotopy is closed under appending a shared left context. -/
+theorem append_left
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {W X Y : State} (ctx : ArchitecturePath Step W X)
+    {p q : ArchitecturePath Step X Y}
+    (hHomotopy :
+      PathHomotopy (Step := Step)
+        IndependentSquare SameExternalContract RepairFill p q) :
+    PathHomotopy (Step := Step)
+      IndependentSquare SameExternalContract RepairFill
+        (append ctx p) (append ctx q) := by
+  induction ctx with
+  | nil W =>
+      simpa [append] using hHomotopy
+  | cons step rest ih =>
+      simpa [append] using
+        (PathHomotopy.cons_congr (Step := Step) step (ih hHomotopy))
+
+/-- Path homotopy is closed under appending a shared right context. -/
+theorem append_right
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {X Y Z : State} {p q : ArchitecturePath Step X Y}
+    (hHomotopy :
+      PathHomotopy (Step := Step)
+        IndependentSquare SameExternalContract RepairFill p q)
+    (suffix : ArchitecturePath Step Y Z) :
+    PathHomotopy (Step := Step)
+      IndependentSquare SameExternalContract RepairFill
+        (append p suffix) (append q suffix) :=
+  PathHomotopy.appendRightCongr suffix hHomotopy
+
+end PathHomotopy
 
 /-- An invariant that is stable under the generated path homotopy relation. -/
 def HomotopyInvariant
