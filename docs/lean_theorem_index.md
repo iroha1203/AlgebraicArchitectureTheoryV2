@@ -652,7 +652,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`, `Formal/Arch/ReplicatedLogDesignPattern.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/ISPDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`, `Formal/Arch/ReplicatedLogDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -672,6 +672,12 @@ relation、または assumption boundary に相対化して読む bounded bridge
 DIP compatibility を selected invariant family とし、`LocalReplacementContract`
 から得られる既存 theorem により closure law を構成する。局所契約層から
 `Decomposable` / `StrictLayered` を結論しないことは non-conclusion として記録する。
+Issue [#414](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/414)
+では、ISP を projection refinement / split の bounded package として
+`DesignPattern` schema に接続した。ここでは target 側の projection soundness、
+selected observation boundary factorization、そこから得る LSP compatibility を
+invariant family として扱い、自然言語としての ISP 全体、API usability、interface
+粒度最適性は non-conclusion として記録する。
 Issue [#403](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/403)
 では、大域構造層の代表例として Layered / Clean Architecture を
 `DesignPattern` schema に接続した。ここでは edge-subset restriction を
@@ -768,6 +774,25 @@ Issue [#415](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4
 | `localContractDesignPattern` | `def` | `LocalReplacementContract` を局所契約層の representative `DesignPattern` schema として束ねる。 | `defined only` |
 | `localContractDesignPattern_closure_law` | `theorem` | 局所契約層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
 | `localContractDesignPattern_records_nonConclusion` | `theorem` | 局所契約層 `DesignPattern` が global layering non-conclusion を記録する。 | `proved` |
+| `InterfaceProjectionRefinementState` | `structure` | concrete graph、interface projection、abstract graph、selected observation を ISP 用の projection-refinement state として束ねる。 | `defined only` |
+| `InterfaceProjectionRefinementOperation` | `structure` | source / target state、target projection を source projection へ戻す collapse map、target 側 projection soundness と observation factorization を持つ proof-carrying operation。 | `defined only` |
+| `interfaceProjectionRefinementOperationSource` | `def` | ISP refinement operation の source state を取り出す。 | `defined only` |
+| `interfaceProjectionRefinementOperationTarget` | `def` | ISP refinement operation の target state を取り出す。 | `defined only` |
+| `InterfaceProjectionRefinementInvariant` | `inductive` | ISP の selected invariant axis として projection soundness、observation boundary factorization、LSP compatibility を列挙する。 | `defined only` |
+| `interfaceProjectionRefinementInvariantHolds` | `def` | `InterfaceProjectionRefinementInvariant` を projection-refinement state 上の predicate として評価する。 | `defined only` |
+| `interfaceProjectionRefinementOperation_preserves_projectionSound` | `theorem` | proof-carrying ISP operation から target state の projection soundness を得る。 | `proved` |
+| `interfaceProjectionRefinementOperation_preserves_observationBoundaryFactors` | `theorem` | proof-carrying ISP operation から target state の observation factorization を得る。 | `proved` |
+| `interfaceProjectionRefinementOperation_preserves_lspCompatible` | `theorem` | target observation factorization から target state の `LSPCompatible` を得る。 | `proved` |
+| `interfaceProjectionRefinementOperation_refinesProjection` | `theorem` | target projection が collapse map を通じて source projection へ戻ることを取り出す。 | `proved` |
+| `interfaceProjectionRefinementOperation_preserves_invariant` | `theorem` | proof-carrying ISP refinement operation が selected projection / observation invariants を保存する。 | `proved` |
+| `interfaceProjectionRefinementOperationFamily_subset_ops` | `theorem` | ISP refinement operation family が selected invariant family の `Ops` に含まれる。 | `proved` |
+| `interfaceProjectionRefinementInvariantFamily_subset_inv` | `theorem` | selected ISP invariants が ISP refinement operation family により保存される `Inv` に含まれる。 | `proved` |
+| `InterfaceProjectionRefinementNonConclusionClause` | `inductive` | ISP の non-conclusion clause として自然言語 ISP 全体、API usability、interface 粒度最適性を列挙する。 | `defined only` |
+| `InterfaceProjectionRefinementNonConclusion` | `def` | ISP の non-conclusion clause を記録する predicate。 | `defined only` |
+| `interfaceProjectionRefinement_nonConclusion` | `theorem` | ISP の non-conclusion clause が記録されることを示す。 | `proved` |
+| `interfaceProjectionRefinementDesignPattern` | `def` | ISP を projection refinement / split と selected observation boundary に相対化した representative `DesignPattern` schema として束ねる。 | `defined only` |
+| `interfaceProjectionRefinementDesignPattern_closure_law` | `theorem` | ISP `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `interfaceProjectionRefinementDesignPattern_records_nonConclusion` | `theorem` | ISP `DesignPattern` が自然言語 ISP 全体、API usability、interface 粒度最適性を non-conclusion として記録する。 | `proved` |
 | `StructuralLayerState` | `structure` | 大域構造層の state として dependency graph を束ねる。 | `defined only` |
 | `StructuralRestrictionOperation` | `structure` | source / target state と `EdgeSubset target.G source.G` を持つ proof-carrying structural operation。 | `defined only` |
 | `structuralRestrictionOperationSource` | `def` | structural restriction operation の source state を取り出す。 | `defined only` |
@@ -850,7 +875,8 @@ Issue [#415](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4
 
 Non-conclusions: この theorem package は operation / invariant の束同型、設計パターンの完全分類、
 selected preservation relation の外側にある runtime / semantic / empirical 性質の保存、
-局所契約層からの無条件の `Decomposable` / `StrictLayered`、層名 convention の完全分類、
+局所契約層からの無条件の `Decomposable` / `StrictLayered`、自然言語としての ISP 全体、
+interface 粒度最適性、API usability、層名 convention の完全分類、
 runtime / semantic decomposability、global flatness preservation、incident reduction、
 障害修正コスト低下、runtime telemetry completeness、policy-aware coverage completeness、
 無条件の可用性、分断耐性、収束性、特定実装 protocol correctness、
