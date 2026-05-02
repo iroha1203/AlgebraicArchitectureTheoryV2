@@ -18,6 +18,17 @@ namespace Formal.Arch
 
 namespace Chapter7TheoremPackages
 
+/--
+A stable documentation-facing mapping from schematic names in Chapter 7 to the
+Lean declarations that currently carry the corresponding bounded package.
+-/
+structure SchematicCorrespondence where
+  schematic : String
+  leanDeclarations : List String
+  reading : String
+  status : String
+  deriving Repr
+
 /-- The six center theorem candidates listed in Chapter 7 of the design note. -/
 inductive Candidate where
   | splitExtensionPreservation
@@ -80,6 +91,129 @@ def representativeDeclarations : Candidate -> List String
        "ArchitectureTransition.reportedObstruction_of_drift",
        "eventuallyFlat_of_targetFlat",
        "evolutionPathPreservesFlatness"]
+
+/--
+Schematic-name to Lean-API correspondences for Chapter 7.
+
+These rows are intentionally metadata only.  They stabilize how the design-note
+schematic names are read against existing bounded Lean packages without adding
+new theorems or global completeness claims.
+-/
+def schematicCorrespondences : Candidate -> List SchematicCorrespondence
+  | splitExtensionPreservation =>
+      [{ schematic := "SplitFeatureExtensionWithin U X F X'",
+         leanDeclarations :=
+          ["SplitFeatureExtensionWithin",
+           "splitFeatureExtensionWithin_of_runtimeSemanticSplitPreservation"],
+         reading :=
+          "public bounded split-feature-extension package over an explicit component universe",
+         status := "defined only / proved" },
+       { schematic := "InteractionLawfulWithin U X F X'",
+         leanDeclarations :=
+          ["RuntimeSemanticSplitPreservation",
+           "RuntimeInteractionProtected",
+           "FeatureDiagramsCommute",
+           "LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation"],
+         reading :=
+          "runtime interaction protection plus selected semantic diagram commutation",
+         status := "defined only / proved" },
+       { schematic := "ArchitectureFlatWithin U X'",
+         leanDeclarations :=
+          ["ArchitectureFlatWithin",
+           "architectureFlatWithin_of_splitFeatureExtensionWithin",
+           "LawfulExtensionPreservesFlatness"],
+         reading :=
+          "bounded architecture flatness relative to coverage and measured semantic diagrams",
+         status := "defined only / proved" }]
+  | nonSplitExtensionWitness =>
+      [{ schematic := "ExtensionObstructionWitness X F X' w",
+         leanDeclarations :=
+          ["ExtensionObstructionWitness",
+           "SelectedExtensionObstructionWitness",
+           "NonSplitExtensionWitnessPackage.WitnessPredicate"],
+         reading :=
+          "selected obstruction witness inside an explicit witness universe",
+         status := "defined only" },
+       { schematic := "ExtensionWitnessComplete X F X'",
+         leanDeclarations :=
+          ["NonSplitExtensionWitnessPackage.coverageAssumptions",
+           "NonSplitExtensionWitnessPackage.exactnessAssumptions",
+           "NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension"],
+         reading :=
+          "coverage and exactness assumptions required for the bounded completeness direction",
+         status := "proved under package assumptions" }]
+  | repairAsResplitting =>
+      [{ schematic := "NonSplitExtensionWitness X F X' w",
+         leanDeclarations :=
+          ["SelectedObstructionUniverse",
+           "NonSplitExtensionWitness"],
+         reading :=
+          "selected witness for the chosen obstruction universe, not all obstructions",
+         status := "defined only" },
+       { schematic := "AdmissibleRepairRule r w",
+         leanDeclarations :=
+          ["AdmissibleRepairRule",
+           "repairStepDecreases_of_admissible",
+           "extensionObstructionMeasure_decreases_of_admissible"],
+         reading :=
+          "selected-rule admissibility that proves decrease of the selected obstruction measure",
+         status := "defined only / proved" }]
+  | complexityTransfer =>
+      [{ schematic := "ComplexityTransferredTo Runtime/Semantic/Policy t",
+         leanDeclarations :=
+          ["ComplexityTransferredTo",
+           "ComplexityTransferTarget.runtime",
+           "ComplexityTransferTarget.semantic",
+           "ComplexityTransferTarget.policy",
+           "ComplexityTransferredWithinSelectedTargets"],
+         reading :=
+          "selected transfer witness for one bounded diagnostic target axis",
+         status := "defined only / proved" },
+       { schematic := "Complexity Transfer theorem candidate",
+         leanDeclarations :=
+          ["BoundedComplexityTransferPackage",
+           "BoundedComplexityTransferPackage.complexityTransfer_selectedAlternative",
+           "BoundedComplexityTransferPackage.no_free_elimination_bounded"],
+         reading :=
+          "bounded alternative: proof elimination or selected runtime / semantic / policy transfer",
+         status := "defined only / proved" }]
+  | noSolutionCertificate =>
+      [{ schematic := "ProducesNoSolutionCertificate C cert",
+         leanDeclarations :=
+          ["NoSolutionCertificate"],
+         reading :=
+          "proof-carrying no-solution certificate package, not solver failure alone",
+         status := "defined only" },
+       { schematic := "ValidNoSolutionCertificate cert C",
+         leanDeclarations :=
+          ["ValidNoSolutionCertificate",
+           "NoSolutionCertificate.sound_of_valid"],
+         reading :=
+          "valid certificate soundness for the selected constraint system",
+         status := "defined only / proved" }]
+  | architectureEvolution =>
+      [{ schematic := "TransitionPreservesFlatness t",
+         leanDeclarations :=
+          ["ArchitectureTransition.TransitionPreservesFlatness",
+           "ArchitectureTransition.flatness_of_transitionPreservesFlatness"],
+         reading :=
+          "single-step preservation for a selected flatness predicate",
+         status := "defined only / proved" },
+       { schematic := "ReportedObstruction (ApplyTransition X t) w",
+         leanDeclarations :=
+          ["ArchitectureTransition.ReportedObstruction",
+           "ArchitectureTransition.reportedObstruction_of_drift"],
+         reading :=
+          "drift-reporting theorem relative to selected drift evidence",
+         status := "defined only / proved" },
+       { schematic := "EventuallyFlat plan",
+         leanDeclarations :=
+          ["EventuallyFlat",
+           "eventuallyFlat_of_targetFlat",
+           "evolutionPathPreservesFlatness"],
+         reading :=
+          "bounded eventual flatness for a selected migration path or preserving path",
+         status := "defined only / proved" }]
 
 /-- Boundary reminder for reading each candidate as a bounded theorem package. -/
 def nonConclusionBoundary : Candidate -> String
