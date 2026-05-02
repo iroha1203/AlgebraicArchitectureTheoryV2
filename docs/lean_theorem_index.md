@@ -652,7 +652,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/ISPDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`, `Formal/Arch/ReplicatedLogDesignPattern.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/SRPDesignPattern.lean`, `Formal/Arch/ISPDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`, `Formal/Arch/ReplicatedLogDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -672,6 +672,12 @@ relation、または assumption boundary に相対化して読む bounded bridge
 DIP compatibility を selected invariant family とし、`LocalReplacementContract`
 から得られる既存 theorem により closure law を構成する。局所契約層から
 `Decomposable` / `StrictLayered` を結論しないことは non-conclusion として記録する。
+Issue [#417](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/417)
+では、SRP を selected responsibility boundary と edge-local cohesion の bounded
+package として `DesignPattern` schema に接続した。ここでは responsibility boundary
+の totality、functional assignment、edge-local cohesion を invariant family とし、
+自然言語としての SRP 全体、責務の意味的発見、組織 ownership 評価は
+non-conclusion として記録する。
 Issue [#414](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/414)
 では、ISP を projection refinement / split の bounded package として
 `DesignPattern` schema に接続した。ここでは target 側の projection soundness、
@@ -774,6 +780,31 @@ Issue [#415](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4
 | `localContractDesignPattern` | `def` | `LocalReplacementContract` を局所契約層の representative `DesignPattern` schema として束ねる。 | `defined only` |
 | `localContractDesignPattern_closure_law` | `theorem` | 局所契約層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
 | `localContractDesignPattern_records_nonConclusion` | `theorem` | 局所契約層 `DesignPattern` が global layering non-conclusion を記録する。 | `proved` |
+| `ResponsibilityBoundary` | `structure` | SRP theorem package 用の selected responsibility boundary witness。 | `defined only` |
+| `ResponsibilityBoundary.Total` | `def` | 各 component が少なくとも一つの selected responsibility を持つこと。 | `defined only` |
+| `ResponsibilityBoundary.Functional` | `def` | 各 component が高々一つの selected responsibility を持つこと。 | `defined only` |
+| `ResponsibilityBoundary.EdgeCohesive` | `def` | selected dependency edge が同じ responsibility boundary 内に留まる edge-local cohesion predicate。 | `defined only` |
+| `ResponsibilityCohesionState` | `structure` | dependency graph と selected responsibility boundary を SRP state として束ねる。 | `defined only` |
+| `ResponsibilityCohesionOperation` | `structure` | source / target state、target responsibility を source responsibility へ戻す collapse map、target 側の responsibility / cohesion witnesses を持つ proof-carrying operation。 | `defined only` |
+| `responsibilityCohesionOperationSource` | `def` | SRP operation の source state を取り出す。 | `defined only` |
+| `responsibilityCohesionOperationTarget` | `def` | SRP operation の target state を取り出す。 | `defined only` |
+| `ResponsibilityCohesionInvariant` | `inductive` | SRP の selected invariant axis として boundary totality、functional assignment、local cohesion を列挙する。 | `defined only` |
+| `responsibilityCohesionInvariantHolds` | `def` | `ResponsibilityCohesionInvariant` を responsibility-cohesion state 上の predicate として評価する。 | `defined only` |
+| `responsibilityCohesionInvariantFamily` | `def` | SRP theorem package で選択する invariant family。 | `defined only` |
+| `responsibilityCohesionOperationFamily` | `def` | proof-carrying responsibility refinement operation family。 | `defined only` |
+| `responsibilityCohesionOperation_preserves_boundaryTotal` | `theorem` | proof-carrying SRP operation から target state の boundary totality を得る。 | `proved` |
+| `responsibilityCohesionOperation_preserves_boundaryFunctional` | `theorem` | proof-carrying SRP operation から target state の functional assignment を得る。 | `proved` |
+| `responsibilityCohesionOperation_preserves_localCohesion` | `theorem` | proof-carrying SRP operation から target state の selected edge-local cohesion を得る。 | `proved` |
+| `responsibilityCohesionOperation_refinesBoundary` | `theorem` | target responsibility label が collapse map を通じて source responsibility boundary に読めることを取り出す。 | `proved` |
+| `responsibilityCohesionOperation_preserves_invariant` | `theorem` | proof-carrying SRP operation が selected responsibility / local cohesion invariants を保存する。 | `proved` |
+| `responsibilityCohesionOperationFamily_subset_ops` | `theorem` | SRP operation family が selected invariant family の `Ops` に含まれる。 | `proved` |
+| `responsibilityCohesionInvariantFamily_subset_inv` | `theorem` | selected SRP invariants が SRP operation family により保存される `Inv` に含まれる。 | `proved` |
+| `ResponsibilityCohesionNonConclusionClause` | `inductive` | SRP の non-conclusion clause として自然言語 SRP 全体、責務の意味的発見、組織 ownership 評価を列挙する。 | `defined only` |
+| `ResponsibilityCohesionNonConclusion` | `def` | SRP の non-conclusion clause を記録する predicate。 | `defined only` |
+| `responsibilityCohesion_nonConclusion` | `theorem` | SRP の non-conclusion clause が記録されることを示す。 | `proved` |
+| `responsibilityCohesionDesignPattern` | `def` | SRP を selected responsibility boundary と edge-local cohesion に相対化した representative `DesignPattern` schema として束ねる。 | `defined only` |
+| `responsibilityCohesionDesignPattern_closure_law` | `theorem` | SRP `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `responsibilityCohesionDesignPattern_records_nonConclusion` | `theorem` | SRP `DesignPattern` が自然言語 SRP 全体、責務の意味的発見、組織 ownership 評価を non-conclusion として記録する。 | `proved` |
 | `InterfaceProjectionRefinementState` | `structure` | concrete graph、interface projection、abstract graph、selected observation を ISP 用の projection-refinement state として束ねる。 | `defined only` |
 | `InterfaceProjectionRefinementOperation` | `structure` | source / target state、target projection を source projection へ戻す collapse map、target 側 projection soundness と observation factorization を持つ proof-carrying operation。 | `defined only` |
 | `interfaceProjectionRefinementOperationSource` | `def` | ISP refinement operation の source state を取り出す。 | `defined only` |
@@ -875,8 +906,9 @@ Issue [#415](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4
 
 Non-conclusions: この theorem package は operation / invariant の束同型、設計パターンの完全分類、
 selected preservation relation の外側にある runtime / semantic / empirical 性質の保存、
-局所契約層からの無条件の `Decomposable` / `StrictLayered`、自然言語としての ISP 全体、
-interface 粒度最適性、API usability、層名 convention の完全分類、
+局所契約層からの無条件の `Decomposable` / `StrictLayered`、自然言語としての SRP 全体、
+責務の意味的発見、組織 ownership 評価、自然言語としての ISP 全体、interface 粒度最適性、
+API usability、層名 convention の完全分類、
 runtime / semantic decomposability、global flatness preservation、incident reduction、
 障害修正コスト低下、runtime telemetry completeness、policy-aware coverage completeness、
 無条件の可用性、分断耐性、収束性、特定実装 protocol correctness、

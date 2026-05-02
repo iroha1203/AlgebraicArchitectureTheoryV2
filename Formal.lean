@@ -26,6 +26,7 @@ import Formal.Arch.StateTransitionDesignPattern
 import Formal.Arch.EventSourcingSagaDesignPattern
 import Formal.Arch.ReplicatedLogDesignPattern
 import Formal.Arch.ISPDesignPattern
+import Formal.Arch.SRPDesignPattern
 import Formal.Arch.Curvature
 import Formal.Arch.SolidCounterexample
 import Formal.Arch.LocalContractDesignPattern
