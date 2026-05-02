@@ -47,3 +47,4 @@ import Formal.Arch.Extension.CertifiedArchitecture
 import Formal.Arch.Signature.ComplexityTransfer
 import Formal.Arch.Repair.RepairTransferCounterexample
 import Formal.Arch.Evolution.Chapter7TheoremPackages
+import Formal.Arch.Evolution.Chapter9DiagramFilling

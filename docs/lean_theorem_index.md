@@ -1243,6 +1243,47 @@ Non-conclusions: この統合入口は、既存の finite path calculus と boun
 全 observation axis の保存、finite universe 外の witness coverage、
 実コード extractor completeness は結論しない。
 
+## Chapter 9 Diagram Filling / Split Extension Entrypoint
+
+File: `Formal/Arch/Evolution/Chapter9DiagramFilling.lean`
+
+親 Issue [#452](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/452)
+と Issue [#454](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/454)
+は、第9章 Diagram Filling and Split Extension の bounded Lean API を docs-facing な
+公開入口として整理する作業である。
+
+`Chapter9DiagramFilling.Candidate` は docs-facing な候補名、設計書の節番号、
+代表 Lean declaration 名、schematic name correspondence、non-conclusion boundary
+を束ねる軽量 API である。この module は既存 API を横断 import / metadata として
+索引するだけであり、global semantic completeness、strict section / retraction equality、
+all feature steps の automatic lifting、実コード extractor completeness を新たに主張しない。
+
+| 設計書 | 候補 | 代表 Lean entrypoint | Status | Bounded reading / non-conclusion boundary |
+| --- | --- | --- | --- | --- |
+| 9.1 | Diagram filling and obstruction | `ArchitectureDiagram`, `DiagramFiller`, `diagramFiller_observation_eq`, `observationDifference_refutesDiagramFiller`, `NonFillabilityWitnessFor`, `obstructionAsNonFillability_sound`, `observationDifference_nonFillabilityWitnessFor`, `WitnessUniverseComplete`, `obstructionAsNonFillability_complete_bounded` | `defined only` / `proved` | selected finite diagram と finite witness universe に相対化された filling refutation / bounded completeness。global semantic completeness や extractor completeness は主張しない。 |
+| 9.2 | Split extension as lifting and section | `FeatureSectionLaw`, `FeatureViewSectionPackage`, `ObservationalCoreRetraction`, `SplitExtensionLiftingData`, `LiftsFeatureStep`, `PreservesCoreInvariants`, `SplitExtensionLifting`, `SplitExtensionLiftingPreservationPackage`, `SplitExtensionLifting_preservationPackage` | `defined only` / `proved` | observation-relative section / retraction と selected feature step の bounded lifting。strict equality、一意分解、all feature steps の automatic lifting は主張しない。 |
+| 9.1 / 9.2 | Filling failure bridge | `FillingFailureWitnessPayload`, `fillingFailureExtensionObstructionWitness`, `fillingFailureExtensionObstructionWitness_classified`, `FillingFailureRefutesSplit`, `not_selectedSplitExtension_of_fillingFailurePayload`, `FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage` | `defined only` / `proved` | diagram non-fillability payload を extension obstruction へ分類する bridge。`NonFillabilityWitnessFor` 単独から任意の selected split failure は結論しない。 |
+
+### Chapter 9 schematic name correspondence
+
+| 設計書の schematic name | 対応する Lean API | 読み替え |
+| --- | --- | --- |
+| `DiagramFiller D` | `ArchitectureDiagram`, `DiagramFiller` | generated path homotopy による finite semantic diagram fillability。 |
+| `Obs D.lhs ≠ Obs D.rhs` refutes `DiagramFiller D` | `diagramFiller_observation_eq`, `observationDifference_refutesDiagramFiller` | selected observation を各 generator が保存する明示前提の下で、diagram filler の不在を示す。 |
+| `NonFillabilityWitnessFor D w` | `NonFillabilityWitness`, `NonFillabilityWitnessFor`, `obstructionAsNonFillability_sound`, `observationDifference_nonFillabilityWitnessFor` | selected diagram と witness value に対する sound non-fillability witness。 |
+| `WitnessUniverseComplete U D` | `WitnessUniverseComplete`, `obstructionAsNonFillability_complete_bounded` | finite witness-universe completeness premise を明示した場合だけ成立する bounded converse。 |
+| `q ∘ s ≈[O_F] id_F` | `FeatureSectionLaw`, `FeatureViewSectionPackage.featureSection_observes`, `SplitExtensionLiftingData.featureSection_observes` | strict equality ではなく、selected feature observation に相対化された section law。 |
+| `r ∘ i ≈[O_X] id_X` | `ObservationalCoreRetraction`, `SplitExtensionLiftingData.coreRetraction_observes_coreEmbedding` | embedded core 上の selected core observation に相対化された retraction law。 |
+| selected feature operations lift to `X'` | `SelectedFeatureStep`, `LiftedExtensionStep`, `LiftsFeatureStep`, `PreservesCoreInvariants`, `SplitExtensionLifting`, `SplitExtensionLiftingPreservationPackage`, `SplitExtensionLifting_preservationPackage` | selected feature step と local compatibility package に相対化した lifting / feature-core preservation。 |
+| filling failure as extension obstruction | `FillingFailureWitnessPayload`, `fillingFailureExtensionObstructionWitness`, `ClassifiedAsFillingFailure`, `fillingFailureExtensionObstructionWitness_classified` | selected diagram non-fillability payload を `.fillingFailure` label の extension obstruction witness として包む。 |
+| filling failure refutes selected split | `FillingFailureRefutesSplit`, `not_selectedSplitExtension_of_fillingFailurePayload`, `FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage` | split failure への接続は explicit bridge premise と selected payload coverage / exactness assumptions に相対化する。 |
+
+Non-conclusions: この統合入口は、第9章で使う bounded theorem package と bridge API を
+索引するだけである。cohomological obstruction、global semantic completeness、
+strict section / retraction equality、全 feature step の automatic lifting、
+全 split failure が filling failure であるという completeness、実コード extractor completeness は
+結論しない。
+
 ## Architecture Path
 
 File: `Formal/Arch/Evolution/ArchitecturePath.lean`
