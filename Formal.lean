@@ -24,6 +24,7 @@ import Formal.Arch.Lawfulness
 import Formal.Arch.StateEffect
 import Formal.Arch.StateTransitionDesignPattern
 import Formal.Arch.EventSourcingSagaDesignPattern
+import Formal.Arch.ReplicatedLogDesignPattern
 import Formal.Arch.Curvature
 import Formal.Arch.SolidCounterexample
 import Formal.Arch.LocalContractDesignPattern

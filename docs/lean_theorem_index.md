@@ -652,7 +652,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`, `Formal/Arch/EventSourcingSagaDesignPattern.lean`, `Formal/Arch/ReplicatedLogDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -698,6 +698,12 @@ Issue [#416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/4
 追加した。Event Sourcing は event sequence monoid、selected replay law、selected
 projection law に相対化し、Saga は compensation を一般逆射ではなく selected weak
 recovery law として扱う。
+Issue [#415](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/415)
+では、Replicated Log を分散収束層の bounded `DesignPattern` package として追加した。
+ここでは failure model、quorum、ordering、convergence predicate、selected entries に
+相対化した conditional convergence のみを扱い、無条件の可用性、分断耐性、収束性、
+特定実装 protocol correctness、実コード log completeness は non-conclusion として
+記録する。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -806,6 +812,23 @@ recovery law として扱う。
 | `runtimeProtectionDesignPattern` | `def` | `protect` / `isolate` を実行時依存層の representative `DesignPattern` schema として束ねる。 | `defined only` |
 | `runtimeProtectionDesignPattern_closure_law` | `theorem` | 実行時依存層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
 | `runtimeProtectionDesignPattern_records_nonConclusion` | `theorem` | 実行時依存層 `DesignPattern` が runtime protection non-conclusion clauses を記録する。 | `proved` |
+| `ReplicatedLogState` | `structure` | failure model、quorum、ordering、replica-local log presence、convergence predicate、selected entries を分散収束層 state として束ねる。 | `defined only` |
+| `ReplicatedLogOperation` | `structure` | source / target state と target 側の aggregate `ReplicatedLogLawFamilyLawful` を持つ proof-carrying operation。 | `defined only` |
+| `replicatedLogOperationSource` | `def` | replicated-log operation の source state を取り出す。 | `defined only` |
+| `replicatedLogOperationTarget` | `def` | replicated-log operation の target state を取り出す。 | `defined only` |
+| `ReplicatedLogInvariant` | `inductive` | quorum condition、ordering condition、conditional convergence、aggregate lawfulness を selected invariant axis として列挙する。 | `defined only` |
+| `replicatedLogInvariantHolds` | `def` | `ReplicatedLogInvariant` を `ReplicatedLogState` 上の predicate として評価する。 | `defined only` |
+| `replicatedLogInvariantFamily` | `def` | 分散収束層で選択する invariant family。 | `defined only` |
+| `replicatedLogOperationFamily` | `def` | proof-carrying replicated-log operation family。 | `defined only` |
+| `replicatedLogOperation_preserves_replicatedLogInvariant` | `theorem` | proof-carrying replicated-log operation が selected replicated-log invariants を保存する。 | `proved` |
+| `replicatedLogOperationFamily_subset_ops` | `theorem` | replicated-log operation family が selected invariant family の `Ops` に含まれる。 | `proved` |
+| `replicatedLogInvariantFamily_subset_inv` | `theorem` | selected replicated-log invariants が replicated-log operation family により保存される `Inv` に含まれる。 | `proved` |
+| `ReplicatedLogNonConclusionClause` | `inductive` | Replicated Log の non-conclusion clause として無条件の可用性、分断耐性、収束性、protocol correctness completeness、concrete implementation correctness を列挙する。 | `defined only` |
+| `ReplicatedLogNonConclusion` | `def` | Replicated Log の non-conclusion clause を記録する predicate。 | `defined only` |
+| `replicatedLog_nonConclusion` | `theorem` | Replicated Log の non-conclusion clause が記録されることを示す。 | `proved` |
+| `replicatedLogDesignPattern` | `def` | Replicated Log を分散収束層の representative `DesignPattern` schema として束ねる。 | `defined only` |
+| `replicatedLogDesignPattern_closure_law` | `theorem` | 分散収束層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `replicatedLogDesignPattern_records_nonConclusion` | `theorem` | 分散収束層 `DesignPattern` が replicated-log non-conclusion clauses を記録する。 | `proved` |
 | `StateTransitionCarrier` | `structure` | 状態、遷移、観測、replay / projection、compensation、`StateTransitionExpr` semantics を束ねる状態遷移代数層の最小 carrier。 | `defined only` |
 | `StateTransitionPatternState` | `structure` | carrier と selected finite replay / roundtrip / compensation law cases を同じ state として束ねる。 | `defined only` |
 | `StateTransitionOperation` | `structure` | source / target state と target 側の aggregate `StateTransitionLawFamilyLawful` を持つ proof-carrying operation。 | `defined only` |
@@ -830,8 +853,9 @@ selected preservation relation の外側にある runtime / semantic / empirical
 局所契約層からの無条件の `Decomposable` / `StrictLayered`、層名 convention の完全分類、
 runtime / semantic decomposability、global flatness preservation、incident reduction、
 障害修正コスト低下、runtime telemetry completeness、policy-aware coverage completeness、
-extractor completeness、実コード event log completeness、運用コスト改善、または
-CRUD の一般 theorem 化
+無条件の可用性、分断耐性、収束性、特定実装 protocol correctness、
+実コード log completeness、extractor completeness、実コード event log completeness、
+運用コスト改善、または CRUD の一般 theorem 化
 を主張しない。
 
 ## Repair
