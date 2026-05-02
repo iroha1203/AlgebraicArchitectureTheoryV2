@@ -1,5 +1,5 @@
 import Formal.Arch.Extension.Flatness
-import Formal.Arch.DiagramFiller
+import Formal.Arch.Evolution.DiagramFiller
 
 namespace Formal.Arch
 

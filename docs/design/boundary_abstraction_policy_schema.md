@@ -165,7 +165,7 @@ policy file を適用した extractor output は、少なくとも `metricStatus
   "policyViolations": [
     {
       "axis": "boundaryViolationCount",
-      "source": "Formal.Arch.Runtime",
+      "source": "Formal.Arch.Patterns.RuntimeProtectionDesignPattern",
       "target": "Main",
       "sourceGroup": "formal-arch",
       "targetGroup": "entrypoint",
