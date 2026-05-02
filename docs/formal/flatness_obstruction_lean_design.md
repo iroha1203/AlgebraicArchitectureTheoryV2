@@ -99,21 +99,22 @@ zero-count bridge として実装する。
 
 ## module 配置案
 
-当面は `Formal/Arch` 直下の flat layout を維持する。
-新規 module を追加する場合は、`Formal.lean` と
-[Lean 定義・定理索引](../lean_theorem_index.md) を同じ PR で更新する。
+現在の実体 module は `Formal/Arch` 直下の互換 facade ではなく、責務別の
+canonical subdirectory に置く。新規 module を追加する場合は、`Formal.lean` と
+[Lean 定義・定理索引](../lean_theorem_index.md) を同じ PR で更新し、docs では
+canonical path を主参照先にする。
 
 候補は次である。
 
 | module 候補 | 役割 |
 | --- | --- |
 | `Formal/Arch/Signature/Obstruction.lean` | generic witness-count kernel, finite witness list, zero-count bridge, diagram obstruction の最小特殊例。 |
-| `Formal/Arch/Law.lean` | `RequiredDiagram`, `LawUniverse`, `DiagramCommutes` などを分離したくなった場合の law 側 module。初期段階では必須ではない。 |
-| `Formal/Arch/Signature/Curvature.lean` | 観測値に距離・差分・重みを入れた後の派生 metric。初期段階では追加しない。 |
+| `Formal/Arch/Law/Lawfulness.lean` | `RequiredDiagram`, `LawUniverse`, `DiagramCommutes` などを分離した law 側 module。 |
+| `Formal/Arch/Signature/Curvature.lean` | zero-separating distance、曲率 signature、diagnostic metric の派生 module。 |
 
-最初の実装では `Law.lean` と `Obstruction.lean` を分けず、
-小さな `Obstruction.lean` から始めてもよい。`Curvature.lean` は名前の印象が強いので、
-数値的構造を本当に導入するまで作らない。
+実装済みの lawfulness / obstruction / curvature API は、それぞれ `Law` と `Signature`
+配下の canonical module に分離している。`Formal/Arch` 直下の同名 module は、旧 import
+path 互換の facade として扱う。
 
 ## 用語
 
