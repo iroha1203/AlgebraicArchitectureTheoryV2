@@ -37,19 +37,20 @@ Lean status: `defined only` / module organization / docs and API design.
 この表は現在の canonical path を表す。互換性のため、`Formal/Arch` 直下には import-only
 facade module を残す。ただし、数学的主張や theorem 名の変更を file move と混ぜない。
 
-## 移行順
+## 移行状況
 
-移行は leaf module から core module へ進める。
+移行は leaf module から core module へ進めた。
 
 1. Issue [#425](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/425):
-   `Patterns`, `Repair`, `Evolution`, `Examples` へ leaf module を移す。
+   `Patterns`, `Repair`, `Evolution`, `Examples` へ leaf module を移した。
 2. Issue [#426](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/426):
-   `Core`, `Law`, `Signature`, `Extension`, `Operation` を依存グラフに沿って小さく移す。
+   `Core`, `Law`, `Signature`, `Extension`, `Operation` を依存グラフに沿って小さく移した。
 3. Issue [#427](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/427):
    `docs/lean_theorem_index.md` と `docs/proof_obligations.md` の path / status を実配置へ同期する。
 
-依存中心に近い module は broad import の影響が大きい。`Graph`, `Reachability`, `Finite`,
-`Signature`, `Flatness`, `Operation*` は、leaf 移動後に単独または小さい束で移す。
+依存中心に近い module は broad import の影響が大きいため、`Graph`, `Reachability`,
+`Finite`, `Signature`, `Flatness`, `Operation*` は facade を保ちながら canonical path へ
+移している。
 
 ## facade module の作り方
 
@@ -110,9 +111,10 @@ Lean import に影響しないことを確認したうえで、`lake build Forma
   完全性を直接主張しない。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
 
-## #424 の結論
+## #423 系 Issue の結論
 
-Issue #424 では、`Formal/Arch` 直下に互換 facade を残す方針を採用する。
-実体 module は leaf から core へ段階的に canonical subdirectory へ移し、各段階で
-docs path と `lake build Formal` を確認する。完全移動や facade 削除は、この段階移行の
-完了後に別 Issue として判断する。
+Issue #424 では、`Formal/Arch` 直下に互換 facade を残す方針を採用した。
+Issue #425 と Issue #426 では、実体 module を leaf から core へ段階的に canonical
+subdirectory へ移した。`Formal.lean` は public facade を import し続け、docs /
+theorem index は canonical path を主参照先として扱う。完全移動や facade 削除は、
+この段階移行の完了後に別 Issue として判断する。
