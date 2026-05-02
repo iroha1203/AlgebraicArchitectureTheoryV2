@@ -1,6 +1,6 @@
 namespace Formal.Arch
 
-universe u v
+universe u v w
 
 /--
 A finite architecture evolution path.
@@ -226,6 +226,122 @@ theorem append_right
       IndependentSquare SameExternalContract RepairFill
         (append p suffix) (append q suffix) :=
   PathHomotopy.appendRightCongr suffix hHomotopy
+
+/--
+Generated path homotopy preserves a selected path observation in every suffix
+context when each non-structural generator preserves that observation and the
+observation respects a shared head context.
+-/
+theorem observation_eq_append
+    {α : Type w}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {Obs : {X Y : State} -> ArchitecturePath Step X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : State}
+        (a : Step W X) (b : Step X Z) (c : Step W Y) (d : Step Y Z)
+        (rest : ArchitecturePath Step Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (cons a (cons b rest)) = Obs (cons c (cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : State} (s t : Step X Y)
+        (rest : ArchitecturePath Step Y Z),
+          SameExternalContract X Y s t ->
+            Obs (cons s rest) = Obs (cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : State} {p q : ArchitecturePath Step X Y},
+        RepairFill X Y p q ->
+          (suffix : ArchitecturePath Step Y Z) ->
+            Obs (append p suffix) = Obs (append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : State} (step : Step X Y)
+        {p q : ArchitecturePath Step Y Z},
+          Obs p = Obs q -> Obs (cons step p) = Obs (cons step q))
+    {X Y : State} {p q : ArchitecturePath Step X Y}
+    (hHomotopy :
+      PathHomotopy (Step := Step)
+        IndependentSquare SameExternalContract RepairFill p q) :
+    ∀ {Z : State} (suffix : ArchitecturePath Step Y Z),
+      Obs (append p suffix) = Obs (append q suffix) := by
+  induction hHomotopy with
+  | refl p =>
+      intro _ suffix
+      rfl
+  | symm _ ih =>
+      intro _ suffix
+      exact Eq.symm (ih suffix)
+  | trans _ _ ihLeft ihRight =>
+      intro _ suffix
+      exact Eq.trans (ihLeft suffix) (ihRight suffix)
+  | swapIndependent a b c d rest hIndependent =>
+      intro _ suffix
+      simpa [append] using
+        hIndependentSquare a b c d (append rest suffix) hIndependent
+  | replaceBySameContract s t rest hSame =>
+      intro _ suffix
+      simpa [append] using
+        hSameExternalContract s t (append rest suffix) hSame
+  | repairFill hRepair =>
+      intro _ suffix
+      exact hRepairFill hRepair suffix
+  | consCongr step _ ih =>
+      intro _ suffix
+      simpa [append] using hConsContext step (ih suffix)
+  | appendRightCongr suffix _ ih =>
+      intro _ suffix'
+      simpa [append_assoc] using ih (append suffix suffix')
+
+/--
+Generated path homotopy preserves a selected path observation, relative to
+explicit preservation assumptions for the generator contracts.
+-/
+theorem observation_eq
+    {α : Type w}
+    {IndependentSquare :
+      (W X Y Z : State) ->
+        Step W X -> Step X Z -> Step W Y -> Step Y Z -> Prop}
+    {SameExternalContract :
+      (X Y : State) -> Step X Y -> Step X Y -> Prop}
+    {RepairFill :
+      (X Y : State) -> ArchitecturePath Step X Y ->
+        ArchitecturePath Step X Y -> Prop}
+    {Obs : {X Y : State} -> ArchitecturePath Step X Y -> α}
+    (hIndependentSquare :
+      ∀ {W X Y Z T : State}
+        (a : Step W X) (b : Step X Z) (c : Step W Y) (d : Step Y Z)
+        (rest : ArchitecturePath Step Z T),
+          IndependentSquare W X Y Z a b c d ->
+            Obs (cons a (cons b rest)) = Obs (cons c (cons d rest)))
+    (hSameExternalContract :
+      ∀ {X Y Z : State} (s t : Step X Y)
+        (rest : ArchitecturePath Step Y Z),
+          SameExternalContract X Y s t ->
+            Obs (cons s rest) = Obs (cons t rest))
+    (hRepairFill :
+      ∀ {X Y Z : State} {p q : ArchitecturePath Step X Y},
+        RepairFill X Y p q ->
+          (suffix : ArchitecturePath Step Y Z) ->
+            Obs (append p suffix) = Obs (append q suffix))
+    (hConsContext :
+      ∀ {X Y Z : State} (step : Step X Y)
+        {p q : ArchitecturePath Step Y Z},
+          Obs p = Obs q -> Obs (cons step p) = Obs (cons step q))
+    {X Y : State} {p q : ArchitecturePath Step X Y}
+    (hHomotopy :
+      PathHomotopy (Step := Step)
+        IndependentSquare SameExternalContract RepairFill p q) :
+    Obs p = Obs q := by
+  simpa using
+    observation_eq_append
+      (Step := Step) (Obs := Obs)
+      hIndependentSquare hSameExternalContract hRepairFill hConsContext
+      hHomotopy (nil Y)
 
 end PathHomotopy
 
