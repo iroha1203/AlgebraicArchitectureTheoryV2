@@ -652,7 +652,7 @@ Non-conclusions: concrete entrypoint は selected finite graph kernel、selected
 
 ## Operation / Invariant Galois
 
-Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`
+Files: `Formal/Arch/OperationInvariant.lean`, `Formal/Arch/LocalContractDesignPattern.lean`, `Formal/Arch/StructuralDesignPattern.lean`, `Formal/Arch/RuntimeProtectionDesignPattern.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`
 
 Issue [#276](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/276)
 の対象範囲は、operation family と invariant family の保存関係から誘導される弱い
@@ -687,6 +687,13 @@ selected invariant family とし、`isolateRuntimeLocalizationLaw` /
 `protectRuntimeProtectionLaw` の bounded assumptions から closure law を構成する。
 incident reduction、障害修正コスト低下、runtime telemetry completeness、
 policy-aware coverage completeness は non-conclusion として記録する。
+Issue [#418](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/418)
+では、状態遷移代数層の入口として `StateTransitionCarrier` と
+`stateTransitionDesignPattern` を追加した。ここでは replay / roundtrip /
+compensation の selected finite law cases を invariant family として扱い、
+Event Sourcing / Saga 固有 theorem package は後続 Issue [#416](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/416)
+に残す。CRUD の一般 theorem 化、extractor completeness、実コード event log completeness、
+運用コスト改善は non-conclusion として記録する。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -795,12 +802,32 @@ policy-aware coverage completeness は non-conclusion として記録する。
 | `runtimeProtectionDesignPattern` | `def` | `protect` / `isolate` を実行時依存層の representative `DesignPattern` schema として束ねる。 | `defined only` |
 | `runtimeProtectionDesignPattern_closure_law` | `theorem` | 実行時依存層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
 | `runtimeProtectionDesignPattern_records_nonConclusion` | `theorem` | 実行時依存層 `DesignPattern` が runtime protection non-conclusion clauses を記録する。 | `proved` |
+| `StateTransitionCarrier` | `structure` | 状態、遷移、観測、replay / projection、compensation、`StateTransitionExpr` semantics を束ねる状態遷移代数層の最小 carrier。 | `defined only` |
+| `StateTransitionPatternState` | `structure` | carrier と selected finite replay / roundtrip / compensation law cases を同じ state として束ねる。 | `defined only` |
+| `StateTransitionOperation` | `structure` | source / target state と target 側の aggregate `StateTransitionLawFamilyLawful` を持つ proof-carrying operation。 | `defined only` |
+| `stateTransitionOperationSource` | `def` | 状態遷移 operation の source state を取り出す。 | `defined only` |
+| `stateTransitionOperationTarget` | `def` | 状態遷移 operation の target state を取り出す。 | `defined only` |
+| `StateTransitionInvariant` | `inductive` | 状態遷移代数層の selected invariant axis として replay、roundtrip、compensation、aggregate lawfulness を列挙する。 | `defined only` |
+| `stateTransitionInvariantHolds` | `def` | `StateTransitionInvariant` を `StateTransitionPatternState` 上の predicate として評価する。 | `defined only` |
+| `stateTransitionInvariantFamily` | `def` | 状態遷移代数層で選択する invariant family。 | `defined only` |
+| `stateTransitionOperationFamily` | `def` | proof-carrying state-transition operation family。 | `defined only` |
+| `stateTransitionOperation_preserves_stateTransitionInvariant` | `theorem` | proof-carrying state-transition operation が selected state-transition invariants を保存する。 | `proved` |
+| `stateTransitionOperationFamily_subset_ops` | `theorem` | state-transition operation family が selected invariant family の `Ops` に含まれる。 | `proved` |
+| `stateTransitionInvariantFamily_subset_inv` | `theorem` | selected state-transition invariants が state-transition operation family により保存される `Inv` に含まれる。 | `proved` |
+| `StateTransitionNonConclusionClause` | `inductive` | 状態遷移代数層の non-conclusion clause として extractor completeness、event log completeness、operational cost improvement、CRUD の一般 theorem 化を列挙する。 | `defined only` |
+| `StateTransitionNonConclusion` | `def` | 状態遷移代数層の non-conclusion clause を記録する predicate。 | `defined only` |
+| `stateTransition_nonConclusion` | `theorem` | 状態遷移代数層の non-conclusion clause が記録されることを示す。 | `proved` |
+| `stateTransitionDesignPattern` | `def` | 状態遷移代数層を representative `DesignPattern` schema として束ねる。 | `defined only` |
+| `stateTransitionDesignPattern_closure_law` | `theorem` | 状態遷移代数層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `stateTransitionDesignPattern_records_nonConclusion` | `theorem` | 状態遷移代数層 `DesignPattern` が state-transition non-conclusion clauses を記録する。 | `proved` |
 
 Non-conclusions: この theorem package は operation / invariant の束同型、設計パターンの完全分類、
 selected preservation relation の外側にある runtime / semantic / empirical 性質の保存、
 局所契約層からの無条件の `Decomposable` / `StrictLayered`、層名 convention の完全分類、
 runtime / semantic decomposability、global flatness preservation、incident reduction、
-障害修正コスト低下、runtime telemetry completeness、または policy-aware coverage completeness
+障害修正コスト低下、runtime telemetry completeness、policy-aware coverage completeness、
+extractor completeness、実コード event log completeness、運用コスト改善、または
+CRUD の一般 theorem 化
 を主張しない。
 
 ## Repair
@@ -1455,7 +1482,7 @@ File: `Formal/Arch/SignatureLawfulness.lean`
 
 ## State Transition / Effect Boundary Laws
 
-File: `Formal/Arch/StateEffect.lean`
+Files: `Formal/Arch/StateEffect.lean`, `Formal/Arch/StateTransitionDesignPattern.lean`
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1488,6 +1515,13 @@ File: `Formal/Arch/StateEffect.lean`
 | `StateTransitionLawFamilyLawful` | `def` | 状態遷移 replay / roundtrip / compensation law family の aggregate lawfulness。 | `defined only` |
 | `NoStateTransitionLawFamilyObstruction` | `def` | 状態遷移 replay / roundtrip / compensation law family の aggregate obstruction absence。 | `defined only` |
 | `stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction` | `theorem` | 状態遷移 law family package の lawfulness と obstruction absence を接続する。 | `proved` |
+| `StateTransitionCarrier` | `structure` | 状態、遷移、観測、replay / projection、compensation、`StateTransitionExpr` semantics を束ねる状態遷移代数層の最小 carrier。 | `defined only` |
+| `StateTransitionPatternState` | `structure` | carrier と selected finite replay / roundtrip / compensation law cases を同じ state として束ねる。 | `defined only` |
+| `StateTransitionOperation` | `structure` | source / target state と target 側の aggregate lawfulness を持つ proof-carrying operation。 | `defined only` |
+| `StateTransitionInvariant` | `inductive` | replay、roundtrip、compensation、aggregate lawfulness を selected invariant axis として列挙する。 | `defined only` |
+| `stateTransitionDesignPattern` | `def` | 状態遷移代数層を `DesignPattern` schema に接続する入口。 | `defined only` |
+| `stateTransitionDesignPattern_closure_law` | `theorem` | 状態遷移代数層 `DesignPattern` から operation-to-invariant / invariant-to-operation closure law を取り出す。 | `proved` |
+| `stateTransitionDesignPattern_records_nonConclusion` | `theorem` | extractor completeness、event log completeness、運用コスト改善、CRUD 一般 theorem 化を non-conclusion として記録する。 | `proved` |
 | `EffectBoundaryLawFamilyLawful` | `def` | effect-boundary replay / roundtrip / compensation law family の aggregate lawfulness。 | `defined only` |
 | `NoEffectBoundaryLawFamilyObstruction` | `def` | effect-boundary replay / roundtrip / compensation law family の aggregate obstruction absence。 | `defined only` |
 | `effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction` | `theorem` | effect-boundary law family package の lawfulness と obstruction absence を接続する。 | `proved` |

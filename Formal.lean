@@ -22,6 +22,7 @@ import Formal.Arch.DiagramFiller
 import Formal.Arch.Obstruction
 import Formal.Arch.Lawfulness
 import Formal.Arch.StateEffect
+import Formal.Arch.StateTransitionDesignPattern
 import Formal.Arch.Curvature
 import Formal.Arch.SolidCounterexample
 import Formal.Arch.LocalContractDesignPattern
