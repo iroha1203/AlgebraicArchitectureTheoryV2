@@ -916,6 +916,34 @@ runtime / semantic decomposability、global flatness preservation、incident red
 運用コスト改善、または CRUD の一般 theorem 化
 を主張しない。
 
+## Chapter 7 Theorem Package Entrypoints
+
+File: `Formal/Arch/Chapter7TheoremPackages.lean`
+
+Issue [#420](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/420)
+は、第7章 7.1〜7.6 の中心 theorem 候補に対応する既存 bounded theorem package を、
+一箇所から import / 追跡できる入口として整理する作業である。
+
+`Chapter7TheoremPackages.Candidate` は docs-facing な候補名、設計書の節番号、
+代表 Lean declaration 名、non-conclusion boundary を束ねる軽量 API である。
+この module は既存 theorem package を再利用する統合入口であり、無条件の global theorem、
+extractor completeness、runtime / semantic completeness、solver completeness を新たに
+主張しない。
+
+| 設計書 | 候補 | 代表 Lean entrypoint | Status |
+| --- | --- | --- | --- |
+| 7.1 | Split Extension Preservation | `SplitFeatureExtensionWithin`, `architectureFlatWithin_of_splitFeatureExtensionWithin`, `LawfulExtensionPreservesFlatness`, `LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` | `defined only` / `proved` |
+| 7.2 | Non-split Extension Witness | `NonSplitExtensionWitnessPackage`, `NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension` | `defined only` / `proved` |
+| 7.3 | Repair as Re-splitting | `SelectedObstructionUniverse`, `AdmissibleRepairRule`, `repairStepDecreases_of_admissible`, `extensionObstructionMeasure_decreases_of_admissible` | `defined only` / `proved` |
+| 7.4 | Complexity Transfer | `BoundedComplexityTransferPackage`, `BoundedComplexityTransferPackage.complexityTransfer_selectedAlternative`, `BoundedComplexityTransferPackage.no_free_elimination_bounded` | `defined only` / `proved` |
+| 7.5 | No-solution Certificate | `NoSolutionCertificate`, `ValidNoSolutionCertificate`, `NoSolutionCertificate.sound_of_valid` | `defined only` / `proved` |
+| 7.6 | Architecture Evolution | `ArchitectureTransition`, `ArchitectureEvolution`, `ArchitectureTransition.flatness_of_transitionPreservesFlatness`, `ArchitectureTransition.reportedObstruction_of_drift`, `eventuallyFlat_of_targetFlat`, `evolutionPathPreservesFlatness` | `defined only` / `proved` |
+
+Non-conclusions: この統合入口は、既存 package の bounded / coverage-aware な読みを
+横断的に索引するだけである。global `ArchitectureFlat`、全 obstruction coverage、
+extractor completeness、runtime telemetry completeness、semantic universe completeness、
+solver completeness、empirical cost 改善、global complexity conservation は結論しない。
+
 ## Repair
 
 File: `Formal/Arch/Repair.lean`
