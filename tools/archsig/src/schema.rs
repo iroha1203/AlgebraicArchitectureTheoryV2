@@ -1132,6 +1132,8 @@ pub struct TheoremPreconditionCheck {
     pub input_claim_classification: String,
     pub resolved_claim_classification: String,
     pub measurement_boundary: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub projection_rule: Option<String>,
     pub required_assumptions: Vec<String>,
     pub coverage_assumptions: Vec<String>,
     pub exactness_assumptions: Vec<String>,
