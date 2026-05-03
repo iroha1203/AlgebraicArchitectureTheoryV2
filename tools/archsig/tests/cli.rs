@@ -157,6 +157,104 @@ fn cli_feature_report_keeps_unmeasured_extension_unmeasured() {
 }
 
 #[test]
+fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("theorem-check");
+    let input = out_dir.join("static-theorem-claim.json");
+    let report = out_dir.join("theorem-check.json");
+    let mut json = read_json(&root.join("good_extension.json"));
+
+    let claims = json["claims"].as_array_mut().expect("claims is an array");
+    claims.push(serde_json::json!({
+        "claimId": "claim-static-split-blocked",
+        "subjectRef": "extension.split",
+        "predicate": "selected static split theorem package applies",
+        "claimLevel": "formal",
+        "claimClassification": "proved",
+        "measurementBoundary": "measuredZero",
+        "theoremRefs": ["SelectedStaticSplitExtension"],
+        "evidenceRefs": [],
+        "requiredAssumptions": ["core edges are preserved"],
+        "coverageAssumptions": ["static graph coverage"],
+        "exactnessAssumptions": ["AIR ids match Lean parameters"],
+        "missingPreconditions": ["declared interface factorization not discharged"],
+        "nonConclusions": ["runtime flatness is not concluded"]
+    }));
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("theorem-check input is written");
+
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert_eq!(
+        report["schemaVersion"],
+        "theorem-precondition-check-report-v0"
+    );
+    assert_eq!(report["registry"]["scope"], "static theorem package v0");
+    assert!(
+        report["registry"]["packages"][0]["theoremRefs"]
+            .as_array()
+            .expect("theorem refs is an array")
+            .iter()
+            .any(|theorem_ref| theorem_ref == "SelectedStaticSplitExtension")
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["claimId"] == "claim-static-split-blocked"
+                && check["resolvedClaimClassification"] == "BLOCKED_FORMAL_CLAIM")
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["claimId"] == "claim-boundary-zero"
+                && check["resolvedClaimClassification"] == "MEASURED_WITNESS")
+    );
+    assert_eq!(report["summary"]["formalProvedClaimCount"], 0);
+}
+
+#[test]
+fn cli_feature_report_includes_theorem_precondition_checks() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-theorem-check");
+    let report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("good_extension.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["theoremPreconditionSummary"]["checkedClaimCount"], 4);
+    assert!(
+        json["theoremPreconditionChecks"]
+            .as_array()
+            .expect("theorem checks is array")
+            .iter()
+            .any(|check| check["claimId"] == "claim-boundary-zero"
+                && check["resolvedClaimClassification"] == "MEASURED_WITNESS")
+    );
+}
+
+#[test]
 fn cli_validate_air_accepts_canonical_fixtures() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-fixtures");

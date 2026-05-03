@@ -52,6 +52,17 @@ claim level は、証明状態とは別に次の境界として扱う。
 「測定された範囲では violation がない」と「全 universe で obstruction がない」を区別し、
 未測定軸を zero と読まないための non-conclusion を持つ。
 
+`tools/archsig` の theorem precondition checker は、この境界を report 側で保持する
+tooling bridge である。Issue
+[#500](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/500) では
+static theorem package v0 に限定した registry / check report を追加し、
+`SelectedStaticSplitExtension`, `CoreEdgesPreserved`,
+`DeclaredInterfaceFactorization`, `NoNewForbiddenStaticEdge`,
+`EmbeddingPolicyPreserved` だけを初期 theorem refs として扱う。Lean status は
+`defined only` / tooling theorem metadata bridge であり、`MEASURED` witness は
+`PROVED` formal claim ではない。`missingPreconditions` が残る formal/proved claim は
+`BLOCKED_FORMAL_CLAIM` として表示し、Lean theorem package の結論として読まない。
+
 ## Lean status の読み方
 
 `docs/aat_v2_mathematical_design.md` は純粋な数学設計書であり、Lean 実装の

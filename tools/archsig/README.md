@@ -19,6 +19,7 @@ Lean の証明器ではなく、CI や AI agent が読むための architecture 
 - GitHub PR JSON から PR metadata を作り、dataset や diff attribution に使う。
 - relation complexity candidate JSON から workflow-level observation を作る。
 - Sig0 / validation / diff / PR metadata を AIR v0 に正規化する。
+- AIR claim に対して static theorem package v0 の前提充足状況を検査する。
 
 ## 標準フロー
 
@@ -48,6 +49,7 @@ AI / CI が最初に読むべき成果物は次である。
 | Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
+| Theorem precondition check report | `theorem-precondition-check-report-v0` | static theorem package v0 の registry と、AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
 | Dataset record | `empirical-signature-dataset-v0` | PR metadata と before / after signature を結合した実証研究用 record。 |
 
 通常の PR / CI 診断では、最終的に `signature-diff-report-v0` を読む。
@@ -309,6 +311,28 @@ canonical AIR fixture は `tools/archsig/tests/fixtures/air` に置く。
 - `policy_violation.json`
 - `unmeasured_runtime_semantic.json`
 
+## Theorem Precondition Check を作る
+
+AIR v0 の claim を static theorem package v0 registry に照合する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- theorem-check \
+  --air .lake/signature-current/air.json \
+  --out .lake/signature-current/theorem-check.json
+```
+
+初期 registry は static theorem package に限定し、Lean 側 entrypoint として
+`SelectedStaticSplitExtension` を持つ。参照できる theorem refs は
+`SelectedStaticSplitExtension`, `CoreEdgesPreserved`,
+`DeclaredInterfaceFactorization`, `NoNewForbiddenStaticEdge`,
+`EmbeddingPolicyPreserved` である。
+
+`claimLevel = formal`, `claimClassification = proved`, registry 登録済み theorem refs、
+かつ `missingPreconditions = []` の claim だけを `FORMAL_PROVED` として表示する。
+tooling の `measured` claim は `MEASURED_WITNESS` のまま残し、formal proof claim へ
+昇格しない。missing preconditions が残る formal/proved claim は
+`BLOCKED_FORMAL_CLAIM` として表示する。
+
 ## Feature Extension Report を作る
 
 AIR v0 から PR review 用の static Feature Extension Report v0 を生成する。
@@ -323,6 +347,9 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- feature-report \
 `splitStatus` を `split`, `non_split`, `unknown`, `unmeasured` へ分類する。
 runtime / semantic 層が未測定の場合は `coverageGaps` と `nonConclusions` に
 `UNMEASURED` として残し、static split の根拠にはしない。
+Feature Extension Report には `theoremPreconditionSummary` と
+`theoremPreconditionChecks` も含まれるため、`MEASURED` witness と `FORMAL_PROVED`
+claim の境界を report 内で確認できる。
 
 ## PR Metadata / Dataset を作る
 
