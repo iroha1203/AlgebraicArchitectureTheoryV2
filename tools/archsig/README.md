@@ -31,7 +31,9 @@ scan
   -> snapshot
   -> signature-diff
   -> air
-  -> AI agent / CI job が diff report を読む
+  -> theorem-check
+  -> feature-report
+  -> AI agent / CI job が feature report と diff report を読む
 ```
 
 単一 revision の状態だけを見たい場合は `scan` と `validate` まででよい。
@@ -50,9 +52,11 @@ AI / CI が最初に読むべき成果物は次である。
 | AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | static theorem package v0 の registry と、AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
+| Feature Extension Report | `feature-extension-report-v0` | AIR から生成する PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を併読する。 |
 | Dataset record | `empirical-signature-dataset-v0` | PR metadata と before / after signature を結合した実証研究用 record。 |
 
-通常の PR / CI 診断では、最終的に `signature-diff-report-v0` を読む。
+通常の PR / CI 診断では、最終的に `feature-extension-report-v0` と
+`signature-diff-report-v0` を読む。
 
 この CLI では、測定済み 0 と未評価を分ける。
 
