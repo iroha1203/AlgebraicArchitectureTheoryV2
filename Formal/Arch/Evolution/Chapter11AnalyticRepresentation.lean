@@ -4,6 +4,7 @@ import Formal.Arch.Extension.FeatureExtensionExamples
 import Formal.Arch.Evolution.DiagramFiller
 import Formal.Arch.Extension.CertifiedArchitecture
 import Formal.Arch.Signature.Signature
+import Formal.Arch.Signature.SignatureLawfulness
 import Formal.Arch.Examples.StaticSemanticCounterexample
 
 /-!
@@ -224,6 +225,127 @@ theorem ofSignatureAxis_isUnmeasured_of_axisValue_none
   simp [hNone, boundaryOfOption]
 
 end AnalyticAxisBoundary
+
+/--
+Aggregate witness used by the concrete Signature v1 representation.
+
+The witness is intentionally coarse: it records failure of the selected
+required-law theorem package as a whole. Per-axis optional metrics remain
+diagnostic boundaries unless they are selected required axes with available
+zero evidence.
+-/
+inductive ArchitectureSignatureAggregateWitness where
+  | selectedRequiredLawFailure
+  deriving DecidableEq, Repr
+
+/--
+Non-conclusion boundary for reading Signature v1 as an analytic
+representation.
+
+An optional axis value of `none` is not an available zero certificate. In
+particular, unselected optional axes do not become required analytic zero axes
+merely by being absent from the report.
+-/
+def ArchitectureSignatureAnalyticNonConclusions : Prop :=
+  ∀ sig axis,
+    ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis = none ->
+      ¬ ArchitectureSignature.ArchitectureSignatureV1.axisAvailableAndZero
+        sig axis
+
+/--
+Concrete analytic representation sending an `ArchitectureLawModel` to its
+Signature v1 output.
+
+The analytic zero predicate is exactly selected required Signature axes being
+available and zero. Reflecting directions remain fields of the representation
+schema and are discharged only through the existing concrete coverage and
+axis-exactness theorem package.
+-/
+noncomputable def architectureSignatureAnalyticRepresentation
+    (C : Type u) (A : Type v) (Obs : Type w)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs] :
+    AnalyticRepresentation
+      (ArchitectureSignature.ArchitectureLawModel C A Obs)
+      ArchitectureSignature.ArchitectureSignatureV1
+      ArchitectureSignatureAggregateWitness where
+  represent := fun X =>
+    haveI := Classical.decRel X.G.edge
+    haveI := Classical.decRel X.GA.edge
+    haveI := Classical.decRel X.boundaryAllowed
+    haveI := Classical.decRel X.abstractionAllowed
+    ArchitectureSignature.ArchitectureLawModel.signatureOf X
+  structuralZero := fun X => ArchitectureSignature.ArchitectureLawful X
+  analyticZero := fun sig =>
+    ArchitectureSignature.RequiredSignatureAxesZero sig
+  structuralObstruction := fun X _ =>
+    ¬ ArchitectureSignature.ArchitectureLawful X
+  analyticObstruction := fun sig _ =>
+    ¬ ArchitectureSignature.RequiredSignatureAxesZero sig
+  coverageAssumptions :=
+    CompleteWitnessCoverage
+      (ArchitectureSignature.architectureLawFamily C A Obs)
+  witnessCompleteness :=
+    RequiredWitnessCoveredByAxis
+      (ArchitectureSignature.architectureLawFamily C A Obs)
+      ArchitectureSignature.architectureWitnessForAxis
+  semanticContractCoverage := True
+  nonConclusions := ArchitectureSignatureAnalyticNonConclusions
+
+theorem architectureSignatureAnalyticRepresentation_nonConclusions
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs] :
+    (architectureSignatureAnalyticRepresentation C A Obs).nonConclusions := by
+  intro sig axis hNone
+  exact
+    ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none
+      hNone
+
+theorem architectureSignatureAnalyticRepresentation_zeroPreserving
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs] :
+    AnalyticRepresentation.ZeroPreserving
+      (architectureSignatureAnalyticRepresentation C A Obs) := by
+  classical
+  intro X hLawful
+  dsimp [architectureSignatureAnalyticRepresentation]
+  exact
+    (ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero X).mp
+      hLawful
+
+theorem architectureSignatureAnalyticRepresentation_zeroReflecting
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs] :
+    AnalyticRepresentation.ZeroReflecting
+      (architectureSignatureAnalyticRepresentation C A Obs) := by
+  classical
+  intro _hCoverage _hWitness _hSemantic X hZero
+  dsimp [architectureSignatureAnalyticRepresentation] at hZero
+  exact
+    (ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero X).mpr
+      hZero
+
+theorem architectureSignatureAnalyticRepresentation_obstructionPreserving
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs] :
+    AnalyticRepresentation.ObstructionPreserving
+      (architectureSignatureAnalyticRepresentation C A Obs) := by
+  classical
+  intro X witness hObstruction
+  cases witness
+  dsimp [architectureSignatureAnalyticRepresentation] at hObstruction ⊢
+  intro hZero
+  exact hObstruction
+    ((ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero X).mpr
+      hZero)
+
+theorem architectureSignatureAnalyticRepresentation_obstructionReflecting
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs] :
+    AnalyticRepresentation.ObstructionReflecting
+      (architectureSignatureAnalyticRepresentation C A Obs) := by
+  classical
+  intro _hCoverage _hWitness _hSemantic X witness hObstruction
+  cases witness
+  dsimp [architectureSignatureAnalyticRepresentation] at hObstruction ⊢
+  intro hLawful
+  exact hObstruction
+    ((ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero X).mp
+      hLawful)
 
 /--
 Report-facing analytic snapshot for the Chapter 11 coupon canonical example.
@@ -630,6 +752,7 @@ end CouponHiddenInteractionLiftingBridge
 /-- The main Chapter 11 API groups exposed through this entrypoint. -/
 inductive Candidate where
   | analyticRepresentation
+  | architectureSignatureRepresentation
   | obstructionValuation
   | couponAnalyticSnapshot
   | couponHiddenInteractionLiftingBridge
@@ -644,6 +767,7 @@ namespace Candidate
 /-- Human-readable section number in `docs/aat_v2_mathematical_design.md`. -/
 def designSection : Candidate -> String
   | analyticRepresentation => "11"
+  | architectureSignatureRepresentation => "11.1 / 11.2"
   | obstructionValuation => "11"
   | couponAnalyticSnapshot => "11.3"
   | couponHiddenInteractionLiftingBridge => "11.3 / coupon lifting bridge"
@@ -655,6 +779,8 @@ def designSection : Candidate -> String
 /-- Stable schematic name used by documentation and theorem-index tables. -/
 def schematicName : Candidate -> String
   | analyticRepresentation => "Analytic Representation"
+  | architectureSignatureRepresentation =>
+      "ArchitectureSignatureV1 concrete analytic representation"
   | obstructionValuation => "Obstruction Valuation"
   | couponAnalyticSnapshot => "Coupon canonical analytic snapshot"
   | couponHiddenInteractionLiftingBridge =>
@@ -677,6 +803,18 @@ def representativeDeclarations : Candidate -> List String
        "AnalyticRepresentation.structuralZero_of_analyticZero",
        "AnalyticRepresentation.analyticObstruction_of_structuralObstruction",
        "AnalyticRepresentation.structuralObstruction_of_analyticObstruction"]
+  | architectureSignatureRepresentation =>
+      ["ArchitectureSignatureAggregateWitness",
+       "ArchitectureSignatureAnalyticNonConclusions",
+       "architectureSignatureAnalyticRepresentation",
+       "architectureSignatureAnalyticRepresentation_nonConclusions",
+       "architectureSignatureAnalyticRepresentation_zeroPreserving",
+       "architectureSignatureAnalyticRepresentation_zeroReflecting",
+       "architectureSignatureAnalyticRepresentation_obstructionPreserving",
+       "architectureSignatureAnalyticRepresentation_obstructionReflecting",
+       "ArchitectureSignature.ArchitectureLawModel.signatureOf",
+       "ArchitectureSignature.RequiredSignatureAxesZero",
+       "ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero"]
   | obstructionValuation =>
       ["ObstructionValuation",
        "ObstructionValuation.NoSelectedObstruction",
@@ -779,6 +917,40 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          reading :=
           "explicit assumptions required before analytic zero or analytic obstruction facts are reflected back to structural facts",
          status := "defined only" }]
+  | architectureSignatureRepresentation =>
+      [{ schematic :=
+          "ArchitectureLawModel -> ArchitectureSignatureV1",
+         leanDeclarations :=
+          ["architectureSignatureAnalyticRepresentation",
+           "ArchitectureSignature.ArchitectureLawModel.signatureOf"],
+         reading :=
+          "concrete representation map from a law model to the Signature v1 analytic domain",
+         status := "defined only" },
+       { schematic := "selected required axes zero",
+         leanDeclarations :=
+          ["ArchitectureSignature.RequiredSignatureAxesZero",
+           "architectureSignatureAnalyticRepresentation_zeroPreserving",
+           "architectureSignatureAnalyticRepresentation_zeroReflecting",
+           "ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero"],
+         reading :=
+          "structural zero and analytic zero are connected through the existing selected required-axis theorem package",
+         status := "proved" },
+       { schematic := "selected required-law obstruction package",
+         leanDeclarations :=
+          ["ArchitectureSignatureAggregateWitness",
+           "architectureSignatureAnalyticRepresentation_obstructionPreserving",
+           "architectureSignatureAnalyticRepresentation_obstructionReflecting"],
+         reading :=
+          "aggregate failure of the selected required-law theorem package is preserved and reflected relative to the representation assumptions",
+         status := "proved" },
+       { schematic := "optional axis none is not analytic zero evidence",
+         leanDeclarations :=
+          ["ArchitectureSignatureAnalyticNonConclusions",
+           "architectureSignatureAnalyticRepresentation_nonConclusions",
+           "ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none"],
+         reading :=
+          "`none` is an unavailable optional metric, not an available selected required-axis zero certificate",
+         status := "proved" }]
   | obstructionValuation =>
       [{ schematic := "ObstructionValuation State Witness",
          leanDeclarations :=
@@ -922,6 +1094,8 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
 def nonConclusionBoundary : Candidate -> String
   | analyticRepresentation =>
       "reflecting directions require coverage, witness completeness, and semantic contract coverage; analytic values alone do not prove flatness"
+  | architectureSignatureRepresentation =>
+      "concrete bridge is restricted to selected required Signature axes; optional none values, runtime axes, empirical cost, and extractor completeness are not zero certificates"
   | obstructionValuation =>
       "valuation is selected-witness-relative; zero selected valuation does not imply global ArchitectureFlat"
   | couponAnalyticSnapshot =>
