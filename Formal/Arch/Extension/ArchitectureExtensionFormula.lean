@@ -1,10 +1,11 @@
 import Formal.Arch.Extension.Flatness
+import Formal.Arch.Extension.SplitExtensionLifting
 import Formal.Arch.Evolution.DiagramFiller
 import Formal.Arch.Signature.ComplexityTransfer
 
 namespace Formal.Arch
 
-universe u v w q z
+universe u v w q r z
 
 /--
 Coverage premise used by the structural architecture extension formula.
@@ -329,6 +330,109 @@ def ClassifiedAsLiftingFailure
     (_U : ComponentUniverse X.extended)
     (witness : ExtensionObstructionWitness X Witness) : Prop :=
   witness.classifiesAs = .liftingFailure
+
+/--
+Payload bridge from a selected split-extension lifting failure into the
+Architecture Extension Formula obstruction universe.
+
+The payload is local to one selected feature step. It records that the
+feature-side step is lawful, but the corresponding preservation package from
+`SplitExtensionLifting_preservationPackage` is unavailable. It does not assert
+strict section/retraction equality, global split completeness, or automatic
+lifting of all feature steps.
+-/
+structure LiftingFailureWitnessPayload
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView)
+    (featureInvariant : Feature -> Prop)
+    (coreInvariant : Core -> Prop)
+    (featureStep : SelectedFeatureStep Feature) : Type (max v w) where
+  lawfulFeatureStep :
+    LawfulFeatureStep featureInvariant featureStep
+  notPreservationPackage :
+    ¬ ∃ liftedStep : LiftedExtensionStep Extended,
+      SplitExtensionLiftingPreservationPackage
+        e featureInvariant coreInvariant featureStep liftedStep
+
+/--
+Turn a selected split-extension lifting failure payload into an abstract
+extension obstruction witness classified as `liftingFailure`.
+-/
+def liftingFailureExtensionObstructionWitness
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView)
+    {featureInvariant : Feature -> Prop}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (payload :
+      LiftingFailureWitnessPayload
+        e featureInvariant coreInvariant featureStep) :
+    ExtensionObstructionWitness e.extension
+      (LiftingFailureWitnessPayload
+        e featureInvariant coreInvariant featureStep) where
+  witness := payload
+  classifiesAs := .liftingFailure
+
+/--
+The lifting-failure bridge constructor always lands in the `liftingFailure`
+classification.
+-/
+theorem liftingFailureExtensionObstructionWitness_classified
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView)
+    (U : ComponentUniverse e.extension.extended)
+    {featureInvariant : Feature -> Prop}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (payload :
+      LiftingFailureWitnessPayload
+        e featureInvariant coreInvariant featureStep) :
+    ClassifiedAsLiftingFailure e.extension U
+      (liftingFailureExtensionObstructionWitness e payload) :=
+  rfl
+
+/--
+A lifting-failure payload refutes local interface compatibility for the selected
+step. This is only the local contrapositive of the bounded lifting theorem.
+-/
+theorem not_compatibleWithInterface_of_liftingFailurePayload
+    {e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView}
+    {featureInvariant : Feature -> Prop}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (payload :
+      LiftingFailureWitnessPayload
+        e featureInvariant coreInvariant featureStep) :
+    ¬ CompatibleWithInterface e coreInvariant featureStep := by
+  intro hCompatible
+  exact payload.notPreservationPackage
+    (SplitExtensionLifting_preservationPackage
+      e featureStep payload.lawfulFeatureStep hCompatible)
+
+/--
+Representative bridge from failure of the selected lifting preservation package
+to a `.liftingFailure` classification witness.
+-/
+theorem liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView)
+    (U : ComponentUniverse e.extension.extended)
+    {featureInvariant : Feature -> Prop}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (hLawfulFeatureStep : LawfulFeatureStep featureInvariant featureStep)
+    (hNoPreservationPackage :
+      ¬ ∃ liftedStep : LiftedExtensionStep Extended,
+        SplitExtensionLiftingPreservationPackage
+          e featureInvariant coreInvariant featureStep liftedStep) :
+    ∃ payload :
+      LiftingFailureWitnessPayload
+        e featureInvariant coreInvariant featureStep,
+      ClassifiedAsLiftingFailure e.extension U
+        (liftingFailureExtensionObstructionWitness e payload) := by
+  let payload :
+      LiftingFailureWitnessPayload
+        e featureInvariant coreInvariant featureStep :=
+    { lawfulFeatureStep := hLawfulFeatureStep
+      notPreservationPackage := hNoPreservationPackage }
+  exact ⟨payload,
+    liftingFailureExtensionObstructionWitness_classified e U payload⟩
 
 /-- The witness records failure to fill a required diagram. -/
 def ClassifiedAsFillingFailure
@@ -780,6 +884,23 @@ def MultiLabelClassifiedAsLiftingFailure
     (_U : ComponentUniverse X.extended)
     (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
   witness.labels .liftingFailure
+
+/--
+The multi-label bridge keeps a lifting-failure bridge witness labeled as
+`liftingFailure`.
+-/
+theorem liftingFailureExtensionObstructionWitness_multilabel_classified
+    (e : SplitExtensionLiftingData Core Feature Extended FeatureView CoreView)
+    (U : ComponentUniverse e.extension.extended)
+    {featureInvariant : Feature -> Prop}
+    {coreInvariant : Core -> Prop}
+    {featureStep : SelectedFeatureStep Feature}
+    (payload :
+      LiftingFailureWitnessPayload
+        e featureInvariant coreInvariant featureStep) :
+    MultiLabelClassifiedAsLiftingFailure e.extension U
+      (liftingFailureExtensionObstructionWitness e payload).toMultiLabel :=
+  rfl
 
 /-- The multi-label witness is labeled as a required diagram filling failure. -/
 def MultiLabelClassifiedAsFillingFailure
