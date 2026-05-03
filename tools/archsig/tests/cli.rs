@@ -153,6 +153,37 @@ fn add_runtime_relation(json: &mut Value) {
         serde_json::json!(["evidence-sig0", "evidence-runtime-coupon"]);
 }
 
+fn runtime_zero_bridge_claim_json(
+    claim_id: &str,
+    required_assumptions: Value,
+    coverage_assumptions: Value,
+    exactness_assumptions: Value,
+    missing_preconditions: Value,
+) -> Value {
+    serde_json::json!({
+        "claimId": claim_id,
+        "subjectRef": "signature.runtimePropagation",
+        "predicate": "runtimePropagation = some 0 discharges bounded runtime exposure obstruction",
+        "claimLevel": "formal",
+        "claimClassification": "proved",
+        "measurementBoundary": "measuredZero",
+        "theoremRefs": [
+            "ArchitectureSignature.runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction",
+            "ArchitectureSignature.v1OfFiniteWithRuntimePropagation_runtimePropagation_eq_some_zero_iff",
+            "runtimePropagationOfFinite_eq_zero_iff_noSemanticRuntimeExposureObstruction_under_universe"
+        ],
+        "evidenceRefs": [],
+        "requiredAssumptions": required_assumptions,
+        "coverageAssumptions": coverage_assumptions,
+        "exactnessAssumptions": exactness_assumptions,
+        "missingPreconditions": missing_preconditions,
+        "nonConclusions": [
+            "runtime blast radius is not concluded",
+            "runtime telemetry completeness is not concluded"
+        ]
+    })
+}
+
 #[test]
 fn cli_feature_report_classifies_good_static_fixture_as_split() {
     let root = air_fixture_root();
@@ -425,7 +456,10 @@ fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() 
         report["schemaVersion"],
         "theorem-precondition-check-report-v0"
     );
-    assert_eq!(report["registry"]["scope"], "static theorem package v0");
+    assert_eq!(
+        report["registry"]["scope"],
+        "static and runtime theorem package registry v0"
+    );
     assert!(
         report["registry"]["packages"][0]["theoremRefs"]
             .as_array()
@@ -450,6 +484,99 @@ fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() 
                 && check["resolvedClaimClassification"] == "MEASURED_WITNESS")
     );
     assert_eq!(report["summary"]["formalProvedClaimCount"], 0);
+}
+
+#[test]
+fn cli_theorem_check_reports_runtime_zero_bridge_boundary() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("theorem-check-runtime");
+    let input = out_dir.join("runtime-theorem-claims.json");
+    let report = out_dir.join("runtime-theorem-check.json");
+    let mut json = read_json(&root.join("good_extension.json"));
+
+    set_measured_runtime_axis(&mut json, 0);
+    let claims = json["claims"].as_array_mut().expect("claims is an array");
+    claims.push(runtime_zero_bridge_claim_json(
+        "claim-runtime-zero-bridge-proved",
+        serde_json::json!([
+            "runtimePropagation is computed over a measured 0/1 RuntimeDependencyGraph"
+        ]),
+        serde_json::json!(["runtime edge evidence coverage"]),
+        serde_json::json!(["runtime-edge-projection-v0 exactness"]),
+        serde_json::json!([]),
+    ));
+    claims.push(runtime_zero_bridge_claim_json(
+        "claim-runtime-zero-bridge-blocked",
+        serde_json::json!([]),
+        serde_json::json!([]),
+        serde_json::json!([]),
+        serde_json::json!([]),
+    ));
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("runtime theorem-check input is written");
+
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert!(
+        report["registry"]["packages"]
+            .as_array()
+            .expect("packages is array")
+            .iter()
+            .any(|package| package["packageId"] == "runtime-zero-bridge-package-v0"
+                && package["theoremRefs"]
+                    .as_array()
+                    .expect("theorem refs is array")
+                    .iter()
+                    .any(|theorem_ref| theorem_ref
+                        == "ArchitectureSignature.runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction"))
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["claimId"] == "claim-runtime-exposure-radius"
+                && check["resolvedClaimClassification"] == "MEASURED_WITNESS")
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-runtime-zero-bridge-proved"
+                    && check["resolvedClaimClassification"] == "FORMAL_PROVED"
+                    && check["projectionRule"] == "runtime-edge-projection-v0"
+            )
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-runtime-zero-bridge-blocked"
+                    && check["resolvedClaimClassification"] == "BLOCKED_FORMAL_CLAIM"
+                    && check["missingPreconditions"]
+                        .as_array()
+                        .expect("missing preconditions is array")
+                        .iter()
+                        .any(|precondition| precondition
+                            == "runtime coverage assumptions are not recorded")
+            )
+    );
+    assert_eq!(report["summary"]["formalProvedClaimCount"], 1);
+    assert_eq!(report["summary"]["blockedClaimCount"], 1);
 }
 
 #[test]

@@ -1334,7 +1334,10 @@ exactness assumptions、missing preconditions、non-conclusions である。
 `MEASURED` witness は `PROVED` formal claim ではなく、missing preconditions が
 残る claim は theorem package の結論として表示しない。
 
-baseline scope は static theorem package に限定する。
+baseline registry は static theorem package と runtime zero bridge package を扱う。
+runtime package は 0/1 `RuntimeDependencyGraph` 上の bounded zero bridge に限定し、
+coverage、projection rule、exactness assumptions、theorem preconditions が揃う場合だけ
+formal claim として扱う。
 
 ```text
 Static theorem package v0:
@@ -1343,10 +1346,15 @@ Static theorem package v0:
   lspViolationCount
   boundaryViolationCount
   abstractionViolationCount
+
+Runtime zero bridge package v0:
+  runtimePropagation
+  runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction
+  v1OfFiniteWithRuntimePropagation_runtimePropagation_eq_some_zero_iff
+  finite universe semantic runtime exposure bridge
 ```
 
-runtime / semantic theorem package は、対応する theorem package が registry に
-登録された段階で接続する。
+semantic theorem package は、対応する theorem package が registry に登録された段階で接続する。
 
 theorem precondition checker は、soundness と completeness を分けて表示する。
 
