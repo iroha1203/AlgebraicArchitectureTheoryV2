@@ -47,6 +47,7 @@ AI / CI が最初に読むべき成果物は次である。
 | Snapshot | `signature-snapshot-store-v0` | repository revision ごとの保存用 signature record。 |
 | Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
+| AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Dataset record | `empirical-signature-dataset-v0` | PR metadata と before / after signature を結合した実証研究用 record。 |
 
 通常の PR / CI 診断では、最終的に `signature-diff-report-v0` を読む。
@@ -287,6 +288,26 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- air \
 AIR では `static_edges` / `runtime_edges` を出さず、`relations` を canonical representation として使う。
 各 signature axis は `measurementBoundary` に `measuredZero`, `measuredNonzero`, `unmeasured` を持つため、
 測定済み 0 と未測定の placeholder 0 を分けて読める。
+
+AIR の参照整合性を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- validate-air \
+  --input .lake/signature-current/air.json \
+  --out .lake/signature-current/air-validation.json
+```
+
+`validate-air` は dangling component / artifact / evidence / claim refs、coverage universe refs、
+claim classification と `measurementBoundary` の不整合を検出する。
+`claimClassification = measured` の claim に `evidenceRefs` がない場合は通常 warning とし、
+CI で fail にしたい場合は `--strict-measured-evidence` を付ける。
+
+canonical AIR fixture は `tools/archsig/tests/fixtures/air` に置く。
+
+- `good_extension.json`
+- `hidden_interaction.json`
+- `policy_violation.json`
+- `unmeasured_runtime_semantic.json`
 
 ## PR Metadata / Dataset を作る
 

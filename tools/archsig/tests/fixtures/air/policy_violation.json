@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-policy-violation",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-policy",
+    "after": "after-policy"
+  },
+  "feature": {
+    "featureId": "#canonical-policy",
+    "title": "Add coupon calculation",
+    "description": "Feature crosses a declared boundary",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-policy",
+      "kind": "policy",
+      "schemaVersion": "signature-policy-v0",
+      "path": "canonical/policy/policy.json",
+      "contentHash": null,
+      "producedBy": null
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-policy-rule",
+      "kind": "policy_rule",
+      "artifactRef": "artifact-policy",
+      "path": "canonical/policy/policy.json",
+      "symbol": null,
+      "line": 7,
+      "ruleId": "boundary:ui-to-infra-forbidden",
+      "confidence": "high"
+    }
+  ],
+  "components": [
+    {
+      "id": "CouponController",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "PaymentRepository",
+      "kind": "database",
+      "lifecycle": "unchanged",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-policy-boundary",
+      "layer": "policy",
+      "from": "CouponController",
+      "to": "PaymentRepository",
+      "kind": "policy_rule",
+      "lifecycle": "added",
+      "protectedBy": null,
+      "extractionRule": "boundaryViolationCount",
+      "evidenceRefs": ["evidence-policy-rule"]
+    }
+  ],
+  "policies": {
+    "laws": ["policy:canonical-boundary"],
+    "boundaries": ["ui cannot depend on infra persistence"],
+    "allowedEdges": [],
+    "forbiddenEdges": ["boundaryViolationCount:CouponController->PaymentRepository"],
+    "abstractionRules": [],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [],
+  "architecturePaths": [],
+  "homotopyGenerators": [],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "boundaryViolationCount",
+        "value": 1,
+        "measured": true,
+        "measurementBoundary": "measuredNonzero",
+        "source": "policy:canonical-boundary",
+        "reason": null
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "policy",
+        "measurementBoundary": "measuredNonzero",
+        "universeRefs": ["artifact-policy"],
+        "measuredAxes": ["boundaryViolationCount"],
+        "unmeasuredAxes": [],
+        "extractionScope": ["policy rule evaluation"],
+        "exactnessAssumptions": ["policy file covers the fixture components"],
+        "unsupportedConstructs": []
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-policy-violation",
+      "subjectRef": "relation-policy-boundary",
+      "predicate": "boundary policy is violated",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-policy-rule"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["policy file covers the fixture components"],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["policy witness is not a formal theorem"]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding is obstructed by policy violation evidence",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-policy-rule"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["policy rule evaluation"],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["tooling measurement is not a Lean proof"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature-owned delta is visible in policy evidence",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-policy-rule"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["feature quotient is not constructed"]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": ["claim-policy-violation"],
+    "splitClaimRef": null,
+    "splitStatus": "unknown"
+  }
+}

@@ -5,13 +5,13 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    AirDocumentInput, ComponentUniverseValidationReport, DEFAULT_UNIVERSE_MODE,
-    EmpiricalDatasetInput, RepositoryRevisionRef, ScanMetadata, Sig0Document,
-    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
+    AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
+    DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, RepositoryRevisionRef, ScanMetadata,
+    Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
     SnapshotRepositoryRef, build_air_document, build_empirical_dataset,
     build_pr_metadata_from_github_files, build_signature_diff_report,
     build_signature_snapshot_record, extract_relation_complexity_observation_from_file,
-    extract_sig0_with_runtime, validate_component_universe_report,
+    extract_sig0_with_runtime, validate_air_document_report, validate_component_universe_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -257,6 +257,21 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Validate an AIR v0 document.
+    ValidateAir {
+        /// Input AIR JSON path.
+        #[arg(long)]
+        input: PathBuf,
+
+        /// Output AIR validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+
+        /// Treat measured claims without evidence refs as failures instead of warnings.
+        #[arg(long)]
+        strict_measured_evidence: bool,
+    },
 }
 
 fn main() -> ExitCode {
@@ -457,6 +472,25 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             );
             write_json(out, &air)?;
             Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::ValidateAir {
+            input,
+            out,
+            strict_measured_evidence,
+        }) => {
+            let document: AirDocumentV0 = read_json(&input)?;
+            let report: AirValidationReport = validate_air_document_report(
+                &document,
+                &input.display().to_string(),
+                strict_measured_evidence,
+            );
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
         }
         None => {
             let document = extract_sig0_with_runtime(

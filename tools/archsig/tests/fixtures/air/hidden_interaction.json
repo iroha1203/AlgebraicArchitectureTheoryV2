@@ -1,0 +1,177 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-hidden-interaction",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-hidden",
+    "after": "after-hidden"
+  },
+  "feature": {
+    "featureId": "#canonical-hidden",
+    "title": "Add coupon calculation",
+    "description": "CouponService reaches PaymentAdapter internals",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-sig0",
+      "kind": "sig0",
+      "schemaVersion": "archsig-sig0-v0",
+      "path": "canonical/hidden/sig0.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-sig0",
+      "kind": "observation_result",
+      "artifactRef": "artifact-sig0",
+      "path": "canonical/hidden/sig0.json",
+      "symbol": null,
+      "line": null,
+      "ruleId": "archsig-sig0-v0",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-hidden-edge",
+      "kind": "source_location",
+      "artifactRef": "artifact-sig0",
+      "path": "src/coupon_service.rs",
+      "symbol": "CouponService::cache_probe",
+      "line": 34,
+      "ruleId": "hidden-interaction-candidate",
+      "confidence": "high"
+    }
+  ],
+  "components": [
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "PaymentAdapter",
+      "kind": "service",
+      "lifecycle": "unchanged",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-hidden-cache",
+      "layer": "static",
+      "from": "CouponService",
+      "to": "PaymentAdapter",
+      "kind": "data_dependency",
+      "lifecycle": "added",
+      "protectedBy": null,
+      "extractionRule": "hidden-interaction-candidate",
+      "evidenceRefs": ["evidence-hidden-edge"]
+    }
+  ],
+  "policies": {
+    "laws": ["policy:canonical-layering"],
+    "boundaries": ["feature depends on declared interface"],
+    "allowedEdges": [],
+    "forbiddenEdges": ["hiddenInteraction:CouponService->PaymentAdapter"],
+    "abstractionRules": ["declared-interface-only"],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [],
+  "architecturePaths": [],
+  "homotopyGenerators": [],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "boundaryViolationCount",
+        "value": 1,
+        "measured": true,
+        "measurementBoundary": "measuredNonzero",
+        "source": "policy:canonical-layering",
+        "reason": null
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "static",
+        "measurementBoundary": "measuredNonzero",
+        "universeRefs": ["artifact-sig0"],
+        "measuredAxes": ["boundaryViolationCount"],
+        "unmeasuredAxes": [],
+        "extractionScope": ["static dependency graph"],
+        "exactnessAssumptions": [],
+        "unsupportedConstructs": []
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-hidden-interaction",
+      "subjectRef": "relation-hidden-cache",
+      "predicate": "feature introduces a hidden interaction candidate",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-hidden-edge"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["static dependency graph coverage"],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["runtime and semantic impact are not concluded"]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding is obstructed by hidden interaction evidence",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-hidden-edge"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["static dependency graph coverage"],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["tooling measurement is not a Lean proof"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature-owned delta is visible in static evidence",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-hidden-edge"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["feature quotient is not constructed"]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": ["claim-hidden-interaction"],
+    "splitClaimRef": null,
+    "splitStatus": "unknown"
+  }
+}
