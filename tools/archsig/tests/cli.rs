@@ -49,6 +49,110 @@ fn read_json(path: &Path) -> Value {
     serde_json::from_str(&contents).expect("json output parses")
 }
 
+fn runtime_axis_mut(json: &mut Value) -> &mut Value {
+    json["signature"]["axes"]
+        .as_array_mut()
+        .expect("signature axes are an array")
+        .iter_mut()
+        .find(|axis| axis["axis"] == "runtimePropagation")
+        .expect("runtimePropagation axis exists")
+}
+
+fn runtime_layer_mut(json: &mut Value) -> &mut Value {
+    json["coverage"]["layers"]
+        .as_array_mut()
+        .expect("coverage layers are an array")
+        .iter_mut()
+        .find(|layer| layer["layer"] == "runtime")
+        .expect("runtime coverage layer exists")
+}
+
+fn runtime_claim_mut(json: &mut Value) -> &mut Value {
+    json["claims"]
+        .as_array_mut()
+        .expect("claims are an array")
+        .iter_mut()
+        .find(|claim| claim["subjectRef"] == "signature.runtimePropagation")
+        .expect("runtime claim exists")
+}
+
+fn set_measured_runtime_axis(json: &mut Value, runtime_propagation: i64) {
+    let measurement_boundary = if runtime_propagation == 0 {
+        "measuredZero"
+    } else {
+        "measuredNonzero"
+    };
+    let axis = runtime_axis_mut(json);
+    axis["value"] = serde_json::json!(runtime_propagation);
+    axis["measured"] = serde_json::json!(true);
+    axis["measurementBoundary"] = serde_json::json!(measurement_boundary);
+    axis["source"] = serde_json::json!("runtime-edge-projection-v0");
+    axis["reason"] = Value::Null;
+
+    let layer = runtime_layer_mut(json);
+    layer["measurementBoundary"] = serde_json::json!(measurement_boundary);
+    layer["universeRefs"] = serde_json::json!(["artifact-sig0"]);
+    layer["measuredAxes"] = serde_json::json!(["runtimePropagation"]);
+    layer["unmeasuredAxes"] = serde_json::json!([]);
+    layer["projectionRule"] = serde_json::json!("runtime-edge-projection-v0");
+    layer["extractionScope"] = serde_json::json!([
+        "runtime edge evidence JSON",
+        "0/1 runtime dependency graph over measured component pairs"
+    ]);
+    layer["exactnessAssumptions"] = serde_json::json!([
+        "runtime-edge-projection-v0 maps each observed component pair to one runtime edge",
+        "runtime evidence component ids resolve inside the AIR component universe"
+    ]);
+    layer["unsupportedConstructs"] = serde_json::json!([]);
+
+    let claim = runtime_claim_mut(json);
+    claim["claimId"] = serde_json::json!("claim-runtime-exposure-radius");
+    claim["predicate"] =
+        serde_json::json!("runtimePropagation is measured runtime exposure radius");
+    claim["claimClassification"] = serde_json::json!("measured");
+    claim["measurementBoundary"] = serde_json::json!(measurement_boundary);
+    claim["evidenceRefs"] = serde_json::json!(["evidence-sig0"]);
+    claim["coverageAssumptions"] = serde_json::json!(["runtime edge evidence coverage"]);
+    claim["exactnessAssumptions"] = serde_json::json!(["runtime-edge-projection-v0 exactness"]);
+    claim["missingPreconditions"] = serde_json::json!([]);
+    claim["nonConclusions"] = serde_json::json!([
+        "runtime blast radius is not concluded",
+        "formal runtime zero bridge is not concluded"
+    ]);
+}
+
+fn add_runtime_relation(json: &mut Value) {
+    json["evidence"]
+        .as_array_mut()
+        .expect("evidence is an array")
+        .push(serde_json::json!({
+            "evidenceId": "evidence-runtime-coupon",
+            "kind": "runtime_trace",
+            "artifactRef": "artifact-sig0",
+            "path": "runtime/routes.json",
+            "symbol": "userCallsCoupon",
+            "line": 17,
+            "ruleId": "grpc",
+            "confidence": "fixture"
+        }));
+    json["relations"]
+        .as_array_mut()
+        .expect("relations are an array")
+        .push(serde_json::json!({
+            "id": "relation-runtime-coupon",
+            "layer": "runtime",
+            "from": "UserService",
+            "to": "CouponService",
+            "kind": "grpc",
+            "lifecycle": "added",
+            "protectedBy": "unknown",
+            "extractionRule": "runtime-edge-projection-v0",
+            "evidenceRefs": ["evidence-runtime-coupon"]
+        }));
+    runtime_claim_mut(json)["evidenceRefs"] =
+        serde_json::json!(["evidence-sig0", "evidence-runtime-coupon"]);
+}
+
 #[test]
 fn cli_feature_report_classifies_good_static_fixture_as_split() {
     let root = air_fixture_root();
@@ -95,6 +199,128 @@ fn cli_feature_report_classifies_good_static_fixture_as_split() {
             .expect("non-conclusions are an array")
             .iter()
             .any(|conclusion| conclusion == "static split does not conclude runtime flatness")
+    );
+}
+
+#[test]
+fn cli_feature_report_surfaces_runtime_exposure_boundaries() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-runtime");
+
+    let mut measured_zero_input = read_json(&root.join("good_extension.json"));
+    set_measured_runtime_axis(&mut measured_zero_input, 0);
+    let measured_zero_air = out_dir.join("runtime-measured-zero.air.json");
+    let measured_zero_report = out_dir.join("runtime-measured-zero.report.json");
+    fs::write(
+        &measured_zero_air,
+        serde_json::to_string_pretty(&measured_zero_input).expect("json serializes"),
+    )
+    .expect("measured zero AIR is written");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        measured_zero_air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        measured_zero_report.to_str().expect("report path is utf-8"),
+    ]);
+    let measured_zero = read_json(&measured_zero_report);
+    assert_eq!(measured_zero["runtimeSummary"]["runtimePropagation"], 0);
+    assert_eq!(
+        measured_zero["runtimeSummary"]["measurementBoundary"],
+        "measuredZero"
+    );
+    assert_eq!(
+        measured_zero["runtimeSummary"]["projectionRule"],
+        "runtime-edge-projection-v0"
+    );
+    assert!(
+        measured_zero["runtimeSummary"]["measuredAxes"]
+            .as_array()
+            .expect("runtime measured axes are an array")
+            .iter()
+            .any(|axis| axis == "runtimePropagation")
+    );
+    assert!(
+        measured_zero["runtimeSummary"]["nonConclusions"]
+            .as_array()
+            .expect("runtime non-conclusions are an array")
+            .iter()
+            .any(|conclusion| conclusion
+                == "runtimePropagation = 0 needs coverage, projection, exactness, and theorem preconditions before a formal claim")
+    );
+
+    let mut measured_nonzero_input = read_json(&root.join("good_extension.json"));
+    set_measured_runtime_axis(&mut measured_nonzero_input, 2);
+    add_runtime_relation(&mut measured_nonzero_input);
+    let measured_nonzero_air = out_dir.join("runtime-measured-nonzero.air.json");
+    let measured_nonzero_report = out_dir.join("runtime-measured-nonzero.report.json");
+    fs::write(
+        &measured_nonzero_air,
+        serde_json::to_string_pretty(&measured_nonzero_input).expect("json serializes"),
+    )
+    .expect("measured nonzero AIR is written");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        measured_nonzero_air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        measured_nonzero_report
+            .to_str()
+            .expect("report path is utf-8"),
+    ]);
+    let measured_nonzero = read_json(&measured_nonzero_report);
+    assert_eq!(measured_nonzero["runtimeSummary"]["runtimePropagation"], 2);
+    assert_eq!(measured_nonzero["runtimeSummary"]["relationCount"], 1);
+    assert_eq!(
+        measured_nonzero["reviewSummary"]["requiredAction"],
+        "review measured runtime exposure radius separately from static split evidence"
+    );
+    assert!(
+        measured_nonzero["runtimeSummary"]["nonConclusions"]
+            .as_array()
+            .expect("runtime non-conclusions are an array")
+            .iter()
+            .any(|conclusion| conclusion
+                == "runtimePropagation is an exposure radius, not runtime blast radius")
+    );
+
+    let unmeasured_report = out_dir.join("runtime-unmeasured.report.json");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("good_extension.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        unmeasured_report.to_str().expect("report path is utf-8"),
+    ]);
+    let unmeasured = read_json(&unmeasured_report);
+    assert_eq!(
+        unmeasured["runtimeSummary"]["runtimePropagation"],
+        Value::Null
+    );
+    assert_eq!(
+        unmeasured["runtimeSummary"]["measurementBoundary"],
+        "unmeasured"
+    );
+    assert_eq!(
+        unmeasured["reviewSummary"]["requiredAction"],
+        "add runtime edge evidence before treating runtime risk as zero"
+    );
+    assert!(
+        unmeasured["runtimeSummary"]["coverageGaps"]
+            .as_array()
+            .expect("runtime coverage gaps are an array")
+            .iter()
+            .any(|gap| gap == "runtime axis unmeasured: runtimePropagation")
+    );
+    assert!(
+        unmeasured["runtimeSummary"]["nonConclusions"]
+            .as_array()
+            .expect("runtime non-conclusions are an array")
+            .iter()
+            .any(|conclusion| conclusion
+                == "runtimePropagation null is UNMEASURED, not runtime risk zero")
     );
 }
 

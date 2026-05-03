@@ -888,6 +888,8 @@ pub struct FeatureExtensionReportV0 {
     pub feature: AirFeature,
     pub review_summary: FeatureReportReviewSummary,
     pub architecture_summary: FeatureReportArchitectureSummary,
+    #[serde(default)]
+    pub runtime_summary: FeatureReportRuntimeSummary,
     pub interpreted_extension: FeatureReportInterpretedExtension,
     pub split_status: String,
     pub preserved_invariants: Vec<FeatureReportInvariant>,
@@ -936,6 +938,45 @@ pub struct FeatureReportArchitectureSummary {
     pub semantic_diagram_count: usize,
     pub measured_axes: Vec<String>,
     pub unmeasured_axes: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportRuntimeSummary {
+    pub relation_count: usize,
+    pub measurement_boundary: String,
+    pub runtime_propagation: Option<i64>,
+    pub interpretation: String,
+    pub measured_axes: Vec<String>,
+    pub unmeasured_axes: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub projection_rule: Option<String>,
+    pub extraction_scope: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub coverage_gaps: Vec<String>,
+    pub claim_refs: Vec<String>,
+    pub claim_classifications: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+impl Default for FeatureReportRuntimeSummary {
+    fn default() -> Self {
+        Self {
+            relation_count: 0,
+            measurement_boundary: "unmeasured".to_string(),
+            runtime_propagation: None,
+            interpretation: "runtimePropagation is unmeasured".to_string(),
+            measured_axes: Vec::new(),
+            unmeasured_axes: Vec::new(),
+            projection_rule: None,
+            extraction_scope: Vec::new(),
+            exactness_assumptions: Vec::new(),
+            coverage_gaps: Vec::new(),
+            claim_refs: Vec::new(),
+            claim_classifications: Vec::new(),
+            non_conclusions: vec!["runtime risk zero is not concluded".to_string()],
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

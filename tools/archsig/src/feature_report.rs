@@ -6,7 +6,7 @@ use crate::{
     FeatureExtensionReportV0, FeatureReportArchitectureSummary, FeatureReportCoverageGap,
     FeatureReportEdgeRef, FeatureReportEvidenceRef, FeatureReportInput,
     FeatureReportInterpretedExtension, FeatureReportInvariant, FeatureReportObstructionWitness,
-    FeatureReportReviewSummary, FeatureReportSemanticPathSummary,
+    FeatureReportReviewSummary, FeatureReportRuntimeSummary, FeatureReportSemanticPathSummary,
 };
 
 pub fn build_feature_extension_report(
@@ -57,6 +57,7 @@ pub fn build_feature_extension_report(
         .filter(|axis| !axis.measured)
         .map(|axis| axis.axis.clone())
         .collect();
+    let runtime_summary = feature_report_runtime_summary(document, &coverage_gaps);
 
     FeatureExtensionReportV0 {
         schema_version: FEATURE_EXTENSION_REPORT_SCHEMA_VERSION.to_string(),
@@ -80,6 +81,7 @@ pub fn build_feature_extension_report(
                 &split_status,
                 &introduced_obstruction_witnesses,
                 &coverage_gaps,
+                &runtime_summary,
             ),
         },
         architecture_summary: FeatureReportArchitectureSummary {
@@ -92,6 +94,7 @@ pub fn build_feature_extension_report(
             measured_axes,
             unmeasured_axes,
         },
+        runtime_summary,
         interpreted_extension: FeatureReportInterpretedExtension {
             embedding_claim_ref: document.extension.embedding_claim_ref.clone(),
             feature_view_claim_ref: document.extension.feature_view_claim_ref.clone(),
@@ -136,10 +139,111 @@ pub fn build_feature_extension_report(
         unsupported_constructs,
         repair_suggestions,
         empirical_annotations: vec![
-            "Feature Extension Report v0 is a static tooling report".to_string(),
-            "Runtime and semantic conclusions require separate evidence".to_string(),
+            "Feature Extension Report v0 combines static split evidence with measured runtime exposure when available".to_string(),
+            "runtimePropagation is reported as runtime exposure radius, not blast radius".to_string(),
+            "Runtime formal claims require coverage, projection, exactness, and theorem preconditions".to_string(),
         ],
         non_conclusions,
+    }
+}
+
+fn feature_report_runtime_summary(
+    document: &AirDocumentV0,
+    coverage_gaps: &[FeatureReportCoverageGap],
+) -> FeatureReportRuntimeSummary {
+    let runtime_axis = document
+        .signature
+        .axes
+        .iter()
+        .find(|axis| axis.axis == "runtimePropagation");
+    let runtime_layer = document
+        .coverage
+        .layers
+        .iter()
+        .find(|layer| layer.layer == "runtime");
+    let runtime_claims: Vec<&AirClaim> = document
+        .claims
+        .iter()
+        .filter(|claim| claim.subject_ref == "signature.runtimePropagation")
+        .collect();
+    let measured = runtime_axis
+        .map(|axis| axis.measured && axis.value.is_some())
+        .unwrap_or(false);
+    let runtime_propagation = runtime_axis.and_then(|axis| axis.value);
+
+    let mut non_conclusions = BTreeSet::new();
+    non_conclusions
+        .insert("runtimePropagation is an exposure radius, not runtime blast radius".to_string());
+    non_conclusions
+        .insert("runtimePropagation is not policy-aware runtime propagation".to_string());
+    non_conclusions
+        .insert("measured runtime witness is not a formal runtime zero bridge claim".to_string());
+    if !measured {
+        non_conclusions
+            .insert("runtimePropagation null is UNMEASURED, not runtime risk zero".to_string());
+    } else if runtime_propagation == Some(0) {
+        non_conclusions.insert(
+            "runtimePropagation = 0 needs coverage, projection, exactness, and theorem preconditions before a formal claim".to_string(),
+        );
+    }
+    for claim in runtime_claims.iter().copied() {
+        for conclusion in &claim.non_conclusions {
+            non_conclusions.insert(conclusion.clone());
+        }
+        for missing in &claim.missing_preconditions {
+            non_conclusions.insert(format!("missing runtime precondition: {missing}"));
+        }
+    }
+
+    FeatureReportRuntimeSummary {
+        relation_count: count_air_relations(document, "runtime"),
+        measurement_boundary: runtime_axis
+            .map(|axis| axis.measurement_boundary.clone())
+            .or_else(|| runtime_layer.map(|layer| layer.measurement_boundary.clone()))
+            .unwrap_or_else(|| "unmeasured".to_string()),
+        runtime_propagation,
+        interpretation: if measured {
+            "runtimePropagation is measured runtime exposure radius over the projected 0/1 runtime graph"
+                .to_string()
+        } else {
+            "runtimePropagation is UNMEASURED; runtime risk zero is not concluded".to_string()
+        },
+        measured_axes: runtime_layer
+            .map(|layer| layer.measured_axes.clone())
+            .unwrap_or_default(),
+        unmeasured_axes: runtime_layer
+            .map(|layer| layer.unmeasured_axes.clone())
+            .unwrap_or_else(|| vec!["runtimePropagation".to_string()]),
+        projection_rule: runtime_layer.and_then(|layer| layer.projection_rule.clone()),
+        extraction_scope: runtime_layer
+            .map(|layer| layer.extraction_scope.clone())
+            .unwrap_or_default(),
+        exactness_assumptions: runtime_layer
+            .map(|layer| layer.exactness_assumptions.clone())
+            .unwrap_or_default(),
+        coverage_gaps: coverage_gaps
+            .iter()
+            .filter(|gap| gap.layer == "runtime")
+            .flat_map(|gap| {
+                gap.unmeasured_axes
+                    .iter()
+                    .map(|axis| format!("runtime axis unmeasured: {axis}"))
+                    .chain(
+                        gap.unsupported_constructs
+                            .iter()
+                            .map(|construct| format!("runtime unsupported construct: {construct}")),
+                    )
+            })
+            .collect(),
+        claim_refs: runtime_claims
+            .iter()
+            .map(|claim| claim.claim_id.clone())
+            .collect(),
+        claim_classifications: runtime_claims
+            .iter()
+            .map(|claim| claim.claim_classification.clone())
+            .collect(),
+        non_conclusions: non_conclusions.into_iter().collect(),
     }
 }
 
@@ -439,12 +543,20 @@ fn feature_report_required_action(
     split_status: &str,
     witnesses: &[FeatureReportObstructionWitness],
     coverage_gaps: &[FeatureReportCoverageGap],
+    runtime_summary: &FeatureReportRuntimeSummary,
 ) -> String {
+    if split_status == "non_split" && !witnesses.is_empty() {
+        return "review introduced obstruction witnesses before treating the feature as split"
+            .to_string();
+    }
+    if runtime_summary.runtime_propagation.unwrap_or_default() > 0 {
+        return "review measured runtime exposure radius separately from static split evidence"
+            .to_string();
+    }
+    if !runtime_summary.coverage_gaps.is_empty() {
+        return "add runtime edge evidence before treating runtime risk as zero".to_string();
+    }
     match split_status {
-        "non_split" if !witnesses.is_empty() => {
-            "review introduced obstruction witnesses before treating the feature as split"
-                .to_string()
-        }
         "split" if !coverage_gaps.is_empty() => {
             "review static split together with UNMEASURED coverage gaps".to_string()
         }
