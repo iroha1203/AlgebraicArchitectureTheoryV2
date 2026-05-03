@@ -303,9 +303,22 @@ File: `Formal/Arch/Extension/FeatureExtensionExamples.lean`
 | `CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension` | `theorem` | hidden dependency witness から selected static split failure を得る。 | `proved` |
 | `CouponStaticDependencyExample.repairedStaticSplitFeatureExtension` | `def` | repair 後 extension が `StaticSplitFeatureExtension` を満たす bundled package。 | `defined only` |
 | `CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension` | `theorem` | repair 後 extension で selected static split が回復することを示す。 | `proved` |
+| `SelectedSplitExtensionLiftingExample.extension` | `def` | two-state coupon feature の selected lifting positive example 用 `FeatureExtension`。 | `defined only` |
+| `SelectedSplitExtensionLiftingExample.featureViewSectionPackage` | `def` | declared feature embedding を selected `FeatureViewSectionPackage` として束ねる具体例。 | `defined only` |
+| `SelectedSplitExtensionLiftingExample.featureViewSectionPackage_observes` | `theorem` | 具体例の selected feature section が selected feature observation と一致することを示す。 | `proved` |
+| `SelectedSplitExtensionLiftingExample.liftingData` | `def` | section law、observational core retraction、interface factorization、required invariant preservation を束ねる具体的 `SplitExtensionLiftingData`。 | `defined only` |
+| `SelectedSplitExtensionLiftingExample.compatibleWithInterface` | `theorem` | selected `couponDraft -> couponApplied` step の `CompatibleWithInterface` を構成する。 | `proved` |
+| `SelectedSplitExtensionLiftingExample.selectedStepLifts` | `theorem` | `SplitExtensionLifting` から selected feature step の lifted step と core preservation を得る。 | `proved` |
+| `SelectedSplitExtensionLiftingExample.selectedStepPreservationPackage` | `theorem` | `SplitExtensionLifting_preservationPackage` から selected feature/core preservation package を得る。 | `proved` |
+| `SelectedSplitExtensionLiftingExample.selectedStep_coreInvariant_target_of_source` | `theorem` | preservation package accessor から selected core invariant preservation を取り出す。 | `proved` |
+| `SelectedSplitExtensionLiftingExample.selectedStep_liftedSource_observes` | `theorem` | preservation package accessor から lifted source の selected feature observation law を取り出す。 | `proved` |
+| `SelectedSplitExtensionLiftingExample.selectedStep_liftedTarget_observes` | `theorem` | preservation package accessor から lifted target の selected feature observation law を取り出す。 | `proved` |
 
 Non-conclusions: coupon static canonical example は静的 split と selected hidden dependency
 witness に限る。runtime flatness、semantic flatness、extractor completeness は主張しない。
+selected split-extension lifting positive example は一つの selected feature step と local
+compatibility package に限る。strict section/retraction equality、全 component の一意分解、
+all feature steps の automatic lifting、global semantic completeness は主張しない。
 
 ## Split Extension Lifting
 

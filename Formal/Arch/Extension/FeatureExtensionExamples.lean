@@ -292,4 +292,207 @@ theorem bad_not_selectedStaticSplitFeatureExtension :
 
 end CouponStaticDependencyExample
 
+/-
+Small positive example for selected split-extension lifting.
+
+The example proves one chosen feature transition through an observation-relative
+section package and a local compatibility package. It intentionally does not
+claim strict section equality, unique decomposition of all extended components,
+or automatic lifting for all feature steps.
+-/
+namespace SelectedSplitExtensionLiftingExample
+
+inductive CoreComponent where
+  | checkoutApi
+  | auditLog
+  deriving DecidableEq, Repr
+
+inductive FeatureComponent where
+  | couponDraft
+  | couponApplied
+  deriving DecidableEq, Repr
+
+inductive ExtendedComponent where
+  | checkoutApi
+  | auditLog
+  | couponDraft
+  | couponApplied
+  | declaredCouponPort
+  deriving DecidableEq, Repr
+
+inductive FeatureView where
+  | draft
+  | applied
+  deriving DecidableEq, Repr
+
+inductive CoreView where
+  | checkout
+  deriving DecidableEq, Repr
+
+def coreGraph : ArchGraph CoreComponent where
+  edge := fun _ _ => False
+
+inductive FeatureEdge : FeatureComponent -> FeatureComponent -> Prop where
+  | draftToApplied :
+      FeatureEdge .couponDraft .couponApplied
+
+inductive ExtendedEdge : ExtendedComponent -> ExtendedComponent -> Prop where
+  | draftToApplied :
+      ExtendedEdge .couponDraft .couponApplied
+  | appliedToDeclaredPort :
+      ExtendedEdge .couponApplied .declaredCouponPort
+
+def featureGraph : ArchGraph FeatureComponent where
+  edge := FeatureEdge
+
+def extendedGraph : ArchGraph ExtendedComponent where
+  edge := ExtendedEdge
+
+def coreEmbedding : CoreComponent -> ExtendedComponent
+  | .checkoutApi => .checkoutApi
+  | .auditLog => .auditLog
+
+def featureEmbedding : FeatureComponent -> ExtendedComponent
+  | .couponDraft => .couponDraft
+  | .couponApplied => .couponApplied
+
+def featureView : Observation ExtendedComponent FeatureView where
+  observe
+    | .couponDraft => .draft
+    | .couponApplied => .applied
+    | .checkoutApi => .applied
+    | .auditLog => .applied
+    | .declaredCouponPort => .applied
+
+def featureObservation : Observation FeatureComponent FeatureView where
+  observe
+    | .couponDraft => .draft
+    | .couponApplied => .applied
+
+def coreObservation : Observation CoreComponent CoreView where
+  observe := fun _ => .checkout
+
+def coreRetraction : ExtendedComponent -> CoreComponent
+  | .checkoutApi => .checkoutApi
+  | .auditLog => .auditLog
+  | .couponDraft => .checkoutApi
+  | .couponApplied => .checkoutApi
+  | .declaredCouponPort => .checkoutApi
+
+def extension :
+    FeatureExtension CoreComponent FeatureComponent ExtendedComponent
+      FeatureView where
+  core := coreGraph
+  feature := featureGraph
+  extended := extendedGraph
+  coreEmbedding := coreEmbedding
+  featureEmbedding := featureEmbedding
+  featureView := featureView
+  preservesRequiredInvariants := True
+  interactionFactorsThroughDeclaredInterfaces := True
+  coverageAssumptions := True
+  proofObligations := True
+
+theorem featureViewSound :
+    FeatureViewSound extension featureObservation := by
+  intro f
+  cases f <;> rfl
+
+def featureViewSectionPackage :
+    FeatureViewSectionPackage extension featureObservation :=
+  featureViewSectionPackage_of_featureViewSound extension featureObservation
+    featureViewSound
+
+theorem featureViewSectionPackage_observes (f : FeatureComponent) :
+    extension.featureView.observe
+        (featureViewSectionPackage.featureSection f) =
+      featureObservation.observe f :=
+  featureViewSectionPackage.featureSection_observes f
+
+def liftingData :
+    SplitExtensionLiftingData CoreComponent FeatureComponent ExtendedComponent
+      FeatureView CoreView where
+  extension := extension
+  featureObservation := featureObservation
+  coreObservation := coreObservation
+  featureSection := featureEmbedding
+  coreRetraction := coreRetraction
+  featureSectionLaw := featureViewSound
+  observationalCoreRetraction := by
+    intro c
+    cases c <;> rfl
+  interfaceFactorization := trivial
+  preservesRequiredInvariants := trivial
+
+def selectedFeatureStep : SelectedFeatureStep FeatureComponent where
+  source := .couponDraft
+  target := .couponApplied
+
+def featureInvariant (_f : FeatureComponent) : Prop :=
+  True
+
+def coreInvariant (c : CoreComponent) : Prop :=
+  c = .checkoutApi
+
+theorem lawfulSelectedFeatureStep :
+    LawfulFeatureStep featureInvariant selectedFeatureStep := by
+  intro _h
+  trivial
+
+theorem compatibleWithInterface :
+    CompatibleWithInterface liftingData coreInvariant selectedFeatureStep where
+  liftedEdge := ExtendedEdge.draftToApplied
+  interfaceFactorization := trivial
+  coverageAssumptions := trivial
+  coreInvariantPreserved := by
+    intro _h
+    rfl
+
+theorem selectedStepLifts :
+    ∃ liftedStep : LiftedExtensionStep ExtendedComponent,
+      LiftsFeatureStep liftingData selectedFeatureStep liftedStep ∧
+        PreservesCoreInvariants liftingData coreInvariant liftedStep :=
+  SplitExtensionLifting liftingData selectedFeatureStep
+    lawfulSelectedFeatureStep compatibleWithInterface
+
+theorem selectedStepPreservationPackage :
+    ∃ liftedStep : LiftedExtensionStep ExtendedComponent,
+      SplitExtensionLiftingPreservationPackage
+        liftingData featureInvariant coreInvariant selectedFeatureStep
+        liftedStep :=
+  SplitExtensionLifting_preservationPackage liftingData selectedFeatureStep
+    lawfulSelectedFeatureStep compatibleWithInterface
+
+theorem selectedStep_coreInvariant_target_of_source :
+    ∃ liftedStep : LiftedExtensionStep ExtendedComponent,
+      coreInvariant (liftingData.coreRetraction liftedStep.source) ->
+        coreInvariant (liftingData.coreRetraction liftedStep.target) := by
+  rcases selectedStepPreservationPackage with ⟨liftedStep, hPackage⟩
+  exact
+    ⟨liftedStep,
+      SplitExtensionLiftingPreservationPackage.coreInvariant_target_of_source
+        hPackage⟩
+
+theorem selectedStep_liftedSource_observes :
+    ∃ liftedStep : LiftedExtensionStep ExtendedComponent,
+      liftingData.extension.featureView.observe liftedStep.source =
+        liftingData.featureObservation.observe selectedFeatureStep.source := by
+  rcases selectedStepPreservationPackage with ⟨liftedStep, hPackage⟩
+  exact
+    ⟨liftedStep,
+      SplitExtensionLiftingPreservationPackage.liftedFeatureSource_observes
+        hPackage⟩
+
+theorem selectedStep_liftedTarget_observes :
+    ∃ liftedStep : LiftedExtensionStep ExtendedComponent,
+      liftingData.extension.featureView.observe liftedStep.target =
+        liftingData.featureObservation.observe selectedFeatureStep.target := by
+  rcases selectedStepPreservationPackage with ⟨liftedStep, hPackage⟩
+  exact
+    ⟨liftedStep,
+      SplitExtensionLiftingPreservationPackage.liftedFeatureTarget_observes
+        hPackage⟩
+
+end SelectedSplitExtensionLiftingExample
+
 end Formal.Arch
