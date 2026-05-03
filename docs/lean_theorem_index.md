@@ -1055,7 +1055,8 @@ File: `Formal/Arch/Extension/ArchitectureExtensionFormula.lean`
 Issues [#321](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/321),
 [#326](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/326),
 [#458](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/458),
-and [#459](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/459)
+[#459](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/459),
+and [#460](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/460)
 audit this package as the Lean entry point for mathematical design sections 7.2,
 9, and 10.  The package separates the soundness direction, the bounded
 completeness direction under explicit coverage / exactness assumptions, and the
@@ -1092,6 +1093,11 @@ coverage-style structural classification theorem.
 | `ClassifiedAsFeatureLocal` | `def` | witness が追加 feature 内部由来として分類されること。 | `defined only` |
 | `ClassifiedAsInteraction` | `def` | witness が feature/core interaction 境界由来として分類されること。 | `defined only` |
 | `ClassifiedAsLiftingFailure` | `def` | witness が selected feature step の lifting failure として分類されること。 | `defined only` |
+| `LiftingFailureWitnessPayload` | `structure` | selected feature step について、lawful feature step でありながら `SplitExtensionLiftingPreservationPackage` が得られないことを、第10章の `.liftingFailure` bridge payload として包む。 | `defined only` |
+| `liftingFailureExtensionObstructionWitness` | `def` | selected split-extension lifting failure payload から `.liftingFailure` に分類された `ExtensionObstructionWitness` を構成する。 | `defined only` |
+| `liftingFailureExtensionObstructionWitness_classified` | `theorem` | bridge constructor で作った witness が `ClassifiedAsLiftingFailure` を満たすことを示す。 | `proved` |
+| `not_compatibleWithInterface_of_liftingFailurePayload` | `theorem` | selected lifting failure payload から、その selected step の `CompatibleWithInterface` 不成立を得る local contrapositive bridge。 | `proved` |
+| `liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage` | `theorem` | selected lifting preservation package の不在から、分類済み lifting-failure witness の存在を得る代表 bridge。 | `proved` |
 | `ClassifiedAsFillingFailure` | `def` | witness が required diagram の filling failure として分類されること。 | `defined only` |
 | `fillingFailureExtensionObstructionWitness_classified` | `theorem` | bridge constructor で作った witness が `ClassifiedAsFillingFailure` を満たすことを示す。 | `proved` |
 | `FillingFailureRefutesSplit` | `def` | selected filling-failure payload が selected split predicate を反駁するための明示 premise。`NonFillabilityWitnessFor` 単独では split failure を結論しない。 | `defined only` |
@@ -1118,6 +1124,7 @@ coverage-style structural classification theorem.
 | `MultiLabelClassifiedAsFeatureLocal` | `def` | multi-label witness が追加 feature 内部由来 label を持つこと。 | `defined only` |
 | `MultiLabelClassifiedAsInteraction` | `def` | multi-label witness が feature/core interaction label を持つこと。 | `defined only` |
 | `MultiLabelClassifiedAsLiftingFailure` | `def` | multi-label witness が lifting failure label を持つこと。 | `defined only` |
+| `liftingFailureExtensionObstructionWitness_multilabel_classified` | `theorem` | lifting-failure bridge witness を multi-label layer に埋め込んでも `.liftingFailure` label が得られることを示す。 | `proved` |
 | `MultiLabelClassifiedAsFillingFailure` | `def` | multi-label witness が filling failure label を持つこと。 | `defined only` |
 | `fillingFailureExtensionObstructionWitness_multilabel_classified` | `theorem` | filling-failure bridge witness を multi-label layer に埋め込んでも `.fillingFailure` label が得られることを示す。 | `proved` |
 | `MultiLabelClassifiedAsComplexityTransfer` | `def` | multi-label witness が complexity / analytic transfer label を持つこと。 | `defined only` |
@@ -1147,6 +1154,10 @@ cost 改善は追加しない。
 residual-coverage bridge は selected `ExtensionCoverageWitness` を `.residualCoverageGap`
 に分類するだけであり、static split law failure、runtime / semantic flatness failure、
 extractor completeness、または coverage witness universe 外の completeness は追加しない。
+lifting-failure bridge は selected feature step ごとの
+`SplitExtensionLiftingPreservationPackage` 不在を `.liftingFailure` に分類するだけであり、
+strict section/retraction equality、global split completeness、または all feature steps の
+automatic lifting failure は追加しない。
 
 ## Complexity Transfer
 
