@@ -1634,6 +1634,73 @@ expected claim classification を持つ。
 - case study paper
 ```
 
+B0-B6 は、数学コアを実行可能な research / tooling prototype へ落とす段階である。
+実用ツールチェーンとして継続運用するには、CI integration、extractor ecosystem、
+schema compatibility、operational feedback loop を別段階として扱う。
+
+### Phase B7: CI / PR review integration
+
+```text
+- GitHub Checks / PR comment output
+- warn / fail / advisory policy
+- baseline comparison and suppression workflow
+- report artifact retention
+- reviewer-facing summary / detail / formal sections
+- organization policy for required axes and allowed unmeasured gaps
+```
+
+この段階では、Feature Extension Report を日常の PR review に接続する。
+tool は設計判断を自動承認しない。CI fail は、policy が明示した required axis と
+missing precondition に基づく運用判断であり、theorem の自動結論ではない。
+
+### Phase B8: Extractor / policy ecosystem
+
+```text
+- non-Lean language extractors
+- framework-specific extraction adapters
+- law policy templates
+- custom rule plugin boundary
+- monorepo / multi-service measurement units
+- runtime / semantic evidence adapters
+```
+
+この段階では、AIR を言語非依存の中間表現として保ちつつ、extractor 側を拡張する。
+各 extractor は、自分が扱える bounded subset、unsupported constructs、projection rule、
+coverage assumptions を明示し、Lean の `ComponentUniverse` 完全性とは同一視しない。
+
+### Phase B9: Schema standardization and compatibility
+
+```text
+- AIR schema versioning
+- Feature Extension Report schema versioning
+- Obstruction Witness schema versioning
+- migration / compatibility checker
+- benchmark suite freeze
+- backward compatibility tests
+- detectable values / reported axes catalog の versioning
+```
+
+この段階では、研究 prototype から複数 project / 複数 extractor が使える標準 artifact へ
+移行する。schema migration は意味保存を主張するものではなく、field mapping、
+deprecated fields、new required assumptions、non-conclusions の互換性を検査する。
+
+### Phase B10: Operational feedback loop
+
+```text
+- report outcome dataset accumulation
+- false positive / false negative review
+- metric calibration
+- team-specific threshold tuning
+- repair suggestion adoption tracking
+- incident / rollback / MTTR correlation monitoring
+- empirical hypothesis refresh cycle
+```
+
+この段階では、AAT report が実際の開発 outcome とどう関係するかを継続的に検証する。
+threshold や CI policy は empirical calibration の対象であり、数学 theorem として扱わない。
+B10 の結果は、B0-B6 の schema / witness / theorem package へ feedback されるが、
+実証相関だけで formal claim を強めてはならない。
+
 ## 14. 成功基準
 
 短期成功:
