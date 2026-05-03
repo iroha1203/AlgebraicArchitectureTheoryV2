@@ -525,6 +525,14 @@ theorem precondition checker は、AIR が数学設計書の theorem package の
 - proof claim classification
 ```
 
+Lean 側の registry metadata は
+`Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata` を入口として扱う。
+最小項目は theorem references、`claim_level`、`claim_classification`、
+`measurement_boundary`、required assumptions、coverage assumptions、
+exactness assumptions、missing preconditions、non-conclusions である。
+`MEASURED` witness は `PROVED` formal claim ではなく、missing preconditions が
+残る claim は theorem package の結論として表示しない。
+
 baseline scope は static theorem package に限定する。
 
 ```text
