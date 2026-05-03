@@ -224,10 +224,202 @@ theorem ofSignatureAxis_isUnmeasured_of_axisValue_none
 
 end AnalyticAxisBoundary
 
+/--
+Report-facing analytic snapshot for the Chapter 11 coupon canonical example.
+
+The three axes mirror the design-note fields
+`static_hidden_interaction`, `runtime_exposure`, and `semantic_curvature`.
+Each axis keeps its measurement boundary, so `none` remains unmeasured rather
+than being read as a zero certificate.
+-/
+structure CouponAnalyticSnapshot where
+  staticHiddenInteraction : AnalyticAxisBoundary
+  runtimeExposure : AnalyticAxisBoundary
+  semanticCurvature : AnalyticAxisBoundary
+  nonConclusions : Prop
+
+namespace CouponAnalyticSnapshot
+
+/-- Bad coupon extension: the selected static hidden-interaction axis is seen. -/
+def badStaticHiddenInteractionAxis : AnalyticAxisBoundary :=
+  AnalyticAxisBoundary.ofOption (some 1) True True True True
+
+/-- Repaired coupon extension: the selected static hidden-interaction axis is measured zero. -/
+def repairedStaticHiddenInteractionAxis : AnalyticAxisBoundary :=
+  AnalyticAxisBoundary.ofOption (some 0) True True True True
+
+/-- Runtime exposure is intentionally left unmeasured in the canonical snapshot. -/
+def runtimeExposureUnmeasuredAxis : AnalyticAxisBoundary :=
+  AnalyticAxisBoundary.ofOption none True True True True
+
+/-- Semantic curvature can also be left unmeasured without being treated as zero. -/
+def semanticCurvatureUnmeasuredAxis : AnalyticAxisBoundary :=
+  AnalyticAxisBoundary.ofOption none True True True True
+
+/--
+Measured semantic curvature for the selected coupon / discount rounding-order
+diagram. The concrete canonical residual is one selected obstruction.
+-/
+def semanticCurvatureMeasuredAxis : AnalyticAxisBoundary :=
+  AnalyticAxisBoundary.ofOption (some 1) True True True True
+
+/-- Canonical bad coupon snapshot with static hidden interaction and unmeasured runtime / semantic axes. -/
+def bad : CouponAnalyticSnapshot where
+  staticHiddenInteraction := badStaticHiddenInteractionAxis
+  runtimeExposure := runtimeExposureUnmeasuredAxis
+  semanticCurvature := semanticCurvatureUnmeasuredAxis
+  nonConclusions := True
+
+/-- Canonical repaired coupon snapshot with measured-zero selected static hidden interaction. -/
+def repaired : CouponAnalyticSnapshot where
+  staticHiddenInteraction := repairedStaticHiddenInteractionAxis
+  runtimeExposure := runtimeExposureUnmeasuredAxis
+  semanticCurvature := semanticCurvatureUnmeasuredAxis
+  nonConclusions := True
+
+/--
+Canonical repaired-static snapshot where the selected semantic rounding-order
+residual is measured as a positive axis.
+-/
+def repairedWithMeasuredSemanticCurvature : CouponAnalyticSnapshot where
+  staticHiddenInteraction := repairedStaticHiddenInteractionAxis
+  runtimeExposure := runtimeExposureUnmeasuredAxis
+  semanticCurvature := semanticCurvatureMeasuredAxis
+  nonConclusions := True
+
+theorem bad_staticHiddenInteraction_value :
+    bad.staticHiddenInteraction.value = some 1 := by
+  rfl
+
+theorem bad_staticHiddenInteraction_measuredNonzero :
+    bad.staticHiddenInteraction.IsMeasuredNonzero := by
+  constructor
+  · rfl
+  · exact ⟨0, rfl⟩
+
+theorem bad_staticHiddenInteraction_supportsSelectedObstruction :
+    bad.staticHiddenInteraction.SupportsSelectedAnalyticObstruction :=
+  AnalyticAxisBoundary.supportsSelectedAnalyticObstruction_of_measuredNonzero
+    bad_staticHiddenInteraction_measuredNonzero
+
+theorem bad_staticHiddenInteraction_hiddenDependencyWitnessExists :
+    StaticExtensionWitnessExists
+      CouponStaticDependencyExample.badExtension
+      CouponStaticDependencyExample.declaredInterface
+      CouponStaticDependencyExample.coreAllowedStaticEdge
+      CouponStaticDependencyExample.extendedAllowedStaticEdge :=
+  CouponStaticDependencyExample.hiddenDependencyWitnessExists
+
+theorem bad_staticHiddenInteraction_bridge :
+    bad.staticHiddenInteraction.SupportsSelectedAnalyticObstruction ∧
+      StaticExtensionWitnessExists
+        CouponStaticDependencyExample.badExtension
+        CouponStaticDependencyExample.declaredInterface
+        CouponStaticDependencyExample.coreAllowedStaticEdge
+        CouponStaticDependencyExample.extendedAllowedStaticEdge :=
+  ⟨bad_staticHiddenInteraction_supportsSelectedObstruction,
+    bad_staticHiddenInteraction_hiddenDependencyWitnessExists⟩
+
+theorem bad_selectedStaticSplitFailure :
+    ¬ SelectedStaticSplitExtension
+      CouponStaticDependencyExample.badExtension
+      CouponStaticDependencyExample.declaredInterface
+      CouponStaticDependencyExample.coreAllowedStaticEdge
+      CouponStaticDependencyExample.extendedAllowedStaticEdge :=
+  CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension
+
+theorem repaired_staticHiddenInteraction_value :
+    repaired.staticHiddenInteraction.value = some 0 := by
+  rfl
+
+theorem repaired_staticHiddenInteraction_measuredZero :
+    repaired.staticHiddenInteraction.IsMeasuredZero := by
+  constructor
+  · rfl
+  · rfl
+
+theorem repaired_selectedStaticSplit :
+    SelectedStaticSplitExtension
+      CouponStaticDependencyExample.repairedExtension
+      CouponStaticDependencyExample.declaredInterface
+      CouponStaticDependencyExample.coreAllowedStaticEdge
+      CouponStaticDependencyExample.extendedAllowedStaticEdge :=
+  CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension
+
+theorem repaired_staticWitnessAbsent :
+    ¬ StaticExtensionWitnessExists
+      CouponStaticDependencyExample.repairedExtension
+      CouponStaticDependencyExample.declaredInterface
+      CouponStaticDependencyExample.coreAllowedStaticEdge
+      CouponStaticDependencyExample.extendedAllowedStaticEdge := by
+  intro hWitness
+  exact
+    not_selectedStaticSplitExtension_of_staticExtensionWitnessExists hWitness
+      repaired_selectedStaticSplit
+
+theorem repaired_staticHiddenInteraction_bridge :
+    repaired.staticHiddenInteraction.IsMeasuredZero ∧
+      ¬ StaticExtensionWitnessExists
+        CouponStaticDependencyExample.repairedExtension
+        CouponStaticDependencyExample.declaredInterface
+        CouponStaticDependencyExample.coreAllowedStaticEdge
+        CouponStaticDependencyExample.extendedAllowedStaticEdge :=
+  ⟨repaired_staticHiddenInteraction_measuredZero, repaired_staticWitnessAbsent⟩
+
+theorem runtimeExposure_unmeasured :
+    bad.runtimeExposure.IsUnmeasured := by
+  constructor
+  · rfl
+  · rfl
+
+theorem runtimeExposure_not_zeroReflectingClaim :
+    ¬ bad.runtimeExposure.CanDischargeZeroReflectingClaim :=
+  AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured
+    runtimeExposure_unmeasured
+
+theorem semanticCurvature_unmeasured :
+    bad.semanticCurvature.IsUnmeasured := by
+  constructor
+  · rfl
+  · rfl
+
+theorem semanticCurvature_unmeasured_not_zeroReflectingClaim :
+    ¬ bad.semanticCurvature.CanDischargeZeroReflectingClaim :=
+  AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured
+    semanticCurvature_unmeasured
+
+theorem repairedWithMeasuredSemanticCurvature_value :
+    repairedWithMeasuredSemanticCurvature.semanticCurvature.value = some 1 := by
+  rfl
+
+theorem repairedWithMeasuredSemanticCurvature_measuredNonzero :
+    repairedWithMeasuredSemanticCurvature.semanticCurvature.IsMeasuredNonzero := by
+  constructor
+  · rfl
+  · exact ⟨0, rfl⟩
+
+theorem repairedWithMeasuredSemanticCurvature_supportsSelectedObstruction :
+    repairedWithMeasuredSemanticCurvature.semanticCurvature.SupportsSelectedAnalyticObstruction :=
+  AnalyticAxisBoundary.supportsSelectedAnalyticObstruction_of_measuredNonzero
+    repairedWithMeasuredSemanticCurvature_measuredNonzero
+
+theorem repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive :
+    0 < CouponDiscountExample.roundingOrderValuation.value
+      CouponDiscountExample.couponDiscountDiagram
+      CouponDiscountExample.CouponDiscountWitness.roundingOrder :=
+  CouponDiscountExample.roundingOrderValuation_positive
+
+theorem recordsNonConclusions (snapshot : CouponAnalyticSnapshot) :
+    snapshot.nonConclusions -> snapshot.nonConclusions :=
+  id
+
+end CouponAnalyticSnapshot
+
 /-- The main Chapter 11 API groups exposed through this entrypoint. -/
 inductive Candidate where
   | analyticRepresentation
   | obstructionValuation
+  | couponAnalyticSnapshot
   | couponStaticExample
   | couponSemanticValuation
   | staticSemanticCounterexample
@@ -240,6 +432,7 @@ namespace Candidate
 def designSection : Candidate -> String
   | analyticRepresentation => "11"
   | obstructionValuation => "11"
+  | couponAnalyticSnapshot => "11.3"
   | couponStaticExample => "11 / coupon static axis"
   | couponSemanticValuation => "11 / coupon semantic axis"
   | staticSemanticCounterexample => "11 / canonical counterexample"
@@ -249,6 +442,7 @@ def designSection : Candidate -> String
 def schematicName : Candidate -> String
   | analyticRepresentation => "Analytic Representation"
   | obstructionValuation => "Obstruction Valuation"
+  | couponAnalyticSnapshot => "Coupon canonical analytic snapshot"
   | couponStaticExample => "Coupon static hidden dependency example"
   | couponSemanticValuation => "Coupon semantic rounding-order valuation"
   | staticSemanticCounterexample => "Static-flat semantic-obstruction example"
@@ -274,6 +468,17 @@ def representativeDeclarations : Candidate -> List String
        "ObstructionValuation.no_obstruction_of_value_zero",
        "ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum",
        "ObstructionValuation.RecordsNonConclusions"]
+  | couponAnalyticSnapshot =>
+      ["CouponAnalyticSnapshot",
+       "CouponAnalyticSnapshot.bad",
+       "CouponAnalyticSnapshot.repaired",
+       "CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature",
+       "CouponAnalyticSnapshot.bad_staticHiddenInteraction_bridge",
+       "CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge",
+       "CouponAnalyticSnapshot.runtimeExposure_not_zeroReflectingClaim",
+       "CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim",
+       "CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive",
+       "CouponAnalyticSnapshot.recordsNonConclusions"]
   | couponStaticExample =>
       ["CouponStaticDependencyExample.goodStaticSplitFeatureExtension",
        "CouponStaticDependencyExample.hiddenDependencyWitness",
@@ -359,6 +564,39 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          reading :=
           "selected witness valuation; zero values rule out selected witnesses, not global flatness",
          status := "defined only / proved" }]
+  | couponAnalyticSnapshot =>
+      [{ schematic := "coupon canonical analytic snapshot",
+         leanDeclarations :=
+          ["CouponAnalyticSnapshot",
+           "CouponAnalyticSnapshot.bad",
+           "CouponAnalyticSnapshot.repaired",
+           "CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature"],
+         reading :=
+          "report-facing static_hidden_interaction / runtime_exposure / semantic_curvature axes with explicit measurement boundaries",
+         status := "defined only" },
+       { schematic := "static_hidden_interaction = some 1",
+         leanDeclarations :=
+          ["CouponAnalyticSnapshot.bad_staticHiddenInteraction_bridge",
+           "CouponStaticDependencyExample.hiddenDependencyWitnessExists",
+           "CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension"],
+         reading :=
+          "bad coupon extension has a selected static hidden dependency witness and a measured nonzero static axis",
+         status := "proved" },
+       { schematic := "repaired static_hidden_interaction = some 0",
+         leanDeclarations :=
+          ["CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge",
+           "CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension"],
+         reading :=
+          "repaired coupon extension has a measured-zero selected static axis and no selected static witness",
+         status := "proved" },
+       { schematic := "runtime_exposure = none / semantic_curvature = none or measured delta",
+         leanDeclarations :=
+          ["CouponAnalyticSnapshot.runtimeExposure_not_zeroReflectingClaim",
+           "CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim",
+           "CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive"],
+         reading :=
+          "unmeasured runtime or semantic axes do not discharge zero-reflecting claims; the selected semantic residual can be recorded as measured nonzero",
+         status := "proved" }]
   | couponStaticExample =>
       [{ schematic := "coupon static_hidden_interaction = some 1",
          leanDeclarations :=
@@ -448,6 +686,8 @@ def nonConclusionBoundary : Candidate -> String
       "reflecting directions require coverage, witness completeness, and semantic contract coverage; analytic values alone do not prove flatness"
   | obstructionValuation =>
       "valuation is selected-witness-relative; zero selected valuation does not imply global ArchitectureFlat"
+  | couponAnalyticSnapshot =>
+      "snapshot axes are report-facing and selected-example-relative; unmeasured runtime / semantic axes are not zero certificates"
   | couponStaticExample =>
       "selected static hidden dependency witness only; no runtime flatness, semantic flatness, or extractor completeness"
   | couponSemanticValuation =>
