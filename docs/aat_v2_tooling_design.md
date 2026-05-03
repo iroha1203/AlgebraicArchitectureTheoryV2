@@ -1034,6 +1034,7 @@ runtime / semantic / empirical axis は evidence schema と unmeasured boundary 
 - architecture id / revision
 - feature id / PR / issue / AI session reference
 - before / after architecture summary
+- runtime summary
 - interpreted extension summary
 - split status
 - preserved invariants
@@ -1058,7 +1059,7 @@ Level 1: Review Summary
   split_status, claim classification, top witnesses, required action.
 
 Level 2: Evidence Detail
-  changed components, changed edges, witness evidence, coverage gaps.
+  changed components, changed edges, witness evidence, runtime summary, coverage gaps.
 
 Level 3: Formal Detail
   theorem package references, discharged assumptions, exactness assumptions,
@@ -1067,6 +1068,13 @@ Level 3: Formal Detail
 
 CI や PR comment に出す既定表示は Level 1 とし、Level 2 / Level 3 は折りたたみ可能な
 詳細として扱う。Report の完全性と、レビューで読める密度は別の設計制約である。
+
+runtime summary は、`runtimePropagation` を exposure radius として表示する。
+`runtimePropagation = null` は未測定であり runtime risk 0 ではない。
+`runtimePropagation = 0` は測定 universe と projection rule の範囲での measured witness であり、
+coverage、projection rule、exactness assumptions、theorem preconditions が揃うまで
+formal runtime zero bridge claim として扱わない。blast radius や policy-aware runtime
+propagation は別 metric / 別 claim として扱う。
 
 Report は、次のような判断を明示する。
 
