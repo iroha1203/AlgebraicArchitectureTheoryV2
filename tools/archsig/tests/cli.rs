@@ -339,6 +339,60 @@ fn cli_validate_air_detects_dangling_refs_and_boundary_mismatch() {
 }
 
 #[test]
+fn cli_validate_air_detects_runtime_metadata_inconsistency() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("validate-air-runtime-invalid");
+    let input = out_dir.join("invalid-runtime-air.json");
+    let report = out_dir.join("invalid-runtime-air-report.json");
+    let mut json = read_json(&root.join("good_extension.json"));
+
+    json["relations"]
+        .as_array_mut()
+        .expect("relations is an array")
+        .push(serde_json::json!({
+            "id": "relation-runtime-invalid",
+            "layer": "runtime",
+            "from": "UserService",
+            "to": "CouponService",
+            "kind": "grpc",
+            "lifecycle": "added",
+            "protectedBy": null,
+            "extractionRule": null,
+            "evidenceRefs": []
+        }));
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("invalid runtime AIR is written");
+
+    let output = run_sig0_output(&[
+        "validate-air",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "invalid runtime AIR should fail\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "fail");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-runtime-metadata-consistent"
+                && check["result"] == "fail")
+    );
+}
+
+#[test]
 fn cli_validate_air_can_escalate_missing_measured_evidence_to_failure() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-strict");
@@ -585,6 +639,7 @@ fn cli_air_normalizes_sig0_validation_and_pr_metadata() {
     let sig0 = out_dir.join("sig0.json");
     let validation = out_dir.join("validation.json");
     let air = out_dir.join("air.json");
+    let air_validation = out_dir.join("air-validation.json");
 
     run_sig0(&[
         "--root",
@@ -642,7 +697,51 @@ fn cli_air_normalizes_sig0_validation_and_pr_metadata() {
             .as_array()
             .expect("relations is array")
             .iter()
-            .any(|relation| relation["layer"] == "runtime" && relation["kind"] == "grpc")
+            .any(|relation| {
+                relation["layer"] == "runtime"
+                    && relation["kind"] == "grpc"
+                    && relation["extractionRule"] == "runtime-edge-projection-v0"
+                    && !relation["evidenceRefs"]
+                        .as_array()
+                        .expect("evidenceRefs is array")
+                        .is_empty()
+            })
+    );
+    let runtime_coverage = json["coverage"]["layers"]
+        .as_array()
+        .expect("coverage layers is array")
+        .iter()
+        .find(|layer| layer["layer"] == "runtime")
+        .expect("runtime coverage layer");
+    assert_eq!(
+        runtime_coverage["projectionRule"],
+        "runtime-edge-projection-v0"
+    );
+    assert_eq!(runtime_coverage["measurementBoundary"], "measuredNonzero");
+    assert!(
+        runtime_coverage["measuredAxes"]
+            .as_array()
+            .expect("measuredAxes is array")
+            .iter()
+            .any(|axis| axis == "runtimePropagation")
+    );
+    assert!(
+        !runtime_coverage["extractionScope"]
+            .as_array()
+            .expect("extractionScope is array")
+            .is_empty()
+    );
+    assert!(
+        !runtime_coverage["exactnessAssumptions"]
+            .as_array()
+            .expect("exactnessAssumptions is array")
+            .is_empty()
+    );
+    assert!(
+        runtime_coverage["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs is array")
+            .is_empty()
     );
     assert!(
         json["signature"]["axes"]
@@ -674,6 +773,26 @@ fn cli_air_normalizes_sig0_validation_and_pr_metadata() {
                 claim["claimId"] == "claim-axis-boundaryviolationcount"
                     && claim["claimClassification"] == "measured"
             })
+    );
+
+    run_sig0(&[
+        "validate-air",
+        "--input",
+        air.to_str().expect("air path is utf-8"),
+        "--out",
+        air_validation
+            .to_str()
+            .expect("air validation path is utf-8"),
+    ]);
+    let validation = read_json(&air_validation);
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-runtime-metadata-consistent"
+                && check["result"] == "pass")
     );
 }
 

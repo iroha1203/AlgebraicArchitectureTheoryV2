@@ -3,7 +3,8 @@ use std::collections::BTreeSet;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     AIR_SCHEMA_VERSION, AIR_VALIDATION_REPORT_SCHEMA_VERSION, AirDocumentV0, AirValidationInput,
-    AirValidationReport, AirValidationSummary, ValidationCheck, ValidationExample,
+    AirValidationReport, AirValidationSummary, RUNTIME_PROJECTION_RULE_VERSION, ValidationCheck,
+    ValidationExample,
 };
 
 pub fn validate_air_document_report(
@@ -23,6 +24,7 @@ pub fn validate_air_document_report(
     checks.push(check_air_coverage_universe_refs(document));
     checks.push(check_air_signature_measurement_boundary(document));
     checks.push(check_air_claim_measurement_boundary(document));
+    checks.push(check_air_runtime_metadata(document));
     checks.push(check_air_measured_claim_evidence(
         document,
         strict_measured_evidence,
@@ -569,6 +571,191 @@ fn check_air_claim_measurement_boundary(document: &AirDocumentV0) -> ValidationC
     air_ref_check(
         "air-claim-boundary-compatible",
         "claim classification is compatible with measurement boundary",
+        invalid,
+    )
+}
+
+fn check_air_runtime_metadata(document: &AirDocumentV0) -> ValidationCheck {
+    let evidence_ids = air_evidence_ids(document);
+    let runtime_axis = document
+        .signature
+        .axes
+        .iter()
+        .find(|axis| axis.axis == "runtimePropagation");
+    let runtime_layer = document
+        .coverage
+        .layers
+        .iter()
+        .find(|layer| layer.layer == "runtime");
+    let runtime_relations: Vec<_> = document
+        .relations
+        .iter()
+        .filter(|relation| relation.layer == "runtime")
+        .collect();
+    let mut invalid = Vec::new();
+
+    for relation in &runtime_relations {
+        if relation.evidence_refs.is_empty() {
+            invalid.push(generic_validation_example(
+                &relation.id,
+                "evidenceRefs",
+                "runtime relation must keep evidence_refs",
+            ));
+        }
+        if relation
+            .evidence_refs
+            .iter()
+            .any(|evidence_ref| !evidence_ids.contains(evidence_ref))
+        {
+            invalid.push(generic_validation_example(
+                &relation.id,
+                "evidenceRefs",
+                "runtime relation has unresolved evidence_refs",
+            ));
+        }
+        if relation.extraction_rule.as_deref() != Some(RUNTIME_PROJECTION_RULE_VERSION) {
+            invalid.push(generic_validation_example(
+                &relation.id,
+                relation.extraction_rule.as_deref().unwrap_or("<missing>"),
+                "runtime relation must use runtime-edge-projection-v0",
+            ));
+        }
+    }
+
+    let Some(runtime_axis) = runtime_axis else {
+        if !runtime_relations.is_empty() || runtime_layer.is_some() {
+            invalid.push(generic_validation_example(
+                "signature.runtimePropagation",
+                "missing",
+                "runtime metadata requires runtimePropagation axis",
+            ));
+        }
+        return air_ref_check(
+            "air-runtime-metadata-consistent",
+            "runtime AIR relations, coverage, and claim boundary are consistent",
+            invalid,
+        );
+    };
+
+    let Some(runtime_layer) = runtime_layer else {
+        invalid.push(generic_validation_example(
+            "coverage.runtime",
+            "missing",
+            "runtimePropagation axis requires runtime coverage layer",
+        ));
+        return air_ref_check(
+            "air-runtime-metadata-consistent",
+            "runtime AIR relations, coverage, and claim boundary are consistent",
+            invalid,
+        );
+    };
+
+    let runtime_measured = runtime_axis.measured && runtime_axis.value.is_some();
+    if runtime_measured {
+        if !matches!(
+            runtime_layer.measurement_boundary.as_str(),
+            "measuredZero" | "measuredNonzero"
+        ) {
+            invalid.push(generic_validation_example(
+                "coverage.runtime",
+                &runtime_layer.measurement_boundary,
+                "measured runtime axis requires measured runtime coverage boundary",
+            ));
+        }
+        if !runtime_layer
+            .measured_axes
+            .iter()
+            .any(|axis| axis == "runtimePropagation")
+        {
+            invalid.push(generic_validation_example(
+                "coverage.runtime.measuredAxes",
+                "runtimePropagation",
+                "measured runtime coverage must list runtimePropagation",
+            ));
+        }
+        if runtime_layer.projection_rule.as_deref() != Some(RUNTIME_PROJECTION_RULE_VERSION) {
+            invalid.push(generic_validation_example(
+                "coverage.runtime.projectionRule",
+                runtime_layer
+                    .projection_rule
+                    .as_deref()
+                    .unwrap_or("<missing>"),
+                "measured runtime coverage must record runtime-edge-projection-v0",
+            ));
+        }
+        if runtime_layer.universe_refs.is_empty() {
+            invalid.push(generic_validation_example(
+                "coverage.runtime.universeRefs",
+                "empty",
+                "measured runtime coverage must reference its measurement artifact",
+            ));
+        }
+        if runtime_layer.extraction_scope.is_empty() {
+            invalid.push(generic_validation_example(
+                "coverage.runtime.extractionScope",
+                "empty",
+                "measured runtime coverage must record coverage scope",
+            ));
+        }
+        if runtime_layer.exactness_assumptions.is_empty() {
+            invalid.push(generic_validation_example(
+                "coverage.runtime.exactnessAssumptions",
+                "empty",
+                "measured runtime coverage must record exactness assumptions",
+            ));
+        }
+    } else {
+        if runtime_layer.measurement_boundary != "unmeasured" {
+            invalid.push(generic_validation_example(
+                "coverage.runtime",
+                &runtime_layer.measurement_boundary,
+                "unmeasured runtime axis requires unmeasured runtime coverage boundary",
+            ));
+        }
+        if runtime_layer
+            .measured_axes
+            .iter()
+            .any(|axis| axis == "runtimePropagation")
+        {
+            invalid.push(generic_validation_example(
+                "coverage.runtime.measuredAxes",
+                "runtimePropagation",
+                "unmeasured runtime coverage must not list runtimePropagation as measured",
+            ));
+        }
+        if !runtime_layer
+            .unmeasured_axes
+            .iter()
+            .any(|axis| axis == "runtimePropagation")
+        {
+            invalid.push(generic_validation_example(
+                "coverage.runtime.unmeasuredAxes",
+                "runtimePropagation",
+                "unmeasured runtime coverage must list runtimePropagation",
+            ));
+        }
+        if runtime_layer.projection_rule.is_some() {
+            invalid.push(generic_validation_example(
+                "coverage.runtime.projectionRule",
+                runtime_layer
+                    .projection_rule
+                    .as_deref()
+                    .unwrap_or("<missing>"),
+                "unmeasured runtime coverage must not claim a projection rule",
+            ));
+        }
+        if !runtime_relations.is_empty() {
+            invalid.push(generic_validation_example(
+                "relations.runtime",
+                "present",
+                "runtime relations require measured runtimePropagation coverage",
+            ));
+        }
+    }
+
+    air_ref_check(
+        "air-runtime-metadata-consistent",
+        "runtime AIR relations, coverage, and claim boundary are consistent",
         invalid,
     )
 }
