@@ -660,12 +660,98 @@ theorem complexityTransferExtensionObstructionWitnessExists_of_no_free_eliminati
         transferWitness := hAtTarget }
     exact ⟨.policy, payload, rfl⟩
 
+/--
+Payload bridge from selected extension-coverage diagnostics into the
+Architecture Extension Formula obstruction universe.
+
+The payload is coverage-only: it records a selected failure of
+`ExtensionCoverageComplete` for the supplied bounded universe. It does not
+assert static split-law failure, runtime flatness failure, semantic flatness
+failure, or extractor completeness.
+-/
+structure ResidualCoverageGapWitnessPayload
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended) where
+  witness : ExtensionCoverageWitness X U
+
+/--
+Turn a selected extension-coverage diagnostic into an abstract extension
+obstruction witness classified as `residualCoverageGap`.
+-/
+def residualCoverageGapExtensionObstructionWitness
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    (payload : ResidualCoverageGapWitnessPayload X U) :
+    ExtensionObstructionWitness X
+      (ResidualCoverageGapWitnessPayload X U) where
+  witness := payload
+  classifiesAs := .residualCoverageGap
+
 /-- The witness remains as residual evidence or a bounded coverage gap. -/
 def ClassifiedAsResidualCoverageGap
     (X : FeatureExtension Core Feature Extended FeatureView)
     (_U : ComponentUniverse X.extended)
     (witness : ExtensionObstructionWitness X Witness) : Prop :=
   witness.classifiesAs = .residualCoverageGap
+
+/--
+The residual-coverage bridge constructor always lands in the
+`residualCoverageGap` classification.
+-/
+theorem residualCoverageGapExtensionObstructionWitness_classified
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    (payload : ResidualCoverageGapWitnessPayload X U) :
+    ClassifiedAsResidualCoverageGap X U
+      (residualCoverageGapExtensionObstructionWitness X U payload) :=
+  rfl
+
+/--
+A residual-coverage payload refutes the selected bounded extension coverage
+premise it was built from.
+-/
+theorem not_extensionCoverage_of_residualCoverageGapPayload
+    {X : FeatureExtension Core Feature Extended FeatureView}
+    {U : ComponentUniverse X.extended}
+    (payload : ResidualCoverageGapWitnessPayload X U) :
+    ¬ ExtensionCoverage X U :=
+  not_extensionCoverageComplete_of_extensionCoverageWitness payload.witness
+
+/--
+Selected extension-coverage witness existence gives a classified residual
+coverage-gap witness in the Architecture Extension Formula layer.
+-/
+theorem residualCoverageGapExtensionObstructionWitnessExists_of_extensionCoverageWitnessExists
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    (hWitness : ExtensionCoverageWitnessExists X U) :
+    ∃ payload : ResidualCoverageGapWitnessPayload X U,
+      ClassifiedAsResidualCoverageGap X U
+        (residualCoverageGapExtensionObstructionWitness X U payload) := by
+  rcases hWitness with ⟨witness⟩
+  let payload : ResidualCoverageGapWitnessPayload X U :=
+    { witness := witness }
+  exact ⟨payload,
+    residualCoverageGapExtensionObstructionWitness_classified X U payload⟩
+
+/--
+Representative bounded-completeness bridge from failure of
+`ExtensionCoverageComplete` to a `.residualCoverageGap` classification witness.
+-/
+theorem residualCoverageGapExtensionObstructionWitnessExists_of_not_extensionCoverage
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    (hFailureCoverage : ExtensionCoverageFailureCoverage X U)
+    (hNonCoverage : ¬ ExtensionCoverage X U) :
+    ∃ payload : ResidualCoverageGapWitnessPayload X U,
+      ClassifiedAsResidualCoverageGap X U
+        (residualCoverageGapExtensionObstructionWitness X U payload) := by
+  have hWitness : ExtensionCoverageWitnessExists X U :=
+    extensionCoverageWitnessExists_of_not_extensionCoverageComplete
+      hFailureCoverage hNonCoverage
+  exact
+    residualCoverageGapExtensionObstructionWitnessExists_of_extensionCoverageWitnessExists
+      X U hWitness
 
 /-- The multi-label witness is labeled as inherited from the embedded core. -/
 def MultiLabelClassifiedAsInheritedCore
@@ -755,6 +841,18 @@ def MultiLabelClassifiedAsResidualCoverageGap
     (_U : ComponentUniverse X.extended)
     (witness : MultiLabelExtensionObstructionWitness X Witness) : Prop :=
   witness.labels .residualCoverageGap
+
+/--
+The multi-label bridge keeps a residual-coverage bridge witness labeled as
+`residualCoverageGap`.
+-/
+theorem residualCoverageGapExtensionObstructionWitness_multilabel_classified
+    (X : FeatureExtension Core Feature Extended FeatureView)
+    (U : ComponentUniverse X.extended)
+    (payload : ResidualCoverageGapWitnessPayload X U) :
+    MultiLabelClassifiedAsResidualCoverageGap X U
+      (residualCoverageGapExtensionObstructionWitness X U payload).toMultiLabel :=
+  rfl
 
 /--
 Bounded structural architecture extension formula.
