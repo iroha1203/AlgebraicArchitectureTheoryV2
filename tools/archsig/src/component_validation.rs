@@ -387,3 +387,138 @@ fn edge_example(edge: &Edge) -> ValidationExample {
         evidence: Some(edge.evidence.clone()),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use crate::extractor::{extract_sig0, extract_sig0_with_policy};
+    use crate::test_support::{fixture_root, insert_unmeasured_policy_status};
+    use crate::{
+        COMPONENT_KIND, Component, DEFAULT_UNIVERSE_MODE, Edge, Policies, SCHEMA_VERSION,
+        Sig0Document, Signature, VALIDATION_REPORT_SCHEMA_VERSION,
+    };
+
+    use super::validate_component_universe_report;
+
+    #[test]
+    fn validates_minimal_fixture_with_tooling_boundary_warnings() {
+        let root = fixture_root();
+        let policy = root.join("policy_measured_zero.json");
+        let document = extract_sig0_with_policy(&root, Some(&policy)).expect("fixture extracts");
+
+        let report =
+            validate_component_universe_report(&document, ".lake/sig0.json", DEFAULT_UNIVERSE_MODE)
+                .expect("report validates");
+
+        assert_eq!(report.schema_version, VALIDATION_REPORT_SCHEMA_VERSION);
+        assert_eq!(report.universe_mode, DEFAULT_UNIVERSE_MODE);
+        assert_eq!(report.summary.component_count, 3);
+        assert_eq!(report.summary.local_edge_count, 3);
+        assert_eq!(report.summary.external_edge_count, 0);
+        assert_eq!(report.summary.failed_check_count, 0);
+        assert_eq!(report.summary.warning_check_count, 0);
+        assert_eq!(report.summary.not_measured_check_count, 0);
+        assert_eq!(report.summary.result, "pass");
+        assert!(
+            report
+                .checks
+                .iter()
+                .any(|check| { check.id == "metric-status-complete" && check.result == "pass" })
+        );
+        assert!(
+            report
+                .checks
+                .iter()
+                .any(|check| { check.id == "boundary-policy-status" && check.result == "pass" })
+        );
+        assert!(report.warnings.is_empty());
+    }
+
+    #[test]
+    fn validation_report_detects_duplicate_and_uncovered_local_target() {
+        let mut metric_status = BTreeMap::new();
+        insert_unmeasured_policy_status(&mut metric_status);
+        let document = Sig0Document {
+            schema_version: SCHEMA_VERSION.to_string(),
+            root: ".".to_string(),
+            component_kind: COMPONENT_KIND.to_string(),
+            components: vec![
+                Component {
+                    id: "Formal".to_string(),
+                    path: "Formal.lean".to_string(),
+                },
+                Component {
+                    id: "Formal".to_string(),
+                    path: "FormalDuplicate.lean".to_string(),
+                },
+            ],
+            edges: vec![Edge {
+                source: "Formal".to_string(),
+                target: "Formal.Arch.Missing".to_string(),
+                kind: "import".to_string(),
+                evidence: "import Formal.Arch.Missing".to_string(),
+            }],
+            policies: Policies {
+                boundary_allowed: Vec::new(),
+                abstraction_allowed: Vec::new(),
+                policy_id: None,
+                schema_version: None,
+                boundary_group_count: None,
+                abstraction_relation_count: None,
+            },
+            signature: Signature {
+                has_cycle: 0,
+                scc_max_size: 1,
+                max_depth: 1,
+                fanout_risk: 1,
+                boundary_violation_count: 0,
+                abstraction_violation_count: 0,
+            },
+            metric_status,
+            policy_violations: Vec::new(),
+            runtime_edge_evidence: Vec::new(),
+            runtime_dependency_graph: None,
+        };
+
+        let report =
+            validate_component_universe_report(&document, ".lake/sig0.json", DEFAULT_UNIVERSE_MODE)
+                .expect("report validates");
+
+        assert_eq!(report.summary.result, "fail");
+        assert_eq!(report.summary.failed_check_count, 3);
+        assert!(report.checks.iter().any(|check| {
+            check.id == "component-id-nodup" && check.result == "fail" && check.count == Some(1)
+        }));
+        assert!(report.checks.iter().any(|check| {
+            check.id == "edge-endpoint-resolved" && check.result == "fail" && check.count == Some(1)
+        }));
+        assert!(report.checks.iter().any(|check| {
+            check.id == "edge-closure-local" && check.result == "fail" && check.count == Some(1)
+        }));
+    }
+
+    #[test]
+    fn validation_report_warns_about_external_targets_in_local_only_mode() {
+        let mut document = extract_sig0(&fixture_root()).expect("fixture extracts");
+        document.edges.push(Edge {
+            source: "Formal".to_string(),
+            target: "Mathlib.Data.List.Basic".to_string(),
+            kind: "import".to_string(),
+            evidence: "import Mathlib.Data.List.Basic".to_string(),
+        });
+
+        let report =
+            validate_component_universe_report(&document, ".lake/sig0.json", DEFAULT_UNIVERSE_MODE)
+                .expect("report validates");
+
+        assert_eq!(report.summary.external_edge_count, 1);
+        assert!(report.checks.iter().any(|check| {
+            check.id == "external-edge-targets" && check.result == "warn" && check.count == Some(1)
+        }));
+        assert_eq!(
+            report.warnings,
+            vec!["local-only universe excludes external or synthetic import targets".to_string()]
+        );
+    }
+}

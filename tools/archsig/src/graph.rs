@@ -192,3 +192,44 @@ impl Graph {
         depth
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{Component, Edge};
+
+    use super::compute_signature;
+
+    #[test]
+    fn detects_cycle_fixture_metrics() {
+        let components = vec![
+            Component {
+                id: "A".to_string(),
+                path: "A.lean".to_string(),
+            },
+            Component {
+                id: "B".to_string(),
+                path: "B.lean".to_string(),
+            },
+        ];
+        let edges = vec![
+            Edge {
+                source: "A".to_string(),
+                target: "B".to_string(),
+                kind: "import".to_string(),
+                evidence: "import B".to_string(),
+            },
+            Edge {
+                source: "B".to_string(),
+                target: "A".to_string(),
+                kind: "import".to_string(),
+                evidence: "import A".to_string(),
+            },
+        ];
+
+        let signature = compute_signature(&components, &edges);
+
+        assert_eq!(signature.has_cycle, 1);
+        assert_eq!(signature.scc_max_size, 2);
+        assert_eq!(signature.fanout_risk, 2);
+    }
+}
