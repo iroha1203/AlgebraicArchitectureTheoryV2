@@ -6,7 +6,7 @@ Lean status: `empirical hypothesis` / tooling output.
 Lean の証明器ではなく、CI や AI agent が読むための architecture telemetry generator として扱う。
 
 現状の自動 scan は Lean module import graph に対応する。出力 schema は JSON で固定し、
-後段の `validate`, `snapshot`, `signature-diff`, `dataset` は JSON artifact を入力にして動く。
+後段の `validate`, `snapshot`, `signature-diff`, `air`, `dataset` は JSON artifact を入力にして動く。
 
 ## 何ができるか
 
@@ -18,6 +18,7 @@ Lean の証明器ではなく、CI や AI agent が読むための architecture 
 - revision ごとの snapshot を作り、before / after の signature diff を出す。
 - GitHub PR JSON から PR metadata を作り、dataset や diff attribution に使う。
 - relation complexity candidate JSON から workflow-level observation を作る。
+- Sig0 / validation / diff / PR metadata を AIR v0 に正規化する。
 
 ## 標準フロー
 
@@ -28,6 +29,7 @@ scan
   -> validate
   -> snapshot
   -> signature-diff
+  -> air
   -> AI agent / CI job が diff report を読む
 ```
 
@@ -44,6 +46,7 @@ AI / CI が最初に読むべき成果物は次である。
 | Validation report | `component-universe-validation-report-v0` | Sig0 output の duplicate、edge closure、policy status などの検査結果。 |
 | Snapshot | `signature-snapshot-store-v0` | repository revision ごとの保存用 signature record。 |
 | Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
+| AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
 | Dataset record | `empirical-signature-dataset-v0` | PR metadata と before / after signature を結合した実証研究用 record。 |
 
 通常の PR / CI 診断では、最終的に `signature-diff-report-v0` を読む。
@@ -266,6 +269,24 @@ diff report は次を持つ。
 
 `validationSummary.result = fail` または `not_run` の snapshot、extractor / rule set / policy が一致しない比較は
 `comparisonStatus.primaryDiffEligible = false` になる。
+
+## AIR を作る
+
+Sig0 output、validation report、diff report、PR metadata を AIR v0 に正規化する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- air \
+  --sig0 .lake/signature-current/sig0.json \
+  --validation .lake/signature-current/validation.json \
+  --diff .lake/signature-current/diff-report.json \
+  --pr-metadata .lake/pr-metadata-123.json \
+  --law-policy signature-policy.json \
+  --out .lake/signature-current/air.json
+```
+
+AIR では `static_edges` / `runtime_edges` を出さず、`relations` を canonical representation として使う。
+各 signature axis は `measurementBoundary` に `measuredZero`, `measuredNonzero`, `unmeasured` を持つため、
+測定済み 0 と未測定の placeholder 0 を分けて読める。
 
 ## PR Metadata / Dataset を作る
 

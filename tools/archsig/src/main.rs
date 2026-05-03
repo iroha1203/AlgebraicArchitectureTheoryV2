@@ -5,9 +5,10 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    ComponentUniverseValidationReport, DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput,
-    RepositoryRevisionRef, ScanMetadata, Sig0Document, SignatureSnapshotStoreRecordV0,
-    SnapshotRecordInput, SnapshotRepositoryRef, build_empirical_dataset,
+    AirDocumentInput, ComponentUniverseValidationReport, DEFAULT_UNIVERSE_MODE,
+    EmpiricalDatasetInput, RepositoryRevisionRef, ScanMetadata, Sig0Document,
+    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
+    SnapshotRepositoryRef, build_air_document, build_empirical_dataset,
     build_pr_metadata_from_github_files, build_signature_diff_report,
     build_signature_snapshot_record, extract_relation_complexity_observation_from_file,
     extract_sig0_with_runtime, validate_component_universe_report,
@@ -229,6 +230,33 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Build an AIR v0 document from Signature artifacts.
+    Air {
+        /// Input ArchSig Sig0 JSON path.
+        #[arg(long)]
+        sig0: PathBuf,
+
+        /// Optional ComponentUniverse validation report JSON path.
+        #[arg(long)]
+        validation: Option<PathBuf>,
+
+        /// Optional Signature diff report JSON path.
+        #[arg(long)]
+        diff: Option<PathBuf>,
+
+        /// Optional PR metadata JSON path.
+        #[arg(long = "pr-metadata")]
+        pr_metadata: Option<PathBuf>,
+
+        /// Optional law / policy JSON path recorded as AIR policy artifact.
+        #[arg(long = "law-policy")]
+        law_policy: Option<PathBuf>,
+
+        /// Output AIR JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -397,6 +425,37 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &pr_metadata,
             );
             write_json(out, &report)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::Air {
+            sig0,
+            validation,
+            diff,
+            pr_metadata,
+            law_policy,
+            out,
+        }) => {
+            let document: Sig0Document = read_json(&sig0)?;
+            let validation_report: Option<ComponentUniverseValidationReport> =
+                validation.as_ref().map(read_json).transpose()?;
+            let diff_report: Option<SignatureDiffReportV0> =
+                diff.as_ref().map(read_json).transpose()?;
+            let pr_metadata_document: Option<EmpiricalDatasetInput> =
+                pr_metadata.as_ref().map(read_json).transpose()?;
+            let air = build_air_document(
+                &document,
+                validation_report.as_ref(),
+                diff_report.as_ref(),
+                pr_metadata_document.as_ref(),
+                AirDocumentInput {
+                    sig0_path: sig0.display().to_string(),
+                    validation_path: validation.map(|path| path.display().to_string()),
+                    diff_path: diff.map(|path| path.display().to_string()),
+                    pr_metadata_path: pr_metadata.map(|path| path.display().to_string()),
+                    law_policy_path: law_policy.map(|path| path.display().to_string()),
+                },
+            );
+            write_json(out, &air)?;
             Ok(ExitCode::SUCCESS)
         }
         None => {
