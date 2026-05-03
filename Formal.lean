@@ -50,3 +50,4 @@ import Formal.Arch.Repair.RepairTransferCounterexample
 import Formal.Arch.Evolution.Chapter7TheoremPackages
 import Formal.Arch.Evolution.Chapter9DiagramFilling
 import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
+import Formal.Arch.Evolution.Chapter11AnalyticRepresentation

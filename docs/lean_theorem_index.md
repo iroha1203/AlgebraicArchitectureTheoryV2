@@ -1417,6 +1417,46 @@ global obstruction completeness、universe-wide obstruction coverage、
 runtime / semantic universe completeness、実コード extractor completeness、
 global complexity conservation、empirical cost 改善は結論しない。
 
+## Chapter 11 Analytic Representation Entrypoint
+
+File: `Formal/Arch/Evolution/Chapter11AnalyticRepresentation.lean`
+
+Issue [#482](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/482)
+は、第11章 Analytic Representation / Canonical Example を docs-facing な
+公開入口として整理する作業である。
+
+`Chapter11AnalyticRepresentation.Candidate` は docs-facing な候補名、
+設計書の節番号、代表 Lean declaration 名、schematic name correspondence、
+non-conclusion boundary を束ねる軽量 API である。この module は既存 API を
+横断 import / metadata として索引するだけであり、global flatness、
+universe-wide witness completeness、実証的な cost 改善、実コード extractor
+completeness を新たに主張しない。
+
+| 設計書 | 候補 | 代表 Lean entrypoint | Status | Bounded reading / non-conclusion boundary |
+| --- | --- | --- | --- | --- |
+| 11 | Analytic Representation | `AnalyticRepresentation`, `AnalyticRepresentation.ZeroPreserving`, `AnalyticRepresentation.ZeroReflecting`, `AnalyticRepresentation.ObstructionPreserving`, `AnalyticRepresentation.ObstructionReflecting`, `AnalyticRepresentation.RecordsNonConclusions`, `AnalyticRepresentation.analyticZero_of_structuralZero`, `AnalyticRepresentation.structuralZero_of_analyticZero`, `AnalyticRepresentation.analyticObstruction_of_structuralObstruction`, `AnalyticRepresentation.structuralObstruction_of_analyticObstruction` | `defined only` / `proved` | preserving direction と reflecting direction を分離する。reflecting direction は coverage / witness completeness / semantic contract coverage に相対化され、analytic value だけから flatness は結論しない。 |
+| 11 | Obstruction Valuation | `ObstructionValuation`, `ObstructionValuation.NoSelectedObstruction`, `ObstructionValuation.ZeroReflectingSum`, `ObstructionValuation.no_obstruction_of_value_zero`, `ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum`, `ObstructionValuation.RecordsNonConclusions` | `defined only` / `proved` | selected witness valuation に限る。zero valuation は selected witness absence を与えるが、global `ArchitectureFlat` は結論しない。 |
+| 11 / coupon static axis | Coupon static hidden dependency example | `CouponStaticDependencyExample.goodStaticSplitFeatureExtension`, `CouponStaticDependencyExample.hiddenDependencyWitness`, `CouponStaticDependencyExample.hiddenDependencyWitnessExists`, `CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension`, `CouponStaticDependencyExample.repairedStaticSplitFeatureExtension`, `CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension` | `defined only` / `proved` | coupon の selected static hidden dependency witness と repaired static split package。runtime flatness、semantic flatness、extractor completeness は主張しない。 |
+| 11 / coupon semantic axis | Coupon semantic rounding-order valuation | `CouponDiscountExample.couponDiscountDiagram`, `CouponDiscountExample.roundingOrderResidual`, `CouponDiscountExample.roundingOrderValuation`, `CouponDiscountExample.couponDiscount_roundingOrderResidual_positive`, `CouponDiscountExample.roundingOrderValuation_obstruction`, `CouponDiscountExample.roundingOrderValuation_positive`, `CouponDiscountExample.roundingOrderValuation_recordsNonConclusions` | `defined only` / `proved` | selected coupon / discount rounding-order residual が正であることを示す。未測定 semantic axis の zero 性や global semantic completeness は主張しない。 |
+| 11 / canonical counterexample | Static-flat semantic-obstruction example | `StaticSemanticCounterexample.canonical_staticFlatWithin`, `StaticSemanticCounterexample.canonical_not_semanticFlatWithin`, `StaticSemanticCounterexample.canonical_not_architectureFlat`, `StaticSemanticCounterexample.staticFlat_with_semanticObstruction`, `StaticSemanticCounterexample.staticFlat_not_architectureFlat` | `proved` | repaired static skeleton が selected-static-flat でも、selected semantic diagram obstruction が残る例。実証頻度や extractor completeness は主張しない。 |
+| 11 / tooling boundary | Measurement boundary for unmeasured axes | `MeasurementBoundary`, `MeasurementBoundary.measuredZero`, `MeasurementBoundary.measuredNonzero`, `MeasurementBoundary.unmeasured`, `MeasurementBoundary.outOfScope`, `MeasurementBoundary.unmeasured_not_measuredZero`, `ArchitectureClaim.unmeasured_not_measuredZero`, `ArchitectureSignature.v1Schema_unitNoEdge_unmeasured` | `defined only` / `proved` | tooling report の `measuredZero`, `measuredNonzero`, `unmeasured`, `outOfScope` と Lean 側の `none` / coverage assumptions の境界を区別する。unmeasured は measured zero ではない。 |
+
+### Chapter 11 schematic name correspondence
+
+| 設計書の schematic name | 対応する Lean API | 読み替え |
+| --- | --- | --- |
+| `AnalyticRepresentation State Analytic Witness` | `AnalyticRepresentation`, `AnalyticRepresentation.ZeroPreserving`, `AnalyticRepresentation.ZeroReflecting`, `AnalyticRepresentation.ObstructionPreserving`, `AnalyticRepresentation.ObstructionReflecting` | representation map の preserving direction と reflecting direction を、明示的な coverage / completeness assumptions に相対化して読む。 |
+| coverage / witness completeness / semantic contract coverage | `AnalyticRepresentation.coverageAssumptions`, `AnalyticRepresentation.witnessCompleteness`, `AnalyticRepresentation.semanticContractCoverage`, `AnalyticRepresentation.RecordsNonConclusions` | analytic zero / obstruction を structural fact へ戻す前提。tooling output 単独では discharge されない。 |
+| `ObstructionValuation State Witness` | `ObstructionValuation`, `ObstructionValuation.ZeroReflectingSum`, `ObstructionValuation.no_obstruction_of_value_zero`, `ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum` | selected witness valuation の zero は selected witness absence に限って読む。 |
+| coupon `static_hidden_interaction = some 1` | `CouponStaticDependencyExample.hiddenDependencyWitness`, `CouponStaticDependencyExample.hiddenDependencyWitnessExists`, `CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension` | bad coupon extension の selected static hidden dependency witness として読む。 |
+| coupon `semantic_curvature = measured nonzero delta` | `CouponDiscountExample.roundingOrderResidual`, `CouponDiscountExample.roundingOrderValuation`, `CouponDiscountExample.couponDiscount_roundingOrderResidual_positive`, `CouponDiscountExample.roundingOrderValuation_positive` | coupon / discount ordering diagram の selected semantic residual が positive であることとして読む。 |
+| `measuredZero` / `measuredNonzero` / `unmeasured` / `outOfScope` | `MeasurementBoundary`, `MeasurementBoundary.unmeasured_not_measuredZero`, `ArchitectureClaim.unmeasured_not_measuredZero`, `ArchitectureSignature.v1Schema_unitNoEdge_unmeasured` | report axis の未測定状態は measured zero ではなく、Lean theorem precondition を満たす証拠にもならない。 |
+
+Non-conclusions: この統合入口は、第11章の representation schema、coupon static /
+semantic examples、measurement boundary を索引するだけである。analytic value
+単独からの flatness、global witness completeness、runtime / semantic universe
+completeness、実証的な cost 改善、実コード extractor completeness は結論しない。
+
 ## Architecture Path
 
 File: `Formal/Arch/Evolution/ArchitecturePath.lean`
