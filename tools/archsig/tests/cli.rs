@@ -356,6 +356,122 @@ fn cli_feature_report_surfaces_runtime_exposure_boundaries() {
 }
 
 #[test]
+fn cli_runtime_canonical_fixtures_lock_measurement_boundaries() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("runtime-canonical-fixtures");
+
+    let measured_zero_report = out_dir.join("runtime-measured-zero.report.json");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("runtime_measured_zero.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        measured_zero_report.to_str().expect("report path is utf-8"),
+    ]);
+    let measured_zero = read_json(&measured_zero_report);
+    assert_eq!(measured_zero["runtimeSummary"]["runtimePropagation"], 0);
+    assert_eq!(
+        measured_zero["runtimeSummary"]["measurementBoundary"],
+        "measuredZero"
+    );
+    assert_eq!(
+        measured_zero["runtimeSummary"]["projectionRule"],
+        "runtime-edge-projection-v0"
+    );
+    assert!(
+        measured_zero["theoremPreconditionChecks"]
+            .as_array()
+            .expect("theorem checks is array")
+            .iter()
+            .any(|check| check["claimId"] == "claim-runtime-exposure-radius"
+                && check["resolvedClaimClassification"] == "MEASURED_WITNESS")
+    );
+
+    let measured_nonzero_report = out_dir.join("runtime-measured-nonzero.report.json");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("runtime_measured_nonzero.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        measured_nonzero_report
+            .to_str()
+            .expect("report path is utf-8"),
+    ]);
+    let measured_nonzero = read_json(&measured_nonzero_report);
+    assert_eq!(measured_nonzero["runtimeSummary"]["runtimePropagation"], 2);
+    assert_eq!(
+        measured_nonzero["runtimeSummary"]["measurementBoundary"],
+        "measuredNonzero"
+    );
+    assert_eq!(measured_nonzero["runtimeSummary"]["relationCount"], 1);
+    assert_eq!(
+        measured_nonzero["reviewSummary"]["requiredAction"],
+        "review measured runtime exposure radius separately from static split evidence"
+    );
+
+    let unmeasured_report = out_dir.join("runtime-unmeasured.report.json");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("runtime_unmeasured.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        unmeasured_report.to_str().expect("report path is utf-8"),
+    ]);
+    let unmeasured = read_json(&unmeasured_report);
+    assert_eq!(
+        unmeasured["runtimeSummary"]["runtimePropagation"],
+        Value::Null
+    );
+    assert_eq!(
+        unmeasured["runtimeSummary"]["measurementBoundary"],
+        "unmeasured"
+    );
+    assert!(
+        unmeasured["runtimeSummary"]["coverageGaps"]
+            .as_array()
+            .expect("runtime coverage gaps are an array")
+            .iter()
+            .any(|gap| gap == "runtime axis unmeasured: runtimePropagation")
+    );
+
+    let blocked_report = out_dir.join("runtime-zero-bridge-blocked.check.json");
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        root.join("runtime_zero_bridge_blocked.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        blocked_report.to_str().expect("report path is utf-8"),
+    ]);
+    let blocked = read_json(&blocked_report);
+    assert!(
+        blocked["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-runtime-zero-bridge-blocked"
+                    && check["resolvedClaimClassification"] == "BLOCKED_FORMAL_CLAIM"
+                    && check["missingPreconditions"]
+                        .as_array()
+                        .expect("missing preconditions is array")
+                        .iter()
+                        .any(|precondition| precondition
+                            == "runtime projection exactness assumptions are not recorded")
+            )
+    );
+    assert_eq!(blocked["summary"]["formalProvedClaimCount"], 0);
+    assert_eq!(blocked["summary"]["blockedClaimCount"], 1);
+}
+
+#[test]
 fn cli_feature_report_surfaces_static_obstruction_witnesses() {
     let root = air_fixture_root();
     let out_dir = temp_dir("feature-report-obstructions");
@@ -615,6 +731,10 @@ fn cli_validate_air_accepts_canonical_fixtures() {
         "good_extension.json",
         "hidden_interaction.json",
         "policy_violation.json",
+        "runtime_measured_zero.json",
+        "runtime_measured_nonzero.json",
+        "runtime_unmeasured.json",
+        "runtime_zero_bridge_blocked.json",
         "unmeasured_runtime_semantic.json",
     ] {
         let report = out_dir.join(format!("{fixture}.report.json"));
