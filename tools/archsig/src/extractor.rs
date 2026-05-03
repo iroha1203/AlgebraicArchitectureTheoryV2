@@ -307,3 +307,209 @@ fn dedup_edges(import_edges: Vec<ImportEdge>) -> Vec<Edge> {
         })
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::dataset::build_empirical_dataset;
+    use crate::test_support::{dataset_input, fixture_root};
+    use crate::{
+        COMPONENT_KIND, RUNTIME_PROJECTION_RULE_VERSION, SCHEMA_VERSION, extractor::ParsedImport,
+    };
+
+    use super::{extract_sig0, extract_sig0_with_policy, extract_sig0_with_runtime, parse_imports};
+
+    #[test]
+    fn parses_leading_imports_only() {
+        let source = r#"
+-- comment
+import Formal.Arch.Graph
+import Formal.Arch.Signature -- inline comment
+
+def x := 1
+import Should.Not.Appear
+"#;
+
+        let imports = parse_imports(source);
+
+        assert_eq!(
+            imports,
+            vec![
+                ParsedImport {
+                    module: "Formal.Arch.Graph".to_string(),
+                    evidence: "import Formal.Arch.Graph".to_string(),
+                },
+                ParsedImport {
+                    module: "Formal.Arch.Signature".to_string(),
+                    evidence: "import Formal.Arch.Signature".to_string(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn extracts_minimal_fixture() {
+        let root = fixture_root();
+        let document = extract_sig0(&root).expect("fixture extracts");
+
+        assert_eq!(document.schema_version, SCHEMA_VERSION);
+        assert_eq!(document.component_kind, COMPONENT_KIND);
+        assert!(document.components.iter().any(|c| c.id == "Formal"));
+        assert!(document.components.iter().any(|c| c.id == "Formal.Arch.B"));
+        assert!(!document.components.iter().any(|c| c.id == "lakefile"));
+        assert!(document.edges.iter().any(|edge| {
+            edge.source == "Formal.Arch.B"
+                && edge.target == "Formal.Arch.A"
+                && edge.kind == "import"
+                && edge.evidence == "import Formal.Arch.A"
+        }));
+        assert_eq!(document.signature.has_cycle, 0);
+        assert_eq!(document.signature.scc_max_size, 1);
+        assert_eq!(document.signature.fanout_risk, 3);
+        assert_eq!(document.signature.boundary_violation_count, 0);
+        assert_eq!(document.signature.abstraction_violation_count, 0);
+        assert!(
+            document
+                .metric_status
+                .get("hasCycle")
+                .expect("hasCycle status")
+                .measured
+        );
+        assert!(
+            !document
+                .metric_status
+                .get("boundaryViolationCount")
+                .expect("boundary status")
+                .measured
+        );
+        assert_eq!(
+            document
+                .metric_status
+                .get("boundaryViolationCount")
+                .expect("boundary status")
+                .reason
+                .as_deref(),
+            Some("policy file not provided")
+        );
+        assert!(document.policy_violations.is_empty());
+        assert!(document.runtime_edge_evidence.is_empty());
+        assert!(document.runtime_dependency_graph.is_none());
+    }
+
+    #[test]
+    fn applies_policy_with_measured_zero_counts() {
+        let root = fixture_root();
+        let policy = root.join("policy_measured_zero.json");
+        let document = extract_sig0_with_policy(&root, Some(&policy)).expect("fixture extracts");
+
+        assert_eq!(
+            document.policies.policy_id.as_deref(),
+            Some("minimal-measured-zero")
+        );
+        assert_eq!(document.policies.boundary_group_count, Some(2));
+        assert_eq!(document.policies.abstraction_relation_count, Some(1));
+        assert_eq!(document.signature.boundary_violation_count, 0);
+        assert_eq!(document.signature.abstraction_violation_count, 0);
+        assert!(
+            document
+                .metric_status
+                .get("boundaryViolationCount")
+                .expect("boundary status")
+                .measured
+        );
+        assert_eq!(
+            document
+                .metric_status
+                .get("boundaryViolationCount")
+                .expect("boundary status")
+                .source
+                .as_deref(),
+            Some("policy:minimal-measured-zero")
+        );
+        assert!(document.policy_violations.is_empty());
+    }
+
+    #[test]
+    fn counts_policy_violations_by_unique_dependency_edge() {
+        let root = fixture_root();
+        let policy = root.join("policy_violations.json");
+        let document = extract_sig0_with_policy(&root, Some(&policy)).expect("fixture extracts");
+
+        assert_eq!(document.signature.boundary_violation_count, 2);
+        assert_eq!(document.signature.abstraction_violation_count, 1);
+        assert!(
+            document
+                .policy_violations
+                .iter()
+                .any(|violation| violation.axis == "boundaryViolationCount"
+                    && violation.source == "Formal"
+                    && violation.target == "Formal.Arch.A")
+        );
+        assert!(document.policy_violations.iter().any(|violation| {
+            violation.axis == "abstractionViolationCount"
+                && violation.source == "Formal"
+                && violation.target == "Formal.Arch.B"
+                && violation
+                    .relation_ids
+                    .as_ref()
+                    .is_some_and(|relations| relations == &vec!["formal-api".to_string()])
+        }));
+    }
+
+    #[test]
+    fn projects_runtime_edge_evidence_to_runtime_dependency_graph() {
+        let root = fixture_root();
+        let runtime_edges = root.join("runtime_edges.json");
+        let document =
+            extract_sig0_with_runtime(&root, None, Some(&runtime_edges)).expect("fixture extracts");
+
+        assert_eq!(document.runtime_edge_evidence.len(), 2);
+        assert!(document.runtime_edge_evidence.iter().any(|edge| {
+            edge.source == "Formal"
+                && edge.target == "Formal.Arch.A"
+                && edge.label == "rpc"
+                && edge.failure_mode.as_deref() == Some("timeout")
+                && edge.timeout_budget.as_deref() == Some("250ms")
+                && edge.retry_policy.as_deref() == Some("bounded-retry")
+                && edge.circuit_breaker_coverage.as_deref() == Some("covered")
+                && edge.confidence.as_deref() == Some("fixture")
+                && edge.evidence_location.path == "runtime/routes.json"
+        }));
+
+        let projection = document
+            .runtime_dependency_graph
+            .as_ref()
+            .expect("runtime projection");
+        assert_eq!(projection.projection_rule, RUNTIME_PROJECTION_RULE_VERSION);
+        assert_eq!(projection.edge_kind, "runtime");
+        assert_eq!(projection.edges.len(), 2);
+        assert!(projection.edges.iter().any(|edge| {
+            edge.source == "Formal"
+                && edge.target == "Formal.Arch.A"
+                && edge.kind == "runtime"
+                && edge.evidence == "runtime edge evidence count: 1"
+        }));
+        assert!(
+            document
+                .metric_status
+                .get("runtimePropagation")
+                .expect("runtime status")
+                .measured
+        );
+
+        let dataset = build_empirical_dataset(&document, &document, dataset_input(), "head")
+            .expect("dataset builds");
+        assert_eq!(
+            dataset.signature_after.signature.runtime_propagation,
+            Some(2)
+        );
+        assert_eq!(dataset.delta_signature_signed.runtime_propagation, Some(0));
+        assert!(
+            dataset
+                .signature_after
+                .metric_status
+                .get("runtimePropagation")
+                .expect("runtime dataset status")
+                .measured
+        );
+    }
+}

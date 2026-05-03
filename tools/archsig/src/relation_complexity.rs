@@ -241,3 +241,84 @@ fn excluded_relation_complexity_evidence(
         line: evidence.line,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::fixture_root;
+    use crate::{
+        RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION, RELATION_COMPLEXITY_RULE_SET_VERSION,
+    };
+
+    use super::extract_relation_complexity_observation_from_file;
+
+    #[test]
+    fn builds_relation_complexity_observation_from_candidate_fixture() {
+        let root = fixture_root();
+        let observation = extract_relation_complexity_observation_from_file(
+            &root.join("relation_complexity_candidates.json"),
+        )
+        .expect("relation complexity fixture extracts");
+
+        assert_eq!(
+            observation.schema_version,
+            RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION
+        );
+        assert_eq!(
+            observation.measurement_universe.rule_set_version.as_deref(),
+            Some(RELATION_COMPLEXITY_RULE_SET_VERSION)
+        );
+        assert_eq!(observation.workflow.id, "checkout-payment");
+        assert_eq!(observation.counts.constraints, 1);
+        assert_eq!(observation.counts.compensations, 1);
+        assert_eq!(observation.counts.projections, 0);
+        assert_eq!(observation.counts.failure_transitions, 1);
+        assert_eq!(observation.counts.idempotency_requirements, 0);
+        assert_eq!(observation.relation_complexity, 3);
+        assert_eq!(observation.evidence.len(), 2);
+        assert!(observation.evidence.iter().any(|evidence| {
+            evidence.id == "constraint-1"
+                && evidence.path == "src/billing/checkout.rs"
+                && evidence.symbol.as_deref() == Some("CheckoutWorkflow::validate")
+                && evidence.line == Some(42)
+                && evidence.tags == vec!["constraints".to_string()]
+                && evidence.ownership == "application-owned"
+                && evidence.review_status == "candidate"
+        }));
+        assert!(observation.evidence.iter().any(|evidence| {
+            evidence.id == "compensate-timeout"
+                && evidence.tags
+                    == vec![
+                        "compensations".to_string(),
+                        "failureTransitions".to_string(),
+                    ]
+                && evidence.ownership == "application-configured"
+        }));
+        assert!(observation.excluded_evidence.iter().any(|evidence| {
+            evidence.path == "src/framework/generated.rs"
+                && evidence.reason == "ownership-not-counted:framework-generated"
+        }));
+        assert!(observation.excluded_evidence.iter().any(|evidence| {
+            evidence.path == "src/billing/checkout.rs"
+                && evidence.reason == "unsupported-tags:notATag"
+        }));
+        assert!(observation.excluded_evidence.iter().any(|evidence| {
+            evidence.path == "src/billing/checkout_test.rs" && evidence.reason == "test-fixture"
+        }));
+    }
+
+    #[test]
+    fn relation_complexity_fixture_excludes_unsupported_framework() {
+        let root = fixture_root();
+        let observation = extract_relation_complexity_observation_from_file(
+            &root.join("relation_complexity_unsupported_framework.json"),
+        )
+        .expect("relation complexity fixture extracts");
+
+        assert_eq!(observation.relation_complexity, 0);
+        assert!(observation.evidence.is_empty());
+        assert!(observation.excluded_evidence.iter().any(|evidence| {
+            evidence.path == "src/billing/unsupported.rs"
+                && evidence.reason == "unsupported-framework:unsupported-framework"
+        }));
+    }
+}

@@ -468,5 +468,9 @@ cargo test --manifest-path tools/archsig/Cargo.toml
 ```
 
 CI では GitHub Actions の `archsig cargo test` job が同じコマンドを実行する。
-fixtures と CLI test で policy, runtime edge projection, relation complexity, dataset conversion,
-snapshot diff を検証する。
+unit tests は実装 module の近くに置き、parse / graph / extraction / validation / dataset /
+theorem precondition / relation complexity の局所的な不変条件を検証する。
+`tests/fixtures/minimal` と `tests/fixtures/air` は representative fixture として、Sig0、
+policy violation、runtime dependency graph、dataset、snapshot diff、AIR、feature report、
+theorem precondition、relation complexity の回帰確認に使う。
+`tests/cli.rs` は CLI と JSON schemaVersion / contract の integration test として維持する。

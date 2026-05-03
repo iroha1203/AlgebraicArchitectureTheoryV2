@@ -254,3 +254,116 @@ fn theorem_package_applies_to_claim(package: &TheoremPackageMetadataV0, claim: &
 
     theorem_ref_matches || subject_matches
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::test_support::air_fixture_document;
+    use crate::{AirClaim, THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION};
+
+    use super::build_theorem_precondition_check_report;
+
+    #[test]
+    fn theorem_check_keeps_measured_witness_out_of_formal_proved_claims() {
+        let document = air_fixture_document("good_extension.json");
+        let report = build_theorem_precondition_check_report(&document, "good_extension.json");
+
+        assert_eq!(
+            report.schema_version,
+            THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION
+        );
+        assert_eq!(report.registry.scope, "static theorem package v0");
+        assert!(report.registry.packages.iter().any(|package| {
+            package.theorem_refs
+                == vec![
+                    "SelectedStaticSplitExtension".to_string(),
+                    "CoreEdgesPreserved".to_string(),
+                    "DeclaredInterfaceFactorization".to_string(),
+                    "NoNewForbiddenStaticEdge".to_string(),
+                    "EmbeddingPolicyPreserved".to_string(),
+                ]
+        }));
+
+        let boundary_check = report
+            .checks
+            .iter()
+            .find(|check| check.claim_id == "claim-boundary-zero")
+            .expect("boundary claim is checked");
+        assert_eq!(
+            boundary_check.resolved_claim_classification,
+            "MEASURED_WITNESS"
+        );
+        assert_eq!(report.summary.formal_proved_claim_count, 0);
+        assert!(report.summary.measured_witness_count > 0);
+    }
+
+    #[test]
+    fn theorem_check_blocks_formal_claims_with_missing_preconditions() {
+        let mut document = air_fixture_document("good_extension.json");
+        document.claims.push(AirClaim {
+            claim_id: "claim-static-split-blocked".to_string(),
+            subject_ref: "extension.split".to_string(),
+            predicate: "selected static split theorem package applies".to_string(),
+            claim_level: "formal".to_string(),
+            claim_classification: "proved".to_string(),
+            measurement_boundary: "measuredZero".to_string(),
+            theorem_refs: vec!["SelectedStaticSplitExtension".to_string()],
+            evidence_refs: Vec::new(),
+            required_assumptions: vec!["core edges are preserved".to_string()],
+            coverage_assumptions: vec!["static graph coverage".to_string()],
+            exactness_assumptions: vec!["AIR ids match Lean parameters".to_string()],
+            missing_preconditions: vec![
+                "declared interface factorization not discharged".to_string(),
+            ],
+            non_conclusions: vec!["runtime flatness is not concluded".to_string()],
+        });
+
+        let report = build_theorem_precondition_check_report(&document, "good_extension.json");
+        let check = report
+            .checks
+            .iter()
+            .find(|check| check.claim_id == "claim-static-split-blocked")
+            .expect("formal split claim is checked");
+
+        assert_eq!(check.resolved_claim_classification, "BLOCKED_FORMAL_CLAIM");
+        assert_eq!(check.result, "warn");
+        assert_eq!(report.summary.blocked_claim_count, 1);
+        assert_eq!(report.summary.formal_proved_claim_count, 0);
+    }
+
+    #[test]
+    fn theorem_check_accepts_registered_formal_claim_without_missing_preconditions() {
+        let mut document = air_fixture_document("good_extension.json");
+        document.claims.push(AirClaim {
+            claim_id: "claim-static-split-proved".to_string(),
+            subject_ref: "extension.split".to_string(),
+            predicate: "selected static split theorem package applies".to_string(),
+            claim_level: "formal".to_string(),
+            claim_classification: "proved".to_string(),
+            measurement_boundary: "measuredZero".to_string(),
+            theorem_refs: vec![
+                "SelectedStaticSplitExtension".to_string(),
+                "CoreEdgesPreserved".to_string(),
+                "DeclaredInterfaceFactorization".to_string(),
+                "NoNewForbiddenStaticEdge".to_string(),
+                "EmbeddingPolicyPreserved".to_string(),
+            ],
+            evidence_refs: Vec::new(),
+            required_assumptions: vec!["core edges are preserved".to_string()],
+            coverage_assumptions: vec!["static graph coverage".to_string()],
+            exactness_assumptions: vec!["AIR ids match Lean parameters".to_string()],
+            missing_preconditions: Vec::new(),
+            non_conclusions: vec!["runtime flatness is not concluded".to_string()],
+        });
+
+        let report = build_theorem_precondition_check_report(&document, "good_extension.json");
+        let check = report
+            .checks
+            .iter()
+            .find(|check| check.claim_id == "claim-static-split-proved")
+            .expect("formal split claim is checked");
+
+        assert_eq!(check.resolved_claim_classification, "FORMAL_PROVED");
+        assert_eq!(check.result, "pass");
+        assert_eq!(report.summary.formal_proved_claim_count, 1);
+    }
+}
