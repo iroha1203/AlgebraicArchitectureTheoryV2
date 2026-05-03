@@ -31,6 +31,199 @@ structure SchematicCorrespondence where
   status : String
   deriving Repr
 
+/--
+Chapter 11 wrapper for reading one optional analytic axis value through the
+tooling report measurement boundary.
+
+The `value` field keeps the Lean-side `Option Nat` metric. The
+`measurementBoundary` field keeps the report-side classification. The coverage
+fields are explicit because a measured zero value alone is not a zero-reflecting
+architecture theorem.
+-/
+structure AnalyticAxisBoundary where
+  value : Option Nat
+  measurementBoundary : MeasurementBoundary
+  coverageAssumptions : Prop
+  witnessCompleteness : Prop
+  semanticContractCoverage : Prop
+  nonConclusions : Prop
+
+namespace AnalyticAxisBoundary
+
+/-- `some (n + 1)` records a measured nonzero selected axis value. -/
+def MeasuredNonzeroValue (value : Option Nat) : Prop :=
+  ∃ n, value = some (n + 1)
+
+/-- `none` records an unmeasured axis, not a zero measurement. -/
+def UnmeasuredValue (value : Option Nat) : Prop :=
+  value = none
+
+/-- Canonical report boundary for a Lean-side optional natural metric. -/
+def boundaryOfOption : Option Nat -> MeasurementBoundary
+  | none => MeasurementBoundary.unmeasured
+  | some 0 => MeasurementBoundary.measuredZero
+  | some (_n + 1) => MeasurementBoundary.measuredNonzero
+
+/-- Build a Chapter 11 axis boundary wrapper from an optional metric. -/
+def ofOption (value : Option Nat)
+    (coverageAssumptions witnessCompleteness semanticContractCoverage
+      nonConclusions : Prop) :
+    AnalyticAxisBoundary where
+  value := value
+  measurementBoundary := boundaryOfOption value
+  coverageAssumptions := coverageAssumptions
+  witnessCompleteness := witnessCompleteness
+  semanticContractCoverage := semanticContractCoverage
+  nonConclusions := nonConclusions
+
+/-- Read a concrete Signature v1 axis as a Chapter 11 analytic axis boundary. -/
+def ofSignatureAxis
+    (sig : ArchitectureSignature.ArchitectureSignatureV1)
+    (axis : ArchitectureSignature.ArchitectureSignatureV1Axis)
+    (coverageAssumptions witnessCompleteness semanticContractCoverage
+      nonConclusions : Prop) :
+    AnalyticAxisBoundary :=
+  ofOption (ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis)
+    coverageAssumptions witnessCompleteness semanticContractCoverage
+    nonConclusions
+
+/-- The wrapper records an explicit measured-zero report boundary. -/
+def IsMeasuredZero (axis : AnalyticAxisBoundary) : Prop :=
+  axis.measurementBoundary = MeasurementBoundary.measuredZero ∧
+    AvailableAndZero axis.value
+
+/-- The wrapper records an explicit measured-nonzero report boundary. -/
+def IsMeasuredNonzero (axis : AnalyticAxisBoundary) : Prop :=
+  axis.measurementBoundary = MeasurementBoundary.measuredNonzero ∧
+    MeasuredNonzeroValue axis.value
+
+/-- The wrapper records an unmeasured report boundary. -/
+def IsUnmeasured (axis : AnalyticAxisBoundary) : Prop :=
+  axis.measurementBoundary = MeasurementBoundary.unmeasured ∧
+    UnmeasuredValue axis.value
+
+/-- A selected analytic obstruction is supported by a measured nonzero axis. -/
+def SupportsSelectedAnalyticObstruction
+    (axis : AnalyticAxisBoundary) : Prop :=
+  MeasuredNonzeroValue axis.value
+
+/--
+Preconditions needed before a zero-valued analytic axis can be used as a
+zero-reflecting theorem claim.
+-/
+def CanDischargeZeroReflectingClaim
+    (axis : AnalyticAxisBoundary) : Prop :=
+  AvailableAndZero axis.value ∧
+    axis.coverageAssumptions ∧
+    axis.witnessCompleteness ∧
+    axis.semanticContractCoverage
+
+theorem boundaryOfOption_none :
+    boundaryOfOption none = MeasurementBoundary.unmeasured := by
+  rfl
+
+theorem boundaryOfOption_some_zero :
+    boundaryOfOption (some 0) = MeasurementBoundary.measuredZero := by
+  rfl
+
+theorem boundaryOfOption_some_succ (n : Nat) :
+    boundaryOfOption (some (n + 1)) =
+      MeasurementBoundary.measuredNonzero := by
+  rfl
+
+/-- `some 0` and `none` are distinct report inputs. -/
+theorem some_zero_ne_unmeasured : (some 0 : Option Nat) ≠ none := by
+  intro h
+  cases h
+
+/-- `none` and `some 0` are distinct report inputs. -/
+theorem unmeasured_ne_some_zero : none ≠ (some 0 : Option Nat) := by
+  intro h
+  cases h
+
+/--
+An unmeasured optional value is not available-and-zero. This is the Chapter 11
+wrapper around the stronger `AvailableAndZero` boundary.
+-/
+theorem unmeasured_not_availableAndZero {value : Option Nat}
+    (hUnmeasured : UnmeasuredValue value) :
+    ¬ AvailableAndZero value := by
+  rw [hUnmeasured]
+  exact not_availableAndZero_none
+
+/-- A measured nonzero value is not weakly measured-zero. -/
+theorem measuredNonzero_not_measuredZero {value : Option Nat}
+    (hNonzero : MeasuredNonzeroValue value) :
+    ¬ MeasuredZero value := by
+  rcases hNonzero with ⟨n, hValue⟩
+  intro hZero
+  rw [hValue] at hZero
+  have hSuccZero : n + 1 = 0 := hZero (n + 1) rfl
+  cases hSuccZero
+
+/-- A measured nonzero report axis supports the selected obstruction reading. -/
+theorem supportsSelectedAnalyticObstruction_of_measuredNonzero
+    {axis : AnalyticAxisBoundary}
+    (hMeasured : axis.IsMeasuredNonzero) :
+    axis.SupportsSelectedAnalyticObstruction :=
+  hMeasured.2
+
+/--
+An unmeasured axis cannot discharge the zero-reflecting claim package, even
+though `none` satisfies the weaker `MeasuredZero` predicate.
+-/
+theorem not_canDischargeZeroReflectingClaim_of_unmeasured
+    {axis : AnalyticAxisBoundary}
+    (hUnmeasured : axis.IsUnmeasured) :
+    ¬ axis.CanDischargeZeroReflectingClaim := by
+  intro hClaim
+  exact unmeasured_not_availableAndZero hUnmeasured.2 hClaim.1
+
+/--
+An absent Signature v1 axis value remains weakly measured-zero only in the
+non-certifying sense.
+-/
+theorem signatureAxisMeasuredZero_of_unmeasured
+    {sig : ArchitectureSignature.ArchitectureSignatureV1}
+    {axis : ArchitectureSignature.ArchitectureSignatureV1Axis}
+    (hNone :
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis =
+        none) :
+    ArchitectureSignature.ArchitectureSignatureV1.axisMeasuredZero sig axis :=
+  ArchitectureSignature.ArchitectureSignatureV1.axisMeasuredZero_of_axisValue_none
+    hNone
+
+/--
+An absent Signature v1 axis value is not available-and-zero, so it cannot be
+used as a covered zero-law witness.
+-/
+theorem not_signatureAxisAvailableAndZero_of_unmeasured
+    {sig : ArchitectureSignature.ArchitectureSignatureV1}
+    {axis : ArchitectureSignature.ArchitectureSignatureV1Axis}
+    (hNone :
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis =
+        none) :
+    ¬ ArchitectureSignature.ArchitectureSignatureV1.axisAvailableAndZero
+        sig axis :=
+  ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none
+    hNone
+
+/-- Signature v1 axes with `none` become unmeasured Chapter 11 axis wrappers. -/
+theorem ofSignatureAxis_isUnmeasured_of_axisValue_none
+    {sig : ArchitectureSignature.ArchitectureSignatureV1}
+    {axis : ArchitectureSignature.ArchitectureSignatureV1Axis}
+    {coverageAssumptions witnessCompleteness semanticContractCoverage
+      nonConclusions : Prop}
+    (hNone :
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis =
+        none) :
+    (ofSignatureAxis sig axis coverageAssumptions witnessCompleteness
+      semanticContractCoverage nonConclusions).IsUnmeasured := by
+  unfold ofSignatureAxis ofOption IsUnmeasured UnmeasuredValue
+  simp [hNone, boundaryOfOption]
+
+end AnalyticAxisBoundary
+
 /-- The main Chapter 11 API groups exposed through this entrypoint. -/
 inductive Candidate where
   | analyticRepresentation
@@ -108,6 +301,21 @@ def representativeDeclarations : Candidate -> List String
        "MeasurementBoundary.measuredNonzero",
        "MeasurementBoundary.unmeasured",
        "MeasurementBoundary.outOfScope",
+       "AnalyticAxisBoundary",
+       "AnalyticAxisBoundary.boundaryOfOption",
+       "AnalyticAxisBoundary.ofOption",
+       "AnalyticAxisBoundary.ofSignatureAxis",
+       "AnalyticAxisBoundary.IsMeasuredZero",
+       "AnalyticAxisBoundary.IsMeasuredNonzero",
+       "AnalyticAxisBoundary.IsUnmeasured",
+       "AnalyticAxisBoundary.SupportsSelectedAnalyticObstruction",
+       "AnalyticAxisBoundary.CanDischargeZeroReflectingClaim",
+       "AnalyticAxisBoundary.some_zero_ne_unmeasured",
+       "AnalyticAxisBoundary.unmeasured_not_availableAndZero",
+       "AnalyticAxisBoundary.supportsSelectedAnalyticObstruction_of_measuredNonzero",
+       "AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured",
+       "AnalyticAxisBoundary.signatureAxisMeasuredZero_of_unmeasured",
+       "AnalyticAxisBoundary.not_signatureAxisAvailableAndZero_of_unmeasured",
        "MeasurementBoundary.unmeasured_not_measuredZero",
        "ArchitectureClaim.unmeasured_not_measuredZero",
        "ArchitectureSignature.v1Schema_unitNoEdge_unmeasured"]
@@ -198,14 +406,38 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
       [{ schematic := "measuredZero / measuredNonzero / unmeasured / outOfScope",
          leanDeclarations :=
           ["MeasurementBoundary",
+           "AnalyticAxisBoundary",
+           "AnalyticAxisBoundary.boundaryOfOption",
            "MeasurementBoundary.unmeasured_not_measuredZero",
            "ArchitectureClaim.unmeasured_not_measuredZero"],
          reading :=
           "tooling report axis boundary distinguishes an unmeasured axis from measured zero evidence",
          status := "defined only / proved" },
+       { schematic := "Option Nat axis: some 0 versus none",
+         leanDeclarations :=
+          ["AnalyticAxisBoundary.IsMeasuredZero",
+           "AnalyticAxisBoundary.IsUnmeasured",
+           "AnalyticAxisBoundary.some_zero_ne_unmeasured",
+           "AnalyticAxisBoundary.unmeasured_not_availableAndZero",
+           "AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured"],
+         reading :=
+          "`some 0` is an available measured zero; `none` is unmeasured and cannot discharge zero-reflecting theorem preconditions",
+         status := "defined only / proved" },
+       { schematic := "measuredNonzero selected analytic obstruction support",
+         leanDeclarations :=
+          ["AnalyticAxisBoundary.IsMeasuredNonzero",
+           "AnalyticAxisBoundary.SupportsSelectedAnalyticObstruction",
+           "AnalyticAxisBoundary.supportsSelectedAnalyticObstruction_of_measuredNonzero"],
+         reading :=
+          "a measured nonzero axis is report evidence for a selected analytic obstruction support, not a global flatness theorem",
+         status := "defined only / proved" },
        { schematic := "runtime_exposure = none",
          leanDeclarations :=
-          ["ArchitectureSignature.v1Schema_unitNoEdge_unmeasured"],
+          ["AnalyticAxisBoundary.ofSignatureAxis",
+           "AnalyticAxisBoundary.ofSignatureAxis_isUnmeasured_of_axisValue_none",
+           "AnalyticAxisBoundary.signatureAxisMeasuredZero_of_unmeasured",
+           "AnalyticAxisBoundary.not_signatureAxisAvailableAndZero_of_unmeasured",
+           "ArchitectureSignature.v1Schema_unitNoEdge_unmeasured"],
          reading :=
           "absent v1 extension-axis values remain `none` rather than being encoded as zero",
          status := "proved" }]
