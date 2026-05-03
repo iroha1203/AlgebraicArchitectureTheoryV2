@@ -15,6 +15,7 @@ import Formal.Arch.Operation.OperationLaws
 import Formal.Arch.Operation.OperationInvariant
 import Formal.Arch.Repair.Repair
 import Formal.Arch.Repair.RepairSynthesis
+import Formal.Arch.Repair.RepairSynthesisExamples
 import Formal.Arch.Extension.SplitExtensionLifting
 import Formal.Arch.Evolution.ArchitecturePath
 import Formal.Arch.Evolution.ArchitectureEvolution
