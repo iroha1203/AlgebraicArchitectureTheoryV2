@@ -34,6 +34,114 @@ structure SchematicCorrespondence where
   deriving Repr
 
 /--
+Report-side classification used by AIR / Feature Extension Report metadata.
+
+This mirrors the tooling vocabulary without turning a measured witness into a
+formal theorem claim.
+-/
+inductive ClaimClassification where
+  | proved
+  | measured
+  | assumed
+  | empirical
+  | unmeasured
+  | outOfScope
+  deriving DecidableEq, Repr
+
+namespace ClaimClassification
+
+/-- The claim has a discharged formal theorem package. -/
+def IsProved (classification : ClaimClassification) : Prop :=
+  classification = ClaimClassification.proved
+
+/-- The claim is supported by tooling-side measurement. -/
+def IsMeasured (classification : ClaimClassification) : Prop :=
+  classification = ClaimClassification.measured
+
+/-- The claim is explicitly unmeasured. -/
+def IsUnmeasured (classification : ClaimClassification) : Prop :=
+  classification = ClaimClassification.unmeasured
+
+theorem measured_not_proved :
+    ¬ IsProved ClaimClassification.measured := by
+  intro h
+  cases h
+
+theorem unmeasured_not_proved :
+    ¬ IsProved ClaimClassification.unmeasured := by
+  intro h
+  cases h
+
+end ClaimClassification
+
+/--
+Minimal theorem-registry metadata that a tooling report must carry before it
+can cite a Lean theorem package.
+
+`missingPreconditions` is a positive predicate recording that the checker still
+found missing premises. A formal proved claim is allowed only when the package
+reference, required assumptions, and absence of missing preconditions are all
+explicit.
+-/
+structure ToolingTheoremPackageMetadata where
+  theoremReferences : List String
+  claimLevel : ClaimLevel
+  claimClassification : ClaimClassification
+  measurementBoundary : MeasurementBoundary
+  requiredAssumptions : Prop
+  coverageAssumptions : Prop
+  exactnessAssumptions : Prop
+  missingPreconditions : Prop
+  nonConclusions : Prop
+  deriving Repr
+
+namespace ToolingTheoremPackageMetadata
+
+/-- The metadata records a report-side non-conclusion clause. -/
+def RecordsNonConclusions (metadata : ToolingTheoremPackageMetadata) : Prop :=
+  metadata.nonConclusions
+
+/-- A measured witness remains tooling-level evidence. -/
+def IsMeasuredWitness (metadata : ToolingTheoremPackageMetadata) : Prop :=
+  metadata.claimLevel = ClaimLevel.tooling ∧
+    metadata.claimClassification = ClaimClassification.measured ∧
+    metadata.measurementBoundary = MeasurementBoundary.measuredNonzero
+
+/-- A formal proved claim needs a theorem reference and discharged preconditions. -/
+def IsFormalProvedClaim (metadata : ToolingTheoremPackageMetadata) : Prop :=
+  metadata.claimLevel = ClaimLevel.formal ∧
+    metadata.claimClassification = ClaimClassification.proved ∧
+    metadata.theoremReferences ≠ [] ∧
+    metadata.requiredAssumptions ∧
+    metadata.coverageAssumptions ∧
+    metadata.exactnessAssumptions ∧
+    ¬ metadata.missingPreconditions
+
+/-- A measured tooling witness is not classified as a formal proved claim. -/
+theorem measuredWitness_not_formalProvedClaim
+    (metadata : ToolingTheoremPackageMetadata)
+    (hMeasured : metadata.IsMeasuredWitness) :
+    ¬ metadata.IsFormalProvedClaim := by
+  intro hFormal
+  cases hMeasured.1.symm.trans hFormal.1
+
+/-- Missing preconditions block formal proved report claims. -/
+theorem not_formalProvedClaim_of_missingPreconditions
+    (metadata : ToolingTheoremPackageMetadata)
+    (hMissing : metadata.missingPreconditions) :
+    ¬ metadata.IsFormalProvedClaim := by
+  intro hFormal
+  exact hFormal.2.2.2.2.2.2 hMissing
+
+/-- The recorded non-conclusion predicate is exactly the schema field. -/
+theorem records_nonConclusions_iff
+    (metadata : ToolingTheoremPackageMetadata) :
+    metadata.RecordsNonConclusions ↔ metadata.nonConclusions := by
+  rfl
+
+end ToolingTheoremPackageMetadata
+
+/--
 Chapter 11 wrapper for reading one optional analytic axis value through the
 tooling report measurement boundary.
 
@@ -346,6 +454,101 @@ theorem architectureSignatureAnalyticRepresentation_obstructionReflecting
   exact hObstruction
     ((ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero X).mp
       hLawful)
+
+/--
+Analytic extension formula package for Chapter 11.
+
+The formula is represented as an explicit field:
+
+`after + repair = before + feature + interaction + transfer + residual`.
+
+This avoids treating the analytic formula as a global conservation law. The
+package is relative to its representation map, selected valuation structure,
+feature payload, decomposition certificate, and coverage assumptions.
+-/
+structure AnalyticExtensionFormulaPackage
+    (State : Type u) (Analytic : Type v) (Feature : Type w)
+    (Witness : Type q) where
+  representation : AnalyticRepresentation State Analytic Witness
+  obstructionValuation : ObstructionValuation State Witness
+  before : State
+  after : State
+  feature : Feature
+  signatureValue : Analytic -> Nat
+  featureContribution : Feature -> Nat
+  interactionTerm : State -> Feature -> State -> Nat
+  transferTerm : State -> Feature -> State -> Nat
+  repairTerm : State -> Feature -> State -> Nat
+  obstructionResidual : State -> Feature -> State -> Nat
+  representationMapAssumptions : Prop
+  valuationStructureAssumptions : Prop
+  decompositionCertificate : Prop
+  coverageAssumptions : Prop
+  complexityTransferBoundary : Prop
+  formulaHolds :
+    signatureValue (representation.represent after) +
+        repairTerm before feature after =
+      signatureValue (representation.represent before) +
+        featureContribution feature +
+        interactionTerm before feature after +
+        transferTerm before feature after +
+        obstructionResidual before feature after
+  nonConclusions : Prop
+
+namespace AnalyticExtensionFormulaPackage
+
+variable {State : Type u} {Analytic : Type v} {Feature : Type w}
+variable {Witness : Type q}
+
+/-- The package explicitly records the analytic formula equation it carries. -/
+def FormulaEquation
+    (pkg : AnalyticExtensionFormulaPackage State Analytic Feature Witness) :
+    Prop :=
+  pkg.signatureValue (pkg.representation.represent pkg.after) +
+      pkg.repairTerm pkg.before pkg.feature pkg.after =
+    pkg.signatureValue (pkg.representation.represent pkg.before) +
+      pkg.featureContribution pkg.feature +
+      pkg.interactionTerm pkg.before pkg.feature pkg.after +
+      pkg.transferTerm pkg.before pkg.feature pkg.after +
+      pkg.obstructionResidual pkg.before pkg.feature pkg.after
+
+/-- The package explicitly records its non-conclusion clause. -/
+def RecordsNonConclusions
+    (pkg : AnalyticExtensionFormulaPackage State Analytic Feature Witness) :
+    Prop :=
+  pkg.nonConclusions
+
+/-- Required assumptions for reading the analytic formula as a theorem package. -/
+def RequiredAssumptions
+    (pkg : AnalyticExtensionFormulaPackage State Analytic Feature Witness) :
+    Prop :=
+  pkg.representationMapAssumptions ∧
+    pkg.valuationStructureAssumptions ∧
+    pkg.decompositionCertificate ∧
+    pkg.coverageAssumptions ∧
+    pkg.complexityTransferBoundary
+
+theorem formula_holds
+    (pkg : AnalyticExtensionFormulaPackage State Analytic Feature Witness) :
+    pkg.FormulaEquation :=
+  pkg.formulaHolds
+
+theorem records_nonConclusions_iff
+    (pkg : AnalyticExtensionFormulaPackage State Analytic Feature Witness) :
+    pkg.RecordsNonConclusions ↔ pkg.nonConclusions := by
+  rfl
+
+theorem requiredAssumptions_of_fields
+    (pkg : AnalyticExtensionFormulaPackage State Analytic Feature Witness)
+    (hRepresentation : pkg.representationMapAssumptions)
+    (hValuation : pkg.valuationStructureAssumptions)
+    (hDecomposition : pkg.decompositionCertificate)
+    (hCoverage : pkg.coverageAssumptions)
+    (hTransfer : pkg.complexityTransferBoundary) :
+    pkg.RequiredAssumptions :=
+  ⟨hRepresentation, hValuation, hDecomposition, hCoverage, hTransfer⟩
+
+end AnalyticExtensionFormulaPackage
 
 /--
 Report-facing analytic snapshot for the Chapter 11 coupon canonical example.
@@ -752,8 +955,10 @@ end CouponHiddenInteractionLiftingBridge
 /-- The main Chapter 11 API groups exposed through this entrypoint. -/
 inductive Candidate where
   | analyticRepresentation
+  | toolingReportMetadata
   | architectureSignatureRepresentation
   | obstructionValuation
+  | analyticExtensionFormula
   | couponAnalyticSnapshot
   | couponHiddenInteractionLiftingBridge
   | couponStaticExample
@@ -767,8 +972,10 @@ namespace Candidate
 /-- Human-readable section number in `docs/aat_v2_mathematical_design.md`. -/
 def designSection : Candidate -> String
   | analyticRepresentation => "11"
+  | toolingReportMetadata => "11.1 / tooling report metadata"
   | architectureSignatureRepresentation => "11.1 / 11.2"
   | obstructionValuation => "11"
+  | analyticExtensionFormula => "11.1 / analytic extension formula"
   | couponAnalyticSnapshot => "11.3"
   | couponHiddenInteractionLiftingBridge => "11.3 / coupon lifting bridge"
   | couponStaticExample => "11 / coupon static axis"
@@ -779,9 +986,12 @@ def designSection : Candidate -> String
 /-- Stable schematic name used by documentation and theorem-index tables. -/
 def schematicName : Candidate -> String
   | analyticRepresentation => "Analytic Representation"
+  | toolingReportMetadata =>
+      "AIR / Feature Extension Report theorem metadata"
   | architectureSignatureRepresentation =>
       "ArchitectureSignatureV1 concrete analytic representation"
   | obstructionValuation => "Obstruction Valuation"
+  | analyticExtensionFormula => "Analytic Extension Formula theorem package"
   | couponAnalyticSnapshot => "Coupon canonical analytic snapshot"
   | couponHiddenInteractionLiftingBridge =>
       "Coupon hidden interaction as lifting failure"
@@ -803,6 +1013,17 @@ def representativeDeclarations : Candidate -> List String
        "AnalyticRepresentation.structuralZero_of_analyticZero",
        "AnalyticRepresentation.analyticObstruction_of_structuralObstruction",
        "AnalyticRepresentation.structuralObstruction_of_analyticObstruction"]
+  | toolingReportMetadata =>
+      ["ClaimClassification",
+       "ClaimClassification.IsProved",
+       "ClaimClassification.IsMeasured",
+       "ClaimClassification.measured_not_proved",
+       "ToolingTheoremPackageMetadata",
+       "ToolingTheoremPackageMetadata.IsMeasuredWitness",
+       "ToolingTheoremPackageMetadata.IsFormalProvedClaim",
+       "ToolingTheoremPackageMetadata.measuredWitness_not_formalProvedClaim",
+       "ToolingTheoremPackageMetadata.not_formalProvedClaim_of_missingPreconditions",
+       "ToolingTheoremPackageMetadata.RecordsNonConclusions"]
   | architectureSignatureRepresentation =>
       ["ArchitectureSignatureAggregateWitness",
        "ArchitectureSignatureAnalyticNonConclusions",
@@ -822,6 +1043,16 @@ def representativeDeclarations : Candidate -> List String
        "ObstructionValuation.no_obstruction_of_value_zero",
        "ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum",
        "ObstructionValuation.RecordsNonConclusions"]
+  | analyticExtensionFormula =>
+      ["AnalyticExtensionFormulaPackage",
+       "AnalyticExtensionFormulaPackage.FormulaEquation",
+       "AnalyticExtensionFormulaPackage.RequiredAssumptions",
+       "AnalyticExtensionFormulaPackage.RecordsNonConclusions",
+       "AnalyticExtensionFormulaPackage.formula_holds",
+       "AnalyticExtensionFormulaPackage.requiredAssumptions_of_fields",
+       "AnalyticExtensionFormulaPackage.records_nonConclusions_iff",
+       "ObstructionValuation",
+       "BoundedComplexityTransferPackage.no_free_elimination_bounded"]
   | couponAnalyticSnapshot =>
       ["CouponAnalyticSnapshot",
        "CouponAnalyticSnapshot.bad",
@@ -917,6 +1148,38 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          reading :=
           "explicit assumptions required before analytic zero or analytic obstruction facts are reflected back to structural facts",
          status := "defined only" }]
+  | toolingReportMetadata =>
+      [{ schematic :=
+          "claim_level / claim_classification / measurement_boundary",
+         leanDeclarations :=
+          ["ClaimLevel",
+           "ClaimClassification",
+           "MeasurementBoundary",
+           "ToolingTheoremPackageMetadata"],
+         reading :=
+          "report metadata separates formal theorem claims from tooling, empirical, hypothesis, measured, unmeasured, and out-of-scope evidence",
+         status := "defined only" },
+       { schematic := "MEASURED witness is not a PROVED claim",
+         leanDeclarations :=
+          ["ToolingTheoremPackageMetadata.IsMeasuredWitness",
+           "ToolingTheoremPackageMetadata.IsFormalProvedClaim",
+           "ToolingTheoremPackageMetadata.measuredWitness_not_formalProvedClaim",
+           "ClaimClassification.measured_not_proved"],
+         reading :=
+          "tooling-side measured witnesses support obstruction reports but do not become formal proved claims without theorem-package discharge",
+         status := "proved" },
+       { schematic :=
+          "required assumptions / missing preconditions / non-conclusions",
+         leanDeclarations :=
+          ["ToolingTheoremPackageMetadata.requiredAssumptions",
+           "ToolingTheoremPackageMetadata.coverageAssumptions",
+           "ToolingTheoremPackageMetadata.exactnessAssumptions",
+           "ToolingTheoremPackageMetadata.missingPreconditions",
+           "ToolingTheoremPackageMetadata.not_formalProvedClaim_of_missingPreconditions",
+           "ToolingTheoremPackageMetadata.RecordsNonConclusions"],
+         reading :=
+          "the theorem precondition checker must expose required assumptions, missing premises, coverage, exactness, and non-conclusions before a formal claim is displayed",
+         status := "defined only / proved" }]
   | architectureSignatureRepresentation =>
       [{ schematic :=
           "ArchitectureLawModel -> ArchitectureSignatureV1",
@@ -961,6 +1224,26 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "ObstructionValuation.noSelectedObstruction_of_zeroReflectingSum"],
          reading :=
           "selected witness valuation; zero values rule out selected witnesses, not global flatness",
+         status := "defined only / proved" }]
+  | analyticExtensionFormula =>
+      [{ schematic := "AnalyticExtensionFormulaPackage",
+         leanDeclarations :=
+          ["AnalyticExtensionFormulaPackage",
+           "AnalyticExtensionFormulaPackage.FormulaEquation",
+           "AnalyticExtensionFormulaPackage.formula_holds"],
+         reading :=
+          "the Chapter 11 analytic formula is a package field relative to representation, before/after state, feature contribution, interaction, transfer, repair, and obstruction residual terms",
+         status := "defined only / proved" },
+       { schematic :=
+          "representation / valuation / decomposition / coverage assumptions",
+         leanDeclarations :=
+          ["AnalyticExtensionFormulaPackage.RequiredAssumptions",
+           "AnalyticExtensionFormulaPackage.requiredAssumptions_of_fields",
+           "AnalyticExtensionFormulaPackage.RecordsNonConclusions",
+           "ObstructionValuation",
+           "BoundedComplexityTransferPackage.no_free_elimination_bounded"],
+         reading :=
+          "formula use is relative to explicit representation-map, valuation-structure, decomposition, coverage, and complexity-transfer boundary assumptions",
          status := "defined only / proved" }]
   | couponAnalyticSnapshot =>
       [{ schematic := "coupon canonical analytic snapshot",
@@ -1094,10 +1377,14 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
 def nonConclusionBoundary : Candidate -> String
   | analyticRepresentation =>
       "reflecting directions require coverage, witness completeness, and semantic contract coverage; analytic values alone do not prove flatness"
+  | toolingReportMetadata =>
+      "MEASURED tooling witnesses, missing preconditions, unmeasured axes, and out-of-scope evidence are not PROVED formal theorem claims"
   | architectureSignatureRepresentation =>
       "concrete bridge is restricted to selected required Signature axes; optional none values, runtime axes, empirical cost, and extractor completeness are not zero certificates"
   | obstructionValuation =>
       "valuation is selected-witness-relative; zero selected valuation does not imply global ArchitectureFlat"
+  | analyticExtensionFormula =>
+      "formulaHolds is a package field under explicit assumptions, not a global conservation law or empirical cost theorem"
   | couponAnalyticSnapshot =>
       "snapshot axes are report-facing and selected-example-relative; unmeasured runtime / semantic axes are not zero certificates"
   | couponHiddenInteractionLiftingBridge =>
