@@ -1,4 +1,5 @@
 import Formal.Arch.Signature.AnalyticRepresentation
+import Formal.Arch.Extension.ArchitectureExtensionFormula
 import Formal.Arch.Extension.FeatureExtensionExamples
 import Formal.Arch.Evolution.DiagramFiller
 import Formal.Arch.Extension.CertifiedArchitecture
@@ -415,11 +416,223 @@ theorem recordsNonConclusions (snapshot : CouponAnalyticSnapshot) :
 
 end CouponAnalyticSnapshot
 
+namespace CouponHiddenInteractionLiftingBridge
+
+open CouponStaticDependencyExample
+
+/--
+Selected operation endpoints used only to read the bad coupon hidden
+interaction as a local lifting failure. This operation view does not assert
+feature ownership for the core cache in the static split model.
+-/
+inductive HiddenInteractionEndpoint where
+  | couponCalculation
+  | paymentCacheRead
+  deriving DecidableEq, Repr
+
+inductive HiddenInteractionFeatureEdge :
+    HiddenInteractionEndpoint -> HiddenInteractionEndpoint -> Prop where
+  | couponCalculationToPaymentCacheRead :
+      HiddenInteractionFeatureEdge .couponCalculation .paymentCacheRead
+
+def operationFeatureGraph : ArchGraph HiddenInteractionEndpoint where
+  edge := HiddenInteractionFeatureEdge
+
+def operationFeatureEmbedding :
+    HiddenInteractionEndpoint -> ExtendedComponent
+  | .couponCalculation => .couponService
+  | .paymentCacheRead => .internalCache
+
+def operationFeatureObservation :
+    Observation HiddenInteractionEndpoint Unit where
+  observe := fun _ => ()
+
+def operationFeatureView :
+    Observation ExtendedComponent Unit where
+  observe := fun _ => ()
+
+/--
+The operation endpoint view shares the bad coupon extended graph. It is a
+selected lifting view for one interaction, not a replacement for the static
+ownership model used by `CouponStaticDependencyExample.badExtension`.
+-/
+def operationExtension :
+    FeatureExtension CoreComponent HiddenInteractionEndpoint ExtendedComponent
+      Unit where
+  core := coreGraph
+  feature := operationFeatureGraph
+  extended := badGraph
+  coreEmbedding := coreEmbedding
+  featureEmbedding := operationFeatureEmbedding
+  featureView := operationFeatureView
+  preservesRequiredInvariants := True
+  interactionFactorsThroughDeclaredInterfaces := True
+  coverageAssumptions := True
+  proofObligations := True
+
+def operationCoreObservation : Observation CoreComponent Unit where
+  observe := fun _ => ()
+
+def operationCoreRetraction : ExtendedComponent -> CoreComponent
+  | .paymentApi => .paymentApi
+  | .paymentAdapter => .paymentAdapter
+  | .internalCache => .internalCache
+  | .couponService => .paymentApi
+  | .declaredPaymentPort => .paymentApi
+
+def liftingData :
+    SplitExtensionLiftingData CoreComponent HiddenInteractionEndpoint
+      ExtendedComponent Unit Unit where
+  extension := operationExtension
+  featureObservation := operationFeatureObservation
+  coreObservation := operationCoreObservation
+  featureSection := operationFeatureEmbedding
+  coreRetraction := operationCoreRetraction
+  featureSectionLaw := by
+    intro f
+    cases f <;> rfl
+  observationalCoreRetraction := by
+    intro c
+    cases c <;> rfl
+  interfaceFactorization := trivial
+  preservesRequiredInvariants := trivial
+
+def selectedFeatureStep : SelectedFeatureStep HiddenInteractionEndpoint where
+  source := .couponCalculation
+  target := .paymentCacheRead
+
+def featureInvariant (_endpoint : HiddenInteractionEndpoint) : Prop :=
+  True
+
+/--
+The selected core invariant excludes direct interaction with the internal cache.
+This makes the hidden cache read a local lifting-preservation failure without
+claiming a global semantic or runtime theorem.
+-/
+def coreInvariant (c : CoreComponent) : Prop :=
+  c ≠ .internalCache
+
+theorem lawfulSelectedFeatureStep :
+    LawfulFeatureStep featureInvariant selectedFeatureStep := by
+  intro _h
+  trivial
+
+theorem selectedFeatureStep_liftedEdge_is_hiddenDependency :
+    operationExtension.extended.edge
+      (liftingData.featureSection selectedFeatureStep.source)
+      (liftingData.featureSection selectedFeatureStep.target) :=
+  BadStaticEdge.hiddenCouponToInternalCache
+
+theorem selectedFeatureStep_not_declaredInterfaceFactor :
+    ¬ EdgeFactorsThroughDeclaredInterface operationExtension.extended
+      declaredInterface
+      (liftingData.featureSection selectedFeatureStep.source)
+      (liftingData.featureSection selectedFeatureStep.target) :=
+  hidden_dependency_not_declared_factor
+
+theorem sourceCoreInvariant :
+    coreInvariant
+      (liftingData.coreRetraction
+        (liftingData.featureSection selectedFeatureStep.source)) := by
+  intro hEq
+  cases hEq
+
+theorem targetCoreInvariant_false :
+    ¬ coreInvariant
+      (liftingData.coreRetraction
+        (liftingData.featureSection selectedFeatureStep.target)) := by
+  intro hTarget
+  exact hTarget rfl
+
+theorem not_compatibleWithInterface :
+    ¬ CompatibleWithInterface liftingData coreInvariant selectedFeatureStep := by
+  intro hCompatible
+  exact targetCoreInvariant_false
+    (hCompatible.coreInvariantPreserved sourceCoreInvariant)
+
+theorem noPreservationPackage :
+    ¬ ∃ liftedStep : LiftedExtensionStep ExtendedComponent,
+      SplitExtensionLiftingPreservationPackage
+        liftingData featureInvariant coreInvariant selectedFeatureStep
+        liftedStep := by
+  intro hExists
+  rcases hExists with ⟨liftedStep, hPackage⟩
+  have hSource :
+      coreInvariant (liftingData.coreRetraction liftedStep.source) := by
+    rw [hPackage.liftsFeatureStep.1]
+    exact sourceCoreInvariant
+  have hTarget :
+      coreInvariant (liftingData.coreRetraction liftedStep.target) :=
+    hPackage.preservesCoreInvariants hSource
+  have hCanonicalTarget :
+      coreInvariant
+        (liftingData.coreRetraction
+          (liftingData.featureSection selectedFeatureStep.target)) := by
+    rw [hPackage.liftsFeatureStep.2.1] at hTarget
+    exact hTarget
+  exact targetCoreInvariant_false hCanonicalTarget
+
+def liftingFailurePayload :
+    LiftingFailureWitnessPayload
+      liftingData featureInvariant coreInvariant selectedFeatureStep where
+  lawfulFeatureStep := lawfulSelectedFeatureStep
+  notPreservationPackage := noPreservationPackage
+
+def liftingFailureWitness :
+    ExtensionObstructionWitness operationExtension
+      (LiftingFailureWitnessPayload
+        liftingData featureInvariant coreInvariant selectedFeatureStep) :=
+  liftingFailureExtensionObstructionWitness liftingData liftingFailurePayload
+
+def allExtendedComponents : List ExtendedComponent :=
+  [ .paymentApi
+  , .paymentAdapter
+  , .internalCache
+  , .couponService
+  , .declaredPaymentPort
+  ]
+
+theorem allExtendedComponents_nodup : allExtendedComponents.Nodup := by
+  decide
+
+theorem mem_allExtendedComponents (c : ExtendedComponent) :
+    c ∈ allExtendedComponents := by
+  cases c <;> simp [allExtendedComponents]
+
+def canonicalUniverse : ComponentUniverse operationExtension.extended :=
+  ComponentUniverse.full operationExtension.extended allExtendedComponents
+    allExtendedComponents_nodup mem_allExtendedComponents
+
+theorem liftingFailureWitness_classified :
+    ClassifiedAsLiftingFailure operationExtension canonicalUniverse
+      liftingFailureWitness :=
+  liftingFailureExtensionObstructionWitness_classified
+    liftingData canonicalUniverse liftingFailurePayload
+
+theorem liftingFailurePayload_refutesCompatibility :
+    ¬ CompatibleWithInterface liftingData coreInvariant selectedFeatureStep :=
+  not_compatibleWithInterface
+
+theorem hiddenDependency_liftingFailure_bridge :
+    StaticExtensionWitnessExists
+      badExtension declaredInterface coreAllowedStaticEdge
+      extendedAllowedStaticEdge ∧
+    ∃ payload :
+      LiftingFailureWitnessPayload
+        liftingData featureInvariant coreInvariant selectedFeatureStep,
+      ClassifiedAsLiftingFailure operationExtension canonicalUniverse
+        (liftingFailureExtensionObstructionWitness liftingData payload) :=
+  ⟨hiddenDependencyWitnessExists,
+    ⟨liftingFailurePayload, liftingFailureWitness_classified⟩⟩
+
+end CouponHiddenInteractionLiftingBridge
+
 /-- The main Chapter 11 API groups exposed through this entrypoint. -/
 inductive Candidate where
   | analyticRepresentation
   | obstructionValuation
   | couponAnalyticSnapshot
+  | couponHiddenInteractionLiftingBridge
   | couponStaticExample
   | couponSemanticValuation
   | staticSemanticCounterexample
@@ -433,6 +646,7 @@ def designSection : Candidate -> String
   | analyticRepresentation => "11"
   | obstructionValuation => "11"
   | couponAnalyticSnapshot => "11.3"
+  | couponHiddenInteractionLiftingBridge => "11.3 / coupon lifting bridge"
   | couponStaticExample => "11 / coupon static axis"
   | couponSemanticValuation => "11 / coupon semantic axis"
   | staticSemanticCounterexample => "11 / canonical counterexample"
@@ -443,6 +657,8 @@ def schematicName : Candidate -> String
   | analyticRepresentation => "Analytic Representation"
   | obstructionValuation => "Obstruction Valuation"
   | couponAnalyticSnapshot => "Coupon canonical analytic snapshot"
+  | couponHiddenInteractionLiftingBridge =>
+      "Coupon hidden interaction as lifting failure"
   | couponStaticExample => "Coupon static hidden dependency example"
   | couponSemanticValuation => "Coupon semantic rounding-order valuation"
   | staticSemanticCounterexample => "Static-flat semantic-obstruction example"
@@ -479,6 +695,16 @@ def representativeDeclarations : Candidate -> List String
        "CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim",
        "CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive",
        "CouponAnalyticSnapshot.recordsNonConclusions"]
+  | couponHiddenInteractionLiftingBridge =>
+      ["CouponHiddenInteractionLiftingBridge.selectedFeatureStep",
+       "CouponHiddenInteractionLiftingBridge.selectedFeatureStep_liftedEdge_is_hiddenDependency",
+       "CouponHiddenInteractionLiftingBridge.selectedFeatureStep_not_declaredInterfaceFactor",
+       "CouponHiddenInteractionLiftingBridge.not_compatibleWithInterface",
+       "CouponHiddenInteractionLiftingBridge.liftingFailurePayload",
+       "CouponHiddenInteractionLiftingBridge.liftingFailureWitness",
+       "CouponHiddenInteractionLiftingBridge.liftingFailureWitness_classified",
+       "CouponHiddenInteractionLiftingBridge.liftingFailurePayload_refutesCompatibility",
+       "CouponHiddenInteractionLiftingBridge.hiddenDependency_liftingFailure_bridge"]
   | couponStaticExample =>
       ["CouponStaticDependencyExample.goodStaticSplitFeatureExtension",
        "CouponStaticDependencyExample.hiddenDependencyWitness",
@@ -597,6 +823,18 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          reading :=
           "unmeasured runtime or semantic axes do not discharge zero-reflecting claims; the selected semantic residual can be recorded as measured nonzero",
          status := "proved" }]
+  | couponHiddenInteractionLiftingBridge =>
+      [{ schematic := "coupon hidden interaction as selected lifting failure",
+         leanDeclarations :=
+          ["CouponHiddenInteractionLiftingBridge.selectedFeatureStep_liftedEdge_is_hiddenDependency",
+           "CouponHiddenInteractionLiftingBridge.selectedFeatureStep_not_declaredInterfaceFactor",
+           "CouponHiddenInteractionLiftingBridge.not_compatibleWithInterface",
+           "CouponHiddenInteractionLiftingBridge.liftingFailurePayload",
+           "CouponHiddenInteractionLiftingBridge.liftingFailureWitness_classified",
+           "CouponHiddenInteractionLiftingBridge.hiddenDependency_liftingFailure_bridge"],
+         reading :=
+          "the selected CouponService -> PaymentAdapter.internalCache interaction is the bad hidden edge and is also packaged as a local `.liftingFailure` obstruction witness",
+         status := "defined only / proved" }]
   | couponStaticExample =>
       [{ schematic := "coupon static_hidden_interaction = some 1",
          leanDeclarations :=
@@ -688,6 +926,8 @@ def nonConclusionBoundary : Candidate -> String
       "valuation is selected-witness-relative; zero selected valuation does not imply global ArchitectureFlat"
   | couponAnalyticSnapshot =>
       "snapshot axes are report-facing and selected-example-relative; unmeasured runtime / semantic axes are not zero certificates"
+  | couponHiddenInteractionLiftingBridge =>
+      "bridge is local to one selected coupon interaction; no strict section equality, all-step lifting failure, runtime flatness, or semantic flatness is concluded"
   | couponStaticExample =>
       "selected static hidden dependency witness only; no runtime flatness, semantic flatness, or extractor completeness"
   | couponSemanticValuation =>
