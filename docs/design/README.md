@@ -13,8 +13,8 @@
 | [boundary / abstraction policy v0 schema](boundary_abstraction_policy_schema.md) | tooling design / empirical hypothesis | boundary / abstraction violation count を測る policy file schema と counting unit を固定する。 |
 | [ComponentUniverse validation report v0](component_universe_validation_report.md) | tooling design / empirical hypothesis | extractor output と Lean `ComponentUniverse` の責務境界を検査する report schema と CLI contract を固定する。 |
 | [relationComplexity 設計](relation_complexity_design.md) | tooling design / empirical hypothesis | 状態遷移代数層の複雑度を workflow observation として測る方針を整理する。 |
-| [runtimePropagation 設計](runtime_propagation_design.md) | Lean executable metric / future proof obligation / tooling boundary | 0/1 `RuntimeDependencyGraph` 上の exposure radius、runtime zero bridge、blast radius、runtime metadata の境界を整理する。 |
+| [runtimePropagation 設計](runtime_propagation_design.md) | Lean executable metric / proved zero bridge / tooling boundary | 0/1 `RuntimeDependencyGraph` 上の exposure radius、runtime zero bridge、blast radius、runtime metadata の境界を整理する。 |
 | [Projection soundness と exact projection の使い分け](projection_exact_soundness.md) | Lean bridge design | `ProjectionSound` で足りる主張と `ProjectionExact` が必要な refinement を分ける。 |
 | [Observation bridge と projection bridge の関係](observation_projection_bridge.md) | Lean bridge design / proved packaging | projection bridge と observation bridge を局所契約層で並列に扱い、`LocalReplacementContract` の包装定理との接続を整理する。 |
 | [spectral radius bridge 設計](spectral_radius_bridge.md) | Lean bridge / empirical boundary | `rho(A)` の構造的 theorem と変更・障害コストの empirical claim を分離する。 |
-| [Architecture Calculus catalog placement](architecture_calculus_catalog_placement.md) | Lean API placement / future proof obligation | 第3章 operation catalog を concrete graph kernel、contract / observation schema、runtime / semantic package、repair / synthesis package へ配置する。 |
+| [Architecture Calculus catalog placement](architecture_calculus_catalog_placement.md) | Lean API placement / bounded theorem packages / future boundary | 第3章 operation catalog を concrete graph kernel、contract / observation schema、runtime / semantic package、repair / synthesis package へ配置する。 |
