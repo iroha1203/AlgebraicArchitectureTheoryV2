@@ -309,6 +309,21 @@ canonical AIR fixture は `tools/archsig/tests/fixtures/air` に置く。
 - `policy_violation.json`
 - `unmeasured_runtime_semantic.json`
 
+## Feature Extension Report を作る
+
+AIR v0 から PR review 用の static Feature Extension Report v0 を生成する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- feature-report \
+  --air .lake/signature-current/air.json \
+  --out .lake/signature-current/feature-report.json
+```
+
+`feature-report` は static / policy 層の測定済み evidence だけを根拠に
+`splitStatus` を `split`, `non_split`, `unknown`, `unmeasured` へ分類する。
+runtime / semantic 層が未測定の場合は `coverageGaps` と `nonConclusions` に
+`UNMEASURED` として残し、static split の根拠にはしない。
+
 ## PR Metadata / Dataset を作る
 
 GitHub API の PR detail / files / reviews JSON から `pr-metadata.json` を作る。
