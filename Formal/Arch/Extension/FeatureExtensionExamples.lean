@@ -1,4 +1,5 @@
 import Formal.Arch.Extension.SplitExtensionLifting
+import Formal.Arch.Extension.Flatness
 
 namespace Formal.Arch
 
@@ -494,5 +495,218 @@ theorem selectedStep_liftedTarget_observes :
         hPackage⟩
 
 end SelectedSplitExtensionLiftingExample
+
+/-
+Positive three-layer flatness example for the repaired coupon extension.
+
+The example bundles static split evidence, selected runtime protection, and a
+measured semantic diagram into the existing bounded theorem package.  It stops
+at `ArchitectureFlatWithin`: it does not build a global `ArchitectureFlat`
+certificate, extractor completeness claim, telemetry completeness claim, or
+global semantic completeness claim.
+-/
+namespace ThreeLayerFlatnessPositiveExample
+
+open CouponStaticDependencyExample
+
+def staticSplit :
+    StaticSplitExtension CoreComponent FeatureComponent ExtendedComponent
+      FeatureView :=
+  repairedStaticSplitFeatureExtension
+
+theorem selectedStaticSplit :
+    SelectedStaticSplitExtension staticSplit.extension
+      staticSplit.declaredInterface staticSplit.coreAllowedStaticEdge
+      staticSplit.extendedAllowedStaticEdge :=
+  selectedStaticSplitExtension_of_staticSplitFeatureExtension staticSplit
+
+def allExtendedComponents : List ExtendedComponent :=
+  [ .paymentApi
+  , .paymentAdapter
+  , .internalCache
+  , .couponService
+  , .declaredPaymentPort
+  ]
+
+theorem allExtendedComponents_nodup : allExtendedComponents.Nodup := by
+  decide
+
+theorem mem_allExtendedComponents (c : ExtendedComponent) :
+    c ∈ allExtendedComponents := by
+  cases c <;> simp [allExtendedComponents]
+
+def canonicalUniverse : ComponentUniverse staticSplit.extension.extended :=
+  ComponentUniverse.full staticSplit.extension.extended allExtendedComponents
+    allExtendedComponents_nodup mem_allExtendedComponents
+
+theorem extensionCoverage :
+    StaticSplitExtensionCoverageComplete staticSplit canonicalUniverse := by
+  constructor
+  · intro c
+    exact canonicalUniverse.covers (staticSplit.extension.coreEmbedding c)
+  · constructor
+    · intro f
+      exact canonicalUniverse.covers (staticSplit.extension.featureEmbedding f)
+    · constructor
+      · intro src dst hEdge
+        exact canonicalUniverse.edgeClosed hEdge
+      · trivial
+
+inductive RuntimeEdge : ExtendedComponent -> ExtendedComponent -> Prop where
+  | couponToDeclaredPort :
+      RuntimeEdge .couponService .declaredPaymentPort
+  | declaredPortToPaymentApi :
+      RuntimeEdge .declaredPaymentPort .paymentApi
+
+def runtimeGraph : RuntimeDependencyGraph ExtendedComponent where
+  edge := RuntimeEdge
+
+def runtimeAllowed (src dst : ExtendedComponent) : Prop :=
+  RuntimeEdge src dst
+
+inductive SemanticExpr where
+  | directCheckout
+  | portMediatedCheckout
+  deriving DecidableEq, Repr
+
+def semantic : Semantics SemanticExpr Unit where
+  eval := fun _ => ()
+
+def selectedSemanticDiagram : RequiredDiagram SemanticExpr where
+  lhs := .directCheckout
+  rhs := .portMediatedCheckout
+
+def measuredSemanticDiagrams : List (RequiredDiagram SemanticExpr) :=
+  [selectedSemanticDiagram]
+
+def requiredSemantic : RequiredDiagram SemanticExpr -> Prop :=
+  RequiredDiagramsByList measuredSemanticDiagrams
+
+theorem semanticCoverage :
+    CoversRequired requiredSemantic measuredSemanticDiagrams :=
+  coversRequired_requiredDiagramsByList_self measuredSemanticDiagrams
+
+def trivialProjection : InterfaceProjection ExtendedComponent Unit where
+  expose := fun _ => ()
+
+def trivialAbstractGraph : AbstractGraph Unit where
+  edge := fun _ _ => True
+
+def trivialStaticObservation : Observation ExtendedComponent Unit where
+  observe := fun _ => ()
+
+def boundaryAllowed (_src _dst : ExtendedComponent) : Prop :=
+  True
+
+def abstractionAllowed (_src _dst : ExtendedComponent) : Prop :=
+  True
+
+def canonicalLayer : Layering ExtendedComponent
+  | .paymentApi => 0
+  | .paymentAdapter => 0
+  | .internalCache => 0
+  | .declaredPaymentPort => 1
+  | .couponService => 2
+
+theorem strictLayering :
+    StrictLayering staticSplit.extension.extended canonicalLayer := by
+  intro src dst hEdge
+  cases hEdge <;> decide
+
+theorem walkAcyclic : WalkAcyclic staticSplit.extension.extended :=
+  walkAcyclic_of_acyclic
+    (acyclic_of_strictLayering strictLayering)
+
+theorem projectionSound :
+    ProjectionSound staticSplit.extension.extended trivialProjection
+      trivialAbstractGraph := by
+  intro src dst _hEdge
+  trivial
+
+theorem lspCompatible :
+    LSPCompatible trivialProjection trivialStaticObservation := by
+  intro x y _hSameAbstraction
+  rfl
+
+def canonicalFlatnessModel :
+    ArchitectureFlatnessModel ExtendedComponent Unit Unit SemanticExpr Unit :=
+  LawfulExtensionFlatnessModel staticSplit runtimeGraph trivialProjection
+    trivialAbstractGraph trivialStaticObservation boundaryAllowed
+    abstractionAllowed runtimeAllowed semantic requiredSemantic
+    measuredSemanticDiagrams
+
+theorem runtimeCoverage :
+    RuntimeCoverageComplete canonicalFlatnessModel canonicalUniverse := by
+  intro src dst _hEdge
+  exact ⟨canonicalUniverse.covers src, canonicalUniverse.covers dst⟩
+
+theorem runtimeInteractionProtected :
+    RuntimeInteractionProtected canonicalFlatnessModel canonicalUniverse := by
+  intro src dst hEdge _hSrc _hDst
+  exact hEdge
+
+theorem featureDiagramsCommute :
+    FeatureDiagramsCommute canonicalFlatnessModel := by
+  intro d hMeasured
+  change d ∈ measuredSemanticDiagrams at hMeasured
+  simp [measuredSemanticDiagrams] at hMeasured
+  cases hMeasured
+  rfl
+
+def runtimeSemanticPreservation :
+    RuntimeSemanticSplitPreservation canonicalFlatnessModel canonicalUniverse where
+  runtimeInteractionProtected := runtimeInteractionProtected
+  featureDiagramsCommute := featureDiagramsCommute
+
+def splitFeatureExtensionWithin :
+    SplitFeatureExtensionWithin staticSplit runtimeGraph trivialProjection
+      trivialAbstractGraph trivialStaticObservation boundaryAllowed
+      abstractionAllowed runtimeAllowed semantic requiredSemantic
+      measuredSemanticDiagrams canonicalUniverse :=
+  splitFeatureExtensionWithin_of_runtimeSemanticSplitPreservation
+    (S := staticSplit)
+    (runtime := runtimeGraph)
+    (projection := trivialProjection)
+    (abstractStatic := trivialAbstractGraph)
+    (staticObservation := trivialStaticObservation)
+    (boundaryAllowed := boundaryAllowed)
+    (abstractionAllowed := abstractionAllowed)
+    (runtimeAllowed := runtimeAllowed)
+    (semantic := semantic)
+    (requiredSemantic := requiredSemantic)
+    (measuredSemantic := measuredSemanticDiagrams)
+    canonicalUniverse
+    extensionCoverage
+    (by intro src dst _hAllowed; trivial)
+    (by intro src dst _hAllowed; trivial)
+    walkAcyclic
+    projectionSound
+    lspCompatible
+    runtimeCoverage
+    semanticCoverage
+    runtimeSemanticPreservation
+
+theorem architectureFlatWithin :
+    ArchitectureFlatWithin canonicalFlatnessModel canonicalUniverse :=
+  architectureFlatWithin_of_splitFeatureExtensionWithin
+    splitFeatureExtensionWithin
+
+theorem noUnmeasuredRequiredAxis :
+    NoUnmeasuredRequiredAxis canonicalFlatnessModel canonicalUniverse :=
+  noUnmeasuredRequiredAxis_of_architectureFlatWithin architectureFlatWithin
+
+theorem exactObservationBridge :
+    ExactFlatnessObservation canonicalFlatnessModel canonicalUniverse :=
+  exactFlatnessObservation_of_exhaustiveCoverage
+    (X := canonicalFlatnessModel)
+    (U := canonicalUniverse)
+    noUnmeasuredRequiredAxis
+
+theorem recordsNonConclusions :
+    SplitFeatureExtensionWithinNonConclusions staticSplit canonicalUniverse :=
+  splitFeatureExtensionWithin_recordsNonConclusions
+    splitFeatureExtensionWithin
+
+end ThreeLayerFlatnessPositiveExample
 
 end Formal.Arch
