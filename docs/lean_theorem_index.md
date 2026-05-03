@@ -313,12 +313,31 @@ File: `Formal/Arch/Extension/FeatureExtensionExamples.lean`
 | `SelectedSplitExtensionLiftingExample.selectedStep_coreInvariant_target_of_source` | `theorem` | preservation package accessor から selected core invariant preservation を取り出す。 | `proved` |
 | `SelectedSplitExtensionLiftingExample.selectedStep_liftedSource_observes` | `theorem` | preservation package accessor から lifted source の selected feature observation law を取り出す。 | `proved` |
 | `SelectedSplitExtensionLiftingExample.selectedStep_liftedTarget_observes` | `theorem` | preservation package accessor から lifted target の selected feature observation law を取り出す。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.staticSplit` | `def` | repaired coupon extension を bounded three-layer flatness example の static split package として再利用する。 | `defined only` |
+| `ThreeLayerFlatnessPositiveExample.selectedStaticSplit` | `theorem` | concrete static evidence として selected static split predicate を取り出す。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.canonicalUniverse` | `def` | repaired coupon extended graph の finite `ComponentUniverse`。 | `defined only` |
+| `ThreeLayerFlatnessPositiveExample.extensionCoverage` | `theorem` | static split extension の core / feature embeddings と extended static edges が selected universe で cover されることを示す。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.runtimeGraph` | `def` | coupon service から declared port、declared port から payment API への selected runtime interaction graph。 | `defined only` |
+| `ThreeLayerFlatnessPositiveExample.runtimeInteractionProtected` | `theorem` | selected runtime interactions が selected runtime policy を満たすことを示す。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.selectedSemanticDiagram` | `def` | direct checkout と port-mediated checkout を比較する selected semantic diagram。 | `defined only` |
+| `ThreeLayerFlatnessPositiveExample.semanticCoverage` | `theorem` | selected semantic diagram universe が required semantic diagrams を cover することを示す。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.featureDiagramsCommute` | `theorem` | measured semantic diagram が commute することを示す。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.runtimeSemanticPreservation` | `def` | runtime interaction protection と selected semantic commutation を `RuntimeSemanticSplitPreservation` として束ねる。 | `defined only` |
+| `ThreeLayerFlatnessPositiveExample.splitFeatureExtensionWithin` | `def` | static split、coverage、static side conditions、runtime / semantic preservation、non-conclusions を `SplitFeatureExtensionWithin` として束ねる。 | `defined only` |
+| `ThreeLayerFlatnessPositiveExample.architectureFlatWithin` | `theorem` | `architectureFlatWithin_of_splitFeatureExtensionWithin` から bounded `ArchitectureFlatWithin` を得る positive canonical theorem。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.noUnmeasuredRequiredAxis` | `theorem` | bounded theorem package から selected coverage package を取り出す。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.exactObservationBridge` | `theorem` | selected coverage に相対化した exact observation bridge を得る。extractor / telemetry completeness は含めない。 | `proved` |
+| `ThreeLayerFlatnessPositiveExample.recordsNonConclusions` | `theorem` | bounded split package が global `ArchitectureFlat`、extractor completeness、runtime / semantic completeness を自動導出しない marker を保持することを示す。 | `proved` |
 
 Non-conclusions: coupon static canonical example は静的 split と selected hidden dependency
 witness に限る。runtime flatness、semantic flatness、extractor completeness は主張しない。
 selected split-extension lifting positive example は一つの selected feature step と local
 compatibility package に限る。strict section/retraction equality、全 component の一意分解、
 all feature steps の automatic lifting、global semantic completeness は主張しない。
+three-layer flatness positive example は selected finite component universe、selected runtime
+interaction graph、selected measured semantic diagram に相対化された bounded
+`ArchitectureFlatWithin` に限る。global `ArchitectureFlat`、extractor completeness、
+telemetry completeness、global semantic completeness は主張しない。
 
 ## Split Extension Lifting
 
