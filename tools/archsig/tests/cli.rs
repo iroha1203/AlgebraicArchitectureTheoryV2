@@ -13,6 +13,10 @@ fn module_root_fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/module_root")
 }
 
+fn air_fixture_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/air")
+}
+
 fn temp_dir(test_name: &str) -> PathBuf {
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -24,10 +28,7 @@ fn temp_dir(test_name: &str) -> PathBuf {
 }
 
 fn run_sig0(args: &[&str]) {
-    let output = Command::new(env!("CARGO_BIN_EXE_archsig"))
-        .args(args)
-        .output()
-        .expect("archsig command runs");
+    let output = run_sig0_output(args);
     assert!(
         output.status.success(),
         "command failed\nstdout:\n{}\nstderr:\n{}",
@@ -36,9 +37,155 @@ fn run_sig0(args: &[&str]) {
     );
 }
 
+fn run_sig0_output(args: &[&str]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_archsig"))
+        .args(args)
+        .output()
+        .expect("archsig command runs")
+}
+
 fn read_json(path: &Path) -> Value {
     let contents = fs::read_to_string(path).expect("json output is readable");
     serde_json::from_str(&contents).expect("json output parses")
+}
+
+#[test]
+fn cli_validate_air_accepts_canonical_fixtures() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("validate-air-fixtures");
+    for fixture in [
+        "good_extension.json",
+        "hidden_interaction.json",
+        "policy_violation.json",
+        "unmeasured_runtime_semantic.json",
+    ] {
+        let report = out_dir.join(format!("{fixture}.report.json"));
+        run_sig0(&[
+            "validate-air",
+            "--input",
+            root.join(fixture).to_str().expect("fixture path is utf-8"),
+            "--out",
+            report.to_str().expect("report path is utf-8"),
+        ]);
+
+        let json = read_json(&report);
+        assert_eq!(json["schemaVersion"], "aat-air-validation-report-v0");
+        assert_eq!(json["summary"]["result"], "pass");
+        assert_eq!(json["summary"]["failedCheckCount"], 0);
+    }
+}
+
+#[test]
+fn cli_validate_air_detects_dangling_refs_and_boundary_mismatch() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("validate-air-invalid");
+    let input = out_dir.join("invalid-air.json");
+    let report = out_dir.join("invalid-air-report.json");
+    let mut json = read_json(&root.join("good_extension.json"));
+
+    json["relations"][0]["to"] = serde_json::json!("MissingComponent");
+    json["claims"][0]["measurementBoundary"] = serde_json::json!("unmeasured");
+    json["extension"]["interactionClaimRefs"] = serde_json::json!(["claim-missing"]);
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("invalid AIR is written");
+
+    let output = run_sig0_output(&[
+        "validate-air",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "invalid AIR should fail\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "fail");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-component-refs-resolved" && check["result"] == "fail")
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["id"] == "air-claim-boundary-compatible" && check["result"] == "fail"
+            )
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-claim-refs-resolved" && check["result"] == "fail")
+    );
+}
+
+#[test]
+fn cli_validate_air_can_escalate_missing_measured_evidence_to_failure() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("validate-air-strict");
+    let input = out_dir.join("missing-evidence-air.json");
+    let warn_report = out_dir.join("warn-report.json");
+    let strict_report = out_dir.join("strict-report.json");
+    let mut json = read_json(&root.join("good_extension.json"));
+
+    json["claims"][0]["evidenceRefs"] = serde_json::json!([]);
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("AIR with missing measured evidence is written");
+
+    run_sig0(&[
+        "validate-air",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        warn_report.to_str().expect("warn report path is utf-8"),
+    ]);
+    let warn = read_json(&warn_report);
+    assert_eq!(warn["summary"]["result"], "warn");
+    assert!(
+        warn["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-measured-claims-have-evidence"
+                && check["result"] == "warn")
+    );
+
+    let output = run_sig0_output(&[
+        "validate-air",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--strict-measured-evidence",
+        "--out",
+        strict_report.to_str().expect("strict report path is utf-8"),
+    ]);
+    assert!(!output.status.success(), "strict validation should fail");
+    let strict = read_json(&strict_report);
+    assert_eq!(strict["summary"]["result"], "fail");
+    assert!(
+        strict["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-measured-claims-have-evidence"
+                && check["result"] == "fail")
+    );
 }
 
 #[test]
