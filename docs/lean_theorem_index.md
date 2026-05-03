@@ -1048,6 +1048,26 @@ valid certificate.
 | `NoSolutionCertificate.sound_of_valid` | `theorem` | `ValidNoSolutionCertificate` から `NoArchitectureSatisfies` を得る。 | `proved` |
 | `NoSolutionCertificate.RecordsNonConclusions` | `def` | certificate package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 
+File: `Formal/Arch/Repair/RepairSynthesisExamples.lean`
+
+Issue [#477](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/477)
+は、上記 schema を小さい finite state / witness universe で読むための concrete example を追加する。
+example は selected universe に相対化され、全 obstruction removal、solver completeness、
+global flatness preservation、empirical cost 改善は主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `RepairSynthesisExamples.smallRepairStates` / `smallRepairWitnesses` | `def` | repair example の小さい state / witness universe を列挙する。 | `defined only` |
+| `RepairSynthesisExamples.smallRepairStates_complete` / `smallRepairWitnesses_complete` | `theorem` | 小さい repair state / witness universe の列挙が各型を覆うこと。 | `proved` |
+| `RepairSynthesisExamples.selectedLeakUniverse` | `def` | selected leak witness だけを測る二状態 repair universe。 | `defined only` |
+| `RepairSynthesisExamples.splitFeatureStep_decreases` | `theorem` | concrete repair step で selected obstruction measure が減少すること。 | `proved` |
+| `RepairSynthesisExamples.smallFiniteRepairPackage` | `def` | bounded plan と non-conclusions を束ねた concrete `FiniteRepairPackage`。 | `defined only` |
+| `RepairSynthesisExamples.smallFiniteRepair_selectedObstructionsCleared` | `theorem` | `FiniteRepairPackage.selectedObstructionsCleared` を concrete package に適用する例。 | `proved` |
+| `RepairSynthesisExamples.smallSynthesisSoundnessPackage` | `def` | 小さい candidate synthesis system の soundness package。 | `defined only` |
+| `RepairSynthesisExamples.smallSynthesis_candidate_satisfies` | `theorem` | `SynthesisSoundnessPackage.candidate_satisfies` を concrete candidate に適用する例。 | `proved` |
+| `RepairSynthesisExamples.conflictingRequirementsCertificatePackage` | `def` | conflicting requirements に対する小さい no-solution certificate package。 | `defined only` |
+| `RepairSynthesisExamples.smallNoSolution_from_valid_certificate` | `theorem` | `NoSolutionCertificate.sound_of_valid` を valid certificate に適用する例。 | `proved` |
+
 ## Architecture Extension Formula
 
 File: `Formal/Arch/Extension/ArchitectureExtensionFormula.lean`
