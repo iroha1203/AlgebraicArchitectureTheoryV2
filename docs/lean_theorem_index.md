@@ -1317,6 +1317,54 @@ strict section / retraction equality、全 feature step の automatic lifting、
 全 split failure が filling failure であるという completeness、実コード extractor completeness は
 結論しない。
 
+## Chapter 10 Architecture Extension Formula Entrypoint
+
+File: `Formal/Arch/Evolution/Chapter10ArchitectureExtensionFormula.lean`
+
+親 Issue [#457](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/457)
+と Issue [#461](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/461)
+は、第10章 Structural Architecture Extension Formula の中核 theorem と、
+filling / lifting / complexity-transfer / residual-coverage bridge API を
+docs-facing な公開入口として整理する作業である。
+
+`Chapter10ArchitectureExtensionFormula.Candidate` は docs-facing な候補名、
+設計書の節番号、代表 Lean declaration 名、schematic name correspondence、
+non-conclusion boundary を束ねる軽量 API である。この module は既存 API を
+横断 import / metadata として索引するだけであり、disjoint decomposition、
+global witness completeness、universe-wide obstruction coverage、
+実コード extractor completeness を新たに主張しない。
+
+| 設計書 | 候補 | 代表 Lean entrypoint | Status | Bounded reading / non-conclusion boundary |
+| --- | --- | --- | --- | --- |
+| 10 | Extension obstruction universe | `ExtensionCoverage`, `ExtensionObstructionClass`, `ExtensionObstructionWitness`, `MultiLabelExtensionObstructionWitness`, `ExtensionObstructionWitness.toMultiLabel`, `ExtensionObstructionWitness.toMultiLabel_label_iff`, `ExtensionObstructionWitness.toMultiLabel_classifiesAs` | `defined only` / `proved` | selected witness carrier と single-label から multi-label への payload-preserving bridge。universe-wide obstruction coverage や extractor completeness は主張しない。 |
+| 10 | Non-split witness package | `SelectedSplitExtension`, `SelectedExtensionObstructionWitness`, `SelectedExtensionObstructionWitnessExists`, `NonSplitExtensionWitnessPackage`, `NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension` | `defined only` / `proved` | soundness と、明示的な coverage / exactness assumptions 下の bounded completeness に限る。 |
+| 10 | Single-label structural classification | `ClassifiedAsInheritedCore`, `ClassifiedAsFeatureLocal`, `ClassifiedAsInteraction`, `ClassifiedAsLiftingFailure`, `ClassifiedAsFillingFailure`, `ClassifiedAsComplexityTransfer`, `ClassifiedAsResidualCoverageGap`, `ArchitectureExtensionFormula_structural` | `defined only` / `proved` | selected single-label witness が 7 分類 predicate の少なくとも一つに入る coverage theorem。分類の互いに素性や global completeness は主張しない。 |
+| 10 | Multi-label structural classification | `MultiLabelClassifiedAsInheritedCore`, `MultiLabelClassifiedAsFeatureLocal`, `MultiLabelClassifiedAsInteraction`, `MultiLabelClassifiedAsLiftingFailure`, `MultiLabelClassifiedAsFillingFailure`, `MultiLabelClassifiedAsComplexityTransfer`, `MultiLabelClassifiedAsResidualCoverageGap`, `ArchitectureExtensionFormula_multilabel_structural` | `defined only` / `proved` | 同一 witness の複数 label を許す coverage layer。single-label 化や disjointness は主張しない。 |
+| 10 / 9 | Filling failure bridge | `FillingFailureWitnessPayload`, `fillingFailureExtensionObstructionWitness`, `fillingFailureExtensionObstructionWitness_classified`, `FillingFailureRefutesSplit`, `not_selectedSplitExtension_of_fillingFailurePayload`, `FillingFailureBridgePackage.toNonSplitExtensionWitnessPackage`, `fillingFailureExtensionObstructionWitness_multilabel_classified` | `defined only` / `proved` | selected diagram non-fillability payload を `.fillingFailure` へ分類する bridge。任意の split failure は結論しない。 |
+| 10 / 9.2 | Lifting failure bridge | `LiftingFailureWitnessPayload`, `liftingFailureExtensionObstructionWitness`, `liftingFailureExtensionObstructionWitness_classified`, `not_compatibleWithInterface_of_liftingFailurePayload`, `liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage`, `liftingFailureExtensionObstructionWitness_multilabel_classified` | `defined only` / `proved` | selected feature step ごとの lifting preservation package 不在を `.liftingFailure` へ分類する bridge。strict equality、global split completeness、all-step lifting は主張しない。 |
+| 10 / 7.4 | Complexity transfer bridge | `ComplexityTransferWitnessPayload`, `complexityTransferExtensionObstructionWitness`, `complexityTransferExtensionObstructionWitness_classified`, `complexityTransferExtensionObstructionWitnessExists_of_transferredTo`, `complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination`, `complexityTransferExtensionObstructionWitness_multilabel_classified` | `defined only` / `proved` | selected runtime / semantic / policy transfer witness を `.complexityTransfer` へ分類する bridge。global conservation や empirical cost theorem は主張しない。 |
+| 10 / FeatureExtension coverage | Residual coverage gap bridge | `ResidualCoverageGapWitnessPayload`, `residualCoverageGapExtensionObstructionWitness`, `residualCoverageGapExtensionObstructionWitness_classified`, `not_extensionCoverage_of_residualCoverageGapPayload`, `residualCoverageGapExtensionObstructionWitnessExists_of_extensionCoverageWitnessExists`, `residualCoverageGapExtensionObstructionWitnessExists_of_not_extensionCoverage`, `residualCoverageGapExtensionObstructionWitness_multilabel_classified` | `defined only` / `proved` | selected extension-coverage diagnostic を `.residualCoverageGap` へ分類する bridge。static split law failure、runtime / semantic flatness failure、extractor completeness は主張しない。 |
+
+### Chapter 10 schematic name correspondence
+
+| 設計書の schematic name | 対応する Lean API | 読み替え |
+| --- | --- | --- |
+| `ExtensionObstructionClass` | `ExtensionObstructionClass`, `ExtensionObstructionWitness`, `MultiLabelExtensionObstructionWitness` | selected extension-obstruction witness の bounded classification carrier。 |
+| single-label witness embedded into multi-label layer | `ExtensionObstructionWitness.toMultiLabel`, `ExtensionObstructionWitness.toMultiLabel_label_iff`, `ExtensionObstructionWitness.toMultiLabel_classifiesAs` | payload を保存し、元の single label を multi-label witness の label predicate として読む bridge。 |
+| selected non-split witness package | `NonSplitExtensionWitnessPackage`, `NonSplitExtensionWitnessPackage.not_selectedSplitExtension_of_selectedExtensionObstructionWitness`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_of_not_selectedSplitExtension`, `NonSplitExtensionWitnessPackage.selectedExtensionObstructionWitnessExists_iff_not_selectedSplitExtension` | soundness と bounded completeness は selected witness coverage / exactness assumptions に相対化する。 |
+| `ArchitectureExtensionFormula_structural` | `ArchitectureExtensionFormula_structural` | selected single-label witness が 7 分類 predicate の少なくとも一つに入ること。 |
+| `ArchitectureExtensionFormula_multilabel_structural` | `ArchitectureExtensionFormula_multilabel_structural` | selected multi-label witness が 7 multi-label predicate の少なくとも一つに入ること。 |
+| filling failure classified as extension obstruction | `FillingFailureWitnessPayload`, `fillingFailureExtensionObstructionWitness`, `fillingFailureExtensionObstructionWitness_classified`, `fillingFailureExtensionObstructionWitness_multilabel_classified` | selected diagram non-fillability payload を `.fillingFailure` classification layer に埋め込む。 |
+| lifting failure classified as extension obstruction | `LiftingFailureWitnessPayload`, `liftingFailureExtensionObstructionWitness`, `liftingFailureExtensionObstructionWitness_classified`, `liftingFailureExtensionObstructionWitnessExists_of_not_liftingPreservationPackage`, `liftingFailureExtensionObstructionWitness_multilabel_classified` | selected lifting preservation package の不在を `.liftingFailure` classification layer に埋め込む。 |
+| complexity transfer classified as extension obstruction | `ComplexityTransferWitnessPayload`, `complexityTransferExtensionObstructionWitness`, `complexityTransferExtensionObstructionWitness_classified`, `complexityTransferExtensionObstructionWitnessExists_of_no_free_elimination`, `complexityTransferExtensionObstructionWitness_multilabel_classified` | selected runtime / semantic / policy transfer witness を `.complexityTransfer` classification layer に埋め込む。 |
+| residual coverage gap classified as extension obstruction | `ResidualCoverageGapWitnessPayload`, `residualCoverageGapExtensionObstructionWitness`, `residualCoverageGapExtensionObstructionWitness_classified`, `residualCoverageGapExtensionObstructionWitnessExists_of_not_extensionCoverage`, `residualCoverageGapExtensionObstructionWitness_multilabel_classified` | selected extension-coverage diagnostic を `.residualCoverageGap` classification layer に埋め込む。 |
+
+Non-conclusions: この統合入口は、第10章の既存 structural classification theorem と
+bridge API を索引するだけである。分類の互いに素性、global witness completeness、
+global obstruction completeness、universe-wide obstruction coverage、
+runtime / semantic universe completeness、実コード extractor completeness、
+global complexity conservation、empirical cost 改善は結論しない。
+
 ## Architecture Path
 
 File: `Formal/Arch/Evolution/ArchitecturePath.lean`
