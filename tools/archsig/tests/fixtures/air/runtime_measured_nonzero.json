@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-runtime-measured-nonzero",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-runtime-nonzero",
+    "after": "after-runtime-nonzero"
+  },
+  "feature": {
+    "featureId": "#canonical-runtime-nonzero",
+    "title": "Measure runtime exposure witness",
+    "description": "Runtime edge evidence produces a nonzero exposure radius",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-sig0",
+      "kind": "sig0",
+      "schemaVersion": "archsig-sig0-v0",
+      "path": "canonical/runtime/nonzero/sig0.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-sig0",
+      "kind": "observation_result",
+      "artifactRef": "artifact-sig0",
+      "path": "canonical/runtime/nonzero/sig0.json",
+      "symbol": null,
+      "line": null,
+      "ruleId": "archsig-sig0-v0",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-static-coupon-port",
+      "kind": "source_location",
+      "artifactRef": "artifact-sig0",
+      "path": "src/user_service.rs",
+      "symbol": "UserService",
+      "line": 12,
+      "ruleId": "declared-interface",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-runtime-coupon",
+      "kind": "runtime_trace",
+      "artifactRef": "artifact-sig0",
+      "path": "runtime/routes.json",
+      "symbol": "userCallsCoupon",
+      "line": 17,
+      "ruleId": "grpc",
+      "confidence": "fixture"
+    }
+  ],
+  "components": [
+    {
+      "id": "UserService",
+      "kind": "service",
+      "lifecycle": "unchanged",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "CouponPort",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-static-coupon-port",
+      "layer": "static",
+      "from": "UserService",
+      "to": "CouponPort",
+      "kind": "import",
+      "lifecycle": "added",
+      "protectedBy": null,
+      "extractionRule": "lean-import",
+      "evidenceRefs": ["evidence-static-coupon-port"]
+    },
+    {
+      "id": "relation-runtime-coupon",
+      "layer": "runtime",
+      "from": "UserService",
+      "to": "CouponService",
+      "kind": "grpc",
+      "lifecycle": "added",
+      "protectedBy": "unknown",
+      "extractionRule": "runtime-edge-projection-v0",
+      "evidenceRefs": ["evidence-runtime-coupon"]
+    }
+  ],
+  "policies": {
+    "laws": ["policy:canonical-layering"],
+    "boundaries": ["feature depends on declared interface"],
+    "allowedEdges": ["UserService->CouponPort"],
+    "forbiddenEdges": [],
+    "abstractionRules": ["declared-interface-only"],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [],
+  "architecturePaths": [],
+  "homotopyGenerators": [],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "boundaryViolationCount",
+        "value": 0,
+        "measured": true,
+        "measurementBoundary": "measuredZero",
+        "source": "policy:canonical-layering",
+        "reason": null
+      },
+      {
+        "axis": "runtimePropagation",
+        "value": 2,
+        "measured": true,
+        "measurementBoundary": "measuredNonzero",
+        "source": "runtime-edge-projection-v0",
+        "reason": null
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "static",
+        "measurementBoundary": "measuredZero",
+        "universeRefs": ["artifact-sig0"],
+        "measuredAxes": ["boundaryViolationCount"],
+        "unmeasuredAxes": [],
+        "extractionScope": ["static dependency graph"],
+        "exactnessAssumptions": ["policy selector is complete for this fixture"],
+        "unsupportedConstructs": []
+      },
+      {
+        "layer": "runtime",
+        "measurementBoundary": "measuredNonzero",
+        "universeRefs": ["artifact-sig0"],
+        "measuredAxes": ["runtimePropagation"],
+        "unmeasuredAxes": [],
+        "projectionRule": "runtime-edge-projection-v0",
+        "extractionScope": [
+          "runtime edge evidence JSON",
+          "0/1 runtime dependency graph over measured component pairs"
+        ],
+        "exactnessAssumptions": [
+          "runtime-edge-projection-v0 maps each observed component pair to one runtime edge",
+          "runtime evidence component ids resolve inside the AIR component universe"
+        ],
+        "unsupportedConstructs": []
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-boundary-zero",
+      "subjectRef": "signature.boundaryViolationCount",
+      "predicate": "boundary policy has measured zero violations",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredZero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-sig0"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["policy selector is complete for this fixture"],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["tooling measurement is not a Lean proof"]
+    },
+    {
+      "claimId": "claim-runtime-exposure-radius",
+      "subjectRef": "signature.runtimePropagation",
+      "predicate": "runtimePropagation is measured runtime exposure radius",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-sig0", "evidence-runtime-coupon"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["runtime edge evidence coverage"],
+      "exactnessAssumptions": ["runtime-edge-projection-v0 exactness"],
+      "missingPreconditions": [],
+      "nonConclusions": [
+        "runtime blast radius is not concluded",
+        "formal runtime zero bridge is not concluded"
+      ]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": null,
+    "featureViewClaimRef": null,
+    "interactionClaimRefs": ["claim-boundary-zero", "claim-runtime-exposure-radius"],
+    "splitClaimRef": null,
+    "splitStatus": "split"
+  }
+}
