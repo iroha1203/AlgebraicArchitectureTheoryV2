@@ -50,6 +50,113 @@ fn read_json(path: &Path) -> Value {
 }
 
 #[test]
+fn cli_feature_report_classifies_good_static_fixture_as_split() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-good");
+    let report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("good_extension.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "feature-extension-report-v0");
+    assert_eq!(json["architectureId"], "canonical-good-extension");
+    assert_eq!(json["splitStatus"], "split");
+    assert_eq!(json["reviewSummary"]["claimClassification"], "MEASURED");
+    assert!(
+        !json["preservedInvariants"]
+            .as_array()
+            .expect("preserved invariants are an array")
+            .is_empty()
+    );
+    assert!(
+        json["introducedObstructionWitnesses"]
+            .as_array()
+            .expect("witnesses are an array")
+            .is_empty()
+    );
+    assert!(
+        json["coverageGaps"]
+            .as_array()
+            .expect("coverage gaps are an array")
+            .iter()
+            .any(|gap| gap["layer"] == "runtime" && gap["measurementBoundary"] == "UNMEASURED")
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("non-conclusions are an array")
+            .iter()
+            .any(|conclusion| conclusion == "static split does not conclude runtime flatness")
+    );
+}
+
+#[test]
+fn cli_feature_report_surfaces_static_obstruction_witnesses() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-obstructions");
+
+    for (fixture, expected_kind) in [
+        ("hidden_interaction.json", "hidden_interaction"),
+        ("policy_violation.json", "policy_violation"),
+    ] {
+        let report = out_dir.join(format!("{fixture}.report.json"));
+        run_sig0(&[
+            "feature-report",
+            "--air",
+            root.join(fixture).to_str().expect("fixture path is utf-8"),
+            "--out",
+            report.to_str().expect("report path is utf-8"),
+        ]);
+
+        let json = read_json(&report);
+        assert_eq!(json["splitStatus"], "non_split");
+        assert!(
+            json["introducedObstructionWitnesses"]
+                .as_array()
+                .expect("witnesses are an array")
+                .iter()
+                .any(|witness| witness["kind"] == expected_kind)
+        );
+    }
+}
+
+#[test]
+fn cli_feature_report_keeps_unmeasured_extension_unmeasured() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-unmeasured");
+    let report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("unmeasured_runtime_semantic.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["splitStatus"], "unmeasured");
+    assert_eq!(json["reviewSummary"]["claimClassification"], "UNMEASURED");
+    assert!(
+        json["coverageGaps"]
+            .as_array()
+            .expect("coverage gaps are an array")
+            .iter()
+            .any(|gap| gap["measurementBoundary"] == "UNMEASURED")
+    );
+}
+
+#[test]
 fn cli_validate_air_accepts_canonical_fixtures() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-fixtures");

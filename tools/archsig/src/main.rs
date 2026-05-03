@@ -6,12 +6,13 @@ use std::process::ExitCode;
 
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
-    DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, RepositoryRevisionRef, ScanMetadata,
-    Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
-    SnapshotRepositoryRef, build_air_document, build_empirical_dataset,
-    build_pr_metadata_from_github_files, build_signature_diff_report,
-    build_signature_snapshot_record, extract_relation_complexity_observation_from_file,
-    extract_sig0_with_runtime, validate_air_document_report, validate_component_universe_report,
+    DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0, RepositoryRevisionRef,
+    ScanMetadata, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
+    SnapshotRecordInput, SnapshotRepositoryRef, build_air_document, build_empirical_dataset,
+    build_feature_extension_report, build_pr_metadata_from_github_files,
+    build_signature_diff_report, build_signature_snapshot_record,
+    extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
+    validate_air_document_report, validate_component_universe_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -272,6 +273,17 @@ enum Command {
         #[arg(long)]
         strict_measured_evidence: bool,
     },
+
+    /// Build a static Feature Extension Report v0 from an AIR v0 document.
+    FeatureReport {
+        /// Input AIR JSON path.
+        #[arg(long)]
+        air: PathBuf,
+
+        /// Output Feature Extension Report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -491,6 +503,13 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             } else {
                 ExitCode::SUCCESS
             })
+        }
+        Some(Command::FeatureReport { air, out }) => {
+            let document: AirDocumentV0 = read_json(&air)?;
+            let report: FeatureExtensionReportV0 =
+                build_feature_extension_report(&document, &air.display().to_string());
+            write_json(out, &report)?;
+            Ok(ExitCode::SUCCESS)
         }
         None => {
             let document = extract_sig0_with_runtime(
