@@ -231,7 +231,7 @@ pub fn build_air_document(
             axes: signature_axes.clone(),
         },
         coverage: AirCoverage {
-            layers: air_coverage_layers(&signature_axes),
+            layers: air_coverage_layers(&signature_axes, sig0),
         },
         claims,
         operation_trace: AirOperationTrace {
@@ -505,7 +505,10 @@ fn stable_id_fragment(value: &str) -> String {
         .collect()
 }
 
-fn air_coverage_layers(signature_axes: &[AirSignatureAxis]) -> Vec<AirCoverageLayer> {
+fn air_coverage_layers(
+    signature_axes: &[AirSignatureAxis],
+    sig0: &Sig0Document,
+) -> Vec<AirCoverageLayer> {
     vec![
         air_coverage_layer(
             "static",
@@ -521,6 +524,8 @@ fn air_coverage_layers(signature_axes: &[AirSignatureAxis]) -> Vec<AirCoverageLa
             ],
             vec!["Lean import graph".to_string()],
             Vec::new(),
+            None,
+            Vec::new(),
         ),
         air_coverage_layer(
             "policy",
@@ -528,17 +533,10 @@ fn air_coverage_layers(signature_axes: &[AirSignatureAxis]) -> Vec<AirCoverageLa
             &["boundaryViolationCount", "abstractionViolationCount"],
             vec!["policy file".to_string()],
             vec!["policy coverage depends on selector completeness".to_string()],
+            None,
+            Vec::new(),
         ),
-        air_coverage_layer(
-            "runtime",
-            signature_axes,
-            &["runtimePropagation"],
-            vec!["runtime edge evidence JSON".to_string()],
-            vec![
-                "runtime projection is a tooling observation, not telemetry completeness"
-                    .to_string(),
-            ],
-        ),
+        air_runtime_coverage_layer(signature_axes, sig0),
         air_unmeasured_coverage_layer(
             "semantic",
             vec![
@@ -562,6 +560,8 @@ fn air_coverage_layer(
     axes: &[&str],
     extraction_scope: Vec<String>,
     exactness_assumptions: Vec<String>,
+    projection_rule: Option<String>,
+    unsupported_constructs: Vec<String>,
 ) -> AirCoverageLayer {
     let mut measured_axes = Vec::new();
     let mut unmeasured_axes = Vec::new();
@@ -585,9 +585,56 @@ fn air_coverage_layer(
         universe_refs: vec!["artifact-sig0".to_string()],
         measured_axes,
         unmeasured_axes,
+        projection_rule,
         extraction_scope,
         exactness_assumptions,
-        unsupported_constructs: Vec::new(),
+        unsupported_constructs,
+    }
+}
+
+fn air_runtime_coverage_layer(
+    signature_axes: &[AirSignatureAxis],
+    sig0: &Sig0Document,
+) -> AirCoverageLayer {
+    let Some(runtime_axis) = signature_axes
+        .iter()
+        .find(|signature_axis| signature_axis.axis == "runtimePropagation")
+    else {
+        return air_unmeasured_coverage_layer("runtime", vec!["runtimePropagation".to_string()]);
+    };
+
+    if sig0.runtime_dependency_graph.is_some() && runtime_axis.measured {
+        return AirCoverageLayer {
+            layer: "runtime".to_string(),
+            measurement_boundary: runtime_axis.measurement_boundary.clone(),
+            universe_refs: vec!["artifact-sig0".to_string()],
+            measured_axes: vec!["runtimePropagation".to_string()],
+            unmeasured_axes: Vec::new(),
+            projection_rule: Some(RUNTIME_PROJECTION_RULE_VERSION.to_string()),
+            extraction_scope: vec![
+                "runtime edge evidence JSON".to_string(),
+                "0/1 runtime dependency graph over measured component pairs".to_string(),
+            ],
+            exactness_assumptions: vec![
+                "runtime-edge-projection-v0 maps each observed component pair to one runtime edge"
+                    .to_string(),
+                "runtime evidence component ids resolve inside the AIR component universe"
+                    .to_string(),
+            ],
+            unsupported_constructs: Vec::new(),
+        };
+    }
+
+    AirCoverageLayer {
+        layer: "runtime".to_string(),
+        measurement_boundary: "unmeasured".to_string(),
+        universe_refs: Vec::new(),
+        measured_axes: Vec::new(),
+        unmeasured_axes: vec!["runtimePropagation".to_string()],
+        projection_rule: None,
+        extraction_scope: Vec::new(),
+        exactness_assumptions: Vec::new(),
+        unsupported_constructs: vec!["runtime edge evidence not provided".to_string()],
     }
 }
 
@@ -598,6 +645,7 @@ fn air_unmeasured_coverage_layer(layer: &str, unmeasured_axes: Vec<String>) -> A
         universe_refs: Vec::new(),
         measured_axes: Vec::new(),
         unmeasured_axes,
+        projection_rule: None,
         extraction_scope: Vec::new(),
         exactness_assumptions: Vec::new(),
         unsupported_constructs: vec!["extractor not implemented for this layer".to_string()],

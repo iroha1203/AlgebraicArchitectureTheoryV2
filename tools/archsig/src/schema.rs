@@ -797,6 +797,8 @@ pub struct AirCoverageLayer {
     pub universe_refs: Vec<String>,
     pub measured_axes: Vec<String>,
     pub unmeasured_axes: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub projection_rule: Option<String>,
     pub extraction_scope: Vec<String>,
     pub exactness_assumptions: Vec<String>,
     pub unsupported_constructs: Vec<String>,
