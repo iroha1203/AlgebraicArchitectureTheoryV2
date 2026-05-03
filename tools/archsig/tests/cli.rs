@@ -227,6 +227,105 @@ fn cli_relation_complexity_fixture_outputs_observation() {
 }
 
 #[test]
+fn cli_air_normalizes_sig0_validation_and_pr_metadata() {
+    let root = fixture_root();
+    let out_dir = temp_dir("air");
+    let sig0 = out_dir.join("sig0.json");
+    let validation = out_dir.join("validation.json");
+    let air = out_dir.join("air.json");
+
+    run_sig0(&[
+        "--root",
+        root.to_str().expect("fixture path is utf-8"),
+        "--policy",
+        root.join("policy_measured_zero.json")
+            .to_str()
+            .expect("policy path is utf-8"),
+        "--runtime-edges",
+        root.join("runtime_edges.json")
+            .to_str()
+            .expect("runtime path is utf-8"),
+        "--out",
+        sig0.to_str().expect("sig0 path is utf-8"),
+    ]);
+    run_sig0(&[
+        "validate",
+        "--input",
+        sig0.to_str().expect("sig0 path is utf-8"),
+        "--out",
+        validation.to_str().expect("validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "air",
+        "--sig0",
+        sig0.to_str().expect("sig0 path is utf-8"),
+        "--validation",
+        validation.to_str().expect("validation path is utf-8"),
+        "--pr-metadata",
+        root.join("pr_metadata.json")
+            .to_str()
+            .expect("metadata path is utf-8"),
+        "--law-policy",
+        root.join("policy_measured_zero.json")
+            .to_str()
+            .expect("policy path is utf-8"),
+        "--out",
+        air.to_str().expect("air path is utf-8"),
+    ]);
+
+    let json = read_json(&air);
+    assert_eq!(json["schemaVersion"], "aat-air-v0");
+    assert_eq!(json["feature"]["featureId"], "#42");
+    assert_eq!(json["revision"]["before"], "base-sha");
+    assert_eq!(json["revision"]["after"], "head-sha");
+    assert!(
+        json["relations"]
+            .as_array()
+            .expect("relations is array")
+            .iter()
+            .any(|relation| relation["layer"] == "static" && relation["kind"] == "import")
+    );
+    assert!(
+        json["relations"]
+            .as_array()
+            .expect("relations is array")
+            .iter()
+            .any(|relation| relation["layer"] == "runtime" && relation["kind"] == "grpc")
+    );
+    assert!(
+        json["signature"]["axes"]
+            .as_array()
+            .expect("axes is array")
+            .iter()
+            .any(|axis| {
+                axis["axis"] == "boundaryViolationCount"
+                    && axis["measurementBoundary"] == "measuredZero"
+            })
+    );
+    assert!(
+        json["signature"]["axes"]
+            .as_array()
+            .expect("axes is array")
+            .iter()
+            .any(|axis| {
+                axis["axis"] == "runtimePropagation"
+                    && axis["measurementBoundary"] == "measuredNonzero"
+            })
+    );
+    assert_eq!(json["extension"]["splitStatus"], "unmeasured");
+    assert!(
+        json["claims"]
+            .as_array()
+            .expect("claims is array")
+            .iter()
+            .any(|claim| {
+                claim["claimId"] == "claim-axis-boundaryviolationcount"
+                    && claim["claimClassification"] == "measured"
+            })
+    );
+}
+
+#[test]
 fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
     let fixture = fixture_root();
     let repo = temp_dir("snapshot-repo");
@@ -257,6 +356,7 @@ fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
     let pr_metadata = out_dir.join("pr-metadata.json");
     let peer_pr_metadata = out_dir.join("peer-pr-metadata.json");
     let report = out_dir.join("signature-diff.json");
+    let air = out_dir.join("air.json");
 
     run_sig0(&[
         "--root",
@@ -501,6 +601,35 @@ fn cli_snapshot_diff_reports_axes_evidence_and_pr_attribution() {
             .as_array()
             .expect("sharedWorsenedAxes is array")
             .is_empty()
+    );
+
+    run_sig0(&[
+        "air",
+        "--sig0",
+        after_sig0.to_str().expect("after sig0 path is utf-8"),
+        "--validation",
+        after_validation
+            .to_str()
+            .expect("after validation path is utf-8"),
+        "--diff",
+        report.to_str().expect("diff report path is utf-8"),
+        "--pr-metadata",
+        pr_metadata.to_str().expect("PR metadata path is utf-8"),
+        "--out",
+        air.to_str().expect("air path is utf-8"),
+    ]);
+
+    let json = read_json(&air);
+    assert_eq!(json["revision"]["before"], "before-sha");
+    assert_eq!(json["revision"]["after"], "after-sha");
+    assert!(
+        json["components"]
+            .as_array()
+            .expect("components is array")
+            .iter()
+            .any(|component| {
+                component["id"] == "Formal.Arch.C" && component["lifecycle"] == "added"
+            })
     );
 }
 
