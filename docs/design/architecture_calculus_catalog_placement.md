@@ -1,6 +1,6 @@
 # Architecture Calculus catalog placement
 
-Lean status: `design` / `future proof obligation`.
+Lean status: `defined only` / `proved` for bounded package placement; remaining global claims are `future proof obligation`.
 
 この文書は Issue [#359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/359)
 の設計決定である。数学設計書第3章の operation catalog を、Lean の public API 上で
@@ -8,10 +8,11 @@ Lean status: `design` / `future proof obligation`.
 operation tag だけから保存性、改善、runtime / semantic completeness、global flatness
 preservation を主張しない。
 
-この文書の `既存 Lean API` 欄は、API の配置先を示す。`proved` status の分類は
+この文書の `既存 Lean API` 欄は、現在の API の配置先を示す。`proved` status の分類は
 `docs/proof_obligations.md` と `docs/lean_theorem_index.md` で管理し、schema /
 accessor theorem / bounded bridge / substantive theorem を区別する。配置表に名前が
 載ることは、無条件の operation law や global flatness preservation の証明を意味しない。
+未実装または未証明の全域的な主張は、引き続き future proof obligation として扱う。
 
 ## 配置原則
 

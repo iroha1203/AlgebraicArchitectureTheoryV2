@@ -32,7 +32,7 @@ Lean status: `defined only` / module organization / docs and API design.
 | `Formal/Arch/Operation` | `Operation`, `OperationKernel`, `OperationLaws`, `OperationInvariant` | operation schema、finite operation kernel、bounded calculus laws、operation / invariant bridge。 |
 | `Formal/Arch/Patterns` | `LocalContractDesignPattern`, `SRPDesignPattern`, `ISPDesignPattern`, `StructuralDesignPattern`, `RuntimeProtectionDesignPattern`, `StateTransitionDesignPattern`, `EventSourcingSagaDesignPattern`, `ReplicatedLogDesignPattern` | design pattern を selected operation / invariant family として読む bounded theorem package。 |
 | `Formal/Arch/Repair` | `Repair`, `RepairSynthesis`, `RepairTransferCounterexample` | repair step、synthesis / no-solution certificate、repair transfer の境界例。 |
-| `Formal/Arch/Evolution` | `ArchitecturePath`, `ArchitectureEvolution`, `DiagramFiller`, `Chapter7TheoremPackages` | path / evolution / diagram filler と、Chapter 7 の docs-facing theorem package entrypoint。 |
+| `Formal/Arch/Evolution` | `ArchitecturePath`, `ArchitectureEvolution`, `DiagramFiller`, `Chapter7TheoremPackages`, `Chapter8HomotopySkeleton`, `Chapter9DiagramFilling`, `Chapter10ArchitectureExtensionFormula` | path / evolution / diagram filler と、Chapter 7 から Chapter 10 の docs-facing theorem package entrypoint。 |
 | `Formal/Arch/Examples` | `SolidCounterexample`, `StaticSemanticCounterexample` | reader-facing counterexample / example。 |
 
 この表は現在の canonical path を表す。`Formal/Arch` 直下の import-only facade は残さない。
