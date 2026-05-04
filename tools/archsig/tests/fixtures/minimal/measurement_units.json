@@ -1,0 +1,269 @@
+{
+  "schemaVersion": "measurement-unit-registry-v0",
+  "registryId": "fixture-b8-measurement-unit-registry",
+  "scope": "canonical B8 monorepo and multi-service measurement unit fixture",
+  "units": [
+    {
+      "unitId": "fixture-repository-root",
+      "unitKind": "repository-root",
+      "repositoryRoot": ".",
+      "componentIdKind": "python-module",
+      "selectedComponentRefs": [
+        "app.service",
+        "app.web"
+      ],
+      "runtimeEvidenceSources": [
+        {
+          "sourceId": "fixture-repo-runtime-trace",
+          "sourceKind": "runtime-trace",
+          "ownerUnitRef": "fixture-repository-root",
+          "path": "artifacts/runtime/repository-runtime.json",
+          "privacyBoundary": "synthetic fixture telemetry",
+          "coverageAssumptions": [
+            "runtime trace covers only the selected fixture revision",
+            "missing background jobs remain unmeasured"
+          ],
+          "unsupportedConstructs": [
+            "private-telemetry",
+            "unsampled-background-job"
+          ]
+        }
+      ],
+      "semanticWorkflowSources": [
+        {
+          "sourceId": "fixture-checkout-workflow",
+          "sourceKind": "semantic-workflow",
+          "ownerUnitRef": "fixture-repository-root",
+          "path": "docs/workflows/checkout.md",
+          "privacyBoundary": "manual workflow annotation",
+          "coverageAssumptions": [
+            "workflow evidence covers only the documented checkout path",
+            "undocumented exception flows remain unsupported"
+          ],
+          "unsupportedConstructs": [
+            "implicit-business-rule",
+            "unmapped-workflow-node"
+          ]
+        }
+      ],
+      "coverageAssumptions": [
+        "repository root is the checkout and artifact path base",
+        "service roots and deployment units are selected separately"
+      ],
+      "unsupportedConstructs": [
+        "implicit-service-boundary",
+        "private-runtime-telemetry"
+      ],
+      "outputArtifacts": [
+        "aat-air-v0",
+        "feature-extension-report-v0"
+      ],
+      "nonConclusions": [
+        "measurement unit registry is tooling validation, not a Lean theorem",
+        "selected measurement units do not conclude global architecture completeness",
+        "selected measurement units do not conclude Lean ComponentUniverse completeness",
+        "runtime or semantic adapter coverage gaps are not measured-zero evidence",
+        "private or missing evidence sources remain unmeasured unless explicitly supplied"
+      ]
+    },
+    {
+      "unitId": "fixture-billing-service",
+      "unitKind": "service-root",
+      "repositoryRoot": ".",
+      "serviceRoot": "services/billing",
+      "componentIdKind": "python-module",
+      "selectedComponentRefs": [
+        "billing.api",
+        "billing.worker"
+      ],
+      "runtimeEvidenceSources": [
+        {
+          "sourceId": "fixture-billing-service-mesh",
+          "sourceKind": "service-mesh",
+          "ownerUnitRef": "fixture-billing-service",
+          "path": "artifacts/runtime/billing-service-mesh.json",
+          "privacyBoundary": "service mesh sample",
+          "coverageAssumptions": [
+            "service mesh evidence covers only the billing service namespace",
+            "cross-namespace traffic remains unsupported unless selected"
+          ],
+          "unsupportedConstructs": [
+            "mesh-sampling-window",
+            "private-cross-namespace-traffic"
+          ]
+        }
+      ],
+      "semanticWorkflowSources": [],
+      "coverageAssumptions": [
+        "service root records source ownership, not deployment topology",
+        "selected components are bounded by the service fixture"
+      ],
+      "unsupportedConstructs": [
+        "shared-library-runtime-call",
+        "external-managed-service"
+      ],
+      "outputArtifacts": [
+        "aat-air-v0",
+        "feature-extension-report-v0"
+      ],
+      "nonConclusions": [
+        "measurement unit registry is tooling validation, not a Lean theorem",
+        "selected measurement units do not conclude global architecture completeness",
+        "selected measurement units do not conclude Lean ComponentUniverse completeness",
+        "runtime or semantic adapter coverage gaps are not measured-zero evidence",
+        "private or missing evidence sources remain unmeasured unless explicitly supplied"
+      ]
+    },
+    {
+      "unitId": "fixture-billing-worker-deployment",
+      "unitKind": "deployment-unit",
+      "repositoryRoot": ".",
+      "serviceRoot": "services/billing",
+      "deploymentUnit": "deployments/billing-worker",
+      "componentIdKind": "python-module",
+      "selectedComponentRefs": [
+        "billing.worker"
+      ],
+      "runtimeEvidenceSources": [
+        {
+          "sourceId": "fixture-billing-worker-log",
+          "sourceKind": "log",
+          "ownerUnitRef": "fixture-billing-worker-deployment",
+          "path": "artifacts/runtime/billing-worker.log.json",
+          "privacyBoundary": "redacted production log",
+          "coverageAssumptions": [
+            "log evidence covers only the selected deployment unit and retention window",
+            "redacted fields remain unmeasured"
+          ],
+          "unsupportedConstructs": [
+            "redacted-log-field",
+            "missing-retention-window"
+          ]
+        }
+      ],
+      "semanticWorkflowSources": [],
+      "coverageAssumptions": [
+        "deployment unit records runtime packaging, not full service behavior",
+        "runtime evidence is bounded by the selected deployment unit"
+      ],
+      "unsupportedConstructs": [
+        "sidecar-runtime-edge",
+        "ephemeral-job"
+      ],
+      "outputArtifacts": [
+        "aat-air-v0",
+        "feature-extension-report-v0"
+      ],
+      "nonConclusions": [
+        "measurement unit registry is tooling validation, not a Lean theorem",
+        "selected measurement units do not conclude global architecture completeness",
+        "selected measurement units do not conclude Lean ComponentUniverse completeness",
+        "runtime or semantic adapter coverage gaps are not measured-zero evidence",
+        "private or missing evidence sources remain unmeasured unless explicitly supplied"
+      ]
+    }
+  ],
+  "evidenceAdapters": [
+    {
+      "adapterId": "fixture-runtime-measurement-unit-adapter-v0",
+      "adapterKind": "runtime-evidence-adapter",
+      "measurementUnitRefs": [
+        "fixture-repository-root",
+        "fixture-billing-service",
+        "fixture-billing-worker-deployment"
+      ],
+      "measuredLayers": [
+        "runtime"
+      ],
+      "evidenceKinds": [
+        "runtime_trace",
+        "observation_result"
+      ],
+      "projectionRule": "runtime-edge-projection-v0",
+      "coverageAssumptions": [
+        "runtime evidence sources are attached to explicit measurement unit refs",
+        "repository root, service root, and deployment unit are not collapsed"
+      ],
+      "exactnessAssumptions": [
+        "runtime edge source and target ids resolve inside the selected AIR component universe",
+        "runtime traces preserve observed directed dependency edges only"
+      ],
+      "unsupportedConstructs": [
+        "private-telemetry",
+        "sampling-gap",
+        "unresolved-service-identity"
+      ],
+      "outputArtifacts": [
+        "aat-air-v0",
+        "feature-extension-report-v0"
+      ],
+      "theoremBridgePreconditions": [
+        "explicit Lean ComponentUniverse bridge precondition",
+        "AIR coverage layer matches the selected measurement unit refs"
+      ],
+      "nonConclusions": [
+        "measurement unit registry is tooling validation, not a Lean theorem",
+        "selected measurement units do not conclude global architecture completeness",
+        "selected measurement units do not conclude Lean ComponentUniverse completeness",
+        "runtime or semantic adapter coverage gaps are not measured-zero evidence",
+        "private or missing evidence sources remain unmeasured unless explicitly supplied"
+      ]
+    },
+    {
+      "adapterId": "fixture-semantic-workflow-measurement-unit-adapter-v0",
+      "adapterKind": "semantic-evidence-adapter",
+      "measurementUnitRefs": [
+        "fixture-repository-root"
+      ],
+      "measuredLayers": [
+        "semantic"
+      ],
+      "evidenceKinds": [
+        "semantic_diagram",
+        "test",
+        "manual_annotation"
+      ],
+      "projectionRule": "semantic-workflow-projection-v0",
+      "coverageAssumptions": [
+        "semantic workflow sources are selected explicitly per measurement unit",
+        "manual workflow evidence is bounded by referenced paths"
+      ],
+      "exactnessAssumptions": [
+        "workflow nodes are projected only when they resolve to selected component refs",
+        "diagram evidence preserves documented path order but not global semantic completeness"
+      ],
+      "unsupportedConstructs": [
+        "unmapped-workflow-node",
+        "implicit-business-rule",
+        "private-contract-test"
+      ],
+      "outputArtifacts": [
+        "aat-air-v0",
+        "feature-extension-report-v0"
+      ],
+      "theoremBridgePreconditions": [
+        "explicit Lean ComponentUniverse bridge precondition",
+        "AIR coverage layer matches the selected measurement unit refs"
+      ],
+      "nonConclusions": [
+        "measurement unit registry is tooling validation, not a Lean theorem",
+        "selected measurement units do not conclude global architecture completeness",
+        "selected measurement units do not conclude Lean ComponentUniverse completeness",
+        "runtime or semantic adapter coverage gaps are not measured-zero evidence",
+        "private or missing evidence sources remain unmeasured unless explicitly supplied"
+      ]
+    }
+  ],
+  "explicitAssumptions": [
+    "measurement units are selected before runtime or semantic evidence is interpreted",
+    "repository root, service root, and deployment unit boundaries are recorded separately",
+    "runtime and semantic evidence adapters trace coverage gaps to AIR and Feature Extension Report metadata"
+  ],
+  "nonConclusions": [
+    "measurement unit registry is tooling validation, not a Lean theorem",
+    "selected measurement units do not conclude global architecture completeness",
+    "selected measurement units do not conclude Lean ComponentUniverse completeness",
+    "runtime or semantic adapter coverage gaps are not measured-zero evidence",
+    "private or missing evidence sources remain unmeasured unless explicitly supplied"
+  ]
+}

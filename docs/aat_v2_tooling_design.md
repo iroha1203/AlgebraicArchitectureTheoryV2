@@ -2008,6 +2008,16 @@ plugin が formal claim level を許す場合でも、theorem precondition check
 preconditions なしには Lean theorem claim へ昇格しない。plugin output は architecture
 lawfulness、extractor completeness、unsupported gap の measured-zero 化を結論しない。
 
+monorepo / multi-service measurement unit は、runtime / semantic evidence adapter が読む
+測定 universe を固定する tooling artifact として扱う。
+`measurement-unit-registry-v0` は repository root、service root、deployment unit、
+runtime evidence source、semantic workflow source、coverage assumptions、unsupported
+constructs、non-conclusions を分けて保持する。runtime / semantic adapter は
+`measurementUnitRefs`、projection rule、coverage / exactness assumptions を AIR coverage /
+Feature Extension Report に trace する。measurement unit の選択は global architecture
+completeness、Lean `ComponentUniverse` completeness、runtime / semantic completeness、
+private / missing evidence の measured-zero 化を結論しない。
+
 Python extractor の詳細な component / root / edge policy は tooling artifact 側の規約として
 [ArchSig tooling index](design/archsig_tooling_index.md#python-component-policy) で管理する。
 この設計書では、`componentKind = "python-module"` が静的 import graph の extractor

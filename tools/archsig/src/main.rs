@@ -9,7 +9,8 @@ use archsig::{
     CustomRulePluginRegistryV0, CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
     EmpiricalDatasetInput, FeatureExtensionReportV0, FrameworkAdapterEvidenceV0,
     LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0,
-    NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
+    MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
+    NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
     ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, RiskDispositionV0,
@@ -24,14 +25,14 @@ use archsig::{
     build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_custom_rule_plugin_registry,
-    static_law_policy_template_registry, static_no_solution_certificate,
-    static_organization_policy, static_repair_rule_registry,
+    static_law_policy_template_registry, static_measurement_unit_registry,
+    static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_synthesis_constraint_artifact,
     validate_air_document_report, validate_component_universe_report,
     validate_custom_rule_plugin_registry_report, validate_law_policy_template_registry_report,
-    validate_no_solution_certificate_report, validate_organization_policy_report,
-    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
-    validate_synthesis_constraint_artifact_report,
+    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
+    validate_organization_policy_report, validate_repair_rule_registry_report,
+    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -458,6 +459,17 @@ enum Command {
         input: Option<PathBuf>,
 
         /// Output custom rule plugin registry validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Validate a measurement unit registry. If input is omitted, validate the static B8 registry.
+    MeasurementUnits {
+        /// Optional measurement unit registry JSON path.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Output measurement unit registry validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -936,6 +948,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-custom-rule-plugin-registry".to_string());
             let report: CustomRulePluginRegistryValidationReportV0 =
                 validate_custom_rule_plugin_registry_report(&registry, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::MeasurementUnits { input, out }) => {
+            let registry: MeasurementUnitRegistryV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_measurement_unit_registry);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-measurement-unit-registry".to_string());
+            let report: MeasurementUnitRegistryValidationReportV0 =
+                validate_measurement_unit_registry_report(&registry, &input_path);
             let failed = report.summary.result == "fail";
             write_json(out, &report)?;
             Ok(if failed {

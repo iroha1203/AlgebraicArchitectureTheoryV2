@@ -12,6 +12,7 @@ mod framework_adapter;
 mod github;
 mod graph;
 mod law_policy_template;
+mod measurement_unit;
 mod no_solution_certificate;
 mod organization_policy;
 mod outcome_linkage;
@@ -54,6 +55,9 @@ pub use github::{
 };
 pub use law_policy_template::{
     static_law_policy_template_registry, validate_law_policy_template_registry_report,
+};
+pub use measurement_unit::{
+    static_measurement_unit_registry, validate_measurement_unit_registry_report,
 };
 pub use no_solution_certificate::{
     static_no_solution_certificate, validate_no_solution_certificate_report,
