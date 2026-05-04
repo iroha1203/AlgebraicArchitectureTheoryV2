@@ -8,6 +8,7 @@ use crate::{
     FeatureReportInterpretedExtension, FeatureReportInvariant, FeatureReportObstructionWitness,
     FeatureReportReviewSummary, FeatureReportRuntimeSummary, FeatureReportSemanticDiagramSummary,
     FeatureReportSemanticNonfillabilityWitnessSummary, FeatureReportSemanticPathSummary,
+    TheoremPreconditionCheck,
 };
 
 pub fn build_feature_extension_report(
@@ -39,7 +40,8 @@ pub fn build_feature_extension_report(
     let theorem_package_refs = feature_report_theorem_package_refs(document);
     let theorem_precondition_report = build_theorem_precondition_check_report(document, input_path);
     let discharged_assumptions = feature_report_discharged_assumptions(document);
-    let undischarged_assumptions = feature_report_undischarged_assumptions(document);
+    let undischarged_assumptions =
+        feature_report_undischarged_assumptions(document, &theorem_precondition_report.checks);
     let unsupported_constructs = feature_report_unsupported_constructs(&coverage_gaps);
     let repair_suggestions =
         feature_report_repair_suggestions(&introduced_obstruction_witnesses, &coverage_gaps);
@@ -83,6 +85,7 @@ pub fn build_feature_extension_report(
                 &introduced_obstruction_witnesses,
                 &coverage_gaps,
                 &runtime_summary,
+                &theorem_precondition_report.checks,
             ),
         },
         architecture_summary: FeatureReportArchitectureSummary {
@@ -761,7 +764,10 @@ fn feature_report_discharged_assumptions(document: &AirDocumentV0) -> Vec<String
     assumptions.into_iter().collect()
 }
 
-fn feature_report_undischarged_assumptions(document: &AirDocumentV0) -> Vec<String> {
+fn feature_report_undischarged_assumptions(
+    document: &AirDocumentV0,
+    theorem_checks: &[TheoremPreconditionCheck],
+) -> Vec<String> {
     let mut assumptions = BTreeSet::new();
     for claim in &document.claims {
         for assumption in claim
@@ -774,6 +780,13 @@ fn feature_report_undischarged_assumptions(document: &AirDocumentV0) -> Vec<Stri
             if !claim.missing_preconditions.is_empty() || claim.claim_classification == "unmeasured"
             {
                 assumptions.insert(assumption.clone());
+            }
+        }
+    }
+    for check in theorem_checks {
+        if check.result == "warn" {
+            for precondition in &check.missing_preconditions {
+                assumptions.insert(format!("{}: {}", check.claim_id, precondition));
             }
         }
     }
@@ -847,7 +860,17 @@ fn feature_report_required_action(
     witnesses: &[FeatureReportObstructionWitness],
     coverage_gaps: &[FeatureReportCoverageGap],
     runtime_summary: &FeatureReportRuntimeSummary,
+    theorem_checks: &[TheoremPreconditionCheck],
 ) -> String {
+    if theorem_checks.iter().any(|check| {
+        check.resolved_claim_classification == "BLOCKED_FORMAL_CLAIM"
+            && check
+                .missing_preconditions
+                .iter()
+                .any(|precondition| precondition.contains("AI session human review"))
+    }) {
+        return "complete human review before promoting AI-generated formal claims".to_string();
+    }
     if split_status == "non_split" && !witnesses.is_empty() {
         return "review introduced obstruction witnesses before treating the feature as split"
             .to_string();

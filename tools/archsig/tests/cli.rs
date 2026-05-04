@@ -1147,6 +1147,7 @@ fn cli_validate_air_accepts_canonical_fixtures() {
     let out_dir = temp_dir("validate-air-fixtures");
     for fixture in [
         "ai_session_generated_patch.json",
+        "ai_session_unreviewed_formal_claim.json",
         "good_extension.json",
         "hidden_interaction.json",
         "policy_violation.json",
@@ -1174,6 +1175,79 @@ fn cli_validate_air_accepts_canonical_fixtures() {
         assert_eq!(json["summary"]["result"], "pass");
         assert_eq!(json["summary"]["failedCheckCount"], 0);
     }
+}
+
+#[test]
+fn cli_ai_session_human_review_blocks_formal_claim_promotion() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("ai-session-human-review");
+    let theorem_report = out_dir.join("theorem-check.json");
+    let feature_report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        root.join("ai_session_unreviewed_formal_claim.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        theorem_report.to_str().expect("report path is utf-8"),
+    ]);
+    let theorem = read_json(&theorem_report);
+    assert_eq!(theorem["summary"]["result"], "warn");
+    assert_eq!(theorem["summary"]["formalProvedClaimCount"], 0);
+    assert_eq!(theorem["summary"]["blockedClaimCount"], 1);
+    assert!(
+        theorem["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-ai-generated-static-split"
+                    && check["resolvedClaimClassification"] == "BLOCKED_FORMAL_CLAIM"
+                    && check["reason"]
+                        == "AI session human review boundary blocks formal claim promotion"
+                    && check["missingPreconditions"]
+                        .as_array()
+                        .expect("missing preconditions is array")
+                        .iter()
+                        .any(|precondition| precondition
+                            == "AI session human review is required before promoting formal claim")
+            )
+    );
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("ai_session_unreviewed_formal_claim.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        feature_report.to_str().expect("report path is utf-8"),
+    ]);
+    let feature = read_json(&feature_report);
+    assert_eq!(
+        feature["reviewSummary"]["requiredAction"],
+        "complete human review before promoting AI-generated formal claims"
+    );
+    assert!(
+        feature["undischargedAssumptions"]
+            .as_array()
+            .expect("undischarged assumptions is array")
+            .iter()
+            .any(|assumption| assumption
+                == "claim-ai-generated-static-split: AI session human review is required before promoting formal claim")
+    );
+    assert!(
+        feature["theoremPreconditionChecks"]
+            .as_array()
+            .expect("theorem checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-ai-generated-static-split"
+                    && check["resolvedClaimClassification"] == "BLOCKED_FORMAL_CLAIM"
+            )
+    );
 }
 
 #[test]
