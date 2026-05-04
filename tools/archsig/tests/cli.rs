@@ -1146,8 +1146,10 @@ fn cli_validate_air_accepts_canonical_fixtures() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-fixtures");
     for fixture in [
+        "ai_metadata_missing_unmeasured.json",
         "ai_session_generated_patch.json",
         "ai_session_hidden_complexity_warning.json",
+        "ai_session_split_candidate.json",
         "ai_session_unreviewed_formal_claim.json",
         "good_extension.json",
         "hidden_interaction.json",
@@ -1176,6 +1178,120 @@ fn cli_validate_air_accepts_canonical_fixtures() {
         assert_eq!(json["summary"]["result"], "pass");
         assert_eq!(json["summary"]["failedCheckCount"], 0);
     }
+}
+
+#[test]
+fn cli_feature_report_locks_ai_generated_split_candidate_and_missing_metadata_boundaries() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("ai-generated-canonical-boundaries");
+
+    let split_report = out_dir.join("ai-split-candidate.report.json");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("ai_session_split_candidate.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        split_report.to_str().expect("report path is utf-8"),
+    ]);
+    let split = read_json(&split_report);
+    assert_eq!(
+        split["architectureId"],
+        "canonical-ai-session-split-candidate"
+    );
+    assert_eq!(split["splitStatus"], "split");
+    assert_eq!(split["generatedPatchSummary"]["isAiSession"], true);
+    assert_eq!(split["generatedPatchSummary"]["generatedPatch"], true);
+    assert_eq!(split["generatedPatchSummary"]["humanReviewed"], true);
+    assert!(
+        split["introducedObstructionWitnesses"]
+            .as_array()
+            .expect("obstruction witnesses is array")
+            .is_empty()
+    );
+    assert!(
+        split["theoremPreconditionChecks"]
+            .as_array()
+            .expect("theorem checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-ai-generated-static-split-reviewed"
+                    && check["resolvedClaimClassification"] == "FORMAL_PROVED"
+            )
+    );
+    assert!(
+        split["generatedPatchSummary"]["nonConclusions"]
+            .as_array()
+            .expect("generated patch non-conclusions is array")
+            .iter()
+            .any(|conclusion| conclusion
+                == "AI generated status is not evidence for architecture lawfulness")
+    );
+
+    let missing_report = out_dir.join("ai-metadata-missing.report.json");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("ai_metadata_missing_unmeasured.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        missing_report.to_str().expect("report path is utf-8"),
+    ]);
+    let missing = read_json(&missing_report);
+    assert_eq!(
+        missing["architectureId"],
+        "canonical-ai-metadata-missing-unmeasured"
+    );
+    assert_eq!(missing["splitStatus"], "unmeasured");
+    assert_eq!(
+        missing["reviewSummary"]["claimClassification"],
+        "UNMEASURED"
+    );
+    assert_eq!(missing["generatedPatchSummary"]["isAiSession"], false);
+    assert_eq!(missing["generatedPatchSummary"]["generatedPatch"], true);
+    assert_eq!(
+        missing["generatedPatchSummary"]["humanReviewed"],
+        Value::Null
+    );
+    assert!(
+        missing["coverageGaps"]
+            .as_array()
+            .expect("coverage gaps is array")
+            .iter()
+            .any(|gap| gap["layer"] == "provenance"
+                && gap["measurementBoundary"] == "UNMEASURED"
+                && gap["unmeasuredAxes"]
+                    .as_array()
+                    .expect("static gap axes is array")
+                    .iter()
+                    .any(|axis| axis == "boundaryViolationCount"))
+    );
+    assert!(
+        missing["generatedPatchSummary"]["operations"]
+            .as_array()
+            .expect("operations is array")
+            .iter()
+            .any(|operation| {
+                operation["operationRef"]
+                    == "generated_patch artifact-generated-patch adds relation-static-coupon-service"
+                    && operation["addedRelations"]
+                        .as_array()
+                        .expect("added relations is array")
+                        .iter()
+                        .any(|relation| relation["relationId"]
+                            == "relation-static-coupon-service")
+            })
+    );
+    assert!(
+        missing["nonConclusions"]
+            .as_array()
+            .expect("non-conclusions is array")
+            .iter()
+            .any(|conclusion| conclusion
+                == "generated patch artifact alone is not AI session traceability")
+    );
 }
 
 #[test]
