@@ -1,5 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::repair_rule::static_repair_rule_registry;
 use crate::theorem_precondition::build_theorem_precondition_check_report;
 use crate::{
     AirClaim, AirDocumentV0, AirEvidence, AirRelation, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
@@ -7,9 +8,10 @@ use crate::{
     FeatureReportEdgeRef, FeatureReportEvidenceRef, FeatureReportGeneratedPatchOperation,
     FeatureReportGeneratedPatchReviewWarning, FeatureReportGeneratedPatchSummary,
     FeatureReportInput, FeatureReportInterpretedExtension, FeatureReportInvariant,
-    FeatureReportObstructionWitness, FeatureReportReviewSummary, FeatureReportRuntimeSummary,
-    FeatureReportSemanticDiagramSummary, FeatureReportSemanticNonfillabilityWitnessSummary,
-    FeatureReportSemanticPathSummary, TheoremPreconditionCheck,
+    FeatureReportObstructionWitness, FeatureReportRepairSuggestion, FeatureReportReviewSummary,
+    FeatureReportRuntimeSummary, FeatureReportSemanticDiagramSummary,
+    FeatureReportSemanticNonfillabilityWitnessSummary, FeatureReportSemanticPathSummary,
+    RepairRuleV0, TheoremPreconditionCheck,
 };
 
 pub fn build_feature_extension_report(
@@ -1360,22 +1362,144 @@ fn feature_report_unsupported_constructs(
 fn feature_report_repair_suggestions(
     witnesses: &[FeatureReportObstructionWitness],
     coverage_gaps: &[FeatureReportCoverageGap],
-) -> Vec<String> {
-    let mut suggestions = BTreeSet::new();
+) -> Vec<FeatureReportRepairSuggestion> {
+    let registry = static_repair_rule_registry();
+    let mut suggestions = BTreeMap::new();
     for witness in witnesses {
-        for repair in &witness.repair_candidates {
-            suggestions.insert(repair.clone());
+        let matching_rules: Vec<&RepairRuleV0> = registry
+            .rules
+            .iter()
+            .filter(|rule| rule.target_witness_kind == witness.kind)
+            .collect();
+        if matching_rules.is_empty() {
+            for repair in &witness.repair_candidates {
+                let suggestion = feature_report_manual_witness_repair_suggestion(witness, repair);
+                suggestions.insert(suggestion.suggestion_id.clone(), suggestion);
+            }
+        } else {
+            for rule in matching_rules {
+                let suggestion = feature_report_rule_repair_suggestion(witness, rule);
+                suggestions.insert(suggestion.suggestion_id.clone(), suggestion);
+            }
         }
     }
     for gap in coverage_gaps {
         if gap.measurement_boundary == "UNMEASURED" {
-            suggestions.insert(format!(
-                "add {} layer evidence before drawing global conclusions",
-                gap.layer
-            ));
+            let suggestion = feature_report_coverage_gap_repair_suggestion(gap);
+            suggestions.insert(suggestion.suggestion_id.clone(), suggestion);
         }
     }
-    suggestions.into_iter().collect()
+    suggestions.into_values().collect()
+}
+
+fn feature_report_rule_repair_suggestion(
+    witness: &FeatureReportObstructionWitness,
+    rule: &RepairRuleV0,
+) -> FeatureReportRepairSuggestion {
+    FeatureReportRepairSuggestion {
+        suggestion_id: format!(
+            "repair-suggestion-{}-{}",
+            stable_id_fragment(&witness.witness_id),
+            stable_id_fragment(&rule.repair_rule_id)
+        ),
+        repair_rule_id: Some(rule.repair_rule_id.clone()),
+        source_witness_refs: vec![witness.witness_id.clone()],
+        source_coverage_gap_refs: Vec::new(),
+        target_witness_kind: rule.target_witness_kind.clone(),
+        proposed_operation: rule.proposed_operation.clone(),
+        required_preconditions: rule.required_preconditions.clone(),
+        expected_effect: rule.expected_effect.clone(),
+        preserved_invariants: rule.preserved_invariants.clone(),
+        possible_side_effects: rule.possible_side_effects.clone(),
+        proof_obligation_refs: rule.proof_obligation_refs.clone(),
+        patch_strategy: rule.patch_strategy.clone(),
+        confidence: rule.confidence.clone(),
+        traceability: vec![
+            format!("witness:{}", witness.witness_id),
+            format!("repairRule:{}", rule.repair_rule_id),
+            format!("measurementBoundary:{}", witness.measurement_boundary),
+        ],
+        non_conclusions: rule.non_conclusions.clone(),
+    }
+}
+
+fn feature_report_manual_witness_repair_suggestion(
+    witness: &FeatureReportObstructionWitness,
+    repair: &str,
+) -> FeatureReportRepairSuggestion {
+    FeatureReportRepairSuggestion {
+        suggestion_id: format!(
+            "repair-suggestion-{}-{}",
+            stable_id_fragment(&witness.witness_id),
+            stable_id_fragment(repair)
+        ),
+        repair_rule_id: None,
+        source_witness_refs: vec![witness.witness_id.clone()],
+        source_coverage_gap_refs: Vec::new(),
+        target_witness_kind: witness.kind.clone(),
+        proposed_operation: "manual".to_string(),
+        required_preconditions: vec![
+            "referenced witness evidence has been reviewed".to_string(),
+            "selected measurement boundary is unchanged".to_string(),
+        ],
+        expected_effect: "reduce".to_string(),
+        preserved_invariants: Vec::new(),
+        possible_side_effects: vec![
+            "manual repair can transfer complexity to another measured or unmeasured axis"
+                .to_string(),
+        ],
+        proof_obligation_refs: witness.theorem_reference.clone(),
+        patch_strategy: "manual".to_string(),
+        confidence: "low".to_string(),
+        traceability: vec![
+            format!("witness:{}", witness.witness_id),
+            format!("repairCandidate:{repair}"),
+            format!("measurementBoundary:{}", witness.measurement_boundary),
+        ],
+        non_conclusions: feature_report_repair_non_conclusions(),
+    }
+}
+
+fn feature_report_coverage_gap_repair_suggestion(
+    gap: &FeatureReportCoverageGap,
+) -> FeatureReportRepairSuggestion {
+    let gap_ref = format!("coverage-gap-{}", stable_id_fragment(&gap.layer));
+    FeatureReportRepairSuggestion {
+        suggestion_id: format!("repair-suggestion-{gap_ref}"),
+        repair_rule_id: None,
+        source_witness_refs: Vec::new(),
+        source_coverage_gap_refs: vec![gap_ref.clone()],
+        target_witness_kind: "coverage_gap".to_string(),
+        proposed_operation: "manual".to_string(),
+        required_preconditions: vec![
+            format!("{} layer evidence source is available", gap.layer),
+            "unsupported constructs are reported instead of discharged".to_string(),
+        ],
+        expected_effect: "translate".to_string(),
+        preserved_invariants: Vec::new(),
+        possible_side_effects: vec![
+            "adding evidence can reveal new obstruction witnesses".to_string(),
+            "coverage improvement does not by itself remove existing obstructions".to_string(),
+        ],
+        proof_obligation_refs: Vec::new(),
+        patch_strategy: "manual".to_string(),
+        confidence: "low".to_string(),
+        traceability: vec![
+            gap_ref,
+            format!("layer:{}", gap.layer),
+            format!("measurementBoundary:{}", gap.measurement_boundary),
+        ],
+        non_conclusions: feature_report_repair_non_conclusions(),
+    }
+}
+
+fn feature_report_repair_non_conclusions() -> Vec<String> {
+    vec![
+        "repair success is not concluded".to_string(),
+        "all obstruction removal is not concluded".to_string(),
+        "global flatness preservation is not concluded".to_string(),
+        "empirical cost improvement is not concluded".to_string(),
+    ]
 }
 
 fn feature_report_non_conclusions(

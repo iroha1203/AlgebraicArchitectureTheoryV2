@@ -912,7 +912,7 @@ pub struct FeatureExtensionReportV0 {
     pub undischarged_assumptions: Vec<String>,
     pub coverage_gaps: Vec<FeatureReportCoverageGap>,
     pub unsupported_constructs: Vec<String>,
-    pub repair_suggestions: Vec<String>,
+    pub repair_suggestions: Vec<FeatureReportRepairSuggestion>,
     pub empirical_annotations: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
@@ -1072,6 +1072,27 @@ pub struct FeatureReportObstructionWitness {
     pub measurement_boundary: String,
     pub non_conclusions: Vec<String>,
     pub repair_candidates: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportRepairSuggestion {
+    pub suggestion_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repair_rule_id: Option<String>,
+    pub source_witness_refs: Vec<String>,
+    pub source_coverage_gap_refs: Vec<String>,
+    pub target_witness_kind: String,
+    pub proposed_operation: String,
+    pub required_preconditions: Vec<String>,
+    pub expected_effect: String,
+    pub preserved_invariants: Vec<String>,
+    pub possible_side_effects: Vec<String>,
+    pub proof_obligation_refs: Vec<String>,
+    pub patch_strategy: String,
+    pub confidence: String,
+    pub traceability: Vec<String>,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
