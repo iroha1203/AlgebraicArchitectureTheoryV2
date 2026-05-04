@@ -891,6 +891,7 @@ pub struct FeatureExtensionReportV0 {
     #[serde(default)]
     pub runtime_summary: FeatureReportRuntimeSummary,
     pub interpreted_extension: FeatureReportInterpretedExtension,
+    pub generated_patch_summary: FeatureReportGeneratedPatchSummary,
     pub split_status: String,
     pub preserved_invariants: Vec<FeatureReportInvariant>,
     pub changed_invariants: Vec<FeatureReportInvariant>,
@@ -989,6 +990,31 @@ pub struct FeatureReportInterpretedExtension {
     pub added_components: Vec<String>,
     pub changed_components: Vec<String>,
     pub added_relations: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportGeneratedPatchSummary {
+    pub is_ai_session: bool,
+    pub generated_patch: bool,
+    pub human_reviewed: Option<bool>,
+    pub provider: Option<String>,
+    pub model: Option<String>,
+    pub prompt_ref: Option<String>,
+    pub artifact_refs: Vec<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub operations: Vec<FeatureReportGeneratedPatchOperation>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportGeneratedPatchOperation {
+    pub operation_ref: String,
+    pub added_components: Vec<String>,
+    pub added_relations: Vec<FeatureReportEdgeRef>,
+    pub policy_touches: Vec<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -4,9 +4,10 @@ use crate::theorem_precondition::build_theorem_precondition_check_report;
 use crate::{
     AirClaim, AirDocumentV0, AirEvidence, AirRelation, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
     FeatureExtensionReportV0, FeatureReportArchitectureSummary, FeatureReportCoverageGap,
-    FeatureReportEdgeRef, FeatureReportEvidenceRef, FeatureReportInput,
-    FeatureReportInterpretedExtension, FeatureReportInvariant, FeatureReportObstructionWitness,
-    FeatureReportReviewSummary, FeatureReportRuntimeSummary, FeatureReportSemanticDiagramSummary,
+    FeatureReportEdgeRef, FeatureReportEvidenceRef, FeatureReportGeneratedPatchOperation,
+    FeatureReportGeneratedPatchSummary, FeatureReportInput, FeatureReportInterpretedExtension,
+    FeatureReportInvariant, FeatureReportObstructionWitness, FeatureReportReviewSummary,
+    FeatureReportRuntimeSummary, FeatureReportSemanticDiagramSummary,
     FeatureReportSemanticNonfillabilityWitnessSummary, FeatureReportSemanticPathSummary,
     TheoremPreconditionCheck,
 };
@@ -123,6 +124,7 @@ pub fn build_feature_extension_report(
                 .map(|relation| relation.id.clone())
                 .collect(),
         },
+        generated_patch_summary: feature_report_generated_patch_summary(document, &evidence_by_id),
         split_status,
         preserved_invariants,
         changed_invariants,
@@ -439,6 +441,221 @@ fn feature_report_semantic_missing_preconditions(semantic_claims: &[&AirClaim]) 
         }
     }
     missing.into_iter().collect()
+}
+
+fn feature_report_generated_patch_summary(
+    document: &AirDocumentV0,
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
+) -> FeatureReportGeneratedPatchSummary {
+    let ai_session = document.feature.ai_session.as_ref();
+    let generated_patch_artifact_ids: BTreeSet<String> = document
+        .artifacts
+        .iter()
+        .filter(|artifact| artifact.kind == "generated_patch")
+        .map(|artifact| artifact.artifact_id.clone())
+        .collect();
+    let generated_patch_evidence_ids: BTreeSet<String> = document
+        .evidence
+        .iter()
+        .filter(|evidence| {
+            evidence.kind == "generated_patch"
+                || evidence
+                    .artifact_ref
+                    .as_ref()
+                    .map(|artifact_ref| generated_patch_artifact_ids.contains(artifact_ref))
+                    .unwrap_or(false)
+        })
+        .map(|evidence| evidence.evidence_id.clone())
+        .collect();
+    let evidence_refs: Vec<String> = generated_patch_evidence_ids.iter().cloned().collect();
+    let mut non_conclusions = BTreeSet::new();
+    non_conclusions.insert(
+        "generated patch summary is traceability evidence, not a proof or measurement claim"
+            .to_string(),
+    );
+    non_conclusions
+        .insert("AI generated status is not evidence for architecture lawfulness".to_string());
+    non_conclusions
+        .insert("AI generated status is not evidence against architecture lawfulness".to_string());
+    non_conclusions.insert(
+        "generated patch summary identifies architecture extension locations, not patch size"
+            .to_string(),
+    );
+
+    FeatureReportGeneratedPatchSummary {
+        is_ai_session: document.feature.source == "ai_session",
+        generated_patch: ai_session
+            .and_then(|session| session.generated_patch)
+            .unwrap_or(false)
+            || !generated_patch_artifact_ids.is_empty(),
+        human_reviewed: ai_session.and_then(|session| session.human_reviewed),
+        provider: ai_session.and_then(|session| session.provider.clone()),
+        model: ai_session.and_then(|session| session.model.clone()),
+        prompt_ref: ai_session.and_then(|session| session.prompt_ref.clone()),
+        artifact_refs: generated_patch_artifact_ids.into_iter().collect(),
+        evidence: feature_report_evidence_refs(&evidence_refs, evidence_by_id),
+        operations: feature_report_generated_patch_operations(
+            document,
+            &generated_patch_evidence_ids,
+            evidence_by_id,
+        ),
+        non_conclusions: non_conclusions.into_iter().collect(),
+    }
+}
+
+fn feature_report_generated_patch_operations(
+    document: &AirDocumentV0,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
+) -> Vec<FeatureReportGeneratedPatchOperation> {
+    document
+        .operation_trace
+        .operations
+        .iter()
+        .filter(|operation_ref| {
+            operation_ref.contains("generated_patch")
+                || generated_patch_evidence_ids
+                    .iter()
+                    .any(|evidence_id| operation_ref.contains(evidence_id))
+                || document.artifacts.iter().any(|artifact| {
+                    artifact.kind == "generated_patch"
+                        && operation_ref.contains(&artifact.artifact_id)
+                })
+        })
+        .map(|operation_ref| {
+            let added_components = feature_report_generated_patch_operation_components(
+                document,
+                operation_ref,
+                generated_patch_evidence_ids,
+            );
+            let added_relations = feature_report_generated_patch_operation_relations(
+                document,
+                operation_ref,
+                generated_patch_evidence_ids,
+            );
+            let policy_touches = feature_report_generated_patch_policy_touches(
+                document,
+                operation_ref,
+                &added_relations,
+            );
+            let operation_evidence_refs = feature_report_generated_patch_operation_evidence_refs(
+                document,
+                &added_components,
+                &added_relations,
+                generated_patch_evidence_ids,
+            );
+
+            FeatureReportGeneratedPatchOperation {
+                operation_ref: operation_ref.clone(),
+                added_components,
+                added_relations,
+                policy_touches,
+                evidence: feature_report_evidence_refs(&operation_evidence_refs, evidence_by_id),
+            }
+        })
+        .collect()
+}
+
+fn feature_report_generated_patch_operation_components(
+    document: &AirDocumentV0,
+    operation_ref: &str,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+) -> Vec<String> {
+    document
+        .components
+        .iter()
+        .filter(|component| {
+            component.lifecycle == "added"
+                && (operation_ref.contains(&component.id)
+                    || component
+                        .evidence_refs
+                        .iter()
+                        .any(|evidence_ref| generated_patch_evidence_ids.contains(evidence_ref)))
+        })
+        .map(|component| component.id.clone())
+        .collect()
+}
+
+fn feature_report_generated_patch_operation_relations(
+    document: &AirDocumentV0,
+    operation_ref: &str,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+) -> Vec<FeatureReportEdgeRef> {
+    document
+        .relations
+        .iter()
+        .filter(|relation| {
+            relation.lifecycle == "added"
+                && (operation_ref.contains(&relation.id)
+                    || relation
+                        .evidence_refs
+                        .iter()
+                        .any(|evidence_ref| generated_patch_evidence_ids.contains(evidence_ref)))
+        })
+        .map(|relation| FeatureReportEdgeRef {
+            relation_id: relation.id.clone(),
+            from: relation.from_component.clone(),
+            to: relation.to_component.clone(),
+            kind: relation.kind.clone(),
+        })
+        .collect()
+}
+
+fn feature_report_generated_patch_policy_touches(
+    document: &AirDocumentV0,
+    operation_ref: &str,
+    added_relations: &[FeatureReportEdgeRef],
+) -> Vec<String> {
+    let mut policy_touches = BTreeSet::new();
+    for relation in &document.relations {
+        if relation.layer == "policy"
+            && added_relations
+                .iter()
+                .any(|added| added.relation_id == relation.id)
+        {
+            policy_touches.insert(format!("policy relation: {}", relation.id));
+        }
+    }
+    if operation_ref.contains("policy") {
+        for policy_ref in document
+            .policies
+            .laws
+            .iter()
+            .chain(document.policies.boundaries.iter())
+            .chain(document.policies.allowed_edges.iter())
+            .chain(document.policies.forbidden_edges.iter())
+            .chain(document.policies.abstraction_rules.iter())
+            .chain(document.policies.protection_rules.iter())
+        {
+            if operation_ref.contains(policy_ref) {
+                policy_touches.insert(policy_ref.clone());
+            }
+        }
+    }
+    policy_touches.into_iter().collect()
+}
+
+fn feature_report_generated_patch_operation_evidence_refs(
+    document: &AirDocumentV0,
+    added_components: &[String],
+    added_relations: &[FeatureReportEdgeRef],
+    generated_patch_evidence_ids: &BTreeSet<String>,
+) -> Vec<String> {
+    let mut evidence_refs = generated_patch_evidence_ids.clone();
+    for component in &document.components {
+        if added_components.contains(&component.id) {
+            evidence_refs.extend(component.evidence_refs.iter().cloned());
+        }
+    }
+    for relation in &document.relations {
+        if added_relations
+            .iter()
+            .any(|added| added.relation_id == relation.id)
+        {
+            evidence_refs.extend(relation.evidence_refs.iter().cloned());
+        }
+    }
+    evidence_refs.into_iter().collect()
 }
 
 fn feature_report_runtime_summary(
