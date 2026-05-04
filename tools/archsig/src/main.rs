@@ -9,7 +9,8 @@ use archsig::{
     DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0,
     NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, RepairRuleRegistryV0,
-    RepairRuleRegistryValidationReportV0, RepositoryRevisionRef, ScanMetadata, Sig0Document,
+    RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
+    ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, ScanMetadata, Sig0Document,
     SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TheoremPreconditionCheckReportV0, build_air_document, build_empirical_dataset,
@@ -19,9 +20,10 @@ use archsig::{
     build_signature_snapshot_record, build_theorem_precondition_check_report,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
-    static_synthesis_constraint_artifact, validate_air_document_report,
-    validate_component_universe_report, validate_no_solution_certificate_report,
-    validate_organization_policy_report, validate_repair_rule_registry_report,
+    static_report_artifact_retention_manifest, static_synthesis_constraint_artifact,
+    validate_air_document_report, validate_component_universe_report,
+    validate_no_solution_certificate_report, validate_organization_policy_report,
+    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
     validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
@@ -414,6 +416,17 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Validate report artifact retention metadata. If input is omitted, validate the static B7 manifest.
+    ReportArtifacts {
+        /// Optional report artifact retention manifest JSON path.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Output report artifact retention validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -763,6 +776,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-organization-policy".to_string());
             let report: OrganizationPolicyValidationReportV0 =
                 validate_organization_policy_report(&policy, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::ReportArtifacts { input, out }) => {
+            let manifest: ReportArtifactRetentionManifestV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_report_artifact_retention_manifest);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-report-artifact-retention-manifest".to_string());
+            let report: ReportArtifactRetentionValidationReportV0 =
+                validate_report_artifact_retention_report(&manifest, &input_path);
             let failed = report.summary.result == "fail";
             write_json(out, &report)?;
             Ok(if failed {

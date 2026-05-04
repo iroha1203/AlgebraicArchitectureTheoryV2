@@ -1,5 +1,6 @@
 mod air;
 mod air_validation;
+mod artifact_retention;
 mod component_validation;
 mod dataset;
 mod extractor;
@@ -25,6 +26,9 @@ mod test_support;
 
 pub use air::build_air_document;
 pub use air_validation::validate_air_document_report;
+pub use artifact_retention::{
+    static_report_artifact_retention_manifest, validate_report_artifact_retention_report,
+};
 pub use component_validation::validate_component_universe_report;
 pub use dataset::build_empirical_dataset;
 pub use extractor::{extract_sig0, extract_sig0_with_policy, extract_sig0_with_runtime};
