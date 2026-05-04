@@ -242,7 +242,10 @@ assumptions、projection rule を evidence として出し、Lean の `Component
 
 ### Python component policy
 
-Issue: [#581](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/581)
+Issues:
+
+- [#581](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/581)
+- [#582](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/582)
 
 Python extractor の最小 component kind は `python-module` である。component id は
 package root から見た importable module 名とし、policy selector は
@@ -260,6 +263,14 @@ Edge policy:
 - package root 外、標準 library、installed dependency、unresolved target は external dependency edge。
 - namespace package は明示された package root 群に属する file だけを local component として測る。
 - `tests/` や `test_*.py` は既定で `python-module` に含め、production / test の区別は policy group で扱う。
+
+AIR normalization:
+
+- Python Sig0 artifact は `archsig air` で `aat-air-v0` に正規化できる。
+- local module は `kind = "python-module"`、外部 dependency target は `kind = "external-dependency"` component として AIR relation refs を解決する。
+- static relation の `extractionRule` は `python-import-graph-v0`、対応する evidence kind は `python_import` として保持する。
+- static coverage は Python `ast` import/from scan と package-root normalization の exactness assumption を記録する。
+- theorem precondition checker は Python import graph を tooling evidence として扱い、Python AIR に formal claim を追加しても Lean `ComponentUniverse` bridge precondition なしでは `FORMAL_PROVED` に昇格しない。
 
 関連 schema / docs:
 

@@ -1,13 +1,14 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::dataset::{DATASET_SIGNATURE_AXES, dataset_metric_status, dataset_signature_shape};
 use crate::{
     AIR_SCHEMA_VERSION, AirArtifact, AirClaim, AirComponent, AirCoverage, AirCoverageLayer,
     AirDocumentInput, AirDocumentV0, AirEvidence, AirExtension, AirFeature, AirIdPolicies,
     AirOperationTrace, AirPolicies, AirRelation, AirRevision, AirSignature, AirSignatureAxis,
-    ArchitectureSignatureV1DatasetShape, ComponentUniverseValidationReport,
+    ArchitectureSignatureV1DatasetShape, COMPONENT_KIND, ComponentUniverseValidationReport,
     EMPIRICAL_DATASET_SCHEMA_VERSION, EXTRACTOR_NAME, Edge, EmpiricalDatasetInput, MetricStatus,
-    RUNTIME_PROJECTION_RULE_VERSION, Sig0Document, SignatureDiffReportV0, unmeasured_status,
+    PYTHON_COMPONENT_KIND, PYTHON_IMPORT_RULE_VERSION, RUNTIME_PROJECTION_RULE_VERSION,
+    Sig0Document, SignatureDiffReportV0, unmeasured_status,
 };
 
 pub fn build_air_document(
@@ -21,6 +22,8 @@ pub fn build_air_document(
     let metric_status = dataset_metric_status(sig0);
     let signature_axes = air_signature_axes(&signature, &metric_status);
     let component_lifecycle = air_component_lifecycle(diff);
+    let static_extraction_rule = static_extraction_rule(sig0);
+    let static_evidence_kind = static_evidence_kind(sig0);
 
     let mut artifacts = vec![AirArtifact {
         artifact_id: "artifact-sig0".to_string(),
@@ -94,7 +97,7 @@ pub fn build_air_document(
         let evidence_id = numbered_id("evidence-static", index);
         evidence.push(AirEvidence {
             evidence_id: evidence_id.clone(),
-            kind: "source_location".to_string(),
+            kind: static_evidence_kind.clone(),
             artifact_ref: Some("artifact-sig0".to_string()),
             path: component_paths.get(&edge.source).cloned(),
             symbol: Some(edge.source.clone()),
@@ -110,7 +113,7 @@ pub fn build_air_document(
             kind: edge.kind.clone(),
             lifecycle: relation_lifecycle(edge, diff),
             protected_by: None,
-            extraction_rule: Some("lean-import".to_string()),
+            extraction_rule: Some(static_extraction_rule.clone()),
             evidence_refs: vec![evidence_id],
         });
     }
@@ -163,12 +166,17 @@ pub fn build_air_document(
         });
     }
 
-    let components = sig0
+    let component_ids: BTreeSet<String> = sig0
+        .components
+        .iter()
+        .map(|component| component.id.clone())
+        .collect();
+    let mut components: Vec<AirComponent> = sig0
         .components
         .iter()
         .map(|component| AirComponent {
             id: component.id.clone(),
-            kind: "module".to_string(),
+            kind: air_component_kind(sig0).to_string(),
             lifecycle: component_lifecycle
                 .get(&component.id)
                 .cloned()
@@ -177,6 +185,19 @@ pub fn build_air_document(
             evidence_refs: Vec::new(),
         })
         .collect();
+    let external_targets: BTreeSet<String> = sig0
+        .edges
+        .iter()
+        .filter(|edge| !component_ids.contains(&edge.target))
+        .map(|edge| edge.target.clone())
+        .collect();
+    components.extend(external_targets.into_iter().map(|target| AirComponent {
+        id: target,
+        kind: "external-dependency".to_string(),
+        lifecycle: "after".to_string(),
+        owner: None,
+        evidence_refs: Vec::new(),
+    }));
     let claims = air_claims(&signature_axes);
     let interaction_claim_refs = air_interaction_claim_refs(&claims);
     let revision = air_revision(diff, pr_metadata);
@@ -329,6 +350,28 @@ fn artifact_evidence_kind(kind: &str) -> String {
         _ => "manual_annotation",
     }
     .to_string()
+}
+
+fn air_component_kind(sig0: &Sig0Document) -> &str {
+    match sig0.component_kind.as_str() {
+        PYTHON_COMPONENT_KIND => PYTHON_COMPONENT_KIND,
+        COMPONENT_KIND => "module",
+        other => other,
+    }
+}
+
+fn static_extraction_rule(sig0: &Sig0Document) -> String {
+    match sig0.component_kind.as_str() {
+        PYTHON_COMPONENT_KIND => PYTHON_IMPORT_RULE_VERSION.to_string(),
+        _ => "lean-import".to_string(),
+    }
+}
+
+fn static_evidence_kind(sig0: &Sig0Document) -> String {
+    match sig0.component_kind.as_str() {
+        PYTHON_COMPONENT_KIND => "python_import".to_string(),
+        _ => "source_location".to_string(),
+    }
 }
 
 fn relation_lifecycle(edge: &Edge, diff: Option<&SignatureDiffReportV0>) -> String {
@@ -522,9 +565,9 @@ fn air_coverage_layers(
                 "maxFanout",
                 "reachableConeSize",
             ],
-            vec!["Lean import graph".to_string()],
-            Vec::new(),
-            None,
+            static_extraction_scope(sig0),
+            static_exactness_assumptions(sig0),
+            Some(static_extraction_rule(sig0)),
             Vec::new(),
         ),
         air_coverage_layer(
@@ -552,6 +595,27 @@ fn air_coverage_layers(
             ],
         ),
     ]
+}
+
+fn static_extraction_scope(sig0: &Sig0Document) -> Vec<String> {
+    match sig0.component_kind.as_str() {
+        PYTHON_COMPONENT_KIND => vec![
+            "Python package-root module universe".to_string(),
+            "static import graph from Python ast import/from nodes".to_string(),
+        ],
+        _ => vec!["Lean import graph".to_string()],
+    }
+}
+
+fn static_exactness_assumptions(sig0: &Sig0Document) -> Vec<String> {
+    match sig0.component_kind.as_str() {
+        PYTHON_COMPONENT_KIND => vec![
+            "python-import-graph-v0 observes static import and from-import syntax only".to_string(),
+            "python-module ids are normalized relative to the configured package root".to_string(),
+            "Python extractor output is tooling evidence, not a Lean ComponentUniverse completeness proof".to_string(),
+        ],
+        _ => Vec::new(),
+    }
 }
 
 fn air_coverage_layer(

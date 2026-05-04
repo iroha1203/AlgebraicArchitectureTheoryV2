@@ -191,6 +191,7 @@ fn check_air_unique_ids(document: &AirDocumentV0) -> ValidationCheck {
 fn check_air_evidence_kinds(document: &AirDocumentV0) -> ValidationCheck {
     let valid_kinds = [
         "source_location",
+        "python_import",
         "policy_rule",
         "runtime_trace",
         "pr_file",
