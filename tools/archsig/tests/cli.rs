@@ -3804,3 +3804,141 @@ fn cli_report_artifacts_validates_static_manifest_and_input_fixture() {
             .any(|reference| reference == "suppression-workflow:pr-575")
     );
 }
+
+#[test]
+fn cli_baseline_suppression_reports_deltas_without_resolving_suppressed_witnesses() {
+    let fixture = fixture_root();
+    let air = air_fixture_root();
+    let out_dir = temp_dir("baseline-suppression");
+    let baseline_report = out_dir.join("baseline-feature-report.json");
+    let current_report = out_dir.join("current-feature-report.json");
+    let baseline_policy = out_dir.join("baseline-policy-decision.json");
+    let current_policy = out_dir.join("current-policy-decision.json");
+    let suppression = out_dir.join("suppression.json");
+    let baseline_suppression = out_dir.join("baseline-suppression.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.join("good_extension.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        baseline_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.join("hidden_interaction.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        current_report.to_str().expect("report path is utf-8"),
+    ]);
+    for (report, decision) in [
+        (&baseline_report, &baseline_policy),
+        (&current_report, &current_policy),
+    ] {
+        let output = run_sig0_output(&[
+            "policy-decision",
+            "--feature-report",
+            report.to_str().expect("report path is utf-8"),
+            "--policy",
+            fixture
+                .join("organization_policy.json")
+                .to_str()
+                .expect("policy path is utf-8"),
+            "--out",
+            decision.to_str().expect("decision path is utf-8"),
+        ]);
+        assert!(
+            !output.status.success(),
+            "fixture policy decisions intentionally keep required runtime axis failing"
+        );
+    }
+
+    let current_json = read_json(&current_report);
+    let witness_ref = current_json["introducedObstructionWitnesses"][0]["witnessId"]
+        .as_str()
+        .expect("current fixture has a witness");
+    fs::write(
+        &suppression,
+        serde_json::to_string_pretty(&serde_json::json!({
+            "dispositionId": "suppression-hidden-interaction-001",
+            "kind": "suppression",
+            "status": "requested",
+            "reason": "fixture records temporary review suppression for the hidden interaction witness",
+            "approvedBy": "architecture-reviewer",
+            "approvedAt": "2026-05-05T00:00:00Z",
+            "expiresAt": "2026-06-05T00:00:00Z",
+            "scope": "minimal fixture PR review",
+            "policyRef": "fixture-b7-organization-policy",
+            "witnessRef": witness_ref,
+            "appliesToCurrentWitness": false,
+            "reviewerStatus": "",
+            "nonConclusions": [
+                "suppression does not prove repair success"
+            ]
+        }))
+        .expect("suppression json serializes"),
+    )
+    .expect("suppression fixture is written");
+
+    run_sig0(&[
+        "baseline-suppression",
+        "--baseline-feature-report",
+        baseline_report.to_str().expect("report path is utf-8"),
+        "--current-feature-report",
+        current_report.to_str().expect("report path is utf-8"),
+        "--baseline-policy-decision",
+        baseline_policy.to_str().expect("decision path is utf-8"),
+        "--current-policy-decision",
+        current_policy.to_str().expect("decision path is utf-8"),
+        "--retention-manifest",
+        fixture
+            .join("report_artifact_retention.json")
+            .to_str()
+            .expect("retention path is utf-8"),
+        "--suppression",
+        suppression.to_str().expect("suppression path is utf-8"),
+        "--out",
+        baseline_suppression
+            .to_str()
+            .expect("baseline suppression path is utf-8"),
+    ]);
+
+    let json = read_json(&baseline_suppression);
+    assert_eq!(json["schemaVersion"], "baseline-suppression-report-v0");
+    assert_eq!(json["summary"]["suppressedCount"], 1);
+    assert_eq!(json["summary"]["newlyIntroducedWitnessCount"], 1);
+    assert!(
+        json["witnessDelta"]["newlyIntroduced"]
+            .as_array()
+            .expect("newlyIntroduced witnesses is array")
+            .iter()
+            .any(|witness| witness["witnessId"] == witness_ref)
+    );
+    assert_eq!(
+        json["suppressions"][0]["reviewerStatus"],
+        "suppressed for review workflow; witness remains unresolved"
+    );
+    assert!(
+        json["suppressions"][0]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion == "suppressed and accepted-risk witnesses are not resolved witnesses"
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["id"] == "baseline-suppression-disposition-non-resolution"
+                    && check["result"] == "advisory"
+            )
+    );
+}

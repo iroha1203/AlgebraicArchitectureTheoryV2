@@ -10,10 +10,11 @@ use archsig::{
     NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
-    ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, ScanMetadata, Sig0Document,
-    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
-    SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
-    TheoremPreconditionCheckReportV0, build_air_document, build_empirical_dataset,
+    ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, RiskDispositionV0,
+    ScanMetadata, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
+    SnapshotRecordInput, SnapshotRepositoryRef, SynthesisConstraintArtifactV0,
+    SynthesisConstraintValidationReportV0, TheoremPreconditionCheckReportV0, build_air_document,
+    build_baseline_suppression_report, build_empirical_dataset,
     build_feature_extension_dataset_from_files, build_feature_extension_report,
     build_outcome_linkage_dataset_from_files, build_policy_decision_report,
     build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
@@ -458,6 +459,41 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Compare baseline/current reports and apply suppression / accepted-risk workflow metadata.
+    BaselineSuppression {
+        /// Baseline Feature Extension Report JSON path.
+        #[arg(long = "baseline-feature-report")]
+        baseline_feature_report: PathBuf,
+
+        /// Current Feature Extension Report JSON path.
+        #[arg(long = "current-feature-report")]
+        current_feature_report: PathBuf,
+
+        /// Optional baseline policy decision report JSON path.
+        #[arg(long = "baseline-policy-decision")]
+        baseline_policy_decision: Option<PathBuf>,
+
+        /// Optional current policy decision report JSON path.
+        #[arg(long = "current-policy-decision")]
+        current_policy_decision: Option<PathBuf>,
+
+        /// Optional report artifact retention manifest JSON path.
+        #[arg(long = "retention-manifest")]
+        retention_manifest: Option<PathBuf>,
+
+        /// Optional suppression metadata JSON path. Repeat for multiple files.
+        #[arg(long)]
+        suppression: Vec<PathBuf>,
+
+        /// Optional accepted-risk metadata JSON path. Repeat for multiple files.
+        #[arg(long = "accepted-risk")]
+        accepted_risk: Vec<PathBuf>,
+
+        /// Output baseline suppression report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -876,6 +912,61 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_text(out, &markdown)?;
             Ok(ExitCode::SUCCESS)
         }
+        Some(Command::BaselineSuppression {
+            baseline_feature_report,
+            current_feature_report,
+            baseline_policy_decision,
+            current_policy_decision,
+            retention_manifest,
+            suppression,
+            accepted_risk,
+            out,
+        }) => {
+            let baseline_report: FeatureExtensionReportV0 = read_json(&baseline_feature_report)?;
+            let current_report: FeatureExtensionReportV0 = read_json(&current_feature_report)?;
+            let baseline_policy: Option<PolicyDecisionReportV0> = baseline_policy_decision
+                .as_ref()
+                .map(read_json)
+                .transpose()?;
+            let current_policy: Option<PolicyDecisionReportV0> = current_policy_decision
+                .as_ref()
+                .map(read_json)
+                .transpose()?;
+            let retention: Option<ReportArtifactRetentionManifestV0> =
+                retention_manifest.as_ref().map(read_json).transpose()?;
+            let suppressions = read_risk_dispositions(&suppression)?;
+            let accepted_risks = read_risk_dispositions(&accepted_risk)?;
+            let report = build_baseline_suppression_report(
+                &baseline_report,
+                &baseline_feature_report.display().to_string(),
+                &current_report,
+                &current_feature_report.display().to_string(),
+                baseline_policy.as_ref(),
+                baseline_policy_decision
+                    .as_ref()
+                    .map(|path| path.display().to_string())
+                    .as_deref(),
+                current_policy.as_ref(),
+                current_policy_decision
+                    .as_ref()
+                    .map(|path| path.display().to_string())
+                    .as_deref(),
+                retention.as_ref(),
+                retention_manifest
+                    .as_ref()
+                    .map(|path| path.display().to_string())
+                    .as_deref(),
+                &suppressions,
+                &accepted_risks,
+            );
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
         None => {
             let document = extract_sig0_with_runtime(
                 &args.root,
@@ -932,4 +1023,18 @@ fn write_text(out: Option<PathBuf>, value: &str) -> Result<(), Box<dyn Error>> {
 
 fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Box<dyn Error>> {
     Ok(serde_json::from_reader(File::open(path)?)?)
+}
+
+fn read_risk_dispositions(paths: &[PathBuf]) -> Result<Vec<RiskDispositionV0>, Box<dyn Error>> {
+    let mut dispositions = Vec::new();
+    for path in paths {
+        let value: serde_json::Value = read_json(path)?;
+        if value.is_array() {
+            let mut batch: Vec<RiskDispositionV0> = serde_json::from_value(value)?;
+            dispositions.append(&mut batch);
+        } else {
+            dispositions.push(serde_json::from_value(value)?);
+        }
+    }
+    Ok(dispositions)
 }
