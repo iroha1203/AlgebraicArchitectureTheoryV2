@@ -262,6 +262,29 @@ architecture lawfulness、runtime / semantic flatness は結論しない。
 
 詳細 schema は [Adapter registry v0 schema](adapter_registry_schema.md) で管理する。
 
+### Framework adapter fixture
+
+Issue: [#599](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/599)
+
+`framework-adapter-evidence-v0` は、特定 framework convention を bounded adapter evidence
+として AIR へ渡す fixture schema である。初期 fixture は FastAPI の `APIRouter` route
+decorator を `framework_route` evidence と `layer = "framework"` の relation に写す。
+`archsig air --framework-adapter framework_adapter.json` は adapter artifact、route evidence、
+framework coverage layer を AIR に追加し、Feature Extension Report は同じ layer の
+coverage gap と unsupported constructs を表示する。
+
+Canonical fixture は
+`tools/archsig/tests/fixtures/python_imports/framework_adapter.json` で固定する。CLI test は
+measured route relation と、dependency injection / middleware など adapter が扱わない
+FastAPI convention を measured-zero にしない境界を検査する。
+
+Non-conclusions:
+
+- framework adapter output は framework runtime semantics の完全性を結論しない。
+- route relation が測定されても未対応 convention は measured-zero evidence ではない。
+- adapter confidence は Lean theorem claim や `ComponentUniverse` completeness の代替ではない。
+- framework fixture は architecture lawfulness を結論しない。
+
 ### Law policy template registry
 
 Issue: [#594](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/594)

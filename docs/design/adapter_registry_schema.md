@@ -34,7 +34,7 @@ AdapterRegistryEntryV0
   relationKinds: List String
   evidenceKinds: List String
   projectionRule: String
-  measuredLayers: List "static" | "runtime" | "semantic" | "policy"
+  measuredLayers: List "static" | "framework" | "runtime" | "semantic" | "policy"
   measuredAxes: List String
   coverageAssumptions: List String
   exactnessAssumptions: List String
@@ -117,6 +117,52 @@ Python pilot は次の registry entry として読む。
 Theorem Precondition Checker は、この entry だけでは `FORMAL_PROVED` へ昇格しない。
 formal claim へ読むには `theoremBridgePreconditions` を claim 側で明示し、coverage /
 exactness / selected universe がすべて足りている必要がある。
+
+## Canonical framework adapter fixture
+
+Issue #599 の FastAPI fixture は次の registry entry として読む。
+
+```json
+{
+  "adapterId": "fastapi-route-adapter-fixture-v0",
+  "adapterKind": "framework-adapter",
+  "sourceLanguage": "python",
+  "frameworks": ["fastapi"],
+  "componentKinds": ["python-module"],
+  "relationKinds": ["http_route_handler"],
+  "evidenceKinds": ["framework_route"],
+  "projectionRule": "fastapi-route-adapter-fixture-v0",
+  "measuredLayers": ["framework"],
+  "measuredAxes": ["frameworkRouteBinding"],
+  "coverageAssumptions": [
+    "fixture adapter inspects FastAPI APIRouter decorator calls in src/app/web.py"
+  ],
+  "exactnessAssumptions": [
+    "fastapi-route-adapter-fixture-v0 maps observed APIRouter method decorators to route handler relations"
+  ],
+  "unsupportedConstructs": [
+    "fastapi-dependency-injection",
+    "fastapi-middleware",
+    "fastapi-runtime-routing"
+  ],
+  "requiredInputs": ["archsig-sig0-v0", "framework-adapter-evidence-v0"],
+  "outputArtifacts": ["aat-air-v0", "feature-extension-report-v0"],
+  "theoremBridgePreconditions": [
+    "explicit Lean ComponentUniverse bridge precondition",
+    "framework route evidence is selected by the theorem package"
+  ],
+  "nonConclusions": [
+    "FastAPI runtime semantics are not fully captured",
+    "framework adapter output is not a Lean ComponentUniverse completeness proof",
+    "unmeasured FastAPI conventions are not measured-zero evidence"
+  ]
+}
+```
+
+`framework-adapter-evidence-v0` の fixture は route relation を AIR の
+`layer = "framework"` として追加する。Feature Extension Report は同じ layer の
+coverage gap へ unsupported constructs を trace する。route relation が測定されても、
+dependency injection、middleware、runtime routing は未対応 boundary として残る。
 
 ## Future adapter constraints
 

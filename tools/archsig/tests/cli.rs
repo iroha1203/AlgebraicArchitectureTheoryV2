@@ -21,6 +21,10 @@ fn python_fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/python_imports")
 }
 
+fn python_framework_adapter_fixture() -> PathBuf {
+    python_fixture_root().join("framework_adapter.json")
+}
+
 fn temp_dir(test_name: &str) -> PathBuf {
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -399,6 +403,143 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
             .any(|precondition| precondition.as_str().expect("precondition is string").contains(
                 "Python import graph evidence requires an explicit Lean ComponentUniverse bridge precondition"
             ))
+    );
+}
+
+#[test]
+fn cli_traces_framework_adapter_fixture_to_air_and_feature_report() {
+    let root = python_fixture_root();
+    let adapter = python_framework_adapter_fixture();
+    let out_dir = temp_dir("framework-adapter-air");
+    let sig0 = out_dir.join("python-sig0.json");
+    let air = out_dir.join("python-framework.air.json");
+    let air_validation = out_dir.join("python-framework-air-validation.json");
+    let feature_report = out_dir.join("python-framework-feature-report.json");
+
+    run_sig0(&[
+        "--language",
+        "python",
+        "--root",
+        root.to_str().expect("fixture path is utf-8"),
+        "--source-root",
+        "src",
+        "--out",
+        sig0.to_str().expect("sig0 path is utf-8"),
+    ]);
+    run_sig0(&[
+        "air",
+        "--sig0",
+        sig0.to_str().expect("sig0 path is utf-8"),
+        "--framework-adapter",
+        adapter.to_str().expect("adapter path is utf-8"),
+        "--out",
+        air.to_str().expect("air path is utf-8"),
+    ]);
+
+    let json = read_json(&air);
+    assert!(
+        json["artifacts"]
+            .as_array()
+            .expect("artifacts are an array")
+            .iter()
+            .any(|artifact| artifact["kind"] == "framework_adapter"
+                && artifact["producedBy"] == "fastapi-route-adapter-fixture-v0")
+    );
+    assert!(
+        json["evidence"]
+            .as_array()
+            .expect("evidence are an array")
+            .iter()
+            .any(|evidence| {
+                evidence["kind"] == "framework_route"
+                    && evidence["path"] == "src/app/web.py"
+                    && evidence["symbol"] == "list_users"
+            })
+    );
+    assert!(
+        json["relations"]
+            .as_array()
+            .expect("relations are an array")
+            .iter()
+            .any(|relation| {
+                relation["layer"] == "framework"
+                    && relation["from"] == "app.web"
+                    && relation["kind"] == "http_route_handler"
+                    && relation["extractionRule"] == "fastapi-route-adapter-fixture-v0"
+            })
+    );
+    let framework_coverage = json["coverage"]["layers"]
+        .as_array()
+        .expect("coverage layers are an array")
+        .iter()
+        .find(|layer| layer["layer"] == "framework")
+        .expect("framework coverage exists");
+    assert_eq!(
+        framework_coverage["projectionRule"],
+        "fastapi-route-adapter-fixture-v0"
+    );
+    assert_eq!(framework_coverage["measurementBoundary"], "measuredNonzero");
+    assert!(
+        framework_coverage["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs are an array")
+            .iter()
+            .any(|construct| construct
+                .as_str()
+                .expect("unsupported construct is a string")
+                .contains("fastapi-dependency-injection"))
+    );
+
+    run_sig0(&[
+        "validate-air",
+        "--input",
+        air.to_str().expect("air path is utf-8"),
+        "--out",
+        air_validation
+            .to_str()
+            .expect("air validation path is utf-8"),
+    ]);
+    assert_eq!(read_json(&air_validation)["summary"]["result"], "pass");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.to_str().expect("air path is utf-8"),
+        "--out",
+        feature_report
+            .to_str()
+            .expect("feature report path is utf-8"),
+    ]);
+    let feature_json = read_json(&feature_report);
+    assert!(
+        feature_json["coverageGaps"]
+            .as_array()
+            .expect("coverageGaps are an array")
+            .iter()
+            .any(|gap| {
+                gap["layer"] == "framework"
+                    && gap["measurementBoundary"] == "measuredNonzero"
+                    && gap["unsupportedConstructs"]
+                        .as_array()
+                        .expect("unsupportedConstructs are an array")
+                        .iter()
+                        .any(|construct| {
+                            construct
+                                .as_str()
+                                .expect("unsupported construct is a string")
+                                .contains("fastapi-dependency-injection")
+                        })
+            })
+    );
+    assert!(
+        feature_json["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs are an array")
+            .iter()
+            .any(|construct| construct
+                .as_str()
+                .expect("unsupported construct is a string")
+                .contains("framework: fastapi-dependency-injection"))
     );
 }
 

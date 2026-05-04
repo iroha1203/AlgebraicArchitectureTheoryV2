@@ -7,6 +7,7 @@ mod dataset;
 mod extractor;
 mod feature_dataset;
 mod feature_report;
+mod framework_adapter;
 mod github;
 mod graph;
 mod law_policy_template;
@@ -42,6 +43,7 @@ pub use feature_dataset::{
     build_feature_extension_dataset, build_feature_extension_dataset_from_files,
 };
 pub use feature_report::build_feature_extension_report;
+pub use framework_adapter::attach_framework_adapter_evidence;
 pub use github::{
     build_pr_history_dataset_from_github_files, build_pr_history_dataset_from_github_values,
     build_pr_metadata_from_github_files, build_pr_metadata_from_github_values,

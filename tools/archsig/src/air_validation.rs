@@ -194,6 +194,7 @@ fn check_air_evidence_kinds(document: &AirDocumentV0) -> ValidationCheck {
         "python_import",
         "policy_rule",
         "runtime_trace",
+        "framework_route",
         "pr_file",
         "test",
         "semantic_diagram",

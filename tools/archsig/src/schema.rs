@@ -42,6 +42,7 @@ pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-da
 pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
+pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
 pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
 pub const RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION: &str =
     "relation-complexity-observation/v0";
@@ -171,6 +172,46 @@ pub struct RuntimeDependencyGraphProjection {
     pub projection_rule: String,
     pub edge_kind: String,
     pub edges: Vec<Edge>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FrameworkAdapterEvidenceV0 {
+    pub schema_version: String,
+    pub adapter_id: String,
+    pub framework: String,
+    pub source_language: String,
+    pub component_id_kind: String,
+    pub projection_rule: String,
+    pub routes: Vec<FrameworkRouteEvidenceV0>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<FrameworkUnsupportedConstructV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FrameworkRouteEvidenceV0 {
+    pub route_id: String,
+    pub source: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target: Option<String>,
+    pub method: String,
+    pub route_path: String,
+    pub relation_kind: String,
+    pub confidence: String,
+    pub evidence_location: RuntimeEvidenceLocation,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FrameworkUnsupportedConstructV0 {
+    pub kind: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    pub reason: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
