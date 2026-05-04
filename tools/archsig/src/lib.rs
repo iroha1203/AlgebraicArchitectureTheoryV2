@@ -3,6 +3,7 @@ mod air_validation;
 mod artifact_retention;
 mod baseline_suppression;
 mod component_validation;
+mod custom_rule_plugin;
 mod dataset;
 mod extractor;
 mod feature_dataset;
@@ -37,6 +38,9 @@ pub use artifact_retention::{
 };
 pub use baseline_suppression::build_baseline_suppression_report;
 pub use component_validation::validate_component_universe_report;
+pub use custom_rule_plugin::{
+    static_custom_rule_plugin_registry, validate_custom_rule_plugin_registry_report,
+};
 pub use dataset::build_empirical_dataset;
 pub use extractor::{extract_sig0, extract_sig0_with_policy, extract_sig0_with_runtime};
 pub use feature_dataset::{

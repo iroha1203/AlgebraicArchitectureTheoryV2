@@ -319,6 +319,42 @@ Non-conclusions:
 - unmeasured gap は measured-zero evidence ではない。
 - selector match は extractor completeness を証明しない。
 
+### Custom rule plugin registry
+
+Issue: [#596](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/596)
+
+`custom-rule-plugin-registry-v0` は、organization-specific rule や extractor extension を
+AIR evidence / Feature Extension Report metadata に接続する trust boundary である。plugin は
+plugin id、rule id、plugin kind、evidence kind、confidence、input / output contract、
+coverage assumptions、permitted claim levels、formal claim promotion mode、theorem
+precondition refs、required theorem preconditions、output artifacts、non-conclusions を持つ。
+
+CLI:
+
+```bash
+archsig custom-rule-plugins --input custom_rule_plugins.json
+```
+
+出力 schema:
+
+```text
+custom-rule-plugin-registry-validation-report-v0
+```
+
+Canonical fixture は `tools/archsig/tests/fixtures/minimal/custom_rule_plugins.json` で固定する。
+validation は plugin id / rule id の一意性、plugin kind / evidence kind / confidence /
+claim level / promotion mode、input / output contract、coverage assumptions、output artifact、
+non-conclusion boundary を検査する。`permittedClaimLevels` に `formal` を含める plugin は
+`theoremPreconditionRefs` と `requiredTheoremPreconditions` を持つ必要があり、validation test は
+これを欠いた overclaiming plugin を fail にする。
+
+Non-conclusions:
+
+- plugin output は architecture lawfulness を結論しない。
+- plugin output は Lean theorem claim を結論しない。
+- plugin evidence は unsupported gap を measured-zero evidence に変えない。
+- formal claim promotion は theorem precondition checker の explicit preconditions を必要とする。
+
 ### Python component policy
 
 Issues:
