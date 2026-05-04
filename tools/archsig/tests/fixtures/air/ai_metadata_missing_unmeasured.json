@@ -1,0 +1,198 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-ai-metadata-missing-unmeasured",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-metadata-missing",
+    "after": "after-metadata-missing"
+  },
+  "feature": {
+    "featureId": "#canonical-ai-metadata-missing",
+    "title": "Generated patch with missing AI session metadata",
+    "description": "A patch artifact is present, but AI session provenance and measurements are outside the current boundary",
+    "source": "unknown",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-generated-patch",
+      "kind": "generated_patch",
+      "schemaVersion": "generated-patch-v0",
+      "path": "canonical/metadata-missing/generated.patch",
+      "contentHash": "sha256:canonical-metadata-missing-patch",
+      "producedBy": null
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-generated-patch",
+      "kind": "generated_patch",
+      "artifactRef": "artifact-generated-patch",
+      "path": "canonical/metadata-missing/generated.patch",
+      "symbol": null,
+      "line": null,
+      "ruleId": "generated-patch-v0",
+      "confidence": "low"
+    }
+  ],
+  "components": [
+    {
+      "id": "UserService",
+      "kind": "service",
+      "lifecycle": "unchanged",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": ["evidence-generated-patch"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-static-coupon-service",
+      "layer": "static",
+      "from": "UserService",
+      "to": "CouponService",
+      "kind": "import",
+      "lifecycle": "added",
+      "protectedBy": null,
+      "extractionRule": "metadata-missing-generated-patch",
+      "evidenceRefs": ["evidence-generated-patch"]
+    }
+  ],
+  "policies": {
+    "laws": [],
+    "boundaries": [],
+    "allowedEdges": [],
+    "forbiddenEdges": [],
+    "abstractionRules": [],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [],
+  "architecturePaths": [],
+  "homotopyGenerators": [],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "boundaryViolationCount",
+        "value": null,
+        "measured": false,
+        "measurementBoundary": "unmeasured",
+        "source": null,
+        "reason": "policy selector not provided"
+      },
+      {
+        "axis": "runtimePropagation",
+        "value": null,
+        "measured": false,
+        "measurementBoundary": "unmeasured",
+        "source": null,
+        "reason": "runtime evidence not provided"
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "provenance",
+        "measurementBoundary": "unmeasured",
+        "universeRefs": [],
+        "measuredAxes": [],
+        "unmeasuredAxes": ["aiSessionTraceability", "boundaryViolationCount"],
+        "extractionScope": [],
+        "exactnessAssumptions": [],
+        "unsupportedConstructs": [
+          "AI session metadata not provided",
+          "static policy measurement not provided"
+        ]
+      },
+      {
+        "layer": "runtime",
+        "measurementBoundary": "unmeasured",
+        "universeRefs": [],
+        "measuredAxes": [],
+        "unmeasuredAxes": ["runtimePropagation"],
+        "extractionScope": [],
+        "exactnessAssumptions": [],
+        "unsupportedConstructs": ["runtime extractor not provided"]
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-ai-metadata-missing",
+      "subjectRef": "feature.aiSession",
+      "predicate": "AI session metadata is absent, so provenance remains unmeasured",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["AI session metadata is absent"],
+      "nonConclusions": [
+        "generated patch artifact alone is not AI session traceability",
+        "metadata absence is not evidence for architecture lawfulness",
+        "metadata absence is not evidence against architecture lawfulness"
+      ]
+    },
+    {
+      "claimId": "claim-static-unmeasured",
+      "subjectRef": "signature.boundaryViolationCount",
+      "predicate": "static boundary axis is outside current measurement boundary",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["static policy measurement is absent"],
+      "nonConclusions": ["static split is not concluded"]
+    },
+    {
+      "claimId": "claim-runtime-unmeasured",
+      "subjectRef": "signature.runtimePropagation",
+      "predicate": "runtime axis is outside current measurement boundary",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["runtime evidence is absent"],
+      "nonConclusions": ["runtime split is not concluded"]
+    }
+  ],
+  "operationTrace": {
+    "operations": [
+      "generated_patch artifact-generated-patch adds relation-static-coupon-service"
+    ]
+  },
+  "extension": {
+    "embeddingClaimRef": null,
+    "featureViewClaimRef": null,
+    "interactionClaimRefs": [
+      "claim-ai-metadata-missing",
+      "claim-static-unmeasured",
+      "claim-runtime-unmeasured"
+    ],
+    "splitClaimRef": null,
+    "splitStatus": "unmeasured"
+  }
+}
