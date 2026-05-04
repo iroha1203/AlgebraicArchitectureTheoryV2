@@ -1,21 +1,25 @@
 use std::collections::BTreeSet;
 
 use crate::{
-    AirClaim, AirCoverageLayer, AirDocumentV0, THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION,
-    TheoremPackageMetadataV0, TheoremPackageRegistryV0, TheoremPreconditionCheck,
-    TheoremPreconditionCheckInput, TheoremPreconditionCheckReportV0,
-    TheoremPreconditionCheckSummary,
+    AirClaim, AirCoverageLayer, AirDocumentV0, AirSemanticDiagram,
+    THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION, TheoremPackageMetadataV0,
+    TheoremPackageRegistryV0, TheoremPreconditionCheck, TheoremPreconditionCheckInput,
+    TheoremPreconditionCheckReportV0, TheoremPreconditionCheckSummary,
 };
 
 const RUNTIME_PROPAGATION_SUBJECT_REF: &str = "signature.runtimePropagation";
+const SEMANTIC_DIAGRAM_SUBJECT_PREFIX: &str = "semantic.diagram.";
 
 pub fn static_theorem_package_registry() -> TheoremPackageRegistryV0 {
     TheoremPackageRegistryV0 {
         schema_version: THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION.to_string(),
-        scope: "static and runtime theorem package registry v0".to_string(),
+        scope: "static, runtime, and semantic theorem package registry v0".to_string(),
         packages: vec![
             static_split_theorem_package(),
             runtime_zero_bridge_package(),
+            semantic_diagram_filler_package(),
+            semantic_nonfillability_package(),
+            semantic_numerical_curvature_zero_package(),
         ],
     }
 }
@@ -119,6 +123,143 @@ fn runtime_zero_bridge_package() -> TheoremPackageMetadataV0 {
     }
 }
 
+fn semantic_diagram_filler_package() -> TheoremPackageMetadataV0 {
+    TheoremPackageMetadataV0 {
+        package_id: "semantic-diagram-filler-package-v0".to_string(),
+        lean_entrypoint: "Chapter9DiagramFilling".to_string(),
+        theorem_refs: vec![
+            "ArchitecturePath.PathHomotopy".to_string(),
+            "DiagramFiller".to_string(),
+            "diagramFiller_observation_eq".to_string(),
+        ],
+        supported_subject_refs: vec!["semantic.diagram".to_string()],
+        supported_axes: vec![
+            "semanticDiagramCommutation".to_string(),
+            "projectionSoundnessViolation".to_string(),
+        ],
+        claim_level: "formal".to_string(),
+        claim_classification: "proved".to_string(),
+        measurement_boundary: "measuredZero".to_string(),
+        required_assumptions: vec![
+            "selected semantic diagram has explicit lhs and rhs architecture paths".to_string(),
+            "selected homotopy generators preserve the observed contract".to_string(),
+            "diagram filler contract is discharged for the selected finite path calculus"
+                .to_string(),
+        ],
+        coverage_assumptions: vec![
+            "semantic coverage records the selected diagram universe".to_string(),
+            "contract and test evidence cover the selected diagram observations".to_string(),
+        ],
+        exactness_assumptions: vec![
+            "AIR path refs, diagram refs, and observation refs match the Lean package parameters"
+                .to_string(),
+        ],
+        missing_preconditions: Vec::new(),
+        non_conclusions: vec![
+            "semantic diagram filler package does not prove global semantic flatness".to_string(),
+            "semantic diagram filler package does not prove extractor completeness".to_string(),
+            "unmeasured semantic diagrams are not treated as commuting".to_string(),
+        ],
+    }
+}
+
+fn semantic_nonfillability_package() -> TheoremPackageMetadataV0 {
+    TheoremPackageMetadataV0 {
+        package_id: "semantic-nonfillability-package-v0".to_string(),
+        lean_entrypoint: "Chapter9DiagramFilling".to_string(),
+        theorem_refs: vec![
+            "NonFillabilityWitness".to_string(),
+            "NonFillabilityWitnessFor".to_string(),
+            "observationDifference_refutesDiagramFiller".to_string(),
+            "observationDifference_nonFillabilityWitnessFor".to_string(),
+            "obstructionAsNonFillability_sound".to_string(),
+            "obstructionAsNonFillability_complete_bounded".to_string(),
+        ],
+        supported_subject_refs: vec!["semantic.diagram".to_string()],
+        supported_axes: vec![
+            "semanticDiagramCommutation".to_string(),
+            "projectionSoundnessViolation".to_string(),
+        ],
+        claim_level: "formal".to_string(),
+        claim_classification: "proved".to_string(),
+        measurement_boundary: "measuredNonzero".to_string(),
+        required_assumptions: vec![
+            "selected observations are comparable".to_string(),
+            "selected witness value refutes the diagram filler".to_string(),
+            "non-fillability is scoped to the selected semantic diagram".to_string(),
+        ],
+        coverage_assumptions: vec![
+            "semantic coverage records the selected non-fillability witness".to_string(),
+            "contract and test evidence cover the observed lhs and rhs paths".to_string(),
+        ],
+        exactness_assumptions: vec![
+            "observation-result evidence matches the selected AIR diagram observations".to_string(),
+        ],
+        missing_preconditions: Vec::new(),
+        non_conclusions: vec![
+            "non-fillability witness does not prove global semantic completeness".to_string(),
+            "non-fillability witness does not refute arbitrary split predicates".to_string(),
+            "absence of a selected non-fillability witness is not evidence of commutation"
+                .to_string(),
+        ],
+    }
+}
+
+fn semantic_numerical_curvature_zero_package() -> TheoremPackageMetadataV0 {
+    TheoremPackageMetadataV0 {
+        package_id: "semantic-numerical-curvature-zero-package-v0".to_string(),
+        lean_entrypoint: "Formal.Arch.Signature.Curvature".to_string(),
+        theorem_refs: vec![
+            "numericalCurvature_eq_zero_iff_DiagramCommutes".to_string(),
+            "numericalCurvature_eq_zero_of_DiagramCommutes".to_string(),
+            "DiagramCommutes_of_numericalCurvature_eq_zero".to_string(),
+            "numericalCurvatureObstruction_iff_DiagramBad".to_string(),
+            "not_numericalCurvatureObstruction_iff_DiagramCommutes".to_string(),
+            "diagramLawful_iff_noNumericalCurvatureObstruction".to_string(),
+            "totalCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero".to_string(),
+            "totalCurvature_eq_zero_iff_forall_measured_DiagramCommutes".to_string(),
+            "totalCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction".to_string(),
+            "totalWeightedCurvature_eq_zero_iff_forall_measured_numericalCurvature_eq_zero"
+                .to_string(),
+            "totalWeightedCurvature_eq_zero_iff_forall_measured_DiagramCommutes".to_string(),
+            "totalWeightedCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction"
+                .to_string(),
+        ],
+        supported_subject_refs: vec![
+            "semantic.diagram".to_string(),
+            "signature.semanticCurvature".to_string(),
+        ],
+        supported_axes: vec![
+            "semanticCurvature".to_string(),
+            "semanticDiagramCommutation".to_string(),
+        ],
+        claim_level: "formal".to_string(),
+        claim_classification: "proved".to_string(),
+        measurement_boundary: "measuredZero".to_string(),
+        required_assumptions: vec![
+            "selected observation distance is zero-separating".to_string(),
+            "selected measured diagram universe is finite".to_string(),
+            "weighted curvature claims record positive weights for every measured diagram"
+                .to_string(),
+        ],
+        coverage_assumptions: vec![
+            "semantic coverage records the measured diagram universe".to_string(),
+            "required diagram coverage is bounded to the selected universe".to_string(),
+        ],
+        exactness_assumptions: vec![
+            "curvature values are computed from the same observations referenced by AIR"
+                .to_string(),
+        ],
+        missing_preconditions: Vec::new(),
+        non_conclusions: vec![
+            "numerical curvature zero bridge does not prove global semantic flatness".to_string(),
+            "numerical curvature zero bridge does not prove business semantics completeness"
+                .to_string(),
+            "weighted curvature does not conclude empirical cost correlation".to_string(),
+        ],
+    }
+}
+
 pub fn build_theorem_precondition_check_report(
     document: &AirDocumentV0,
     input_path: &str,
@@ -185,6 +326,12 @@ fn theorem_precondition_check(
         projection_rule.as_ref(),
         &mut missing_preconditions,
     );
+    add_semantic_inferred_missing_preconditions(
+        document,
+        claim,
+        &applicable_packages,
+        &mut missing_preconditions,
+    );
 
     let (resolved_claim_classification, result, reason) = if !unknown_theorem_refs.is_empty() {
         (
@@ -206,6 +353,12 @@ fn theorem_precondition_check(
             "BLOCKED_FORMAL_CLAIM".to_string(),
             "warn".to_string(),
             "missing preconditions block formal proved classification".to_string(),
+        )
+    } else if claim.claim_level == "formal" && !missing_preconditions.is_empty() {
+        (
+            "BLOCKED_FORMAL_CLAIM".to_string(),
+            "warn".to_string(),
+            "missing preconditions block formal claim promotion".to_string(),
         )
     } else if claim.claim_level == "formal"
         && claim.claim_classification == "proved"
@@ -314,10 +467,22 @@ fn theorem_package_applies_to_claim(package: &TheoremPackageMetadataV0, claim: &
         .theorem_refs
         .iter()
         .any(|theorem_ref| package.theorem_refs.contains(theorem_ref));
-    let subject_matches = package
-        .supported_subject_refs
-        .iter()
-        .any(|subject_ref| subject_ref == &claim.subject_ref);
+    if !claim.theorem_refs.is_empty()
+        && claim
+            .subject_ref
+            .starts_with(SEMANTIC_DIAGRAM_SUBJECT_PREFIX)
+        && package.package_id.starts_with("semantic-")
+    {
+        return theorem_ref_matches;
+    }
+
+    let subject_matches = package.supported_subject_refs.iter().any(|subject_ref| {
+        subject_ref == &claim.subject_ref
+            || (subject_ref == "semantic.diagram"
+                && claim
+                    .subject_ref
+                    .starts_with(SEMANTIC_DIAGRAM_SUBJECT_PREFIX))
+    });
 
     theorem_ref_matches || subject_matches
 }
@@ -351,6 +516,14 @@ fn runtime_coverage_layer(document: &AirDocumentV0) -> Option<&AirCoverageLayer>
         .layers
         .iter()
         .find(|layer| layer.layer == "runtime")
+}
+
+fn semantic_coverage_layer(document: &AirDocumentV0) -> Option<&AirCoverageLayer> {
+    document
+        .coverage
+        .layers
+        .iter()
+        .find(|layer| layer.layer == "semantic")
 }
 
 fn add_runtime_inferred_missing_preconditions(
@@ -406,6 +579,173 @@ fn add_runtime_inferred_missing_preconditions(
             "runtime projection exactness assumptions are not recorded",
         );
     }
+}
+
+fn add_semantic_inferred_missing_preconditions(
+    document: &AirDocumentV0,
+    claim: &AirClaim,
+    applicable_packages: &[&TheoremPackageMetadataV0],
+    missing_preconditions: &mut Vec<String>,
+) {
+    if claim.claim_level != "formal"
+        || !applicable_packages
+            .iter()
+            .any(|package| package.package_id.starts_with("semantic-"))
+    {
+        return;
+    }
+
+    let semantic_layer = semantic_coverage_layer(document);
+    if semantic_layer.is_none() {
+        push_missing_once(
+            missing_preconditions,
+            "semantic coverage layer is not recorded",
+        );
+    }
+    if semantic_layer.is_some_and(|layer| layer.universe_refs.is_empty()) {
+        push_missing_once(
+            missing_preconditions,
+            "semantic coverage universe refs are not recorded",
+        );
+    }
+    if semantic_layer.is_some_and(|layer| layer.extraction_scope.is_empty()) {
+        push_missing_once(
+            missing_preconditions,
+            "semantic coverage extraction scope is not recorded",
+        );
+    }
+    if semantic_layer.is_some_and(|layer| layer.exactness_assumptions.is_empty()) {
+        push_missing_once(
+            missing_preconditions,
+            "semantic coverage exactness assumptions are not recorded",
+        );
+    }
+    if semantic_layer.is_some_and(|layer| layer.measured_axes.is_empty()) {
+        push_missing_once(
+            missing_preconditions,
+            "semantic coverage measured axes are not recorded",
+        );
+    }
+
+    let diagrams = semantic_diagrams_for_claim(document, claim);
+    if diagrams.is_empty() {
+        push_missing_once(
+            missing_preconditions,
+            "semantic formal claim does not reference a selected semantic diagram",
+        );
+    }
+    if diagrams.iter().any(|diagram| {
+        !architecture_path_exists(document, &diagram.lhs_path_ref)
+            || !architecture_path_exists(document, &diagram.rhs_path_ref)
+    }) {
+        push_missing_once(
+            missing_preconditions,
+            "semantic diagram lhs/rhs path refs do not resolve to AIR architecture paths",
+        );
+    }
+
+    let evidence_kinds = claim_evidence_kinds(document, claim);
+    if !evidence_kinds
+        .iter()
+        .any(|kind| kind == "observation_result")
+    {
+        push_missing_once(
+            missing_preconditions,
+            "semantic formal claim lacks observation-result evidence",
+        );
+    }
+    if !evidence_kinds.iter().any(|kind| kind == "test") {
+        push_missing_once(
+            missing_preconditions,
+            "semantic formal claim lacks test evidence",
+        );
+    }
+    if !evidence_kinds
+        .iter()
+        .any(|kind| kind == "manual_annotation" || kind == "semantic_diagram")
+    {
+        push_missing_once(
+            missing_preconditions,
+            "semantic formal claim lacks contract or diagram evidence",
+        );
+    }
+    if claim.required_assumptions.is_empty() {
+        push_missing_once(
+            missing_preconditions,
+            "semantic theorem required assumptions are not recorded",
+        );
+    }
+    if claim.coverage_assumptions.is_empty() {
+        push_missing_once(
+            missing_preconditions,
+            "semantic coverage assumptions are not recorded",
+        );
+    }
+    if claim.exactness_assumptions.is_empty() {
+        push_missing_once(
+            missing_preconditions,
+            "semantic exactness assumptions are not recorded",
+        );
+    }
+
+    for package in applicable_packages
+        .iter()
+        .filter(|package| package.package_id.starts_with("semantic-"))
+    {
+        if package.measurement_boundary != claim.measurement_boundary {
+            push_missing_once(
+                missing_preconditions,
+                &format!(
+                    "{} expects measurement boundary {}",
+                    package.package_id, package.measurement_boundary
+                ),
+            );
+        }
+        if semantic_layer
+            .is_some_and(|layer| layer.measurement_boundary != package.measurement_boundary)
+        {
+            push_missing_once(
+                missing_preconditions,
+                &format!(
+                    "{} expects semantic coverage boundary {}",
+                    package.package_id, package.measurement_boundary
+                ),
+            );
+        }
+    }
+}
+
+fn semantic_diagrams_for_claim<'a>(
+    document: &'a AirDocumentV0,
+    claim: &AirClaim,
+) -> Vec<&'a AirSemanticDiagram> {
+    document
+        .semantic_diagrams
+        .iter()
+        .filter(|diagram| {
+            diagram.filler_claim_ref.as_ref() == Some(&claim.claim_id)
+                || document.nonfillability_witnesses.iter().any(|witness| {
+                    witness.claim_ref == claim.claim_id && witness.diagram_ref == diagram.id
+                })
+                || claim.subject_ref == format!("{SEMANTIC_DIAGRAM_SUBJECT_PREFIX}{}", diagram.id)
+        })
+        .collect()
+}
+
+fn architecture_path_exists(document: &AirDocumentV0, path_ref: &str) -> bool {
+    document
+        .architecture_paths
+        .iter()
+        .any(|path| path.path_id == path_ref)
+}
+
+fn claim_evidence_kinds(document: &AirDocumentV0, claim: &AirClaim) -> BTreeSet<String> {
+    document
+        .evidence
+        .iter()
+        .filter(|evidence| claim.evidence_refs.contains(&evidence.evidence_id))
+        .map(|evidence| evidence.kind.clone())
+        .collect()
 }
 
 fn runtime_axis_is_measured_zero(document: &AirDocumentV0) -> bool {
@@ -523,7 +863,7 @@ mod tests {
         );
         assert_eq!(
             report.registry.scope,
-            "static and runtime theorem package registry v0"
+            "static, runtime, and semantic theorem package registry v0"
         );
         assert!(report.registry.packages.iter().any(|package| {
             package.theorem_refs
@@ -540,6 +880,12 @@ mod tests {
                 && package
                     .theorem_refs
                     .contains(&"ArchitectureSignature.runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction".to_string())
+        }));
+        assert!(report.registry.packages.iter().any(|package| {
+            package.package_id == "semantic-nonfillability-package-v0"
+                && package
+                    .theorem_refs
+                    .contains(&"observationDifference_refutesDiagramFiller".to_string())
         }));
 
         let boundary_check = report
@@ -681,5 +1027,75 @@ mod tests {
         );
         assert_eq!(report.summary.formal_proved_claim_count, 1);
         assert_eq!(report.summary.blocked_claim_count, 1);
+    }
+
+    #[test]
+    fn theorem_check_distinguishes_semantic_measured_witness_and_formal_claim() {
+        let mut document = air_fixture_document("semantic_nonfillability.json");
+        document.claims.push(AirClaim {
+            claim_id: "claim-rounding-order-nonfillability-proved".to_string(),
+            subject_ref: "semantic.diagram.diagram-coupon-discount-order".to_string(),
+            predicate: "selected observation difference refutes the selected diagram filler"
+                .to_string(),
+            claim_level: "formal".to_string(),
+            claim_classification: "proved".to_string(),
+            measurement_boundary: "measuredNonzero".to_string(),
+            theorem_refs: vec![
+                "observationDifference_refutesDiagramFiller".to_string(),
+                "obstructionAsNonFillability_sound".to_string(),
+            ],
+            evidence_refs: vec![
+                "evidence-rounding-order".to_string(),
+                "evidence-coupon-flow-test".to_string(),
+                "evidence-coupon-contract".to_string(),
+                "evidence-coupon-diagram".to_string(),
+            ],
+            required_assumptions: vec![
+                "selected observations are comparable".to_string(),
+                "selected witness value refutes the diagram filler".to_string(),
+            ],
+            coverage_assumptions: vec![
+                "selected business-flow test covers coupon / discount ordering".to_string(),
+            ],
+            exactness_assumptions: vec![
+                "fixture records both selected workflow observations".to_string(),
+            ],
+            missing_preconditions: Vec::new(),
+            non_conclusions: vec![
+                "global semantic flatness is not concluded".to_string(),
+                "business semantics completeness is not concluded".to_string(),
+            ],
+        });
+
+        let report =
+            build_theorem_precondition_check_report(&document, "semantic_nonfillability.json");
+        let measured = report
+            .checks
+            .iter()
+            .find(|check| check.claim_id == "claim-rounding-order-nonfillability")
+            .expect("semantic measured witness is checked");
+        let blocked = report
+            .checks
+            .iter()
+            .find(|check| check.claim_id == "claim-coupon-discount-filler-blocked")
+            .expect("semantic blocked filler claim is checked");
+        let proved = report
+            .checks
+            .iter()
+            .find(|check| check.claim_id == "claim-rounding-order-nonfillability-proved")
+            .expect("semantic formal non-fillability claim is checked");
+
+        assert_eq!(measured.resolved_claim_classification, "MEASURED_WITNESS");
+        assert_eq!(
+            blocked.resolved_claim_classification,
+            "BLOCKED_FORMAL_CLAIM"
+        );
+        assert_eq!(proved.resolved_claim_classification, "FORMAL_PROVED");
+        assert!(
+            proved
+                .applicable_package_refs
+                .contains(&"semantic-nonfillability-package-v0".to_string())
+        );
+        assert_eq!(proved.missing_preconditions, Vec::<String>::new());
     }
 }

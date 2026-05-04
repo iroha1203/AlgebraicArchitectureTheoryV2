@@ -1334,7 +1334,8 @@ exactness assumptions、missing preconditions、non-conclusions である。
 `MEASURED` witness は `PROVED` formal claim ではなく、missing preconditions が
 残る claim は theorem package の結論として表示しない。
 
-baseline registry は static theorem package と runtime zero bridge package を扱う。
+baseline registry は static theorem package、runtime zero bridge package、
+semantic diagram filler / non-fillability package、semantic numerical curvature zero package を扱う。
 runtime package は 0/1 `RuntimeDependencyGraph` 上の bounded zero bridge に限定し、
 coverage、projection rule、exactness assumptions、theorem preconditions が揃う場合だけ
 formal claim として扱う。
@@ -1352,9 +1353,27 @@ Runtime zero bridge package v0:
   runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction
   v1OfFiniteWithRuntimePropagation_runtimePropagation_eq_some_zero_iff
   finite universe semantic runtime exposure bridge
+
+Semantic diagram filler package v0:
+  DiagramFiller
+  diagramFiller_observation_eq
+
+Semantic non-fillability package v0:
+  observationDifference_refutesDiagramFiller
+  observationDifference_nonFillabilityWitnessFor
+  obstructionAsNonFillability_sound
+  obstructionAsNonFillability_complete_bounded
+
+Semantic numerical curvature zero package v0:
+  numericalCurvature_eq_zero_iff_DiagramCommutes
+  totalCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction
+  totalWeightedCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction
 ```
 
-semantic theorem package は、対応する theorem package が registry に登録された段階で接続する。
+semantic package は selected finite diagram / witness / measured diagram universe に限定する。
+observation-result、test、contract または diagram evidence、coverage scope、exactness assumptions、
+AIR path / diagram refs が不足する formal semantic claim は `BLOCKED_FORMAL_CLAIM` として表示し、
+`FORMAL_PROVED` に昇格しない。
 
 theorem precondition checker は、soundness と completeness を分けて表示する。
 
