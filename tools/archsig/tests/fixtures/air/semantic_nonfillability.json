@@ -38,6 +38,36 @@
       "line": 9,
       "ruleId": "business-flow-test-v0",
       "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-coupon-flow-test",
+      "kind": "test",
+      "artifactRef": "artifact-semantic-test",
+      "path": "tests/coupon_discount_order.json",
+      "symbol": "couponDiscountOrderingTest",
+      "line": 3,
+      "ruleId": "business-flow-test-v0",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-coupon-contract",
+      "kind": "manual_annotation",
+      "artifactRef": null,
+      "path": "docs/contracts/coupon_discount.md",
+      "symbol": "selected coupon discount contract",
+      "line": 1,
+      "ruleId": "selected-contract",
+      "confidence": "medium"
+    },
+    {
+      "evidenceId": "evidence-coupon-diagram",
+      "kind": "semantic_diagram",
+      "artifactRef": "artifact-semantic-test",
+      "path": "docs/diagrams/coupon_discount.yaml",
+      "symbol": "diagram-coupon-discount-order",
+      "line": 1,
+      "ruleId": "selected-semantic-diagram",
+      "confidence": "medium"
     }
   ],
   "components": [
@@ -73,9 +103,14 @@
       "equivalence": "observational",
       "fillerClaimRef": null,
       "nonfillabilityWitnessRefs": ["witness-rounding-order-difference"],
-      "observationRefs": ["evidence-rounding-order"],
+      "observationRefs": ["evidence-rounding-order", "evidence-coupon-flow-test"],
       "lifecycle": "added",
-      "evidenceRefs": ["evidence-rounding-order"]
+      "evidenceRefs": [
+        "evidence-rounding-order",
+        "evidence-coupon-flow-test",
+        "evidence-coupon-contract",
+        "evidence-coupon-diagram"
+      ]
     }
   ],
   "architecturePaths": [
@@ -85,7 +120,7 @@
       "targetState": "cart-priced",
       "steps": ["apply-discount", "apply-coupon"],
       "lifecycle": "added",
-      "evidenceRefs": ["evidence-rounding-order"]
+      "evidenceRefs": ["evidence-rounding-order", "evidence-coupon-flow-test"]
     },
     {
       "pathId": "path-coupon-then-discount",
@@ -93,7 +128,7 @@
       "targetState": "cart-priced",
       "steps": ["apply-coupon", "apply-discount"],
       "lifecycle": "added",
-      "evidenceRefs": ["evidence-rounding-order"]
+      "evidenceRefs": ["evidence-rounding-order", "evidence-coupon-flow-test"]
     }
   ],
   "homotopyGenerators": [
@@ -102,7 +137,7 @@
       "kind": "independent_square",
       "diagramRefs": ["diagram-coupon-discount-order"],
       "preservesObservationClaimRefs": ["claim-rounding-order-nonfillability"],
-      "evidenceRefs": ["evidence-rounding-order"]
+      "evidenceRefs": ["evidence-rounding-order", "evidence-coupon-contract"]
     }
   ],
   "nonfillabilityWitnesses": [
@@ -111,7 +146,7 @@
       "diagramRef": "diagram-coupon-discount-order",
       "witnessKind": "test_counterexample",
       "claimRef": "claim-rounding-order-nonfillability",
-      "evidenceRefs": ["evidence-rounding-order"]
+      "evidenceRefs": ["evidence-rounding-order", "evidence-coupon-flow-test"]
     }
   ],
   "signature": {
@@ -149,7 +184,12 @@
       "claimClassification": "measured",
       "measurementBoundary": "measuredNonzero",
       "theoremRefs": ["observationDifference_refutesDiagramFiller"],
-      "evidenceRefs": ["evidence-rounding-order"],
+      "evidenceRefs": [
+        "evidence-rounding-order",
+        "evidence-coupon-flow-test",
+        "evidence-coupon-contract",
+        "evidence-coupon-diagram"
+      ],
       "requiredAssumptions": ["selected observations are comparable"],
       "coverageAssumptions": ["selected business-flow test covers coupon / discount ordering"],
       "exactnessAssumptions": ["fixture records both selected workflow observations"],
@@ -157,6 +197,27 @@
       "nonConclusions": [
         "global semantic flatness is not concluded",
         "unmeasured diagrams are not treated as commuting"
+      ]
+    },
+    {
+      "claimId": "claim-coupon-discount-filler-blocked",
+      "subjectRef": "semantic.diagram.diagram-coupon-discount-order",
+      "predicate": "selected diagram filler is not promoted to a formal theorem claim without complete contract and test evidence",
+      "claimLevel": "formal",
+      "claimClassification": "assumed",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": ["DiagramFiller"],
+      "evidenceRefs": ["evidence-rounding-order"],
+      "requiredAssumptions": ["selected paths have an explicit filler contract"],
+      "coverageAssumptions": ["all selected business-flow observations are covered"],
+      "exactnessAssumptions": ["contract observations match AIR path endpoints"],
+      "missingPreconditions": [
+        "formal filler contract has not been discharged",
+        "test evidence is only a bounded measurement witness"
+      ],
+      "nonConclusions": [
+        "formal diagram filler claim is not concluded",
+        "measured non-fillability witness is not a global semantic completeness result"
       ]
     },
     {

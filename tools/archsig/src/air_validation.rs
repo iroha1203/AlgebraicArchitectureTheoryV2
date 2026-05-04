@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
@@ -15,6 +15,7 @@ pub fn validate_air_document_report(
     let mut checks = Vec::new();
 
     checks.push(check_air_schema_version(&document.schema_version));
+    checks.push(check_air_evidence_kinds(document));
     checks.push(check_air_unique_ids(document));
     checks.push(check_air_artifact_refs(document));
     checks.push(check_air_component_refs(document));
@@ -186,6 +187,37 @@ fn check_air_unique_ids(document: &AirDocumentV0) -> ValidationCheck {
     check
 }
 
+fn check_air_evidence_kinds(document: &AirDocumentV0) -> ValidationCheck {
+    let valid_kinds = [
+        "source_location",
+        "policy_rule",
+        "runtime_trace",
+        "pr_file",
+        "test",
+        "semantic_diagram",
+        "observation_result",
+        "manual_annotation",
+    ];
+    let invalid: Vec<ValidationExample> = document
+        .evidence
+        .iter()
+        .filter(|evidence| !valid_kinds.contains(&evidence.kind.as_str()))
+        .map(|evidence| {
+            generic_validation_example(
+                &evidence.evidence_id,
+                &evidence.kind,
+                "unsupported evidence.kind",
+            )
+        })
+        .collect();
+
+    air_ref_check(
+        "air-evidence-kind-supported",
+        "AIR evidence kinds use the supported taxonomy",
+        invalid,
+    )
+}
+
 fn check_air_artifact_refs(document: &AirDocumentV0) -> ValidationCheck {
     let artifact_ids = air_artifact_ids(document);
     let unresolved: Vec<ValidationExample> = document
@@ -266,6 +298,12 @@ fn check_air_evidence_refs(document: &AirDocumentV0) -> ValidationCheck {
             &diagram.id,
             "dangling semantic_diagram.evidence_refs",
             &diagram.evidence_refs,
+            &evidence_ids,
+        ));
+        unresolved.extend(unresolved_refs(
+            &diagram.id,
+            "dangling semantic_diagram.observation_refs",
+            &diagram.observation_refs,
             &evidence_ids,
         ));
     }
@@ -808,6 +846,11 @@ fn check_air_semantic_metadata(document: &AirDocumentV0) -> ValidationCheck {
         "unknown",
     ];
     let valid_equivalence = ["equality", "observational", "contract_based"];
+    let evidence_by_id: BTreeMap<String, &str> = document
+        .evidence
+        .iter()
+        .map(|evidence| (evidence.evidence_id.clone(), evidence.kind.as_str()))
+        .collect();
     let claim_ids = air_claim_ids(document);
     let semantic_layer = document
         .coverage
@@ -899,6 +942,13 @@ fn check_air_semantic_metadata(document: &AirDocumentV0) -> ValidationCheck {
             layer.measurement_boundary.as_str(),
             "measuredZero" | "measuredNonzero"
         ) {
+            if layer.measured_axes.is_empty() {
+                invalid.push(generic_validation_example(
+                    "coverage.semantic.measuredAxes",
+                    "empty",
+                    "measured semantic coverage must record measured axes",
+                ));
+            }
             if layer.universe_refs.is_empty() {
                 invalid.push(generic_validation_example(
                     "coverage.semantic.universeRefs",
@@ -938,6 +988,50 @@ fn check_air_semantic_metadata(document: &AirDocumentV0) -> ValidationCheck {
         ));
     }
 
+    for claim in document
+        .claims
+        .iter()
+        .filter(|claim| semantic_claim(document, claim))
+    {
+        let evidence_kinds: BTreeSet<&str> = claim
+            .evidence_refs
+            .iter()
+            .filter_map(|evidence_ref| evidence_by_id.get(evidence_ref).copied())
+            .collect();
+        let has_semantic_evidence = evidence_kinds.iter().any(|kind| {
+            matches!(
+                *kind,
+                "observation_result" | "test" | "semantic_diagram" | "manual_annotation"
+            )
+        });
+        if matches!(
+            claim.measurement_boundary.as_str(),
+            "measuredZero" | "measuredNonzero"
+        ) && !has_semantic_evidence
+        {
+            invalid.push(generic_validation_example(
+                &claim.claim_id,
+                "evidenceRefs",
+                "measured semantic claim must reference observation, test, diagram, or manual evidence",
+            ));
+        }
+
+        let has_contract_or_test_evidence = evidence_kinds
+            .iter()
+            .any(|kind| matches!(*kind, "test" | "semantic_diagram" | "manual_annotation"));
+        if claim.claim_level == "formal"
+            && claim.claim_classification != "proved"
+            && !has_contract_or_test_evidence
+            && claim.missing_preconditions.is_empty()
+        {
+            invalid.push(generic_validation_example(
+                &claim.claim_id,
+                "missingPreconditions",
+                "blocked semantic formal claim must record missing contract or test evidence",
+            ));
+        }
+    }
+
     for witness in &document.nonfillability_witnesses {
         if !claim_ids.contains(&witness.claim_ref) {
             continue;
@@ -969,6 +1063,19 @@ fn check_air_semantic_metadata(document: &AirDocumentV0) -> ValidationCheck {
         "semantic AIR paths, diagrams, witnesses, and coverage are consistent",
         invalid,
     )
+}
+
+fn semantic_claim(document: &AirDocumentV0, claim: &crate::AirClaim) -> bool {
+    claim.subject_ref.contains("semantic")
+        || claim.subject_ref == "signature.projectionSoundnessViolation"
+        || document
+            .semantic_diagrams
+            .iter()
+            .any(|diagram| diagram.filler_claim_ref.as_ref() == Some(&claim.claim_id))
+        || document
+            .nonfillability_witnesses
+            .iter()
+            .any(|witness| witness.claim_ref == claim.claim_id)
 }
 
 fn check_air_measured_claim_evidence(
