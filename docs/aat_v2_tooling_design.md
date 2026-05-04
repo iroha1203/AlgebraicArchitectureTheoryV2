@@ -1928,6 +1928,8 @@ Repair / synthesis prototype の canonical fixtures は、次の tooling 境界�
   - schema: `docs/design/outcome_linkage_dataset_schema.md`
   - CLI: `archsig outcome-linkage-dataset`
 - case study paper
+  - evaluation plan: `docs/design/b6_empirical_hypothesis_evaluation.md`
+  - skeleton: `docs/empirical/b6_case_study_paper_skeleton.md`
 ```
 
 B0-B6 は、数学コアを実行可能な research / tooling prototype へ落とす段階である。
