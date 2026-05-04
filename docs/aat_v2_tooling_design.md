@@ -1995,6 +1995,10 @@ evidence であり、Lean `ComponentUniverse` 完全性や architecture lawfulne
 dynamic import、plugin loading、framework convention、generated code、notebook は
 `unsupportedConstructs` から AIR coverage / Feature Extension Report の coverage gap へ
 trace し、測定済み 0 の evidence としては扱わない。
+canonical fixture と CLI tests は small Python package、relative import、external dependency、
+unsupported boundary、Python Sig0 output、AIR validation、Feature Extension Report、
+theorem precondition boundary を tooling validation として固定する。これらの fixture は
+実コード extractor completeness や Lean theorem claim への昇格を結論しない。
 
 ### Phase B9: Schema standardization and compatibility
 
