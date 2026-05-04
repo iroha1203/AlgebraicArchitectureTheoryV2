@@ -125,11 +125,7 @@ pub fn build_feature_extension_report(
         introduced_obstruction_witnesses,
         eliminated_obstruction_witnesses: Vec::new(),
         complexity_transfer_candidates: Vec::new(),
-        semantic_path_summary: FeatureReportSemanticPathSummary {
-            path_count: document.architecture_paths.len(),
-            diagram_count: document.semantic_diagrams.len(),
-            nonfillability_witness_count: document.nonfillability_witnesses.len(),
-        },
+        semantic_path_summary: feature_report_semantic_path_summary(document, &coverage_gaps),
         theorem_package_refs,
         theorem_precondition_summary: theorem_precondition_report.summary,
         theorem_precondition_checks: theorem_precondition_report.checks,
@@ -144,6 +140,90 @@ pub fn build_feature_extension_report(
             "Runtime formal claims require coverage, projection, exactness, and theorem preconditions".to_string(),
         ],
         non_conclusions,
+    }
+}
+
+fn feature_report_semantic_path_summary(
+    document: &AirDocumentV0,
+    coverage_gaps: &[FeatureReportCoverageGap],
+) -> FeatureReportSemanticPathSummary {
+    let semantic_layer = document
+        .coverage
+        .layers
+        .iter()
+        .find(|layer| layer.layer == "semantic");
+    let semantic_claims: Vec<&AirClaim> = document
+        .claims
+        .iter()
+        .filter(|claim| {
+            claim.subject_ref.contains("semantic")
+                || claim.subject_ref == "signature.projectionSoundnessViolation"
+                || document
+                    .semantic_diagrams
+                    .iter()
+                    .any(|diagram| diagram.filler_claim_ref.as_ref() == Some(&claim.claim_id))
+                || document
+                    .nonfillability_witnesses
+                    .iter()
+                    .any(|witness| witness.claim_ref == claim.claim_id)
+        })
+        .collect();
+    let mut non_conclusions = BTreeSet::new();
+    non_conclusions.insert("global semantic flatness is not concluded".to_string());
+    non_conclusions
+        .insert("absence of semantic witnesses is not evidence of commutation".to_string());
+    if semantic_layer
+        .map(|layer| layer.measurement_boundary == "unmeasured")
+        .unwrap_or(true)
+    {
+        non_conclusions.insert("unmeasured semantic layer is not measuredZero".to_string());
+    }
+    for claim in &semantic_claims {
+        for conclusion in &claim.non_conclusions {
+            non_conclusions.insert(conclusion.clone());
+        }
+    }
+
+    FeatureReportSemanticPathSummary {
+        path_count: document.architecture_paths.len(),
+        diagram_count: document.semantic_diagrams.len(),
+        nonfillability_witness_count: document.nonfillability_witnesses.len(),
+        measurement_boundary: semantic_layer
+            .map(|layer| layer.measurement_boundary.clone())
+            .unwrap_or_else(|| "unmeasured".to_string()),
+        measured_axes: semantic_layer
+            .map(|layer| layer.measured_axes.clone())
+            .unwrap_or_default(),
+        unmeasured_axes: semantic_layer
+            .map(|layer| layer.unmeasured_axes.clone())
+            .unwrap_or_else(|| vec!["semanticDiagramCommutation".to_string()]),
+        coverage_gaps: coverage_gaps
+            .iter()
+            .filter(|gap| gap.layer == "semantic")
+            .flat_map(|gap| {
+                let mut gaps = vec![format!("semantic layer is {}", gap.measurement_boundary)];
+                gaps.extend(
+                    gap.unmeasured_axes
+                        .iter()
+                        .map(|axis| format!("semantic axis unmeasured: {axis}")),
+                );
+                gaps.extend(
+                    gap.unsupported_constructs
+                        .iter()
+                        .map(|construct| format!("semantic unsupported: {construct}")),
+                );
+                gaps
+            })
+            .collect(),
+        claim_refs: semantic_claims
+            .iter()
+            .map(|claim| claim.claim_id.clone())
+            .collect(),
+        claim_classifications: semantic_claims
+            .iter()
+            .map(|claim| claim.claim_classification.clone())
+            .collect(),
+        non_conclusions: non_conclusions.into_iter().collect(),
     }
 }
 

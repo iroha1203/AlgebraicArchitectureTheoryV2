@@ -527,6 +527,53 @@ fn cli_feature_report_keeps_unmeasured_extension_unmeasured() {
             .iter()
             .any(|gap| gap["measurementBoundary"] == "UNMEASURED")
     );
+    assert_eq!(
+        json["semanticPathSummary"]["measurementBoundary"],
+        "unmeasured"
+    );
+    assert!(
+        json["semanticPathSummary"]["nonConclusions"]
+            .as_array()
+            .expect("semantic non-conclusions are an array")
+            .iter()
+            .any(|conclusion| conclusion == "unmeasured semantic layer is not measuredZero")
+    );
+}
+
+#[test]
+fn cli_feature_report_surfaces_semantic_nonfillability_witness() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-semantic");
+    let report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("semantic_nonfillability.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["splitStatus"], "non_split");
+    assert_eq!(
+        json["semanticPathSummary"]["measurementBoundary"],
+        "measuredNonzero"
+    );
+    assert_eq!(json["semanticPathSummary"]["pathCount"], 2);
+    assert_eq!(json["semanticPathSummary"]["diagramCount"], 1);
+    assert_eq!(json["semanticPathSummary"]["nonfillabilityWitnessCount"], 1);
+    assert!(
+        json["introducedObstructionWitnesses"]
+            .as_array()
+            .expect("witnesses are an array")
+            .iter()
+            .any(|witness| witness["layer"] == "semantic"
+                && witness["nonfillabilityWitnessRef"] == "witness-rounding-order-difference"
+                && witness["measurementBoundary"] == "measuredNonzero")
+    );
 }
 
 #[test]
@@ -735,6 +782,7 @@ fn cli_validate_air_accepts_canonical_fixtures() {
         "runtime_measured_nonzero.json",
         "runtime_unmeasured.json",
         "runtime_zero_bridge_blocked.json",
+        "semantic_nonfillability.json",
         "unmeasured_runtime_semantic.json",
     ] {
         let report = out_dir.join(format!("{fixture}.report.json"));
@@ -861,6 +909,51 @@ fn cli_validate_air_detects_runtime_metadata_inconsistency() {
             .expect("checks is array")
             .iter()
             .any(|check| check["id"] == "air-runtime-metadata-consistent"
+                && check["result"] == "fail")
+    );
+}
+
+#[test]
+fn cli_validate_air_detects_semantic_metadata_inconsistency() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("validate-air-semantic-invalid");
+    let input = out_dir.join("invalid-semantic-air.json");
+    let report = out_dir.join("invalid-semantic-air-report.json");
+    let mut json = read_json(&root.join("semantic_nonfillability.json"));
+
+    json["semanticDiagrams"][0]["lifecycle"] = serde_json::json!("maybe");
+    json["coverage"]["layers"][0]["measurementBoundary"] = serde_json::json!("unmeasured");
+    json["coverage"]["layers"][0]["measuredAxes"] =
+        serde_json::json!(["projectionSoundnessViolation"]);
+    json["claims"][0]["measurementBoundary"] = serde_json::json!("unmeasured");
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("invalid semantic AIR is written");
+
+    let output = run_sig0_output(&[
+        "validate-air",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "invalid semantic AIR should fail\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "fail");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-semantic-metadata-consistent"
                 && check["result"] == "fail")
     );
 }
