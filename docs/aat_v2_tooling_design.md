@@ -1951,6 +1951,13 @@ schema compatibility、operational feedback loop を別段階として扱う。
 tool は設計判断を自動承認しない。CI fail は、policy が明示した required axis と
 missing precondition に基づく運用判断であり、theorem の自動結論ではない。
 
+`organization-policy-v0` は、この CI 運用判断の入力 schema である。
+`policy_id`、`policy_version`、`scope`、required axes、allowed unmeasured gaps、
+required theorem preconditions、non-conclusions を保持する。validation は unknown axis、
+unknown claim level、missing scope、invalid unmeasured allowance を検出するが、policy pass
+だけで architecture lawfulness、Lean theorem claim、unmeasured gap の measured-zero 化、
+missing precondition の discharge は結論しない。
+
 ### Phase B8: Extractor / policy ecosystem
 
 ```text

@@ -3517,3 +3517,53 @@ fn cli_validation_warns_for_module_root_import_target() {
             })
     );
 }
+
+#[test]
+fn cli_organization_policy_validates_static_policy_and_input_fixture() {
+    let root = fixture_root();
+    let out_dir = temp_dir("organization-policy");
+    let static_report = out_dir.join("organization-policy-static.json");
+    let fixture_report = out_dir.join("organization-policy-fixture.json");
+
+    run_sig0(&[
+        "organization-policy",
+        "--out",
+        static_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "organization-policy",
+        "--input",
+        root.join("organization_policy.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        fixture_report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&static_report);
+    assert_eq!(
+        json["schemaVersion"],
+        "organization-policy-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(json["summary"]["requiredAxisCount"].as_u64().unwrap() >= 3);
+    assert!(
+        json["policy"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion == "organization policy is CI decision support, not a Lean theorem"
+            })
+    );
+
+    let json = read_json(&fixture_report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["policy"]["allowedUnmeasuredGaps"]
+            .as_array()
+            .expect("allowedUnmeasuredGaps is array")
+            .iter()
+            .any(|gap| gap["axis"] == "semanticDiagramCommutation")
+    );
+}
