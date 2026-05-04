@@ -1,0 +1,208 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-semantic-formal-claim-blocked",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-semantic-blocked",
+    "after": "after-semantic-blocked"
+  },
+  "feature": {
+    "featureId": "#canonical-semantic-blocked",
+    "title": "Add coupon and discount workflow",
+    "description": "A selected semantic diagram has observation evidence but lacks contract and test evidence for a formal filler claim",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-semantic-observation",
+      "kind": "semantic",
+      "schemaVersion": "business-flow-observation-v0",
+      "path": "tests/coupon_discount_observation.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-blocked-observation",
+      "kind": "observation_result",
+      "artifactRef": "artifact-semantic-observation",
+      "path": "tests/coupon_discount_observation.json",
+      "symbol": "couponDiscountObservation",
+      "line": 7,
+      "ruleId": "business-flow-observation-v0",
+      "confidence": "medium"
+    },
+    {
+      "evidenceId": "evidence-blocked-diagram",
+      "kind": "semantic_diagram",
+      "artifactRef": "artifact-semantic-observation",
+      "path": "docs/diagrams/coupon_discount_blocked.yaml",
+      "symbol": "diagram-coupon-discount-blocked-order",
+      "line": 1,
+      "ruleId": "selected-semantic-diagram",
+      "confidence": "medium"
+    }
+  ],
+  "components": [
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "DiscountService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [],
+  "policies": {
+    "laws": [],
+    "boundaries": [],
+    "allowedEdges": [],
+    "forbiddenEdges": [],
+    "abstractionRules": [],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [
+    {
+      "id": "diagram-coupon-discount-blocked-order",
+      "lhsPathRef": "path-discount-then-coupon",
+      "rhsPathRef": "path-coupon-then-discount",
+      "equivalence": "observational",
+      "fillerClaimRef": "claim-coupon-discount-filler-formal-blocked",
+      "nonfillabilityWitnessRefs": [],
+      "observationRefs": ["evidence-blocked-observation"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-blocked-observation", "evidence-blocked-diagram"]
+    }
+  ],
+  "architecturePaths": [
+    {
+      "pathId": "path-discount-then-coupon",
+      "sourceState": "cart-before-pricing",
+      "targetState": "cart-priced",
+      "steps": ["apply-discount", "apply-coupon"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-blocked-observation"]
+    },
+    {
+      "pathId": "path-coupon-then-discount",
+      "sourceState": "cart-before-pricing",
+      "targetState": "cart-priced",
+      "steps": ["apply-coupon", "apply-discount"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-blocked-observation"]
+    }
+  ],
+  "homotopyGenerators": [
+    {
+      "generatorId": "generator-blocked-order",
+      "kind": "independent_square",
+      "diagramRefs": ["diagram-coupon-discount-blocked-order"],
+      "preservesObservationClaimRefs": ["claim-coupon-discount-filler-formal-blocked"],
+      "evidenceRefs": ["evidence-blocked-observation"]
+    }
+  ],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "projectionSoundnessViolation",
+        "value": 0,
+        "measured": true,
+        "measurementBoundary": "measuredZero",
+        "source": "business-flow-observation-v0",
+        "reason": null
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "semantic",
+        "measurementBoundary": "measuredZero",
+        "universeRefs": ["artifact-semantic-observation"],
+        "measuredAxes": ["projectionSoundnessViolation"],
+        "unmeasuredAxes": [],
+        "extractionScope": ["selected coupon / discount observation"],
+        "exactnessAssumptions": ["fixture records selected workflow observation"],
+        "unsupportedConstructs": []
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-coupon-discount-filler-formal-blocked",
+      "subjectRef": "semantic.diagram.diagram-coupon-discount-blocked-order",
+      "predicate": "selected semantic diagram filler is blocked until contract and test evidence are present",
+      "claimLevel": "formal",
+      "claimClassification": "assumed",
+      "measurementBoundary": "measuredZero",
+      "theoremRefs": ["DiagramFiller", "totalCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction"],
+      "evidenceRefs": ["evidence-blocked-observation", "evidence-blocked-diagram"],
+      "requiredAssumptions": ["selected paths have an explicit filler contract"],
+      "coverageAssumptions": ["selected business-flow observations are covered"],
+      "exactnessAssumptions": ["contract observations match AIR path endpoints"],
+      "missingPreconditions": [
+        "contract evidence is absent",
+        "test evidence is absent"
+      ],
+      "nonConclusions": [
+        "formal diagram filler claim is not concluded",
+        "semantic measured zero witness is not a global semantic completeness result"
+      ]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding requires theorem preconditions",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["before/after component correspondence"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["theorem precondition checker has not run"],
+      "nonConclusions": ["split extension is not concluded"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature view requires diff attribution",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["feature ownership"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["feature extension report has not run"],
+      "nonConclusions": ["feature quotient is not constructed"]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": ["claim-coupon-discount-filler-formal-blocked"],
+    "splitClaimRef": null,
+    "splitStatus": "unknown"
+  }
+}
