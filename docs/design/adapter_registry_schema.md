@@ -172,6 +172,8 @@ Issue #599, #594, #596, #600 の後続 adapter / policy / plugin / measurement-u
 - AIR relation の `extractionRule` と registry `projectionRule` が対応する。
 - evidence kind は registry `evidenceKinds` に現れる。
 - measured layer / axis と unsupported construct は Feature Extension Report に trace できる。
+- runtime / semantic adapter は `measurement-unit-registry-v0` の `measurementUnitRefs` と
+  repository root / service root / deployment unit 境界を trace できる。
 - adapter-specific confidence は formal theorem claim の代替ではない。
 - private / missing / unparsed data は measured-zero に丸めない。
 - registry validation は tooling validation であり、Lean proof obligation の discharge ではない。

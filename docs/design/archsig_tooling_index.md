@@ -355,6 +355,48 @@ Non-conclusions:
 - plugin evidence は unsupported gap を measured-zero evidence に変えない。
 - formal claim promotion は theorem precondition checker の explicit preconditions を必要とする。
 
+### Measurement unit registry
+
+Issue: [#600](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/600)
+
+`measurement-unit-registry-v0` は、monorepo / multi-service 環境で runtime / semantic
+evidence を読む前に、repository root、service root、deployment unit、runtime evidence
+source、semantic workflow source の境界を固定する tooling registry である。unit は unit id、
+unit kind、repository root、任意の service root / deployment unit、component id kind、
+selected component refs、runtime / semantic evidence sources、coverage assumptions、
+unsupported constructs、output artifacts、non-conclusions を持つ。
+
+runtime / semantic evidence adapter boundary は adapter id、adapter kind、
+measurement unit refs、measured layer、evidence kind、projection rule、coverage /
+exactness assumptions、unsupported constructs、theorem bridge preconditions、
+non-conclusions を持つ。これにより、runtime trace、service mesh、log、manual workflow、
+contract test、semantic diagram の source boundary を AIR coverage / Feature Extension
+Report の coverage gap へ trace する。
+
+CLI:
+
+```bash
+archsig measurement-units --input measurement_units.json
+```
+
+出力 schema:
+
+```text
+measurement-unit-registry-validation-report-v0
+```
+
+Canonical fixture は `tools/archsig/tests/fixtures/minimal/measurement_units.json` で固定する。
+validation は repository root / service root / deployment unit を collapse せず、adapter の
+`measurementUnitRefs` が selected unit へ解決すること、coverage / exactness assumptions と
+unsupported constructs が report へ trace 可能な形で残ることを検査する。
+
+Non-conclusions:
+
+- selected measurement unit は global architecture completeness を結論しない。
+- selected measurement unit は Lean `ComponentUniverse` completeness を結論しない。
+- runtime / semantic adapter coverage gap は measured-zero evidence ではない。
+- private / missing evidence source は明示的に供給されるまで unmeasured のままである。
+
 ### Python component policy
 
 Issues:

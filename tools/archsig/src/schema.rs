@@ -33,6 +33,9 @@ pub const LAW_POLICY_TEMPLATE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const CUSTOM_RULE_PLUGIN_REGISTRY_SCHEMA_VERSION: &str = "custom-rule-plugin-registry-v0";
 pub const CUSTOM_RULE_PLUGIN_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "custom-rule-plugin-registry-validation-report-v0";
+pub const MEASUREMENT_UNIT_REGISTRY_SCHEMA_VERSION: &str = "measurement-unit-registry-v0";
+pub const MEASUREMENT_UNIT_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "measurement-unit-registry-validation-report-v0";
 pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
@@ -2027,6 +2030,96 @@ pub struct CustomRulePluginRegistryValidationInput {
 pub struct CustomRulePluginRegistryValidationSummary {
     pub result: String,
     pub plugin_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitRegistryV0 {
+    pub schema_version: String,
+    pub registry_id: String,
+    pub scope: String,
+    pub units: Vec<MeasurementUnitV0>,
+    pub evidence_adapters: Vec<MeasurementEvidenceAdapterBoundaryV0>,
+    pub explicit_assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitV0 {
+    pub unit_id: String,
+    pub unit_kind: String,
+    pub repository_root: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub service_root: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deployment_unit: Option<String>,
+    pub component_id_kind: String,
+    pub selected_component_refs: Vec<String>,
+    pub runtime_evidence_sources: Vec<MeasurementEvidenceSourceV0>,
+    pub semantic_workflow_sources: Vec<MeasurementEvidenceSourceV0>,
+    pub coverage_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub output_artifacts: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementEvidenceSourceV0 {
+    pub source_id: String,
+    pub source_kind: String,
+    pub owner_unit_ref: String,
+    pub path: String,
+    pub privacy_boundary: String,
+    pub coverage_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementEvidenceAdapterBoundaryV0 {
+    pub adapter_id: String,
+    pub adapter_kind: String,
+    pub measurement_unit_refs: Vec<String>,
+    pub measured_layers: Vec<String>,
+    pub evidence_kinds: Vec<String>,
+    pub projection_rule: String,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub output_artifacts: Vec<String>,
+    pub theorem_bridge_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitRegistryValidationReportV0 {
+    pub schema_version: String,
+    pub input: MeasurementUnitRegistryValidationInput,
+    pub registry: MeasurementUnitRegistryV0,
+    pub summary: MeasurementUnitRegistryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitRegistryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub registry_id: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitRegistryValidationSummary {
+    pub result: String,
+    pub unit_count: usize,
+    pub evidence_adapter_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

@@ -4287,6 +4287,126 @@ fn cli_custom_rule_plugins_validate_fixture_and_formal_promotion_boundary() {
 }
 
 #[test]
+fn cli_measurement_units_validate_fixture_and_boundary_refs() {
+    let root = fixture_root();
+    let out_dir = temp_dir("measurement-units");
+    let static_report = out_dir.join("measurement-units-static.json");
+    let fixture_report = out_dir.join("measurement-units-fixture.json");
+    let invalid_registry = out_dir.join("invalid-measurement-units.json");
+    let invalid_report = out_dir.join("invalid-measurement-units-report.json");
+
+    run_sig0(&[
+        "measurement-units",
+        "--out",
+        static_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "measurement-units",
+        "--input",
+        root.join("measurement_units.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        fixture_report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&static_report);
+    assert_eq!(
+        json["schemaVersion"],
+        "measurement-unit-registry-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(json["summary"]["unitCount"].as_u64().unwrap() >= 3);
+    assert!(
+        json["registry"]["units"]
+            .as_array()
+            .expect("units is array")
+            .iter()
+            .any(|unit| {
+                unit["unitKind"] == "deployment-unit"
+                    && unit["serviceRoot"] == "services/billing"
+                    && unit["deploymentUnit"] == "deployments/billing-worker"
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "measurement-unit-evidence-adapter-boundaries-recorded"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let json = read_json(&fixture_report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["registry"]["evidenceAdapters"]
+            .as_array()
+            .expect("evidenceAdapters is array")
+            .iter()
+            .any(|adapter| {
+                adapter["adapterId"] == "fixture-semantic-workflow-measurement-unit-adapter-v0"
+                    && adapter["measurementUnitRefs"]
+                        .as_array()
+                        .expect("unit refs are array")
+                        .iter()
+                        .any(|unit_ref| unit_ref == "fixture-repository-root")
+                    && adapter["unsupportedConstructs"]
+                        .as_array()
+                        .expect("unsupported constructs are array")
+                        .iter()
+                        .any(|construct| construct == "unmapped-workflow-node")
+            })
+    );
+    assert!(
+        json["registry"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion
+                    == "selected measurement units do not conclude Lean ComponentUniverse completeness"
+            })
+    );
+
+    let mut invalid_json = read_json(&root.join("measurement_units.json"));
+    invalid_json["evidenceAdapters"][0]["measurementUnitRefs"] =
+        serde_json::json!(["missing-unit"]);
+    fs::write(
+        &invalid_registry,
+        serde_json::to_string_pretty(&invalid_json).expect("json serializes"),
+    )
+    .expect("invalid registry is written");
+    let output = run_sig0_output(&[
+        "measurement-units",
+        "--input",
+        invalid_registry
+            .to_str()
+            .expect("invalid fixture path is utf-8"),
+        "--out",
+        invalid_report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "dangling measurement unit refs should fail validation"
+    );
+    let json = read_json(&invalid_report);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "measurement-unit-evidence-adapter-boundaries-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_policy_decision_reports_fail_and_pass_boundaries() {
     let fixture = fixture_root();
     let air = air_fixture_root();
