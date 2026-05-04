@@ -1051,6 +1051,13 @@ pub struct FeatureReportSemanticPathSummary {
     pub path_count: usize,
     pub diagram_count: usize,
     pub nonfillability_witness_count: usize,
+    pub measurement_boundary: String,
+    pub measured_axes: Vec<String>,
+    pub unmeasured_axes: Vec<String>,
+    pub coverage_gaps: Vec<String>,
+    pub claim_refs: Vec<String>,
+    pub claim_classifications: Vec<String>,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

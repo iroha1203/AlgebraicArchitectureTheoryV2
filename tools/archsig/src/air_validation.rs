@@ -25,6 +25,7 @@ pub fn validate_air_document_report(
     checks.push(check_air_signature_measurement_boundary(document));
     checks.push(check_air_claim_measurement_boundary(document));
     checks.push(check_air_runtime_metadata(document));
+    checks.push(check_air_semantic_metadata(document));
     checks.push(check_air_measured_claim_evidence(
         document,
         strict_measured_evidence,
@@ -123,6 +124,42 @@ fn check_air_unique_ids(document: &AirDocumentV0) -> ValidationCheck {
         (
             "claim",
             duplicates(document.claims.iter().map(|claim| claim.claim_id.as_str())),
+        ),
+        (
+            "architecture_path",
+            duplicates(
+                document
+                    .architecture_paths
+                    .iter()
+                    .map(|path| path.path_id.as_str()),
+            ),
+        ),
+        (
+            "semantic_diagram",
+            duplicates(
+                document
+                    .semantic_diagrams
+                    .iter()
+                    .map(|diagram| diagram.id.as_str()),
+            ),
+        ),
+        (
+            "homotopy_generator",
+            duplicates(
+                document
+                    .homotopy_generators
+                    .iter()
+                    .map(|generator| generator.generator_id.as_str()),
+            ),
+        ),
+        (
+            "nonfillability_witness",
+            duplicates(
+                document
+                    .nonfillability_witnesses
+                    .iter()
+                    .map(|witness| witness.witness_id.as_str()),
+            ),
         ),
     ]
     .into_iter()
@@ -756,6 +793,180 @@ fn check_air_runtime_metadata(document: &AirDocumentV0) -> ValidationCheck {
     air_ref_check(
         "air-runtime-metadata-consistent",
         "runtime AIR relations, coverage, and claim boundary are consistent",
+        invalid,
+    )
+}
+
+fn check_air_semantic_metadata(document: &AirDocumentV0) -> ValidationCheck {
+    let valid_lifecycle = [
+        "before",
+        "after",
+        "added",
+        "removed",
+        "changed",
+        "unchanged",
+        "unknown",
+    ];
+    let valid_equivalence = ["equality", "observational", "contract_based"];
+    let claim_ids = air_claim_ids(document);
+    let semantic_layer = document
+        .coverage
+        .layers
+        .iter()
+        .find(|layer| layer.layer == "semantic");
+    let semantic_objects_present = !document.architecture_paths.is_empty()
+        || !document.semantic_diagrams.is_empty()
+        || !document.homotopy_generators.is_empty()
+        || !document.nonfillability_witnesses.is_empty();
+    let semantic_claims_present = document.claims.iter().any(|claim| {
+        claim.subject_ref.contains("semantic")
+            || claim.subject_ref == "signature.projectionSoundnessViolation"
+    });
+    let mut invalid = Vec::new();
+
+    for path in &document.architecture_paths {
+        if !valid_lifecycle.contains(&path.lifecycle.as_str()) {
+            invalid.push(generic_validation_example(
+                &path.path_id,
+                &path.lifecycle,
+                "unsupported architecture_path.lifecycle",
+            ));
+        }
+        if path.steps.is_empty() {
+            invalid.push(generic_validation_example(
+                &path.path_id,
+                "steps",
+                "architecture_path must record finite path steps",
+            ));
+        }
+    }
+
+    for diagram in &document.semantic_diagrams {
+        if !valid_lifecycle.contains(&diagram.lifecycle.as_str()) {
+            invalid.push(generic_validation_example(
+                &diagram.id,
+                &diagram.lifecycle,
+                "unsupported semantic_diagram.lifecycle",
+            ));
+        }
+        if !valid_equivalence.contains(&diagram.equivalence.as_str()) {
+            invalid.push(generic_validation_example(
+                &diagram.id,
+                &diagram.equivalence,
+                "unsupported semantic_diagram.equivalence",
+            ));
+        }
+    }
+
+    if semantic_objects_present && semantic_layer.is_none() {
+        invalid.push(generic_validation_example(
+            "coverage.semantic",
+            "missing",
+            "semantic objects require a semantic coverage layer",
+        ));
+    }
+
+    if let Some(layer) = semantic_layer {
+        if matches!(
+            layer.measurement_boundary.as_str(),
+            "unmeasured" | "outOfScope"
+        ) {
+            if !layer.measured_axes.is_empty() {
+                invalid.push(generic_validation_example(
+                    "coverage.semantic.measuredAxes",
+                    &layer.measured_axes.join(", "),
+                    "unmeasured semantic coverage must not list measured axes",
+                ));
+            }
+            if !document.nonfillability_witnesses.is_empty() {
+                invalid.push(generic_validation_example(
+                    "nonfillabilityWitnesses",
+                    "present",
+                    "non-fillability witnesses require measuredNonzero semantic coverage",
+                ));
+            }
+        }
+        if layer.measurement_boundary == "measuredZero"
+            && !document.nonfillability_witnesses.is_empty()
+        {
+            invalid.push(generic_validation_example(
+                "coverage.semantic",
+                "measuredZero",
+                "measuredZero semantic coverage cannot contain non-fillability witnesses",
+            ));
+        }
+        if matches!(
+            layer.measurement_boundary.as_str(),
+            "measuredZero" | "measuredNonzero"
+        ) {
+            if layer.universe_refs.is_empty() {
+                invalid.push(generic_validation_example(
+                    "coverage.semantic.universeRefs",
+                    "empty",
+                    "measured semantic coverage must reference its measurement artifact",
+                ));
+            }
+            if layer.extraction_scope.is_empty() {
+                invalid.push(generic_validation_example(
+                    "coverage.semantic.extractionScope",
+                    "empty",
+                    "measured semantic coverage must record coverage scope",
+                ));
+            }
+            if layer.exactness_assumptions.is_empty() {
+                invalid.push(generic_validation_example(
+                    "coverage.semantic.exactnessAssumptions",
+                    "empty",
+                    "measured semantic coverage must record exactness assumptions",
+                ));
+            }
+        }
+        if layer.measurement_boundary == "measuredNonzero"
+            && document.nonfillability_witnesses.is_empty()
+        {
+            invalid.push(generic_validation_example(
+                "nonfillabilityWitnesses",
+                "empty",
+                "measuredNonzero semantic coverage requires a non-fillability witness",
+            ));
+        }
+    } else if semantic_claims_present {
+        invalid.push(generic_validation_example(
+            "coverage.semantic",
+            "missing",
+            "semantic claims require a semantic coverage layer",
+        ));
+    }
+
+    for witness in &document.nonfillability_witnesses {
+        if !claim_ids.contains(&witness.claim_ref) {
+            continue;
+        }
+        if let Some(claim) = document
+            .claims
+            .iter()
+            .find(|claim| claim.claim_id == witness.claim_ref)
+        {
+            if claim.measurement_boundary != "measuredNonzero" {
+                invalid.push(generic_validation_example(
+                    &witness.witness_id,
+                    &claim.measurement_boundary,
+                    "non-fillability witness claim_ref must use measuredNonzero boundary",
+                ));
+            }
+            if claim.claim_classification == "unmeasured" {
+                invalid.push(generic_validation_example(
+                    &witness.witness_id,
+                    &claim.claim_classification,
+                    "non-fillability witness claim_ref cannot be unmeasured",
+                ));
+            }
+        }
+    }
+
+    air_ref_check(
+        "air-semantic-metadata-consistent",
+        "semantic AIR paths, diagrams, witnesses, and coverage are consistent",
         invalid,
     )
 }

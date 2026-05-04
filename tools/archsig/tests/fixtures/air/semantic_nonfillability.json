@@ -1,0 +1,203 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-semantic-nonfillability",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-semantic",
+    "after": "after-semantic"
+  },
+  "feature": {
+    "featureId": "#canonical-semantic",
+    "title": "Add coupon and discount workflow",
+    "description": "Coupon and discount ordering is measured through a selected semantic diagram",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-semantic-test",
+      "kind": "semantic",
+      "schemaVersion": "business-flow-test-v0",
+      "path": "tests/coupon_discount_order.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-rounding-order",
+      "kind": "observation_result",
+      "artifactRef": "artifact-semantic-test",
+      "path": "tests/coupon_discount_order.json",
+      "symbol": "couponDiscountRoundingOrder",
+      "line": 9,
+      "ruleId": "business-flow-test-v0",
+      "confidence": "high"
+    }
+  ],
+  "components": [
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "DiscountService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [],
+  "policies": {
+    "laws": [],
+    "boundaries": [],
+    "allowedEdges": [],
+    "forbiddenEdges": [],
+    "abstractionRules": [],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [
+    {
+      "id": "diagram-coupon-discount-order",
+      "lhsPathRef": "path-discount-then-coupon",
+      "rhsPathRef": "path-coupon-then-discount",
+      "equivalence": "observational",
+      "fillerClaimRef": null,
+      "nonfillabilityWitnessRefs": ["witness-rounding-order-difference"],
+      "observationRefs": ["evidence-rounding-order"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-rounding-order"]
+    }
+  ],
+  "architecturePaths": [
+    {
+      "pathId": "path-discount-then-coupon",
+      "sourceState": "cart-before-pricing",
+      "targetState": "cart-priced",
+      "steps": ["apply-discount", "apply-coupon"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-rounding-order"]
+    },
+    {
+      "pathId": "path-coupon-then-discount",
+      "sourceState": "cart-before-pricing",
+      "targetState": "cart-priced",
+      "steps": ["apply-coupon", "apply-discount"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-rounding-order"]
+    }
+  ],
+  "homotopyGenerators": [
+    {
+      "generatorId": "generator-independent-order",
+      "kind": "independent_square",
+      "diagramRefs": ["diagram-coupon-discount-order"],
+      "preservesObservationClaimRefs": ["claim-rounding-order-nonfillability"],
+      "evidenceRefs": ["evidence-rounding-order"]
+    }
+  ],
+  "nonfillabilityWitnesses": [
+    {
+      "witnessId": "witness-rounding-order-difference",
+      "diagramRef": "diagram-coupon-discount-order",
+      "witnessKind": "test_counterexample",
+      "claimRef": "claim-rounding-order-nonfillability",
+      "evidenceRefs": ["evidence-rounding-order"]
+    }
+  ],
+  "signature": {
+    "axes": [
+      {
+        "axis": "projectionSoundnessViolation",
+        "value": 1,
+        "measured": true,
+        "measurementBoundary": "measuredNonzero",
+        "source": "business-flow-test-v0",
+        "reason": null
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "semantic",
+        "measurementBoundary": "measuredNonzero",
+        "universeRefs": ["artifact-semantic-test"],
+        "measuredAxes": ["projectionSoundnessViolation"],
+        "unmeasuredAxes": [],
+        "extractionScope": ["selected coupon / discount business-flow test"],
+        "exactnessAssumptions": ["fixture records both selected workflow observations"],
+        "unsupportedConstructs": []
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-rounding-order-nonfillability",
+      "subjectRef": "semantic.diagram.diagram-coupon-discount-order",
+      "predicate": "selected coupon / discount order diagram has measured observation difference",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": ["observationDifference_refutesDiagramFiller"],
+      "evidenceRefs": ["evidence-rounding-order"],
+      "requiredAssumptions": ["selected observations are comparable"],
+      "coverageAssumptions": ["selected business-flow test covers coupon / discount ordering"],
+      "exactnessAssumptions": ["fixture records both selected workflow observations"],
+      "missingPreconditions": [],
+      "nonConclusions": [
+        "global semantic flatness is not concluded",
+        "unmeasured diagrams are not treated as commuting"
+      ]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding requires theorem preconditions",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["before/after component correspondence"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["theorem precondition checker has not run"],
+      "nonConclusions": ["split extension is not concluded"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature view requires diff attribution",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["feature ownership"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["feature extension report has not run"],
+      "nonConclusions": ["feature quotient is not constructed"]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": ["claim-rounding-order-nonfillability"],
+    "splitClaimRef": null,
+    "splitStatus": "non_split"
+  }
+}
