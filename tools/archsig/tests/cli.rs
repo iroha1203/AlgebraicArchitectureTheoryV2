@@ -1147,6 +1147,7 @@ fn cli_validate_air_accepts_canonical_fixtures() {
     let out_dir = temp_dir("validate-air-fixtures");
     for fixture in [
         "ai_session_generated_patch.json",
+        "ai_session_hidden_complexity_warning.json",
         "ai_session_unreviewed_formal_claim.json",
         "good_extension.json",
         "hidden_interaction.json",
@@ -1175,6 +1176,78 @@ fn cli_validate_air_accepts_canonical_fixtures() {
         assert_eq!(json["summary"]["result"], "pass");
         assert_eq!(json["summary"]["failedCheckCount"], 0);
     }
+}
+
+#[test]
+fn cli_feature_report_surfaces_ai_generated_review_warnings_without_obstruction_witnesses() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("ai-generated-review-warnings");
+    let report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("ai_session_hidden_complexity_warning.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    let warnings = json["generatedPatchSummary"]["reviewWarnings"]
+        .as_array()
+        .expect("review warnings is array");
+    let hidden_warning = warnings
+        .iter()
+        .find(|warning| warning["warningKind"] == "hidden_interaction_candidate")
+        .expect("hidden interaction candidate warning is reported");
+    assert_eq!(
+        hidden_warning["classification"],
+        "conservative_review_signal"
+    );
+    assert_eq!(hidden_warning["measurementBoundary"], "unmeasured");
+    assert!(
+        hidden_warning["relations"]
+            .as_array()
+            .expect("hidden warning relations is array")
+            .iter()
+            .any(|relation| relation["relationId"] == "relation-static-coupon-cache")
+    );
+    assert!(
+        hidden_warning["nonConclusions"]
+            .as_array()
+            .expect("hidden warning non-conclusions is array")
+            .iter()
+            .any(|conclusion| conclusion
+                == "hidden interaction candidate is not a measured hidden_interaction witness")
+    );
+
+    let complexity_warning = warnings
+        .iter()
+        .find(|warning| warning["warningKind"] == "complexity_transfer_warning")
+        .expect("complexity transfer warning is reported");
+    assert_eq!(
+        complexity_warning["classification"],
+        "conservative_review_signal"
+    );
+    assert_eq!(complexity_warning["measurementBoundary"], "measuredNonzero");
+    assert!(
+        json["complexityTransferCandidates"]
+            .as_array()
+            .expect("complexity candidates is array")
+            .iter()
+            .any(|candidate| candidate
+                .as_str()
+                .expect("candidate is a string")
+                .contains("warning-ai-generated-relation-complexity-transfer"))
+    );
+    assert!(
+        json["introducedObstructionWitnesses"]
+            .as_array()
+            .expect("obstruction witnesses is array")
+            .is_empty()
+    );
 }
 
 #[test]
