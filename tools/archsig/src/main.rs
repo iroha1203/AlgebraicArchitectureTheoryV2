@@ -6,14 +6,15 @@ use std::process::ExitCode;
 
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
-    DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0, RepositoryRevisionRef,
-    ScanMetadata, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
-    SnapshotRecordInput, SnapshotRepositoryRef, TheoremPreconditionCheckReportV0,
-    build_air_document, build_empirical_dataset, build_feature_extension_report,
-    build_pr_metadata_from_github_files, build_signature_diff_report,
-    build_signature_snapshot_record, build_theorem_precondition_check_report,
-    extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    validate_air_document_report, validate_component_universe_report,
+    DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0, RepairRuleRegistryV0,
+    RepairRuleRegistryValidationReportV0, RepositoryRevisionRef, ScanMetadata, Sig0Document,
+    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
+    SnapshotRepositoryRef, TheoremPreconditionCheckReportV0, build_air_document,
+    build_empirical_dataset, build_feature_extension_report, build_pr_metadata_from_github_files,
+    build_signature_diff_report, build_signature_snapshot_record,
+    build_theorem_precondition_check_report, extract_relation_complexity_observation_from_file,
+    extract_sig0_with_runtime, static_repair_rule_registry, validate_air_document_report,
+    validate_component_universe_report, validate_repair_rule_registry_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -296,6 +297,17 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Validate a repair rule registry. If input is omitted, validate the static registry.
+    RepairRegistry {
+        /// Optional repair rule registry JSON path.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Output repair rule registry validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -529,6 +541,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 build_theorem_precondition_check_report(&document, &air.display().to_string());
             write_json(out, &report)?;
             Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::RepairRegistry { input, out }) => {
+            let registry: RepairRuleRegistryV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_repair_rule_registry);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-repair-rule-registry".to_string());
+            let report: RepairRuleRegistryValidationReportV0 =
+                validate_repair_rule_registry_report(&registry, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
         }
         None => {
             let document = extract_sig0_with_runtime(

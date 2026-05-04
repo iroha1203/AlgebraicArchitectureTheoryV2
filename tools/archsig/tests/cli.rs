@@ -888,6 +888,105 @@ fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() 
 }
 
 #[test]
+fn cli_repair_registry_reports_static_rules_and_boundaries() {
+    let out_dir = temp_dir("repair-registry-static");
+    let report = out_dir.join("repair-registry.json");
+
+    run_sig0(&[
+        "repair-registry",
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert_eq!(
+        report["schemaVersion"],
+        "repair-rule-registry-validation-report-v0"
+    );
+    assert_eq!(report["summary"]["result"], "pass");
+    assert_eq!(
+        report["registry"]["schemaVersion"],
+        "repair-rule-registry-v0"
+    );
+    assert!(
+        report["registry"]["rules"]
+            .as_array()
+            .expect("repair rules are an array")
+            .iter()
+            .any(|rule| {
+                rule["repairRuleId"] == "repair-hidden-interaction-through-interface-v0"
+                    && rule["targetWitnessKind"] == "hidden_interaction"
+                    && rule["relativeTo"]["selectedObstructionUniverse"]
+                        == "selected obstruction witnesses in the current Feature Extension Report"
+                    && rule["nonConclusions"]
+                        .as_array()
+                        .expect("non conclusions are an array")
+                        .iter()
+                        .any(|boundary| boundary == "all obstruction removal is not concluded")
+            })
+    );
+}
+
+#[test]
+fn cli_repair_registry_rejects_invalid_success_boundary() {
+    let out_dir = temp_dir("repair-registry-invalid");
+    let input = out_dir.join("invalid-repair-registry.json");
+    let report = out_dir.join("invalid-repair-registry-report.json");
+
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&serde_json::json!({
+            "schemaVersion": "repair-rule-registry-v0",
+            "scope": "invalid fixture",
+            "selectedObstructionUniverse": "",
+            "explicitAssumptions": [],
+            "rules": [{
+                "repairRuleId": "bad-rule",
+                "targetWitnessKind": "unknown_witness",
+                "proposedOperation": "auto_rewrite",
+                "requiredPreconditions": [],
+                "expectedEffect": "guarantee",
+                "preservedInvariants": [],
+                "possibleSideEffects": [],
+                "proofObligationRefs": [],
+                "patchStrategy": "autonomous",
+                "confidence": "certain",
+                "relativeTo": {
+                    "selectedObstructionUniverse": "",
+                    "explicitAssumptions": []
+                },
+                "nonConclusions": []
+            }],
+            "nonConclusions": []
+        }))
+        .expect("json serializes"),
+    )
+    .expect("invalid repair registry input is written");
+
+    let output = run_sig0_output(&[
+        "repair-registry",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(!output.status.success());
+
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "fail");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(|check| {
+                check["id"] == "repair-rule-non-conclusion-boundary-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_theorem_check_reports_semantic_package_boundary() {
     let root = air_fixture_root();
     let out_dir = temp_dir("theorem-check-semantic");
