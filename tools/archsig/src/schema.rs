@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 pub const SCHEMA_VERSION: &str = "archsig-sig0-v0";
 pub const COMPONENT_KIND: &str = "lean-module";
+pub const PYTHON_COMPONENT_KIND: &str = "python-module";
+pub const PYTHON_IMPORT_RULE_VERSION: &str = "python-import-graph-v0";
 pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report-v0";
 pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
 pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-store-v0";

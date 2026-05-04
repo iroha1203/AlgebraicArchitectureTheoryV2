@@ -19,14 +19,14 @@ use archsig::{
     build_outcome_linkage_dataset_from_files, build_policy_decision_report,
     build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
     build_signature_diff_report, build_signature_snapshot_record,
-    build_theorem_precondition_check_report, extract_relation_complexity_observation_from_file,
-    extract_sig0_with_runtime, render_pr_comment_markdown, static_no_solution_certificate,
-    static_organization_policy, static_repair_rule_registry,
-    static_report_artifact_retention_manifest, static_synthesis_constraint_artifact,
-    validate_air_document_report, validate_component_universe_report,
-    validate_no_solution_certificate_report, validate_organization_policy_report,
-    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
-    validate_synthesis_constraint_artifact_report,
+    build_theorem_precondition_check_report, extract_python_sig0,
+    extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
+    render_pr_comment_markdown, static_no_solution_certificate, static_organization_policy,
+    static_repair_rule_registry, static_report_artifact_retention_manifest,
+    static_synthesis_constraint_artifact, validate_air_document_report,
+    validate_component_universe_report, validate_no_solution_certificate_report,
+    validate_organization_policy_report, validate_repair_rule_registry_report,
+    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -51,6 +51,18 @@ struct Args {
     /// Optional runtime edge evidence JSON file.
     #[arg(long = "runtime-edges")]
     runtime_edges: Option<PathBuf>,
+
+    /// Source language to scan.
+    #[arg(long, default_value = "lean", value_parser = ["lean", "python"])]
+    language: String,
+
+    /// Python source root relative to --root. Repeat for multiple roots.
+    #[arg(long = "source-root")]
+    source_roots: Vec<PathBuf>,
+
+    /// Python package root relative to --root. Repeat for multiple roots.
+    #[arg(long = "package-root")]
+    package_roots: Vec<PathBuf>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -968,11 +980,28 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             })
         }
         None => {
-            let document = extract_sig0_with_runtime(
-                &args.root,
-                args.policy.as_deref(),
-                args.runtime_edges.as_deref(),
-            )?;
+            let document = match args.language.as_str() {
+                "lean" => extract_sig0_with_runtime(
+                    &args.root,
+                    args.policy.as_deref(),
+                    args.runtime_edges.as_deref(),
+                )?,
+                "python" => {
+                    if args.policy.is_some() {
+                        return Err(
+                            "Python policy measurement is tracked by the Sig0 / AIR normalization work"
+                                .into(),
+                        );
+                    }
+                    if args.runtime_edges.is_some() {
+                        return Err(
+                            "runtime edge projection is not part of python-import-graph-v0".into(),
+                        );
+                    }
+                    extract_python_sig0(&args.root, &args.source_roots, &args.package_roots)?
+                }
+                _ => unreachable!("clap restricts language values"),
+            };
             write_json(args.out, &document)?;
             Ok(ExitCode::SUCCESS)
         }
