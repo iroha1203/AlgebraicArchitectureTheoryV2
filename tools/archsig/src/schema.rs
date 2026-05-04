@@ -27,6 +27,9 @@ pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const ORGANIZATION_POLICY_SCHEMA_VERSION: &str = "organization-policy-v0";
 pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "organization-policy-validation-report-v0";
+pub const LAW_POLICY_TEMPLATE_REGISTRY_SCHEMA_VERSION: &str = "law-policy-template-registry-v0";
+pub const LAW_POLICY_TEMPLATE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "law-policy-template-registry-validation-report-v0";
 pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
@@ -1868,6 +1871,60 @@ pub struct OrganizationPolicyValidationSummary {
     pub required_axis_count: usize,
     pub allowed_unmeasured_gap_count: usize,
     pub required_theorem_precondition_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateRegistryV0 {
+    pub schema_version: String,
+    pub registry_id: String,
+    pub scope: String,
+    pub templates: Vec<LawPolicyTemplateV0>,
+    pub explicit_assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateV0 {
+    pub template_id: String,
+    pub target_component_kind: String,
+    pub law_policy_family: String,
+    pub selector_semantics: String,
+    pub selector_assumptions: Vec<String>,
+    pub required_evidence_kinds: Vec<String>,
+    pub default_required_axes: Vec<String>,
+    pub policy_output_artifacts: Vec<String>,
+    pub theorem_bridge_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateRegistryValidationReportV0 {
+    pub schema_version: String,
+    pub input: LawPolicyTemplateRegistryValidationInput,
+    pub registry: LawPolicyTemplateRegistryV0,
+    pub summary: LawPolicyTemplateRegistryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateRegistryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub registry_id: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateRegistryValidationSummary {
+    pub result: String,
+    pub template_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

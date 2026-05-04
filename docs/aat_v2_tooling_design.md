@@ -1992,6 +1992,13 @@ projection rule、coverage / exactness assumptions、unsupported constructs、
 non-conclusions を持ち、AIR coverage / Feature Extension Report / theorem precondition
 boundary への trace point になる。
 
+law policy templates は、boundary / abstraction / runtime protection などの policy selector
+初期値を与える tooling artifact として扱う。`law-policy-template-registry-v0` は
+template id、対象 component kind、law / policy family、selector assumptions、required
+evidence、theorem bridge preconditions、non-conclusions を保持する。template application
+は policy evidence の生成であり、architecture lawfulness、Lean theorem claim、
+extractor completeness、unmeasured gap の measured-zero 化を結論しない。
+
 Python extractor の詳細な component / root / edge policy は tooling artifact 側の規約として
 [ArchSig tooling index](design/archsig_tooling_index.md#python-component-policy) で管理する。
 この設計書では、`componentKind = "python-module"` が静的 import graph の extractor
