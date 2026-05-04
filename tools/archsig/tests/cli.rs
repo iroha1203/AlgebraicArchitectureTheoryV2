@@ -987,6 +987,157 @@ fn cli_repair_registry_rejects_invalid_success_boundary() {
 }
 
 #[test]
+fn cli_synthesis_constraints_reports_static_candidate_boundary() {
+    let root = fixture_root();
+    let out_dir = temp_dir("synthesis-constraints-static");
+    let report = out_dir.join("synthesis-constraints.json");
+
+    run_sig0(&[
+        "synthesis-constraints",
+        "--input",
+        root.join("synthesis_constraints_candidate.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert_eq!(
+        report["schemaVersion"],
+        "synthesis-constraint-validation-report-v0"
+    );
+    assert_eq!(report["summary"]["result"], "pass");
+    assert_eq!(
+        report["artifact"]["schemaVersion"],
+        "synthesis-constraint-artifact-v0"
+    );
+    assert!(
+        report["artifact"]["candidates"]
+            .as_array()
+            .expect("synthesis candidates are an array")
+            .iter()
+            .any(|candidate| {
+                candidate["candidateId"] == "candidate-split-coupon-interface-v0"
+                    && candidate["constraintRefs"]
+                        .as_array()
+                        .expect("constraint refs are an array")
+                        .iter()
+                        .any(|constraint_ref| {
+                            constraint_ref == "constraint-static-boundary-coupon-v0"
+                        })
+                    && candidate["soundnessPackageRefs"]
+                        .as_array()
+                        .expect("soundness package refs are an array")
+                        .iter()
+                        .any(|package_ref| {
+                            package_ref == "SynthesisSoundnessPackage.candidate_satisfies"
+                        })
+                    && candidate["nonConclusions"]
+                        .as_array()
+                        .expect("non conclusions are an array")
+                        .iter()
+                        .any(|boundary| boundary == "solver completeness is not concluded")
+            })
+    );
+    assert_eq!(
+        report["artifact"]["noSolutionBoundary"]["solverStatus"],
+        "candidate_produced"
+    );
+    assert!(
+        report["artifact"]["noSolutionBoundary"]["nonConclusions"]
+            .as_array()
+            .expect("no-solution non conclusions are an array")
+            .iter()
+            .any(|boundary| boundary
+                == "solver no-candidate result is not a no-solution certificate")
+    );
+}
+
+#[test]
+fn cli_synthesis_constraints_rejects_solver_completeness_confusion() {
+    let out_dir = temp_dir("synthesis-constraints-invalid");
+    let input = out_dir.join("invalid-synthesis-constraints.json");
+    let report = out_dir.join("invalid-synthesis-constraints-report.json");
+
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&serde_json::json!({
+            "schemaVersion": "synthesis-constraint-artifact-v0",
+            "scope": "invalid fixture",
+            "constraintRefs": ["missing-constraint"],
+            "candidateRefs": ["missing-candidate"],
+            "requiredAssumptions": [],
+            "coverageAssumptions": [],
+            "exactnessAssumptions": [],
+            "unsupportedConstructs": [],
+            "constraints": [{
+                "constraintId": "bad-constraint",
+                "kind": "global",
+                "subjectRef": "",
+                "predicate": "",
+                "evidenceRefs": [],
+                "theoremPreconditionRefs": []
+            }],
+            "candidates": [{
+                "candidateId": "bad-candidate",
+                "producedBy": "",
+                "operationRefs": [],
+                "constraintRefs": ["missing-constraint"],
+                "soundnessPackageRefs": [],
+                "requiredAssumptions": [],
+                "coverageAssumptions": [],
+                "exactnessAssumptions": [],
+                "unsupportedConstructs": [],
+                "nonConclusions": []
+            }],
+            "noSolutionBoundary": {
+                "solverStatus": "no_candidate",
+                "candidateRefs": [],
+                "noSolutionCertificateRef": null,
+                "validCertificateClaimRef": null,
+                "nonConclusions": []
+            },
+            "nonConclusions": []
+        }))
+        .expect("json serializes"),
+    )
+    .expect("invalid synthesis constraints input is written");
+
+    let output = run_sig0_output(&[
+        "synthesis-constraints",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(!output.status.success());
+
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "fail");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(|check| {
+                check["id"] == "synthesis-no-solution-boundary-distinguished"
+                    && check["result"] == "fail"
+            })
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(|check| {
+                check["id"] == "synthesis-non-conclusion-boundary-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_theorem_check_reports_semantic_package_boundary() {
     let root = air_fixture_root();
     let out_dir = temp_dir("theorem-check-semantic");

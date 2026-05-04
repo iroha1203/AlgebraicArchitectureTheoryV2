@@ -20,6 +20,7 @@ Lean の証明器ではなく、CI や AI agent が読むための architecture 
 - relation complexity candidate JSON から workflow-level observation を作る。
 - Sig0 / validation / diff / PR metadata を AIR v0 に正規化する。
 - AIR claim に対して static theorem package v0 の前提充足状況を検査する。
+- synthesis constraint artifact v0 の候補境界と no-solution certificate 境界を検査する。
 
 ## 標準フロー
 
@@ -53,6 +54,7 @@ AI / CI が最初に読むべき成果物は次である。
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | static theorem package v0 の registry と、AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
 | Feature Extension Report | `feature-extension-report-v0` | AIR から生成する PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を併読する。 |
+| Synthesis constraint validation report | `synthesis-constraint-validation-report-v0` | synthesis constraint artifact の constraint / candidate refs、assumption boundary、solver no-candidate と valid no-solution certificate の分離を検査する。 |
 | Dataset record | `empirical-signature-dataset-v0` | PR metadata と before / after signature を結合した実証研究用 record。 |
 
 通常の PR / CI 診断では、最終的に `feature-extension-report-v0` と
@@ -354,6 +356,22 @@ runtime / semantic 層が未測定の場合は `coverageGaps` と `nonConclusion
 Feature Extension Report には `theoremPreconditionSummary` と
 `theoremPreconditionChecks` も含まれるため、`MEASURED` witness と `FORMAL_PROVED`
 claim の境界を report 内で確認できる。
+
+## Synthesis Constraints を検査する
+
+synthesis constraint artifact v0 は、constraint refs、candidate refs、required /
+coverage / exactness assumptions、unsupported constructs、non-conclusions を明示する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- synthesis-constraints \
+  --input tools/archsig/tests/fixtures/minimal/synthesis_constraints_candidate.json \
+  --out .lake/signature-current/synthesis-constraints.json
+```
+
+候補が返った場合は `SynthesisSoundnessPackage.candidate_satisfies` などの
+soundness package refs と前提境界を併読する。solver が candidate を返さないことは
+valid no-solution certificate ではないため、`noSolutionBoundary` と
+`nonConclusions` で solver completeness を主張しないことを固定する。
 
 ## PR Metadata / Dataset を作る
 
