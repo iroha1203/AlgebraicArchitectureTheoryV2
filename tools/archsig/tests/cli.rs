@@ -729,7 +729,7 @@ fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() 
     );
     assert_eq!(
         report["registry"]["scope"],
-        "static and runtime theorem package registry v0"
+        "static, runtime, and semantic theorem package registry v0"
     );
     assert!(
         report["registry"]["packages"][0]["theoremRefs"]
@@ -755,6 +755,139 @@ fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() 
                 && check["resolvedClaimClassification"] == "MEASURED_WITNESS")
     );
     assert_eq!(report["summary"]["formalProvedClaimCount"], 0);
+}
+
+#[test]
+fn cli_theorem_check_reports_semantic_package_boundary() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("theorem-check-semantic");
+    let input = out_dir.join("semantic-theorem-claims.json");
+    let report = out_dir.join("semantic-theorem-check.json");
+    let mut json = read_json(&root.join("semantic_nonfillability.json"));
+
+    let claims = json["claims"].as_array_mut().expect("claims is an array");
+    claims.push(serde_json::json!({
+        "claimId": "claim-rounding-order-nonfillability-proved",
+        "subjectRef": "semantic.diagram.diagram-coupon-discount-order",
+        "predicate": "selected observation difference refutes the selected diagram filler",
+        "claimLevel": "formal",
+        "claimClassification": "proved",
+        "measurementBoundary": "measuredNonzero",
+        "theoremRefs": [
+            "observationDifference_refutesDiagramFiller",
+            "obstructionAsNonFillability_sound"
+        ],
+        "evidenceRefs": [
+            "evidence-rounding-order",
+            "evidence-coupon-flow-test",
+            "evidence-coupon-contract",
+            "evidence-coupon-diagram"
+        ],
+        "requiredAssumptions": [
+            "selected observations are comparable",
+            "selected witness value refutes the diagram filler"
+        ],
+        "coverageAssumptions": [
+            "selected business-flow test covers coupon / discount ordering"
+        ],
+        "exactnessAssumptions": [
+            "fixture records both selected workflow observations"
+        ],
+        "missingPreconditions": [],
+        "nonConclusions": [
+            "global semantic flatness is not concluded",
+            "business semantics completeness is not concluded"
+        ]
+    }));
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("semantic theorem-check input is written");
+
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert!(
+        report["registry"]["packages"]
+            .as_array()
+            .expect("packages is array")
+            .iter()
+            .any(|package| {
+                package["packageId"] == "semantic-nonfillability-package-v0"
+                    && package["theoremRefs"]
+                        .as_array()
+                        .expect("theorem refs is array")
+                        .iter()
+                        .any(|theorem_ref| {
+                            theorem_ref == "observationDifference_refutesDiagramFiller"
+                        })
+            })
+    );
+    assert!(
+        report["registry"]["packages"]
+            .as_array()
+            .expect("packages is array")
+            .iter()
+            .any(|package| {
+                let package_id_matches =
+                    package["packageId"] == "semantic-numerical-curvature-zero-package-v0";
+                let theorem_ref_matches = package["theoremRefs"]
+                    .as_array()
+                    .expect("theorem refs is array")
+                    .iter()
+                    .any(|theorem_ref| {
+                        theorem_ref
+                            == "totalCurvature_eq_zero_iff_noMeasuredNumericalCurvatureObstruction"
+                    });
+                package_id_matches && theorem_ref_matches
+            })
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-rounding-order-nonfillability"
+                    && check["resolvedClaimClassification"] == "MEASURED_WITNESS"
+                    && check["applicablePackageRefs"]
+                        .as_array()
+                        .expect("applicable package refs is array")
+                        .iter()
+                        .any(|package_ref| package_ref == "semantic-nonfillability-package-v0")
+            )
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-coupon-discount-filler-blocked"
+                    && check["resolvedClaimClassification"] == "BLOCKED_FORMAL_CLAIM"
+            )
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-rounding-order-nonfillability-proved"
+                    && check["resolvedClaimClassification"] == "FORMAL_PROVED"
+                    && check["missingPreconditions"]
+                        .as_array()
+                        .expect("missing preconditions is array")
+                        .is_empty()
+            )
+    );
 }
 
 #[test]
