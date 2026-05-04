@@ -103,6 +103,23 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- \
 
 `--out` を省略すると JSON は stdout に出る。
 
+Python repository を scan する場合は `--language python` を指定する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- \
+  --language python \
+  --root path/to/repository \
+  --source-root src \
+  --package-root src \
+  --out .lake/python-sig0.json
+```
+
+Python scan は `componentKind = "python-module"` を出し、標準 `ast` parser で
+`import` / `from ... import ...` を抽出する。package root 内で解決できる target は
+local module edge、標準 library / installed dependency / unresolved target は external
+dependency edge として扱う。dynamic import、plugin loading、framework convention は
+`metricStatus.pythonDynamicImportCoverage.measured = false` として残し、測定済み 0 と混同しない。
+
 ## Scan する
 
 基本形:

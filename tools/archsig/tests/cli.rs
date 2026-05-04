@@ -17,6 +17,10 @@ fn air_fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/air")
 }
 
+fn python_fixture_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/python_imports")
+}
+
 fn temp_dir(test_name: &str) -> PathBuf {
     let nanos = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -47,6 +51,50 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
 fn read_json(path: &Path) -> Value {
     let contents = fs::read_to_string(path).expect("json output is readable");
     serde_json::from_str(&contents).expect("json output parses")
+}
+
+#[test]
+fn cli_extracts_python_import_graph() {
+    let root = python_fixture_root();
+    let out_dir = temp_dir("python-import-graph");
+    let sig0 = out_dir.join("sig0.json");
+
+    run_sig0(&[
+        "--language",
+        "python",
+        "--root",
+        root.to_str().expect("fixture path is utf-8"),
+        "--source-root",
+        "src",
+        "--out",
+        sig0.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&sig0);
+    assert_eq!(json["schemaVersion"], "archsig-sig0-v0");
+    assert_eq!(json["componentKind"], "python-module");
+    assert!(
+        json["components"]
+            .as_array()
+            .expect("components are an array")
+            .iter()
+            .any(|component| component["id"] == "app.service")
+    );
+    assert!(
+        json["edges"]
+            .as_array()
+            .expect("edges are an array")
+            .iter()
+            .any(|edge| {
+                edge["source"] == "app.service"
+                    && edge["target"] == "app.util"
+                    && edge["evidence"] == "from . import util"
+            })
+    );
+    assert_eq!(
+        json["metricStatus"]["pythonDynamicImportCoverage"]["measured"],
+        false
+    );
 }
 
 fn runtime_axis_mut(json: &mut Value) -> &mut Value {
