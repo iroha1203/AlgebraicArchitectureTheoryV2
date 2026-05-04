@@ -13,6 +13,7 @@ mod organization_policy;
 mod outcome_linkage;
 mod policy;
 mod policy_decision;
+mod pr_comment;
 mod relation_complexity;
 mod repair_rule;
 mod runtime;
@@ -49,6 +50,7 @@ pub use outcome_linkage::{
     build_outcome_linkage_dataset, build_outcome_linkage_dataset_from_files,
 };
 pub use policy_decision::build_policy_decision_report;
+pub use pr_comment::render_pr_comment_markdown;
 pub use relation_complexity::{
     extract_relation_complexity_observation, extract_relation_complexity_observation_from_file,
 };

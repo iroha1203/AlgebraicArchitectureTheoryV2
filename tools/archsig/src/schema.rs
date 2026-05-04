@@ -30,6 +30,7 @@ pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
 pub const REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "report-artifact-retention-validation-report-v0";
+pub const PR_COMMENT_SUMMARY_SCHEMA_VERSION: &str = "pr-comment-summary-v0";
 pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
 pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
 pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";

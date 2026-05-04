@@ -140,3 +140,41 @@ Non-conclusions:
 - policy decision は architecture lawfulness を承認しない。
 - advisory signal は repair success evidence ではない。
 - unmeasured axis は measured-zero risk として扱わない。
+
+### GitHub Checks / PR comment output
+
+Issue: [#574](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/574)
+
+`pr-comment-summary-v0` は、Feature Extension Report と任意の
+`policy-decision-report-v0` を GitHub Checks / PR comment 向け Markdown に写す
+reviewer-facing summary artifact である。CI 判定そのものは `policy-decision-report-v0`
+に残し、PR comment は Level 1 / Level 2 / Level 3 の読み分けを固定する。
+
+表示境界:
+
+- Level 1 は split status、claim classification、top witnesses、required action、
+  warn / fail / advisory status を出す。
+- Level 2 は changed components、witness evidence、runtime summary、coverage gaps を出す。
+- Level 3 は theorem package refs、discharged / missing assumptions、exactness assumptions、
+  non-conclusions を出す。
+
+CLI:
+
+```bash
+archsig pr-comment --feature-report feature-report.json --policy-decision policy-decision.json
+```
+
+出力 artifact:
+
+```text
+pr-comment-summary-v0 Markdown
+```
+
+Canonical fixture は `cargo test --manifest-path tools/archsig/Cargo.toml` で固定する。
+
+Non-conclusions:
+
+- PR comment summary は architecture lawfulness を承認しない。
+- PR comment summary は Lean theorem proof ではない。
+- unmeasured axis は measured-zero evidence ではない。
+- advisory signal は repair success evidence ではない。
