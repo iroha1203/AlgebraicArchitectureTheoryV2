@@ -125,7 +125,11 @@ pub fn build_feature_extension_report(
         introduced_obstruction_witnesses,
         eliminated_obstruction_witnesses: Vec::new(),
         complexity_transfer_candidates: Vec::new(),
-        semantic_path_summary: feature_report_semantic_path_summary(document, &coverage_gaps),
+        semantic_path_summary: feature_report_semantic_path_summary(
+            document,
+            &coverage_gaps,
+            &evidence_by_id,
+        ),
         theorem_package_refs,
         theorem_precondition_summary: theorem_precondition_report.summary,
         theorem_precondition_checks: theorem_precondition_report.checks,
@@ -146,6 +150,7 @@ pub fn build_feature_extension_report(
 fn feature_report_semantic_path_summary(
     document: &AirDocumentV0,
     coverage_gaps: &[FeatureReportCoverageGap],
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
 ) -> FeatureReportSemanticPathSummary {
     let semantic_layer = document
         .coverage
@@ -197,6 +202,17 @@ fn feature_report_semantic_path_summary(
         unmeasured_axes: semantic_layer
             .map(|layer| layer.unmeasured_axes.clone())
             .unwrap_or_else(|| vec!["semanticDiagramCommutation".to_string()]),
+        evidence_kinds: feature_report_semantic_evidence_kinds(&semantic_claims, evidence_by_id),
+        extraction_scope: semantic_layer
+            .map(|layer| layer.extraction_scope.clone())
+            .unwrap_or_default(),
+        exactness_assumptions: semantic_layer
+            .map(|layer| layer.exactness_assumptions.clone())
+            .unwrap_or_default(),
+        unsupported_constructs: semantic_layer
+            .map(|layer| layer.unsupported_constructs.clone())
+            .unwrap_or_default(),
+        missing_preconditions: feature_report_semantic_missing_preconditions(&semantic_claims),
         coverage_gaps: coverage_gaps
             .iter()
             .filter(|gap| gap.layer == "semantic")
@@ -225,6 +241,31 @@ fn feature_report_semantic_path_summary(
             .collect(),
         non_conclusions: non_conclusions.into_iter().collect(),
     }
+}
+
+fn feature_report_semantic_evidence_kinds(
+    semantic_claims: &[&AirClaim],
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
+) -> Vec<String> {
+    let mut kinds = BTreeSet::new();
+    for claim in semantic_claims {
+        for evidence_ref in &claim.evidence_refs {
+            if let Some(evidence) = evidence_by_id.get(evidence_ref) {
+                kinds.insert(evidence.kind.clone());
+            }
+        }
+    }
+    kinds.into_iter().collect()
+}
+
+fn feature_report_semantic_missing_preconditions(semantic_claims: &[&AirClaim]) -> Vec<String> {
+    let mut missing = BTreeSet::new();
+    for claim in semantic_claims {
+        for precondition in &claim.missing_preconditions {
+            missing.insert(format!("{}: {}", claim.claim_id, precondition));
+        }
+    }
+    missing.into_iter().collect()
 }
 
 fn feature_report_runtime_summary(

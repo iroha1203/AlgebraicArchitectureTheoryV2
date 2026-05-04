@@ -566,6 +566,49 @@ fn cli_feature_report_surfaces_semantic_nonfillability_witness() {
     assert_eq!(json["semanticPathSummary"]["diagramCount"], 1);
     assert_eq!(json["semanticPathSummary"]["nonfillabilityWitnessCount"], 1);
     assert!(
+        json["semanticPathSummary"]["evidenceKinds"]
+            .as_array()
+            .expect("semantic evidence kinds are an array")
+            .iter()
+            .any(|kind| kind == "observation_result")
+    );
+    assert!(
+        json["semanticPathSummary"]["evidenceKinds"]
+            .as_array()
+            .expect("semantic evidence kinds are an array")
+            .iter()
+            .any(|kind| kind == "test")
+    );
+    assert!(
+        json["semanticPathSummary"]["evidenceKinds"]
+            .as_array()
+            .expect("semantic evidence kinds are an array")
+            .iter()
+            .any(|kind| kind == "manual_annotation")
+    );
+    assert!(
+        json["semanticPathSummary"]["extractionScope"]
+            .as_array()
+            .expect("semantic extraction scope is an array")
+            .iter()
+            .any(|scope| scope == "selected coupon / discount business-flow test")
+    );
+    assert!(
+        json["semanticPathSummary"]["exactnessAssumptions"]
+            .as_array()
+            .expect("semantic exactness assumptions are an array")
+            .iter()
+            .any(|assumption| assumption == "fixture records both selected workflow observations")
+    );
+    assert!(
+        json["semanticPathSummary"]["missingPreconditions"]
+            .as_array()
+            .expect("semantic missing preconditions are an array")
+            .iter()
+            .any(|precondition| precondition
+                == "claim-coupon-discount-filler-blocked: formal filler contract has not been discharged")
+    );
+    assert!(
         json["introducedObstructionWitnesses"]
             .as_array()
             .expect("witnesses are an array")
@@ -922,10 +965,12 @@ fn cli_validate_air_detects_semantic_metadata_inconsistency() {
     let mut json = read_json(&root.join("semantic_nonfillability.json"));
 
     json["semanticDiagrams"][0]["lifecycle"] = serde_json::json!("maybe");
+    json["semanticDiagrams"][0]["observationRefs"] = serde_json::json!(["evidence-missing"]);
     json["coverage"]["layers"][0]["measurementBoundary"] = serde_json::json!("unmeasured");
     json["coverage"]["layers"][0]["measuredAxes"] =
         serde_json::json!(["projectionSoundnessViolation"]);
     json["claims"][0]["measurementBoundary"] = serde_json::json!("unmeasured");
+    json["evidence"][0]["kind"] = serde_json::json!("unknown_semantic_evidence");
     fs::write(
         &input,
         serde_json::to_string_pretty(&json).expect("json serializes"),
@@ -955,6 +1000,20 @@ fn cli_validate_air_detects_semantic_metadata_inconsistency() {
             .iter()
             .any(|check| check["id"] == "air-semantic-metadata-consistent"
                 && check["result"] == "fail")
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-evidence-kind-supported" && check["result"] == "fail")
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-evidence-refs-resolved" && check["result"] == "fail")
     );
 }
 
