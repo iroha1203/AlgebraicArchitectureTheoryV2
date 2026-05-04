@@ -9,6 +9,7 @@
 | [ArchSig v0 設計](archsig_design.md) | tooling design / empirical hypothesis | Lean module import graph から Signature v0 JSON を作る最小 extractor と、Lean `ComponentUniverse` との責務境界を整理する。 |
 | [ArchSig tooling index](archsig_tooling_index.md) | tooling validation index | ArchSig tooling の schema、CLI、fixture、non-conclusion boundary を追跡する。 |
 | [Adapter registry v0 schema](adapter_registry_schema.md) | tooling schema / empirical hypothesis | non-Lean extractor、framework adapter、runtime / semantic evidence adapter の evidence boundary と projection rule を固定する。 |
+| [Law policy template registry v0 schema](law_policy_template_registry_schema.md) | tooling schema / empirical hypothesis | law policy template の selector assumptions、required evidence、non-conclusion boundary を固定する。 |
 | [Signature 実証プロトコル](empirical_protocol.md) | empirical protocol | Signature と PR / issue / incident metadata を結合し、変更波及・レビューコスト・障害修正との関係を検証する手順を固定する。 |
 | [empirical dataset v0 schema](empirical_dataset_schema.md) | empirical dataset schema | Signature before / after、signed delta、PR metadata、metric status を結合する最小 record schema を固定する。 |
 | [PR history dataset v0 schema](pr_history_dataset_schema.md) | empirical dataset schema / tooling validation | GitHub PR metadata、changed file summary、review metadata、Signature / Feature Extension Report artifact refs を PR 単位で保存する schema を固定する。 |

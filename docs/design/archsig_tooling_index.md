@@ -262,6 +262,40 @@ architecture lawfulness、runtime / semantic flatness は結論しない。
 
 詳細 schema は [Adapter registry v0 schema](adapter_registry_schema.md) で管理する。
 
+### Law policy template registry
+
+Issue: [#594](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/594)
+
+`law-policy-template-registry-v0` は、boundary / abstraction / runtime protection などの
+law policy template を selector assumptions と required evidence boundary 付きで固定する
+tooling registry である。template は template id、対象 component kind、law / policy
+family、selector semantics、selector assumptions、required evidence kinds、default
+required axes、policy output artifacts、theorem bridge preconditions、non-conclusions を持つ。
+
+CLI:
+
+```bash
+archsig law-policy-templates --input law_policy_templates.json
+```
+
+出力 schema:
+
+```text
+law-policy-template-registry-validation-report-v0
+```
+
+Canonical fixture は `tools/archsig/tests/fixtures/minimal/law_policy_templates.json` で固定する。
+validation は template id の一意性、component kind / policy family / selector semantics、
+selector assumptions、required evidence、output artifact、theorem bridge precondition、
+non-conclusion boundary を検査する。
+
+Non-conclusions:
+
+- template application は architecture lawfulness を結論しない。
+- template pass は Lean theorem claim を結論しない。
+- unmeasured gap は measured-zero evidence ではない。
+- selector match は extractor completeness を証明しない。
+
 ### Python component policy
 
 Issues:

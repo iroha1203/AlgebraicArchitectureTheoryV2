@@ -7,6 +7,7 @@ use std::process::ExitCode;
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
     DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0,
+    LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0,
     NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
@@ -21,10 +22,11 @@ use archsig::{
     build_signature_diff_report, build_signature_snapshot_record,
     build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    render_pr_comment_markdown, static_no_solution_certificate, static_organization_policy,
-    static_repair_rule_registry, static_report_artifact_retention_manifest,
-    static_synthesis_constraint_artifact, validate_air_document_report,
-    validate_component_universe_report, validate_no_solution_certificate_report,
+    render_pr_comment_markdown, static_law_policy_template_registry,
+    static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
+    static_report_artifact_retention_manifest, static_synthesis_constraint_artifact,
+    validate_air_document_report, validate_component_universe_report,
+    validate_law_policy_template_registry_report, validate_no_solution_certificate_report,
     validate_organization_policy_report, validate_repair_rule_registry_report,
     validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
 };
@@ -427,6 +429,17 @@ enum Command {
         input: Option<PathBuf>,
 
         /// Output organization policy validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Validate a law policy template registry. If input is omitted, validate the static B8 registry.
+    LawPolicyTemplates {
+        /// Optional law policy template registry JSON path.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Output law policy template registry validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -855,6 +868,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-organization-policy".to_string());
             let report: OrganizationPolicyValidationReportV0 =
                 validate_organization_policy_report(&policy, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::LawPolicyTemplates { input, out }) => {
+            let registry: LawPolicyTemplateRegistryV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_law_policy_template_registry);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-law-policy-template-registry".to_string());
+            let report: LawPolicyTemplateRegistryValidationReportV0 =
+                validate_law_policy_template_registry_report(&registry, &input_path);
             let failed = report.summary.result == "fail";
             write_json(out, &report)?;
             Ok(if failed {

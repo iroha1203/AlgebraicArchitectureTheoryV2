@@ -9,6 +9,7 @@ mod feature_dataset;
 mod feature_report;
 mod github;
 mod graph;
+mod law_policy_template;
 mod no_solution_certificate;
 mod organization_policy;
 mod outcome_linkage;
@@ -44,6 +45,9 @@ pub use feature_report::build_feature_extension_report;
 pub use github::{
     build_pr_history_dataset_from_github_files, build_pr_history_dataset_from_github_values,
     build_pr_metadata_from_github_files, build_pr_metadata_from_github_values,
+};
+pub use law_policy_template::{
+    static_law_policy_template_registry, validate_law_policy_template_registry_report,
 };
 pub use no_solution_certificate::{
     static_no_solution_certificate, validate_no_solution_certificate_report,
