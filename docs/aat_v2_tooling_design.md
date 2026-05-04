@@ -1987,6 +1987,12 @@ schema / CLI / fixture は tooling index で管理する。
 各 extractor は、自分が扱える bounded subset、unsupported constructs、projection rule、
 coverage assumptions を明示し、Lean の `ComponentUniverse` 完全性とは同一視しない。
 
+Python extractor の詳細な component / root / edge policy は tooling artifact 側の規約として
+[ArchSig tooling index](design/archsig_tooling_index.md#python-component-policy) で管理する。
+この設計書では、`componentKind = "python-module"` が静的 import graph の extractor
+evidence であり、Lean `ComponentUniverse` 完全性や architecture lawfulness を結論しない、
+という境界だけを固定する。
+
 ### Phase B9: Schema standardization and compatibility
 
 ```text

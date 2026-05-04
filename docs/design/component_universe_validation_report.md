@@ -54,6 +54,19 @@ component list へ自動補完しない。このため report は universe mode 
 
 v0 の既定 mode は `local-only` とする。
 
+Python extractor output では、`componentKind = "python-module"` の component list は
+明示された source root / package root policy に相対化して読む。repository root は artifact
+path の基準、source root は scan 対象 file の境界、package root は importable module id
+正規化と local import 解決の境界である。validation report は extractor output の
+`componentKind` と root metadata を report input に残し、local module edge と external
+dependency edge の分類結果を JSON-level evidence として検査する。
+
+Python の `local-only` mode では、package root 内の `python-module` component 間 edge だけを
+closure 対象にする。標準 library、installed dependency、package root 外、namespace package
+の未測定 fragment、dynamic import / plugin loading / framework convention に由来する target
+は external または unsupported construct として扱い、warning / not measured evidence に残す。
+これらを component list へ自動補完して Lean `ComponentUniverse` witness とみなしてはならない。
+
 ## 最小 JSON schema
 
 report は単一 JSON document とし、schema version を必須にする。
