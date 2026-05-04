@@ -3,6 +3,7 @@ mod air_validation;
 mod component_validation;
 mod dataset;
 mod extractor;
+mod feature_dataset;
 mod feature_report;
 mod github;
 mod graph;
@@ -25,6 +26,9 @@ pub use air_validation::validate_air_document_report;
 pub use component_validation::validate_component_universe_report;
 pub use dataset::build_empirical_dataset;
 pub use extractor::{extract_sig0, extract_sig0_with_policy, extract_sig0_with_runtime};
+pub use feature_dataset::{
+    build_feature_extension_dataset, build_feature_extension_dataset_from_files,
+};
 pub use feature_report::build_feature_extension_report;
 pub use github::{
     build_pr_history_dataset_from_github_files, build_pr_history_dataset_from_github_values,

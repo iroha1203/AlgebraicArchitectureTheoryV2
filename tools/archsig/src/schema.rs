@@ -23,6 +23,7 @@ pub const NO_SOLUTION_CERTIFICATE_SCHEMA_VERSION: &str = "no-solution-certificat
 pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "no-solution-certificate-validation-report-v0";
 pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
+pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
@@ -374,6 +375,110 @@ pub struct PrHistoryArtifactRef {
 pub struct PrHistoryAnalysisMetadata {
     pub lean_status: String,
     pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub records: Vec<FeatureExtensionDatasetRecordV0>,
+    pub analysis_metadata: FeatureExtensionDatasetAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetRecordV0 {
+    pub pull_request: PullRequestRef,
+    pub pr_history_record_ref: FeatureExtensionPrHistoryRecordRef,
+    pub changed_components: Vec<String>,
+    pub feature_report_ref: PrHistoryArtifactRef,
+    pub architecture_id: String,
+    pub feature: AirFeature,
+    pub split_status: String,
+    pub claim_classification: String,
+    pub obstruction_witness_taxonomy: Vec<FeatureExtensionObstructionTaxon>,
+    pub coverage_gaps: Vec<FeatureExtensionDatasetCoverageGap>,
+    pub repair_suggestion_adoption_candidates:
+        Vec<FeatureExtensionRepairSuggestionAdoptionCandidate>,
+    pub theorem_precondition_boundary: FeatureExtensionTheoremPreconditionBoundary,
+    pub artifact_refs: FeatureExtensionDatasetArtifactRefs,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionPrHistoryRecordRef {
+    pub pr_number: usize,
+    pub base_commit: String,
+    pub head_commit: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionObstructionTaxon {
+    pub kind: String,
+    pub layer: String,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub witness_count: usize,
+    pub witness_refs: Vec<String>,
+    pub components: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetCoverageGap {
+    pub layer: String,
+    pub measurement_boundary: String,
+    pub unmeasured_axes: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionRepairSuggestionAdoptionCandidate {
+    pub suggestion_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repair_rule_id: Option<String>,
+    pub target_witness_kind: String,
+    pub proposed_operation: String,
+    pub source_witness_refs: Vec<String>,
+    pub source_coverage_gap_refs: Vec<String>,
+    pub adoption_status: String,
+    pub required_preconditions: Vec<String>,
+    pub traceability: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionTheoremPreconditionBoundary {
+    pub summary: TheoremPreconditionCheckSummary,
+    pub missing_preconditions: Vec<String>,
+    pub blocked_claim_refs: Vec<String>,
+    pub measured_witness_count: usize,
+    pub formal_proved_claim_count: usize,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetArtifactRefs {
+    pub signature_artifacts: Vec<PrHistoryArtifactRef>,
+    pub feature_extension_report: PrHistoryArtifactRef,
+    pub theorem_precondition_reports: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetAnalysisMetadata {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub join_keys: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
