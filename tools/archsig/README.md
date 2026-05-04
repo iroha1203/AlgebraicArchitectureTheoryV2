@@ -54,6 +54,7 @@ AI / CI が最初に読むべき成果物は次である。
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | static theorem package v0 の registry と、AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
 | Feature Extension Report | `feature-extension-report-v0` | AIR から生成する PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を併読する。 |
+| PR comment summary | `pr-comment-summary-v0` | Feature Extension Report と policy decision を GitHub Checks / PR comment 向け Markdown に整形する。 |
 | Synthesis constraint validation report | `synthesis-constraint-validation-report-v0` | synthesis constraint artifact の constraint / candidate refs、assumption boundary、solver no-candidate と valid no-solution certificate の分離を検査する。 |
 | Dataset record | `empirical-signature-dataset-v0` | PR metadata と before / after signature を結合した実証研究用 record。 |
 
@@ -356,6 +357,23 @@ runtime / semantic 層が未測定の場合は `coverageGaps` と `nonConclusion
 Feature Extension Report には `theoremPreconditionSummary` と
 `theoremPreconditionChecks` も含まれるため、`MEASURED` witness と `FORMAL_PROVED`
 claim の境界を report 内で確認できる。
+
+## PR comment summary を作る
+
+Feature Extension Report と policy decision report から、GitHub Checks / PR comment 用の
+Markdown summary を生成する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- pr-comment \
+  --feature-report .lake/signature-current/feature-report.json \
+  --policy-decision .lake/signature-current/policy-decision.json \
+  --out .lake/signature-current/pr-comment-summary.md
+```
+
+`pr-comment` は Level 1 Review Summary、Level 2 Evidence Detail、Level 3 Formal Detail を
+分けて出す。CI fail / warn / advisory の判定は `policy-decision` が生成した report を
+表示するだけであり、PR comment summary 自体は architecture lawfulness、Lean theorem proof、
+repair success、unmeasured axis の measured-zero 化を結論しない。
 
 ## Synthesis Constraints を検査する
 

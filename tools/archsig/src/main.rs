@@ -19,12 +19,13 @@ use archsig::{
     build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
     build_signature_diff_report, build_signature_snapshot_record,
     build_theorem_precondition_check_report, extract_relation_complexity_observation_from_file,
-    extract_sig0_with_runtime, static_no_solution_certificate, static_organization_policy,
-    static_repair_rule_registry, static_report_artifact_retention_manifest,
-    static_synthesis_constraint_artifact, validate_air_document_report,
-    validate_component_universe_report, validate_no_solution_certificate_report,
-    validate_organization_policy_report, validate_repair_rule_registry_report,
-    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
+    extract_sig0_with_runtime, render_pr_comment_markdown, static_no_solution_certificate,
+    static_organization_policy, static_repair_rule_registry,
+    static_report_artifact_retention_manifest, static_synthesis_constraint_artifact,
+    validate_air_document_report, validate_component_universe_report,
+    validate_no_solution_certificate_report, validate_organization_policy_report,
+    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
+    validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -442,6 +443,21 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Render a GitHub Checks / PR comment Markdown summary.
+    PrComment {
+        /// Feature Extension Report JSON path.
+        #[arg(long = "feature-report")]
+        feature_report: PathBuf,
+
+        /// Optional policy decision report JSON path.
+        #[arg(long = "policy-decision")]
+        policy_decision: Option<PathBuf>,
+
+        /// Output Markdown path. If omitted, Markdown is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -848,6 +864,18 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 ExitCode::SUCCESS
             })
         }
+        Some(Command::PrComment {
+            feature_report,
+            policy_decision,
+            out,
+        }) => {
+            let report: FeatureExtensionReportV0 = read_json(&feature_report)?;
+            let policy: Option<PolicyDecisionReportV0> =
+                policy_decision.as_ref().map(read_json).transpose()?;
+            let markdown = render_pr_comment_markdown(&report, policy.as_ref());
+            write_text(out, &markdown)?;
+            Ok(ExitCode::SUCCESS)
+        }
         None => {
             let document = extract_sig0_with_runtime(
                 &args.root,
@@ -877,6 +905,26 @@ fn write_json<T: serde::Serialize>(out: Option<PathBuf>, value: &T) -> Result<()
             let mut handle = stdout.lock();
             serde_json::to_writer_pretty(&mut handle, value)?;
             writeln!(handle)?;
+        }
+    }
+    Ok(())
+}
+
+fn write_text(out: Option<PathBuf>, value: &str) -> Result<(), Box<dyn Error>> {
+    match out {
+        Some(path) => {
+            if let Some(parent) = path.parent() {
+                if !parent.as_os_str().is_empty() {
+                    std::fs::create_dir_all(parent)?;
+                }
+            }
+            let mut file = File::create(path)?;
+            file.write_all(value.as_bytes())?;
+        }
+        None => {
+            let stdout = io::stdout();
+            let mut handle = stdout.lock();
+            handle.write_all(value.as_bytes())?;
         }
     }
     Ok(())

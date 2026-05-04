@@ -3686,6 +3686,61 @@ fn cli_policy_decision_reports_fail_and_pass_boundaries() {
 }
 
 #[test]
+fn cli_pr_comment_renders_levelled_markdown_summary() {
+    let fixture = fixture_root();
+    let air = air_fixture_root();
+    let out_dir = temp_dir("pr-comment");
+    let feature_report = out_dir.join("feature-report.json");
+    let policy_decision = out_dir.join("policy-decision.json");
+    let pr_comment = out_dir.join("pr-comment.md");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.join("good_extension.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        feature_report.to_str().expect("report path is utf-8"),
+    ]);
+    let output = run_sig0_output(&[
+        "policy-decision",
+        "--feature-report",
+        feature_report.to_str().expect("report path is utf-8"),
+        "--policy",
+        fixture
+            .join("organization_policy.json")
+            .to_str()
+            .expect("policy path is utf-8"),
+        "--out",
+        policy_decision.to_str().expect("decision path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "fixture keeps unmeasured required runtime axis as policy fail"
+    );
+
+    run_sig0(&[
+        "pr-comment",
+        "--feature-report",
+        feature_report.to_str().expect("report path is utf-8"),
+        "--policy-decision",
+        policy_decision.to_str().expect("decision path is utf-8"),
+        "--out",
+        pr_comment.to_str().expect("comment path is utf-8"),
+    ]);
+
+    let markdown = fs::read_to_string(&pr_comment).expect("PR comment markdown is readable");
+    assert!(markdown.contains("<!-- schemaVersion: pr-comment-summary-v0 -->"));
+    assert!(markdown.contains("### Level 1 Review Summary"));
+    assert!(markdown.contains("<summary>Level 2 Evidence Detail</summary>"));
+    assert!(markdown.contains("<summary>Level 3 Formal Detail</summary>"));
+    assert!(markdown.contains("Policy decision: `fail`"));
+    assert!(markdown.contains("runtimePropagation"));
+    assert!(markdown.contains("This summary does not approve architecture lawfulness."));
+}
+
+#[test]
 fn cli_report_artifacts_validates_static_manifest_and_input_fixture() {
     let root = fixture_root();
     let out_dir = temp_dir("report-artifacts");

@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, ORGANIZATION_POLICY_SCHEMA_VERSION,
-    REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION,
+    PR_COMMENT_SUMMARY_SCHEMA_VERSION, REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION,
     REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION, ReportArtifactPolicyRef,
     ReportArtifactPullRequestRef, ReportArtifactRetentionManifestV0,
     ReportArtifactRetentionValidationInput, ReportArtifactRetentionValidationReportV0,
@@ -99,7 +99,7 @@ pub fn static_report_artifact_retention_manifest() -> ReportArtifactRetentionMan
                 &repository,
                 pr_number,
                 &commit_sha,
-                "pr-comment-summary-v0",
+                PR_COMMENT_SUMMARY_SCHEMA_VERSION,
                 &policy_version,
                 &generated_at,
                 &retention_scope,
