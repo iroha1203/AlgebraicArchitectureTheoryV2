@@ -16,6 +16,9 @@ pub const THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION: &str =
 pub const REPAIR_RULE_REGISTRY_SCHEMA_VERSION: &str = "repair-rule-registry-v0";
 pub const REPAIR_RULE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "repair-rule-registry-validation-report-v0";
+pub const SYNTHESIS_CONSTRAINT_ARTIFACT_SCHEMA_VERSION: &str = "synthesis-constraint-artifact-v0";
+pub const SYNTHESIS_CONSTRAINT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "synthesis-constraint-validation-report-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
@@ -1298,6 +1301,87 @@ pub struct RepairRuleRegistryValidationInput {
 pub struct RepairRuleRegistryValidationSummary {
     pub result: String,
     pub rule_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintArtifactV0 {
+    pub schema_version: String,
+    pub scope: String,
+    pub constraint_refs: Vec<String>,
+    pub candidate_refs: Vec<String>,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub constraints: Vec<SynthesisConstraintV0>,
+    pub candidates: Vec<SynthesisCandidateV0>,
+    pub no_solution_boundary: SynthesisNoSolutionBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintV0 {
+    pub constraint_id: String,
+    pub kind: String,
+    pub subject_ref: String,
+    pub predicate: String,
+    pub evidence_refs: Vec<String>,
+    pub theorem_precondition_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisCandidateV0 {
+    pub candidate_id: String,
+    pub produced_by: String,
+    pub operation_refs: Vec<String>,
+    pub constraint_refs: Vec<String>,
+    pub soundness_package_refs: Vec<String>,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisNoSolutionBoundaryV0 {
+    pub solver_status: String,
+    pub candidate_refs: Vec<String>,
+    pub no_solution_certificate_ref: Option<String>,
+    pub valid_certificate_claim_ref: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintValidationReportV0 {
+    pub schema_version: String,
+    pub input: SynthesisConstraintValidationInput,
+    pub artifact: SynthesisConstraintArtifactV0,
+    pub summary: SynthesisConstraintValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintValidationSummary {
+    pub result: String,
+    pub constraint_count: usize,
+    pub candidate_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }
