@@ -16,6 +16,7 @@ pub fn validate_air_document_report(
 
     checks.push(check_air_schema_version(&document.schema_version));
     checks.push(check_air_evidence_kinds(document));
+    checks.push(check_air_feature_source_and_ai_session(document));
     checks.push(check_air_unique_ids(document));
     checks.push(check_air_artifact_refs(document));
     checks.push(check_air_component_refs(document));
@@ -197,6 +198,8 @@ fn check_air_evidence_kinds(document: &AirDocumentV0) -> ValidationCheck {
         "semantic_diagram",
         "observation_result",
         "manual_annotation",
+        "ai_session",
+        "generated_patch",
     ];
     let invalid: Vec<ValidationExample> = document
         .evidence
@@ -214,6 +217,140 @@ fn check_air_evidence_kinds(document: &AirDocumentV0) -> ValidationCheck {
     air_ref_check(
         "air-evidence-kind-supported",
         "AIR evidence kinds use the supported taxonomy",
+        invalid,
+    )
+}
+
+fn check_air_feature_source_and_ai_session(document: &AirDocumentV0) -> ValidationCheck {
+    let valid_sources = ["pr", "issue", "manual", "ai_session", "unknown"];
+    let mut invalid = Vec::new();
+
+    if !valid_sources.contains(&document.feature.source.as_str()) {
+        invalid.push(generic_validation_example(
+            "feature.source",
+            &document.feature.source,
+            "unsupported feature.source",
+        ));
+    }
+
+    if document.feature.source == "ai_session" {
+        let Some(ai_session) = &document.feature.ai_session else {
+            invalid.push(generic_validation_example(
+                "feature.aiSession",
+                "missing",
+                "feature.source = ai_session requires aiSession metadata",
+            ));
+            return air_ref_check(
+                "air-ai-session-metadata-consistent",
+                "AI session metadata is traceability evidence and not a direct claim source",
+                invalid,
+            );
+        };
+
+        if ai_session.provider.as_deref().map_or(true, str::is_empty) {
+            invalid.push(generic_validation_example(
+                "feature.aiSession.provider",
+                "missing",
+                "aiSession.provider is required for traceability",
+            ));
+        }
+        if ai_session.model.as_deref().map_or(true, str::is_empty) {
+            invalid.push(generic_validation_example(
+                "feature.aiSession.model",
+                "missing",
+                "aiSession.model is required for traceability",
+            ));
+        }
+        if ai_session.prompt_ref.as_deref().map_or(true, str::is_empty) {
+            invalid.push(generic_validation_example(
+                "feature.aiSession.promptRef",
+                "missing",
+                "aiSession.promptRef is required as a prompt reference, not prompt contents",
+            ));
+        }
+        if ai_session.generated_patch != Some(true) {
+            let generated_patch_value = ai_session
+                .generated_patch
+                .map(|value| value.to_string())
+                .unwrap_or_else(|| "missing".to_string());
+            invalid.push(generic_validation_example(
+                "feature.aiSession.generatedPatch",
+                &generated_patch_value,
+                "feature.source = ai_session requires generatedPatch = true",
+            ));
+        }
+        if ai_session.human_reviewed.is_none() {
+            invalid.push(generic_validation_example(
+                "feature.aiSession.humanReviewed",
+                "missing",
+                "aiSession.humanReviewed must explicitly record true or false",
+            ));
+        }
+
+        let generated_patch_artifact_ids: BTreeSet<String> = document
+            .artifacts
+            .iter()
+            .filter(|artifact| artifact.kind == "generated_patch")
+            .map(|artifact| artifact.artifact_id.clone())
+            .collect();
+        if generated_patch_artifact_ids.is_empty() {
+            invalid.push(generic_validation_example(
+                "artifacts",
+                "generated_patch",
+                "AI session AIR must include a generated_patch artifact",
+            ));
+        }
+
+        let generated_patch_evidence_ids: BTreeSet<String> = document
+            .evidence
+            .iter()
+            .filter(|evidence| {
+                evidence.kind == "generated_patch"
+                    || evidence.artifact_ref.as_ref().is_some_and(|artifact_ref| {
+                        generated_patch_artifact_ids.contains(artifact_ref)
+                    })
+            })
+            .map(|evidence| evidence.evidence_id.clone())
+            .collect();
+        if generated_patch_evidence_ids.is_empty() {
+            invalid.push(generic_validation_example(
+                "evidence",
+                "generated_patch",
+                "generated_patch artifact must be represented by AIR evidence",
+            ));
+        }
+
+        let trace_mentions_generated_patch = document.operation_trace.operations.iter().any(|op| {
+            generated_patch_artifact_ids
+                .iter()
+                .any(|artifact_id| op.contains(artifact_id))
+                || generated_patch_evidence_ids
+                    .iter()
+                    .any(|evidence_id| op.contains(evidence_id))
+        });
+        if !trace_mentions_generated_patch {
+            invalid.push(generic_validation_example(
+                "operationTrace.operations",
+                "generated_patch",
+                "operationTrace must connect the generated patch artifact to an architecture operation",
+            ));
+        }
+
+        invalid.extend(ai_claim_direct_conversion_examples(
+            document,
+            &generated_patch_evidence_ids,
+        ));
+    } else if document.feature.ai_session.is_some() {
+        invalid.push(generic_validation_example(
+            "feature.aiSession",
+            &document.feature.source,
+            "aiSession metadata is only valid when feature.source = ai_session",
+        ));
+    }
+
+    air_ref_check(
+        "air-ai-session-metadata-consistent",
+        "AI session metadata is traceability evidence and not a direct claim source",
         invalid,
     )
 }
@@ -1111,6 +1248,49 @@ fn check_air_measured_claim_evidence(
         check.examples = missing_evidence.into_iter().take(5).collect();
     }
     check
+}
+
+fn ai_claim_direct_conversion_examples(
+    document: &AirDocumentV0,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+) -> Vec<ValidationExample> {
+    let ai_metadata_evidence_ids: BTreeSet<String> = document
+        .evidence
+        .iter()
+        .filter(|evidence| {
+            evidence.kind == "ai_session"
+                || evidence.kind == "generated_patch"
+                || generated_patch_evidence_ids.contains(&evidence.evidence_id)
+        })
+        .map(|evidence| evidence.evidence_id.clone())
+        .collect();
+
+    document
+        .claims
+        .iter()
+        .filter(|claim| {
+            claim.claim_classification == "measured"
+                || claim.claim_classification == "proved"
+                || matches!(
+                    claim.measurement_boundary.as_str(),
+                    "measuredZero" | "measuredNonzero"
+                )
+        })
+        .filter(|claim| {
+            !claim.evidence_refs.is_empty()
+                && claim
+                    .evidence_refs
+                    .iter()
+                    .all(|evidence_ref| ai_metadata_evidence_ids.contains(evidence_ref))
+        })
+        .map(|claim| {
+            generic_validation_example(
+                &claim.claim_id,
+                &claim.claim_classification,
+                "AI session or generated patch evidence cannot be the sole evidence for a positive or negative claim",
+            )
+        })
+        .collect()
 }
 
 fn air_ref_check(id: &str, title: &str, unresolved: Vec<ValidationExample>) -> ValidationCheck {

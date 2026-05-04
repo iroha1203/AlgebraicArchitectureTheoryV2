@@ -1146,6 +1146,7 @@ fn cli_validate_air_accepts_canonical_fixtures() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-fixtures");
     for fixture in [
+        "ai_session_generated_patch.json",
         "good_extension.json",
         "hidden_interaction.json",
         "policy_violation.json",
@@ -1173,6 +1174,54 @@ fn cli_validate_air_accepts_canonical_fixtures() {
         assert_eq!(json["summary"]["result"], "pass");
         assert_eq!(json["summary"]["failedCheckCount"], 0);
     }
+}
+
+#[test]
+fn cli_validate_air_detects_ai_session_metadata_inconsistency() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("validate-air-ai-session-invalid");
+    let input = out_dir.join("invalid-ai-session-air.json");
+    let report = out_dir.join("invalid-ai-session-air-report.json");
+    let mut json = read_json(&root.join("ai_session_generated_patch.json"));
+
+    json["feature"]["aiSession"]["provider"] = serde_json::json!("");
+    json["feature"]["aiSession"]["generatedPatch"] = serde_json::json!(false);
+    json["artifacts"]
+        .as_array_mut()
+        .expect("artifacts is an array")
+        .retain(|artifact| artifact["kind"] != "generated_patch");
+    json["operationTrace"]["operations"] = serde_json::json!([]);
+    json["claims"][0]["evidenceRefs"] = serde_json::json!(["evidence-generated-patch"]);
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("invalid AI session AIR is written");
+
+    let output = run_sig0_output(&[
+        "validate-air",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "invalid AI session AIR should fail\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "fail");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| check["id"] == "air-ai-session-metadata-consistent"
+                && check["result"] == "fail")
+    );
 }
 
 #[test]
