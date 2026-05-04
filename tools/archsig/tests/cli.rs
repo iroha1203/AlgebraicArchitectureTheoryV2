@@ -1251,6 +1251,98 @@ fn cli_ai_session_human_review_blocks_formal_claim_promotion() {
 }
 
 #[test]
+fn cli_feature_report_traces_generated_patch_architecture_operations() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("generated-patch-operations");
+    let report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("ai_session_generated_patch.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    let summary = &json["generatedPatchSummary"];
+    assert_eq!(summary["isAiSession"], true);
+    assert_eq!(summary["generatedPatch"], true);
+    assert_eq!(summary["humanReviewed"], false);
+    assert!(
+        summary["artifactRefs"]
+            .as_array()
+            .expect("artifact refs is array")
+            .iter()
+            .any(|artifact_ref| artifact_ref == "artifact-generated-patch")
+    );
+    assert!(
+        summary["evidence"]
+            .as_array()
+            .expect("generated patch evidence is array")
+            .iter()
+            .any(
+                |evidence| evidence["evidenceRef"] == "evidence-generated-patch"
+                    && evidence["kind"] == "generated_patch"
+                    && evidence["artifactRef"] == "artifact-generated-patch"
+            )
+    );
+
+    let operation = summary["operations"]
+        .as_array()
+        .expect("operations is array")
+        .iter()
+        .find(|operation| {
+            operation["operationRef"]
+                == "generated_patch artifact-generated-patch adds relation-static-coupon-port"
+        })
+        .expect("generated patch operation is reported");
+    assert!(
+        operation["addedComponents"]
+            .as_array()
+            .expect("added components is array")
+            .iter()
+            .any(|component| component == "CouponPort")
+    );
+    assert!(
+        operation["addedComponents"]
+            .as_array()
+            .expect("added components is array")
+            .iter()
+            .any(|component| component == "CouponService")
+    );
+    assert!(
+        operation["addedRelations"]
+            .as_array()
+            .expect("added relations is array")
+            .iter()
+            .any(
+                |relation| relation["relationId"] == "relation-static-coupon-port"
+                    && relation["from"] == "UserService"
+                    && relation["to"] == "CouponPort"
+                    && relation["kind"] == "import"
+            )
+    );
+    assert!(
+        operation["evidence"]
+            .as_array()
+            .expect("operation evidence is array")
+            .iter()
+            .any(|evidence| evidence["evidenceRef"] == "evidence-generated-patch")
+    );
+    assert!(
+        summary["nonConclusions"]
+            .as_array()
+            .expect("non conclusions is array")
+            .iter()
+            .any(|conclusion| conclusion
+                == "generated patch summary identifies architecture extension locations, not patch size")
+    );
+}
+
+#[test]
 fn cli_validate_air_detects_ai_session_metadata_inconsistency() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-ai-session-invalid");
