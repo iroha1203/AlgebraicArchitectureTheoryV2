@@ -4170,6 +4170,123 @@ fn cli_law_policy_templates_validate_fixture_and_non_conclusion_boundary() {
 }
 
 #[test]
+fn cli_custom_rule_plugins_validate_fixture_and_formal_promotion_boundary() {
+    let root = fixture_root();
+    let out_dir = temp_dir("custom-rule-plugins");
+    let static_report = out_dir.join("custom-rule-plugins-static.json");
+    let fixture_report = out_dir.join("custom-rule-plugins-fixture.json");
+    let invalid_registry = out_dir.join("invalid-custom-rule-plugins.json");
+    let invalid_report = out_dir.join("invalid-custom-rule-plugins-report.json");
+
+    run_sig0(&[
+        "custom-rule-plugins",
+        "--out",
+        static_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "custom-rule-plugins",
+        "--input",
+        root.join("custom_rule_plugins.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        fixture_report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&static_report);
+    assert_eq!(
+        json["schemaVersion"],
+        "custom-rule-plugin-registry-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(json["summary"]["pluginCount"].as_u64().unwrap() >= 2);
+    assert!(
+        json["registry"]["plugins"]
+            .as_array()
+            .expect("plugins is array")
+            .iter()
+            .any(|plugin| {
+                plugin["pluginId"] == "runtime-hot-path-annotation-plugin-v0"
+                    && plugin["formalClaimPromotion"] == "requires-theorem-precondition-check"
+                    && plugin["theoremPreconditionRefs"]
+                        .as_array()
+                        .expect("theorem refs are an array")
+                        .iter()
+                        .any(|reference| reference == "runtime-zero-bridge-theorem-package-v0")
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "custom-rule-plugin-formal-promotion-boundary-recorded"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let json = read_json(&fixture_report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["registry"]["plugins"]
+            .as_array()
+            .expect("plugins is array")
+            .iter()
+            .any(|plugin| {
+                plugin["pluginId"] == "fixture-semantic-workflow-plugin-v0"
+                    && plugin["permittedClaimLevels"]
+                        .as_array()
+                        .expect("claim levels are array")
+                        .iter()
+                        .any(|level| level == "formal")
+                    && plugin["nonConclusions"]
+                        .as_array()
+                        .expect("nonConclusions is array")
+                        .iter()
+                        .any(|conclusion| {
+                            conclusion
+                                == "formal claim promotion requires explicit theorem precondition checks"
+                        })
+            })
+    );
+
+    let mut invalid_json = read_json(&root.join("custom_rule_plugins.json"));
+    invalid_json["plugins"][1]["theoremPreconditionRefs"] = serde_json::json!([]);
+    invalid_json["plugins"][1]["requiredTheoremPreconditions"] = serde_json::json!([]);
+    fs::write(
+        &invalid_registry,
+        serde_json::to_string_pretty(&invalid_json).expect("json serializes"),
+    )
+    .expect("invalid registry is written");
+    let output = run_sig0_output(&[
+        "custom-rule-plugins",
+        "--input",
+        invalid_registry
+            .to_str()
+            .expect("invalid fixture path is utf-8"),
+        "--out",
+        invalid_report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "formal plugin promotion without theorem preconditions should fail validation"
+    );
+    let json = read_json(&invalid_report);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "custom-rule-plugin-formal-promotion-boundary-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_policy_decision_reports_fail_and_pass_boundaries() {
     let fixture = fixture_root();
     let air = air_fixture_root();

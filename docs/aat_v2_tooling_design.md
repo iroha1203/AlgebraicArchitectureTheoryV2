@@ -1999,6 +1999,15 @@ evidence、theorem bridge preconditions、non-conclusions を保持する。temp
 は policy evidence の生成であり、architecture lawfulness、Lean theorem claim、
 extractor completeness、unmeasured gap の measured-zero 化を結論しない。
 
+custom rule plugin は、organization-specific rule や extractor extension を AIR evidence /
+Feature Extension Report metadata へ写す bounded tooling artifact として扱う。
+`custom-rule-plugin-registry-v0` は plugin id、rule id、plugin / evidence kind、confidence、
+input / output contract、coverage assumptions、permitted claim levels、formal claim promotion
+mode、theorem precondition refs、required theorem preconditions、non-conclusions を保持する。
+plugin が formal claim level を許す場合でも、theorem precondition checker の explicit
+preconditions なしには Lean theorem claim へ昇格しない。plugin output は architecture
+lawfulness、extractor completeness、unsupported gap の measured-zero 化を結論しない。
+
 Python extractor の詳細な component / root / edge policy は tooling artifact 側の規約として
 [ArchSig tooling index](design/archsig_tooling_index.md#python-component-policy) で管理する。
 この設計書では、`componentKind = "python-module"` が静的 import graph の extractor

@@ -30,6 +30,9 @@ pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const LAW_POLICY_TEMPLATE_REGISTRY_SCHEMA_VERSION: &str = "law-policy-template-registry-v0";
 pub const LAW_POLICY_TEMPLATE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "law-policy-template-registry-validation-report-v0";
+pub const CUSTOM_RULE_PLUGIN_REGISTRY_SCHEMA_VERSION: &str = "custom-rule-plugin-registry-v0";
+pub const CUSTOM_RULE_PLUGIN_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "custom-rule-plugin-registry-validation-report-v0";
 pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
@@ -1966,6 +1969,64 @@ pub struct LawPolicyTemplateRegistryValidationInput {
 pub struct LawPolicyTemplateRegistryValidationSummary {
     pub result: String,
     pub template_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginRegistryV0 {
+    pub schema_version: String,
+    pub registry_id: String,
+    pub scope: String,
+    pub plugins: Vec<CustomRulePluginV0>,
+    pub explicit_assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginV0 {
+    pub plugin_id: String,
+    pub rule_id: String,
+    pub plugin_kind: String,
+    pub evidence_kind: String,
+    pub confidence: String,
+    pub input_contract: Vec<String>,
+    pub output_contract: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub permitted_claim_levels: Vec<String>,
+    pub formal_claim_promotion: String,
+    pub theorem_precondition_refs: Vec<String>,
+    pub required_theorem_preconditions: Vec<String>,
+    pub output_artifacts: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginRegistryValidationReportV0 {
+    pub schema_version: String,
+    pub input: CustomRulePluginRegistryValidationInput,
+    pub registry: CustomRulePluginRegistryV0,
+    pub summary: CustomRulePluginRegistryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginRegistryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub registry_id: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginRegistryValidationSummary {
+    pub result: String,
+    pub plugin_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }
