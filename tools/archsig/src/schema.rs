@@ -1051,10 +1051,15 @@ pub struct FeatureReportSemanticPathSummary {
     pub path_count: usize,
     pub diagram_count: usize,
     pub nonfillability_witness_count: usize,
+    pub representative_path_ids: Vec<String>,
+    pub representative_diagram_ids: Vec<String>,
+    pub representative_nonfillability_witness_ids: Vec<String>,
     pub measurement_boundary: String,
     pub measured_axes: Vec<String>,
     pub unmeasured_axes: Vec<String>,
     pub evidence_kinds: Vec<String>,
+    pub diagrams: Vec<FeatureReportSemanticDiagramSummary>,
+    pub nonfillability_witnesses: Vec<FeatureReportSemanticNonfillabilityWitnessSummary>,
     pub extraction_scope: Vec<String>,
     pub exactness_assumptions: Vec<String>,
     pub unsupported_constructs: Vec<String>,
@@ -1062,6 +1067,40 @@ pub struct FeatureReportSemanticPathSummary {
     pub coverage_gaps: Vec<String>,
     pub claim_refs: Vec<String>,
     pub claim_classifications: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportSemanticDiagramSummary {
+    pub diagram_id: String,
+    pub lhs_path_ref: String,
+    pub rhs_path_ref: String,
+    pub equivalence: String,
+    pub filler_claim_ref: Option<String>,
+    pub nonfillability_witness_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub claim_refs: Vec<String>,
+    pub claim_classifications: Vec<String>,
+    pub theorem_reference: Vec<String>,
+    pub missing_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportSemanticNonfillabilityWitnessSummary {
+    pub witness_id: String,
+    pub diagram_ref: String,
+    pub witness_kind: String,
+    pub claim_ref: String,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub theorem_reference: Vec<String>,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub missing_preconditions: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 

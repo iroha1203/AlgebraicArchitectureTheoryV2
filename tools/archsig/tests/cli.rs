@@ -566,6 +566,27 @@ fn cli_feature_report_surfaces_semantic_nonfillability_witness() {
     assert_eq!(json["semanticPathSummary"]["diagramCount"], 1);
     assert_eq!(json["semanticPathSummary"]["nonfillabilityWitnessCount"], 1);
     assert!(
+        json["semanticPathSummary"]["representativePathIds"]
+            .as_array()
+            .expect("semantic representative path ids are an array")
+            .iter()
+            .any(|path_id| path_id == "path-discount-then-coupon")
+    );
+    assert!(
+        json["semanticPathSummary"]["representativeDiagramIds"]
+            .as_array()
+            .expect("semantic representative diagram ids are an array")
+            .iter()
+            .any(|diagram_id| diagram_id == "diagram-coupon-discount-order")
+    );
+    assert!(
+        json["semanticPathSummary"]["representativeNonfillabilityWitnessIds"]
+            .as_array()
+            .expect("semantic representative witness ids are an array")
+            .iter()
+            .any(|witness_id| witness_id == "witness-rounding-order-difference")
+    );
+    assert!(
         json["semanticPathSummary"]["evidenceKinds"]
             .as_array()
             .expect("semantic evidence kinds are an array")
@@ -609,13 +630,57 @@ fn cli_feature_report_surfaces_semantic_nonfillability_witness() {
                 == "claim-coupon-discount-filler-blocked: formal filler contract has not been discharged")
     );
     assert!(
+        json["semanticPathSummary"]["diagrams"]
+            .as_array()
+            .expect("semantic diagrams are an array")
+            .iter()
+            .any(
+                |diagram| diagram["diagramId"] == "diagram-coupon-discount-order"
+                    && diagram["lhsPathRef"] == "path-discount-then-coupon"
+                    && diagram["rhsPathRef"] == "path-coupon-then-discount"
+                    && diagram["claimRefs"]
+                        .as_array()
+                        .expect("semantic diagram claim refs are an array")
+                        .iter()
+                        .any(|claim_ref| claim_ref == "claim-rounding-order-nonfillability")
+                    && diagram["evidence"]
+                        .as_array()
+                        .expect("semantic diagram evidence is an array")
+                        .iter()
+                        .any(|evidence| evidence["evidenceRef"] == "evidence-coupon-diagram")
+            )
+    );
+    assert!(
+        json["semanticPathSummary"]["nonfillabilityWitnesses"]
+            .as_array()
+            .expect("semantic nonfillability witnesses are an array")
+            .iter()
+            .any(|witness| {
+                witness["witnessId"] == "witness-rounding-order-difference"
+                    && witness["diagramRef"] == "diagram-coupon-discount-order"
+                    && witness["measurementBoundary"] == "measuredNonzero"
+                    && witness["theoremReference"]
+                        .as_array()
+                        .expect("semantic witness theorem refs are an array")
+                        .iter()
+                        .any(|theorem_ref| {
+                            theorem_ref == "observationDifference_refutesDiagramFiller"
+                        })
+            })
+    );
+    assert!(
         json["introducedObstructionWitnesses"]
             .as_array()
             .expect("witnesses are an array")
             .iter()
             .any(|witness| witness["layer"] == "semantic"
                 && witness["nonfillabilityWitnessRef"] == "witness-rounding-order-difference"
-                && witness["measurementBoundary"] == "measuredNonzero")
+                && witness["measurementBoundary"] == "measuredNonzero"
+                && witness["paths"]
+                    .as_array()
+                    .expect("semantic obstruction paths are an array")
+                    .iter()
+                    .any(|path_ref| path_ref == "path-coupon-then-discount"))
     );
 }
 
