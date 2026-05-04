@@ -26,7 +26,10 @@ pub use component_validation::validate_component_universe_report;
 pub use dataset::build_empirical_dataset;
 pub use extractor::{extract_sig0, extract_sig0_with_policy, extract_sig0_with_runtime};
 pub use feature_report::build_feature_extension_report;
-pub use github::{build_pr_metadata_from_github_files, build_pr_metadata_from_github_values};
+pub use github::{
+    build_pr_history_dataset_from_github_files, build_pr_history_dataset_from_github_values,
+    build_pr_metadata_from_github_files, build_pr_metadata_from_github_values,
+};
 pub use no_solution_certificate::{
     static_no_solution_certificate, validate_no_solution_certificate_report,
 };

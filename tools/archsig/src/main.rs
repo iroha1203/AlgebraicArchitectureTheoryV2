@@ -12,10 +12,11 @@ use archsig::{
     SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TheoremPreconditionCheckReportV0, build_air_document, build_empirical_dataset,
-    build_feature_extension_report, build_pr_metadata_from_github_files,
-    build_signature_diff_report, build_signature_snapshot_record,
-    build_theorem_precondition_check_report, extract_relation_complexity_observation_from_file,
-    extract_sig0_with_runtime, static_no_solution_certificate, static_repair_rule_registry,
+    build_feature_extension_report, build_pr_history_dataset_from_github_files,
+    build_pr_metadata_from_github_files, build_signature_diff_report,
+    build_signature_snapshot_record, build_theorem_precondition_check_report,
+    extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
+    static_no_solution_certificate, static_repair_rule_registry,
     static_synthesis_constraint_artifact, validate_air_document_report,
     validate_component_universe_report, validate_no_solution_certificate_report,
     validate_repair_rule_registry_report, validate_synthesis_constraint_artifact_report,
@@ -104,6 +105,37 @@ enum Command {
         review_threads: Option<PathBuf>,
 
         /// Output PR metadata JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Build a PR history dataset v0 record from GitHub API JSON and artifact refs.
+    PrHistoryDataset {
+        /// GitHub REST pull request JSON path.
+        #[arg(long = "pull-request")]
+        pull_request: PathBuf,
+
+        /// GitHub pull request files JSON path.
+        #[arg(long)]
+        files: PathBuf,
+
+        /// Optional GitHub pull request reviews JSON path.
+        #[arg(long)]
+        reviews: Option<PathBuf>,
+
+        /// Optional GitHub GraphQL reviewThreads JSON path.
+        #[arg(long = "review-threads")]
+        review_threads: Option<PathBuf>,
+
+        /// Signature artifact path. Optional role prefix can be used, e.g. base=before.json.
+        #[arg(long = "signature-artifact")]
+        signature_artifact: Vec<String>,
+
+        /// Feature Extension Report artifact path.
+        #[arg(long = "feature-report-artifact")]
+        feature_report_artifact: Vec<String>,
+
+        /// Output PR history dataset JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -400,6 +432,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 review_threads.as_deref(),
             )?;
             write_json(out, &metadata)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::PrHistoryDataset {
+            pull_request,
+            files,
+            reviews,
+            review_threads,
+            signature_artifact,
+            feature_report_artifact,
+            out,
+        }) => {
+            let dataset = build_pr_history_dataset_from_github_files(
+                &pull_request,
+                &files,
+                reviews.as_deref(),
+                review_threads.as_deref(),
+                &signature_artifact,
+                &feature_report_artifact,
+            )?;
+            write_json(out, &dataset)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::RelationComplexity { input, out }) => {

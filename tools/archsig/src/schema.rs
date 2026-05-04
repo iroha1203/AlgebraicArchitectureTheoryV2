@@ -22,6 +22,7 @@ pub const SYNTHESIS_CONSTRAINT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const NO_SOLUTION_CERTIFICATE_SCHEMA_VERSION: &str = "no-solution-certificate-v0";
 pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "no-solution-certificate-validation-report-v0";
+pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
@@ -296,6 +297,84 @@ pub struct IssueIncidentLink {
     pub affected_components: Vec<String>,
     pub rollback: Option<bool>,
     pub reopened: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryDatasetV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub records: Vec<PrHistoryRecordV0>,
+    pub analysis_metadata: PrHistoryAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryRecordV0 {
+    pub pull_request: PullRequestRef,
+    pub changed_file_summary: ChangedFileSummary,
+    pub review_metadata: ReviewMetadata,
+    pub artifact_refs: PrHistoryArtifactRefs,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangedFileSummary {
+    pub changed_files: usize,
+    pub additions: usize,
+    pub deletions: usize,
+    pub changed_components: Vec<String>,
+    pub files: Vec<ChangedFileEntry>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangedFileEntry {
+    pub path: String,
+    pub additions: Option<usize>,
+    pub deletions: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewMetadata {
+    pub review_comment_count: usize,
+    pub review_thread_count: usize,
+    pub review_round_count: usize,
+    pub reviewer_count: usize,
+    pub reviewers: Vec<String>,
+    pub review_states: Vec<String>,
+    pub first_review_latency_hours: Option<f64>,
+    pub approval_latency_hours: Option<f64>,
+    pub merge_latency_hours: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryArtifactRefs {
+    pub signature_artifacts: Vec<PrHistoryArtifactRef>,
+    pub feature_extension_reports: Vec<PrHistoryArtifactRef>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryArtifactRef {
+    pub kind: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commit_role: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryAnalysisMetadata {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -2529,6 +2529,71 @@ fn cli_pr_metadata_generates_dataset_input_from_github_json() {
 }
 
 #[test]
+fn cli_pr_history_dataset_generates_record_from_github_json() {
+    let root = fixture_root();
+    let out_dir = temp_dir("pr-history-dataset");
+    let out = out_dir.join("pr_history_dataset.json");
+
+    run_sig0(&[
+        "pr-history-dataset",
+        "--pull-request",
+        root.join("github_pr.json")
+            .to_str()
+            .expect("pull request path is utf-8"),
+        "--files",
+        root.join("github_files.json")
+            .to_str()
+            .expect("files path is utf-8"),
+        "--reviews",
+        root.join("github_reviews.json")
+            .to_str()
+            .expect("reviews path is utf-8"),
+        "--signature-artifact",
+        "base=artifacts/signature-before.json",
+        "--signature-artifact",
+        "head=artifacts/signature-after.json",
+        "--feature-report-artifact",
+        "artifacts/feature-extension-report.json",
+        "--out",
+        out.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out);
+    assert_eq!(json["schemaVersion"], "pr-history-dataset-v0");
+    assert_eq!(json["repository"]["owner"], "example");
+    assert_eq!(json["records"][0]["pullRequest"]["number"], 42);
+    assert_eq!(
+        json["records"][0]["changedFileSummary"]["changedComponents"],
+        serde_json::json!(["Formal", "Formal.Arch.A"])
+    );
+    assert_eq!(json["records"][0]["changedFileSummary"]["changedFiles"], 3);
+    assert_eq!(
+        json["records"][0]["changedFileSummary"]["files"][0]["path"],
+        "Formal.lean"
+    );
+    assert_eq!(json["records"][0]["reviewMetadata"]["reviewerCount"], 1);
+    assert_eq!(
+        json["records"][0]["reviewMetadata"]["reviewStates"],
+        serde_json::json!(["COMMENTED"])
+    );
+    assert_eq!(
+        json["records"][0]["artifactRefs"]["signatureArtifacts"][0]["commitRole"],
+        "base"
+    );
+    assert_eq!(
+        json["records"][0]["artifactRefs"]["featureExtensionReports"][0]["schemaVersion"],
+        "feature-extension-report-v0"
+    );
+    assert!(
+        json["analysisMetadata"]["nonConclusions"]
+            .as_array()
+            .expect("non-conclusions are an array")
+            .iter()
+            .any(|claim| claim == "does not conclude architecture lawfulness")
+    );
+}
+
+#[test]
 fn cli_relation_complexity_fixture_outputs_observation() {
     let root = fixture_root();
     let out_dir = temp_dir("relation");
