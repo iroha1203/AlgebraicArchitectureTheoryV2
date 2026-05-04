@@ -685,6 +685,136 @@ fn cli_feature_report_surfaces_semantic_nonfillability_witness() {
 }
 
 #[test]
+fn cli_feature_report_surfaces_semantic_measured_zero_boundary() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-semantic-zero");
+    let report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("semantic_measured_zero.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(
+        json["semanticPathSummary"]["measurementBoundary"],
+        "measuredZero"
+    );
+    assert_eq!(json["semanticPathSummary"]["pathCount"], 2);
+    assert_eq!(json["semanticPathSummary"]["diagramCount"], 1);
+    assert_eq!(json["semanticPathSummary"]["nonfillabilityWitnessCount"], 0);
+    assert!(
+        json["semanticPathSummary"]["diagrams"]
+            .as_array()
+            .expect("semantic diagrams are an array")
+            .iter()
+            .any(
+                |diagram| diagram["diagramId"] == "diagram-coupon-discount-commuting-order"
+                    && diagram["fillerClaimRef"] == "claim-coupon-discount-commutes"
+                    && diagram["nonfillabilityWitnessRefs"]
+                        .as_array()
+                        .expect("semantic witness refs are an array")
+                        .is_empty()
+            )
+    );
+    assert!(
+        json["introducedObstructionWitnesses"]
+            .as_array()
+            .expect("obstruction witnesses are an array")
+            .iter()
+            .all(|witness| witness["layer"] != "semantic")
+    );
+}
+
+#[test]
+fn cli_feature_report_keeps_semantic_unmeasured_boundary_distinct_from_zero() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-semantic-unmeasured");
+    let report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("semantic_unmeasured.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(
+        json["semanticPathSummary"]["measurementBoundary"],
+        "unmeasured"
+    );
+    assert!(
+        json["semanticPathSummary"]["unmeasuredAxes"]
+            .as_array()
+            .expect("semantic unmeasured axes are an array")
+            .iter()
+            .any(|axis| axis == "projectionSoundnessViolation")
+    );
+    assert!(
+        json["semanticPathSummary"]["nonConclusions"]
+            .as_array()
+            .expect("semantic non-conclusions are an array")
+            .iter()
+            .any(|conclusion| conclusion == "semantic risk zero is not concluded")
+    );
+    assert!(
+        json["coverageGaps"]
+            .as_array()
+            .expect("coverage gaps are an array")
+            .iter()
+            .any(|gap| gap["layer"] == "semantic" && gap["measurementBoundary"] == "UNMEASURED")
+    );
+}
+
+#[test]
+fn cli_theorem_check_blocks_semantic_formal_claim_without_contract_and_test_evidence() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("theorem-check-semantic-blocked");
+    let report = out_dir.join("semantic-blocked-theorem-check.json");
+
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        root.join("semantic_formal_claim_blocked.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["claimId"] == "claim-coupon-discount-filler-formal-blocked"
+                    && check["resolvedClaimClassification"] == "BLOCKED_FORMAL_CLAIM"
+                    && check["missingPreconditions"]
+                        .as_array()
+                        .expect("missing preconditions is array")
+                        .iter()
+                        .any(|precondition| precondition == "contract evidence is absent")
+                    && check["missingPreconditions"]
+                        .as_array()
+                        .expect("missing preconditions is array")
+                        .iter()
+                        .any(|precondition| precondition == "test evidence is absent")
+            )
+    );
+}
+
+#[test]
 fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() {
     let root = air_fixture_root();
     let out_dir = temp_dir("theorem-check");
@@ -1023,7 +1153,10 @@ fn cli_validate_air_accepts_canonical_fixtures() {
         "runtime_measured_nonzero.json",
         "runtime_unmeasured.json",
         "runtime_zero_bridge_blocked.json",
+        "semantic_measured_zero.json",
         "semantic_nonfillability.json",
+        "semantic_unmeasured.json",
+        "semantic_formal_claim_blocked.json",
         "unmeasured_runtime_semantic.json",
     ] {
         let report = out_dir.join(format!("{fixture}.report.json"));

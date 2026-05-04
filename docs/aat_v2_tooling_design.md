@@ -1736,6 +1736,23 @@ Runtime integration の canonical AIR fixtures は、次の測定境界を固定
     coverage / projection / exactness / theorem preconditions が不足する場合に blocked とする。
 ```
 
+Semantic integration の canonical AIR fixtures は、次の測定境界を固定する。
+
+```text
+- semantic_measured_zero.json:
+    selected business-flow diagram の観測が一致する場合を measuredZero として扱い、
+    selected non-fillability witness 不在を report する。
+- semantic_nonfillability.json:
+    selected coupon / discount diagram の観測差分を measuredNonzero の
+    non-fillability witness として扱う。
+- semantic_unmeasured.json:
+    selected path / diagram があっても観測 evidence が未測定なら unmeasured とし、
+    semantic risk zero とは読まない。
+- semantic_formal_claim_blocked.json:
+    observation evidence があっても contract / test evidence が不足する formal
+    diagram filler claim は blocked とする。
+```
+
 ### 12.5 Standardization targets
 
 標準化対象は次である。
