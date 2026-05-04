@@ -170,6 +170,18 @@ SnapshotArtifacts =
 artifact path は store の読者が raw evidence を追跡するための参照であり、Lean witness
 そのものではない。外部 object storage を使う場合は path の代わりに URI を入れてよい。
 
+PR review / CI で生成される Feature Extension Report、theorem precondition check report、
+policy decision report、PR comment summary は `report-artifact-retention-manifest-v0` で
+retention metadata を保持する。各 artifact ref は repository、PR number、commit sha、
+schema version、policy version、generated_at、retention scope、visibility を持つ。
+manifest は baseline comparison、suppression workflow、Architecture Drift Ledger、
+reviewer output から参照される追跡 layer であり、snapshot store の repository revision
+record そのものとは分ける。
+
+private / missing artifact は measured-zero evidence ではない。retention manifest では
+reason と non-conclusions を持つ missing/private gap として記録し、保存済み artifact
+だけから Lean theorem claim や architecture lawfulness を結論しない。
+
 ## Analysis metadata
 
 ```text

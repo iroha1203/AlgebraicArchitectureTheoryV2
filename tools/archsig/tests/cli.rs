@@ -3567,3 +3567,68 @@ fn cli_organization_policy_validates_static_policy_and_input_fixture() {
             .any(|gap| gap["axis"] == "semanticDiagramCommutation")
     );
 }
+
+#[test]
+fn cli_report_artifacts_validates_static_manifest_and_input_fixture() {
+    let root = fixture_root();
+    let out_dir = temp_dir("report-artifacts");
+    let static_report = out_dir.join("report-artifacts-static.json");
+    let fixture_report = out_dir.join("report-artifacts-fixture.json");
+
+    run_sig0(&[
+        "report-artifacts",
+        "--out",
+        static_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "report-artifacts",
+        "--input",
+        root.join("report_artifact_retention.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        fixture_report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&static_report);
+    assert_eq!(
+        json["schemaVersion"],
+        "report-artifact-retention-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert_eq!(json["summary"]["artifactCount"], 4);
+    assert!(
+        json["manifest"]["artifacts"]
+            .as_array()
+            .expect("artifacts is array")
+            .iter()
+            .any(|artifact| artifact["kind"] == "policyDecisionReport"
+                && artifact["repository"]["name"] == "AlgebraicArchitectureTheoryV2"
+                && artifact["pullRequestNumber"] == 575
+                && artifact["policyVersion"] == "2026-05-05")
+    );
+
+    let json = read_json(&fixture_report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["manifest"]["missingOrPrivateArtifacts"]
+            .as_array()
+            .expect("missingOrPrivateArtifacts is array")
+            .iter()
+            .any(|artifact| artifact["kind"] == "prCommentSummary"
+                && artifact["nonConclusions"]
+                    .as_array()
+                    .expect("nonConclusions is array")
+                    .iter()
+                    .any(|conclusion| {
+                        conclusion == "missing or private artifacts are not measured-zero evidence"
+                    }))
+    );
+    assert!(
+        json["manifest"]["traceability"]["suppressionWorkflowRefs"]
+            .as_array()
+            .expect("suppressionWorkflowRefs is array")
+            .iter()
+            .any(|reference| reference == "suppression-workflow:pr-575")
+    );
+}

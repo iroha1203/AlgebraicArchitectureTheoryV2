@@ -25,6 +25,10 @@ pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const ORGANIZATION_POLICY_SCHEMA_VERSION: &str = "organization-policy-v0";
 pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "organization-policy-validation-report-v0";
+pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
+    "report-artifact-retention-manifest-v0";
+pub const REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "report-artifact-retention-validation-report-v0";
 pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
 pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
 pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
@@ -1845,6 +1849,119 @@ pub struct OrganizationPolicyValidationSummary {
     pub required_axis_count: usize,
     pub allowed_unmeasured_gap_count: usize,
     pub required_theorem_precondition_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactRetentionManifestV0 {
+    pub schema_version: String,
+    pub retention_id: String,
+    pub repository: RepositoryRef,
+    pub pull_request: ReportArtifactPullRequestRef,
+    pub commit_sha: String,
+    pub policy: ReportArtifactPolicyRef,
+    pub generated_at: String,
+    pub retention_scope: String,
+    pub artifacts: Vec<RetainedReportArtifactRefV0>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub missing_or_private_artifacts: Vec<MissingReportArtifactRefV0>,
+    pub traceability: ReportArtifactTraceabilityV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactPullRequestRef {
+    pub number: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactPolicyRef {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub policy_id: Option<String>,
+    pub policy_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RetainedReportArtifactRefV0 {
+    pub artifact_id: String,
+    pub kind: String,
+    pub path: String,
+    pub repository: RepositoryRef,
+    pub pull_request_number: usize,
+    pub commit_sha: String,
+    pub schema_version: String,
+    pub policy_version: String,
+    pub generated_at: String,
+    pub retention_scope: String,
+    pub visibility: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content_hash: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MissingReportArtifactRefV0 {
+    pub kind: String,
+    pub reason: String,
+    pub visibility: String,
+    pub repository: RepositoryRef,
+    pub pull_request_number: usize,
+    pub commit_sha: String,
+    pub schema_version: String,
+    pub policy_version: String,
+    pub generated_at: String,
+    pub retention_scope: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactTraceabilityV0 {
+    pub baseline_comparison_refs: Vec<String>,
+    pub suppression_workflow_refs: Vec<String>,
+    pub drift_ledger_refs: Vec<String>,
+    pub reviewer_output_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactRetentionValidationReportV0 {
+    pub schema_version: String,
+    pub input: ReportArtifactRetentionValidationInput,
+    pub manifest: ReportArtifactRetentionManifestV0,
+    pub summary: ReportArtifactRetentionValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactRetentionValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub retention_id: String,
+    pub repository: RepositoryRef,
+    pub pull_request_number: usize,
+    pub commit_sha: String,
+    pub policy_version: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactRetentionValidationSummary {
+    pub result: String,
+    pub artifact_count: usize,
+    pub missing_or_private_artifact_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }
