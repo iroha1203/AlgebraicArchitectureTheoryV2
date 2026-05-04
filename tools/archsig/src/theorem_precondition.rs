@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use crate::{
-    AirClaim, AirCoverageLayer, AirDocumentV0, AirSemanticDiagram,
+    AirClaim, AirCoverageLayer, AirDocumentV0, AirSemanticDiagram, PYTHON_COMPONENT_KIND,
     THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION, TheoremPackageMetadataV0,
     TheoremPackageRegistryV0, TheoremPreconditionCheck, TheoremPreconditionCheckInput,
     TheoremPreconditionCheckReportV0, TheoremPreconditionCheckSummary,
@@ -12,6 +12,7 @@ const SEMANTIC_DIAGRAM_SUBJECT_PREFIX: &str = "semantic.diagram.";
 const NO_SOLUTION_CERTIFICATE_SUBJECT_PREFIX: &str = "synthesis.noSolutionCertificate.";
 const AI_HUMAN_REVIEW_REQUIRED_PRECONDITION: &str =
     "AI session human review is required before promoting formal claim";
+const PYTHON_COMPONENT_UNIVERSE_BRIDGE_PRECONDITION: &str = "Python import graph evidence requires an explicit Lean ComponentUniverse bridge precondition before formal claim promotion";
 
 pub fn static_theorem_package_registry() -> TheoremPackageRegistryV0 {
     TheoremPackageRegistryV0 {
@@ -373,6 +374,7 @@ fn theorem_precondition_check(
         &applicable_packages,
         &mut missing_preconditions,
     );
+    add_python_inferred_missing_preconditions(document, claim, &mut missing_preconditions);
     let ai_human_review_required = add_ai_session_human_review_missing_precondition(
         document,
         claim,
@@ -791,6 +793,40 @@ fn add_ai_session_human_review_missing_precondition(
 
     push_missing_once(missing_preconditions, AI_HUMAN_REVIEW_REQUIRED_PRECONDITION);
     true
+}
+
+fn add_python_inferred_missing_preconditions(
+    document: &AirDocumentV0,
+    claim: &AirClaim,
+    missing_preconditions: &mut Vec<String>,
+) {
+    if claim.claim_level != "formal" {
+        return;
+    }
+    let has_python_components = document
+        .components
+        .iter()
+        .any(|component| component.kind == PYTHON_COMPONENT_KIND);
+    let has_python_import_evidence = claim
+        .evidence_refs
+        .iter()
+        .filter_map(|evidence_ref| {
+            document
+                .evidence
+                .iter()
+                .find(|evidence| evidence.evidence_id == *evidence_ref)
+        })
+        .any(|evidence| evidence.kind == "python_import");
+    let has_python_static_relation = document.relations.iter().any(|relation| {
+        relation.layer == "static"
+            && relation.extraction_rule.as_deref() == Some("python-import-graph-v0")
+    });
+    if has_python_components || has_python_import_evidence || has_python_static_relation {
+        push_missing_once(
+            missing_preconditions,
+            PYTHON_COMPONENT_UNIVERSE_BRIDGE_PRECONDITION,
+        );
+    }
 }
 
 fn semantic_diagrams_for_claim<'a>(

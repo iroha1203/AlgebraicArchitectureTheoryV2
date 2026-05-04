@@ -97,6 +97,198 @@ fn cli_extracts_python_import_graph() {
     );
 }
 
+#[test]
+fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
+    let root = python_fixture_root();
+    let out_dir = temp_dir("python-air");
+    let sig0 = out_dir.join("python-sig0.json");
+    let air = out_dir.join("python.air.json");
+    let air_validation = out_dir.join("python-air-validation.json");
+    let feature_report = out_dir.join("python-feature-report.json");
+    let theorem_report = out_dir.join("python-theorem-check.json");
+    let formal_air = out_dir.join("python-formal.air.json");
+    let formal_theorem_report = out_dir.join("python-formal-theorem-check.json");
+
+    run_sig0(&[
+        "--language",
+        "python",
+        "--root",
+        root.to_str().expect("fixture path is utf-8"),
+        "--source-root",
+        "src",
+        "--out",
+        sig0.to_str().expect("sig0 path is utf-8"),
+    ]);
+    run_sig0(&[
+        "air",
+        "--sig0",
+        sig0.to_str().expect("sig0 path is utf-8"),
+        "--out",
+        air.to_str().expect("air path is utf-8"),
+    ]);
+
+    let json = read_json(&air);
+    assert_eq!(json["schemaVersion"], "aat-air-v0");
+    assert!(
+        json["components"]
+            .as_array()
+            .expect("components are an array")
+            .iter()
+            .any(|component| component["id"] == "app.service"
+                && component["kind"] == "python-module")
+    );
+    assert!(
+        json["relations"]
+            .as_array()
+            .expect("relations are an array")
+            .iter()
+            .any(|relation| {
+                relation["layer"] == "static"
+                    && relation["extractionRule"] == "python-import-graph-v0"
+            })
+    );
+    assert!(
+        json["evidence"]
+            .as_array()
+            .expect("evidence are an array")
+            .iter()
+            .any(|evidence| evidence["kind"] == "python_import")
+    );
+    let static_coverage = json["coverage"]["layers"]
+        .as_array()
+        .expect("coverage layers are an array")
+        .iter()
+        .find(|layer| layer["layer"] == "static")
+        .expect("static coverage exists");
+    assert_eq!(static_coverage["projectionRule"], "python-import-graph-v0");
+    assert!(
+        static_coverage["extractionScope"]
+            .as_array()
+            .expect("extractionScope is an array")
+            .iter()
+            .any(|scope| scope == "static import graph from Python ast import/from nodes")
+    );
+    assert!(
+        static_coverage["exactnessAssumptions"]
+            .as_array()
+            .expect("exactnessAssumptions is an array")
+            .iter()
+            .any(|assumption| {
+                assumption
+                    == "Python extractor output is tooling evidence, not a Lean ComponentUniverse completeness proof"
+            })
+    );
+
+    run_sig0(&[
+        "validate-air",
+        "--input",
+        air.to_str().expect("air path is utf-8"),
+        "--out",
+        air_validation
+            .to_str()
+            .expect("air validation path is utf-8"),
+    ]);
+    assert_eq!(read_json(&air_validation)["summary"]["result"], "pass");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.to_str().expect("air path is utf-8"),
+        "--out",
+        feature_report
+            .to_str()
+            .expect("feature report path is utf-8"),
+    ]);
+    let feature_json = read_json(&feature_report);
+    assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert!(
+        feature_json["architectureSummary"]["measuredAxes"]
+            .as_array()
+            .expect("measuredAxes are an array")
+            .iter()
+            .any(|axis| axis == "hasCycle")
+    );
+
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        air.to_str().expect("air path is utf-8"),
+        "--out",
+        theorem_report
+            .to_str()
+            .expect("theorem report path is utf-8"),
+    ]);
+    let theorem_json = read_json(&theorem_report);
+    assert_eq!(
+        theorem_json["summary"]["formalProvedClaimCount"],
+        serde_json::json!(0)
+    );
+    assert!(
+        theorem_json["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(|check| {
+                check["subjectRef"] == "signature.hasCycle"
+                    && check["resolvedClaimClassification"] == "MEASURED_WITNESS"
+            })
+    );
+
+    let mut formal_json = json;
+    formal_json["claims"]
+        .as_array_mut()
+        .expect("claims are an array")
+        .push(serde_json::json!({
+            "claimId": "claim-python-static-formal-blocked",
+            "subjectRef": "signature.hasCycle",
+            "predicate": "Python static import graph has no cycle as a Lean theorem claim",
+            "claimLevel": "formal",
+            "claimClassification": "proved",
+            "measurementBoundary": "measuredZero",
+            "theoremRefs": ["SelectedStaticSplitExtension"],
+            "evidenceRefs": ["evidence-static-0001"],
+            "requiredAssumptions": ["core edges are preserved"],
+            "coverageAssumptions": ["static dependency graph is inside the measured universe"],
+            "exactnessAssumptions": ["AIR component and relation identifiers match the Lean package parameters"],
+            "missingPreconditions": [],
+            "nonConclusions": ["Python extractor completeness is not concluded"]
+        }));
+    fs::write(
+        &formal_air,
+        serde_json::to_string_pretty(&formal_json).expect("formal AIR serializes"),
+    )
+    .expect("formal AIR fixture is written");
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        formal_air.to_str().expect("formal AIR path is utf-8"),
+        "--out",
+        formal_theorem_report
+            .to_str()
+            .expect("formal theorem report path is utf-8"),
+    ]);
+    let formal_report = read_json(&formal_theorem_report);
+    let blocked = formal_report["checks"]
+        .as_array()
+        .expect("checks are an array")
+        .iter()
+        .find(|check| check["claimId"] == "claim-python-static-formal-blocked")
+        .expect("formal Python claim is checked");
+    assert_eq!(
+        blocked["resolvedClaimClassification"],
+        "BLOCKED_FORMAL_CLAIM"
+    );
+    assert!(
+        blocked["missingPreconditions"]
+            .as_array()
+            .expect("missingPreconditions are an array")
+            .iter()
+            .any(|precondition| precondition.as_str().expect("precondition is string").contains(
+                "Python import graph evidence requires an explicit Lean ComponentUniverse bridge precondition"
+            ))
+    );
+}
+
 fn runtime_axis_mut(json: &mut Value) -> &mut Value {
     json["signature"]["axes"]
         .as_array_mut()
