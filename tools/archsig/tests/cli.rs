@@ -498,6 +498,51 @@ fn cli_feature_report_surfaces_static_obstruction_witnesses() {
                 .iter()
                 .any(|witness| witness["kind"] == expected_kind)
         );
+        assert!(
+            json["repairSuggestions"]
+                .as_array()
+                .expect("repair suggestions are an array")
+                .iter()
+                .any(|suggestion| {
+                    suggestion["targetWitnessKind"] == expected_kind
+                        && suggestion["repairRuleId"].is_string()
+                        && suggestion["sourceWitnessRefs"]
+                            .as_array()
+                            .expect("source witness refs are an array")
+                            .iter()
+                            .any(|witness_ref| {
+                                witness_ref
+                                    .as_str()
+                                    .unwrap_or_default()
+                                    .starts_with("witness-")
+                            })
+                        && suggestion["requiredPreconditions"]
+                            .as_array()
+                            .expect("required preconditions are an array")
+                            .iter()
+                            .any(|precondition| {
+                                precondition
+                                    .as_str()
+                                    .unwrap_or_default()
+                                    .contains("evidence")
+                                    || precondition
+                                        .as_str()
+                                        .unwrap_or_default()
+                                        .contains("interface")
+                                    || precondition.as_str().unwrap_or_default().contains("edge")
+                            })
+                        && suggestion["possibleSideEffects"]
+                            .as_array()
+                            .expect("side effects are an array")
+                            .iter()
+                            .any(|effect| !effect.as_str().unwrap_or_default().is_empty())
+                        && suggestion["nonConclusions"]
+                            .as_array()
+                            .expect("non conclusions are an array")
+                            .iter()
+                            .any(|conclusion| conclusion == "repair success is not concluded")
+                })
+        );
     }
 }
 
@@ -526,6 +571,30 @@ fn cli_feature_report_keeps_unmeasured_extension_unmeasured() {
             .expect("coverage gaps are an array")
             .iter()
             .any(|gap| gap["measurementBoundary"] == "UNMEASURED")
+    );
+    assert!(
+        json["repairSuggestions"]
+            .as_array()
+            .expect("repair suggestions are an array")
+            .iter()
+            .any(|suggestion| {
+                suggestion["targetWitnessKind"] == "coverage_gap"
+                    && suggestion["sourceCoverageGapRefs"]
+                        .as_array()
+                        .expect("source coverage gap refs are an array")
+                        .iter()
+                        .any(|gap_ref| {
+                            gap_ref
+                                .as_str()
+                                .unwrap_or_default()
+                                .starts_with("coverage-gap-")
+                        })
+                    && suggestion["nonConclusions"]
+                        .as_array()
+                        .expect("non conclusions are an array")
+                        .iter()
+                        .any(|conclusion| conclusion == "all obstruction removal is not concluded")
+            })
     );
     assert_eq!(
         json["semanticPathSummary"]["measurementBoundary"],
