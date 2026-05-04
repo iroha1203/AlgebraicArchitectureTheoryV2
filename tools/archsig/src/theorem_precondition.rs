@@ -9,6 +9,8 @@ use crate::{
 
 const RUNTIME_PROPAGATION_SUBJECT_REF: &str = "signature.runtimePropagation";
 const SEMANTIC_DIAGRAM_SUBJECT_PREFIX: &str = "semantic.diagram.";
+const AI_HUMAN_REVIEW_REQUIRED_PRECONDITION: &str =
+    "AI session human review is required before promoting formal claim";
 
 pub fn static_theorem_package_registry() -> TheoremPackageRegistryV0 {
     TheoremPackageRegistryV0 {
@@ -332,8 +334,19 @@ fn theorem_precondition_check(
         &applicable_packages,
         &mut missing_preconditions,
     );
+    let ai_human_review_required = add_ai_session_human_review_missing_precondition(
+        document,
+        claim,
+        &mut missing_preconditions,
+    );
 
-    let (resolved_claim_classification, result, reason) = if !unknown_theorem_refs.is_empty() {
+    let (resolved_claim_classification, result, reason) = if ai_human_review_required {
+        (
+            "BLOCKED_FORMAL_CLAIM".to_string(),
+            "warn".to_string(),
+            "AI session human review boundary blocks formal claim promotion".to_string(),
+        )
+    } else if !unknown_theorem_refs.is_empty() {
         (
             "UNKNOWN_THEOREM_REF".to_string(),
             "warn".to_string(),
@@ -713,6 +726,28 @@ fn add_semantic_inferred_missing_preconditions(
             );
         }
     }
+}
+
+fn add_ai_session_human_review_missing_precondition(
+    document: &AirDocumentV0,
+    claim: &AirClaim,
+    missing_preconditions: &mut Vec<String>,
+) -> bool {
+    if document.feature.source != "ai_session" || claim.claim_level != "formal" {
+        return false;
+    }
+    if document
+        .feature
+        .ai_session
+        .as_ref()
+        .and_then(|ai_session| ai_session.human_reviewed)
+        == Some(true)
+    {
+        return false;
+    }
+
+    push_missing_once(missing_preconditions, AI_HUMAN_REVIEW_REQUIRED_PRECONDITION);
+    true
 }
 
 fn semantic_diagrams_for_claim<'a>(
