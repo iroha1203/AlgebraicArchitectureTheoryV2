@@ -7,20 +7,21 @@ use std::process::ExitCode;
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
     DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0,
-    LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0,
-    NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
+    FrameworkAdapterEvidenceV0, LawPolicyTemplateRegistryV0,
+    LawPolicyTemplateRegistryValidationReportV0, NoSolutionCertificateV0,
+    NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
     ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, RiskDispositionV0,
     ScanMetadata, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
     SnapshotRecordInput, SnapshotRepositoryRef, SynthesisConstraintArtifactV0,
-    SynthesisConstraintValidationReportV0, TheoremPreconditionCheckReportV0, build_air_document,
-    build_baseline_suppression_report, build_empirical_dataset,
-    build_feature_extension_dataset_from_files, build_feature_extension_report,
-    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
-    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
-    build_signature_diff_report, build_signature_snapshot_record,
-    build_theorem_precondition_check_report, extract_python_sig0,
+    SynthesisConstraintValidationReportV0, TheoremPreconditionCheckReportV0,
+    attach_framework_adapter_evidence, build_air_document, build_baseline_suppression_report,
+    build_empirical_dataset, build_feature_extension_dataset_from_files,
+    build_feature_extension_report, build_outcome_linkage_dataset_from_files,
+    build_policy_decision_report, build_pr_history_dataset_from_github_files,
+    build_pr_metadata_from_github_files, build_signature_diff_report,
+    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_law_policy_template_registry,
     static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
@@ -346,6 +347,10 @@ enum Command {
         /// Optional law / policy JSON path recorded as AIR policy artifact.
         #[arg(long = "law-policy")]
         law_policy: Option<PathBuf>,
+
+        /// Optional framework adapter evidence JSON path. Repeat for multiple adapters.
+        #[arg(long = "framework-adapter")]
+        framework_adapters: Vec<PathBuf>,
 
         /// Output AIR JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
@@ -738,6 +743,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             diff,
             pr_metadata,
             law_policy,
+            framework_adapters,
             out,
         }) => {
             let document: Sig0Document = read_json(&sig0)?;
@@ -747,7 +753,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 diff.as_ref().map(read_json).transpose()?;
             let pr_metadata_document: Option<EmpiricalDatasetInput> =
                 pr_metadata.as_ref().map(read_json).transpose()?;
-            let air = build_air_document(
+            let mut air = build_air_document(
                 &document,
                 validation_report.as_ref(),
                 diff_report.as_ref(),
@@ -760,6 +766,15 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     law_policy_path: law_policy.map(|path| path.display().to_string()),
                 },
             );
+            for (index, path) in framework_adapters.iter().enumerate() {
+                let adapter: FrameworkAdapterEvidenceV0 = read_json(path)?;
+                attach_framework_adapter_evidence(
+                    &mut air,
+                    &adapter,
+                    path.display().to_string(),
+                    index,
+                )?;
+            }
             write_json(out, &air)?;
             Ok(ExitCode::SUCCESS)
         }

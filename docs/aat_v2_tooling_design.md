@@ -2012,6 +2012,14 @@ unsupported boundary、Python Sig0 output、AIR validation、Feature Extension R
 theorem precondition boundary を tooling validation として固定する。これらの fixture は
 実コード extractor completeness や Lean theorem claim への昇格を結論しない。
 
+framework-specific adapter の初期 fixture は、FastAPI の route decorator を
+`framework-adapter-evidence-v0` として AIR に追加する。`archsig air --framework-adapter`
+は adapter artifact、`framework_route` evidence、`layer = "framework"` の relation /
+coverage を作り、Feature Extension Report は dependency injection、middleware、
+runtime routing などの未対応 convention を coverage gap として残す。この adapter output は
+bounded tooling evidence であり、FastAPI runtime semantics、Lean `ComponentUniverse`
+completeness、architecture lawfulness、未対応 convention の measured-zero 化を結論しない。
+
 ### Phase B9: Schema standardization and compatibility
 
 ```text
