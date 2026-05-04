@@ -40,6 +40,15 @@ repository で sample project ごとの比較が必要な場合は、各 subproj
 最小 extractor の入力は repository checkout である。初期実装では、Lean toolchain
 や lake build artifact に依存せず、source file と import 文から静的依存辺を抽出する。
 
+後続の Python extractor では、同じ Sig0 envelope を保ったまま
+`componentKind = "python-module"` を使う。Python module id は package root から見た
+importable module 名であり、repository root、source root、package root を分けて記録する。
+local module edge は package root 内で解決できた `import` / `from ... import ...` に限定し、
+package root 外、標準 library、installed dependency、unresolved target は external
+dependency edge として扱う。dynamic import、plugin loading、framework convention、
+generated code、notebook は v0 の静的 import graph では unsupported / unmeasured として
+残し、risk 0 や Lean `ComponentUniverse` 完全性へ昇格しない。
+
 ## 入出力形式
 
 v0 tooling は JSON Lines ではなく、差分レビューしやすい単一 JSON document を出力する。

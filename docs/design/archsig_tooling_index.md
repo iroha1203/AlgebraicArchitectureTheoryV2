@@ -230,3 +230,47 @@ Non-conclusions:
 - suppressed / accepted-risk witness は resolved witness ではない。
 - private / missing baseline artifact は measured-zero evidence ではない。
 - policy decision delta は architecture lawfulness を承認しない。
+
+## B8 Extractor / policy ecosystem
+
+Parent Issue: [#577](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/577)
+
+B8 は non-Lean extractor と policy ecosystem を AIR / Feature Extension Report へ接続する
+layer である。extractor は言語ごとの bounded subset、unsupported constructs、coverage
+assumptions、projection rule を evidence として出し、Lean の `ComponentUniverse` 完全性とは
+分離する。
+
+### Python component policy
+
+Issue: [#581](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/581)
+
+Python extractor の最小 component kind は `python-module` である。component id は
+package root から見た importable module 名とし、policy selector は
+`componentIdKind = "python-module"` でこの id を参照する。
+
+Root policy:
+
+- repository root: checkout と artifact path の基準。
+- source root: scan 対象 file を制限する file system 境界。
+- package root: module id 正規化と local import 解決の境界。
+
+Edge policy:
+
+- package root 内で解決できる `import` / `from ... import ...` は local module edge。
+- package root 外、標準 library、installed dependency、unresolved target は external dependency edge。
+- namespace package は明示された package root 群に属する file だけを local component として測る。
+- `tests/` や `test_*.py` は既定で `python-module` に含め、production / test の区別は policy group で扱う。
+
+関連 schema / docs:
+
+- [AAT v2 tooling design](../aat_v2_tooling_design.md#phase-b8-extractor--policy-ecosystem)
+- [ArchSig v0 design](archsig_design.md)
+- [boundary / abstraction policy v0 schema](boundary_abstraction_policy_schema.md#python-module-id-policy)
+- [ComponentUniverse validation report v0](component_universe_validation_report.md)
+
+Non-conclusions:
+
+- Python component policy は extractor evidence であり、Lean theorem ではない。
+- `python-module` scan は dynamic import、plugin loading、framework convention、generated code、notebook を完全捕捉しない。
+- external dependency edge は local `ComponentUniverse` closure witness ではない。
+- policy selector の一致は architecture lawfulness や実コード extractor completeness を結論しない。
