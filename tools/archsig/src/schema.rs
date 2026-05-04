@@ -25,6 +25,7 @@ pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const ORGANIZATION_POLICY_SCHEMA_VERSION: &str = "organization-policy-v0";
 pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "organization-policy-validation-report-v0";
+pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
 pub const REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
@@ -1851,6 +1852,99 @@ pub struct OrganizationPolicyValidationSummary {
     pub required_theorem_precondition_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyDecisionReportV0 {
+    pub schema_version: String,
+    pub input: PolicyDecisionInput,
+    pub summary: PolicyDecisionSummary,
+    pub required_axis_decisions: Vec<RequiredAxisPolicyDecisionV0>,
+    pub missing_precondition_decisions: Vec<MissingPreconditionPolicyDecisionV0>,
+    pub coverage_gap_decisions: Vec<CoverageGapPolicyDecisionV0>,
+    pub witness_decisions: Vec<WitnessPolicyDecisionV0>,
+    pub checks: Vec<ValidationCheck>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyDecisionInput {
+    pub feature_report_schema_version: String,
+    pub feature_report_path: String,
+    pub organization_policy_schema_version: String,
+    pub organization_policy_path: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyDecisionSummary {
+    pub decision: String,
+    pub fail_count: usize,
+    pub warn_count: usize,
+    pub advisory_count: usize,
+    pub required_axis_count: usize,
+    pub allowed_unmeasured_gap_count: usize,
+    pub missing_precondition_count: usize,
+    pub measured_nonzero_witness_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequiredAxisPolicyDecisionV0 {
+    pub axis: String,
+    pub status: String,
+    pub claim_level: String,
+    pub expected_measurement_boundary: String,
+    pub actual_measurement_boundary: String,
+    pub value: Option<i64>,
+    pub max_allowed_value: Option<i64>,
+    pub reason: String,
+    pub required_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MissingPreconditionPolicyDecisionV0 {
+    pub subject_ref: String,
+    pub claim_id: String,
+    pub status: String,
+    pub missing_preconditions: Vec<String>,
+    pub theorem_refs: Vec<String>,
+    pub reason: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoverageGapPolicyDecisionV0 {
+    pub layer: String,
+    pub axis: String,
+    pub status: String,
+    pub allowed_by_policy: bool,
+    pub measurement_boundary: String,
+    pub reason: String,
+    pub policy_scope: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WitnessPolicyDecisionV0 {
+    pub witness_id: String,
+    pub status: String,
+    pub layer: String,
+    pub kind: String,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub reason: String,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
