@@ -1004,6 +1004,8 @@ pub struct FeatureReportGeneratedPatchSummary {
     pub artifact_refs: Vec<String>,
     pub evidence: Vec<FeatureReportEvidenceRef>,
     pub operations: Vec<FeatureReportGeneratedPatchOperation>,
+    #[serde(default)]
+    pub review_warnings: Vec<FeatureReportGeneratedPatchReviewWarning>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -1015,6 +1017,21 @@ pub struct FeatureReportGeneratedPatchOperation {
     pub added_relations: Vec<FeatureReportEdgeRef>,
     pub policy_touches: Vec<String>,
     pub evidence: Vec<FeatureReportEvidenceRef>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportGeneratedPatchReviewWarning {
+    pub warning_id: String,
+    pub warning_kind: String,
+    pub classification: String,
+    pub review_signal: String,
+    pub measurement_boundary: String,
+    pub components: Vec<String>,
+    pub relations: Vec<FeatureReportEdgeRef>,
+    pub operation_refs: Vec<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -5,11 +5,11 @@ use crate::{
     AirClaim, AirDocumentV0, AirEvidence, AirRelation, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
     FeatureExtensionReportV0, FeatureReportArchitectureSummary, FeatureReportCoverageGap,
     FeatureReportEdgeRef, FeatureReportEvidenceRef, FeatureReportGeneratedPatchOperation,
-    FeatureReportGeneratedPatchSummary, FeatureReportInput, FeatureReportInterpretedExtension,
-    FeatureReportInvariant, FeatureReportObstructionWitness, FeatureReportReviewSummary,
-    FeatureReportRuntimeSummary, FeatureReportSemanticDiagramSummary,
-    FeatureReportSemanticNonfillabilityWitnessSummary, FeatureReportSemanticPathSummary,
-    TheoremPreconditionCheck,
+    FeatureReportGeneratedPatchReviewWarning, FeatureReportGeneratedPatchSummary,
+    FeatureReportInput, FeatureReportInterpretedExtension, FeatureReportInvariant,
+    FeatureReportObstructionWitness, FeatureReportReviewSummary, FeatureReportRuntimeSummary,
+    FeatureReportSemanticDiagramSummary, FeatureReportSemanticNonfillabilityWitnessSummary,
+    FeatureReportSemanticPathSummary, TheoremPreconditionCheck,
 };
 
 pub fn build_feature_extension_report(
@@ -62,6 +62,9 @@ pub fn build_feature_extension_report(
         .map(|axis| axis.axis.clone())
         .collect();
     let runtime_summary = feature_report_runtime_summary(document, &coverage_gaps);
+    let generated_patch_summary = feature_report_generated_patch_summary(document, &evidence_by_id);
+    let complexity_transfer_candidates =
+        feature_report_complexity_transfer_candidates(&generated_patch_summary.review_warnings);
 
     FeatureExtensionReportV0 {
         schema_version: FEATURE_EXTENSION_REPORT_SCHEMA_VERSION.to_string(),
@@ -124,13 +127,13 @@ pub fn build_feature_extension_report(
                 .map(|relation| relation.id.clone())
                 .collect(),
         },
-        generated_patch_summary: feature_report_generated_patch_summary(document, &evidence_by_id),
+        generated_patch_summary,
         split_status,
         preserved_invariants,
         changed_invariants,
         introduced_obstruction_witnesses,
         eliminated_obstruction_witnesses: Vec::new(),
-        complexity_transfer_candidates: Vec::new(),
+        complexity_transfer_candidates,
         semantic_path_summary: feature_report_semantic_path_summary(
             document,
             &coverage_gaps,
@@ -481,13 +484,22 @@ fn feature_report_generated_patch_summary(
         "generated patch summary identifies architecture extension locations, not patch size"
             .to_string(),
     );
+    non_conclusions.insert(
+        "AI-generated hidden interaction candidates are conservative review signals, not measured obstruction witnesses"
+            .to_string(),
+    );
+    non_conclusions.insert(
+        "complexity transfer warnings are review signals, not obstruction measurements".to_string(),
+    );
+    let is_ai_session = document.feature.source == "ai_session";
+    let generated_patch = ai_session
+        .and_then(|session| session.generated_patch)
+        .unwrap_or(false)
+        || !generated_patch_artifact_ids.is_empty();
 
     FeatureReportGeneratedPatchSummary {
-        is_ai_session: document.feature.source == "ai_session",
-        generated_patch: ai_session
-            .and_then(|session| session.generated_patch)
-            .unwrap_or(false)
-            || !generated_patch_artifact_ids.is_empty(),
+        is_ai_session,
+        generated_patch,
         human_reviewed: ai_session.and_then(|session| session.human_reviewed),
         provider: ai_session.and_then(|session| session.provider.clone()),
         model: ai_session.and_then(|session| session.model.clone()),
@@ -499,8 +511,331 @@ fn feature_report_generated_patch_summary(
             &generated_patch_evidence_ids,
             evidence_by_id,
         ),
+        review_warnings: feature_report_generated_patch_review_warnings(
+            document,
+            is_ai_session && generated_patch,
+            &generated_patch_evidence_ids,
+            evidence_by_id,
+        ),
         non_conclusions: non_conclusions.into_iter().collect(),
     }
+}
+
+fn feature_report_generated_patch_review_warnings(
+    document: &AirDocumentV0,
+    enabled: bool,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
+) -> Vec<FeatureReportGeneratedPatchReviewWarning> {
+    if !enabled {
+        return Vec::new();
+    }
+
+    let mut warnings = Vec::new();
+    for relation in &document.relations {
+        if !feature_report_relation_in_generated_patch_context(
+            document,
+            relation,
+            generated_patch_evidence_ids,
+        ) || feature_report_obstructing_relation(document, relation)
+        {
+            continue;
+        }
+        let Some(review_signal) =
+            feature_report_hidden_interaction_review_signal(document, relation, evidence_by_id)
+        else {
+            continue;
+        };
+        let evidence_refs =
+            feature_report_relation_warning_evidence_refs(relation, generated_patch_evidence_ids);
+        warnings.push(FeatureReportGeneratedPatchReviewWarning {
+            warning_id: format!(
+                "warning-{}-hidden-interaction-candidate",
+                stable_id_fragment(&relation.id)
+            ),
+            warning_kind: "hidden_interaction_candidate".to_string(),
+            classification: "conservative_review_signal".to_string(),
+            review_signal,
+            measurement_boundary: "unmeasured".to_string(),
+            components: relation
+                .from_component
+                .iter()
+                .chain(relation.to_component.iter())
+                .cloned()
+                .collect(),
+            relations: vec![FeatureReportEdgeRef {
+                relation_id: relation.id.clone(),
+                from: relation.from_component.clone(),
+                to: relation.to_component.clone(),
+                kind: relation.kind.clone(),
+            }],
+            operation_refs: feature_report_relation_operation_refs(
+                document,
+                relation,
+                generated_patch_evidence_ids,
+            ),
+            evidence: feature_report_evidence_refs(&evidence_refs, evidence_by_id),
+            non_conclusions: vec![
+                "hidden interaction candidate is not a measured hidden_interaction witness"
+                    .to_string(),
+                "candidate requires human review or measured policy/runtime/semantic evidence"
+                    .to_string(),
+            ],
+        });
+    }
+
+    if let Some(warning) = feature_report_complexity_transfer_review_warning(
+        document,
+        generated_patch_evidence_ids,
+        evidence_by_id,
+    ) {
+        warnings.push(warning);
+    }
+
+    warnings
+}
+
+fn feature_report_relation_in_generated_patch_context(
+    document: &AirDocumentV0,
+    relation: &AirRelation,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+) -> bool {
+    relation.lifecycle == "added"
+        || relation.lifecycle == "changed"
+        || relation
+            .evidence_refs
+            .iter()
+            .any(|evidence_ref| generated_patch_evidence_ids.contains(evidence_ref))
+        || document
+            .operation_trace
+            .operations
+            .iter()
+            .any(|operation| operation.contains(&relation.id))
+}
+
+fn feature_report_hidden_interaction_review_signal(
+    _document: &AirDocumentV0,
+    relation: &AirRelation,
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
+) -> Option<String> {
+    let mut haystack = vec![
+        relation.id.as_str(),
+        relation.layer.as_str(),
+        relation.kind.as_str(),
+    ]
+    .join(" ");
+    if let Some(extraction_rule) = &relation.extraction_rule {
+        haystack.push(' ');
+        haystack.push_str(extraction_rule);
+    }
+    if let Some(protected_by) = &relation.protected_by {
+        haystack.push(' ');
+        haystack.push_str(protected_by);
+    }
+    for component in relation
+        .from_component
+        .iter()
+        .chain(relation.to_component.iter())
+    {
+        haystack.push(' ');
+        haystack.push_str(component);
+    }
+    for evidence_ref in &relation.evidence_refs {
+        if let Some(evidence) = evidence_by_id.get(evidence_ref) {
+            for text in [
+                Some(evidence.kind.as_str()),
+                evidence.path.as_deref(),
+                evidence.symbol.as_deref(),
+                evidence.rule_id.as_deref(),
+            ]
+            .into_iter()
+            .flatten()
+            {
+                haystack.push(' ');
+                haystack.push_str(text);
+            }
+        }
+    }
+    let haystack = haystack.to_ascii_lowercase();
+    if haystack.contains("policy_bypass") || haystack.contains("policy bypass") {
+        Some("AI-generated patch contains a policy bypass candidate".to_string())
+    } else if haystack.contains("cache") {
+        Some("AI-generated patch contains a cache access candidate".to_string())
+    } else if haystack.contains("implicit_state")
+        || haystack.contains("implicit state")
+        || haystack.contains("state_sharing")
+        || haystack.contains("state sharing")
+        || haystack.contains("internal")
+    {
+        Some("AI-generated patch contains an implicit state sharing candidate".to_string())
+    } else if haystack.contains("adapter") {
+        Some("AI-generated patch contains an adapter boundary candidate".to_string())
+    } else {
+        None
+    }
+}
+
+fn feature_report_relation_warning_evidence_refs(
+    relation: &AirRelation,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+) -> Vec<String> {
+    let mut refs: BTreeSet<String> = generated_patch_evidence_ids.clone();
+    refs.extend(relation.evidence_refs.iter().cloned());
+    refs.into_iter().collect()
+}
+
+fn feature_report_relation_operation_refs(
+    document: &AirDocumentV0,
+    relation: &AirRelation,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+) -> Vec<String> {
+    document
+        .operation_trace
+        .operations
+        .iter()
+        .filter(|operation| {
+            operation.contains(&relation.id)
+                || generated_patch_evidence_ids
+                    .iter()
+                    .any(|evidence_ref| operation.contains(evidence_ref))
+        })
+        .cloned()
+        .collect()
+}
+
+fn feature_report_complexity_transfer_review_warning(
+    document: &AirDocumentV0,
+    generated_patch_evidence_ids: &BTreeSet<String>,
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
+) -> Option<FeatureReportGeneratedPatchReviewWarning> {
+    let relation_complexity_axis = document
+        .signature
+        .axes
+        .iter()
+        .find(|axis| axis.axis == "relationComplexity");
+    let has_relation_complexity_signal = relation_complexity_axis.is_some()
+        || document.claims.iter().any(|claim| {
+            claim.subject_ref.contains("relationComplexity")
+                || claim.predicate.contains("relation complexity")
+        })
+        || document
+            .operation_trace
+            .operations
+            .iter()
+            .any(|operation| operation.contains("relationComplexity"));
+    if !has_relation_complexity_signal {
+        return None;
+    }
+
+    let generated_relations: Vec<&AirRelation> = document
+        .relations
+        .iter()
+        .filter(|relation| {
+            feature_report_relation_in_generated_patch_context(
+                document,
+                relation,
+                generated_patch_evidence_ids,
+            )
+        })
+        .collect();
+    if generated_relations.is_empty() {
+        return None;
+    }
+
+    let mut evidence_refs = generated_patch_evidence_ids.clone();
+    for relation in &generated_relations {
+        evidence_refs.extend(relation.evidence_refs.iter().cloned());
+    }
+    let operation_refs: Vec<String> = document
+        .operation_trace
+        .operations
+        .iter()
+        .filter(|operation| {
+            operation.contains("relationComplexity")
+                || generated_relations
+                    .iter()
+                    .any(|relation| operation.contains(&relation.id))
+                || operation.contains("generated_patch")
+        })
+        .cloned()
+        .collect();
+    let relation_ids: Vec<String> = generated_relations
+        .iter()
+        .map(|relation| relation.id.clone())
+        .collect();
+
+    Some(FeatureReportGeneratedPatchReviewWarning {
+        warning_id: "warning-ai-generated-relation-complexity-transfer".to_string(),
+        warning_kind: "complexity_transfer_warning".to_string(),
+        classification: "conservative_review_signal".to_string(),
+        review_signal: if relation_complexity_axis
+            .and_then(|axis| axis.value)
+            .unwrap_or_default()
+            > 0
+        {
+            "relationComplexity is nonzero in an AI-generated patch context".to_string()
+        } else {
+            "changed generated-patch relations may transfer complexity across boundaries"
+                .to_string()
+        },
+        measurement_boundary: relation_complexity_axis
+            .map(|axis| axis.measurement_boundary.clone())
+            .unwrap_or_else(|| "unmeasured".to_string()),
+        components: generated_relations
+            .iter()
+            .flat_map(|relation| {
+                relation
+                    .from_component
+                    .iter()
+                    .chain(relation.to_component.iter())
+            })
+            .cloned()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect(),
+        relations: generated_relations
+            .iter()
+            .map(|relation| FeatureReportEdgeRef {
+                relation_id: relation.id.clone(),
+                from: relation.from_component.clone(),
+                to: relation.to_component.clone(),
+                kind: relation.kind.clone(),
+            })
+            .collect(),
+        operation_refs,
+        evidence: feature_report_evidence_refs(
+            &evidence_refs.into_iter().collect::<Vec<_>>(),
+            evidence_by_id,
+        ),
+        non_conclusions: vec![
+            "complexity transfer warning is not a measured obstruction witness".to_string(),
+            format!(
+                "changed relation candidates are review targets: {}",
+                relation_ids.join(", ")
+            ),
+        ],
+    })
+}
+
+fn feature_report_complexity_transfer_candidates(
+    review_warnings: &[FeatureReportGeneratedPatchReviewWarning],
+) -> Vec<String> {
+    review_warnings
+        .iter()
+        .filter(|warning| warning.warning_kind == "complexity_transfer_warning")
+        .map(|warning| {
+            let relation_ids = warning
+                .relations
+                .iter()
+                .map(|relation| relation.relation_id.clone())
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!(
+                "{}: {} ({}, relations: {})",
+                warning.warning_id, warning.review_signal, warning.classification, relation_ids
+            )
+        })
+        .collect()
 }
 
 fn feature_report_generated_patch_operations(
