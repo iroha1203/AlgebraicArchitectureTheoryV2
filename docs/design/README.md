@@ -10,6 +10,7 @@
 | [Signature 実証プロトコル](empirical_protocol.md) | empirical protocol | Signature と PR / issue / incident metadata を結合し、変更波及・レビューコスト・障害修正との関係を検証する手順を固定する。 |
 | [empirical dataset v0 schema](empirical_dataset_schema.md) | empirical dataset schema | Signature before / after、signed delta、PR metadata、metric status を結合する最小 record schema を固定する。 |
 | [PR history dataset v0 schema](pr_history_dataset_schema.md) | empirical dataset schema / tooling validation | GitHub PR metadata、changed file summary、review metadata、Signature / Feature Extension Report artifact refs を PR 単位で保存する schema を固定する。 |
+| [Feature extension dataset v0 schema](feature_extension_dataset_schema.md) | empirical dataset schema / tooling validation | PR history dataset と Feature Extension Report / theorem precondition boundary を join し、split status、obstruction witness taxonomy、coverage gap、repair suggestion adoption candidate を保持する schema を固定する。 |
 | [Signature snapshot store schema](signature_snapshot_store_schema.md) | tooling schema / empirical hypothesis | repository revision ごとの Signature snapshot を蓄積し、週次 scan や任意期間 diff に使う最小 store schema を固定する。 |
 | [boundary / abstraction policy v0 schema](boundary_abstraction_policy_schema.md) | tooling design / empirical hypothesis | boundary / abstraction violation count を測る policy file schema と counting unit を固定する。 |
 | [ComponentUniverse validation report v0](component_universe_validation_report.md) | tooling design / empirical hypothesis | extractor output と Lean `ComponentUniverse` の責務境界を検査する report schema と CLI contract を固定する。 |

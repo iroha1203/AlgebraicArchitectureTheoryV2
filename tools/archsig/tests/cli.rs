@@ -2594,6 +2594,108 @@ fn cli_pr_history_dataset_generates_record_from_github_json() {
 }
 
 #[test]
+fn cli_feature_extension_dataset_joins_pr_history_and_feature_report() {
+    let github_root = fixture_root();
+    let air_root = air_fixture_root();
+    let out_dir = temp_dir("feature-extension-dataset");
+    let feature_report = out_dir.join("feature-extension-report.json");
+    let theorem_check = out_dir.join("theorem-check.json");
+    let pr_history = out_dir.join("pr-history.json");
+    let dataset = out_dir.join("feature-extension-dataset.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air_root
+            .join("good_extension.json")
+            .to_str()
+            .expect("AIR path is utf-8"),
+        "--out",
+        feature_report
+            .to_str()
+            .expect("feature report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        air_root
+            .join("good_extension.json")
+            .to_str()
+            .expect("AIR path is utf-8"),
+        "--out",
+        theorem_check.to_str().expect("theorem check path is utf-8"),
+    ]);
+    run_sig0(&[
+        "pr-history-dataset",
+        "--pull-request",
+        github_root
+            .join("github_pr.json")
+            .to_str()
+            .expect("pull request path is utf-8"),
+        "--files",
+        github_root
+            .join("github_files.json")
+            .to_str()
+            .expect("files path is utf-8"),
+        "--feature-report-artifact",
+        feature_report
+            .to_str()
+            .expect("feature report path is utf-8"),
+        "--out",
+        pr_history.to_str().expect("PR history path is utf-8"),
+    ]);
+    run_sig0(&[
+        "feature-extension-dataset",
+        "--pr-history",
+        pr_history.to_str().expect("PR history path is utf-8"),
+        "--feature-report",
+        feature_report
+            .to_str()
+            .expect("feature report path is utf-8"),
+        "--theorem-check-report",
+        theorem_check.to_str().expect("theorem check path is utf-8"),
+        "--out",
+        dataset.to_str().expect("dataset path is utf-8"),
+    ]);
+
+    let json = read_json(&dataset);
+    assert_eq!(json["schemaVersion"], "feature-extension-dataset-v0");
+    assert_eq!(json["repository"]["owner"], "example");
+    assert_eq!(json["records"][0]["pullRequest"]["number"], 42);
+    assert_eq!(json["records"][0]["splitStatus"], "split");
+    assert_eq!(
+        json["records"][0]["changedComponents"],
+        serde_json::json!(["Formal", "Formal.Arch.A"])
+    );
+    assert!(
+        json["records"][0]["coverageGaps"]
+            .as_array()
+            .expect("coverage gaps are an array")
+            .iter()
+            .any(|gap| gap["layer"] == "runtime" && gap["measurementBoundary"] == "UNMEASURED")
+    );
+    assert!(
+        json["records"][0]["repairSuggestionAdoptionCandidates"]
+            .as_array()
+            .expect("repair candidates are an array")
+            .iter()
+            .any(|candidate| candidate["adoptionStatus"] == "candidate")
+    );
+    assert_eq!(
+        json["records"][0]["theoremPreconditionBoundary"]["summary"],
+        read_json(&theorem_check)["summary"]
+    );
+    assert!(
+        json["analysisMetadata"]["nonConclusions"]
+            .as_array()
+            .expect("non-conclusions are an array")
+            .iter()
+            .any(|claim| claim
+                == "does not infer causal outcome effects from feature report classifications")
+    );
+}
+
+#[test]
 fn cli_relation_complexity_fixture_outputs_observation() {
     let root = fixture_root();
     let out_dir = temp_dir("relation");
