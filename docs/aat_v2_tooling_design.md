@@ -1951,25 +1951,22 @@ schema compatibility、operational feedback loop を別段階として扱う。
 tool は設計判断を自動承認しない。CI fail は、policy が明示した required axis と
 missing precondition に基づく運用判断であり、theorem の自動結論ではない。
 
-`organization-policy-v0` は、この CI 運用判断の入力 schema である。
-`policy_id`、`policy_version`、`scope`、required axes、allowed unmeasured gaps、
-required theorem preconditions、non-conclusions を保持する。validation は unknown axis、
-unknown claim level、missing scope、invalid unmeasured allowance を検出するが、policy pass
-だけで architecture lawfulness、Lean theorem claim、unmeasured gap の measured-zero 化、
-missing precondition の discharge は結論しない。
+B7 では、組織ごとの required axis、許容される unmeasured gap、required theorem
+precondition を明示する policy layer を置く。policy は CI / PR review の運用判断を
+支える入力であり、policy pass だけで architecture lawfulness、Lean theorem claim、
+unmeasured gap の measured-zero 化、missing precondition の discharge は結論しない。
 
-`report-artifact-retention-manifest-v0` は、PR review / CI で生成される report artifact を
-後続の baseline comparison、suppression workflow、Architecture Drift Ledger から参照する
-ための retention schema である。Feature Extension Report、theorem precondition check
-report、policy decision report、PR comment summary の artifact ref または missing/private
-gap を保持する。各 artifact ref は repository、PR number、commit sha、schema version、
-policy version、generated_at、retention scope、visibility を持つ。
+また、PR review / CI で生成される report artifact を、後続の baseline comparison、
+suppression workflow、Architecture Drift Ledger から参照できる retention layer として
+扱う。retention layer は Feature Extension Report、theorem precondition check report、
+policy decision、reviewer-facing summary への参照、または missing/private gap を保持する。
+各参照は後続 workflow が追跡に必要な repository、PR、commit、schema / policy version、
+生成時刻、retention scope などの metadata を持つ。
 
-retention manifest は保存場所と追跡可能性の schema であり、保存済み artifact から Lean
-theorem claim や architecture lawfulness を結論しない。private / missing artifact は
-measured-zero evidence ではなく、reason と non-conclusions を持つ evidence gap として扱う。
-`archsig report-artifacts` は static B7 manifest または JSON 入力を検証し、
-`report-artifact-retention-validation-report-v0` を生成する。
+retention は保存場所と追跡可能性の設計であり、保存済み artifact から Lean theorem claim
+や architecture lawfulness を結論しない。private / missing artifact は measured-zero
+evidence ではなく、reason と non-conclusions を持つ evidence gap として扱う。具体的な
+schema / CLI / fixture は tooling index で管理する。
 
 ### Phase B8: Extractor / policy ecosystem
 
