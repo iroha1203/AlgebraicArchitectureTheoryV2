@@ -31,6 +31,7 @@ pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
 pub const REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "report-artifact-retention-validation-report-v0";
 pub const PR_COMMENT_SUMMARY_SCHEMA_VERSION: &str = "pr-comment-summary-v0";
+pub const BASELINE_SUPPRESSION_REPORT_SCHEMA_VERSION: &str = "baseline-suppression-report-v0";
 pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
 pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
 pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
@@ -2059,6 +2060,143 @@ pub struct ReportArtifactRetentionValidationSummary {
     pub missing_or_private_artifact_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BaselineSuppressionReportV0 {
+    pub schema_version: String,
+    pub input: BaselineSuppressionInput,
+    pub summary: BaselineSuppressionSummary,
+    pub witness_delta: WitnessDeltaV0,
+    pub coverage_gap_delta: CoverageGapDeltaV0,
+    pub required_axis_delta: RequiredAxisDeltaV0,
+    pub policy_decision_delta: PolicyDecisionDeltaV0,
+    pub suppressions: Vec<RiskDispositionV0>,
+    pub accepted_risks: Vec<RiskDispositionV0>,
+    pub checks: Vec<ValidationCheck>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BaselineSuppressionInput {
+    pub baseline_feature_report_schema_version: String,
+    pub baseline_feature_report_path: String,
+    pub current_feature_report_schema_version: String,
+    pub current_feature_report_path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub baseline_policy_decision_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub current_policy_decision_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retention_manifest_ref: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BaselineSuppressionSummary {
+    pub result: String,
+    pub newly_introduced_witness_count: usize,
+    pub eliminated_witness_count: usize,
+    pub new_coverage_gap_count: usize,
+    pub eliminated_coverage_gap_count: usize,
+    pub required_axis_status_change_count: usize,
+    pub policy_decision_before: Option<String>,
+    pub policy_decision_after: Option<String>,
+    pub suppressed_count: usize,
+    pub accepted_risk_count: usize,
+    pub unresolved_current_witness_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+    pub advisory_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WitnessDeltaV0 {
+    pub newly_introduced: Vec<WitnessDeltaEntryV0>,
+    pub eliminated: Vec<WitnessDeltaEntryV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WitnessDeltaEntryV0 {
+    pub witness_id: String,
+    pub layer: String,
+    pub kind: String,
+    pub status: String,
+    pub measurement_boundary: String,
+    pub claim_classification: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoverageGapDeltaV0 {
+    pub newly_introduced: Vec<CoverageGapDeltaEntryV0>,
+    pub eliminated: Vec<CoverageGapDeltaEntryV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoverageGapDeltaEntryV0 {
+    pub gap_ref: String,
+    pub layer: String,
+    pub axis: String,
+    pub status: String,
+    pub measurement_boundary: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allowed_by_policy: Option<bool>,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequiredAxisDeltaV0 {
+    pub changes: Vec<RequiredAxisDeltaEntryV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequiredAxisDeltaEntryV0 {
+    pub axis: String,
+    pub before_status: Option<String>,
+    pub after_status: String,
+    pub before_measurement_boundary: Option<String>,
+    pub after_measurement_boundary: String,
+    pub before_value: Option<i64>,
+    pub after_value: Option<i64>,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyDecisionDeltaV0 {
+    pub baseline_decision: Option<String>,
+    pub current_decision: Option<String>,
+    pub fail_delta: i64,
+    pub warn_delta: i64,
+    pub advisory_delta: i64,
+    pub required_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RiskDispositionV0 {
+    pub disposition_id: String,
+    pub kind: String,
+    pub status: String,
+    pub reason: String,
+    pub approved_by: String,
+    pub approved_at: String,
+    pub expires_at: String,
+    pub scope: String,
+    pub policy_ref: String,
+    pub witness_ref: String,
+    pub applies_to_current_witness: bool,
+    pub reviewer_status: String,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

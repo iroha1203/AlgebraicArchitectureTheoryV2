@@ -178,3 +178,55 @@ Non-conclusions:
 - PR comment summary は Lean theorem proof ではない。
 - unmeasured axis は measured-zero evidence ではない。
 - advisory signal は repair success evidence ではない。
+
+### Baseline comparison and suppression workflow
+
+Issue: [#572](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/572)
+
+`baseline-suppression-report-v0` は、baseline/current の Feature Extension Report と
+policy decision report を比較し、PR review で必要な差分と risk disposition を保持する
+tooling artifact である。
+
+比較対象:
+
+- newly introduced / eliminated obstruction witnesses
+- coverage gap delta
+- required axis status / measurement boundary / value delta
+- policy decision fail / warn / advisory delta
+
+suppression / accepted risk metadata は次を保持する。
+
+- reason
+- approved_by
+- approved_at
+- expires_at
+- scope
+- policy_ref
+- witness_ref
+
+CLI:
+
+```bash
+archsig baseline-suppression \
+  --baseline-feature-report baseline-feature-report.json \
+  --current-feature-report current-feature-report.json \
+  --baseline-policy-decision baseline-policy-decision.json \
+  --current-policy-decision current-policy-decision.json \
+  --retention-manifest report-artifacts.json \
+  --suppression suppression.json
+```
+
+出力 schema:
+
+```text
+baseline-suppression-report-v0
+```
+
+Canonical fixture は `cargo test --manifest-path tools/archsig/Cargo.toml` で固定する。
+
+Non-conclusions:
+
+- baseline comparison は Lean theorem ではない。
+- suppressed / accepted-risk witness は resolved witness ではない。
+- private / missing baseline artifact は measured-zero evidence ではない。
+- policy decision delta は architecture lawfulness を承認しない。

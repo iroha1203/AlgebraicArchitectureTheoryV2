@@ -55,6 +55,7 @@ AI / CI が最初に読むべき成果物は次である。
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | static theorem package v0 の registry と、AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
 | Feature Extension Report | `feature-extension-report-v0` | AIR から生成する PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を併読する。 |
 | PR comment summary | `pr-comment-summary-v0` | Feature Extension Report と policy decision を GitHub Checks / PR comment 向け Markdown に整形する。 |
+| Baseline suppression report | `baseline-suppression-report-v0` | baseline/current Feature Extension Report と policy decision の差分、suppression / accepted risk metadata を PR review 用に保持する。 |
 | Synthesis constraint validation report | `synthesis-constraint-validation-report-v0` | synthesis constraint artifact の constraint / candidate refs、assumption boundary、solver no-candidate と valid no-solution certificate の分離を検査する。 |
 | Dataset record | `empirical-signature-dataset-v0` | PR metadata と before / after signature を結合した実証研究用 record。 |
 
@@ -374,6 +375,28 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- pr-comment \
 分けて出す。CI fail / warn / advisory の判定は `policy-decision` が生成した report を
 表示するだけであり、PR comment summary 自体は architecture lawfulness、Lean theorem proof、
 repair success、unmeasured axis の measured-zero 化を結論しない。
+
+## Baseline / suppression workflow を作る
+
+baseline/current の Feature Extension Report と policy decision report から、
+newly introduced / eliminated witness、coverage gap delta、required axis delta、
+policy decision delta を生成する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- baseline-suppression \
+  --baseline-feature-report .lake/signature-baseline/feature-report.json \
+  --current-feature-report .lake/signature-current/feature-report.json \
+  --baseline-policy-decision .lake/signature-baseline/policy-decision.json \
+  --current-policy-decision .lake/signature-current/policy-decision.json \
+  --retention-manifest .lake/signature-current/report-artifacts.json \
+  --suppression .lake/signature-current/suppression.json \
+  --out .lake/signature-current/baseline-suppression.json
+```
+
+suppression / accepted risk metadata は `reason`, `approvedBy`, `approvedAt`,
+`expiresAt`, `scope`, `policyRef`, `witnessRef` を保持する。`status = suppressed` や
+`status = acceptedRisk` は reviewer workflow 上の disposition であり、witness の解決、
+repair success、Lean theorem proof、architecture lawfulness を結論しない。
 
 ## Synthesis Constraints を検査する
 
