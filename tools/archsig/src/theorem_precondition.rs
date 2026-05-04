@@ -9,19 +9,21 @@ use crate::{
 
 const RUNTIME_PROPAGATION_SUBJECT_REF: &str = "signature.runtimePropagation";
 const SEMANTIC_DIAGRAM_SUBJECT_PREFIX: &str = "semantic.diagram.";
+const NO_SOLUTION_CERTIFICATE_SUBJECT_PREFIX: &str = "synthesis.noSolutionCertificate.";
 const AI_HUMAN_REVIEW_REQUIRED_PRECONDITION: &str =
     "AI session human review is required before promoting formal claim";
 
 pub fn static_theorem_package_registry() -> TheoremPackageRegistryV0 {
     TheoremPackageRegistryV0 {
         schema_version: THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION.to_string(),
-        scope: "static, runtime, and semantic theorem package registry v0".to_string(),
+        scope: "static, runtime, semantic, and synthesis theorem package registry v0".to_string(),
         packages: vec![
             static_split_theorem_package(),
             runtime_zero_bridge_package(),
             semantic_diagram_filler_package(),
             semantic_nonfillability_package(),
             semantic_numerical_curvature_zero_package(),
+            no_solution_certificate_package(),
         ],
     }
 }
@@ -262,6 +264,43 @@ fn semantic_numerical_curvature_zero_package() -> TheoremPackageMetadataV0 {
     }
 }
 
+fn no_solution_certificate_package() -> TheoremPackageMetadataV0 {
+    TheoremPackageMetadataV0 {
+        package_id: "no-solution-certificate-package-v0".to_string(),
+        lean_entrypoint: "NoSolutionCertificate.sound_of_valid".to_string(),
+        theorem_refs: vec![
+            "NoSolutionCertificate".to_string(),
+            "ValidNoSolutionCertificate".to_string(),
+            "NoSolutionCertificate.sound_of_valid".to_string(),
+            "ArchitectureCalculusLaw.noSolutionCertificateSoundnessLaw_conclusion".to_string(),
+        ],
+        supported_subject_refs: vec![NO_SOLUTION_CERTIFICATE_SUBJECT_PREFIX.to_string()],
+        supported_axes: vec!["synthesisNoSolution".to_string()],
+        claim_level: "formal".to_string(),
+        claim_classification: "proved".to_string(),
+        measurement_boundary: "certificateBacked".to_string(),
+        required_assumptions: vec![
+            "candidate universe is finite and explicitly enumerated".to_string(),
+            "valid no-solution certificate is supplied".to_string(),
+            "certificate cases cover the selected constraints".to_string(),
+        ],
+        coverage_assumptions: vec![
+            "constraint refs and obstruction witness refs resolve in the bounded synthesis universe"
+                .to_string(),
+            "unsupported constructs are reported rather than discharged".to_string(),
+        ],
+        exactness_assumptions: vec![
+            "certificate case refs match the Lean no-solution package parameters".to_string(),
+        ],
+        missing_preconditions: Vec::new(),
+        non_conclusions: vec![
+            "no-solution certificate package does not prove solver completeness".to_string(),
+            "no-solution certificate package does not prove extractor completeness".to_string(),
+            "solver no-candidate result alone is not a no-solution certificate".to_string(),
+        ],
+    }
+}
+
 pub fn build_theorem_precondition_check_report(
     document: &AirDocumentV0,
     input_path: &str,
@@ -495,6 +534,10 @@ fn theorem_package_applies_to_claim(package: &TheoremPackageMetadataV0, claim: &
                 && claim
                     .subject_ref
                     .starts_with(SEMANTIC_DIAGRAM_SUBJECT_PREFIX))
+            || (subject_ref == NO_SOLUTION_CERTIFICATE_SUBJECT_PREFIX
+                && claim
+                    .subject_ref
+                    .starts_with(NO_SOLUTION_CERTIFICATE_SUBJECT_PREFIX))
     });
 
     theorem_ref_matches || subject_matches
@@ -898,7 +941,7 @@ mod tests {
         );
         assert_eq!(
             report.registry.scope,
-            "static, runtime, and semantic theorem package registry v0"
+            "static, runtime, semantic, and synthesis theorem package registry v0"
         );
         assert!(report.registry.packages.iter().any(|package| {
             package.theorem_refs
