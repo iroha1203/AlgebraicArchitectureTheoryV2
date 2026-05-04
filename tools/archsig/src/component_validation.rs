@@ -479,6 +479,7 @@ mod tests {
             policy_violations: Vec::new(),
             runtime_edge_evidence: Vec::new(),
             runtime_dependency_graph: None,
+            unsupported_constructs: Vec::new(),
         };
 
         let report =

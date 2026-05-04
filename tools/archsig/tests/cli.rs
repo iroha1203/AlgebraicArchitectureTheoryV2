@@ -95,6 +95,28 @@ fn cli_extracts_python_import_graph() {
         json["metricStatus"]["pythonDynamicImportCoverage"]["measured"],
         false
     );
+    for kind in [
+        "dynamic-import",
+        "plugin-loading",
+        "framework-convention",
+        "generated-code",
+        "notebook",
+    ] {
+        assert!(
+            json["unsupportedConstructs"]
+                .as_array()
+                .expect("unsupportedConstructs are an array")
+                .iter()
+                .any(|construct| construct["kind"] == kind),
+            "missing unsupported construct kind {kind}"
+        );
+    }
+    assert!(
+        json["metricStatus"]["pythonDynamicImportCoverage"]["reason"]
+            .as_str()
+            .expect("dynamic import coverage reason is a string")
+            .contains("not counted as measured zero")
+    );
 }
 
 #[test]
@@ -178,6 +200,26 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
                     == "Python extractor output is tooling evidence, not a Lean ComponentUniverse completeness proof"
             })
     );
+    assert!(
+        static_coverage["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs is an array")
+            .iter()
+            .any(|construct| construct
+                .as_str()
+                .expect("unsupported construct is a string")
+                .contains("dynamic-import at src/app/service.py"))
+    );
+    assert!(
+        static_coverage["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs is an array")
+            .iter()
+            .any(|construct| construct
+                .as_str()
+                .expect("unsupported construct is a string")
+                .contains("notebook at src/notebook.ipynb"))
+    );
 
     run_sig0(&[
         "validate-air",
@@ -207,6 +249,35 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
             .expect("measuredAxes are an array")
             .iter()
             .any(|axis| axis == "hasCycle")
+    );
+    assert!(
+        feature_json["coverageGaps"]
+            .as_array()
+            .expect("coverageGaps are an array")
+            .iter()
+            .any(|gap| {
+                gap["layer"] == "static"
+                    && gap["unsupportedConstructs"]
+                        .as_array()
+                        .expect("unsupportedConstructs are an array")
+                        .iter()
+                        .any(|construct| {
+                            construct
+                                .as_str()
+                                .expect("unsupported construct is a string")
+                                .contains("plugin-loading")
+                        })
+            })
+    );
+    assert!(
+        feature_json["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs are an array")
+            .iter()
+            .any(|construct| construct
+                .as_str()
+                .expect("unsupported construct is a string")
+                .contains("static: generated-code"))
     );
 
     run_sig0(&[

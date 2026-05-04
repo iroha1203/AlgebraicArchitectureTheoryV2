@@ -65,6 +65,8 @@ pub struct Sig0Document {
     pub runtime_edge_evidence: Vec<RuntimeEdgeEvidence>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub runtime_dependency_graph: Option<RuntimeDependencyGraphProjection>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub unsupported_constructs: Vec<UnsupportedConstruct>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -166,6 +168,18 @@ pub struct RuntimeDependencyGraphProjection {
     pub projection_rule: String,
     pub edge_kind: String,
     pub edges: Vec<Edge>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnsupportedConstruct {
+    pub kind: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<String>,
+    pub reason: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

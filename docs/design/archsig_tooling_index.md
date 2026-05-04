@@ -246,6 +246,7 @@ Issues:
 
 - [#581](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/581)
 - [#582](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/582)
+- [#579](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/579)
 
 Python extractor の最小 component kind は `python-module` である。component id は
 package root から見た importable module 名とし、policy selector は
@@ -270,7 +271,16 @@ AIR normalization:
 - local module は `kind = "python-module"`、外部 dependency target は `kind = "external-dependency"` component として AIR relation refs を解決する。
 - static relation の `extractionRule` は `python-import-graph-v0`、対応する evidence kind は `python_import` として保持する。
 - static coverage は Python `ast` import/from scan と package-root normalization の exactness assumption を記録する。
+- `unsupportedConstructs` は Sig0 data model で `kind`、`path`、任意の `line` / `evidence`、`reason` を持つ boundary record として保持し、AIR static coverage と Feature Extension Report の coverage gap へ写す。
 - theorem precondition checker は Python import graph を tooling evidence として扱い、Python AIR に formal claim を追加しても Lean `ComponentUniverse` bridge precondition なしでは `FORMAL_PROVED` に昇格しない。
+
+Unsupported construct taxonomy:
+
+- `dynamic-import`: `__import__` / `importlib.import_module` による import target は静的 import edge として測定しない。
+- `plugin-loading`: entry point / plugin metadata による relation は runtime/package metadata evidence を別途必要とする。
+- `framework-convention`: Django / FastAPI / Celery / SQLAlchemy などの convention は framework-specific adapter の対象である。
+- `generated-code`: 生成物は generator trace として扱い、通常 source evidence と同一視しない。
+- `notebook`: notebook は execution order / hidden state を持つため notebook-specific extraction の対象である。
 
 関連 schema / docs:
 
