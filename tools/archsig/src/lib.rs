@@ -6,6 +6,7 @@ mod extractor;
 mod feature_report;
 mod github;
 mod graph;
+mod no_solution_certificate;
 mod policy;
 mod relation_complexity;
 mod repair_rule;
@@ -26,6 +27,9 @@ pub use dataset::build_empirical_dataset;
 pub use extractor::{extract_sig0, extract_sig0_with_policy, extract_sig0_with_runtime};
 pub use feature_report::build_feature_extension_report;
 pub use github::{build_pr_metadata_from_github_files, build_pr_metadata_from_github_values};
+pub use no_solution_certificate::{
+    static_no_solution_certificate, validate_no_solution_certificate_report,
+};
 pub use relation_complexity::{
     extract_relation_complexity_observation, extract_relation_complexity_observation_from_file,
 };

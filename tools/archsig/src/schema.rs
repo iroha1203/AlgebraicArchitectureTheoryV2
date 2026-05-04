@@ -19,6 +19,9 @@ pub const REPAIR_RULE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const SYNTHESIS_CONSTRAINT_ARTIFACT_SCHEMA_VERSION: &str = "synthesis-constraint-artifact-v0";
 pub const SYNTHESIS_CONSTRAINT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "synthesis-constraint-validation-report-v0";
+pub const NO_SOLUTION_CERTIFICATE_SCHEMA_VERSION: &str = "no-solution-certificate-v0";
+pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "no-solution-certificate-validation-report-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
@@ -1403,6 +1406,64 @@ pub struct SynthesisConstraintValidationSummary {
     pub result: String,
     pub constraint_count: usize,
     pub candidate_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateV0 {
+    pub schema_version: String,
+    pub certificate_id: String,
+    pub scope: String,
+    pub constraint_refs: Vec<String>,
+    pub refuted_candidate_refs: Vec<String>,
+    pub obstruction_witness_refs: Vec<String>,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub proof_obligation_refs: Vec<String>,
+    pub valid_certificate_claim_ref: Option<String>,
+    pub cases: Vec<NoSolutionCertificateCaseV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateCaseV0 {
+    pub case_id: String,
+    pub constraint_refs: Vec<String>,
+    pub refuted_candidate_ref: Option<String>,
+    pub evidence_refs: Vec<String>,
+    pub theorem_precondition_refs: Vec<String>,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateValidationReportV0 {
+    pub schema_version: String,
+    pub input: NoSolutionCertificateValidationInput,
+    pub certificate: NoSolutionCertificateV0,
+    pub summary: NoSolutionCertificateValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub certificate_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateValidationSummary {
+    pub result: String,
+    pub case_count: usize,
+    pub refuted_candidate_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

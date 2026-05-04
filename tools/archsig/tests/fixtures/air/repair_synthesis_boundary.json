@@ -1,0 +1,280 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-repair-synthesis-boundary",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-b5",
+    "after": "after-b5"
+  },
+  "feature": {
+    "featureId": "#canonical-b5",
+    "title": "Add coupon calculation with B5 repair and synthesis artifacts",
+    "description": "CouponService reaches PaymentAdapter internals and B5 artifacts record advisory repair plus bounded no-solution evidence",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-sig0",
+      "kind": "sig0",
+      "schemaVersion": "archsig-sig0-v0",
+      "path": "canonical/b5/sig0.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    },
+    {
+      "artifactId": "artifact-repair-registry",
+      "kind": "repair-rule-registry",
+      "schemaVersion": "repair-rule-registry-v0",
+      "path": "canonical/b5/repair_rule_registry.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    },
+    {
+      "artifactId": "artifact-synthesis-constraints",
+      "kind": "synthesis-constraint-artifact",
+      "schemaVersion": "synthesis-constraint-artifact-v0",
+      "path": "canonical/b5/synthesis_constraints_no_solution_certificate.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    },
+    {
+      "artifactId": "artifact-no-solution-certificate",
+      "kind": "no-solution-certificate",
+      "schemaVersion": "no-solution-certificate-v0",
+      "path": "canonical/b5/no_solution_certificate_valid.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-sig0",
+      "kind": "observation_result",
+      "artifactRef": "artifact-sig0",
+      "path": "canonical/b5/sig0.json",
+      "symbol": null,
+      "line": null,
+      "ruleId": "archsig-sig0-v0",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-hidden-edge",
+      "kind": "source_location",
+      "artifactRef": "artifact-sig0",
+      "path": "src/coupon_service.rs",
+      "symbol": "CouponService::cache_probe",
+      "line": 34,
+      "ruleId": "hidden-interaction-candidate",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-repair-registry",
+      "kind": "manual_annotation",
+      "artifactRef": "artifact-repair-registry",
+      "path": "canonical/b5/repair_rule_registry.json",
+      "symbol": null,
+      "line": null,
+      "ruleId": "repair-rule-registry-v0",
+      "confidence": "medium"
+    },
+    {
+      "evidenceId": "evidence-synthesis-constraints",
+      "kind": "manual_annotation",
+      "artifactRef": "artifact-synthesis-constraints",
+      "path": "canonical/b5/synthesis_constraints_no_solution_certificate.json",
+      "symbol": null,
+      "line": null,
+      "ruleId": "synthesis-constraint-artifact-v0",
+      "confidence": "medium"
+    },
+    {
+      "evidenceId": "evidence-no-solution-certificate",
+      "kind": "manual_annotation",
+      "artifactRef": "artifact-no-solution-certificate",
+      "path": "canonical/b5/no_solution_certificate_valid.json",
+      "symbol": null,
+      "line": null,
+      "ruleId": "no-solution-certificate-v0",
+      "confidence": "medium"
+    }
+  ],
+  "components": [
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "PaymentAdapter",
+      "kind": "service",
+      "lifecycle": "unchanged",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-hidden-cache",
+      "layer": "static",
+      "from": "CouponService",
+      "to": "PaymentAdapter",
+      "kind": "data_dependency",
+      "lifecycle": "added",
+      "protectedBy": null,
+      "extractionRule": "hidden-interaction-candidate",
+      "evidenceRefs": ["evidence-hidden-edge"]
+    }
+  ],
+  "policies": {
+    "laws": ["policy:canonical-layering"],
+    "boundaries": ["feature depends on declared interface"],
+    "allowedEdges": [],
+    "forbiddenEdges": ["hiddenInteraction:CouponService->PaymentAdapter"],
+    "abstractionRules": ["declared-interface-only"],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [],
+  "architecturePaths": [],
+  "homotopyGenerators": [],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "boundaryViolationCount",
+        "value": 1,
+        "measured": true,
+        "measurementBoundary": "measuredNonzero",
+        "source": "policy:canonical-layering",
+        "reason": null
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "static",
+        "measurementBoundary": "measuredNonzero",
+        "universeRefs": ["artifact-sig0"],
+        "measuredAxes": ["boundaryViolationCount"],
+        "unmeasuredAxes": [],
+        "extractionScope": ["static dependency graph"],
+        "exactnessAssumptions": [],
+        "unsupportedConstructs": []
+      },
+      {
+        "layer": "synthesis",
+        "measurementBoundary": "outOfScope",
+        "universeRefs": [
+          "artifact-repair-registry",
+          "artifact-synthesis-constraints",
+          "artifact-no-solution-certificate"
+        ],
+        "measuredAxes": [],
+        "unmeasuredAxes": [],
+        "extractionScope": ["bounded B5 tooling artifact validation"],
+        "exactnessAssumptions": [
+          "repair, synthesis, and no-solution artifacts are validated as tooling artifacts"
+        ],
+        "unsupportedConstructs": [
+          "solver completeness and automatic repair success are outside AIR validation"
+        ]
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-hidden-interaction",
+      "subjectRef": "relation-hidden-cache",
+      "predicate": "feature introduces a hidden interaction candidate",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-hidden-edge"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["static dependency graph coverage"],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["runtime and semantic impact are not concluded"]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding is obstructed by hidden interaction evidence",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-hidden-edge"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["static dependency graph coverage"],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["tooling measurement is not a Lean proof"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature-owned delta is visible in static evidence",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-hidden-edge"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": ["feature quotient is not constructed"]
+    },
+    {
+      "claimId": "claim-valid-no-solution-certificate",
+      "subjectRef": "synthesis.noSolutionCertificate.certificate-coupon-no-solution-v0",
+      "predicate": "valid no-solution certificate soundness applies to the selected bounded synthesis universe",
+      "claimLevel": "formal",
+      "claimClassification": "proved",
+      "measurementBoundary": "certificateBacked",
+      "theoremRefs": [
+        "ValidNoSolutionCertificate",
+        "NoSolutionCertificate.sound_of_valid"
+      ],
+      "evidenceRefs": [
+        "evidence-synthesis-constraints",
+        "evidence-no-solution-certificate"
+      ],
+      "requiredAssumptions": [
+        "candidate universe is finite and explicitly enumerated",
+        "valid no-solution certificate is supplied"
+      ],
+      "coverageAssumptions": [
+        "certificate cases cover the selected constraints"
+      ],
+      "exactnessAssumptions": [
+        "certificate case refs match the Lean no-solution package parameters"
+      ],
+      "missingPreconditions": [],
+      "nonConclusions": [
+        "solver completeness is not concluded",
+        "solver no-candidate result alone is not a no-solution certificate"
+      ]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": ["claim-hidden-interaction"],
+    "splitClaimRef": null,
+    "splitStatus": "unknown"
+  }
+}

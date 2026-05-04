@@ -928,7 +928,7 @@ fn cli_theorem_check_reports_static_registry_and_blocks_missing_preconditions() 
     );
     assert_eq!(
         report["registry"]["scope"],
-        "static, runtime, and semantic theorem package registry v0"
+        "static, runtime, semantic, and synthesis theorem package registry v0"
     );
     assert!(
         report["registry"]["packages"][0]["theoremRefs"]
@@ -1124,6 +1124,41 @@ fn cli_synthesis_constraints_reports_static_candidate_boundary() {
 }
 
 #[test]
+fn cli_synthesis_constraints_reports_valid_no_solution_certificate_boundary() {
+    let root = fixture_root();
+    let out_dir = temp_dir("synthesis-constraints-no-solution");
+    let report = out_dir.join("synthesis-constraints-no-solution.json");
+
+    run_sig0(&[
+        "synthesis-constraints",
+        "--input",
+        root.join("synthesis_constraints_no_solution_certificate.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "pass");
+    assert_eq!(
+        report["artifact"]["noSolutionBoundary"]["solverStatus"],
+        "certificate_supplied"
+    );
+    assert_eq!(
+        report["artifact"]["noSolutionBoundary"]["noSolutionCertificateRef"],
+        "certificate-coupon-no-solution-v0"
+    );
+    assert!(
+        report["artifact"]["noSolutionBoundary"]["nonConclusions"]
+            .as_array()
+            .expect("no-solution non conclusions are an array")
+            .iter()
+            .any(|boundary| boundary == "solver completeness is not concluded")
+    );
+}
+
+#[test]
 fn cli_synthesis_constraints_rejects_solver_completeness_confusion() {
     let out_dir = temp_dir("synthesis-constraints-invalid");
     let input = out_dir.join("invalid-synthesis-constraints.json");
@@ -1202,6 +1237,213 @@ fn cli_synthesis_constraints_rejects_solver_completeness_confusion() {
             .any(|check| {
                 check["id"] == "synthesis-non-conclusion-boundary-recorded"
                     && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
+fn cli_no_solution_certificate_accepts_valid_certificate() {
+    let root = fixture_root();
+    let out_dir = temp_dir("no-solution-certificate-valid");
+    let report = out_dir.join("no-solution-certificate.json");
+
+    run_sig0(&[
+        "no-solution-certificate",
+        "--input",
+        root.join("no_solution_certificate_valid.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "pass");
+    assert_eq!(report["summary"]["caseCount"], 2);
+    assert_eq!(
+        report["certificate"]["validCertificateClaimRef"],
+        "claim-valid-no-solution-certificate"
+    );
+    assert!(
+        report["certificate"]["proofObligationRefs"]
+            .as_array()
+            .expect("proof obligation refs are an array")
+            .iter()
+            .any(|proof_ref| proof_ref == "NoSolutionCertificate.sound_of_valid")
+    );
+    assert!(
+        report["certificate"]["nonConclusions"]
+            .as_array()
+            .expect("non conclusions are an array")
+            .iter()
+            .any(|boundary| boundary
+                == "solver no-candidate result is not a no-solution certificate")
+    );
+}
+
+#[test]
+fn cli_no_solution_certificate_rejects_missing_certificate_claim() {
+    let out_dir = temp_dir("no-solution-certificate-invalid");
+    let input = out_dir.join("invalid-no-solution-certificate.json");
+    let report = out_dir.join("invalid-no-solution-certificate-report.json");
+
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&serde_json::json!({
+            "schemaVersion": "no-solution-certificate-v0",
+            "certificateId": "certificate-invalid",
+            "scope": "invalid fixture",
+            "constraintRefs": ["constraint-static-boundary-coupon-v0"],
+            "refutedCandidateRefs": ["candidate-direct-cache-access-v0"],
+            "obstructionWitnessRefs": ["witness-hidden-cache-access"],
+            "requiredAssumptions": ["candidate universe is finite"],
+            "coverageAssumptions": ["cases cover recorded candidates"],
+            "exactnessAssumptions": ["case refs match selected package"],
+            "unsupportedConstructs": [],
+            "proofObligationRefs": [],
+            "validCertificateClaimRef": null,
+            "cases": [{
+                "caseId": "case-invalid",
+                "constraintRefs": ["constraint-static-boundary-coupon-v0"],
+                "refutedCandidateRef": "candidate-direct-cache-access-v0",
+                "evidenceRefs": ["evidence-hidden-edge"],
+                "theoremPreconditionRefs": ["ValidNoSolutionCertificate"],
+                "reason": "candidate remains blocked"
+            }],
+            "nonConclusions": []
+        }))
+        .expect("json serializes"),
+    )
+    .expect("invalid no-solution certificate input is written");
+
+    let output = run_sig0_output(&[
+        "no-solution-certificate",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(!output.status.success());
+
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "fail");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(|check| {
+                check["id"] == "no-solution-certificate-validity-boundary-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(|check| {
+                check["id"] == "no-solution-certificate-non-conclusion-boundary-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
+fn cli_validate_air_accepts_b5_repair_synthesis_boundary_fixture() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("air-b5-boundary");
+    let report = out_dir.join("air-b5-boundary-validation.json");
+
+    run_sig0(&[
+        "validate-air",
+        "--input",
+        root.join("repair_synthesis_boundary.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "pass");
+    assert_eq!(report["summary"]["claimCount"], 4);
+}
+
+#[test]
+fn cli_feature_report_keeps_b5_repair_suggestions_advisory() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("feature-report-b5");
+    let report = out_dir.join("feature-report-b5.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        root.join("repair_synthesis_boundary.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert_eq!(report["splitStatus"], "non_split");
+    assert!(
+        report["repairSuggestions"]
+            .as_array()
+            .expect("repair suggestions are an array")
+            .iter()
+            .any(|suggestion| {
+                suggestion["targetWitnessKind"] == "hidden_interaction"
+                    && suggestion["nonConclusions"]
+                        .as_array()
+                        .expect("non conclusions are an array")
+                        .iter()
+                        .any(|boundary| boundary == "repair success is not concluded")
+                    && suggestion["nonConclusions"]
+                        .as_array()
+                        .expect("non conclusions are an array")
+                        .iter()
+                        .any(|boundary| boundary == "global flatness preservation is not concluded")
+            })
+    );
+}
+
+#[test]
+fn cli_theorem_check_reports_no_solution_certificate_package_boundary() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("theorem-check-b5");
+    let report = out_dir.join("theorem-check-b5.json");
+
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        root.join("repair_synthesis_boundary.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(|check| {
+                check["claimId"] == "claim-valid-no-solution-certificate"
+                    && check["resolvedClaimClassification"] == "FORMAL_PROVED"
+                    && check["applicablePackageRefs"]
+                        .as_array()
+                        .expect("package refs are an array")
+                        .iter()
+                        .any(|package_ref| package_ref == "no-solution-certificate-package-v0")
+                    && check["nonConclusions"]
+                        .as_array()
+                        .expect("non conclusions are an array")
+                        .iter()
+                        .any(|boundary| boundary == "solver completeness is not concluded")
             })
     );
 }

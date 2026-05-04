@@ -713,6 +713,7 @@ fn check_air_claim_measurement_boundary(document: &AirDocumentV0) -> ValidationC
     let valid_boundaries = [
         "measuredZero",
         "measuredNonzero",
+        "certificateBacked",
         "unmeasured",
         "outOfScope",
     ];

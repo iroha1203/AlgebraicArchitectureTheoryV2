@@ -6,7 +6,8 @@ use std::process::ExitCode;
 
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
-    DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0, RepairRuleRegistryV0,
+    DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0,
+    NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, RepositoryRevisionRef, ScanMetadata, Sig0Document,
     SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
@@ -14,8 +15,9 @@ use archsig::{
     build_feature_extension_report, build_pr_metadata_from_github_files,
     build_signature_diff_report, build_signature_snapshot_record,
     build_theorem_precondition_check_report, extract_relation_complexity_observation_from_file,
-    extract_sig0_with_runtime, static_repair_rule_registry, static_synthesis_constraint_artifact,
-    validate_air_document_report, validate_component_universe_report,
+    extract_sig0_with_runtime, static_no_solution_certificate, static_repair_rule_registry,
+    static_synthesis_constraint_artifact, validate_air_document_report,
+    validate_component_universe_report, validate_no_solution_certificate_report,
     validate_repair_rule_registry_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
@@ -321,6 +323,17 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Validate a no-solution certificate. If input is omitted, validate the static certificate.
+    NoSolutionCertificate {
+        /// Optional no-solution certificate JSON path.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Output no-solution certificate validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -587,6 +600,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-synthesis-constraint-artifact".to_string());
             let report: SynthesisConstraintValidationReportV0 =
                 validate_synthesis_constraint_artifact_report(&artifact, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::NoSolutionCertificate { input, out }) => {
+            let certificate: NoSolutionCertificateV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_no_solution_certificate);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-no-solution-certificate".to_string());
+            let report: NoSolutionCertificateValidationReportV0 =
+                validate_no_solution_certificate_report(&certificate, &input_path);
             let failed = report.summary.result == "fail";
             write_json(out, &report)?;
             Ok(if failed {
