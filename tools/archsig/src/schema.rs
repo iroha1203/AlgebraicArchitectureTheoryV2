@@ -13,6 +13,9 @@ pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-repor
 pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report-v0";
 pub const THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION: &str =
     "theorem-precondition-check-report-v0";
+pub const REPAIR_RULE_REGISTRY_SCHEMA_VERSION: &str = "repair-rule-registry-v0";
+pub const REPAIR_RULE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "repair-rule-registry-validation-report-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
@@ -1235,6 +1238,68 @@ pub struct TheoremPreconditionCheck {
     pub non_conclusions: Vec<String>,
     pub result: String,
     pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRegistryV0 {
+    pub schema_version: String,
+    pub scope: String,
+    pub selected_obstruction_universe: String,
+    pub explicit_assumptions: Vec<String>,
+    pub rules: Vec<RepairRuleV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleV0 {
+    pub repair_rule_id: String,
+    pub target_witness_kind: String,
+    pub proposed_operation: String,
+    pub required_preconditions: Vec<String>,
+    pub expected_effect: String,
+    pub preserved_invariants: Vec<String>,
+    pub possible_side_effects: Vec<String>,
+    pub proof_obligation_refs: Vec<String>,
+    pub patch_strategy: String,
+    pub confidence: String,
+    pub relative_to: RepairRuleRelativeScopeV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRelativeScopeV0 {
+    pub selected_obstruction_universe: String,
+    pub explicit_assumptions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRegistryValidationReportV0 {
+    pub schema_version: String,
+    pub input: RepairRuleRegistryValidationInput,
+    pub registry: RepairRuleRegistryV0,
+    pub summary: RepairRuleRegistryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRegistryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRegistryValidationSummary {
+    pub result: String,
+    pub rule_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
