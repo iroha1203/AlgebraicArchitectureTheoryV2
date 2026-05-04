@@ -233,12 +233,34 @@ Non-conclusions:
 
 ## B8 Extractor / policy ecosystem
 
-Parent Issue: [#577](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/577)
+Parent Issues:
+
+- [#577](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/577)
+- [#593](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/593)
 
 B8 は non-Lean extractor と policy ecosystem を AIR / Feature Extension Report へ接続する
 layer である。extractor は言語ごとの bounded subset、unsupported constructs、coverage
 assumptions、projection rule を evidence として出し、Lean の `ComponentUniverse` 完全性とは
 分離する。
+
+### Adapter registry
+
+Issue: [#598](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/598)
+
+`adapter-registry-v0` は、language extractor、framework adapter、runtime / semantic
+evidence adapter、policy adapter の evidence boundary を固定する tooling registry である。
+registry entry は adapter id、adapter kind、source language / framework、
+component / relation / evidence kind、projection rule、measured layer / axis、
+coverage assumptions、exactness assumptions、unsupported constructs、
+required inputs、output artifacts、theorem bridge preconditions、non-conclusions を持つ。
+
+Python pilot の `python-import-graph-v0` は `language-extractor` entry として読む。
+将来の framework-specific adapter、runtime / semantic evidence adapter、law policy template、
+custom rule plugin は同じ registry boundary の下で AIR coverage と Feature Extension Report
+へ trace する。registry entry の存在だけで Lean theorem claim、extractor completeness、
+architecture lawfulness、runtime / semantic flatness は結論しない。
+
+詳細 schema は [Adapter registry v0 schema](adapter_registry_schema.md) で管理する。
 
 ### Python component policy
 
@@ -293,6 +315,7 @@ Canonical fixture / CLI validation:
 
 - [AAT v2 tooling design](../aat_v2_tooling_design.md#phase-b8-extractor--policy-ecosystem)
 - [ArchSig v0 design](archsig_design.md)
+- [Adapter registry v0 schema](adapter_registry_schema.md)
 - [boundary / abstraction policy v0 schema](boundary_abstraction_policy_schema.md#python-module-id-policy)
 - [ComponentUniverse validation report v0](component_universe_validation_report.md)
 
