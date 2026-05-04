@@ -24,6 +24,7 @@ pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "no-solution-certificate-validation-report-v0";
 pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
 pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
+pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
@@ -476,6 +477,124 @@ pub struct FeatureExtensionDatasetArtifactRefs {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeatureExtensionDatasetAnalysisMetadata {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeLinkageInputV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub records: Vec<OutcomeObservationV0>,
+    pub analysis_metadata: OutcomeLinkageAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeLinkageDatasetV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub records: Vec<OutcomeLinkageDatasetRecordV0>,
+    pub analysis_metadata: OutcomeLinkageAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeLinkageDatasetRecordV0 {
+    pub pull_request: PullRequestRef,
+    pub feature_dataset_record_ref: OutcomeFeatureDatasetRecordRef,
+    pub changed_components: Vec<String>,
+    pub split_status: String,
+    pub claim_classification: String,
+    pub obstruction_witness_taxonomy: Vec<FeatureExtensionObstructionTaxon>,
+    pub outcome_observation: OutcomeObservationV0,
+    pub correlation_inputs: OutcomeCorrelationInputs,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeFeatureDatasetRecordRef {
+    pub pr_number: usize,
+    pub base_commit: String,
+    pub head_commit: String,
+    pub feature_report_path: String,
+    pub architecture_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeObservationV0 {
+    pub pr_number: usize,
+    pub review_cost: ReviewCostOutcome,
+    pub follow_up_fix_count: OutcomeMetric<usize>,
+    pub rollback: OutcomeMetric<bool>,
+    pub incident_affected_component_count: OutcomeMetric<usize>,
+    pub mttr_hours: OutcomeMetric<f64>,
+    pub traceability: OutcomeTraceabilityRefs,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewCostOutcome {
+    pub review_comment_count: OutcomeMetric<usize>,
+    pub review_thread_count: OutcomeMetric<usize>,
+    pub review_round_count: OutcomeMetric<usize>,
+    pub reviewer_count: OutcomeMetric<usize>,
+    pub first_review_latency_hours: OutcomeMetric<f64>,
+    pub approval_latency_hours: OutcomeMetric<f64>,
+    pub merge_latency_hours: OutcomeMetric<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeMetric<T> {
+    pub boundary: String,
+    pub value: Option<T>,
+    pub reason: Option<String>,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeTraceabilityRefs {
+    pub pr_refs: Vec<OutcomeExternalRef>,
+    pub issue_refs: Vec<OutcomeExternalRef>,
+    pub incident_refs: Vec<OutcomeExternalRef>,
+    pub artifact_refs: Vec<PrHistoryArtifactRef>,
+    pub missing_or_private_data: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeExternalRef {
+    pub kind: String,
+    pub id: String,
+    pub url: Option<String>,
+    pub visibility: Option<String>,
+    pub labels: Vec<String>,
+    pub affected_components: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeCorrelationInputs {
+    pub obstruction_witness_refs: Vec<String>,
+    pub obstruction_witness_kinds: Vec<String>,
+    pub outcome_metric_refs: Vec<String>,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeLinkageAnalysisMetadata {
     pub lean_status: String,
     pub measurement_boundary: String,
     pub join_keys: Vec<String>,
