@@ -91,10 +91,22 @@ fn cli_extracts_python_import_graph() {
                     && edge["evidence"] == "from . import util"
             })
     );
+    assert!(
+        json["edges"]
+            .as_array()
+            .expect("edges are an array")
+            .iter()
+            .any(|edge| {
+                edge["source"] == "app.service"
+                    && edge["target"] == "requests"
+                    && edge["evidence"] == "import requests as http"
+            })
+    );
     assert_eq!(
         json["metricStatus"]["pythonDynamicImportCoverage"]["measured"],
         false
     );
+    assert_eq!(json["metricStatus"]["hasCycle"]["measured"], true);
     for kind in [
         "dynamic-import",
         "plugin-loading",
@@ -116,6 +128,17 @@ fn cli_extracts_python_import_graph() {
             .as_str()
             .expect("dynamic import coverage reason is a string")
             .contains("not counted as measured zero")
+    );
+    assert!(
+        json["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs are an array")
+            .iter()
+            .any(|construct| {
+                construct["kind"] == "dynamic-import"
+                    && construct["path"] == "src/app/service.py"
+                    && construct["line"] == 6
+            })
     );
 }
 
@@ -160,12 +183,31 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
                 && component["kind"] == "python-module")
     );
     assert!(
+        json["components"]
+            .as_array()
+            .expect("components are an array")
+            .iter()
+            .any(|component| component["id"] == "requests"
+                && component["kind"] == "external-dependency")
+    );
+    assert!(
         json["relations"]
             .as_array()
             .expect("relations are an array")
             .iter()
             .any(|relation| {
                 relation["layer"] == "static"
+                    && relation["extractionRule"] == "python-import-graph-v0"
+            })
+    );
+    assert!(
+        json["relations"]
+            .as_array()
+            .expect("relations are an array")
+            .iter()
+            .any(|relation| {
+                relation["from"] == "app.service"
+                    && relation["to"] == "requests"
                     && relation["extractionRule"] == "python-import-graph-v0"
             })
     );

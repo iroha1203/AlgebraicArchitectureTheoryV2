@@ -247,6 +247,7 @@ Issues:
 - [#581](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/581)
 - [#582](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/582)
 - [#579](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/579)
+- [#578](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/578)
 
 Python extractor の最小 component kind は `python-module` である。component id は
 package root から見た importable module 名とし、policy selector は
@@ -281,6 +282,12 @@ Unsupported construct taxonomy:
 - `framework-convention`: Django / FastAPI / Celery / SQLAlchemy などの convention は framework-specific adapter の対象である。
 - `generated-code`: 生成物は generator trace として扱い、通常 source evidence と同一視しない。
 - `notebook`: notebook は execution order / hidden state を持つため notebook-specific extraction の対象である。
+
+Canonical fixture / CLI validation:
+
+- `tools/archsig/tests/fixtures/python_imports` は small Python package、relative import、external dependency、dynamic import、plugin loading、framework convention、generated code、notebook boundary を 1 つの canonical fixture として固定する。
+- `tools/archsig/tests/cli.rs` は Python Sig0 output、AIR normalization、AIR validation、Feature Extension Report、Theorem Precondition Checker の CLI 経路を `cargo test --manifest-path tools/archsig/Cargo.toml` で検証する。
+- fixture は measured static import graph と unmeasured / unsupported boundary の区別を固定するための tooling validation であり、Python runtime semantics や Lean `ComponentUniverse` bridge の完全性を結論しない。
 
 関連 schema / docs:
 
