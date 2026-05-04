@@ -8,6 +8,7 @@ mod feature_report;
 mod github;
 mod graph;
 mod no_solution_certificate;
+mod outcome_linkage;
 mod policy;
 mod relation_complexity;
 mod repair_rule;
@@ -36,6 +37,9 @@ pub use github::{
 };
 pub use no_solution_certificate::{
     static_no_solution_certificate, validate_no_solution_certificate_report,
+};
+pub use outcome_linkage::{
+    build_outcome_linkage_dataset, build_outcome_linkage_dataset_from_files,
 };
 pub use relation_complexity::{
     extract_relation_complexity_observation, extract_relation_complexity_observation_from_file,

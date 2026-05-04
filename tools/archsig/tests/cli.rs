@@ -2696,6 +2696,278 @@ fn cli_feature_extension_dataset_joins_pr_history_and_feature_report() {
 }
 
 #[test]
+fn cli_outcome_linkage_dataset_joins_feature_dataset_and_bounded_outcomes() {
+    let github_root = fixture_root();
+    let air_root = air_fixture_root();
+    let out_dir = temp_dir("outcome-linkage-dataset");
+    let feature_report = out_dir.join("feature-extension-report.json");
+    let theorem_check = out_dir.join("theorem-check.json");
+    let pr_history = out_dir.join("pr-history.json");
+    let feature_dataset = out_dir.join("feature-extension-dataset.json");
+    let outcome_input = out_dir.join("outcome-observations.json");
+    let outcome_dataset = out_dir.join("outcome-linkage-dataset.json");
+
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air_root
+            .join("runtime_measured_nonzero.json")
+            .to_str()
+            .expect("AIR path is utf-8"),
+        "--out",
+        feature_report
+            .to_str()
+            .expect("feature report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        air_root
+            .join("runtime_measured_nonzero.json")
+            .to_str()
+            .expect("AIR path is utf-8"),
+        "--out",
+        theorem_check.to_str().expect("theorem check path is utf-8"),
+    ]);
+    run_sig0(&[
+        "pr-history-dataset",
+        "--pull-request",
+        github_root
+            .join("github_pr.json")
+            .to_str()
+            .expect("pull request path is utf-8"),
+        "--files",
+        github_root
+            .join("github_files.json")
+            .to_str()
+            .expect("files path is utf-8"),
+        "--reviews",
+        github_root
+            .join("github_reviews.json")
+            .to_str()
+            .expect("reviews path is utf-8"),
+        "--feature-report-artifact",
+        feature_report
+            .to_str()
+            .expect("feature report path is utf-8"),
+        "--out",
+        pr_history.to_str().expect("PR history path is utf-8"),
+    ]);
+    run_sig0(&[
+        "feature-extension-dataset",
+        "--pr-history",
+        pr_history.to_str().expect("PR history path is utf-8"),
+        "--feature-report",
+        feature_report
+            .to_str()
+            .expect("feature report path is utf-8"),
+        "--theorem-check-report",
+        theorem_check.to_str().expect("theorem check path is utf-8"),
+        "--out",
+        feature_dataset
+            .to_str()
+            .expect("feature dataset path is utf-8"),
+    ]);
+
+    let measured_comment_count = serde_json::json!({
+        "boundary": "measured",
+        "value": 2,
+        "reason": null,
+        "sourceRefs": ["github:pulls/42/reviews"],
+        "nonConclusions": ["review comments are not a complete review effort measure"]
+    });
+    let measured_latency = serde_json::json!({
+        "boundary": "measured",
+        "value": 4.5,
+        "reason": null,
+        "sourceRefs": ["github:pulls/42/reviews"],
+        "nonConclusions": ["latency is calendar-time observation, not architecture causality"]
+    });
+    let unavailable_latency = serde_json::json!({
+        "boundary": "unavailable",
+        "value": null,
+        "reason": "approval timestamp not present in fixture",
+        "sourceRefs": [],
+        "nonConclusions": ["unavailable approval latency is not measured-zero evidence"]
+    });
+    fs::write(
+        &outcome_input,
+        serde_json::to_string_pretty(&serde_json::json!({
+            "schemaVersion": "outcome-linkage-input-v0",
+            "repository": {
+                "owner": "example",
+                "name": "service",
+                "defaultBranch": "main"
+            },
+            "records": [{
+                "prNumber": 42,
+                "reviewCost": {
+                    "reviewCommentCount": measured_comment_count,
+                    "reviewThreadCount": {
+                        "boundary": "measured",
+                        "value": 1,
+                        "reason": null,
+                        "sourceRefs": ["github:pulls/42/reviewThreads"],
+                        "nonConclusions": []
+                    },
+                    "reviewRoundCount": {
+                        "boundary": "measured",
+                        "value": 1,
+                        "reason": null,
+                        "sourceRefs": ["github:pulls/42/reviews"],
+                        "nonConclusions": []
+                    },
+                    "reviewerCount": {
+                        "boundary": "measured",
+                        "value": 1,
+                        "reason": null,
+                        "sourceRefs": ["github:pulls/42/reviews"],
+                        "nonConclusions": []
+                    },
+                    "firstReviewLatencyHours": measured_latency,
+                    "approvalLatencyHours": unavailable_latency,
+                    "mergeLatencyHours": {
+                        "boundary": "measured",
+                        "value": 24.0,
+                        "reason": null,
+                        "sourceRefs": ["github:pulls/42"],
+                        "nonConclusions": []
+                    }
+                },
+                "followUpFixCount": {
+                    "boundary": "measured",
+                    "value": 1,
+                    "reason": null,
+                    "sourceRefs": ["github:issues/99"],
+                    "nonConclusions": ["follow-up fix count is observational, not proof of defect cause"]
+                },
+                "rollback": {
+                    "boundary": "measured",
+                    "value": true,
+                    "reason": null,
+                    "sourceRefs": ["github:pulls/43"],
+                    "nonConclusions": ["rollback is not attributed to a specific obstruction by this schema"]
+                },
+                "incidentAffectedComponentCount": {
+                    "boundary": "measured",
+                    "value": 2,
+                    "reason": null,
+                    "sourceRefs": ["incident:inc-7"],
+                    "nonConclusions": []
+                },
+                "mttrHours": {
+                    "boundary": "measured",
+                    "value": 5.5,
+                    "reason": null,
+                    "sourceRefs": ["incident:inc-7"],
+                    "nonConclusions": ["MTTR is operational observation, not semantic completeness"]
+                },
+                "traceability": {
+                    "prRefs": [{
+                        "kind": "github_pr",
+                        "id": "42",
+                        "url": "https://example.invalid/pulls/42",
+                        "visibility": "public",
+                        "labels": ["feature"],
+                        "affectedComponents": ["Formal", "Formal.Arch.A"]
+                    }],
+                    "issueRefs": [{
+                        "kind": "github_issue",
+                        "id": "99",
+                        "url": "https://example.invalid/issues/99",
+                        "visibility": "public",
+                        "labels": ["follow-up-fix"],
+                        "affectedComponents": ["Formal.Arch.A"]
+                    }],
+                    "incidentRefs": [{
+                        "kind": "incident",
+                        "id": "inc-7",
+                        "url": null,
+                        "visibility": "private",
+                        "labels": ["runtime"],
+                        "affectedComponents": ["Formal", "Formal.Arch.A"]
+                    }],
+                    "artifactRefs": [{
+                        "kind": "outcomeObservation",
+                        "path": "outcomes/pr-42.json",
+                        "schemaVersion": "outcome-linkage-input-v0"
+                    }],
+                    "missingOrPrivateData": ["incident timeline redacted"],
+                    "nonConclusions": ["private incident data is not absence of incident evidence"]
+                },
+                "nonConclusions": [
+                    "outcome observations are correlation inputs, not causal proof"
+                ]
+            }],
+            "analysisMetadata": {
+                "leanStatus": "empirical hypothesis / tooling validation",
+                "measurementBoundary": "explicitly bounded review, follow-up, rollback, and incident observations",
+                "joinKeys": ["repository owner/name", "pull request number"],
+                "nonConclusions": [
+                    "does not infer causal effects from obstruction profile to outcome"
+                ]
+            }
+        }))
+        .expect("outcome input serializes"),
+    )
+    .expect("outcome input is written");
+
+    run_sig0(&[
+        "outcome-linkage-dataset",
+        "--feature-dataset",
+        feature_dataset
+            .to_str()
+            .expect("feature dataset path is utf-8"),
+        "--outcome",
+        outcome_input.to_str().expect("outcome path is utf-8"),
+        "--out",
+        outcome_dataset
+            .to_str()
+            .expect("outcome dataset path is utf-8"),
+    ]);
+
+    let json = read_json(&outcome_dataset);
+    assert_eq!(json["schemaVersion"], "outcome-linkage-dataset-v0");
+    assert_eq!(json["repository"]["owner"], "example");
+    assert_eq!(json["records"][0]["pullRequest"]["number"], 42);
+    assert_eq!(
+        json["records"][0]["outcomeObservation"]["rollback"]["value"],
+        true
+    );
+    assert_eq!(
+        json["records"][0]["outcomeObservation"]["mttrHours"]["value"],
+        5.5
+    );
+    assert_eq!(
+        json["records"][0]["outcomeObservation"]["reviewCost"]["approvalLatencyHours"]["boundary"],
+        "unavailable"
+    );
+    assert!(
+        json["records"][0]["correlationInputs"]["nonConclusions"]
+            .as_array()
+            .expect("correlation non-conclusions are an array")
+            .iter()
+            .any(
+                |claim| claim == "does not infer obstruction witnesses caused the observed outcome"
+            )
+    );
+    assert!(
+        json["records"][0]["nonConclusions"]
+            .as_array()
+            .expect("record non-conclusions are an array")
+            .iter()
+            .any(|claim| claim == "private incident data is not absence of incident evidence")
+    );
+    assert!(
+        json["analysisMetadata"]["nonConclusions"]
+            .as_array()
+            .expect("analysis non-conclusions are an array")
+            .iter()
+            .any(|claim| claim == "does not rank architecture quality with a single score")
+    );
+}
+
+#[test]
 fn cli_relation_complexity_fixture_outputs_observation() {
     let root = fixture_root();
     let out_dir = temp_dir("relation");

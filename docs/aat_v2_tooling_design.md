@@ -1925,6 +1925,8 @@ Repair / synthesis prototype の canonical fixtures は、次の tooling 境界�
   - schema: `docs/design/feature_extension_dataset_schema.md`
   - CLI: `archsig feature-extension-dataset`
 - incident / rollback / review outcome との対応
+  - schema: `docs/design/outcome_linkage_dataset_schema.md`
+  - CLI: `archsig outcome-linkage-dataset`
 - case study paper
 ```
 

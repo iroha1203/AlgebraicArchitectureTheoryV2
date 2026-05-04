@@ -13,10 +13,11 @@ use archsig::{
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TheoremPreconditionCheckReportV0, build_air_document, build_empirical_dataset,
     build_feature_extension_dataset_from_files, build_feature_extension_report,
-    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
-    build_signature_diff_report, build_signature_snapshot_record,
-    build_theorem_precondition_check_report, extract_relation_complexity_observation_from_file,
-    extract_sig0_with_runtime, static_no_solution_certificate, static_repair_rule_registry,
+    build_outcome_linkage_dataset_from_files, build_pr_history_dataset_from_github_files,
+    build_pr_metadata_from_github_files, build_signature_diff_report,
+    build_signature_snapshot_record, build_theorem_precondition_check_report,
+    extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
+    static_no_solution_certificate, static_repair_rule_registry,
     static_synthesis_constraint_artifact, validate_air_document_report,
     validate_component_universe_report, validate_no_solution_certificate_report,
     validate_repair_rule_registry_report, validate_synthesis_constraint_artifact_report,
@@ -155,6 +156,21 @@ enum Command {
         theorem_check_report: Vec<PathBuf>,
 
         /// Output feature extension dataset JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Build an outcome linkage dataset v0 by joining feature dataset records and outcome observations.
+    OutcomeLinkageDataset {
+        /// Input feature extension dataset JSON path.
+        #[arg(long = "feature-dataset")]
+        feature_dataset: PathBuf,
+
+        /// Outcome observation input JSON path.
+        #[arg(long)]
+        outcome: PathBuf,
+
+        /// Output outcome linkage dataset JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -484,6 +500,15 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &feature_report,
                 &theorem_check_report,
             )?;
+            write_json(out, &dataset)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::OutcomeLinkageDataset {
+            feature_dataset,
+            outcome,
+            out,
+        }) => {
+            let dataset = build_outcome_linkage_dataset_from_files(&feature_dataset, &outcome)?;
             write_json(out, &dataset)?;
             Ok(ExitCode::SUCCESS)
         }
