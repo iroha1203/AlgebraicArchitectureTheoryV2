@@ -7,7 +7,8 @@ use std::process::ExitCode;
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
     DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0,
-    NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, RepairRuleRegistryV0,
+    NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
+    OrganizationPolicyValidationReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, RepositoryRevisionRef, ScanMetadata, Sig0Document,
     SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
@@ -17,10 +18,11 @@ use archsig::{
     build_pr_metadata_from_github_files, build_signature_diff_report,
     build_signature_snapshot_record, build_theorem_precondition_check_report,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    static_no_solution_certificate, static_repair_rule_registry,
+    static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
     static_synthesis_constraint_artifact, validate_air_document_report,
     validate_component_universe_report, validate_no_solution_certificate_report,
-    validate_repair_rule_registry_report, validate_synthesis_constraint_artifact_report,
+    validate_organization_policy_report, validate_repair_rule_registry_report,
+    validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -401,6 +403,17 @@ enum Command {
         #[arg(long)]
         out: Option<PathBuf>,
     },
+
+    /// Validate an organization policy. If input is omitted, validate the static B7 policy.
+    OrganizationPolicy {
+        /// Optional organization policy JSON path.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Output organization policy validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
 }
 
 fn main() -> ExitCode {
@@ -730,6 +743,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-no-solution-certificate".to_string());
             let report: NoSolutionCertificateValidationReportV0 =
                 validate_no_solution_certificate_report(&certificate, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::OrganizationPolicy { input, out }) => {
+            let policy: OrganizationPolicyV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_organization_policy);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-organization-policy".to_string());
+            let report: OrganizationPolicyValidationReportV0 =
+                validate_organization_policy_report(&policy, &input_path);
             let failed = report.summary.result == "fail";
             write_json(out, &report)?;
             Ok(if failed {

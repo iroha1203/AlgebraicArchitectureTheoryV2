@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "organization-policy-v0",
+  "policyId": "fixture-b7-organization-policy",
+  "policyVersion": "2026-05-05",
+  "scope": "minimal fixture repository PR review",
+  "requiredAxes": [
+    {
+      "axis": "boundaryViolationCount",
+      "claimLevel": "tooling",
+      "measurementBoundary": "measuredZero",
+      "maxAllowedValue": 0,
+      "requiredPreconditions": [
+        "boundary policy selectors cover checked static edges"
+      ]
+    },
+    {
+      "axis": "runtimePropagation",
+      "claimLevel": "formal",
+      "measurementBoundary": "measuredZero",
+      "maxAllowedValue": 0,
+      "requiredPreconditions": [
+        "runtime edge evidence coverage is present",
+        "runtime zero bridge theorem preconditions are discharged"
+      ]
+    }
+  ],
+  "allowedUnmeasuredGaps": [
+    {
+      "axis": "semanticDiagramCommutation",
+      "claimLevel": "tooling",
+      "layer": "semantic",
+      "scope": "minimal fixture without semantic diagram evidence",
+      "reason": "semantic adapter coverage is outside this fixture",
+      "expiresAt": null,
+      "nonConclusions": [
+        "allowed unmeasured gaps are not measured-zero evidence"
+      ]
+    }
+  ],
+  "requiredTheoremPreconditions": [
+    {
+      "subjectRef": "signature.runtimePropagation",
+      "claimLevel": "formal",
+      "theoremRefs": [
+        "ArchitectureSignature.runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction"
+      ],
+      "requiredPreconditions": [
+        "runtimePropagation is computed over a measured 0/1 RuntimeDependencyGraph"
+      ]
+    }
+  ],
+  "nonConclusions": [
+    "organization policy is CI decision support, not a Lean theorem",
+    "policy pass does not conclude architecture lawfulness",
+    "allowed unmeasured gaps are not measured-zero evidence",
+    "missing preconditions are not discharged by policy configuration"
+  ]
+}

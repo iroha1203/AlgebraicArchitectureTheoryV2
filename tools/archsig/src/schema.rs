@@ -22,6 +22,9 @@ pub const SYNTHESIS_CONSTRAINT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const NO_SOLUTION_CERTIFICATE_SCHEMA_VERSION: &str = "no-solution-certificate-v0";
 pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "no-solution-certificate-validation-report-v0";
+pub const ORGANIZATION_POLICY_SCHEMA_VERSION: &str = "organization-policy-v0";
+pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "organization-policy-validation-report-v0";
 pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
 pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
 pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
@@ -1767,6 +1770,81 @@ pub struct NoSolutionCertificateValidationSummary {
     pub result: String,
     pub case_count: usize,
     pub refuted_candidate_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationPolicyV0 {
+    pub schema_version: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub scope: String,
+    pub required_axes: Vec<OrganizationRequiredAxisV0>,
+    pub allowed_unmeasured_gaps: Vec<OrganizationAllowedUnmeasuredGapV0>,
+    pub required_theorem_preconditions: Vec<OrganizationRequiredTheoremPreconditionV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationRequiredAxisV0 {
+    pub axis: String,
+    pub claim_level: String,
+    pub measurement_boundary: String,
+    pub max_allowed_value: Option<i64>,
+    pub required_preconditions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationAllowedUnmeasuredGapV0 {
+    pub axis: String,
+    pub claim_level: String,
+    pub layer: String,
+    pub scope: String,
+    pub reason: String,
+    pub expires_at: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationRequiredTheoremPreconditionV0 {
+    pub subject_ref: String,
+    pub claim_level: String,
+    pub theorem_refs: Vec<String>,
+    pub required_preconditions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationPolicyValidationReportV0 {
+    pub schema_version: String,
+    pub input: OrganizationPolicyValidationInput,
+    pub policy: OrganizationPolicyV0,
+    pub summary: OrganizationPolicyValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationPolicyValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationPolicyValidationSummary {
+    pub result: String,
+    pub required_axis_count: usize,
+    pub allowed_unmeasured_gap_count: usize,
+    pub required_theorem_precondition_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }
