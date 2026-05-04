@@ -6,7 +6,8 @@ use crate::{
     FeatureExtensionReportV0, FeatureReportArchitectureSummary, FeatureReportCoverageGap,
     FeatureReportEdgeRef, FeatureReportEvidenceRef, FeatureReportInput,
     FeatureReportInterpretedExtension, FeatureReportInvariant, FeatureReportObstructionWitness,
-    FeatureReportReviewSummary, FeatureReportRuntimeSummary, FeatureReportSemanticPathSummary,
+    FeatureReportReviewSummary, FeatureReportRuntimeSummary, FeatureReportSemanticDiagramSummary,
+    FeatureReportSemanticNonfillabilityWitnessSummary, FeatureReportSemanticPathSummary,
 };
 
 pub fn build_feature_extension_report(
@@ -128,6 +129,7 @@ pub fn build_feature_extension_report(
         semantic_path_summary: feature_report_semantic_path_summary(
             document,
             &coverage_gaps,
+            &claim_by_id,
             &evidence_by_id,
         ),
         theorem_package_refs,
@@ -150,6 +152,7 @@ pub fn build_feature_extension_report(
 fn feature_report_semantic_path_summary(
     document: &AirDocumentV0,
     coverage_gaps: &[FeatureReportCoverageGap],
+    claim_by_id: &BTreeMap<String, &AirClaim>,
     evidence_by_id: &BTreeMap<String, &AirEvidence>,
 ) -> FeatureReportSemanticPathSummary {
     let semantic_layer = document
@@ -193,6 +196,24 @@ fn feature_report_semantic_path_summary(
         path_count: document.architecture_paths.len(),
         diagram_count: document.semantic_diagrams.len(),
         nonfillability_witness_count: document.nonfillability_witnesses.len(),
+        representative_path_ids: document
+            .architecture_paths
+            .iter()
+            .take(3)
+            .map(|path| path.path_id.clone())
+            .collect(),
+        representative_diagram_ids: document
+            .semantic_diagrams
+            .iter()
+            .take(3)
+            .map(|diagram| diagram.id.clone())
+            .collect(),
+        representative_nonfillability_witness_ids: document
+            .nonfillability_witnesses
+            .iter()
+            .take(3)
+            .map(|witness| witness.witness_id.clone())
+            .collect(),
         measurement_boundary: semantic_layer
             .map(|layer| layer.measurement_boundary.clone())
             .unwrap_or_else(|| "unmeasured".to_string()),
@@ -203,6 +224,12 @@ fn feature_report_semantic_path_summary(
             .map(|layer| layer.unmeasured_axes.clone())
             .unwrap_or_else(|| vec!["semanticDiagramCommutation".to_string()]),
         evidence_kinds: feature_report_semantic_evidence_kinds(&semantic_claims, evidence_by_id),
+        diagrams: feature_report_semantic_diagram_summaries(document, claim_by_id, evidence_by_id),
+        nonfillability_witnesses: feature_report_semantic_nonfillability_summaries(
+            document,
+            claim_by_id,
+            evidence_by_id,
+        ),
         extraction_scope: semantic_layer
             .map(|layer| layer.extraction_scope.clone())
             .unwrap_or_default(),
@@ -241,6 +268,149 @@ fn feature_report_semantic_path_summary(
             .collect(),
         non_conclusions: non_conclusions.into_iter().collect(),
     }
+}
+
+fn feature_report_semantic_diagram_summaries(
+    document: &AirDocumentV0,
+    claim_by_id: &BTreeMap<String, &AirClaim>,
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
+) -> Vec<FeatureReportSemanticDiagramSummary> {
+    document
+        .semantic_diagrams
+        .iter()
+        .map(|diagram| {
+            let claims = feature_report_semantic_diagram_claims(document, &diagram.id, claim_by_id);
+            FeatureReportSemanticDiagramSummary {
+                diagram_id: diagram.id.clone(),
+                lhs_path_ref: diagram.lhs_path_ref.clone(),
+                rhs_path_ref: diagram.rhs_path_ref.clone(),
+                equivalence: diagram.equivalence.clone(),
+                filler_claim_ref: diagram.filler_claim_ref.clone(),
+                nonfillability_witness_refs: diagram.nonfillability_witness_refs.clone(),
+                observation_refs: diagram.observation_refs.clone(),
+                evidence: feature_report_evidence_refs(&diagram.evidence_refs, evidence_by_id),
+                claim_refs: claims.iter().map(|claim| claim.claim_id.clone()).collect(),
+                claim_classifications: claims
+                    .iter()
+                    .map(|claim| claim.claim_classification.clone())
+                    .collect(),
+                theorem_reference: feature_report_claim_theorem_refs(&claims),
+                missing_preconditions: feature_report_claim_missing_preconditions(&claims),
+                non_conclusions: feature_report_claims_non_conclusions(&claims),
+            }
+        })
+        .collect()
+}
+
+fn feature_report_semantic_nonfillability_summaries(
+    document: &AirDocumentV0,
+    claim_by_id: &BTreeMap<String, &AirClaim>,
+    evidence_by_id: &BTreeMap<String, &AirEvidence>,
+) -> Vec<FeatureReportSemanticNonfillabilityWitnessSummary> {
+    document
+        .nonfillability_witnesses
+        .iter()
+        .map(|witness| {
+            let claim = claim_by_id.get(&witness.claim_ref).copied();
+            FeatureReportSemanticNonfillabilityWitnessSummary {
+                witness_id: witness.witness_id.clone(),
+                diagram_ref: witness.diagram_ref.clone(),
+                witness_kind: witness.witness_kind.clone(),
+                claim_ref: witness.claim_ref.clone(),
+                evidence: feature_report_evidence_refs(&witness.evidence_refs, evidence_by_id),
+                theorem_reference: claim
+                    .map(|claim| claim.theorem_refs.clone())
+                    .unwrap_or_default(),
+                claim_level: claim
+                    .map(|claim| claim.claim_level.clone())
+                    .unwrap_or_else(|| "tooling".to_string()),
+                claim_classification: claim
+                    .map(|claim| claim.claim_classification.clone())
+                    .unwrap_or_else(|| "measured".to_string()),
+                measurement_boundary: claim
+                    .map(|claim| claim.measurement_boundary.clone())
+                    .unwrap_or_else(|| "measuredNonzero".to_string()),
+                missing_preconditions: claim
+                    .map(|claim| claim.missing_preconditions.clone())
+                    .unwrap_or_default(),
+                non_conclusions: feature_report_claim_non_conclusions(claim),
+            }
+        })
+        .collect()
+}
+
+fn feature_report_semantic_diagram_claims<'a>(
+    document: &'a AirDocumentV0,
+    diagram_id: &str,
+    claim_by_id: &BTreeMap<String, &'a AirClaim>,
+) -> Vec<&'a AirClaim> {
+    let diagram = document
+        .semantic_diagrams
+        .iter()
+        .find(|diagram| diagram.id == diagram_id);
+    let mut claim_ids = BTreeSet::new();
+    if let Some(diagram) = diagram {
+        if let Some(claim_ref) = &diagram.filler_claim_ref {
+            claim_ids.insert(claim_ref.clone());
+        }
+        for witness_ref in &diagram.nonfillability_witness_refs {
+            if let Some(witness) = document
+                .nonfillability_witnesses
+                .iter()
+                .find(|witness| witness.witness_id == *witness_ref)
+            {
+                claim_ids.insert(witness.claim_ref.clone());
+            }
+        }
+    }
+
+    let subject_ref = format!("semantic.diagram.{diagram_id}");
+    let mut claims: Vec<&AirClaim> = document
+        .claims
+        .iter()
+        .filter(|claim| claim.subject_ref == subject_ref || claim.subject_ref.contains(diagram_id))
+        .collect();
+    for claim_id in claim_ids {
+        if let Some(claim) = claim_by_id.get(&claim_id).copied() {
+            if !claims
+                .iter()
+                .any(|existing| existing.claim_id == claim.claim_id)
+            {
+                claims.push(claim);
+            }
+        }
+    }
+    claims
+}
+
+fn feature_report_claim_theorem_refs(claims: &[&AirClaim]) -> Vec<String> {
+    let mut theorem_refs = BTreeSet::new();
+    for claim in claims {
+        for theorem_ref in &claim.theorem_refs {
+            theorem_refs.insert(theorem_ref.clone());
+        }
+    }
+    theorem_refs.into_iter().collect()
+}
+
+fn feature_report_claim_missing_preconditions(claims: &[&AirClaim]) -> Vec<String> {
+    let mut missing = BTreeSet::new();
+    for claim in claims {
+        for precondition in &claim.missing_preconditions {
+            missing.insert(format!("{}: {}", claim.claim_id, precondition));
+        }
+    }
+    missing.into_iter().collect()
+}
+
+fn feature_report_claims_non_conclusions(claims: &[&AirClaim]) -> Vec<String> {
+    let mut non_conclusions = BTreeSet::new();
+    for claim in claims {
+        for conclusion in &claim.non_conclusions {
+            non_conclusions.insert(conclusion.clone());
+        }
+    }
+    non_conclusions.into_iter().collect()
 }
 
 fn feature_report_semantic_evidence_kinds(
@@ -471,7 +641,7 @@ fn feature_report_obstruction_witnesses(
             extension_classification: vec!["fillingFailure".to_string()],
             components: Vec::new(),
             edges: Vec::new(),
-            paths: Vec::new(),
+            paths: feature_report_semantic_witness_path_refs(document, &witness.diagram_ref),
             diagrams: vec![witness.diagram_ref.clone()],
             nonfillability_witness_ref: Some(witness.witness_id.clone()),
             operation: Some("feature_addition".to_string()),
@@ -497,6 +667,18 @@ fn feature_report_obstruction_witnesses(
     }
 
     witnesses
+}
+
+fn feature_report_semantic_witness_path_refs(
+    document: &AirDocumentV0,
+    diagram_ref: &str,
+) -> Vec<String> {
+    document
+        .semantic_diagrams
+        .iter()
+        .find(|diagram| diagram.id == diagram_ref)
+        .map(|diagram| vec![diagram.lhs_path_ref.clone(), diagram.rhs_path_ref.clone()])
+        .unwrap_or_default()
 }
 
 fn feature_report_coverage_gaps(document: &AirDocumentV0) -> Vec<FeatureReportCoverageGap> {
