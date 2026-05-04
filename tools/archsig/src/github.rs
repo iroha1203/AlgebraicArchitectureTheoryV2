@@ -6,7 +6,11 @@ use std::path::Path;
 use serde_json::Value;
 
 use crate::{
-    AnalysisMetadata, EmpiricalDatasetInput, PullRequestMetrics, PullRequestRef, RepositoryRef,
+    AnalysisMetadata, ChangedFileEntry, ChangedFileSummary, EmpiricalDatasetInput,
+    FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, PR_HISTORY_DATASET_SCHEMA_VERSION,
+    PrHistoryAnalysisMetadata, PrHistoryArtifactRef, PrHistoryArtifactRefs, PrHistoryDatasetV0,
+    PrHistoryRecordV0, PullRequestMetrics, PullRequestRef, RepositoryRef, ReviewMetadata,
+    SCHEMA_VERSION,
 };
 
 pub fn build_pr_metadata_from_github_files(
@@ -32,6 +36,125 @@ pub fn build_pr_metadata_from_github_files(
         reviews.as_ref(),
         review_threads.as_ref(),
     )
+}
+
+pub fn build_pr_history_dataset_from_github_files(
+    pull_request_path: &Path,
+    files_path: &Path,
+    reviews_path: Option<&Path>,
+    review_threads_path: Option<&Path>,
+    signature_artifacts: &[String],
+    feature_extension_reports: &[String],
+) -> Result<PrHistoryDatasetV0, Box<dyn Error>> {
+    let pull_request: Value = serde_json::from_str(&fs::read_to_string(pull_request_path)?)?;
+    let files: Value = serde_json::from_str(&fs::read_to_string(files_path)?)?;
+    let reviews = match reviews_path {
+        Some(path) => Some(serde_json::from_str(&fs::read_to_string(path)?)?),
+        None => None,
+    };
+    let review_threads = match review_threads_path {
+        Some(path) => Some(serde_json::from_str(&fs::read_to_string(path)?)?),
+        None => None,
+    };
+
+    build_pr_history_dataset_from_github_values(
+        &pull_request,
+        &files,
+        reviews.as_ref(),
+        review_threads.as_ref(),
+        signature_artifacts,
+        feature_extension_reports,
+    )
+}
+
+pub fn build_pr_history_dataset_from_github_values(
+    pull_request: &Value,
+    files: &Value,
+    reviews: Option<&Value>,
+    review_threads: Option<&Value>,
+    signature_artifacts: &[String],
+    feature_extension_reports: &[String],
+) -> Result<PrHistoryDatasetV0, Box<dyn Error>> {
+    let metadata =
+        build_pr_metadata_from_github_values(pull_request, files, reviews, review_threads)?;
+    let file_items = json_items(
+        files,
+        &["data", "repository", "pullRequest", "files", "nodes"],
+    );
+    let review_items = reviews
+        .map(|reviews| {
+            json_items(
+                reviews,
+                &["data", "repository", "pullRequest", "reviews", "nodes"],
+            )
+        })
+        .unwrap_or_default();
+    let thread_items = review_threads
+        .map(|threads| {
+            json_items(
+                threads,
+                &[
+                    "data",
+                    "repository",
+                    "pullRequest",
+                    "reviewThreads",
+                    "nodes",
+                ],
+            )
+        })
+        .unwrap_or_default();
+    let reviewers = reviewers_from_github_reviews(&review_items);
+    let review_states = review_states_from_github_reviews(&review_items);
+
+    let record = PrHistoryRecordV0 {
+        pull_request: metadata.pull_request,
+        changed_file_summary: ChangedFileSummary {
+            changed_files: metadata.pr_metrics.changed_files,
+            additions: metadata.pr_metrics.changed_lines_added,
+            deletions: metadata.pr_metrics.changed_lines_deleted,
+            changed_components: metadata.pr_metrics.changed_components,
+            files: changed_file_entries_from_github_files(&file_items),
+        },
+        review_metadata: ReviewMetadata {
+            review_comment_count: metadata.pr_metrics.review_comment_count,
+            review_thread_count: thread_items.len(),
+            review_round_count: metadata.pr_metrics.review_round_count,
+            reviewer_count: reviewers.len(),
+            reviewers,
+            review_states,
+            first_review_latency_hours: metadata.pr_metrics.first_review_latency_hours,
+            approval_latency_hours: metadata.pr_metrics.approval_latency_hours,
+            merge_latency_hours: metadata.pr_metrics.merge_latency_hours,
+        },
+        artifact_refs: PrHistoryArtifactRefs {
+            signature_artifacts: artifact_refs(
+                signature_artifacts,
+                "signature",
+                Some(SCHEMA_VERSION),
+            ),
+            feature_extension_reports: artifact_refs(
+                feature_extension_reports,
+                "featureExtensionReport",
+                Some(FEATURE_EXTENSION_REPORT_SCHEMA_VERSION),
+            ),
+        },
+    };
+
+    Ok(PrHistoryDatasetV0 {
+        schema_version: PR_HISTORY_DATASET_SCHEMA_VERSION.to_string(),
+        repository: metadata.repository,
+        records: vec![record],
+        analysis_metadata: PrHistoryAnalysisMetadata {
+            lean_status: "empirical hypothesis / tooling validation".to_string(),
+            measurement_boundary:
+                "GitHub PR metadata joined with explicit ArchSig artifact references".to_string(),
+            non_conclusions: vec![
+                "does not conclude architecture lawfulness".to_string(),
+                "does not establish a Lean theorem claim".to_string(),
+                "does not infer causal outcome effects from PR metadata alone".to_string(),
+            ],
+        },
+    })
 }
 
 pub fn build_pr_metadata_from_github_values(
@@ -200,11 +323,76 @@ fn changed_components_from_github_files(files: &[&Value]) -> Vec<String> {
     components.into_iter().collect()
 }
 
+fn changed_file_entries_from_github_files(files: &[&Value]) -> Vec<ChangedFileEntry> {
+    files
+        .iter()
+        .filter_map(|file| {
+            let path = optional_string(file, &["filename"])
+                .or_else(|| optional_string(file, &["path"]))
+                .or_else(|| optional_string(file, &["name"]))?;
+            Some(ChangedFileEntry {
+                path,
+                additions: optional_usize(file, &["additions"]),
+                deletions: optional_usize(file, &["deletions"]),
+                status: optional_string(file, &["status"])
+                    .or_else(|| optional_string(file, &["changeType"])),
+            })
+        })
+        .collect()
+}
+
 fn lean_module_id_from_path(path: &str) -> Option<String> {
     let path = path.trim_start_matches("./");
     let module_path = path.strip_suffix(".lean")?;
     let module_id = module_path.replace(['/', '\\'], ".");
     (!module_id.is_empty()).then_some(module_id)
+}
+
+fn reviewers_from_github_reviews(reviews: &[&Value]) -> Vec<String> {
+    let reviewers: BTreeSet<String> = reviews
+        .iter()
+        .filter_map(|review| {
+            optional_string(review, &["user", "login"])
+                .or_else(|| optional_string(review, &["author", "login"]))
+        })
+        .collect();
+    reviewers.into_iter().collect()
+}
+
+fn review_states_from_github_reviews(reviews: &[&Value]) -> Vec<String> {
+    let states: BTreeSet<String> = reviews
+        .iter()
+        .filter_map(|review| review_state(review))
+        .collect();
+    states.into_iter().collect()
+}
+
+fn artifact_refs(
+    inputs: &[String],
+    kind: &str,
+    schema_version: Option<&str>,
+) -> Vec<PrHistoryArtifactRef> {
+    inputs
+        .iter()
+        .map(|input| {
+            let (commit_role, path) = artifact_role_and_path(input);
+            PrHistoryArtifactRef {
+                kind: kind.to_string(),
+                path,
+                commit_role,
+                schema_version: schema_version.map(str::to_string),
+            }
+        })
+        .collect()
+}
+
+fn artifact_role_and_path(input: &str) -> (Option<String>, String) {
+    match input.split_once('=') {
+        Some((role, path)) if matches!(role, "base" | "head" | "merge" | "before" | "after") => {
+            (Some(role.to_string()), path.to_string())
+        }
+        _ => (None, input.to_string()),
+    }
 }
 
 fn review_timestamp(review: &Value) -> Option<String> {
