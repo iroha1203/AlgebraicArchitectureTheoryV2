@@ -100,3 +100,43 @@ Non-conclusions:
 - retention pass は Lean theorem claim を結論しない。
 - private / missing artifact は measured-zero evidence ではない。
 - PR comment summary は proof certificate ではない。
+
+### Warn / fail / advisory policy decision
+
+Issue: [#573](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/573)
+
+`policy-decision-report-v0` は、Feature Extension Report と `organization-policy-v0` から
+CI / PR review 向けの warn / fail / advisory decision を生成する schema である。
+
+入力:
+
+- Feature Extension Report
+- organization policy
+
+decision boundary:
+
+- `fail` は required axis の未測定・測定境界違反・閾値違反、または required theorem
+  precondition の欠落に限定する。
+- `warn` は coverage gap、allowed unmeasured gap、非 required な測定不足を reviewer に残す。
+- `advisory` は measured nonzero witness や obstruction witness を review signal として示す。
+
+CLI:
+
+```bash
+archsig policy-decision --feature-report feature-report.json --policy organization-policy.json
+```
+
+出力 schema:
+
+```text
+policy-decision-report-v0
+```
+
+Canonical fixture は `cargo test --manifest-path tools/archsig/Cargo.toml` で固定する。
+
+Non-conclusions:
+
+- policy decision は Lean theorem ではない。
+- policy decision は architecture lawfulness を承認しない。
+- advisory signal は repair success evidence ではない。
+- unmeasured axis は measured-zero risk として扱わない。

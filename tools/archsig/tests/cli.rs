@@ -3569,6 +3569,123 @@ fn cli_organization_policy_validates_static_policy_and_input_fixture() {
 }
 
 #[test]
+fn cli_policy_decision_reports_fail_and_pass_boundaries() {
+    let fixture = fixture_root();
+    let air = air_fixture_root();
+    let out_dir = temp_dir("policy-decision");
+
+    let unmeasured_feature_report = out_dir.join("unmeasured-feature-report.json");
+    let unmeasured_policy_decision = out_dir.join("unmeasured-policy-decision.json");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.join("good_extension.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        unmeasured_feature_report
+            .to_str()
+            .expect("report path is utf-8"),
+    ]);
+    let output = run_sig0_output(&[
+        "policy-decision",
+        "--feature-report",
+        unmeasured_feature_report
+            .to_str()
+            .expect("report path is utf-8"),
+        "--policy",
+        fixture
+            .join("organization_policy.json")
+            .to_str()
+            .expect("policy path is utf-8"),
+        "--out",
+        unmeasured_policy_decision
+            .to_str()
+            .expect("decision path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "unmeasured required runtime axis should fail policy decision"
+    );
+    let json = read_json(&unmeasured_policy_decision);
+    assert_eq!(json["schemaVersion"], "policy-decision-report-v0");
+    assert_eq!(json["summary"]["decision"], "fail");
+    assert!(
+        json["requiredAxisDecisions"]
+            .as_array()
+            .expect("requiredAxisDecisions is array")
+            .iter()
+            .any(|decision| decision["axis"] == "runtimePropagation"
+                && decision["status"] == "fail"
+                && decision["actualMeasurementBoundary"] == "unmeasured")
+    );
+    assert!(json["nonConclusions"]
+        .as_array()
+        .expect("nonConclusions is array")
+        .iter()
+        .any(|conclusion| conclusion == "unmeasured axes are not treated as measured-zero risk"));
+
+    let mut measured_zero_input = read_json(&air.join("good_extension.json"));
+    set_measured_runtime_axis(&mut measured_zero_input, 0);
+    measured_zero_input["claims"]
+        .as_array_mut()
+        .expect("claims is an array")
+        .push(runtime_zero_bridge_claim_json(
+            "claim-runtime-zero-bridge-policy-proved",
+            serde_json::json!([
+                "runtimePropagation is computed over a measured 0/1 RuntimeDependencyGraph"
+            ]),
+            serde_json::json!(["runtime edge evidence coverage"]),
+            serde_json::json!(["runtime-edge-projection-v0 exactness"]),
+            serde_json::json!([]),
+        ));
+    let measured_zero_air = out_dir.join("runtime-measured-zero.air.json");
+    let measured_zero_feature_report = out_dir.join("runtime-measured-zero.report.json");
+    let measured_zero_policy_decision = out_dir.join("runtime-measured-zero.policy.json");
+    fs::write(
+        &measured_zero_air,
+        serde_json::to_string_pretty(&measured_zero_input).expect("json serializes"),
+    )
+    .expect("measured zero AIR is written");
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        measured_zero_air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        measured_zero_feature_report
+            .to_str()
+            .expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "policy-decision",
+        "--feature-report",
+        measured_zero_feature_report
+            .to_str()
+            .expect("report path is utf-8"),
+        "--policy",
+        fixture
+            .join("organization_policy.json")
+            .to_str()
+            .expect("policy path is utf-8"),
+        "--out",
+        measured_zero_policy_decision
+            .to_str()
+            .expect("decision path is utf-8"),
+    ]);
+    let json = read_json(&measured_zero_policy_decision);
+    assert_eq!(json["summary"]["decision"], "pass");
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["id"] == "policy-decision-required-axes" && check["result"] == "pass"
+            )
+    );
+}
+
+#[test]
 fn cli_report_artifacts_validates_static_manifest_and_input_fixture() {
     let root = fixture_root();
     let out_dir = temp_dir("report-artifacts");

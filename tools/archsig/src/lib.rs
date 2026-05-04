@@ -12,6 +12,7 @@ mod no_solution_certificate;
 mod organization_policy;
 mod outcome_linkage;
 mod policy;
+mod policy_decision;
 mod relation_complexity;
 mod repair_rule;
 mod runtime;
@@ -47,6 +48,7 @@ pub use organization_policy::{static_organization_policy, validate_organization_
 pub use outcome_linkage::{
     build_outcome_linkage_dataset, build_outcome_linkage_dataset_from_files,
 };
+pub use policy_decision::build_policy_decision_report;
 pub use relation_complexity::{
     extract_relation_complexity_observation, extract_relation_complexity_observation_from_file,
 };

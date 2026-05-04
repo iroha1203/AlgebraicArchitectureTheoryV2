@@ -1955,6 +1955,10 @@ B7 では、組織ごとの required axis、許容される unmeasured gap、req
 precondition を明示する policy layer を置く。policy は CI / PR review の運用判断を
 支える入力であり、policy pass だけで architecture lawfulness、Lean theorem claim、
 unmeasured gap の measured-zero 化、missing precondition の discharge は結論しない。
+Feature Extension Report と policy layer から生成する policy decision は、required axis
+または required theorem precondition の違反を `fail`、coverage gap を `warn`、measured
+nonzero witness などの review signal を `advisory` として分ける。`advisory` は repair
+success や設計判断の自動承認ではない。
 
 また、PR review / CI で生成される report artifact を、後続の baseline comparison、
 suppression workflow、Architecture Drift Ledger から参照できる retention layer として

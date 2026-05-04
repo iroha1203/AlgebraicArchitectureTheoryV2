@@ -8,23 +8,23 @@ use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
     DEFAULT_UNIVERSE_MODE, EmpiricalDatasetInput, FeatureExtensionReportV0,
     NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
-    OrganizationPolicyValidationReportV0, RepairRuleRegistryV0,
+    OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
     ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, ScanMetadata, Sig0Document,
     SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TheoremPreconditionCheckReportV0, build_air_document, build_empirical_dataset,
     build_feature_extension_dataset_from_files, build_feature_extension_report,
-    build_outcome_linkage_dataset_from_files, build_pr_history_dataset_from_github_files,
-    build_pr_metadata_from_github_files, build_signature_diff_report,
-    build_signature_snapshot_record, build_theorem_precondition_check_report,
-    extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
-    static_report_artifact_retention_manifest, static_synthesis_constraint_artifact,
-    validate_air_document_report, validate_component_universe_report,
-    validate_no_solution_certificate_report, validate_organization_policy_report,
-    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
-    validate_synthesis_constraint_artifact_report,
+    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
+    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
+    build_signature_diff_report, build_signature_snapshot_record,
+    build_theorem_precondition_check_report, extract_relation_complexity_observation_from_file,
+    extract_sig0_with_runtime, static_no_solution_certificate, static_organization_policy,
+    static_repair_rule_registry, static_report_artifact_retention_manifest,
+    static_synthesis_constraint_artifact, validate_air_document_report,
+    validate_component_universe_report, validate_no_solution_certificate_report,
+    validate_organization_policy_report, validate_repair_rule_registry_report,
+    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -417,6 +417,21 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Build a B7 warn / fail / advisory policy decision report.
+    PolicyDecision {
+        /// Feature Extension Report JSON path.
+        #[arg(long = "feature-report")]
+        feature_report: PathBuf,
+
+        /// Optional organization policy JSON path. If omitted, the static B7 policy is used.
+        #[arg(long)]
+        policy: Option<PathBuf>,
+
+        /// Output policy decision report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
     /// Validate report artifact retention metadata. If input is omitted, validate the static B7 manifest.
     ReportArtifacts {
         /// Optional report artifact retention manifest JSON path.
@@ -777,6 +792,35 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let report: OrganizationPolicyValidationReportV0 =
                 validate_organization_policy_report(&policy, &input_path);
             let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::PolicyDecision {
+            feature_report,
+            policy,
+            out,
+        }) => {
+            let report_input: FeatureExtensionReportV0 = read_json(&feature_report)?;
+            let organization_policy: OrganizationPolicyV0 = policy
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_organization_policy);
+            let policy_path = policy
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-organization-policy".to_string());
+            let report: PolicyDecisionReportV0 = build_policy_decision_report(
+                &report_input,
+                &feature_report.display().to_string(),
+                &organization_policy,
+                &policy_path,
+            );
+            let failed = report.summary.decision == "fail";
             write_json(out, &report)?;
             Ok(if failed {
                 ExitCode::from(1)
