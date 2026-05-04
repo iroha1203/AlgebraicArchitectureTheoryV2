@@ -1986,6 +1986,11 @@ schema / CLI / fixture は tooling index で管理する。
 この段階では、AIR を言語非依存の中間表現として保ちつつ、extractor 側を拡張する。
 各 extractor は、自分が扱える bounded subset、unsupported constructs、projection rule、
 coverage assumptions を明示し、Lean の `ComponentUniverse` 完全性とは同一視しない。
+adapter registry は、この boundary を tooling artifact として束ねる。
+registry entry は adapter kind、source language / framework、evidence kind、
+projection rule、coverage / exactness assumptions、unsupported constructs、
+non-conclusions を持ち、AIR coverage / Feature Extension Report / theorem precondition
+boundary への trace point になる。
 
 Python extractor の詳細な component / root / edge policy は tooling artifact 側の規約として
 [ArchSig tooling index](design/archsig_tooling_index.md#python-component-policy) で管理する。
