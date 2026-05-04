@@ -64,6 +64,7 @@ pub(crate) fn sig0_document_for_edges(
         policy_violations: Vec::new(),
         runtime_edge_evidence: Vec::new(),
         runtime_dependency_graph: None,
+        unsupported_constructs: Vec::new(),
     }
 }
 

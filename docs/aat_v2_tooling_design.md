@@ -1992,6 +1992,9 @@ Python extractor の詳細な component / root / edge policy は tooling artifac
 この設計書では、`componentKind = "python-module"` が静的 import graph の extractor
 evidence であり、Lean `ComponentUniverse` 完全性や architecture lawfulness を結論しない、
 という境界だけを固定する。
+dynamic import、plugin loading、framework convention、generated code、notebook は
+`unsupportedConstructs` から AIR coverage / Feature Extension Report の coverage gap へ
+trace し、測定済み 0 の evidence としては扱わない。
 
 ### Phase B9: Schema standardization and compatibility
 

@@ -10,7 +10,7 @@ use walkdir::{DirEntry, WalkDir};
 use crate::graph::compute_signature;
 use crate::{
     Component, Edge, MetricStatus, PYTHON_COMPONENT_KIND, PYTHON_IMPORT_RULE_VERSION, Policies,
-    SCHEMA_VERSION, Sig0Document, measured_status, unmeasured_status,
+    SCHEMA_VERSION, Sig0Document, UnsupportedConstruct, measured_status, unmeasured_status,
 };
 
 const PYTHON_AST_SCRIPT: &str = r#"
@@ -24,14 +24,66 @@ with open(path, "r", encoding="utf-8") as handle:
 lines = source.splitlines()
 tree = ast.parse(source, filename=path)
 
-def evidence(node):
+def location(node):
     lineno = getattr(node, "lineno", None)
     if lineno is None or lineno < 1 or lineno > len(lines):
-        return ""
-    return lines[lineno - 1].strip()
+        return (None, "")
+    return (lineno, lines[lineno - 1].strip())
+
+def evidence(node):
+    return location(node)[1]
+
+def add_unsupported(kind, node, reason):
+    lineno, text = location(node)
+    unsupported.append({
+        "kind": kind,
+        "line": lineno,
+        "evidence": text,
+        "reason": reason,
+    })
 
 imports = []
 unsupported = []
+importlib_aliases = set()
+import_module_aliases = set()
+metadata_aliases = set()
+entry_point_aliases = set()
+framework_modules = {"django", "fastapi", "celery", "sqlalchemy"}
+
+for node in ast.walk(tree):
+    if isinstance(node, ast.Import):
+        for alias in node.names:
+            name = alias.name
+            bound = alias.asname or name.split(".")[0]
+            if name == "importlib":
+                importlib_aliases.add(bound)
+            elif name == "importlib.metadata":
+                metadata_aliases.add(bound)
+            if name.split(".")[0] in framework_modules:
+                add_unsupported(
+                    "framework-convention",
+                    node,
+                    f"{name.split('.')[0]} convention requires framework-specific extraction",
+                )
+    elif isinstance(node, ast.ImportFrom):
+        module = node.module or ""
+        for alias in node.names:
+            bound = alias.asname or alias.name
+            if module == "importlib" and alias.name == "import_module":
+                import_module_aliases.add(bound)
+            elif module == "importlib" and alias.name == "metadata":
+                metadata_aliases.add(bound)
+            elif module == "importlib.metadata" and alias.name == "entry_points":
+                entry_point_aliases.add(bound)
+            elif module == "pkg_resources" and alias.name == "iter_entry_points":
+                entry_point_aliases.add(bound)
+        if module.split(".")[0] in framework_modules:
+            add_unsupported(
+                "framework-convention",
+                node,
+                f"{module.split('.')[0]} convention requires framework-specific extraction",
+            )
+
 for node in ast.walk(tree):
     if isinstance(node, ast.Import):
         imports.append({
@@ -52,17 +104,32 @@ for node in ast.walk(tree):
     elif isinstance(node, ast.Call):
         func = node.func
         dynamic = isinstance(func, ast.Name) and func.id == "__import__"
+        dynamic = dynamic or isinstance(func, ast.Name) and func.id in import_module_aliases
         dynamic = dynamic or (
             isinstance(func, ast.Attribute)
             and func.attr == "import_module"
             and isinstance(func.value, ast.Name)
-            and func.value.id == "importlib"
+            and func.value.id in importlib_aliases
         )
         if dynamic:
-            unsupported.append({
-                "kind": "dynamic-import",
-                "evidence": evidence(node),
-            })
+            add_unsupported(
+                "dynamic-import",
+                node,
+                "dynamic import target is not part of the static import graph",
+            )
+        plugin = isinstance(func, ast.Name) and func.id in entry_point_aliases
+        plugin = plugin or (
+            isinstance(func, ast.Attribute)
+            and func.attr in {"entry_points", "iter_entry_points"}
+            and isinstance(func.value, ast.Name)
+            and func.value.id in (metadata_aliases | {"pkg_resources"})
+        )
+        if plugin:
+            add_unsupported(
+                "plugin-loading",
+                node,
+                "entry point based plugin loading requires runtime/package metadata evidence",
+            )
 
 json.dump({"imports": imports, "unsupported": unsupported}, sys.stdout)
 "#;
@@ -98,7 +165,9 @@ struct PythonImport {
 #[derive(Debug, Deserialize)]
 struct PythonUnsupported {
     kind: String,
+    line: Option<usize>,
     evidence: String,
+    reason: String,
 }
 
 pub fn extract_python_sig0(
@@ -155,8 +224,19 @@ pub fn extract_python_sig0(
                 &component_ids,
             ));
         }
-        unsupported.extend(parsed.unsupported);
+        unsupported.extend(parsed.unsupported.into_iter().map(|unsupported| {
+            UnsupportedConstruct {
+                kind: unsupported.kind,
+                path: python_component.component.path.clone(),
+                line: unsupported.line,
+                evidence: (!unsupported.evidence.is_empty()).then_some(unsupported.evidence),
+                reason: unsupported.reason,
+            }
+        }));
     }
+    unsupported.extend(detect_file_level_unsupported(&root, &source_roots)?);
+    unsupported.sort();
+    unsupported.dedup();
 
     let edges = dedup_edges(import_edges);
     let signature = compute_signature(&components, &edges);
@@ -194,15 +274,21 @@ pub fn extract_python_sig0(
         "pythonDynamicImportCoverage".to_string(),
         if unsupported.is_empty() {
             unmeasured_status(
-                "dynamic import, plugin loading, and framework convention coverage is outside python-import-graph-v0".to_string(),
+                "dynamic import, plugin loading, framework convention, generated code, and notebook coverage is outside python-import-graph-v0".to_string(),
             )
         } else {
             let first = unsupported
                 .first()
-                .map(|site| format!(" first {} evidence: {}", site.kind, site.evidence))
+                .map(|site| {
+                    let location = site
+                        .line
+                        .map(|line| format!("{}:{}", site.path, line))
+                        .unwrap_or_else(|| site.path.clone());
+                    format!(" first {} at {}", site.kind, location)
+                })
                 .unwrap_or_default();
             unmeasured_status(format!(
-                "{} unsupported dynamic import site(s) detected; not counted as measured zero.{first}",
+                "{} unsupported Python construct(s) detected; not counted as measured zero.{first}",
                 unsupported.len(),
             ))
         },
@@ -227,6 +313,7 @@ pub fn extract_python_sig0(
         policy_violations: Vec::new(),
         runtime_edge_evidence: Vec::new(),
         runtime_dependency_graph: None,
+        unsupported_constructs: unsupported,
     })
 }
 
@@ -262,6 +349,66 @@ fn python_files(source_roots: &[PathBuf]) -> Result<Vec<PathBuf>, Box<dyn Error>
         }
     }
     Ok(files.into_iter().collect())
+}
+
+fn detect_file_level_unsupported(
+    root: &Path,
+    source_roots: &[PathBuf],
+) -> Result<Vec<UnsupportedConstruct>, Box<dyn Error>> {
+    let mut unsupported = Vec::new();
+    for source_root in source_roots {
+        for entry in WalkDir::new(source_root)
+            .sort_by_file_name()
+            .into_iter()
+            .filter_entry(is_skipped_entry)
+        {
+            let entry = entry?;
+            if !entry.file_type().is_file() {
+                continue;
+            }
+            let path = entry.path();
+            let relative_path = normalize_relative_path(root, path)?;
+            let extension = path.extension().and_then(OsStr::to_str);
+            let file_name = path.file_name().and_then(OsStr::to_str).unwrap_or_default();
+            if extension == Some("ipynb") {
+                unsupported.push(UnsupportedConstruct {
+                    kind: "notebook".to_string(),
+                    path: relative_path,
+                    line: None,
+                    evidence: None,
+                    reason: "notebook execution order and hidden state require notebook-specific extraction".to_string(),
+                });
+                continue;
+            }
+            if extension != Some("py") {
+                continue;
+            }
+            let generated_by_name = file_name.ends_with("_pb2.py")
+                || file_name.ends_with("_pb2_grpc.py")
+                || file_name == "models.py" && path.components().any(|part| {
+                    matches!(part, PathComponent::Normal(name) if name == OsStr::new("migrations"))
+                });
+            let generated_by_header = std::fs::read_to_string(path)
+                .ok()
+                .map(|contents| {
+                    contents.lines().take(5).any(|line| {
+                        let lower = line.to_ascii_lowercase();
+                        lower.contains("generated by") || lower.contains("auto-generated")
+                    })
+                })
+                .unwrap_or(false);
+            if generated_by_name || generated_by_header {
+                unsupported.push(UnsupportedConstruct {
+                    kind: "generated-code".to_string(),
+                    path: relative_path,
+                    line: None,
+                    evidence: Some(file_name.to_string()),
+                    reason: "generated code should be traced to its generator rather than treated as ordinary source evidence".to_string(),
+                });
+            }
+        }
+    }
+    Ok(unsupported)
 }
 
 fn is_skipped_entry(entry: &DirEntry) -> bool {
@@ -494,6 +641,21 @@ mod tests {
                 .measured,
             false
         );
+        for kind in [
+            "dynamic-import",
+            "plugin-loading",
+            "framework-convention",
+            "generated-code",
+            "notebook",
+        ] {
+            assert!(
+                document
+                    .unsupported_constructs
+                    .iter()
+                    .any(|construct| construct.kind == kind),
+                "missing unsupported construct kind {kind}"
+            );
+        }
         assert_eq!(document.signature.has_cycle, 0);
     }
 }

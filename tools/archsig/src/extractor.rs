@@ -192,6 +192,7 @@ pub fn extract_sig0_with_runtime(
         policy_violations,
         runtime_edge_evidence,
         runtime_dependency_graph,
+        unsupported_constructs: Vec::new(),
     })
 }
 

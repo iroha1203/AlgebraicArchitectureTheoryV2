@@ -568,7 +568,7 @@ fn air_coverage_layers(
             static_extraction_scope(sig0),
             static_exactness_assumptions(sig0),
             Some(static_extraction_rule(sig0)),
-            Vec::new(),
+            static_unsupported_constructs(sig0),
         ),
         air_coverage_layer(
             "policy",
@@ -614,6 +614,23 @@ fn static_exactness_assumptions(sig0: &Sig0Document) -> Vec<String> {
             "python-module ids are normalized relative to the configured package root".to_string(),
             "Python extractor output is tooling evidence, not a Lean ComponentUniverse completeness proof".to_string(),
         ],
+        _ => Vec::new(),
+    }
+}
+
+fn static_unsupported_constructs(sig0: &Sig0Document) -> Vec<String> {
+    match sig0.component_kind.as_str() {
+        PYTHON_COMPONENT_KIND => sig0
+            .unsupported_constructs
+            .iter()
+            .map(|construct| {
+                let location = construct
+                    .line
+                    .map(|line| format!("{}:{}", construct.path, line))
+                    .unwrap_or_else(|| construct.path.clone());
+                format!("{} at {}: {}", construct.kind, location, construct.reason)
+            })
+            .collect(),
         _ => Vec::new(),
     }
 }
