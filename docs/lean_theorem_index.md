@@ -1666,6 +1666,9 @@ selected additive delta law に相対化して net delta の telescoping theorem
 Issue [#641](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/641) では、
 selected safe region と stepwise preservation assumption に相対化して、
 observed trajectory が safe region 内に留まる theorem を追加した。
+Issue [#639](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/639) では、
+two-step の観測可換性と bounded merge-order sensitivity を定義し、可換なら sensitivity が
+0 になる theorem と、小さい非可換 counterexample を追加した。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1688,6 +1691,15 @@ observed trajectory が safe region 内に留まる theorem を追加した。
 | `AdditiveSignatureDeltaLaw.RecordsNonConclusions` | `def` | additive delta law package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `netSignatureDelta_telescopes` | `theorem` | `AdditiveSignatureDeltaLaw` の下で、path 上の per-step delta の net sum が endpoint delta と一致することを示す。 | `proved` |
 | `trajectory_preserves_safeRegion` | `theorem` | initial observation が safe region にあり、各 selected transition が safe region を保存するなら、observed trajectory 全体が safe region に属することを示す。 | `proved` |
+| `TwoStepObservationCommutative` | `def` | 同じ start state からの二つの two-step transition order が selected final observation 上で一致すること。 | `defined only` |
+| `MergeOrderSensitive` | `def` | 二つの two-step transition order の selected final observation が異なること。実 PR risk や incident との相関は結論しない。 | `defined only` |
+| `MergeOrderSensitivity` | `def` | selected final observation が一致すれば `0`、異なれば `1` を返す bounded 0/1 sensitivity metric。 | `defined only` |
+| `mergeOrderSensitivity_eq_zero_of_twoStepObservationCommutative` | `theorem` | two-step order が観測上可換なら bounded merge-order sensitivity が `0` になることを示す。 | `proved` |
+| `not_mergeOrderSensitive_of_twoStepObservationCommutative` | `theorem` | two-step order の観測可換性から selected merge-order sensitivity がないことを示す。 | `proved` |
+| `MergeOrderCounterexample.steps_lawful` | `theorem` | counterexample の各 primitive transition が locally lawful であることを示す。 | `proved` |
+| `MergeOrderCounterexample.not_twoStepObservationCommutative` | `theorem` | locally lawful な二つの two-step order が観測上可換でない小例を示す。 | `proved` |
+| `MergeOrderCounterexample.mergeOrderSensitive` | `theorem` | 同じ小例が selected merge-order sensitive であることを示す。 | `proved` |
+| `MergeOrderCounterexample.mergeOrderSensitivity_eq_one` | `theorem` | 同じ小例の bounded sensitivity metric が `1` に評価されることを示す。 | `proved` |
 
 ## Diagram Filler
 

@@ -237,4 +237,160 @@ theorem trajectory_preserves_safeRegion
             trajectory_preserves_safeRegion O R rest
               (hEvery.1 hStart) hEvery.2 sig hTail
 
+/--
+Two two-step transition orders are observationally commutative when they start
+from the same state and their selected final observations agree.
+
+The two intermediate and final states are allowed to differ. This keeps the
+predicate about observed signatures rather than definitional equality of
+architecture states.
+-/
+def TwoStepObservationCommutative
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (_leftFirst : ArchitectureTransition State X YLeft)
+    (_leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (_rightFirst : ArchitectureTransition State X YRight)
+    (_rightSecond : ArchitectureTransition State YRight ZRight) : Prop :=
+  O.observe ZLeft = O.observe ZRight
+
+/--
+Two two-step transition orders are merge-order sensitive when their selected
+final observations differ.
+
+This is a bounded observation predicate. It does not claim that a real PR merge
+order predicts incident risk, review cost, or unmeasured signature axes.
+-/
+def MergeOrderSensitive
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (_leftFirst : ArchitectureTransition State X YLeft)
+    (_leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (_rightFirst : ArchitectureTransition State X YRight)
+    (_rightSecond : ArchitectureTransition State YRight ZRight) : Prop :=
+  O.observe ZLeft ≠ O.observe ZRight
+
+/--
+A 0/1 bounded merge-order sensitivity metric for two selected two-step orders.
+
+The value is `0` exactly when the selected final observations agree, and `1`
+when they differ. The metric is intentionally local to the supplied observation
+schema and does not measure empirical PR risk or hidden axes.
+-/
+def MergeOrderSensitivity [DecidableEq Sig]
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (_leftFirst : ArchitectureTransition State X YLeft)
+    (_leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (_rightFirst : ArchitectureTransition State X YRight)
+    (_rightSecond : ArchitectureTransition State YRight ZRight) : Nat :=
+  if O.observe ZLeft = O.observe ZRight then 0 else 1
+
+/--
+If two selected two-step transition orders are observationally commutative, the
+bounded merge-order sensitivity metric is zero.
+-/
+theorem mergeOrderSensitivity_eq_zero_of_twoStepObservationCommutative
+    [DecidableEq Sig]
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (leftFirst : ArchitectureTransition State X YLeft)
+    (leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (rightFirst : ArchitectureTransition State X YRight)
+    (rightSecond : ArchitectureTransition State YRight ZRight)
+    (hCommutes :
+      TwoStepObservationCommutative O leftFirst leftSecond rightFirst rightSecond) :
+    MergeOrderSensitivity O leftFirst leftSecond rightFirst rightSecond = 0 := by
+  dsimp [MergeOrderSensitivity]
+  exact if_pos (by
+    simpa [TwoStepObservationCommutative] using hCommutes)
+
+/--
+Observational commutativity rules out selected merge-order sensitivity.
+-/
+theorem not_mergeOrderSensitive_of_twoStepObservationCommutative
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (leftFirst : ArchitectureTransition State X YLeft)
+    (leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (rightFirst : ArchitectureTransition State X YRight)
+    (rightSecond : ArchitectureTransition State YRight ZRight)
+    (hCommutes :
+      TwoStepObservationCommutative O leftFirst leftSecond rightFirst rightSecond) :
+    ¬ MergeOrderSensitive O leftFirst leftSecond rightFirst rightSecond := by
+  intro hSensitive
+  exact hSensitive (by
+    simpa [TwoStepObservationCommutative] using hCommutes)
+
+/-
+A tiny finite-state witness that locally lawful steps can still be
+order-sensitive under a selected observation.
+
+The example is deliberately synthetic: it proves only that local lawfulness
+fields do not force final observations to agree.
+-/
+namespace MergeOrderCounterexample
+
+abbrev ExampleState := Nat
+abbrev ExampleSig := Nat
+
+def observation : SignatureObservation ExampleState ExampleSig where
+  observe := id
+  coverageAssumptions := True
+  nonConclusions := True
+
+def leftFirst : ArchitectureTransition ExampleState 0 1 where
+  kind := ArchitectureTransitionKind.featureExtension
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def leftSecond : ArchitectureTransition ExampleState 1 3 where
+  kind := ArchitectureTransitionKind.policyUpdate
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def rightFirst : ArchitectureTransition ExampleState 0 2 where
+  kind := ArchitectureTransitionKind.policyUpdate
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def rightSecond : ArchitectureTransition ExampleState 2 4 where
+  kind := ArchitectureTransitionKind.featureExtension
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+/-- Each selected primitive step in the counterexample is locally lawful. -/
+theorem steps_lawful :
+    leftFirst.lawful ∧ leftSecond.lawful ∧
+      rightFirst.lawful ∧ rightSecond.lawful := by
+  simp [leftFirst, leftSecond, rightFirst, rightSecond]
+
+/-- The two selected orders do not commute observationally. -/
+theorem not_twoStepObservationCommutative :
+    ¬ TwoStepObservationCommutative
+        observation leftFirst leftSecond rightFirst rightSecond := by
+  simp [TwoStepObservationCommutative, observation]
+
+/-- The selected orders are merge-order sensitive. -/
+theorem mergeOrderSensitive :
+    MergeOrderSensitive
+        observation leftFirst leftSecond rightFirst rightSecond := by
+  simp [MergeOrderSensitive, observation]
+
+/-- The bounded merge-order sensitivity metric evaluates to `1`. -/
+theorem mergeOrderSensitivity_eq_one :
+    MergeOrderSensitivity
+        observation leftFirst leftSecond rightFirst rightSecond = 1 := by
+  simp [MergeOrderSensitivity, observation]
+
+end MergeOrderCounterexample
+
 end Formal.Arch
