@@ -1622,6 +1622,25 @@ pub struct FeatureReportObstructionWitness {
     pub repair_candidates: Vec<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObstructionWitnessArtifactV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub witness: FeatureReportObstructionWitness,
+    pub versioning: ObstructionWitnessVersioningV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObstructionWitnessVersioningV0 {
+    pub target_fields: Vec<String>,
+    pub compatibility_boundaries: Vec<String>,
+    pub evidence_state_policy: Vec<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FeatureReportRepairSuggestion {
@@ -1661,6 +1680,79 @@ pub struct FeatureReportEvidenceRef {
     pub path: Option<String>,
     pub symbol: Option<String>,
     pub rule_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDriftLedgerV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub ledger_id: String,
+    pub generated_at: String,
+    pub baseline_ref: Option<String>,
+    pub retention_manifest_ref: Option<String>,
+    pub suppression_workflow_refs: Vec<String>,
+    pub entries: Vec<ArchitectureDriftLedgerEntryV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDriftLedgerEntryV0 {
+    pub ledger_entry_id: String,
+    pub observed_at: String,
+    pub architecture_id: String,
+    pub revision_ref: Option<String>,
+    pub subject_ref: String,
+    pub witness_fingerprint: Option<String>,
+    pub policy_ref: Option<String>,
+    pub aggregation_window: DriftLedgerAggregationWindowV0,
+    pub source: DriftLedgerSourceV0,
+    pub metric_id: String,
+    pub layer: String,
+    pub measured_value: Option<serde_json::Value>,
+    pub measurement_boundary: String,
+    pub evidence_refs: Vec<String>,
+    pub confidence: String,
+    pub introduced_by_pr: Option<String>,
+    pub first_seen_at: Option<String>,
+    pub last_seen_at: Option<String>,
+    pub owner: Option<String>,
+    pub status: String,
+    pub suppression: Option<DriftLedgerSuppressionV0>,
+    pub repair_candidates: Vec<String>,
+    pub linked_witness_refs: Vec<String>,
+    pub linked_claim_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DriftLedgerAggregationWindowV0 {
+    pub window_start: Option<String>,
+    pub window_end: Option<String>,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DriftLedgerSourceV0 {
+    pub kind: String,
+    #[serde(rename = "ref")]
+    pub reference: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DriftLedgerSuppressionV0 {
+    pub reason: Option<String>,
+    pub approved_by: Option<String>,
+    pub approved_at: Option<String>,
+    pub expires_at: Option<String>,
+    pub scope: Option<String>,
+    pub policy_ref: Option<String>,
+    pub witness_ref: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -2943,6 +2943,112 @@ fn cli_schema_compatibility_blocks_missing_formal_claim_guardrail() {
 }
 
 #[test]
+fn cli_schema_compatibility_locks_obstruction_witness_and_drift_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("schema-compatibility-obstruction-drift");
+    let witness = root.join("obstruction_witness.json");
+    let ledger = root.join("architecture_drift_ledger.json");
+    let witness_pass = out_dir.join("witness-pass.json");
+    let ledger_pass = out_dir.join("ledger-pass.json");
+    let ledger_after = out_dir.join("architecture-drift-ledger-rounded.json");
+    let ledger_report = out_dir.join("ledger-rounded-report.json");
+
+    run_sig0(&[
+        "schema-compatibility",
+        "--before",
+        witness.to_str().expect("witness path is utf-8"),
+        "--after",
+        witness.to_str().expect("witness path is utf-8"),
+        "--out",
+        witness_pass.to_str().expect("witness report path is utf-8"),
+    ]);
+    let witness_report = read_json(&witness_pass);
+    assert_eq!(witness_report["summary"]["result"], "pass");
+    assert_eq!(witness_report["after"]["artifactId"], "obstruction-witness");
+    assert!(
+        witness_report["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("witness boundaries are an array")
+            .iter()
+            .any(
+                |boundary| boundary["axisOrLayer"] == "witness.evidence.private-or-missing"
+                    && boundary["measurementBoundary"] == "unmeasured"
+            )
+    );
+
+    run_sig0(&[
+        "schema-compatibility",
+        "--before",
+        ledger.to_str().expect("ledger path is utf-8"),
+        "--after",
+        ledger.to_str().expect("ledger path is utf-8"),
+        "--out",
+        ledger_pass.to_str().expect("ledger report path is utf-8"),
+    ]);
+    let pass_report = read_json(&ledger_pass);
+    assert_eq!(pass_report["summary"]["result"], "pass");
+    assert_eq!(
+        pass_report["after"]["artifactId"],
+        "architecture-drift-ledger"
+    );
+    assert!(
+        pass_report["fieldMappings"]
+            .as_array()
+            .expect("ledger fieldMappings are an array")
+            .iter()
+            .any(|mapping| mapping["sourceField"] == "retentionManifestRef")
+    );
+    assert!(
+        pass_report["fieldMappings"]
+            .as_array()
+            .expect("ledger fieldMappings are an array")
+            .iter()
+            .any(|mapping| mapping["sourceField"] == "suppressionWorkflowRefs")
+    );
+
+    let mut rounded = read_json(&ledger);
+    rounded["schemaCompatibility"]["coverageExactnessBoundaries"][1]["measurementBoundary"] =
+        serde_json::json!("measuredZero");
+    rounded["entries"][1]["measurementBoundary"] = serde_json::json!("measuredZero");
+    fs::write(
+        &ledger_after,
+        serde_json::to_string_pretty(&rounded).expect("ledger json serializes"),
+    )
+    .expect("rounded ledger fixture is written");
+
+    let output = run_sig0_output(&[
+        "schema-compatibility",
+        "--before",
+        ledger.to_str().expect("ledger path is utf-8"),
+        "--after",
+        ledger_after.to_str().expect("rounded ledger path is utf-8"),
+        "--out",
+        ledger_report.to_str().expect("ledger report path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "rounding unmeasured evidence to measuredZero should require migration"
+    );
+
+    let report = read_json(&ledger_report);
+    assert_eq!(report["summary"]["result"], "requiresMigration");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(
+                |check| check["id"] == "coverage-exactness-boundaries-preserved"
+                    && check["severity"] == "migrationRequired"
+                    && check["message"]
+                        .as_str()
+                        .expect("message is a string")
+                        .contains("ledger.private-or-missing-evidence:unmeasured")
+            )
+    );
+}
+
+#[test]
 fn cli_validate_air_detects_runtime_metadata_inconsistency() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-runtime-invalid");

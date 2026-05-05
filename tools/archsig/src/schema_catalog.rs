@@ -91,7 +91,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 OBSTRUCTION_WITNESS_SCHEMA_VERSION,
                 "embedded-witness",
                 "B1-B9",
-                "schema-skeleton",
+                "implemented",
                 vec!["docs/aat_v2_tooling_design.md#6-obstruction-witness-schema"],
                 vec!["#608", "#610"],
                 compatibility_boundary(
@@ -111,7 +111,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
                 "batch-history-output",
                 "B1-B9",
-                "schema-skeleton",
+                "implemented",
                 vec!["docs/aat_v2_tooling_design.md#51-architecture-drift-ledger"],
                 vec!["#608", "#610"],
                 compatibility_boundary(
