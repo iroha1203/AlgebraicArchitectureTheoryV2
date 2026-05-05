@@ -126,6 +126,44 @@ MeasurementBoundary =
 Validation は、`measured` / `estimated` / `derived` / `advisory` を混同してはならない。
 特に `unmeasured`、`unavailable`、`private`、`notComparable` は measured zero ではない。
 
+## Stochastic / empirical bridge
+
+Architecture Signature Dynamics の stochastic / empirical bridge は、Lean theorem、
+tooling validation、empirical validation の三つを分けるための artifact boundary である。
+tool は finite universe と join key を検査するが、operation distribution の完全性や
+AI patch 成功条件を証明しない。
+
+初期 schema は次の五つに分ける。
+
+| schema | 役割 | source / join |
+| --- | --- | --- |
+| `finite-weighted-operation-distribution-v0` | selected finite operation universe と重みを記録する。 | `operation-proposal-log-v0`, `pr-history-dataset-v0`, manual annotation |
+| `signature-dynamics-simulation-protocol-v0` | initial state、operation distribution、control policy、bounded horizon、observation を固定する。 | field snapshot, distribution, Signature snapshot store |
+| `architecture-dynamics-metrics-report-v0` | trajectory / force / attractor candidate / AI sensitivity signal を measurement status つきで集計する。 | PR force report, trajectory report, distribution |
+| `ai-patch-sensitivity-protocol-v0` | AI 由来 proposal / accepted transition が selected bad-axis measure や safe region に与える変化を測る。 | proposal log, PR force report, dissipation ledger |
+| `vibe-coding-hypothesis-v0` | task class、architecture region、control policy、outcome linkage を束ねて empirical hypothesis を管理する。 | outcome linkage dataset, trajectory report, review metadata |
+
+`finite-weighted-operation-distribution-v0` は、operation id、operation kind、applicability
+boundary、weight、weight status、source refs、normalization status、missing evidence、
+non-conclusions を持つ。weight は `measured` / `estimated` / `advisory` / `unmeasured`
+を区別し、正規化済みであっても実際の future operation distribution の完全復元とは読まない。
+
+`signature-dynamics-simulation-protocol-v0` は、selected finite state list、operation
+distribution ref、transition semantics ref、control policy ref、bounded horizon、
+seed / deterministic replay metadata、signature observation ref、comparison baseline refs を
+持つ。validation は、参照 artifact の schema version と measurement boundary が比較可能かを
+検査する。finite simulation の結果は global attractor / basin claim ではない。
+
+`ai-patch-sensitivity-protocol-v0` では、AI provenance は source metadata としてだけ扱う。
+AI 由来であることから high risk / low risk、lawfulness、theorem precondition discharge を
+結論しない。selected bad-axis nonincrease を主張する場合は、Lean 側の explicit damping
+assumption または tooling-side policy evidence への参照を必須にする。
+
+`vibe-coding-hypothesis-v0` は empirical hypothesis ledger であり、success criteria、
+task class、control policy、trajectory / outcome refs、confounder notes、retained /
+rejected status、non-conclusions を保持する。これは case study や pilot の入口であり、
+Vibe coding の一般的成功 / 失敗を theorem claim にしない。
+
 ## Artifact overview
 
 ### architecture-field-snapshot-v0
@@ -428,6 +466,12 @@ archsig force-dissipation-ledger \
 - AI provenance を risk claim や theorem claim に変換しない。
 - attractor / basin / Lyapunov-like metric は finite observed trajectory、selected region、
   bounded operation window を明示する。
+- finite weighted operation distribution は selected universe、weight status、source refs、
+  normalization status、missing evidence を明示する。
+- simulation protocol は bounded horizon、transition semantics、control policy、
+  observation boundary、comparison baseline を固定する。
+- Vibe coding success condition は empirical hypothesis として扱い、formal / tooling claim に
+  昇格しない。
 - extractor / policy / schema version が異なる比較は sensitivity analysis または migration
   boundary を必要とする。
 - formal claim promotion は theorem precondition checker の明示 precondition なしに通さない。

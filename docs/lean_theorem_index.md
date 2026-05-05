@@ -1676,6 +1676,11 @@ finite initial-state list と bounded operation script に相対化した basin 
 Issue [#642](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/642) では、
 accepted / rejected transition boundary と selected damping assumption に相対化して、
 accepted evolution の invariant preservation と bad-axis nonincrease theorem を追加した。
+Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
+stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
+finite weighted operation distribution、simulation protocol、PR force / trajectory /
+dynamics metrics report、AI patch sensitivity、Vibe coding success hypothesis は
+tooling validation / empirical hypothesis として扱い、下表の Lean theorem claim とは分ける。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |

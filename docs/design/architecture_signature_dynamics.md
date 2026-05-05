@@ -522,7 +522,90 @@ predicate は Lean theorem の前提として扱える。
 - AI patch Lyapunov-like sensitivity protocol
 - Vibe coding success condition hypotheses
 
-ここは Lean proof と tooling validation と empirical validation を混同しない。
+ここは Lean proof と tooling validation と empirical validation を混同しない。Lean 側で
+証明できるのは、selected finite universe、bounded operation family、明示された
+distribution / script / damping assumption に相対化された命題だけである。tooling 側では
+その universe と artifact join を検証し、empirical 側では PR、AI patch、incident、
+review outcome との相関を仮説として評価する。
+
+最小 schema は次である。
+
+```text
+FiniteWeightedOperationDistribution =
+  selectedStateUniverseRef
+  selectedOperationUniverseRef
+  weights : OperationId -> nonnegative measured / estimated weight
+  normalizationStatus
+  sourceRefs
+  measurementBoundary
+  nonConclusions
+
+SimulationProtocol =
+  initialStateSelection
+  operationDistributionRef
+  controlPolicyRef
+  boundedHorizon
+  transitionSemanticsRef
+  signatureObservationRef
+  outputTrajectoryReportRef
+  comparisonBaselineRefs
+  nonConclusions
+```
+
+`FiniteWeightedOperationDistribution` は確率分布そのものを Lean theorem として主張しない。
+有限な候補 operation universe と重みの出所を記録し、`measured`、`estimated`、
+`advisory`、`unmeasured` を分けるための artifact である。weight が正規化されていても、
+実開発全体や AI patch distribution の完全標本とは読まない。
+
+`SimulationProtocol` は、同じ selected universe、同じ observation、同じ control policy
+境界の下で trajectory を比較するための protocol である。simulation の attractor /
+basin / Lyapunov-like signal は、finite observed trajectory と bounded horizon に限られる。
+global attractor theorem、実コード全体の basin、incident reduction は結論しない。
+
+PR force / trajectory / dynamics metrics との join point は次に置く。
+
+| join point | 役割 | claim level |
+| --- | --- | --- |
+| `pr-force-report-v0` | accepted transition の before / after Signature delta を `ObservedForce` として記録する。 | tooling |
+| `signature-trajectory-report-v0` | selected window の observed Signature sequence と drift signal を記録する。 | tooling |
+| `architecture-dynamics-metrics-report-v0` | trajectory stability、force distribution、finite attractor / basin candidate、AI sensitivity signal を同じ measurement contract で束ねる。 | tooling / empirical |
+| `operation-proposal-log-v0` | accepted 前の human / AI / automation proposal を記録し、latent distribution 推定の source にする。 | tooling / empirical |
+| `outcome-linkage-dataset-v0` | review、incident、rollback、MTTR との empirical join を提供する。 | empirical |
+
+AI patch Lyapunov-like sensitivity は、AI 由来 patch が selected bad-axis measure や safe region
+に与える変化を、finite proposal / accepted transition window 上で測る protocol として扱う。
+これは `DampingControlSchema.BadAxisDampingAssumption` のような Lean 側の explicit
+assumption を discharge しない。AI provenance は source metadata であり、risk claim や
+theorem claim ではない。
+
+Vibe coding success condition は次のような empirical hypothesis として置く。
+
+```text
+VibeCodingSuccessHypothesis =
+  selectedTaskClass
+  selectedArchitectureRegion
+  operationProposalDistributionRef
+  controlPolicyRef
+  acceptedTrajectoryReportRefs
+  outcomeLinkageRefs
+  successCriteria
+  confounderNotes
+  nonConclusions
+```
+
+この hypothesis は、AI patch 反復がどの条件で selected invariant を保ちやすいかを
+検証する入口である。成功条件は dataset / case study 上の仮説であり、AAT の theorem
+claim ではない。
+
+後続 tooling Issue に分解する場合の粒度は次である。
+
+| slice | 主な artifact / validator | 残す境界 |
+| --- | --- | --- |
+| finite distribution fixture | `finite-weighted-operation-distribution-v0` | proposal completeness と真の operation distribution は主張しない。 |
+| simulation protocol fixture | `signature-dynamics-simulation-protocol-v0` | finite horizon の比較に限る。 |
+| dynamics metrics join | `architecture-dynamics-metrics-report-v0` | metrics は多軸診断であり単一 score ではない。 |
+| AI sensitivity protocol | `ai-patch-sensitivity-protocol-v0` | AI provenance だけで risk / success を結論しない。 |
+| Vibe coding hypothesis ledger | `vibe-coding-hypothesis-v0` | success / failure の一般 theorem 化をしない。 |
 
 ### Phase D6: development field theory
 
