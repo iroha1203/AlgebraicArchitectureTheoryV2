@@ -1,0 +1,750 @@
+{
+  "schemaVersion": "architecture-dynamics-metrics-report-v0",
+  "reportId": "fixture-architecture-dynamics-metrics-report-v0",
+  "repository": {
+    "owner": "iroha1203",
+    "name": "AlgebraicArchitectureTheoryV2",
+    "defaultBranch": "main"
+  },
+  "window": {
+    "windowStart": "2026-01-01T00:00:00Z",
+    "windowEnd": "2026-01-31T23:59:59Z",
+    "windowKind": "selected-fixture-window"
+  },
+  "sourceRefs": [
+    {
+      "kind": "pr-force-report",
+      "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+      "schemaVersion": "pr-force-report-v0",
+      "artifactId": "fixture-pr-force-report-v0"
+    },
+    {
+      "kind": "signature-trajectory-report",
+      "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+      "schemaVersion": "signature-trajectory-report-v0",
+      "artifactId": "fixture-signature-trajectory-report-v0"
+    },
+    {
+      "kind": "architecture-drift-ledger",
+      "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+      "schemaVersion": "architecture-drift-ledger-v0",
+      "artifactId": "fixture-architecture-drift-ledger"
+    },
+    {
+      "kind": "outcome-linkage-dataset",
+      "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+      "schemaVersion": "outcome-linkage-dataset-v0",
+      "artifactId": "fixture-outcome-linkage-dataset"
+    },
+    {
+      "kind": "policy-decision-report",
+      "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+      "schemaVersion": "policy-decision-report-v0",
+      "artifactId": "fixture-policy-decision-report"
+    },
+    {
+      "kind": "ai-provenance-log",
+      "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+      "artifactId": "fixture-ai-provenance-log"
+    }
+  ],
+  "trajectoryMetrics": [
+    {
+      "metricId": "trajectory.trajectoryDriftRate",
+      "value": null,
+      "status": "unmeasured",
+      "sourceRefs": [],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "trajectory drift extractor is not implemented in the MVP fixture"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "architecture-dynamics-evidence",
+            "reason": "trajectory drift extractor is not implemented in the MVP fixture",
+            "boundary": "unmeasured"
+          }
+        ],
+        "nonConclusions": [
+          "unmeasured dynamics metric is not measured-zero evidence"
+        ]
+      },
+      "assumptions": [
+        "trajectory report is a future source artifact in this fixture"
+      ],
+      "nonConclusions": [
+        "unmeasured trajectory drift is not zero drift",
+        "endpoint delta does not imply path safety"
+      ]
+    },
+    {
+      "metricId": "trajectory.trajectoryStability",
+      "value": null,
+      "status": "unavailable",
+      "sourceRefs": [
+        {
+          "kind": "signature-trajectory-report",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "schemaVersion": "signature-trajectory-report-v0",
+          "artifactId": "fixture-signature-trajectory-report-v0"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [
+          "TrajectoryStability"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "trajectory report schema is reserved but not retained in this fixture"
+        ],
+        "unsupportedConstructs": [
+          "global attractor inference"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
+        ]
+      },
+      "assumptions": [
+        "selected finite trajectory evidence is unavailable"
+      ],
+      "nonConclusions": [
+        "unavailable stability is not instability evidence",
+        "trajectory stability does not claim global convergence"
+      ]
+    }
+  ],
+  "forceMetrics": [
+    {
+      "metricId": "force.observedForce",
+      "value": {
+        "boundaryViolationDelta": -2
+      },
+      "status": "measured",
+      "sourceRefs": [
+        {
+          "kind": "pr-force-report",
+          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "schemaVersion": "pr-force-report-v0",
+          "artifactId": "fixture-pr-force-report-v0"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "pr-force",
+        "measuredAxes": [
+          "ObservedForce"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "accepted PR force report is retained"
+        ],
+        "unsupportedConstructs": [
+          "rejected raw proposal force"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
+        ]
+      },
+      "assumptions": [
+        "ObservedForce is read only from accepted PR force reports"
+      ],
+      "nonConclusions": [
+        "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes",
+        "ObservedForce excludes rejected raw proposal force"
+      ]
+    },
+    {
+      "metricId": "force.latentForceEstimate",
+      "value": null,
+      "status": "unmeasured",
+      "sourceRefs": [],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "operation proposal log is not available for latent force estimation"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "architecture-dynamics-evidence",
+            "reason": "operation proposal log is not available for latent force estimation",
+            "boundary": "unmeasured"
+          }
+        ],
+        "nonConclusions": [
+          "unmeasured dynamics metric is not measured-zero evidence"
+        ]
+      },
+      "assumptions": [
+        "latent force needs proposal or review pressure evidence"
+      ],
+      "nonConclusions": [
+        "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes",
+        "LatentForceEstimate is not inferred from ObservedForce"
+      ]
+    },
+    {
+      "metricId": "force.dissipatedForceEstimate",
+      "value": null,
+      "status": "unavailable",
+      "sourceRefs": [
+        {
+          "kind": "policy-decision-report",
+          "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+          "schemaVersion": "policy-decision-report-v0",
+          "artifactId": "fixture-policy-decision-report"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "development-control",
+        "measuredAxes": [
+          "DissipatedForceEstimate"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "policy-decision-report",
+            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "schemaVersion": "policy-decision-report-v0",
+            "artifactId": "fixture-policy-decision-report"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "policy decision report is retained as dissipation mechanism context"
+        ],
+        "unsupportedConstructs": [
+          "causal proof of force dissipation"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
+        ]
+      },
+      "assumptions": [
+        "dissipation ledger is not retained in this MVP fixture"
+      ],
+      "nonConclusions": [
+        "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes",
+        "DissipatedForceEstimate is not inferred from ObservedForce"
+      ]
+    },
+    {
+      "metricId": "force.netPrForce",
+      "value": null,
+      "status": "notComparable",
+      "sourceRefs": [
+        {
+          "kind": "pr-force-report",
+          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "schemaVersion": "pr-force-report-v0",
+          "artifactId": "fixture-pr-force-report-v0"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "pr-force",
+        "measuredAxes": [
+          "NetPRForce"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "only one accepted PR force report is retained"
+        ],
+        "unsupportedConstructs": [
+          "cross-window normalization"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
+        ]
+      },
+      "assumptions": [
+        "net force needs comparable additive axes across the selected window"
+      ],
+      "nonConclusions": [
+        "notComparable NetPRForce is not zero net force"
+      ]
+    }
+  ],
+  "gapMetrics": [
+    {
+      "metricId": "gap.forceCancellationRatio",
+      "value": null,
+      "status": "notComparable",
+      "sourceRefs": [
+        {
+          "kind": "pr-force-report",
+          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "schemaVersion": "pr-force-report-v0",
+          "artifactId": "fixture-pr-force-report-v0"
+        },
+        {
+          "kind": "signature-trajectory-report",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "schemaVersion": "signature-trajectory-report-v0",
+          "artifactId": "fixture-signature-trajectory-report-v0"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics-gap",
+        "measuredAxes": [
+          "ForceCancellationRatio"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "trajectory delta sequence is unavailable for denominator comparison"
+        ],
+        "unsupportedConstructs": [
+          "force cancellation theorem"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
+        ]
+      },
+      "assumptions": [
+        "denominator or comparable trajectory evidence is unavailable"
+      ],
+      "nonConclusions": [
+        "notComparable ForceCancellationRatio is not measured cancellation"
+      ]
+    },
+    {
+      "metricId": "gap.transientExcursionDebt",
+      "value": null,
+      "status": "unmeasured",
+      "sourceRefs": [],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "selected bad-axis trajectory points are not available"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "architecture-dynamics-evidence",
+            "reason": "selected bad-axis trajectory points are not available",
+            "boundary": "unmeasured"
+          }
+        ],
+        "nonConclusions": [
+          "unmeasured dynamics metric is not measured-zero evidence"
+        ]
+      },
+      "assumptions": [
+        "transient excursion debt needs finite trajectory points"
+      ],
+      "nonConclusions": [
+        "endpoint safe does not imply path safe"
+      ]
+    }
+  ],
+  "fieldControlMetrics": [
+    {
+      "metricId": "fieldControl.dissipationCapacity",
+      "value": null,
+      "status": "unavailable",
+      "sourceRefs": [
+        {
+          "kind": "policy-decision-report",
+          "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+          "schemaVersion": "policy-decision-report-v0",
+          "artifactId": "fixture-policy-decision-report"
+        },
+        {
+          "kind": "outcome-linkage-dataset",
+          "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+          "schemaVersion": "outcome-linkage-dataset-v0",
+          "artifactId": "fixture-outcome-linkage-dataset"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "development-control",
+        "measuredAxes": [
+          "DissipationCapacity"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "policy-decision-report",
+            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "schemaVersion": "policy-decision-report-v0",
+            "artifactId": "fixture-policy-decision-report"
+          },
+          {
+            "kind": "outcome-linkage-dataset",
+            "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+            "schemaVersion": "outcome-linkage-dataset-v0",
+            "artifactId": "fixture-outcome-linkage-dataset"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "policy and outcome refs are retained but proposal-level evidence is absent"
+        ],
+        "unsupportedConstructs": [
+          "organization-level causal capacity proof"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
+        ]
+      },
+      "assumptions": [
+        "dissipation capacity needs proposal, policy, and trajectory evidence"
+      ],
+      "nonConclusions": [
+        "unavailable DissipationCapacity is not zero capacity"
+      ]
+    },
+    {
+      "metricId": "fieldControl.designFieldStrength",
+      "value": null,
+      "status": "outOfScope",
+      "sourceRefs": [],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "development field snapshot is outside the MVP fixture scope"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "architecture-dynamics-evidence",
+            "reason": "development field snapshot is outside the MVP fixture scope",
+            "boundary": "outOfScope"
+          }
+        ],
+        "nonConclusions": [
+          "outOfScope dynamics metric is not measured-zero evidence"
+        ]
+      },
+      "assumptions": [
+        "field snapshot artifact is not part of the MVP fixture"
+      ],
+      "nonConclusions": [
+        "outOfScope DesignFieldStrength is not weak design field evidence"
+      ]
+    }
+  ],
+  "aiDynamicsMetrics": [
+    {
+      "metricId": "aiDynamics.operationDistributionShift",
+      "value": null,
+      "status": "private",
+      "sourceRefs": [
+        {
+          "kind": "ai-provenance-log",
+          "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+          "artifactId": "fixture-ai-provenance-log"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "ai-provenance",
+        "measuredAxes": [
+          "OperationDistributionShift"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "ai-provenance-log",
+            "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+            "artifactId": "fixture-ai-provenance-log"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "AI provenance may be private in the selected window"
+        ],
+        "unsupportedConstructs": [
+          "AI behavior theorem"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
+        ]
+      },
+      "assumptions": [
+        "AI provenance evidence is private for this fixture"
+      ],
+      "nonConclusions": [
+        "private AI dynamics evidence is not zero distribution shift"
+      ]
+    },
+    {
+      "metricId": "aiDynamics.aiPatchLyapunov",
+      "value": null,
+      "status": "outOfScope",
+      "sourceRefs": [],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "Lyapunov-like AI patch protocol is outside the MVP fixture scope"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "architecture-dynamics-evidence",
+            "reason": "Lyapunov-like AI patch protocol is outside the MVP fixture scope",
+            "boundary": "outOfScope"
+          }
+        ],
+        "nonConclusions": [
+          "outOfScope dynamics metric is not measured-zero evidence"
+        ]
+      },
+      "assumptions": [
+        "simulation protocol is not fixed in this fixture"
+      ],
+      "nonConclusions": [
+        "AI patch Lyapunov-like metric is not a formal convergence theorem"
+      ]
+    }
+  ],
+  "measurementBoundary": {
+    "measuredLayer": "architecture-dynamics",
+    "measuredAxes": [
+      "trajectory",
+      "force",
+      "gap",
+      "fieldControl",
+      "aiDynamics"
+    ],
+    "sourceArtifactRefs": [
+      {
+        "kind": "pr-force-report",
+        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "schemaVersion": "pr-force-report-v0",
+        "artifactId": "fixture-pr-force-report-v0"
+      },
+      {
+        "kind": "signature-trajectory-report",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "artifactId": "fixture-signature-trajectory-report-v0"
+      },
+      {
+        "kind": "architecture-drift-ledger",
+        "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+        "schemaVersion": "architecture-drift-ledger-v0",
+        "artifactId": "fixture-architecture-drift-ledger"
+      },
+      {
+        "kind": "outcome-linkage-dataset",
+        "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+        "schemaVersion": "outcome-linkage-dataset-v0",
+        "artifactId": "fixture-outcome-linkage-dataset"
+      },
+      {
+        "kind": "policy-decision-report",
+        "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+        "schemaVersion": "policy-decision-report-v0",
+        "artifactId": "fixture-policy-decision-report"
+      },
+      {
+        "kind": "ai-provenance-log",
+        "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
+        "artifactId": "fixture-ai-provenance-log"
+      }
+    ],
+    "extractorVersion": "0.1.0",
+    "policyVersion": "fixture-policy-v0",
+    "schemaVersion": "architecture-dynamics-metrics-report-v0",
+    "aggregationWindow": {
+      "windowStart": "2026-01-01T00:00:00Z",
+      "windowEnd": "2026-01-31T23:59:59Z",
+      "windowKind": "selected-fixture-window"
+    },
+    "selectedRegionRefs": [
+      "fixture:selected-dynamics-window"
+    ],
+    "assumptions": [
+      "fixture records Architecture Dynamics metric slots for a bounded selected window",
+      "missing, private, unavailable, and notComparable metrics remain explicit"
+    ],
+    "unsupportedConstructs": [
+      "global attractor inference",
+      "causal incident-risk theorem",
+      "AI behavior theorem"
+    ],
+    "missingEvidence": [
+      {
+        "evidenceKind": "signature-trajectory-report",
+        "reason": "trajectory report is a reserved future source for this fixture",
+        "boundary": "unavailable"
+      },
+      {
+        "evidenceKind": "operation-proposal-log",
+        "reason": "proposal log is not retained in the MVP fixture",
+        "boundary": "unmeasured"
+      }
+    ],
+    "nonConclusions": [
+      "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+      "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+      "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+      "global attractor, causal proof, and incident-risk conclusions are out of scope"
+    ]
+  },
+  "nonConclusions": [
+    "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+    "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+    "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+    "global attractor, causal proof, and incident-risk conclusions are out of scope"
+  ]
+}

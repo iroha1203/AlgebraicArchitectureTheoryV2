@@ -1,6 +1,6 @@
 use crate::{
     AIR_SCHEMA_VERSION, ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
-    CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
+    ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION, CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
     INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
@@ -333,6 +333,30 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "ObservedForce excludes rejected raw proposal force; heuristic decomposition remains advisory tooling evidence.",
+                    ],
+                ),
+            ),
+            artifact(
+                "architecture-dynamics-metrics-report",
+                "Architecture Dynamics Metrics Report",
+                ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION,
+                "architecture-dynamics-output",
+                "D5-D6",
+                "implemented",
+                vec![
+                    "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-v0",
+                    "docs/design/architecture_signature_dynamics.md#quantitative-metric-derivation",
+                ],
+                vec!["#671"],
+                compatibility_boundary(
+                    "Map repository, selected window, source refs, trajectory / force / gap / field-control / AI dynamics metric groups, measurement boundary, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New dynamics metrics must declare MeasurementStatus, source refs, measurement boundary, assumptions, and non-conclusions.",
+                    ],
+                    vec![
+                        "Metrics report remains a multi-axis diagnostic artifact and does not promote tooling evidence to Lean theorem claims.",
+                        "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes.",
                     ],
                 ),
             ),

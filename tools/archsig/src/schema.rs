@@ -50,6 +50,10 @@ pub const DYNAMICS_MEASUREMENT_CONTRACT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const PR_FORCE_REPORT_SCHEMA_VERSION: &str = "pr-force-report-v0";
 pub const PR_FORCE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "pr-force-report-validation-report-v0";
+pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION: &str =
+    "architecture-dynamics-metrics-report-v0";
+pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "architecture-dynamics-metrics-report-validation-report-v0";
 pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
@@ -3237,6 +3241,56 @@ pub struct PrForceReportValidationSummary {
     pub result: String,
     pub observed_force_count: usize,
     pub decomposition_component_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDynamicsMetricsReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub repository: RepositoryRef,
+    pub window: DynamicsAggregationWindowV0,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub trajectory_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub force_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub gap_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub field_control_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub ai_dynamics_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDynamicsMetricsReportValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArchitectureDynamicsMetricsReportValidationInput,
+    pub report: ArchitectureDynamicsMetricsReportV0,
+    pub summary: ArchitectureDynamicsMetricsReportValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDynamicsMetricsReportValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub report_id: String,
+    pub repository: String,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDynamicsMetricsReportValidationSummary {
+    pub result: String,
+    pub trajectory_metric_count: usize,
+    pub force_metric_count: usize,
+    pub gap_metric_count: usize,
+    pub field_control_metric_count: usize,
+    pub ai_dynamics_metric_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }
