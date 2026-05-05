@@ -25,6 +25,7 @@ mod repair_rule;
 mod runtime;
 pub mod schema;
 mod schema_catalog;
+mod schema_versioning;
 mod snapshot;
 mod synthesis_constraint;
 mod theorem_precondition;

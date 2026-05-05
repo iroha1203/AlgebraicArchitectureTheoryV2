@@ -40,6 +40,34 @@ Compatibility policy の schema version は `schema-compatibility-policy-v0` で
 - non-conclusions が保存または強化される。
 - coverage / exactness metadata が migration で落ちない。
 
+## AIR / Feature Extension Report metadata
+
+Issue: [#609](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/609)
+
+`aat-air-v0` と `feature-extension-report-v0` は B9 compatibility policy への artifact-local
+trace として `schemaCompatibility` を持つ。
+
+AIR metadata は次を固定する。
+
+- `coverage.layers[].extractionScope`
+- `coverage.layers[].exactnessAssumptions`
+- `coverage.layers[].unsupportedConstructs`
+- `claims[].missingPreconditions`
+- `claims[].nonConclusions`
+
+Feature Extension Report metadata は次を固定する。
+
+- `coverageGaps[].nonConclusions`
+- `theoremPreconditionChecks[].missingPreconditions`
+- `unsupportedConstructs`
+- `nonConclusions`
+
+AIR validation は `schemaCompatibility` がある場合に、coverage / exactness boundaries、
+new required assumptions、theorem bridge preconditions、formal claim promotion を禁止する
+non-conclusions が落ちていないことを検査する。metadata がない legacy AIR v0 fixture は
+backward-compatible input として読むが、新しく生成する AIR / Feature Extension Report は
+metadata を出力する。
+
 ## Non-Conclusions
 
 Schema migration は意味保存を主張しない。field mapping が通ることは、

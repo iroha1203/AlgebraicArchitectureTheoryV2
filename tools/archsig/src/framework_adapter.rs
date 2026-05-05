@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 
+use crate::schema_versioning::air_schema_compatibility_metadata;
 use crate::{
     AirArtifact, AirClaim, AirCoverageLayer, AirDocumentV0, AirEvidence, AirRelation,
     FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION, FrameworkAdapterEvidenceV0, PYTHON_COMPONENT_KIND,
@@ -140,6 +141,10 @@ pub fn attach_framework_adapter_evidence(
         missing_preconditions: Vec::new(),
         non_conclusions: adapter.non_conclusions.clone(),
     });
+    document.schema_compatibility = Some(air_schema_compatibility_metadata(
+        &document.coverage,
+        &document.claims,
+    ));
 
     Ok(())
 }

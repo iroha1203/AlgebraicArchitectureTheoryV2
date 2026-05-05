@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::dataset::{DATASET_SIGNATURE_AXES, dataset_metric_status, dataset_signature_shape};
+use crate::schema_versioning::air_schema_compatibility_metadata;
 use crate::{
     AIR_SCHEMA_VERSION, AirArtifact, AirClaim, AirComponent, AirCoverage, AirCoverageLayer,
     AirDocumentInput, AirDocumentV0, AirEvidence, AirExtension, AirFeature, AirIdPolicies,
@@ -202,9 +203,14 @@ pub fn build_air_document(
     let interaction_claim_refs = air_interaction_claim_refs(&claims);
     let revision = air_revision(diff, pr_metadata);
     let feature = air_feature(pr_metadata);
+    let coverage = AirCoverage {
+        layers: air_coverage_layers(&signature_axes, sig0),
+    };
+    let schema_compatibility = air_schema_compatibility_metadata(&coverage, &claims);
 
     AirDocumentV0 {
         schema_version: AIR_SCHEMA_VERSION.to_string(),
+        schema_compatibility: Some(schema_compatibility),
         architecture_id: sig0.root.clone(),
         ids: AirIdPolicies {
             component_id_policy: "sig0 component id".to_string(),
@@ -251,9 +257,7 @@ pub fn build_air_document(
         signature: AirSignature {
             axes: signature_axes.clone(),
         },
-        coverage: AirCoverage {
-            layers: air_coverage_layers(&signature_axes, sig0),
-        },
+        coverage,
         claims,
         operation_trace: AirOperationTrace {
             operations: Vec::new(),

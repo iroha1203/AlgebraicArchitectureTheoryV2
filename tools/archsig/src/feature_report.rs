@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::repair_rule::static_repair_rule_registry;
+use crate::schema_versioning::feature_report_schema_compatibility_metadata;
 use crate::theorem_precondition::build_theorem_precondition_check_report;
 use crate::{
     AirClaim, AirDocumentV0, AirEvidence, AirRelation, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
@@ -67,9 +68,23 @@ pub fn build_feature_extension_report(
     let generated_patch_summary = feature_report_generated_patch_summary(document, &evidence_by_id);
     let complexity_transfer_candidates =
         feature_report_complexity_transfer_candidates(&generated_patch_summary.review_warnings);
+    let semantic_path_summary = feature_report_semantic_path_summary(
+        document,
+        &coverage_gaps,
+        &claim_by_id,
+        &evidence_by_id,
+    );
+    let schema_compatibility = feature_report_schema_compatibility_metadata(
+        &coverage_gaps,
+        &undischarged_assumptions,
+        &runtime_summary,
+        &semantic_path_summary,
+        &non_conclusions,
+    );
 
     FeatureExtensionReportV0 {
         schema_version: FEATURE_EXTENSION_REPORT_SCHEMA_VERSION.to_string(),
+        schema_compatibility: Some(schema_compatibility),
         input: FeatureReportInput {
             schema_version: document.schema_version.clone(),
             path: input_path.to_string(),
@@ -136,12 +151,7 @@ pub fn build_feature_extension_report(
         introduced_obstruction_witnesses,
         eliminated_obstruction_witnesses: Vec::new(),
         complexity_transfer_candidates,
-        semantic_path_summary: feature_report_semantic_path_summary(
-            document,
-            &coverage_gaps,
-            &claim_by_id,
-            &evidence_by_id,
-        ),
+        semantic_path_summary,
         theorem_package_refs,
         theorem_precondition_summary: theorem_precondition_report.summary,
         theorem_precondition_checks: theorem_precondition_report.checks,

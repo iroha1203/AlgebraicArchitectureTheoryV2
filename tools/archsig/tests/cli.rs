@@ -178,6 +178,38 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
 
     let json = read_json(&air);
     assert_eq!(json["schemaVersion"], "aat-air-v0");
+    assert_eq!(json["schemaCompatibility"]["artifactId"], "air");
+    assert!(
+        json["schemaCompatibility"]["fieldMappings"]
+            .as_array()
+            .expect("fieldMappings are an array")
+            .iter()
+            .any(|mapping| mapping["sourceField"] == "claims[].missingPreconditions")
+    );
+    assert!(
+        json["schemaCompatibility"]["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("coverageExactnessBoundaries are an array")
+            .iter()
+            .any(|boundary| boundary["axisOrLayer"] == "static"
+                && boundary["coverageAssumptions"]
+                    .as_array()
+                    .expect("coverageAssumptions are an array")
+                    .iter()
+                    .any(|assumption| assumption
+                        .as_str()
+                        .expect("coverage assumption is a string")
+                        .contains("dynamic-import")))
+    );
+    assert!(
+        json["schemaCompatibility"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|conclusion| {
+                conclusion == "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+            })
+    );
     assert!(
         json["components"]
             .as_array()
@@ -289,6 +321,25 @@ fn cli_python_sig0_normalizes_to_air_and_reports_theorem_boundary() {
     ]);
     let feature_json = read_json(&feature_report);
     assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert_eq!(
+        feature_json["schemaCompatibility"]["artifactId"],
+        "feature-extension-report"
+    );
+    assert!(
+        feature_json["schemaCompatibility"]["fieldMappings"]
+            .as_array()
+            .expect("feature fieldMappings are an array")
+            .iter()
+            .any(|mapping| mapping["sourceField"]
+                == "theoremPreconditionChecks[].missingPreconditions")
+    );
+    assert!(
+        feature_json["schemaCompatibility"]["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("feature coverageExactnessBoundaries are an array")
+            .iter()
+            .any(|boundary| boundary["axisOrLayer"] == "semantic")
+    );
     assert!(
         feature_json["architectureSummary"]["measuredAxes"]
             .as_array()
@@ -2689,6 +2740,55 @@ fn cli_validate_air_detects_dangling_refs_and_boundary_mismatch() {
             .expect("checks is array")
             .iter()
             .any(|check| check["id"] == "air-claim-refs-resolved" && check["result"] == "fail")
+    );
+}
+
+#[test]
+fn cli_validate_air_detects_incomplete_schema_compatibility_metadata() {
+    let root = air_fixture_root();
+    let out_dir = temp_dir("validate-air-schema-compatibility-invalid");
+    let input = out_dir.join("invalid-schema-compatibility-air.json");
+    let report = out_dir.join("invalid-schema-compatibility-air-report.json");
+    let mut json = read_json(&root.join("good_extension.json"));
+
+    json["schemaCompatibility"] = serde_json::json!({
+        "artifactId": "air",
+        "schemaVersionName": "aat-air-v0",
+        "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+        "fieldMappings": [],
+        "deprecatedFields": [],
+        "requiredAssumptions": [],
+        "coverageExactnessBoundaries": [],
+        "nonConclusions": []
+    });
+    fs::write(
+        &input,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("invalid AIR is written");
+
+    let output = run_sig0_output(&[
+        "validate-air",
+        "--input",
+        input.to_str().expect("input path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    assert!(
+        !output.status.success(),
+        "invalid schema compatibility metadata should fail"
+    );
+    let report = read_json(&report);
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["id"] == "air-schema-compatibility-metadata-complete"
+                    && check["result"] == "fail"
+            )
     );
 }
 

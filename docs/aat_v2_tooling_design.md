@@ -291,6 +291,15 @@ precondition checker が読む stable kernel である。
 
 ```yaml
 schema_version: aat-air-v0
+schema_compatibility:
+  artifact_id: air
+  schema_version_name: aat-air-v0
+  compatibility_policy_ref: b9-compatibility-policy-v0
+  field_mappings: list
+  deprecated_fields: list
+  required_assumptions: list
+  coverage_exactness_boundaries: list
+  non_conclusions: list
 architecture_id: string
 ids:
   component_id_policy: string
@@ -1054,6 +1063,7 @@ runtime / semantic / empirical axis は evidence schema と unmeasured boundary 
 必須項目:
 
 ```text
+- schema compatibility metadata
 - architecture id / revision
 - feature id / PR / issue / AI session reference
 - before / after architecture summary
@@ -2029,6 +2039,14 @@ B9 の schema version catalog と compatibility policy は
 [`docs/design/schema_version_catalog.md`](design/schema_version_catalog.md) で管理する。
 最小 skeleton は `SchemaVersionCatalogV0` / `SchemaCompatibilityPolicyV0` と
 `tools/archsig/tests/fixtures/minimal/schema_version_catalog.json` に置く。
+
+AIR と Feature Extension Report は B9 metadata として `schemaCompatibility` を持つ。
+この metadata は field mapping、deprecated fields、new required assumptions、
+coverage / exactness boundaries、non-conclusions を artifact 内で trace する。
+AIR validation は metadata が存在する場合、coverage layer、exactness assumption、
+theorem bridge precondition、non-conclusion boundary が落ちていないことを検査する。
+metadata の存在や validation pass は semantic preservation、Lean theorem claim、
+extractor completeness、architecture lawfulness を結論しない。
 
 ### Phase B10: Operational feedback loop
 
