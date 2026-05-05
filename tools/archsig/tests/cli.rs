@@ -2793,6 +2793,156 @@ fn cli_validate_air_detects_incomplete_schema_compatibility_metadata() {
 }
 
 #[test]
+fn cli_schema_compatibility_accepts_backward_compatible_sig0_fixture() {
+    let root = fixture_root();
+    let out_dir = temp_dir("schema-compatibility-sig0");
+    let sig0 = out_dir.join("sig0.json");
+    let report = out_dir.join("schema-compatibility-report.json");
+
+    run_sig0(&[
+        "--root",
+        root.to_str().expect("fixture path is utf-8"),
+        "--out",
+        sig0.to_str().expect("sig0 path is utf-8"),
+    ]);
+    run_sig0(&[
+        "schema-compatibility",
+        "--before",
+        sig0.to_str().expect("before path is utf-8"),
+        "--after",
+        sig0.to_str().expect("after path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let report = read_json(&report);
+    assert_eq!(
+        report["schemaVersion"],
+        "schema-compatibility-check-report-v0"
+    );
+    assert_eq!(report["summary"]["result"], "pass");
+    assert_eq!(report["after"]["artifactId"], "signature-artifact");
+    assert_eq!(
+        report["after"]["hasSchemaCompatibilityMetadata"], false,
+        "B0-B8 Sig0 fixture remains backward-compatible input"
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(
+                |check| check["id"] == "schema-compatibility-metadata-present"
+                    && check["severity"] == "warning"
+            )
+    );
+    assert!(
+        report["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|item| item
+                .as_str()
+                .expect("nonConclusion is a string")
+                .contains("semantic-preservation"))
+    );
+}
+
+#[test]
+fn cli_schema_compatibility_blocks_missing_formal_claim_guardrail() {
+    let root = python_fixture_root();
+    let out_dir = temp_dir("schema-compatibility-formal-claim");
+    let sig0 = out_dir.join("python-sig0.json");
+    let air = out_dir.join("python.air.json");
+    let before = out_dir.join("feature-report-before.json");
+    let after = out_dir.join("feature-report-after.json");
+    let report = out_dir.join("schema-compatibility-report.json");
+
+    run_sig0(&[
+        "--language",
+        "python",
+        "--root",
+        root.to_str().expect("fixture path is utf-8"),
+        "--source-root",
+        "src",
+        "--out",
+        sig0.to_str().expect("sig0 path is utf-8"),
+    ]);
+    run_sig0(&[
+        "air",
+        "--sig0",
+        sig0.to_str().expect("sig0 path is utf-8"),
+        "--out",
+        air.to_str().expect("air path is utf-8"),
+    ]);
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.to_str().expect("air path is utf-8"),
+        "--out",
+        before.to_str().expect("feature report path is utf-8"),
+    ]);
+
+    let mut json = read_json(&before);
+    json["schemaCompatibility"]["nonConclusions"] =
+        serde_json::json!(["schema compatibility metadata does not prove semantic preservation"]);
+    fs::write(
+        &after,
+        serde_json::to_string_pretty(&json).expect("json serializes"),
+    )
+    .expect("after feature report is written");
+
+    let output = run_sig0_output(&[
+        "schema-compatibility",
+        "--before",
+        before.to_str().expect("before path is utf-8"),
+        "--after",
+        after.to_str().expect("after path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "missing formal claim guardrail should fail compatibility check"
+    );
+
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "blockedFormalClaimPromotion");
+    assert!(
+        report["fieldMappings"]
+            .as_array()
+            .expect("fieldMappings are an array")
+            .iter()
+            .any(|mapping| mapping["sourceField"] == "nonConclusions")
+    );
+    assert!(
+        report["newRequiredAssumptions"]
+            .as_array()
+            .expect("newRequiredAssumptions are an array")
+            .iter()
+            .any(|assumption| assumption["fallbackWhenMissing"]
+                .as_str()
+                .expect("fallbackWhenMissing is a string")
+                .contains("do not infer"))
+    );
+    assert!(
+        report["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("coverageExactnessBoundaries are an array")
+            .iter()
+            .any(|boundary| boundary["axisOrLayer"] == "runtime")
+    );
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(|check| check["id"] == "formal-claim-promotion-blocked"
+                && check["result"] == "blockedFormalClaimPromotion")
+    );
+}
+
+#[test]
 fn cli_validate_air_detects_runtime_metadata_inconsistency() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-runtime-invalid");

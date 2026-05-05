@@ -19,6 +19,8 @@ pub const DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION: &str =
     "detectable-values-reported-axes-catalog-v0";
 pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog-v0";
 pub const SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION: &str = "schema-compatibility-policy-v0";
+pub const SCHEMA_COMPATIBILITY_CHECK_REPORT_SCHEMA_VERSION: &str =
+    "schema-compatibility-check-report-v0";
 pub const THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION: &str =
     "theorem-precondition-check-report-v0";
 pub const REPAIR_RULE_REGISTRY_SCHEMA_VERSION: &str = "repair-rule-registry-v0";
@@ -167,6 +169,55 @@ pub struct SchemaCoverageExactnessBoundaryV0 {
     pub measurement_boundary: String,
     pub coverage_assumptions: Vec<String>,
     pub exactness_assumptions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityCheckReportV0 {
+    pub schema_version: String,
+    pub checker_id: String,
+    pub compatibility_policy_ref: String,
+    pub before: SchemaCompatibilityArtifactRefV0,
+    pub after: SchemaCompatibilityArtifactRefV0,
+    pub summary: SchemaCompatibilityCheckSummaryV0,
+    pub checks: Vec<SchemaCompatibilityCheckV0>,
+    pub field_mappings: Vec<SchemaFieldMappingV0>,
+    pub deprecated_fields: Vec<SchemaDeprecatedFieldV0>,
+    pub new_required_assumptions: Vec<SchemaRequiredAssumptionV0>,
+    pub coverage_exactness_boundaries: Vec<SchemaCoverageExactnessBoundaryV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityArtifactRefV0 {
+    pub path: String,
+    pub artifact_id: Option<String>,
+    pub schema_version_name: Option<String>,
+    pub catalog_status: String,
+    pub has_schema_compatibility_metadata: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityCheckSummaryV0 {
+    pub result: String,
+    pub compatible_diff_count: usize,
+    pub migration_required_count: usize,
+    pub blocked_formal_claim_promotion_count: usize,
+    pub warning_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityCheckV0 {
+    pub id: String,
+    pub dimension: String,
+    pub result: String,
+    pub severity: String,
+    pub message: String,
+    pub required_action: Option<String>,
+    pub non_conclusion: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

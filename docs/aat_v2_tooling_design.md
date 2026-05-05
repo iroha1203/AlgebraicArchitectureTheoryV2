@@ -2045,6 +2045,10 @@ AIR と Feature Extension Report は B9 metadata として `schemaCompatibility`
 coverage / exactness boundaries、non-conclusions を artifact 内で trace する。
 AIR validation は metadata が存在する場合、coverage layer、exactness assumption、
 theorem bridge precondition、non-conclusion boundary が落ちていないことを検査する。
+`archsig schema-compatibility` は before / after artifact の field mapping、
+deprecated fields、new required assumptions、non-conclusions、coverage / exactness boundary を
+別軸で報告し、metadata 欠落、explicit migration が必要な差分、formal claim promotion を
+block すべき差分を区別する。
 metadata の存在や validation pass は semantic preservation、Lean theorem claim、
 extractor completeness、architecture lawfulness を結論しない。
 

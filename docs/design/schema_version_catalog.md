@@ -68,6 +68,27 @@ non-conclusions が落ちていないことを検査する。metadata がない 
 backward-compatible input として読むが、新しく生成する AIR / Feature Extension Report は
 metadata を出力する。
 
+## Migration / compatibility checker
+
+Issue: [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608)
+
+`archsig schema-compatibility --before <artifact.json> --after <artifact.json>` は
+`schema-compatibility-check-report-v0` を出力する。catalog の `schemaVersion` 照合に加え、
+artifact-local `schemaCompatibility` metadata がある場合は次を別軸で検査する。
+
+- field mappings が explicit に保持されていること。
+- deprecated fields が replacement または reader behavior と removal phase を持つこと。
+- new required assumptions が missing / undischarged として表面化し、formal claim を暗黙に
+  discharge しないこと。
+- non-conclusions が保存または強化され、semantic preservation、extractor completeness、
+  Lean theorem / formal claim promotion の boundary が落ちないこと。
+- coverage / exactness boundary が migration で落ちないこと。
+
+同一 `schemaVersion` で `schemaCompatibility` metadata を持たない B0-B8 artifact は、
+backward-compatible input として warning 付きで受け入れる。schemaVersion 変更や metadata
+欠落を伴う migration は `requiresMigration` として報告し、formal claim promotion を
+防ぐ guardrail 欠落は `blockedFormalClaimPromotion` として報告する。
+
 ## Non-Conclusions
 
 Schema migration は意味保存を主張しない。field mapping が通ることは、

@@ -466,7 +466,8 @@ Non-conclusions:
 Parent Issue: [#607](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/607)
 
 Issues: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/613),
-[#609](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/609)
+[#609](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/609),
+[#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608)
 
 B9 は AIR、Feature Extension Report、Obstruction Witness、Architecture Drift Ledger、
 detectable values / reported axes catalog など、複数 tooling artifact の schema version と
@@ -503,6 +504,14 @@ AIR metadata は `coverage.layers[].extractionScope`、
 boundary、theorem bridge preconditions、formal claim promotion を禁止する
 non-conclusions が metadata から落ちていないことを検査する。legacy AIR v0 fixture は
 metadata 欠落を backward-compatible input として読む。
+
+`archsig schema-compatibility --before <path> --after <path>` は B9 catalog を参照し、
+schema migration / compatibility check report を出力する。report は field mappings、
+deprecated fields、new required assumptions、non-conclusions、coverage / exactness
+boundaries を別軸で保持し、schemaVersion 未登録、metadata 欠落、non-conclusion 欠落、
+formal claim promotion boundary の欠落を `pass` / `requiresMigration` /
+`blockedFormalClaimPromotion` / `fail` に分類する。metadata がない同一 schemaVersion の
+B0-B8 artifact は backward-compatible input として warning 付きで受け入れる。
 
 Non-conclusions:
 
