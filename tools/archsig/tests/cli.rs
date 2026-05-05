@@ -5525,6 +5525,135 @@ fn cli_pr_force_report_fixture_and_validator_preserve_boundaries() {
 }
 
 #[test]
+fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("architecture-dynamics-metrics");
+    let static_report = out_dir.join("architecture-dynamics-metrics-static-validation.json");
+    let fixture_artifact = out_dir.join("architecture-dynamics-metrics-report.json");
+    let fixture_validation = out_dir.join("architecture-dynamics-metrics-validation.json");
+    let invalid_report = out_dir.join("architecture-dynamics-metrics-invalid.json");
+    let invalid_validation = out_dir.join("architecture-dynamics-metrics-invalid-validation.json");
+
+    run_sig0(&[
+        "architecture-dynamics-metrics",
+        "--out",
+        static_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "architecture-dynamics-metrics",
+        "--fixture",
+        "--out",
+        fixture_artifact
+            .to_str()
+            .expect("fixture artifact path is utf-8"),
+    ]);
+    run_sig0(&[
+        "architecture-dynamics-metrics",
+        "--input",
+        root.join("architecture_dynamics_metrics_report.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let json = read_json(&static_report);
+    assert_eq!(
+        json["schemaVersion"],
+        "architecture-dynamics-metrics-report-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["report"]["forceMetrics"]
+            .as_array()
+            .expect("forceMetrics is array")
+            .iter()
+            .any(|metric| {
+                metric["metricId"] == "force.observedForce"
+                    && metric["status"] == "measured"
+                    && metric["nonConclusions"]
+                        .as_array()
+                        .expect("nonConclusions is array")
+                        .iter()
+                        .any(|conclusion| {
+                            conclusion
+                                == "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes"
+                        })
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "architecture-dynamics-metrics-force-classes-separated"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let artifact = read_json(&fixture_artifact);
+    assert_eq!(
+        artifact["schemaVersion"],
+        "architecture-dynamics-metrics-report-v0"
+    );
+    assert!(
+        artifact["gapMetrics"]
+            .as_array()
+            .expect("gapMetrics is array")
+            .iter()
+            .any(|metric| {
+                metric["metricId"] == "gap.forceCancellationRatio"
+                    && metric["status"] == "notComparable"
+            })
+    );
+
+    let json = read_json(&fixture_validation);
+    assert_eq!(json["summary"]["result"], "pass");
+
+    let mut invalid_json = read_json(&root.join("architecture_dynamics_metrics_report.json"));
+    invalid_json["forceMetrics"][0]["metricId"] =
+        serde_json::json!("force.observedForce.latentForceEstimate");
+    invalid_json["forceMetrics"][0]["nonConclusions"] = serde_json::json!([]);
+    invalid_json["forceMetrics"][1]["metricId"] = serde_json::json!("force.hiddenPressure");
+    invalid_json["forceMetrics"][2]["metricId"] = serde_json::json!("force.filteredPressure");
+    fs::write(
+        &invalid_report,
+        serde_json::to_string_pretty(&invalid_json).expect("json serializes"),
+    )
+    .expect("invalid Architecture Dynamics metrics report is written");
+    let output = run_sig0_output(&[
+        "architecture-dynamics-metrics",
+        "--input",
+        invalid_report
+            .to_str()
+            .expect("invalid fixture path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid Architecture Dynamics metrics report should fail validation"
+    );
+    let json = read_json(&invalid_validation);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "architecture-dynamics-metrics-force-classes-separated"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_policy_decision_reports_fail_and_pass_boundaries() {
     let fixture = fixture_root();
     let air = air_fixture_root();

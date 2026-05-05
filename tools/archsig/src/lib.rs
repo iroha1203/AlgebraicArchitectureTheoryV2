@@ -1,5 +1,6 @@
 mod air;
 mod air_validation;
+mod architecture_dynamics_metrics;
 mod artifact_retention;
 mod baseline_suppression;
 mod component_validation;
@@ -42,6 +43,9 @@ mod test_support;
 
 pub use air::build_air_document;
 pub use air_validation::validate_air_document_report;
+pub use architecture_dynamics_metrics::{
+    static_architecture_dynamics_metrics_report, validate_architecture_dynamics_metrics_report,
+};
 pub use artifact_retention::{
     static_report_artifact_retention_manifest, validate_report_artifact_retention_report,
 };

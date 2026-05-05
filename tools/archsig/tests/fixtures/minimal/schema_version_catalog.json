@@ -393,6 +393,35 @@
           "renamed fields do not discharge new required assumptions"
         ]
       }
+    },
+    {
+      "artifactId": "architecture-dynamics-metrics-report",
+      "artifactName": "Architecture Dynamics Metrics Report",
+      "schemaVersionName": "architecture-dynamics-metrics-report-v0",
+      "artifactRole": "architecture-dynamics-output",
+      "ownerPhase": "D5-D6",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-v0",
+        "docs/design/architecture_signature_dynamics.md#quantitative-metric-derivation"
+      ],
+      "downstreamIssues": ["#671"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map repository, selected window, source refs, trajectory / force / gap / field-control / AI dynamics metric groups, measurement boundary, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New dynamics metrics must declare MeasurementStatus, source refs, measurement boundary, assumptions, and non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "Metrics report remains a multi-axis diagnostic artifact and does not promote tooling evidence to Lean theorem claims.",
+          "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {
