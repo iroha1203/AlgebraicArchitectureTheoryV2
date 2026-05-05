@@ -1,0 +1,230 @@
+{
+  "schemaVersion": "schema-version-catalog-v0",
+  "catalogId": "archsig-b9-schema-version-catalog",
+  "catalogVersion": "b9-schema-catalog-v0",
+  "phase": "B9 Schema standardization and compatibility",
+  "artifacts": [
+    {
+      "artifactId": "signature-artifact",
+      "artifactName": "Architecture Signature artifact",
+      "schemaVersionName": "archsig-sig0-v0",
+      "artifactRole": "extractor-output",
+      "ownerPhase": "B0-B8",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#4-architecture-signature-artifact-layer",
+        "docs/design/archsig_tooling_index.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map component/relation/signature fields by stable camelCase names; new axes must be added with metricStatus boundary metadata.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New required axes must declare measuredZero/measuredNonzero/unmeasured/outOfScope semantics."
+        ],
+        "coverageExactnessBoundary": [
+          "metricStatus is the compatibility boundary for coverage and exactness of Sig0 axes."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "air",
+      "artifactName": "Architecture Intermediate Representation",
+      "schemaVersionName": "aat-air-v0",
+      "artifactRole": "intermediate-representation",
+      "ownerPhase": "B0-B9",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#31-air-v0-schema",
+        "docs/design/archsig_tooling_index.md"
+      ],
+      "downstreamIssues": ["#608", "#609"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map ids, relation refs, evidence refs, claims, coverage layers, and theorem-package refs explicitly; never infer a formal claim from renamed fields.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New required theorem, coverage, projection, or exactness assumptions must be listed in claims or coverage layers."
+        ],
+        "coverageExactnessBoundary": [
+          "AIR coverage layers and claim classifications are the exactness boundary for report generation."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "feature-extension-report",
+      "artifactName": "Feature Extension Report",
+      "schemaVersionName": "feature-extension-report-v0",
+      "artifactRole": "review-output",
+      "ownerPhase": "B1-B9",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#5-feature-extension-report",
+        "docs/design/archsig_tooling_index.md"
+      ],
+      "downstreamIssues": ["#608", "#609"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map review summary, witness, theorem precondition, coverage gap, repair suggestion, and non-conclusion fields separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New required review assumptions must appear in discharged/undischarged assumptions or theorem precondition checks."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage gaps, runtime summary, semantic summary, and non-conclusions delimit report exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "obstruction-witness",
+      "artifactName": "Obstruction Witness",
+      "schemaVersionName": "obstruction-witness-v0",
+      "artifactRole": "embedded-witness",
+      "ownerPhase": "B1-B9",
+      "status": "schema-skeleton",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#6-obstruction-witness-schema"
+      ],
+      "downstreamIssues": ["#608", "#610"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map witness id, layer, kind, extension role, classification, evidence, theorem refs, claim classification, measurement boundary, and non-conclusions independently.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New witness kinds must declare layer, evidence requirements, measurement boundary, and non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "Witness measurement boundary and claim classification distinguish measured evidence from formal theorem claims."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "architecture-drift-ledger",
+      "artifactName": "Architecture Drift Ledger",
+      "schemaVersionName": "architecture-drift-ledger-v0",
+      "artifactRole": "batch-history-output",
+      "ownerPhase": "B1-B9",
+      "status": "schema-skeleton",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#51-architecture-drift-ledger"
+      ],
+      "downstreamIssues": ["#608", "#610"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map stable grouping keys, aggregation window, source, metric, status, suppression, repair, witness, claim, and non-conclusion fields separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New batch metrics must declare grouping key, aggregation window, measurement boundary, and evidence refs."
+        ],
+        "coverageExactnessBoundary": [
+          "Ledger status and suppression metadata are operational state, not formal proof state."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "detectable-values-reported-axes-catalog",
+      "artifactName": "Detectable values / reported axes catalog",
+      "schemaVersionName": "detectable-values-reported-axes-catalog-v0",
+      "artifactRole": "axis-catalog",
+      "ownerPhase": "B9",
+      "status": "schema-skeleton",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#41-detectable-values--reported-axes"
+      ],
+      "downstreamIssues": ["#608", "#612"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map axis id, layer, value type, measurement boundary, evidence requirements, theorem refs, and non-conclusions explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New reported axes must declare whether unmeasured differs from measured zero."
+        ],
+        "coverageExactnessBoundary": [
+          "Axis coverage and exactness metadata delimit what a zero or nonzero value can support."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    }
+  ],
+  "compatibilityPolicy": {
+    "schemaVersion": "schema-compatibility-policy-v0",
+    "policyId": "archsig-b9-schema-compatibility-policy",
+    "policyVersion": "b9-compatibility-policy-v0",
+    "appliesToCatalogVersion": "b9-schema-catalog-v0",
+    "dimensions": [
+      {
+        "dimension": "field_mapping",
+        "requiredMetadata": ["sourceField", "targetField", "mappingKind", "requiredReview"],
+        "checkerBoundary": "A checker may validate declared field mappings, but it must not infer semantic equivalence."
+      },
+      {
+        "dimension": "deprecated_fields",
+        "requiredMetadata": ["field", "replacement", "removalPhase", "readerBehavior"],
+        "checkerBoundary": "Deprecated fields remain compatibility metadata until removal; migration must preserve explicit reader behavior."
+      },
+      {
+        "dimension": "new_required_assumptions",
+        "requiredMetadata": ["assumptionId", "appliesTo", "requiredFor", "fallbackWhenMissing"],
+        "checkerBoundary": "New assumptions must be reported as missing or undischarged unless explicit evidence is present."
+      },
+      {
+        "dimension": "non_conclusions",
+        "requiredMetadata": ["nonConclusion", "appliesTo", "reason"],
+        "checkerBoundary": "Non-conclusions are mandatory guardrails and cannot be dropped by migration."
+      },
+      {
+        "dimension": "coverage_exactness_boundary",
+        "requiredMetadata": [
+          "axisOrLayer",
+          "measurementBoundary",
+          "coverageAssumptions",
+          "exactnessAssumptions"
+        ],
+        "checkerBoundary": "Coverage and exactness metadata delimit what any reported value can support."
+      }
+    ],
+    "requiredChecks": [
+      "known schemaVersion in catalog",
+      "field mapping entries are explicit for renamed or removed fields",
+      "deprecated fields declare replacement or removal behavior",
+      "new required assumptions are surfaced as missing until discharged",
+      "non-conclusions are preserved or strengthened",
+      "coverage and exactness metadata are not dropped"
+    ],
+    "nonConclusions": [
+      "compatibility policy is not a proof of semantic preservation",
+      "compatibility policy is not evidence of extractor completeness",
+      "compatibility policy is not a Lean theorem package"
+    ]
+  },
+  "nonConclusions": [
+    "schema migration is not a semantic-preservation theorem",
+    "catalog membership does not imply extractor completeness",
+    "compatibility pass does not imply architecture lawfulness",
+    "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+  ]
+}

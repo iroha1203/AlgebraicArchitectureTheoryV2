@@ -460,3 +460,38 @@ Non-conclusions:
 - `python-module` scan は dynamic import、plugin loading、framework convention、generated code、notebook を完全捕捉しない。
 - external dependency edge は local `ComponentUniverse` closure witness ではない。
 - policy selector の一致は architecture lawfulness や実コード extractor completeness を結論しない。
+
+## B9 Schema Standardization And Compatibility
+
+Parent Issue: [#607](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/607)
+
+Issue: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/613)
+
+B9 は AIR、Feature Extension Report、Obstruction Witness、Architecture Drift Ledger、
+detectable values / reported axes catalog など、複数 tooling artifact の schema version と
+compatibility boundary を固定する段階である。catalog と policy の詳細は
+[B9 schema version catalog](schema_version_catalog.md) で管理する。
+
+Canonical fixture:
+
+```text
+tools/archsig/tests/fixtures/minimal/schema_version_catalog.json
+```
+
+Rust schema skeleton:
+
+```text
+SchemaVersionCatalogV0
+SchemaCompatibilityPolicyV0
+SchemaCompatibilityBoundaryV0
+```
+
+Compatibility policy は field mapping、deprecated fields、new required assumptions、
+non-conclusions、coverage / exactness boundary を別項目として扱う。
+
+Non-conclusions:
+
+- schema migration は意味保存を主張しない。
+- compatibility pass は architecture lawfulness を結論しない。
+- compatibility pass は Lean theorem claim を結論しない。
+- catalog entry の存在は extractor completeness を結論しない。

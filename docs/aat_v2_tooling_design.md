@@ -2022,7 +2022,13 @@ B8 の共通境界は次の通りである。
 
 この段階では、研究 prototype から複数 project / 複数 extractor が使える標準 artifact へ
 移行する。schema migration は意味保存を主張するものではなく、field mapping、
-deprecated fields、new required assumptions、non-conclusions の互換性を検査する。
+deprecated fields、new required assumptions、non-conclusions、coverage / exactness boundary の
+互換性を検査する。
+
+B9 の schema version catalog と compatibility policy は
+[`docs/design/schema_version_catalog.md`](design/schema_version_catalog.md) で管理する。
+最小 skeleton は `SchemaVersionCatalogV0` / `SchemaCompatibilityPolicyV0` と
+`tools/archsig/tests/fixtures/minimal/schema_version_catalog.json` に置く。
 
 ### Phase B10: Operational feedback loop
 
