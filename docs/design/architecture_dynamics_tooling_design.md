@@ -34,7 +34,7 @@ current architecture field
 | accepted PR force | `pr-force-report-v0` | before / after Signature delta と Feature Extension Report context を PR 単位で記録する。 |
 | rejected / modified force | `force-dissipation-ledger-v0` | review / CI / policy によって拒否・修正・減衰された raw force を記録する。 |
 | trajectory | `signature-trajectory-report-v0` | selected window の Signature trajectory と drift / stability signal を記録する。 |
-| dynamics metrics | `architecture-dynamics-metrics-report-v0` | trajectory, force, field, control, AI dynamics の指標を集計する。 |
+| dynamics metrics | `architecture-dynamics-metrics-report-v0` | trajectory, force, gap, field, control, AI dynamics の指標を集計する。 |
 | control input | `development-control-input-log-v0` | requirement, design boundary, prompt, review / CI policy の変化を記録する。 |
 
 これらは既存の `archsig-sig0-v0`、`feature-extension-report-v0`、
@@ -59,6 +59,8 @@ architecture-dynamics-metrics-report-v0
 - `signature-trajectory-report-v0` は、一定 window で Signature trajectory がどちらへ流れたかを示す。
 - `architecture-dynamics-metrics-report-v0` は、何が測定済みで、何が推定で、何が
   `unmeasured` / `unavailable` / `notComparable` かを明示する。
+  ここには endpoint / axis-wise / measured な見え方と path / cross-axis /
+  future support / unmeasured axis の差分を読む gap metrics も含める。
 
 `architecture-field-snapshot-v0`、`operation-proposal-log-v0`、
 `force-dissipation-ledger-v0`、`development-control-input-log-v0` は次段階の artifact とする。
@@ -139,7 +141,7 @@ AI patch 成功条件を証明しない。
 | --- | --- | --- |
 | `finite-weighted-operation-distribution-v0` | selected finite operation universe と重みを記録する。 | `operation-proposal-log-v0`, `pr-history-dataset-v0`, manual annotation |
 | `signature-dynamics-simulation-protocol-v0` | initial state、operation distribution、control policy、bounded horizon、observation を固定する。 | field snapshot, distribution, Signature snapshot store |
-| `architecture-dynamics-metrics-report-v0` | trajectory / force / attractor candidate / AI sensitivity signal を measurement status つきで集計する。 | PR force report, trajectory report, distribution |
+| `architecture-dynamics-metrics-report-v0` | trajectory / force / gap / attractor candidate / AI sensitivity signal を measurement status つきで集計する。 | PR force report, trajectory report, distribution |
 | `ai-patch-sensitivity-protocol-v0` | AI 由来 proposal / accepted transition が selected bad-axis measure や safe region に与える変化を測る。 | proposal log, PR force report, dissipation ledger |
 | `vibe-coding-hypothesis-v0` | task class、architecture region、control policy、outcome linkage を束ねて empirical hypothesis を管理する。 | outcome linkage dataset, trajectory report, review metadata |
 
@@ -316,6 +318,8 @@ SignatureTrajectoryReportV0 =
   forceRefs: List ArtifactRef
   driftSignals: DriftSignals
   stabilitySignals: StabilitySignals
+  excursionSignals: ExcursionSignals
+  endpointCompressionSignals: EndpointCompressionSignals
   selectedRegions: List SelectedSignatureRegion
   measurementBoundary: MeasurementBoundary
   nonConclusions: List String
@@ -325,11 +329,18 @@ SignatureTrajectoryReportV0 =
 明示する。attractor / basin 語彙は、初期段階では必ず finite observed trajectory、
 selected region、bounded operation window に相対化する。
 
+`excursionSignals` は、start / target の endpoint だけでは見えない path 内部の
+bad-axis 最大値、selected bad region 通過、safe region からの一時逸脱を記録する。
+`endpointCompressionSignals` は、PR / window を endpoint diff に潰したときに失われる
+trajectory risk、force cancellation、内部順序感度を記録する。いずれも selected window
+内の有限 trajectory に相対化し、window 外の safety claim へ拡張しない。
+
 Non-conclusions:
 
 - trajectory report は global attractor を証明しない。
 - selected window 外の behavior を結論しない。
 - extractor / policy version 差分がある trajectory は sensitivity metadata を必要とする。
+- endpoint が selected safe region にあることから、path 全体が safe region にあるとは読まない。
 
 ### architecture-dynamics-metrics-report-v0
 
@@ -343,6 +354,7 @@ ArchitectureDynamicsMetricsReportV0 =
   sourceRefs: DynamicsSourceRefs
   trajectoryMetrics: TrajectoryMetrics
   forceMetrics: ForceMetrics
+  gapMetrics: GapMetrics
   fieldControlMetrics: FieldControlMetrics
   aiDynamicsMetrics: AiDynamicsMetrics
   measurementBoundary: MeasurementBoundary
@@ -355,11 +367,27 @@ ArchitectureDynamicsMetricsReportV0 =
 | --- | --- |
 | trajectory | `TrajectoryDriftRate`, `TrajectoryStability`, `InvariantDecayRate`, `SignatureVolatility`, `PhaseShiftSignal` |
 | force | `ObservedForce`, `LatentForceEstimate`, `DissipatedForceEstimate`, `NetPRForce`, `DebtForceAccumulation`, `StabilizingForceRatio`, `MergeOrderSensitivity` |
+| gap | `TransientExcursionDebt`, `ForceCancellationRatio`, `OperationCommutatorCurvature`, `CrossAxisClosureGap`, `SupportRiskMass`, `SignatureAliasingRisk`, `ObservabilityExpansionShock`, `PathCompressionLoss`, `EscapeCostLowerBound` |
 | field / control | `DissipationCapacity`, `ConstraintSaturation`, `FeedbackDelayInstability`, `DesignFieldStrength`, `IndirectForceLeverage` |
 | AI dynamics | `OperationDistributionShift`, `AIPatchLyapunov`, `PromptBasinBias`, `SeedAttractorStrength`, `AISafetyMargin` |
 
 各 metric は `value`, `status`, `sourceRefs`, `confidence`, `measurementBoundary`,
 `nonConclusions` を持つ。推定値と測定値を同じ confidence で扱わない。
+
+`gapMetrics` は、endpoint / axis-wise / measured な見え方と、path / cross-axis /
+future support / unmeasured axis の間にある差分を測る group である。
+
+| metric | 主な source | 出力境界 |
+| --- | --- | --- |
+| `TransientExcursionDebt` | `signature-trajectory-report-v0`, selected bad axis / region | endpoint safe から path safe を結論しないための bounded trajectory metric。 |
+| `ForceCancellationRatio` | PR force report, trajectory delta sequence | additive / comparable axes に限る。denominator が 0 または比較不能なら `notComparable`。 |
+| `OperationCommutatorCurvature` | merge-order sensitivity refs, paired order reports | 同一 source / comparable observation boundary の二順序に限る。 |
+| `CrossAxisClosureGap` | Signature snapshot, Feature Extension Report, theorem precondition refs | axis-wise zero と cross-axis relation closure を分けて報告する。 |
+| `SupportRiskMass` | finite weighted operation distribution, operation semantics refs | accepted history ではなく selected future support 上の risk mass として扱う。 |
+| `SignatureAliasingRisk` | field snapshot, operation distribution refs, signature snapshots | 同じ observation を持つ state が同じ future field を持つとは読まない。 |
+| `ObservabilityExpansionShock` | before / after measurement boundary, schema compatibility report | 新規測定で見えた nonzero を architecture degradation と即断しない。 |
+| `PathCompressionLoss` | endpoint-only report, trajectory report, force report | PR / window 圧縮で失われた trajectory information を report する。 |
+| `EscapeCostLowerBound` | obstruction witness refs, repair rule registry, synthesis constraints | repair cost の下界候補であり、solver completeness は主張しない。 |
 
 ### development-control-input-log-v0
 
@@ -514,11 +542,32 @@ archsig signature-trajectory-report \
 archsig architecture-dynamics-metrics \
   --trajectory signature-trajectory-report.json \
   --force-reports pr-force-report.json \
+  --gap-metrics \
   --out architecture-dynamics-metrics-report.json
 ```
 
 CLI は段階的に実装してよい。最初は schema fixture と validation だけを固定し、推定指標は
 `unmeasured` / `unavailable` として出す。
+
+`--gap-metrics` は、`TransientExcursionDebt`、`ForceCancellationRatio`、
+`PathCompressionLoss` のように trajectory / force reports だけで bounded に読める指標から
+始める。`SupportRiskMass`、`SignatureAliasingRisk`、`EscapeCostLowerBound` は、
+finite distribution、field snapshot、repair / synthesis artifact がない場合は
+`unmeasured` または `unavailable` として出す。
+
+gap metrics の入力を増やす段階では、次の optional refs を受け取る。
+
+```bash
+archsig architecture-dynamics-metrics \
+  --trajectory signature-trajectory-report.json \
+  --force-reports pr-force-report.json \
+  --operation-distribution finite-weighted-operation-distribution.json \
+  --field-snapshot architecture-field-snapshot.json \
+  --schema-compatibility schema-compatibility-check-report.json \
+  --repair-constraints synthesis-constraint-artifact.json \
+  --gap-metrics \
+  --out architecture-dynamics-metrics-report.json
+```
 
 次段階 CLI は、proposal、field、dissipation、control input の evidence が揃ってから追加する。
 
@@ -596,6 +645,16 @@ archsig ai-agent-team-dynamics-protocol \
 - `estimated` metric は confidence、source refs、assumption、non-conclusion を持つ。
 - `ObservedForce`、`LatentForceEstimate`、`DissipatedForceEstimate` を混同しない。
 - accepted transition と rejected proposal を同じ force class として集計しない。
+- endpoint safe、endpoint delta zero、net force zero から trajectory safe を結論しない。
+- `TransientExcursionDebt` は selected bad axis / region と finite trajectory points を必要とする。
+- `ForceCancellationRatio` は additive / comparable axes、同一 measurement boundary、非零 denominator を必要とする。
+- `OperationCommutatorCurvature` は同一 source state、同一 observation boundary、二つの order result refs を必要とする。
+- `CrossAxisClosureGap` は axis-wise measurement と cross-axis invariant / theorem precondition refs を分けて保持する。
+- `SupportRiskMass` は finite support、weight status、operation preservation precondition status を明示する。
+- `SignatureAliasingRisk` は same signature observation を same future field claim に昇格しない。
+- `ObservabilityExpansionShock` は newly measured nonzero と architecture degradation を分けて報告する。
+- `PathCompressionLoss` は endpoint-only report と trajectory report の比較可能性を検査する。
+- `EscapeCostLowerBound` は repair / synthesis artifact の coverage と solver completeness boundary を明示する。
 - AI provenance を risk claim や theorem claim に変換しない。
 - attractor / basin / Lyapunov-like metric は finite observed trajectory、selected region、
   bounded operation window を明示する。
@@ -625,6 +684,11 @@ Architecture Dynamics tooling は次を結論しない。
 - AI patch distribution の完全復元。
 - operation proposal log の完全性。
 - PR force と incident / rollback / MTTR の因果関係。
+- endpoint safety から path safety への昇格。
+- axis-wise safety から cross-axis global safety への昇格。
+- same observed signature から same future operation distribution への昇格。
+- observability expansion shock を architecture degradation と即断すること。
+- path compression loss が 0 であることを、endpoint diff だけから結論すること。
 - organization policy の正しさ。
 - design field strength の真値。
 - indirect force leverage の因果効果。
@@ -642,6 +706,7 @@ Architecture Dynamics tooling は次を結論しない。
 - `pr-force-report-v0` skeleton。
 - `signature-trajectory-report-v0` skeleton。
 - `architecture-dynamics-metrics-report-v0` skeleton。
+- `gapMetrics` skeleton と、入力不足時に `unmeasured` / `notComparable` を返す fixture。
 - 共通 `DynamicsMeasuredValue` / `MeasurementStatus` / `MeasurementBoundary` validation。
 - canonical minimal fixtures。
 - `archsig architecture-dynamics-metrics --fixture` で non-conclusions と unmeasured metrics を出す。
