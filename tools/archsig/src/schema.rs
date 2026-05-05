@@ -122,6 +122,55 @@ pub struct SchemaCompatibilityDimensionV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct SchemaArtifactCompatibilityV0 {
+    pub artifact_id: String,
+    pub schema_version_name: String,
+    pub compatibility_policy_ref: String,
+    pub field_mappings: Vec<SchemaFieldMappingV0>,
+    pub deprecated_fields: Vec<SchemaDeprecatedFieldV0>,
+    pub required_assumptions: Vec<SchemaRequiredAssumptionV0>,
+    pub coverage_exactness_boundaries: Vec<SchemaCoverageExactnessBoundaryV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaFieldMappingV0 {
+    pub source_field: String,
+    pub target_field: String,
+    pub mapping_kind: String,
+    pub required_review: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaDeprecatedFieldV0 {
+    pub field: String,
+    pub replacement: Option<String>,
+    pub removal_phase: String,
+    pub reader_behavior: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaRequiredAssumptionV0 {
+    pub assumption_id: String,
+    pub applies_to: String,
+    pub required_for: String,
+    pub fallback_when_missing: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCoverageExactnessBoundaryV0 {
+    pub axis_or_layer: String,
+    pub measurement_boundary: String,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Sig0Document {
     pub schema_version: String,
     pub root: String,
@@ -1054,6 +1103,8 @@ pub struct SignatureDiffReportV0 {
 #[serde(rename_all = "camelCase")]
 pub struct AirDocumentV0 {
     pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
     pub architecture_id: String,
     pub ids: AirIdPolicies,
     pub revision: AirRevision,
@@ -1332,6 +1383,8 @@ pub struct AirValidationSummary {
 #[serde(rename_all = "camelCase")]
 pub struct FeatureExtensionReportV0 {
     pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
     pub input: FeatureReportInput,
     pub architecture_id: String,
     pub revision: AirRevision,

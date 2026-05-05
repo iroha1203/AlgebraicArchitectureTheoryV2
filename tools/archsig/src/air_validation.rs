@@ -15,6 +15,7 @@ pub fn validate_air_document_report(
     let mut checks = Vec::new();
 
     checks.push(check_air_schema_version(&document.schema_version));
+    checks.push(check_air_schema_compatibility_metadata(document));
     checks.push(check_air_evidence_kinds(document));
     checks.push(check_air_feature_source_and_ai_session(document));
     checks.push(check_air_unique_ids(document));
@@ -83,6 +84,96 @@ fn check_air_schema_version(schema_version: &str) -> ValidationCheck {
         check.reason = Some(format!("unsupported schemaVersion: {schema_version}"));
     }
     check
+}
+
+fn check_air_schema_compatibility_metadata(document: &AirDocumentV0) -> ValidationCheck {
+    let Some(metadata) = &document.schema_compatibility else {
+        let mut check = validation_check(
+            "air-schema-compatibility-metadata-present",
+            "AIR B9 schema compatibility metadata is present when emitted",
+            "pass",
+        );
+        check.reason = Some(
+            "legacy AIR v0 fixture without schemaCompatibility metadata is accepted".to_string(),
+        );
+        return check;
+    };
+
+    let mut invalid = Vec::new();
+    if metadata.artifact_id != "air" {
+        invalid.push(generic_validation_example(
+            "schemaCompatibility.artifactId",
+            &metadata.artifact_id,
+            "AIR schema compatibility metadata must be tagged as air",
+        ));
+    }
+    if metadata.schema_version_name != AIR_SCHEMA_VERSION {
+        invalid.push(generic_validation_example(
+            "schemaCompatibility.schemaVersionName",
+            &metadata.schema_version_name,
+            "AIR schema compatibility metadata must match schemaVersion",
+        ));
+    }
+    for required_field in [
+        "coverage.layers[].exactnessAssumptions",
+        "coverage.layers[].unsupportedConstructs",
+        "claims[].missingPreconditions",
+        "claims[].nonConclusions",
+    ] {
+        if !metadata
+            .field_mappings
+            .iter()
+            .any(|mapping| mapping.source_field == required_field)
+        {
+            invalid.push(generic_validation_example(
+                "schemaCompatibility.fieldMappings",
+                required_field,
+                "required B9 compatibility field mapping is missing",
+            ));
+        }
+    }
+    for layer in &document.coverage.layers {
+        if !metadata
+            .coverage_exactness_boundaries
+            .iter()
+            .any(|boundary| boundary.axis_or_layer == layer.layer)
+        {
+            invalid.push(generic_validation_example(
+                "schemaCompatibility.coverageExactnessBoundaries",
+                &layer.layer,
+                "coverage layer boundary must be represented in schema compatibility metadata",
+            ));
+        }
+    }
+    for required_non_conclusion in [
+        "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+        "schema compatibility metadata does not imply extractor completeness",
+    ] {
+        if !metadata
+            .non_conclusions
+            .iter()
+            .any(|non_conclusion| non_conclusion == required_non_conclusion)
+        {
+            invalid.push(generic_validation_example(
+                "schemaCompatibility.nonConclusions",
+                required_non_conclusion,
+                "B9 non-conclusion boundary must be preserved",
+            ));
+        }
+    }
+    if metadata.required_assumptions.is_empty() {
+        invalid.push(generic_validation_example(
+            "schemaCompatibility.requiredAssumptions",
+            "empty",
+            "new required assumptions must be explicit or marked undischarged",
+        ));
+    }
+
+    air_ref_check(
+        "air-schema-compatibility-metadata-complete",
+        "AIR B9 schema compatibility metadata preserves coverage, exactness, theorem, and non-conclusion boundaries",
+        invalid,
+    )
 }
 
 fn check_air_unique_ids(document: &AirDocumentV0) -> ValidationCheck {

@@ -465,7 +465,8 @@ Non-conclusions:
 
 Parent Issue: [#607](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/607)
 
-Issue: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/613)
+Issues: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/613),
+[#609](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/609)
 
 B9 は AIR、Feature Extension Report、Obstruction Witness、Architecture Drift Ledger、
 detectable values / reported axes catalog など、複数 tooling artifact の schema version と
@@ -484,10 +485,24 @@ Rust schema skeleton:
 SchemaVersionCatalogV0
 SchemaCompatibilityPolicyV0
 SchemaCompatibilityBoundaryV0
+SchemaArtifactCompatibilityV0
 ```
 
 Compatibility policy は field mapping、deprecated fields、new required assumptions、
 non-conclusions、coverage / exactness boundary を別項目として扱う。
+
+AIR と Feature Extension Report は `schemaCompatibility` metadata を出力する。
+AIR metadata は `coverage.layers[].extractionScope`、
+`coverage.layers[].exactnessAssumptions`、`coverage.layers[].unsupportedConstructs`、
+`claims[].missingPreconditions`、`claims[].nonConclusions` を migration boundary として
+保持する。Feature Extension Report metadata は `coverageGaps[].nonConclusions`、
+`theoremPreconditionChecks[].missingPreconditions`、`unsupportedConstructs`、
+`nonConclusions` を保持する。
+
+`archsig validate-air` は metadata が存在する AIR について、coverage / exactness
+boundary、theorem bridge preconditions、formal claim promotion を禁止する
+non-conclusions が metadata から落ちていないことを検査する。legacy AIR v0 fixture は
+metadata 欠落を backward-compatible input として読む。
 
 Non-conclusions:
 
