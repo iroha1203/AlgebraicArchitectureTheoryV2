@@ -4199,6 +4199,114 @@ fn cli_repair_adoption_record_fixture_preserves_adoption_boundaries() {
 }
 
 #[test]
+fn cli_incident_correlation_monitor_fixture_preserves_correlation_boundaries() {
+    let out_dir = temp_dir("incident-correlation-monitor");
+    let out = out_dir.join("incident-correlation-monitor.json");
+
+    run_sig0(&[
+        "incident-correlation-monitor",
+        "--out",
+        out.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out);
+    assert_eq!(json["schemaVersion"], "incident-correlation-monitor-v0");
+    assert_eq!(json["teamRef"], "team:checkout-platform");
+    assert_eq!(json["correlationWindow"]["windowKind"], "monthly");
+    assert!(
+        json["metricAxes"]
+            .as_array()
+            .expect("metricAxes are an array")
+            .iter()
+            .any(|axis| axis["metricRef"] == "mttrHours"
+                && axis["measurementBoundary"] == "boundedOutcomeObservation")
+    );
+    assert!(
+        json["confounderNotes"]
+            .as_array()
+            .expect("confounderNotes are an array")
+            .iter()
+            .any(|note| note["boundary"] == "private")
+    );
+    assert!(
+        json["missingPrivateData"]
+            .as_array()
+            .expect("missingPrivateData is an array")
+            .iter()
+            .any(|evidence| evidence["boundary"] == "private")
+    );
+    assert_eq!(json["refreshDecision"]["decision"], "refreshHypothesis");
+    assert!(
+        json["schemaCompatibility"]["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("coverageExactnessBoundaries are an array")
+            .iter()
+            .any(|boundary| boundary["axisOrLayer"] == "incident-correlation.missing-private-data")
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|claim| claim == "correlation does not imply causation")
+    );
+}
+
+#[test]
+fn cli_hypothesis_refresh_cycle_fixture_preserves_refresh_boundaries() {
+    let out_dir = temp_dir("hypothesis-refresh-cycle");
+    let out = out_dir.join("hypothesis-refresh-cycle.json");
+
+    run_sig0(&[
+        "hypothesis-refresh-cycle",
+        "--out",
+        out.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out);
+    assert_eq!(json["schemaVersion"], "hypothesis-refresh-cycle-v0");
+    assert_eq!(json["refreshDecision"]["decision"], "reviseAndRetain");
+    assert!(
+        json["versionedHypothesisRefs"]
+            .as_array()
+            .expect("versionedHypothesisRefs are an array")
+            .iter()
+            .any(
+                |hypothesis| hypothesis["hypothesisRef"] == "H5-runtime-exposure-incident-scope"
+                    && hypothesis["hypothesisVersion"] == "2026-04"
+            )
+    );
+    assert!(
+        json["rejectedHypotheses"]
+            .as_array()
+            .expect("rejectedHypotheses are an array")
+            .iter()
+            .any(|hypothesis| hypothesis["disposition"] == "rejected")
+    );
+    assert!(
+        json["retainedHypotheses"]
+            .as_array()
+            .expect("retainedHypotheses are an array")
+            .iter()
+            .any(|hypothesis| hypothesis["disposition"] == "retained")
+    );
+    assert!(
+        json["schemaCompatibility"]["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("coverageExactnessBoundaries are an array")
+            .iter()
+            .any(|boundary| boundary["axisOrLayer"] == "hypothesis-refresh.formal-claim-boundary")
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|claim| claim == "retained hypothesis is not a proved claim")
+    );
+}
+
+#[test]
 fn cli_relation_complexity_fixture_outputs_observation() {
     let root = fixture_root();
     let out_dir = temp_dir("relation");

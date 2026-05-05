@@ -9,20 +9,28 @@ use crate::{
     CalibrationMissingEvidenceV0, CalibrationOutcomeRefV0, CalibrationReportFindingRefV0,
     CalibrationReviewAnalysisMetadataV0, CalibrationReviewRecordV0, CalibrationReviewerDecisionV0,
     DriftLedgerAggregationWindowV0, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
-    OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION, OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION,
-    OutcomeLinkageDatasetV0, OutcomeMetric, OwnershipBoundaryAnalysisMetadataV0,
-    OwnershipBoundaryMissingEvidenceV0, OwnershipBoundaryMonitorV0, OwnershipBoundarySourceRefV0,
-    OwnershipScopeObservationV0, REPAIR_ADOPTION_RECORD_SCHEMA_VERSION,
-    REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, RepairAdoptionAnalysisMetadataV0,
-    RepairAdoptionDecisionV0, RepairAdoptionMissingEvidenceV0, RepairAdoptionRecordV0,
-    RepairFollowUpOutcomeRefV0, RepairSideEffectNoteV0, RepairSuggestionRefV0,
-    ReportOutcomeBoundaryCountV0, ReportOutcomeDailyBatchV0, ReportOutcomeDailyLedgerV0,
-    ReportOutcomeLedgerAnalysisMetadataV0, ReportOutcomeMetricSummaryV0,
-    ReportOutcomeRetentionPolicyV0, ReportOutcomeSourceReportRefV0, SchemaArtifactCompatibilityV0,
-    SchemaCoverageExactnessBoundaryV0, SchemaFieldMappingV0, SchemaRequiredAssumptionV0,
-    TEAM_THRESHOLD_POLICY_SCHEMA_VERSION, TeamThresholdAxisPolicyV0,
+    HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION, HypothesisChangeReasonV0, HypothesisDispositionV0,
+    HypothesisProposedUpdateV0, HypothesisRefreshAnalysisMetadataV0, HypothesisRefreshCycleV0,
+    HypothesisRefreshDecisionV0, HypothesisRefreshSourceMonitorRefV0,
+    INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, IncidentCorrelationAnalysisMetadataV0,
+    IncidentCorrelationConfounderNoteV0, IncidentCorrelationMetricAxisV0,
+    IncidentCorrelationMissingDataBoundaryV0, IncidentCorrelationMonitorV0,
+    IncidentCorrelationObservationV0, IncidentCorrelationRefreshDecisionV0,
+    IncidentCorrelationSourceRefV0, OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION,
+    OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, OutcomeLinkageDatasetV0, OutcomeMetric,
+    OwnershipBoundaryAnalysisMetadataV0, OwnershipBoundaryMissingEvidenceV0,
+    OwnershipBoundaryMonitorV0, OwnershipBoundarySourceRefV0, OwnershipScopeObservationV0,
+    REPAIR_ADOPTION_RECORD_SCHEMA_VERSION, REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION,
+    RepairAdoptionAnalysisMetadataV0, RepairAdoptionDecisionV0, RepairAdoptionMissingEvidenceV0,
+    RepairAdoptionRecordV0, RepairFollowUpOutcomeRefV0, RepairSideEffectNoteV0,
+    RepairSuggestionRefV0, ReportOutcomeBoundaryCountV0, ReportOutcomeDailyBatchV0,
+    ReportOutcomeDailyLedgerV0, ReportOutcomeLedgerAnalysisMetadataV0,
+    ReportOutcomeMetricSummaryV0, ReportOutcomeRetentionPolicyV0, ReportOutcomeSourceReportRefV0,
+    SchemaArtifactCompatibilityV0, SchemaCoverageExactnessBoundaryV0, SchemaFieldMappingV0,
+    SchemaRequiredAssumptionV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION, TeamThresholdAxisPolicyV0,
     TeamThresholdCalibrationSourceRefV0, TeamThresholdEffectivePeriodV0,
     TeamThresholdPolicyAnalysisMetadataV0, TeamThresholdPolicyV0, TeamThresholdRollbackPolicyV0,
+    VersionedHypothesisRefV0,
 };
 
 const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy-v0";
@@ -1574,6 +1582,443 @@ pub fn repair_adoption_record_schema_compatibility_metadata() -> SchemaArtifactC
     }
 }
 
+pub fn static_incident_correlation_monitor() -> IncidentCorrelationMonitorV0 {
+    let mut monitor = IncidentCorrelationMonitorV0 {
+        schema_version: INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION.to_string(),
+        schema_compatibility: None,
+        monitor_id: "fixture-b10-incident-correlation-monitor-v0".to_string(),
+        generated_at: "2026-05-05T12:00:00Z".to_string(),
+        organization_ref: "org:example".to_string(),
+        team_ref: "team:checkout-platform".to_string(),
+        architecture_id: "checkout-service".to_string(),
+        correlation_window: DriftLedgerAggregationWindowV0 {
+            window_start: Some("2026-04-01T00:00:00Z".to_string()),
+            window_end: Some("2026-05-01T00:00:00Z".to_string()),
+            window_kind: "monthly".to_string(),
+        },
+        source_refs: vec![
+            IncidentCorrelationSourceRefV0 {
+                source_ref: "report-outcome-daily-ledger:checkout-2026-04".to_string(),
+                source_kind: "report-outcome-daily-ledger".to_string(),
+                path: "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                    .to_string(),
+                schema_version: REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION.to_string(),
+                boundary: "operationalFeedback".to_string(),
+                non_conclusions: vec![
+                    "daily ledger is an operational aggregation, not causal proof".to_string(),
+                ],
+            },
+            IncidentCorrelationSourceRefV0 {
+                source_ref: "calibration-review:runtime-private-evidence".to_string(),
+                source_kind: "calibration-review-record".to_string(),
+                path: "tools/archsig/tests/fixtures/minimal/calibration_review_record.json"
+                    .to_string(),
+                schema_version: CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION.to_string(),
+                boundary: "boundedEmpiricalReview".to_string(),
+                non_conclusions: vec![
+                    "reviewer calibration remains empirical policy evidence".to_string(),
+                ],
+            },
+        ],
+        metric_axes: vec![
+            IncidentCorrelationMetricAxisV0 {
+                axis_ref: "signature.runtimePropagation".to_string(),
+                metric_ref: "runtime.privateEvidenceCount".to_string(),
+                metric_kind: "report-warning".to_string(),
+                measurement_boundary: "unmeasuredPrivateEvidence".to_string(),
+                source_refs: vec!["feature-extension-report:finding-runtime-private".to_string()],
+                non_conclusions: vec![
+                    "private runtime evidence is not measured-zero runtime safety".to_string(),
+                ],
+            },
+            IncidentCorrelationMetricAxisV0 {
+                axis_ref: "outcome.rollback".to_string(),
+                metric_ref: "rollback".to_string(),
+                metric_kind: "operational-outcome".to_string(),
+                measurement_boundary: "boundedOutcomeObservation".to_string(),
+                source_refs: vec!["incident:inc-7".to_string(), "github:pulls/43".to_string()],
+                non_conclusions: vec![
+                    "rollback observation is not attributed to one obstruction by this monitor"
+                        .to_string(),
+                ],
+            },
+            IncidentCorrelationMetricAxisV0 {
+                axis_ref: "outcome.mttr".to_string(),
+                metric_ref: "mttrHours".to_string(),
+                metric_kind: "operational-outcome".to_string(),
+                measurement_boundary: "boundedOutcomeObservation".to_string(),
+                source_refs: vec!["incident:inc-7".to_string()],
+                non_conclusions: vec![
+                    "MTTR is operational observation, not semantic completeness".to_string(),
+                ],
+            },
+        ],
+        correlations: vec![
+            IncidentCorrelationObservationV0 {
+                correlation_id: "corr-runtime-private-vs-mttr".to_string(),
+                report_metric_ref: "runtime.privateEvidenceCount".to_string(),
+                outcome_metric_ref: "mttrHours".to_string(),
+                observed_direction: "positive".to_string(),
+                coefficient: Some(0.42),
+                sample_size: 12,
+                confidence_boundary: "exploratorySmallSample".to_string(),
+                source_refs: vec![
+                    "report-outcome-daily-ledger:checkout-2026-04".to_string(),
+                    "incident:inc-7".to_string(),
+                ],
+                non_conclusions: vec![
+                    "positive correlation is not a causal claim".to_string(),
+                    "small sample correlation does not promote a formal theorem claim".to_string(),
+                ],
+            },
+            IncidentCorrelationObservationV0 {
+                correlation_id: "corr-runtime-private-vs-rollback".to_string(),
+                report_metric_ref: "runtime.privateEvidenceCount".to_string(),
+                outcome_metric_ref: "rollback".to_string(),
+                observed_direction: "insufficientEvidence".to_string(),
+                coefficient: None,
+                sample_size: 3,
+                confidence_boundary: "insufficientRollbackSample".to_string(),
+                source_refs: vec!["github:pulls/43".to_string()],
+                non_conclusions: vec![
+                    "insufficient rollback sample is not evidence of no rollback risk".to_string(),
+                ],
+            },
+        ],
+        confounder_notes: vec![
+            IncidentCorrelationConfounderNoteV0 {
+                note_id: "confounder-release-size".to_string(),
+                confounder_kind: "release-size".to_string(),
+                description: "Large releases may increase incident scope independently of Architecture Signature warnings.".to_string(),
+                boundary: "knownConfounder".to_string(),
+                mitigation_refs: vec!["analysis-plan:control-for-release-size".to_string()],
+                non_conclusions: vec![
+                    "uncontrolled confounders block causal interpretation".to_string(),
+                ],
+            },
+            IncidentCorrelationConfounderNoteV0 {
+                note_id: "confounder-private-incident-redaction".to_string(),
+                confounder_kind: "private-data-redaction".to_string(),
+                description: "Incident timelines are redacted in the fixture source.".to_string(),
+                boundary: "private".to_string(),
+                mitigation_refs: vec!["evidence-request:incident-timeline-redaction".to_string()],
+                non_conclusions: vec![
+                    "private redaction is not absence of incident evidence".to_string(),
+                ],
+            },
+        ],
+        missing_private_data: vec![
+            IncidentCorrelationMissingDataBoundaryV0 {
+                evidence_kind: "incident-timeline".to_string(),
+                reason: "source incident timeline is private and represented only by a traceability ref".to_string(),
+                boundary: "private".to_string(),
+                follow_up_ref: "evidence-request:incident-timeline-redaction".to_string(),
+                non_conclusions: vec![
+                    "private incident timeline cannot discharge a theorem precondition".to_string(),
+                ],
+            },
+            IncidentCorrelationMissingDataBoundaryV0 {
+                evidence_kind: "longitudinal-sample".to_string(),
+                reason: "fixture has one month of bounded outcome data".to_string(),
+                boundary: "unavailable".to_string(),
+                follow_up_ref: "b10-backlog:extend-correlation-window".to_string(),
+                non_conclusions: vec![
+                    "missing longitudinal data is not measured-zero correlation".to_string(),
+                ],
+            },
+        ],
+        refresh_decision: IncidentCorrelationRefreshDecisionV0 {
+            decision: "refreshHypothesis".to_string(),
+            decision_reason: "runtime exposure hypothesis should be narrowed to exploratory small-sample status".to_string(),
+            hypothesis_cycle_ref: "hypothesis-refresh-cycle:runtime-exposure-2026-05".to_string(),
+            decision_refs: vec!["analysis-review:2026-05-runtime-exposure".to_string()],
+            non_conclusions: vec![
+                "refresh decision changes empirical hypothesis tracking only".to_string(),
+                "refresh decision does not promote a formal claim".to_string(),
+            ],
+        },
+        analysis_metadata: IncidentCorrelationAnalysisMetadataV0 {
+            lean_status: "empirical hypothesis / tooling validation".to_string(),
+            measurement_boundary: "bounded operational correlation monitoring over report warnings, rollback, incidents, and MTTR".to_string(),
+            correlation_boundary: "correlations are exploratory empirical signals with explicit confounder and missing-data boundaries".to_string(),
+            source_join_keys: vec![
+                "repository owner/name".to_string(),
+                "pull request number where present".to_string(),
+                "incident id".to_string(),
+                "correlation window".to_string(),
+            ],
+            non_conclusions: vec![
+                "does not infer causal effects from report warnings to incidents".to_string(),
+                "does not promote empirical correlation to a Lean theorem claim".to_string(),
+                "does not treat missing / private data as measured-zero evidence".to_string(),
+            ],
+        },
+        non_conclusions: vec![
+            "incident correlation monitor is empirical / operational signal, not a Lean theorem"
+                .to_string(),
+            "correlation does not imply causation".to_string(),
+            "incident / rollback / MTTR observations do not prove extractor completeness".to_string(),
+            "monitor output does not rank architecture quality with a single score".to_string(),
+        ],
+    };
+    monitor.schema_compatibility = Some(incident_correlation_schema_compatibility_metadata());
+    monitor
+}
+
+pub fn incident_correlation_schema_compatibility_metadata() -> SchemaArtifactCompatibilityV0 {
+    SchemaArtifactCompatibilityV0 {
+        artifact_id: "incident-correlation-monitor".to_string(),
+        schema_version_name: INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION.to_string(),
+        compatibility_policy_ref: COMPATIBILITY_POLICY_REF.to_string(),
+        field_mappings: vec![
+            field_mapping("correlationWindow", "correlationWindow", "stable", "preserve correlation window"),
+            field_mapping("sourceRefs", "sourceRefs", "stable", "preserve source traceability"),
+            field_mapping("metricAxes", "metricAxes", "stable", "preserve report and outcome metric axes"),
+            field_mapping("correlations", "correlations", "stable", "preserve exploratory correlation observations"),
+            field_mapping("confounderNotes", "confounderNotes", "stable", "preserve confounder boundaries"),
+            field_mapping("missingPrivateData", "missingPrivateData", "stable", "preserve missing / private data boundary"),
+            field_mapping("refreshDecision", "refreshDecision", "stable", "preserve empirical hypothesis refresh decision"),
+            field_mapping("nonConclusions", "nonConclusions", "stable", "preserve correlation non-conclusions"),
+        ],
+        deprecated_fields: Vec::new(),
+        required_assumptions: vec![
+            required_assumption_for("incident-correlation-monitor", "correlation window is preserved", "incident correlation review"),
+            required_assumption_for("incident-correlation-monitor", "source refs and metric axes are preserved", "incident correlation review"),
+            required_assumption_for("incident-correlation-monitor", "confounder and missing private data boundaries are preserved", "incident correlation review"),
+        ],
+        coverage_exactness_boundaries: vec![
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "incident-correlation.correlation-window".to_string(),
+                measurement_boundary: "operationalMetadata".to_string(),
+                coverage_assumptions: vec![
+                    "windowStart and windowEnd delimit bounded correlation scope".to_string(),
+                ],
+                exactness_assumptions: vec!["window metadata is not causal evidence".to_string()],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "incident-correlation.metric-axes".to_string(),
+                measurement_boundary: "boundedOperationalObservation".to_string(),
+                coverage_assumptions: vec![
+                    "metric axes preserve report warning and outcome metric refs".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "metric axis linkage is correlation input, not theorem precondition discharge"
+                        .to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "incident-correlation.confounders".to_string(),
+                measurement_boundary: "unmeasured".to_string(),
+                coverage_assumptions: vec![
+                    "confounder notes remain explicit when causal interpretation is blocked".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "uncontrolled confounders prevent causal proof".to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "incident-correlation.missing-private-data".to_string(),
+                measurement_boundary: "private".to_string(),
+                coverage_assumptions: vec![
+                    "private incident and rollback data remain traceability refs".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "missing or private incident data is not measured-zero evidence".to_string(),
+                ],
+            },
+        ],
+        non_conclusions: vec![
+            "incident correlation schema compatibility metadata does not prove causality"
+                .to_string(),
+            "incident correlation schema compatibility metadata does not imply extractor completeness"
+                .to_string(),
+            "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+                .to_string(),
+        ],
+    }
+}
+
+pub fn static_hypothesis_refresh_cycle() -> HypothesisRefreshCycleV0 {
+    let mut cycle = HypothesisRefreshCycleV0 {
+        schema_version: HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION.to_string(),
+        schema_compatibility: None,
+        cycle_id: "hypothesis-refresh-cycle:runtime-exposure-2026-05".to_string(),
+        generated_at: "2026-05-05T12:30:00Z".to_string(),
+        organization_ref: "org:example".to_string(),
+        team_ref: "team:checkout-platform".to_string(),
+        source_monitor_refs: vec![HypothesisRefreshSourceMonitorRefV0 {
+            monitor_ref: "fixture-b10-incident-correlation-monitor-v0".to_string(),
+            source_kind: "incident-correlation-monitor".to_string(),
+            path: "tools/archsig/tests/fixtures/minimal/incident_correlation_monitor.json"
+                .to_string(),
+            boundary: "exploratoryOperationalCorrelation".to_string(),
+            non_conclusions: vec!["monitor correlation is empirical input only".to_string()],
+        }],
+        versioned_hypothesis_refs: vec![
+            VersionedHypothesisRefV0 {
+                hypothesis_ref: "H5-runtime-exposure-incident-scope".to_string(),
+                hypothesis_version: "2026-04".to_string(),
+                status_before: "active".to_string(),
+                evidence_boundary: "empirical hypothesis".to_string(),
+                source_refs: vec!["docs/proof_obligations.md#empirical-hypotheses".to_string()],
+                non_conclusions: vec!["active hypothesis is not a proved theorem".to_string()],
+            },
+            VersionedHypothesisRefV0 {
+                hypothesis_ref: "H3-hidden-interaction-review-cost".to_string(),
+                hypothesis_version: "2026-04".to_string(),
+                status_before: "active".to_string(),
+                evidence_boundary: "empirical hypothesis".to_string(),
+                source_refs: vec!["docs/design/b6_empirical_hypothesis_evaluation.md".to_string()],
+                non_conclusions: vec!["retained hypothesis remains empirical".to_string()],
+            },
+        ],
+        change_reasons: vec![
+            HypothesisChangeReasonV0 {
+                reason_id: "reason-small-sample-mttr-correlation".to_string(),
+                reason_kind: "small-sample-correlation".to_string(),
+                description: "Runtime private evidence and MTTR correlation is positive but based on a small bounded window.".to_string(),
+                source_refs: vec!["corr-runtime-private-vs-mttr".to_string()],
+                boundary: "exploratoryCorrelation".to_string(),
+                non_conclusions: vec![
+                    "small-sample correlation cannot strengthen a formal claim".to_string(),
+                ],
+            },
+            HypothesisChangeReasonV0 {
+                reason_id: "reason-private-incident-boundary".to_string(),
+                reason_kind: "private-data-boundary".to_string(),
+                description: "Incident timeline evidence remains private and cannot be inspected by the fixture.".to_string(),
+                source_refs: vec!["evidence-request:incident-timeline-redaction".to_string()],
+                boundary: "private".to_string(),
+                non_conclusions: vec![
+                    "private data boundary is not absence of incident evidence".to_string(),
+                ],
+            },
+        ],
+        refresh_decision: HypothesisRefreshDecisionV0 {
+            decision: "reviseAndRetain".to_string(),
+            decision_reason: "Narrow H5 to exploratory runtime exposure monitoring until more incident windows are available.".to_string(),
+            decision_refs: vec!["analysis-review:2026-05-runtime-exposure".to_string()],
+            effective_hypothesis_version: "2026-05".to_string(),
+            non_conclusions: vec![
+                "refresh decision is empirical hypothesis management only".to_string(),
+                "refresh decision does not discharge theorem preconditions".to_string(),
+            ],
+        },
+        retained_hypotheses: vec![HypothesisDispositionV0 {
+            hypothesis_ref: "H3-hidden-interaction-review-cost".to_string(),
+            from_version: "2026-04".to_string(),
+            to_version: Some("2026-05".to_string()),
+            disposition: "retained".to_string(),
+            rationale: "No contradictory operational signal was observed in this cycle.".to_string(),
+            source_refs: vec!["calibration-review:runtime-private-evidence".to_string()],
+            non_conclusions: vec!["retained does not mean proved".to_string()],
+        }],
+        rejected_hypotheses: vec![HypothesisDispositionV0 {
+            hypothesis_ref: "H5-runtime-exposure-causes-incident".to_string(),
+            from_version: "2026-04".to_string(),
+            to_version: None,
+            disposition: "rejected".to_string(),
+            rationale: "Causal phrasing is rejected because the monitor records correlation with explicit confounders.".to_string(),
+            source_refs: vec!["confounder-release-size".to_string()],
+            non_conclusions: vec![
+                "rejecting causal phrasing does not reject exploratory monitoring".to_string(),
+            ],
+        }],
+        proposed_updates: vec![HypothesisProposedUpdateV0 {
+            hypothesis_ref: "H5-runtime-exposure-incident-scope".to_string(),
+            proposed_version: "2026-05".to_string(),
+            change_summary: "Track runtime exposure as an exploratory correlation with incident scope and MTTR, not as a causal claim.".to_string(),
+            required_follow_up_refs: vec![
+                "b10-backlog:extend-correlation-window".to_string(),
+                "analysis-plan:control-for-release-size".to_string(),
+            ],
+            non_conclusions: vec!["proposed update is not formal claim promotion".to_string()],
+        }],
+        analysis_metadata: HypothesisRefreshAnalysisMetadataV0 {
+            lean_status: "empirical hypothesis / tooling validation".to_string(),
+            refresh_boundary: "versioned empirical hypothesis management driven by operational feedback artifacts".to_string(),
+            formal_claim_boundary: "hypothesis refresh can narrow or reject empirical claims but cannot promote Lean theorem claims".to_string(),
+            non_conclusions: vec![
+                "does not prove runtime exposure causes incidents".to_string(),
+                "does not discharge theorem package preconditions".to_string(),
+                "does not imply extractor completeness".to_string(),
+            ],
+        },
+        non_conclusions: vec![
+            "hypothesis refresh cycle is empirical research tracking, not a Lean theorem".to_string(),
+            "retained hypothesis is not a proved claim".to_string(),
+            "rejected causal phrasing is not evidence of zero operational risk".to_string(),
+            "hypothesis refresh does not rank architecture quality with a single score".to_string(),
+        ],
+    };
+    cycle.schema_compatibility = Some(hypothesis_refresh_schema_compatibility_metadata());
+    cycle
+}
+
+pub fn hypothesis_refresh_schema_compatibility_metadata() -> SchemaArtifactCompatibilityV0 {
+    SchemaArtifactCompatibilityV0 {
+        artifact_id: "hypothesis-refresh-cycle".to_string(),
+        schema_version_name: HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION.to_string(),
+        compatibility_policy_ref: COMPATIBILITY_POLICY_REF.to_string(),
+        field_mappings: vec![
+            field_mapping("sourceMonitorRefs", "sourceMonitorRefs", "stable", "preserve monitor traceability"),
+            field_mapping("versionedHypothesisRefs", "versionedHypothesisRefs", "stable", "preserve hypothesis version refs"),
+            field_mapping("changeReasons", "changeReasons", "stable", "preserve refresh rationale"),
+            field_mapping("refreshDecision", "refreshDecision", "stable", "preserve refresh decision boundary"),
+            field_mapping("retainedHypotheses", "retainedHypotheses", "stable", "preserve retained hypothesis dispositions"),
+            field_mapping("rejectedHypotheses", "rejectedHypotheses", "stable", "preserve rejected hypothesis dispositions"),
+            field_mapping("nonConclusions", "nonConclusions", "stable", "preserve hypothesis / theorem boundary"),
+        ],
+        deprecated_fields: Vec::new(),
+        required_assumptions: vec![
+            required_assumption_for("hypothesis-refresh-cycle", "versioned hypothesis refs are preserved", "hypothesis refresh review"),
+            required_assumption_for("hypothesis-refresh-cycle", "change reasons and refresh decision are preserved", "hypothesis refresh review"),
+            required_assumption_for("hypothesis-refresh-cycle", "retained and rejected hypothesis dispositions are preserved", "hypothesis refresh review"),
+        ],
+        coverage_exactness_boundaries: vec![
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "hypothesis-refresh.versioned-refs".to_string(),
+                measurement_boundary: "empiricalHypothesis".to_string(),
+                coverage_assumptions: vec![
+                    "hypothesis refs preserve version and previous status".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "hypothesis versioning is research tracking, not proof state".to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "hypothesis-refresh.dispositions".to_string(),
+                measurement_boundary: "empiricalHypothesis".to_string(),
+                coverage_assumptions: vec![
+                    "retained and rejected hypotheses preserve source refs and rationale".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "retained does not mean proved and rejected causal phrasing does not mean zero risk"
+                        .to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "hypothesis-refresh.formal-claim-boundary".to_string(),
+                measurement_boundary: "formalClaimBlocked".to_string(),
+                coverage_assumptions: vec![
+                    "non-conclusions preserve theorem promotion guardrails".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "empirical refresh does not discharge theorem preconditions".to_string(),
+                ],
+            },
+        ],
+        non_conclusions: vec![
+            "hypothesis refresh schema compatibility metadata does not prove any hypothesis"
+                .to_string(),
+            "hypothesis refresh schema compatibility metadata does not imply extractor completeness"
+                .to_string(),
+            "compatibility pass does not promote empirical evidence to a Lean theorem claim"
+                .to_string(),
+        ],
+    }
+}
+
 fn field_mapping(
     source_field: &str,
     target_field: &str,
@@ -1710,5 +2155,43 @@ mod tests {
                 .iter()
                 .any(|evidence| evidence.boundary == "private")
         );
+    }
+
+    #[test]
+    fn incident_correlation_monitor_fixture_parses() {
+        let fixture: IncidentCorrelationMonitorV0 = serde_json::from_str(include_str!(
+            "../tests/fixtures/minimal/incident_correlation_monitor.json"
+        ))
+        .expect("incident correlation monitor fixture parses");
+        assert_eq!(
+            fixture.schema_version,
+            INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION
+        );
+        assert!(
+            fixture
+                .missing_private_data
+                .iter()
+                .any(|evidence| evidence.boundary == "private")
+        );
+        assert_eq!(fixture.refresh_decision.decision, "refreshHypothesis");
+    }
+
+    #[test]
+    fn hypothesis_refresh_cycle_fixture_parses() {
+        let fixture: HypothesisRefreshCycleV0 = serde_json::from_str(include_str!(
+            "../tests/fixtures/minimal/hypothesis_refresh_cycle.json"
+        ))
+        .expect("hypothesis refresh cycle fixture parses");
+        assert_eq!(
+            fixture.schema_version,
+            HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION
+        );
+        assert!(
+            fixture
+                .rejected_hypotheses
+                .iter()
+                .any(|hypothesis| hypothesis.disposition == "rejected")
+        );
+        assert_eq!(fixture.refresh_decision.decision, "reviseAndRetain");
     }
 }

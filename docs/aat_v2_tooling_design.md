@@ -2119,6 +2119,15 @@ follow-up outcome refs、side-effect notes、missing evidence を保持する。
 repair correctness、global flatness preservation、cost improvement、formal claim
 promotion を結論せず、境界劣化と修復提案採用の empirical tracking として扱う。
 
+Issue [#624](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/624) では
+`incident-correlation-monitor-v0` と `hypothesis-refresh-cycle-v0` を追加する。前者は
+correlation window、source refs、metric axes、incident / rollback / MTTR correlations、
+confounder notes、missing / private data boundary、refresh decision を保持する。後者は
+versioned hypothesis refs、change reasons、retained / rejected hypotheses、proposed
+updates、non-conclusions を保持する。相関 monitoring と hypothesis refresh は
+empirical / operational feedback であり、因果証明、formal claim promotion、
+theorem precondition discharge、extractor completeness を結論しない。
+
 ## 14. 成功基準
 
 短期成功:

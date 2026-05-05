@@ -2,7 +2,8 @@ use crate::{
     AIR_SCHEMA_VERSION, ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
     CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
-    FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
+    FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
+    INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
     OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, REPAIR_ADOPTION_RECORD_SCHEMA_VERSION,
     REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
     SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
@@ -265,6 +266,52 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                 ),
             ),
+            artifact(
+                "incident-correlation-monitor",
+                "Incident / rollback / MTTR correlation monitor",
+                INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION,
+                "operational-feedback-monitor",
+                "B10",
+                "implemented",
+                vec![
+                    "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+                    "docs/design/schema_version_catalog.md#incident-correlation-monitor-metadata",
+                ],
+                vec!["#624"],
+                compatibility_boundary(
+                    "Map correlation window, source refs, metric axes, correlations, confounder notes, missing / private data, refresh decision, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New incident correlation fields must preserve source refs, metric axes, confounder notes, and missing / private evidence boundaries.",
+                    ],
+                    vec![
+                        "Correlation observations, confounders, and missing / private data delimit empirical incident-monitoring exactness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "hypothesis-refresh-cycle",
+                "Empirical hypothesis refresh cycle",
+                HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
+                "operational-feedback-research-cycle",
+                "B10",
+                "implemented",
+                vec![
+                    "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+                    "docs/design/schema_version_catalog.md#hypothesis-refresh-cycle-metadata",
+                ],
+                vec!["#624"],
+                compatibility_boundary(
+                    "Map source monitor refs, versioned hypothesis refs, change reasons, refresh decision, retained / rejected hypotheses, proposed updates, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New refresh fields must preserve hypothesis version refs, disposition rationale, source refs, and formal-claim non-conclusions.",
+                    ],
+                    vec![
+                        "Hypothesis dispositions and refresh decisions delimit empirical research tracking exactness.",
+                    ],
+                ),
+            ),
         ],
         compatibility_policy: compatibility_policy(catalog_version),
         non_conclusions: vec![
@@ -438,6 +485,8 @@ mod tests {
             ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
             DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
             CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
+            INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION,
+            HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
         ] {
             assert!(
                 versions.contains(expected),

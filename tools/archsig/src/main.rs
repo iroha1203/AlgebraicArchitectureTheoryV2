@@ -9,7 +9,8 @@ use archsig::{
     ComponentUniverseValidationReport, CustomRulePluginRegistryV0,
     CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
     DetectableValuesReportedAxesCatalogV0, DriftLedgerAggregationWindowV0, EmpiricalDatasetInput,
-    FeatureExtensionReportV0, FrameworkAdapterEvidenceV0, LawPolicyTemplateRegistryV0,
+    FeatureExtensionReportV0, FrameworkAdapterEvidenceV0, HypothesisRefreshCycleV0,
+    IncidentCorrelationMonitorV0, LawPolicyTemplateRegistryV0,
     LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
     MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
@@ -31,6 +32,7 @@ use archsig::{
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_calibration_review_record,
     static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
+    static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
     static_law_policy_template_registry, static_measurement_unit_registry,
     static_no_solution_certificate, static_organization_policy, static_ownership_boundary_monitor,
     static_repair_adoption_record, static_repair_rule_registry,
@@ -273,6 +275,20 @@ enum Command {
     /// Emit a B10 repair suggestion adoption tracking record.
     RepairAdoptionRecord {
         /// Output repair adoption record JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit a B10 incident / rollback / MTTR correlation monitor artifact.
+    IncidentCorrelationMonitor {
+        /// Output incident correlation monitor JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit a B10 empirical hypothesis refresh cycle artifact.
+    HypothesisRefreshCycle {
+        /// Output hypothesis refresh cycle JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -810,6 +826,16 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         Some(Command::RepairAdoptionRecord { out }) => {
             let record: RepairAdoptionRecordV0 = static_repair_adoption_record();
             write_json(out, &record)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::IncidentCorrelationMonitor { out }) => {
+            let monitor: IncidentCorrelationMonitorV0 = static_incident_correlation_monitor();
+            write_json(out, &monitor)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::HypothesisRefreshCycle { out }) => {
+            let cycle: HypothesisRefreshCycleV0 = static_hypothesis_refresh_cycle();
+            write_json(out, &cycle)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::RelationComplexity { input, out }) => {
