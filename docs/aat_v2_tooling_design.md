@@ -2111,6 +2111,14 @@ non-conclusions を保持する。team-local threshold tuning は empirical cali
 formal claim promotion、theorem precondition discharge、architecture lawfulness を
 結論しない。
 
+Issue [#623](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/623) では
+`ownership-boundary-monitor-v0` と `repair-adoption-record-v0` を追加する。前者は
+ownership scopes、boundary erosion signals、missing / private evidence を運用観測として
+保持し、後者は repair suggestion refs、adopted / rejected / deferred decision、
+follow-up outcome refs、side-effect notes、missing evidence を保持する。これらは
+repair correctness、global flatness preservation、cost improvement、formal claim
+promotion を結論せず、境界劣化と修復提案採用の empirical tracking として扱う。
+
 ## 14. 成功基準
 
 短期成功:

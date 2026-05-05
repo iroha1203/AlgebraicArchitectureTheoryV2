@@ -259,6 +259,70 @@ archsig team-threshold-policy \
 advisory mode だけで formal claim promotion、theorem precondition discharge、
 extractor completeness、architecture lawfulness を結論しない。
 
+## Ownership boundary monitor metadata
+
+Issue: [#623](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/623)
+
+`ownership-boundary-monitor-v0` は、ownership / boundary erosion monitoring を B10 の
+operational feedback monitor artifact として保存する。schema は `organizationRef`,
+`teamRef`, `architectureId`, `aggregationWindow`, `sourceRefs`, `ownershipScopes`,
+`boundaryErosionSignals`, `missingEvidence`, `analysisMetadata`, `nonConclusions` を
+保持する。
+
+Ownership scope は owner refs、component refs、boundary policy refs、evidence refs、
+missing evidence refs を分離して記録する。Boundary erosion signal は metric refs、
+observed value、severity、trend、measurement boundary、follow-up refs を保持し、
+private / unavailable evidence を measured-zero evidence に丸めない。
+
+Canonical fixture:
+
+```text
+tools/archsig/tests/fixtures/minimal/ownership_boundary_monitor.json
+```
+
+CLI は次の形で canonical ownership boundary monitor を出力する。
+
+```bash
+archsig ownership-boundary-monitor \
+  --out ownership-boundary-monitor.json
+```
+
+この artifact は empirical / operational signal であり、ownership completeness、
+boundary erosion causality、repair correctness、extractor completeness、
+architecture lawfulness を結論しない。
+
+## Repair adoption record metadata
+
+Issue: [#623](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/623)
+
+`repair-adoption-record-v0` は、repair suggestion adoption tracking を B10 の
+operational feedback record artifact として保存する。schema は `suggestionRefs`,
+`adoptionDecision`, `followUpOutcomeRefs`, `sideEffectNotes`, `missingEvidence`,
+`analysisMetadata`, `nonConclusions` を保持する。
+
+Suggestion refs は source report、obstruction witness、repair rule、target components、
+evidence boundary を保持する。Adoption decision は adopted / rejected / deferred、
+reason、decision refs、adoption / deferral timing を記録する。Follow-up outcome refs と
+side-effect notes は repair adoption の運用観測であり、repair correctness、
+global flatness preservation、cost improvement の theorem claim ではない。
+
+Canonical fixture:
+
+```text
+tools/archsig/tests/fixtures/minimal/repair_adoption_record.json
+```
+
+CLI は次の形で canonical repair adoption record を出力する。
+
+```bash
+archsig repair-adoption-record \
+  --out repair-adoption-record.json
+```
+
+この artifact は empirical / operational signal であり、adopted / rejected / deferred
+decision や follow-up outcome refs だけで obstruction removal、repair correctness、
+global flatness preservation、cost improvement、formal claim promotion を結論しない。
+
 ## Non-Conclusions
 
 Schema migration は意味保存を主張しない。field mapping が通ることは、

@@ -4080,6 +4080,125 @@ fn cli_team_threshold_policy_fixture_preserves_policy_boundaries() {
 }
 
 #[test]
+fn cli_ownership_boundary_monitor_fixture_preserves_boundary_evidence() {
+    let out_dir = temp_dir("ownership-boundary-monitor");
+    let out = out_dir.join("ownership-boundary-monitor.json");
+
+    run_sig0(&[
+        "ownership-boundary-monitor",
+        "--out",
+        out.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out);
+    assert_eq!(json["schemaVersion"], "ownership-boundary-monitor-v0");
+    assert_eq!(json["teamRef"], "team:checkout-platform");
+    assert!(
+        json["ownershipScopes"]
+            .as_array()
+            .expect("ownershipScopes are an array")
+            .iter()
+            .any(|scope| scope["scopeRef"] == "ownership-scope:checkout-api"
+                && scope["observationBoundary"] == "boundedOperationalObservation")
+    );
+    assert!(
+        json["boundaryErosionSignals"]
+            .as_array()
+            .expect("boundaryErosionSignals are an array")
+            .iter()
+            .any(
+                |signal| signal["metricRef"] == "runtime.privateEvidenceCount"
+                    && signal["measurementBoundary"] == "unmeasuredPrivateEvidence"
+            )
+    );
+    assert!(
+        json["missingEvidence"]
+            .as_array()
+            .expect("missingEvidence is an array")
+            .iter()
+            .any(|evidence| evidence["boundary"] == "private")
+    );
+    assert!(
+        json["schemaCompatibility"]["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("coverageExactnessBoundaries are an array")
+            .iter()
+            .any(|boundary| {
+                boundary["axisOrLayer"] == "ownership-boundary-monitor.boundary-erosion"
+            })
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|claim| claim == "boundary erosion monitoring does not prove repair correctness")
+    );
+}
+
+#[test]
+fn cli_repair_adoption_record_fixture_preserves_adoption_boundaries() {
+    let out_dir = temp_dir("repair-adoption-record");
+    let out = out_dir.join("repair-adoption-record.json");
+
+    run_sig0(&[
+        "repair-adoption-record",
+        "--out",
+        out.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out);
+    assert_eq!(json["schemaVersion"], "repair-adoption-record-v0");
+    assert_eq!(json["adoptionDecision"]["decision"], "deferred");
+    assert!(
+        json["suggestionRefs"]
+            .as_array()
+            .expect("suggestionRefs are an array")
+            .iter()
+            .any(|suggestion| {
+                suggestion["suggestionRef"] == "repair-suggestion:split-runtime-adapter-boundary"
+                    && suggestion["evidenceBoundary"] == "suggestionFromUnmeasuredRuntimeEvidence"
+            })
+    );
+    assert!(
+        json["followUpOutcomeRefs"]
+            .as_array()
+            .expect("followUpOutcomeRefs are an array")
+            .iter()
+            .any(|outcome| outcome["outcomeKind"] == "ownership-boundary-monitor")
+    );
+    assert!(
+        json["sideEffectNotes"]
+            .as_array()
+            .expect("sideEffectNotes are an array")
+            .iter()
+            .any(|note| note["severity"] == "watch")
+    );
+    assert!(
+        json["missingEvidence"]
+            .as_array()
+            .expect("missingEvidence is an array")
+            .iter()
+            .any(|evidence| evidence["boundary"] == "private")
+    );
+    assert!(
+        json["schemaCompatibility"]["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("coverageExactnessBoundaries are an array")
+            .iter()
+            .any(|boundary| boundary["axisOrLayer"] == "repair-adoption.decision")
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|claim| claim
+                == "adopted, rejected, or deferred decision does not prove repair correctness")
+    );
+}
+
+#[test]
 fn cli_relation_complexity_fixture_outputs_observation() {
     let root = fixture_root();
     let out_dir = temp_dir("relation");

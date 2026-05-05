@@ -74,7 +74,7 @@ pub use obstruction_drift::{
 pub use operational_feedback::{
     ReportOutcomeDailyLedgerInput, build_report_outcome_daily_ledger,
     build_report_outcome_daily_ledger_from_files, static_calibration_review_record,
-    static_team_threshold_policy,
+    static_ownership_boundary_monitor, static_repair_adoption_record, static_team_threshold_policy,
 };
 pub use organization_policy::{static_organization_policy, validate_organization_policy_report};
 pub use outcome_linkage::{

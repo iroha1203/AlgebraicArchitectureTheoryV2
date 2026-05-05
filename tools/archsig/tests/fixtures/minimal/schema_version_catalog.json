@@ -253,6 +253,62 @@
           "renamed fields do not discharge new required assumptions"
         ]
       }
+    },
+    {
+      "artifactId": "ownership-boundary-monitor",
+      "artifactName": "Ownership boundary monitor",
+      "schemaVersionName": "ownership-boundary-monitor-v0",
+      "artifactRole": "operational-feedback-monitor",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#ownership-boundary-monitor-metadata"
+      ],
+      "downstreamIssues": ["#623"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map source refs, ownership scopes, boundary erosion signals, missing evidence, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New ownership or boundary erosion metrics must preserve measurement boundary and missing / private evidence refs."
+        ],
+        "coverageExactnessBoundary": [
+          "Ownership scope and boundary erosion signal metadata delimit empirical monitoring exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "repair-adoption-record",
+      "artifactName": "Repair adoption record",
+      "schemaVersionName": "repair-adoption-record-v0",
+      "artifactRole": "operational-feedback-record",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#repair-adoption-record-metadata"
+      ],
+      "downstreamIssues": ["#623"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map suggestion refs, adopted / rejected / deferred decision, follow-up outcomes, side-effect notes, missing evidence, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New adoption fields must preserve repair suggestion traceability, workflow state, side effects, and missing / private evidence boundaries."
+        ],
+        "coverageExactnessBoundary": [
+          "Repair adoption workflow state and follow-up outcome refs delimit empirical repair tracking exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {

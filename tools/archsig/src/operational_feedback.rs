@@ -4,17 +4,23 @@ use std::fs;
 use std::path::Path;
 
 use crate::{
-    ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION, ArchitectureDriftLedgerV0,
+    ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION, ArchitectureDriftLedgerV0, BoundaryErosionSignalV0,
     CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION, CalibrationConfidenceV0, CalibrationInputV0,
     CalibrationMissingEvidenceV0, CalibrationOutcomeRefV0, CalibrationReportFindingRefV0,
     CalibrationReviewAnalysisMetadataV0, CalibrationReviewRecordV0, CalibrationReviewerDecisionV0,
     DriftLedgerAggregationWindowV0, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
-    OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION, OutcomeLinkageDatasetV0, OutcomeMetric,
-    REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, ReportOutcomeBoundaryCountV0,
-    ReportOutcomeDailyBatchV0, ReportOutcomeDailyLedgerV0, ReportOutcomeLedgerAnalysisMetadataV0,
-    ReportOutcomeMetricSummaryV0, ReportOutcomeRetentionPolicyV0, ReportOutcomeSourceReportRefV0,
-    SchemaArtifactCompatibilityV0, SchemaCoverageExactnessBoundaryV0, SchemaFieldMappingV0,
-    SchemaRequiredAssumptionV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION, TeamThresholdAxisPolicyV0,
+    OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION, OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION,
+    OutcomeLinkageDatasetV0, OutcomeMetric, OwnershipBoundaryAnalysisMetadataV0,
+    OwnershipBoundaryMissingEvidenceV0, OwnershipBoundaryMonitorV0, OwnershipBoundarySourceRefV0,
+    OwnershipScopeObservationV0, REPAIR_ADOPTION_RECORD_SCHEMA_VERSION,
+    REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, RepairAdoptionAnalysisMetadataV0,
+    RepairAdoptionDecisionV0, RepairAdoptionMissingEvidenceV0, RepairAdoptionRecordV0,
+    RepairFollowUpOutcomeRefV0, RepairSideEffectNoteV0, RepairSuggestionRefV0,
+    ReportOutcomeBoundaryCountV0, ReportOutcomeDailyBatchV0, ReportOutcomeDailyLedgerV0,
+    ReportOutcomeLedgerAnalysisMetadataV0, ReportOutcomeMetricSummaryV0,
+    ReportOutcomeRetentionPolicyV0, ReportOutcomeSourceReportRefV0, SchemaArtifactCompatibilityV0,
+    SchemaCoverageExactnessBoundaryV0, SchemaFieldMappingV0, SchemaRequiredAssumptionV0,
+    TEAM_THRESHOLD_POLICY_SCHEMA_VERSION, TeamThresholdAxisPolicyV0,
     TeamThresholdCalibrationSourceRefV0, TeamThresholdEffectivePeriodV0,
     TeamThresholdPolicyAnalysisMetadataV0, TeamThresholdPolicyV0, TeamThresholdRollbackPolicyV0,
 };
@@ -1062,6 +1068,512 @@ pub fn team_threshold_policy_schema_compatibility_metadata() -> SchemaArtifactCo
     }
 }
 
+pub fn static_ownership_boundary_monitor() -> OwnershipBoundaryMonitorV0 {
+    let mut monitor = OwnershipBoundaryMonitorV0 {
+        schema_version: OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION.to_string(),
+        schema_compatibility: None,
+        monitor_id: "fixture-b10-ownership-boundary-monitor-v0".to_string(),
+        generated_at: "2026-05-05T10:00:00Z".to_string(),
+        organization_ref: "org:example-commerce".to_string(),
+        team_ref: "team:checkout-platform".to_string(),
+        architecture_id: "checkout-service".to_string(),
+        aggregation_window: DriftLedgerAggregationWindowV0 {
+            window_start: Some("2026-05-04T00:00:00Z".to_string()),
+            window_end: Some("2026-05-05T00:00:00Z".to_string()),
+            window_kind: "daily".to_string(),
+        },
+        source_refs: vec![
+            OwnershipBoundarySourceRefV0 {
+                source_ref: "daily-ledger:fixture-b10-report-outcome-daily-ledger".to_string(),
+                source_kind: "report-outcome-daily-ledger".to_string(),
+                path: "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                    .to_string(),
+                boundary: "operationalFeedback".to_string(),
+                non_conclusions: vec![
+                    "daily ledger input does not prove boundary erosion causality".to_string(),
+                ],
+            },
+            OwnershipBoundarySourceRefV0 {
+                source_ref: "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0"
+                    .to_string(),
+                source_kind: "team-threshold-policy".to_string(),
+                path: "tools/archsig/tests/fixtures/minimal/team_threshold_policy.json"
+                    .to_string(),
+                boundary: "teamLocalEmpiricalCalibration".to_string(),
+                non_conclusions: vec![
+                    "team-local thresholds are policy context, not global invariants".to_string(),
+                ],
+            },
+        ],
+        ownership_scopes: vec![
+            OwnershipScopeObservationV0 {
+                scope_ref: "ownership-scope:checkout-api".to_string(),
+                owner_ref: "team:checkout-platform".to_string(),
+                component_refs: vec![
+                    "component:checkout.api".to_string(),
+                    "component:checkout.payment_adapter".to_string(),
+                ],
+                boundary_policy_refs: vec![
+                    "policy:checkout-owned-api-surface".to_string(),
+                    "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0".to_string(),
+                ],
+                observation_boundary: "boundedOperationalObservation".to_string(),
+                evidence_refs: vec![
+                    "CODEOWNERS:checkout-platform".to_string(),
+                    "feature-report:checkout-private-runtime-warning".to_string(),
+                ],
+                missing_evidence_refs: vec!["private-runtime-trace:redacted".to_string()],
+                non_conclusions: vec![
+                    "ownership scope observation does not prove semantic ownership completeness"
+                        .to_string(),
+                    "private runtime trace redaction is not measured-zero boundary evidence"
+                        .to_string(),
+                ],
+            },
+            OwnershipScopeObservationV0 {
+                scope_ref: "ownership-scope:billing-integration".to_string(),
+                owner_ref: "team:billing-platform".to_string(),
+                component_refs: vec!["component:billing.gateway".to_string()],
+                boundary_policy_refs: vec!["policy:billing-owned-integration".to_string()],
+                observation_boundary: "partialObservation".to_string(),
+                evidence_refs: vec!["architecture-drift-ledger:billing-cross-team-edge".to_string()],
+                missing_evidence_refs: vec!["CODEOWNERS:generated-client-owner".to_string()],
+                non_conclusions: vec![
+                    "partial ownership observation cannot infer absence of boundary erosion"
+                        .to_string(),
+                ],
+            },
+        ],
+        boundary_erosion_signals: vec![
+            BoundaryErosionSignalV0 {
+                signal_id: "boundary-erosion:checkout-to-billing-runtime-edge".to_string(),
+                boundary_ref: "ownership-scope:checkout-api -> ownership-scope:billing-integration"
+                    .to_string(),
+                metric_ref: "runtime.privateEvidenceCount".to_string(),
+                observed_value: Some(1.0),
+                severity: "watch".to_string(),
+                trend: "newlyObserved".to_string(),
+                measurement_boundary: "unmeasuredPrivateEvidence".to_string(),
+                evidence_refs: vec![
+                    "drift-ledger-entry:private_runtime_evidence_count".to_string(),
+                    "feature-report:finding-runtime-private-evidence-warning".to_string(),
+                ],
+                recommended_follow_up_refs: vec![
+                    "repair-suggestion:split-runtime-adapter-boundary".to_string(),
+                    "evidence-request:runtime-trace-redaction-policy".to_string(),
+                ],
+                non_conclusions: vec![
+                    "new runtime edge signal is boundary erosion monitoring, not causal proof"
+                        .to_string(),
+                    "unmeasured private evidence is not measured-zero evidence".to_string(),
+                ],
+            },
+            BoundaryErosionSignalV0 {
+                signal_id: "boundary-erosion:generated-client-owner-gap".to_string(),
+                boundary_ref: "ownership-scope:billing-integration".to_string(),
+                metric_ref: "ownership.missingOwnerEvidenceCount".to_string(),
+                observed_value: None,
+                severity: "advisory".to_string(),
+                trend: "unavailable".to_string(),
+                measurement_boundary: "unavailable".to_string(),
+                evidence_refs: vec!["CODEOWNERS:generated-client-owner".to_string()],
+                recommended_follow_up_refs: vec!["ownership-review:generated-client".to_string()],
+                non_conclusions: vec![
+                    "missing owner evidence does not imply unowned code".to_string(),
+                ],
+            },
+        ],
+        missing_evidence: vec![
+            OwnershipBoundaryMissingEvidenceV0 {
+                evidence_kind: "private-runtime-trace".to_string(),
+                reason: "runtime edge evidence is retained as a private artifact reference only"
+                    .to_string(),
+                boundary: "private".to_string(),
+                follow_up_ref: "evidence-request:runtime-trace-redaction-policy".to_string(),
+            },
+            OwnershipBoundaryMissingEvidenceV0 {
+                evidence_kind: "generated-client-owner".to_string(),
+                reason: "generated client ownership is not represented in the bounded fixture"
+                    .to_string(),
+                boundary: "unavailable".to_string(),
+                follow_up_ref: "ownership-review:generated-client".to_string(),
+            },
+        ],
+        analysis_metadata: OwnershipBoundaryAnalysisMetadataV0 {
+            lean_status: "empirical hypothesis / tooling validation".to_string(),
+            measurement_boundary:
+                "bounded ownership and boundary erosion monitoring over operational feedback artifacts"
+                    .to_string(),
+            source_join_keys: vec![
+                "organizationRef/teamRef".to_string(),
+                "architectureId".to_string(),
+                "component refs".to_string(),
+                "aggregation window".to_string(),
+            ],
+            non_conclusions: vec![
+                "ownership monitoring does not prove architecture lawfulness".to_string(),
+                "boundary erosion signal does not prove causal incident or rollback linkage"
+                    .to_string(),
+                "missing / private evidence is preserved instead of rounded to measured zero"
+                    .to_string(),
+            ],
+        },
+        non_conclusions: vec![
+            "ownership boundary monitor is empirical / operational signal, not a Lean theorem"
+                .to_string(),
+            "boundary erosion monitoring does not prove repair correctness".to_string(),
+            "private or unavailable ownership evidence is not measured-zero evidence".to_string(),
+            "monitor output does not imply extractor completeness".to_string(),
+        ],
+    };
+    monitor.schema_compatibility = Some(ownership_boundary_monitor_schema_compatibility_metadata());
+    monitor
+}
+
+pub fn ownership_boundary_monitor_schema_compatibility_metadata() -> SchemaArtifactCompatibilityV0 {
+    SchemaArtifactCompatibilityV0 {
+        artifact_id: "ownership-boundary-monitor".to_string(),
+        schema_version_name: OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION.to_string(),
+        compatibility_policy_ref: COMPATIBILITY_POLICY_REF.to_string(),
+        field_mappings: vec![
+            field_mapping(
+                "sourceRefs",
+                "sourceRefs",
+                "stable",
+                "preserve operational source traceability",
+            ),
+            field_mapping(
+                "ownershipScopes",
+                "ownershipScopes",
+                "stable",
+                "preserve owner, component, policy, evidence, and missing evidence refs",
+            ),
+            field_mapping(
+                "boundaryErosionSignals",
+                "boundaryErosionSignals",
+                "stable",
+                "preserve boundary erosion signal identity and measurement boundary",
+            ),
+            field_mapping(
+                "missingEvidence",
+                "missingEvidence",
+                "stable",
+                "preserve private / unavailable ownership evidence boundaries",
+            ),
+            field_mapping(
+                "nonConclusions",
+                "nonConclusions",
+                "stable",
+                "preserve empirical / formal-claim guardrails",
+            ),
+        ],
+        deprecated_fields: Vec::new(),
+        required_assumptions: vec![
+            required_assumption_for(
+                "ownership-boundary-monitor",
+                "ownership scopes preserve owner and component refs",
+                "ownership boundary monitoring",
+            ),
+            required_assumption_for(
+                "ownership-boundary-monitor",
+                "boundary erosion signals preserve measurement boundary",
+                "ownership boundary monitoring",
+            ),
+            required_assumption_for(
+                "ownership-boundary-monitor",
+                "missing ownership evidence remains private or unavailable",
+                "ownership boundary monitoring",
+            ),
+        ],
+        coverage_exactness_boundaries: vec![
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "ownership-boundary-monitor.ownership-scope".to_string(),
+                measurement_boundary: "boundedOperationalObservation".to_string(),
+                coverage_assumptions: vec![
+                    "ownershipScopes identify owner, component, and policy refs".to_string(),
+                    "missingEvidenceRefs preserve unavailable ownership evidence".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "bounded ownership observation is not ownership completeness".to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "ownership-boundary-monitor.boundary-erosion".to_string(),
+                measurement_boundary: "unmeasuredPrivateEvidence".to_string(),
+                coverage_assumptions: vec![
+                    "boundaryErosionSignals preserve metric refs and evidence refs".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "boundary erosion monitoring does not prove causal incident linkage"
+                        .to_string(),
+                    "private evidence is not measured-zero evidence".to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "ownership-boundary-monitor.missing-evidence".to_string(),
+                measurement_boundary: "unavailable".to_string(),
+                coverage_assumptions: vec![
+                    "missingEvidence entries preserve private and unavailable boundaries"
+                        .to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "missing ownership evidence does not imply unowned or risk-free components"
+                        .to_string(),
+                ],
+            },
+        ],
+        non_conclusions: vec![
+            "ownership boundary monitor schema compatibility metadata does not prove semantic preservation"
+                .to_string(),
+            "ownership boundary monitor schema compatibility metadata does not imply extractor completeness"
+                .to_string(),
+            "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+                .to_string(),
+            "boundary erosion monitoring is empirical signal, not repair correctness".to_string(),
+        ],
+    }
+}
+
+pub fn static_repair_adoption_record() -> RepairAdoptionRecordV0 {
+    let mut record = RepairAdoptionRecordV0 {
+        schema_version: REPAIR_ADOPTION_RECORD_SCHEMA_VERSION.to_string(),
+        schema_compatibility: None,
+        record_id: "fixture-b10-repair-adoption-record-v0".to_string(),
+        reviewed_at: "2026-05-05T11:00:00Z".to_string(),
+        reviewer: "architecture-reviewer@example.com".to_string(),
+        suggestion_refs: vec![RepairSuggestionRefV0 {
+            suggestion_ref: "repair-suggestion:split-runtime-adapter-boundary".to_string(),
+            source_report_ref:
+                "tools/archsig/tests/fixtures/minimal/feature_extension_report.json".to_string(),
+            obstruction_witness_ref: "obstruction-witness:private-runtime-evidence".to_string(),
+            repair_rule_ref: "repair-rule:extract-runtime-adapter".to_string(),
+            target_component_refs: vec![
+                "component:checkout.payment_adapter".to_string(),
+                "component:billing.gateway".to_string(),
+            ],
+            evidence_boundary: "suggestionFromUnmeasuredRuntimeEvidence".to_string(),
+            non_conclusions: vec![
+                "repair suggestion ref does not prove obstruction witness semantics".to_string(),
+                "suggested repair is not a proof of global flatness preservation".to_string(),
+            ],
+        }],
+        adoption_decision: RepairAdoptionDecisionV0 {
+            decision: "deferred".to_string(),
+            reason:
+                "team accepted boundary review but deferred code movement until private runtime evidence can be redacted"
+                    .to_string(),
+            decision_refs: vec![
+                "review-thread:repair-adoption-2026-05-05".to_string(),
+                "issue:#623".to_string(),
+            ],
+            adopted_at: None,
+            deferred_until: Some("2026-06-05T00:00:00Z".to_string()),
+            non_conclusions: vec![
+                "deferred adoption is operational workflow state, not repair failure proof"
+                    .to_string(),
+                "decision does not establish cost improvement or obstruction removal".to_string(),
+            ],
+        },
+        follow_up_outcome_refs: vec![
+            RepairFollowUpOutcomeRefV0 {
+                outcome_ref: "daily-ledger:fixture-b10-report-outcome-daily-ledger".to_string(),
+                outcome_kind: "report-outcome-daily-ledger".to_string(),
+                boundary: "operationalFeedback".to_string(),
+                metric_refs: vec![
+                    "driftLedger.private_runtime_evidence_count".to_string(),
+                    "reviewCost.approvalLatencyHours".to_string(),
+                ],
+                non_conclusions: vec![
+                    "follow-up ledger signal is not causal evidence of repair effect".to_string(),
+                ],
+            },
+            RepairFollowUpOutcomeRefV0 {
+                outcome_ref: "ownership-monitor:fixture-b10-ownership-boundary-monitor-v0"
+                    .to_string(),
+                outcome_kind: "ownership-boundary-monitor".to_string(),
+                boundary: "boundedOperationalObservation".to_string(),
+                metric_refs: vec!["ownership.missingOwnerEvidenceCount".to_string()],
+                non_conclusions: vec![
+                    "ownership monitor signal does not prove boundary repair correctness"
+                        .to_string(),
+                ],
+            },
+        ],
+        side_effect_notes: vec![RepairSideEffectNoteV0 {
+            note_id: "side-effect:review-latency-risk".to_string(),
+            affected_axis_refs: vec![
+                "reviewCost.approvalLatencyHours".to_string(),
+                "ownership.missingOwnerEvidenceCount".to_string(),
+            ],
+            description:
+                "adapter extraction may require cross-team review and temporarily increase approval latency"
+                    .to_string(),
+            severity: "watch".to_string(),
+            evidence_refs: vec![
+                "team-threshold-policy:fixture-b10-checkout-team-threshold-policy-v0".to_string(),
+            ],
+            non_conclusions: vec![
+                "side-effect note is risk tracking, not a prediction theorem".to_string(),
+            ],
+        }],
+        missing_evidence: vec![
+            RepairAdoptionMissingEvidenceV0 {
+                evidence_kind: "post-adoption-outcome-window".to_string(),
+                reason: "repair is deferred, so post-adoption outcome evidence is unavailable"
+                    .to_string(),
+                boundary: "unavailable".to_string(),
+                follow_up_ref: "repair-review:post-adoption-window".to_string(),
+            },
+            RepairAdoptionMissingEvidenceV0 {
+                evidence_kind: "private-runtime-trace".to_string(),
+                reason: "runtime trace must be redacted before deciding the exact extraction"
+                    .to_string(),
+                boundary: "private".to_string(),
+                follow_up_ref: "evidence-request:runtime-trace-redaction-policy".to_string(),
+            },
+        ],
+        analysis_metadata: RepairAdoptionAnalysisMetadataV0 {
+            lean_status: "empirical hypothesis / tooling validation".to_string(),
+            adoption_boundary:
+                "repair suggestion adoption state with follow-up outcome refs and missing evidence"
+                    .to_string(),
+            repair_correctness_boundary:
+                "adoption tracking records workflow outcome and cannot prove repair correctness"
+                    .to_string(),
+            non_conclusions: vec![
+                "repair adoption record is not a proof that obstruction was removed".to_string(),
+                "repair adoption record is not a proof of global flatness preservation".to_string(),
+                "repair adoption record is not a proof of cost improvement".to_string(),
+            ],
+        },
+        non_conclusions: vec![
+            "repair adoption tracking is empirical / operational signal, not a Lean theorem"
+                .to_string(),
+            "adopted, rejected, or deferred decision does not prove repair correctness".to_string(),
+            "follow-up outcomes do not establish causal repair success".to_string(),
+            "missing or private evidence is not measured-zero evidence".to_string(),
+        ],
+    };
+    record.schema_compatibility = Some(repair_adoption_record_schema_compatibility_metadata());
+    record
+}
+
+pub fn repair_adoption_record_schema_compatibility_metadata() -> SchemaArtifactCompatibilityV0 {
+    SchemaArtifactCompatibilityV0 {
+        artifact_id: "repair-adoption-record".to_string(),
+        schema_version_name: REPAIR_ADOPTION_RECORD_SCHEMA_VERSION.to_string(),
+        compatibility_policy_ref: COMPATIBILITY_POLICY_REF.to_string(),
+        field_mappings: vec![
+            field_mapping(
+                "suggestionRefs",
+                "suggestionRefs",
+                "stable",
+                "preserve repair suggestion, witness, rule, component, and evidence refs",
+            ),
+            field_mapping(
+                "adoptionDecision",
+                "adoptionDecision",
+                "stable",
+                "preserve adopted / rejected / deferred decision and reason",
+            ),
+            field_mapping(
+                "followUpOutcomeRefs",
+                "followUpOutcomeRefs",
+                "stable",
+                "preserve follow-up operational outcome refs",
+            ),
+            field_mapping(
+                "sideEffectNotes",
+                "sideEffectNotes",
+                "stable",
+                "preserve side-effect notes as empirical risk tracking",
+            ),
+            field_mapping(
+                "missingEvidence",
+                "missingEvidence",
+                "stable",
+                "preserve missing / private evidence boundaries",
+            ),
+            field_mapping(
+                "nonConclusions",
+                "nonConclusions",
+                "stable",
+                "preserve empirical / formal-claim guardrails",
+            ),
+        ],
+        deprecated_fields: Vec::new(),
+        required_assumptions: vec![
+            required_assumption_for(
+                "repair-adoption-record",
+                "repair suggestion refs preserve witness and rule traceability",
+                "repair adoption tracking",
+            ),
+            required_assumption_for(
+                "repair-adoption-record",
+                "adoption decision preserves adopted rejected or deferred status",
+                "repair adoption tracking",
+            ),
+            required_assumption_for(
+                "repair-adoption-record",
+                "follow up outcomes remain operational signal",
+                "repair adoption tracking",
+            ),
+            required_assumption_for(
+                "repair-adoption-record",
+                "missing repair evidence remains private or unavailable",
+                "repair adoption tracking",
+            ),
+        ],
+        coverage_exactness_boundaries: vec![
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "repair-adoption.suggestion-ref".to_string(),
+                measurement_boundary: "suggestionTraceability".to_string(),
+                coverage_assumptions: vec![
+                    "suggestionRefs preserve source report, witness, rule, and component refs"
+                        .to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "repair suggestion traceability does not prove obstruction semantics"
+                        .to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "repair-adoption.decision".to_string(),
+                measurement_boundary: "operationalWorkflowState".to_string(),
+                coverage_assumptions: vec![
+                    "adoptionDecision records adopted / rejected / deferred and reason"
+                        .to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "workflow decision does not prove repair correctness".to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "repair-adoption.missing-evidence".to_string(),
+                measurement_boundary: "unavailable".to_string(),
+                coverage_assumptions: vec![
+                    "missingEvidence preserves unavailable and private follow-up evidence"
+                        .to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "missing follow-up outcome evidence is not measured-zero evidence"
+                        .to_string(),
+                ],
+            },
+        ],
+        non_conclusions: vec![
+            "repair adoption schema compatibility metadata does not prove semantic preservation"
+                .to_string(),
+            "repair adoption schema compatibility metadata does not imply extractor completeness"
+                .to_string(),
+            "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+                .to_string(),
+            "repair adoption tracking does not prove global flatness preservation or cost improvement"
+                .to_string(),
+        ],
+    }
+}
+
 fn field_mapping(
     source_field: &str,
     target_field: &str,
@@ -1160,6 +1672,43 @@ mod tests {
                 .axis_thresholds
                 .iter()
                 .any(|axis| axis.ci_mode == "advisory")
+        );
+    }
+
+    #[test]
+    fn ownership_boundary_monitor_fixture_parses() {
+        let fixture: OwnershipBoundaryMonitorV0 = serde_json::from_str(include_str!(
+            "../tests/fixtures/minimal/ownership_boundary_monitor.json"
+        ))
+        .expect("ownership boundary monitor fixture parses");
+        assert_eq!(
+            fixture.schema_version,
+            OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION
+        );
+        assert!(
+            fixture
+                .boundary_erosion_signals
+                .iter()
+                .any(|signal| signal.measurement_boundary == "unmeasuredPrivateEvidence")
+        );
+    }
+
+    #[test]
+    fn repair_adoption_record_fixture_parses() {
+        let fixture: RepairAdoptionRecordV0 = serde_json::from_str(include_str!(
+            "../tests/fixtures/minimal/repair_adoption_record.json"
+        ))
+        .expect("repair adoption record fixture parses");
+        assert_eq!(
+            fixture.schema_version,
+            REPAIR_ADOPTION_RECORD_SCHEMA_VERSION
+        );
+        assert_eq!(fixture.adoption_decision.decision, "deferred");
+        assert!(
+            fixture
+                .missing_evidence
+                .iter()
+                .any(|evidence| evidence.boundary == "private")
         );
     }
 }
