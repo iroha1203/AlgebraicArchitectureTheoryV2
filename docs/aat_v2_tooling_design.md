@@ -1984,60 +1984,28 @@ schema / CLI / fixture は tooling index で管理する。
 ```
 
 この段階では、AIR を言語非依存の中間表現として保ちつつ、extractor 側を拡張する。
-各 extractor は、自分が扱える bounded subset、unsupported constructs、projection rule、
-coverage assumptions を明示し、Lean の `ComponentUniverse` 完全性とは同一視しない。
-adapter registry は、この boundary を tooling artifact として束ねる。
-registry entry は adapter kind、source language / framework、evidence kind、
-projection rule、coverage / exactness assumptions、unsupported constructs、
-non-conclusions を持ち、AIR coverage / Feature Extension Report / theorem precondition
-boundary への trace point になる。
+各 extractor / adapter / policy artifact は、自分が扱える bounded subset、
+unsupported constructs、projection rule、coverage / exactness assumptions、
+non-conclusions を明示し、AIR coverage / Feature Extension Report /
+theorem precondition boundary へ trace できる形で出力する。
 
-law policy templates は、boundary / abstraction / runtime protection などの policy selector
-初期値を与える tooling artifact として扱う。`law-policy-template-registry-v0` は
-template id、対象 component kind、law / policy family、selector assumptions、required
-evidence、theorem bridge preconditions、non-conclusions を保持する。template application
-は policy evidence の生成であり、architecture lawfulness、Lean theorem claim、
-extractor completeness、unmeasured gap の measured-zero 化を結論しない。
+B8 の artifact 群は、`python-import-graph-v0`、`adapter-registry-v0`,
+`framework-adapter-evidence-v0`, `law-policy-template-registry-v0`,
+`custom-rule-plugin-registry-v0`, `measurement-unit-registry-v0` を含む。
+個別 schema、CLI、fixture、validation rule は
+[ArchSig tooling index](design/archsig_tooling_index.md#b8-extractor--policy-ecosystem)
+と各 schema document で管理する。
 
-custom rule plugin は、organization-specific rule や extractor extension を AIR evidence /
-Feature Extension Report metadata へ写す bounded tooling artifact として扱う。
-`custom-rule-plugin-registry-v0` は plugin id、rule id、plugin / evidence kind、confidence、
-input / output contract、coverage assumptions、permitted claim levels、formal claim promotion
-mode、theorem precondition refs、required theorem preconditions、non-conclusions を保持する。
-plugin が formal claim level を許す場合でも、theorem precondition checker の explicit
-preconditions なしには Lean theorem claim へ昇格しない。plugin output は architecture
-lawfulness、extractor completeness、unsupported gap の measured-zero 化を結論しない。
+B8 の共通境界は次の通りである。
 
-monorepo / multi-service measurement unit は、runtime / semantic evidence adapter が読む
-測定 universe を固定する tooling artifact として扱う。
-`measurement-unit-registry-v0` は repository root、service root、deployment unit、
-runtime evidence source、semantic workflow source、coverage assumptions、unsupported
-constructs、non-conclusions を分けて保持する。runtime / semantic adapter は
-`measurementUnitRefs`、projection rule、coverage / exactness assumptions を AIR coverage /
-Feature Extension Report に trace する。measurement unit の選択は global architecture
-completeness、Lean `ComponentUniverse` completeness、runtime / semantic completeness、
-private / missing evidence の measured-zero 化を結論しない。
-
-Python extractor の詳細な component / root / edge policy は tooling artifact 側の規約として
-[ArchSig tooling index](design/archsig_tooling_index.md#python-component-policy) で管理する。
-この設計書では、`componentKind = "python-module"` が静的 import graph の extractor
-evidence であり、Lean `ComponentUniverse` 完全性や architecture lawfulness を結論しない、
-という境界だけを固定する。
-dynamic import、plugin loading、framework convention、generated code、notebook は
-`unsupportedConstructs` から AIR coverage / Feature Extension Report の coverage gap へ
-trace し、測定済み 0 の evidence としては扱わない。
-canonical fixture と CLI tests は small Python package、relative import、external dependency、
-unsupported boundary、Python Sig0 output、AIR validation、Feature Extension Report、
-theorem precondition boundary を tooling validation として固定する。これらの fixture は
-実コード extractor completeness や Lean theorem claim への昇格を結論しない。
-
-framework-specific adapter の初期 fixture は、FastAPI の route decorator を
-`framework-adapter-evidence-v0` として AIR に追加する。`archsig air --framework-adapter`
-は adapter artifact、`framework_route` evidence、`layer = "framework"` の relation /
-coverage を作り、Feature Extension Report は dependency injection、middleware、
-runtime routing などの未対応 convention を coverage gap として残す。この adapter output は
-bounded tooling evidence であり、FastAPI runtime semantics、Lean `ComponentUniverse`
-completeness、architecture lawfulness、未対応 convention の measured-zero 化を結論しない。
+- extractor / adapter output は tooling evidence であり、Lean theorem ではない。
+- Lean `ComponentUniverse` completeness、extractor completeness、architecture lawfulness、
+  runtime / semantic completeness は結論しない。
+- unsupported / unmeasured / private / missing evidence は measured-zero evidence に丸めない。
+- policy template、custom rule plugin、measurement unit selection は formal claim promotion
+  の代替ではない。
+- formal claim へ読む場合は、claim 側の theorem bridge preconditions と theorem
+  precondition checker の結果を明示する。
 
 ### Phase B9: Schema standardization and compatibility
 
