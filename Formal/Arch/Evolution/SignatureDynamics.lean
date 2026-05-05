@@ -84,4 +84,87 @@ def SignatureDeltaSequence
       D.between (O.observe X) (O.observe Y) ::
         SignatureDeltaSequence O D rest
 
+/--
+Add the selected per-step signature deltas into one net delta.
+
+This is only a fold API over the supplied `Delta` type. It does not assert that
+the deltas are complete measurements, comparable across all axes, or connected
+to empirical PR outcomes.
+-/
+def NetSignatureDelta [Zero Delta] [Add Delta] : List Delta -> Delta
+  | [] => 0
+  | delta :: rest => delta + NetSignatureDelta rest
+
+/--
+The endpoint delta observed over an architecture evolution path.
+
+This keeps endpoint aggregation separate from the per-step sequence so that the
+telescoping theorem can state the exact algebraic assumption it needs.
+-/
+def EndpointSignatureDelta
+    (O : SignatureObservation State Sig) (D : SignatureDelta Sig Delta) :
+    {X Y : State} -> ArchitectureEvolution State X Y -> Delta
+  | X, Y, _plan => D.between (O.observe X) (O.observe Y)
+
+/--
+Local additive laws sufficient for net signature deltas to telescope.
+
+The laws are explicit assumptions about the selected delta package. They do not
+claim that unmeasured axes, empirical cost, incident risk, review quality, or PR
+outcomes are represented by the additive delta.
+-/
+structure AdditiveSignatureDeltaLaw [Zero Delta] [Add Delta]
+    (D : SignatureDelta Sig Delta) where
+  self_zero : ∀ sig : Sig, D.between sig sig = 0
+  step_telescope :
+    ∀ source mid target : Sig,
+      D.between source mid + D.between mid target =
+        D.between source target
+  nonConclusions : Prop
+
+namespace AdditiveSignatureDeltaLaw
+
+variable [Zero Delta] [Add Delta] {D : SignatureDelta Sig Delta}
+
+/-- The law package explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions (_law : AdditiveSignatureDeltaLaw D) : Prop :=
+  _law.nonConclusions
+
+end AdditiveSignatureDeltaLaw
+
+/--
+Per-step signature deltas telescope to the endpoint delta.
+
+The theorem is relative to `AdditiveSignatureDeltaLaw`: it proves a finite path
+calculus fact about the selected additive delta, not an empirical claim about
+unmeasured signature axes, cost, incidents, or PR outcomes.
+-/
+theorem netSignatureDelta_telescopes [Zero Delta] [Add Delta]
+    (O : SignatureObservation State Sig) (D : SignatureDelta Sig Delta)
+    (law : AdditiveSignatureDeltaLaw D) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      NetSignatureDelta (SignatureDeltaSequence O D plan) =
+        EndpointSignatureDelta O D plan
+  | X, _, ArchitecturePath.nil _ => by
+      simpa [SignatureDeltaSequence, NetSignatureDelta, EndpointSignatureDelta]
+        using (law.self_zero (O.observe X)).symm
+  | X, Z, ArchitecturePath.cons (Y := Y) _step rest => by
+      calc
+        NetSignatureDelta
+            (SignatureDeltaSequence O D
+              (ArchitecturePath.cons (Y := Y) _step rest))
+            =
+              D.between (O.observe X) (O.observe Y) +
+                NetSignatureDelta (SignatureDeltaSequence O D rest) := by
+                  rfl
+        _ =
+              D.between (O.observe X) (O.observe Y) +
+                EndpointSignatureDelta O D rest := by
+                  rw [netSignatureDelta_telescopes O D law rest]
+        _ = EndpointSignatureDelta O D
+              (ArchitecturePath.cons (Y := Y) _step rest) := by
+                  simpa [EndpointSignatureDelta] using
+                    law.step_telescope
+                      (O.observe X) (O.observe Y) (O.observe Z)
+
 end Formal.Arch
