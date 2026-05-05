@@ -1,0 +1,249 @@
+{
+  "schemaVersion": "hypothesis-refresh-cycle-v0",
+  "schemaCompatibility": {
+    "artifactId": "hypothesis-refresh-cycle",
+    "schemaVersionName": "hypothesis-refresh-cycle-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "sourceMonitorRefs",
+        "targetField": "sourceMonitorRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve monitor traceability"
+      },
+      {
+        "sourceField": "versionedHypothesisRefs",
+        "targetField": "versionedHypothesisRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve hypothesis version refs"
+      },
+      {
+        "sourceField": "changeReasons",
+        "targetField": "changeReasons",
+        "mappingKind": "stable",
+        "requiredReview": "preserve refresh rationale"
+      },
+      {
+        "sourceField": "refreshDecision",
+        "targetField": "refreshDecision",
+        "mappingKind": "stable",
+        "requiredReview": "preserve refresh decision boundary"
+      },
+      {
+        "sourceField": "retainedHypotheses",
+        "targetField": "retainedHypotheses",
+        "mappingKind": "stable",
+        "requiredReview": "preserve retained hypothesis dispositions"
+      },
+      {
+        "sourceField": "rejectedHypotheses",
+        "targetField": "rejectedHypotheses",
+        "mappingKind": "stable",
+        "requiredReview": "preserve rejected hypothesis dispositions"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve hypothesis / theorem boundary"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "versioned-hypothesis-refs-are-preserved",
+        "appliesTo": "hypothesis-refresh-cycle",
+        "requiredFor": "hypothesis refresh review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "change-reasons-and-refresh-decision-are-preserved",
+        "appliesTo": "hypothesis-refresh-cycle",
+        "requiredFor": "hypothesis refresh review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "retained-and-rejected-hypothesis-dispositions-are-preserved",
+        "appliesTo": "hypothesis-refresh-cycle",
+        "requiredFor": "hypothesis refresh review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "hypothesis-refresh.versioned-refs",
+        "measurementBoundary": "empiricalHypothesis",
+        "coverageAssumptions": [
+          "hypothesis refs preserve version and previous status"
+        ],
+        "exactnessAssumptions": [
+          "hypothesis versioning is research tracking, not proof state"
+        ]
+      },
+      {
+        "axisOrLayer": "hypothesis-refresh.dispositions",
+        "measurementBoundary": "empiricalHypothesis",
+        "coverageAssumptions": [
+          "retained and rejected hypotheses preserve source refs and rationale"
+        ],
+        "exactnessAssumptions": [
+          "retained does not mean proved and rejected causal phrasing does not mean zero risk"
+        ]
+      },
+      {
+        "axisOrLayer": "hypothesis-refresh.formal-claim-boundary",
+        "measurementBoundary": "formalClaimBlocked",
+        "coverageAssumptions": [
+          "non-conclusions preserve theorem promotion guardrails"
+        ],
+        "exactnessAssumptions": [
+          "empirical refresh does not discharge theorem preconditions"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "hypothesis refresh schema compatibility metadata does not prove any hypothesis",
+      "hypothesis refresh schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote empirical evidence to a Lean theorem claim"
+    ]
+  },
+  "cycleId": "hypothesis-refresh-cycle:runtime-exposure-2026-05",
+  "generatedAt": "2026-05-05T12:30:00Z",
+  "organizationRef": "org:example",
+  "teamRef": "team:checkout-platform",
+  "sourceMonitorRefs": [
+    {
+      "monitorRef": "fixture-b10-incident-correlation-monitor-v0",
+      "sourceKind": "incident-correlation-monitor",
+      "path": "tools/archsig/tests/fixtures/minimal/incident_correlation_monitor.json",
+      "boundary": "exploratoryOperationalCorrelation",
+      "nonConclusions": [
+        "monitor correlation is empirical input only"
+      ]
+    }
+  ],
+  "versionedHypothesisRefs": [
+    {
+      "hypothesisRef": "H5-runtime-exposure-incident-scope",
+      "hypothesisVersion": "2026-04",
+      "statusBefore": "active",
+      "evidenceBoundary": "empirical hypothesis",
+      "sourceRefs": [
+        "docs/proof_obligations.md#empirical-hypotheses"
+      ],
+      "nonConclusions": [
+        "active hypothesis is not a proved theorem"
+      ]
+    },
+    {
+      "hypothesisRef": "H3-hidden-interaction-review-cost",
+      "hypothesisVersion": "2026-04",
+      "statusBefore": "active",
+      "evidenceBoundary": "empirical hypothesis",
+      "sourceRefs": [
+        "docs/design/b6_empirical_hypothesis_evaluation.md"
+      ],
+      "nonConclusions": [
+        "retained hypothesis remains empirical"
+      ]
+    }
+  ],
+  "changeReasons": [
+    {
+      "reasonId": "reason-small-sample-mttr-correlation",
+      "reasonKind": "small-sample-correlation",
+      "description": "Runtime private evidence and MTTR correlation is positive but based on a small bounded window.",
+      "sourceRefs": [
+        "corr-runtime-private-vs-mttr"
+      ],
+      "boundary": "exploratoryCorrelation",
+      "nonConclusions": [
+        "small-sample correlation cannot strengthen a formal claim"
+      ]
+    },
+    {
+      "reasonId": "reason-private-incident-boundary",
+      "reasonKind": "private-data-boundary",
+      "description": "Incident timeline evidence remains private and cannot be inspected by the fixture.",
+      "sourceRefs": [
+        "evidence-request:incident-timeline-redaction"
+      ],
+      "boundary": "private",
+      "nonConclusions": [
+        "private data boundary is not absence of incident evidence"
+      ]
+    }
+  ],
+  "refreshDecision": {
+    "decision": "reviseAndRetain",
+    "decisionReason": "Narrow H5 to exploratory runtime exposure monitoring until more incident windows are available.",
+    "decisionRefs": [
+      "analysis-review:2026-05-runtime-exposure"
+    ],
+    "effectiveHypothesisVersion": "2026-05",
+    "nonConclusions": [
+      "refresh decision is empirical hypothesis management only",
+      "refresh decision does not discharge theorem preconditions"
+    ]
+  },
+  "retainedHypotheses": [
+    {
+      "hypothesisRef": "H3-hidden-interaction-review-cost",
+      "fromVersion": "2026-04",
+      "toVersion": "2026-05",
+      "disposition": "retained",
+      "rationale": "No contradictory operational signal was observed in this cycle.",
+      "sourceRefs": [
+        "calibration-review:runtime-private-evidence"
+      ],
+      "nonConclusions": [
+        "retained does not mean proved"
+      ]
+    }
+  ],
+  "rejectedHypotheses": [
+    {
+      "hypothesisRef": "H5-runtime-exposure-causes-incident",
+      "fromVersion": "2026-04",
+      "toVersion": null,
+      "disposition": "rejected",
+      "rationale": "Causal phrasing is rejected because the monitor records correlation with explicit confounders.",
+      "sourceRefs": [
+        "confounder-release-size"
+      ],
+      "nonConclusions": [
+        "rejecting causal phrasing does not reject exploratory monitoring"
+      ]
+    }
+  ],
+  "proposedUpdates": [
+    {
+      "hypothesisRef": "H5-runtime-exposure-incident-scope",
+      "proposedVersion": "2026-05",
+      "changeSummary": "Track runtime exposure as an exploratory correlation with incident scope and MTTR, not as a causal claim.",
+      "requiredFollowUpRefs": [
+        "b10-backlog:extend-correlation-window",
+        "analysis-plan:control-for-release-size"
+      ],
+      "nonConclusions": [
+        "proposed update is not formal claim promotion"
+      ]
+    }
+  ],
+  "analysisMetadata": {
+    "leanStatus": "empirical hypothesis / tooling validation",
+    "refreshBoundary": "versioned empirical hypothesis management driven by operational feedback artifacts",
+    "formalClaimBoundary": "hypothesis refresh can narrow or reject empirical claims but cannot promote Lean theorem claims",
+    "nonConclusions": [
+      "does not prove runtime exposure causes incidents",
+      "does not discharge theorem package preconditions",
+      "does not imply extractor completeness"
+    ]
+  },
+  "nonConclusions": [
+    "hypothesis refresh cycle is empirical research tracking, not a Lean theorem",
+    "retained hypothesis is not a proved claim",
+    "rejected causal phrasing is not evidence of zero operational risk",
+    "hypothesis refresh does not rank architecture quality with a single score"
+  ]
+}

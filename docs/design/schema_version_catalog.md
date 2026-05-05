@@ -22,6 +22,10 @@ artifact、後続 checker が参照する最小 skeleton を固定する。canon
 | Report outcome daily ledger | `report-outcome-daily-ledger-v0` | operational feedback output | implemented | [#620](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/620) |
 | Calibration review record | `calibration-review-record-v0` | operational feedback input | implemented | [#621](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/621) |
 | Team threshold policy | `team-threshold-policy-v0` | operational feedback policy | implemented | [#622](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/622) |
+| Ownership boundary monitor | `ownership-boundary-monitor-v0` | operational feedback monitor | implemented | [#623](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/623) |
+| Repair adoption record | `repair-adoption-record-v0` | operational feedback record | implemented | [#623](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/623) |
+| Incident / rollback / MTTR correlation monitor | `incident-correlation-monitor-v0` | operational feedback monitor | implemented | [#624](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/624) |
+| Empirical hypothesis refresh cycle | `hypothesis-refresh-cycle-v0` | operational feedback research cycle | implemented | [#624](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/624) |
 
 ## Compatibility Policy
 
@@ -322,6 +326,69 @@ archsig repair-adoption-record \
 この artifact は empirical / operational signal であり、adopted / rejected / deferred
 decision や follow-up outcome refs だけで obstruction removal、repair correctness、
 global flatness preservation、cost improvement、formal claim promotion を結論しない。
+
+## Incident correlation monitor metadata
+
+Issue: [#624](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/624)
+
+`incident-correlation-monitor-v0` は、incident / rollback / MTTR correlation monitoring を
+B10 の operational feedback monitor artifact として保存する。schema は
+`correlationWindow`, `sourceRefs`, `metricAxes`, `correlations`, `confounderNotes`,
+`missingPrivateData`, `refreshDecision`, `analysisMetadata`, `nonConclusions` を保持する。
+
+Correlation window は bounded operational observation の範囲を明示する。Source refs と
+metric axes は report warning、rollback、incident affected component count、MTTR の
+join boundary を保持する。Confounder notes と missing / private data は causal
+interpretation を止める boundary であり、private incident data や unavailable longitudinal
+sample を measured-zero evidence に丸めない。
+
+Canonical fixture:
+
+```text
+tools/archsig/tests/fixtures/minimal/incident_correlation_monitor.json
+```
+
+CLI は次の形で canonical incident correlation monitor を出力する。
+
+```bash
+archsig incident-correlation-monitor \
+  --out incident-correlation-monitor.json
+```
+
+この artifact は empirical / operational signal であり、report warning と incident /
+rollback / MTTR の因果関係、formal claim promotion、theorem precondition discharge、
+extractor completeness、architecture lawfulness を結論しない。
+
+## Hypothesis refresh cycle metadata
+
+Issue: [#624](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/624)
+
+`hypothesis-refresh-cycle-v0` は、empirical hypothesis refresh cycle を versioned research
+tracking artifact として保存する。schema は `sourceMonitorRefs`,
+`versionedHypothesisRefs`, `changeReasons`, `refreshDecision`, `retainedHypotheses`,
+`rejectedHypotheses`, `proposedUpdates`, `analysisMetadata`, `nonConclusions` を保持する。
+
+Versioned hypothesis refs は仮説 ID、version、前状態、evidence boundary を明示する。
+Change reasons、retained / rejected hypotheses、proposed updates は研究仮説の更新理由と
+非結論を保持する。Rejected causal phrasing は exploratory monitoring の否定ではなく、
+retained hypothesis も proved claim ではない。
+
+Canonical fixture:
+
+```text
+tools/archsig/tests/fixtures/minimal/hypothesis_refresh_cycle.json
+```
+
+CLI は次の形で canonical hypothesis refresh cycle を出力する。
+
+```bash
+archsig hypothesis-refresh-cycle \
+  --out hypothesis-refresh-cycle.json
+```
+
+この artifact は empirical research tracking であり、hypothesis retention / rejection
+だけで Lean theorem claim、formal claim promotion、theorem precondition discharge、
+extractor completeness、architecture lawfulness を結論しない。
 
 ## Non-Conclusions
 
