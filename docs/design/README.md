@@ -8,6 +8,7 @@
 | --- | --- | --- |
 | [ArchSig v0 設計](archsig_design.md) | tooling design / empirical hypothesis | Lean module import graph から Signature v0 JSON を作る最小 extractor と、Lean `ComponentUniverse` との責務境界を整理する。 |
 | [ArchSig tooling index](archsig_tooling_index.md) | tooling validation index | ArchSig tooling の schema、CLI、fixture、non-conclusion boundary を追跡する。 |
+| [B9/B10 schema version catalog](schema_version_catalog.md) | tooling schema / empirical hypothesis | B9 schema compatibility policy と B10 operational feedback artifact の version catalog、canonical fixture、non-conclusion boundary を固定する。 |
 | [Adapter registry v0 schema](adapter_registry_schema.md) | tooling schema / empirical hypothesis | non-Lean extractor、framework adapter、runtime / semantic evidence adapter の evidence boundary と projection rule を固定する。 |
 | [Law policy template registry v0 schema](law_policy_template_registry_schema.md) | tooling schema / empirical hypothesis | law policy template の selector assumptions、required evidence、non-conclusion boundary を固定する。 |
 | [Custom rule plugin registry v0 schema](custom_rule_plugin_registry_schema.md) | tooling schema / empirical hypothesis | custom rule plugin の trust boundary、input / output contract、formal claim promotion boundary を固定する。 |

@@ -92,6 +92,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- air \
   --diff .lake/signature-current/diff-report.json \
   --pr-metadata .lake/pr-metadata-123.json \
   --law-policy signature-policy.json \
+  --framework-adapter framework-adapter.json \
   --out .lake/signature-current/air.json
 ```
 
@@ -102,6 +103,9 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- validate-air \
   --input .lake/signature-current/air.json \
   --out .lake/signature-current/air-validation.json
 ```
+
+`--strict-measured-evidence` を付けると、evidence refs を持たない measured claim を
+warning ではなく failure として扱う。
 
 Theorem precondition check を作る。
 
@@ -138,7 +142,16 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- organization-policy \
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- policy-decision \
   --feature-report .lake/signature-current/feature-report.json \
+  --policy organization-policy.json \
   --out .lake/signature-current/policy-decision.json
+```
+
+B7 report artifact retention manifest を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- report-artifacts \
+  --input report-artifacts.json \
+  --out .lake/signature-current/report-artifacts-validation.json
 ```
 
 B8 extension registry を検査する。
@@ -152,6 +165,22 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- custom-rule-plugins \
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-units \
   --out .lake/signature-current/measurement-units-validation.json
+```
+
+B5 repair / synthesis artifact を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- repair-registry \
+  --input repair-rule-registry.json \
+  --out .lake/signature-current/repair-registry-validation.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- synthesis-constraints \
+  --input tools/archsig/tests/fixtures/minimal/synthesis_constraints_candidate.json \
+  --out .lake/signature-current/synthesis-constraints.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- no-solution-certificate \
+  --input tools/archsig/tests/fixtures/minimal/no_solution_certificate_valid.json \
+  --out .lake/signature-current/no-solution-certificate-validation.json
 ```
 
 B9 schema compatibility を検査する。
@@ -190,6 +219,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- pr-metadata \
   --pull-request github-pr.json \
   --files github-pr-files.json \
   --reviews github-pr-reviews.json \
+  --review-threads github-review-threads.json \
   --out pr-metadata.json
 ```
 
@@ -211,6 +241,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- pr-history-dataset \
   --pull-request github-pr.json \
   --files github-pr-files.json \
   --reviews github-pr-reviews.json \
+  --review-threads github-review-threads.json \
   --signature-artifact base=.lake/sig0-base.json \
   --signature-artifact head=.lake/sig0-head.json \
   --feature-report-artifact head=.lake/signature-current/feature-report.json \
@@ -228,15 +259,48 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- outcome-linkage-dataset \
   --out .lake/outcome-linkage-dataset.json
 ```
 
-## Other Artifacts
+## Operational Feedback
 
-Synthesis constraint artifact を検査する。
+B10 daily ledger を作る。
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- synthesis-constraints \
-  --input tools/archsig/tests/fixtures/minimal/synthesis_constraints_candidate.json \
-  --out .lake/signature-current/synthesis-constraints.json
+cargo run --manifest-path tools/archsig/Cargo.toml -- report-outcome-daily-ledger \
+  --outcome-linkage .lake/outcome-linkage-dataset.json \
+  --drift-ledger .lake/architecture-drift-ledger.json \
+  --generated-at 2026-05-05T00:00:00Z \
+  --window-start 2026-05-04T00:00:00Z \
+  --window-end 2026-05-05T00:00:00Z \
+  --out .lake/report-outcome-daily-ledger.json
 ```
+
+Canonical B10 artifact を出力する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- calibration-review-record \
+  --out .lake/calibration-review-record.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- team-threshold-policy \
+  --out .lake/team-threshold-policy.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- ownership-boundary-monitor \
+  --out .lake/ownership-boundary-monitor.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- repair-adoption-record \
+  --out .lake/repair-adoption-record.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- incident-correlation-monitor \
+  --out .lake/incident-correlation-monitor.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- hypothesis-refresh-cycle \
+  --out .lake/hypothesis-refresh-cycle.json
+```
+
+これらは empirical / operational feedback artifact であり、因果証明、formal claim
+promotion、theorem precondition discharge、extractor completeness、architecture
+lawfulness を結論しない。詳しい読み方は
+[Operational Feedback](operational-feedback.md) を参照する。
+
+## Other Artifacts
 
 Workflow 単位の relation complexity observation を作る。
 
