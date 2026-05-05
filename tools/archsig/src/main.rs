@@ -19,7 +19,7 @@ use archsig::{
     RepositoryRevisionRef, RiskDispositionV0, ScanMetadata, SchemaCompatibilityCheckReportV0,
     SchemaVersionCatalogV0, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
     SnapshotRecordInput, SnapshotRepositoryRef, SynthesisConstraintArtifactV0,
-    SynthesisConstraintValidationReportV0, TheoremPreconditionCheckReportV0,
+    SynthesisConstraintValidationReportV0, TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0,
     attach_framework_adapter_evidence, build_air_document, build_baseline_suppression_report,
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_outcome_linkage_dataset_from_files,
@@ -33,12 +33,12 @@ use archsig::{
     static_law_policy_template_registry, static_measurement_unit_registry,
     static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_schema_version_catalog,
-    static_synthesis_constraint_artifact, validate_air_document_report,
-    validate_component_universe_report, validate_custom_rule_plugin_registry_report,
-    validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
-    validate_no_solution_certificate_report, validate_organization_policy_report,
-    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
-    validate_synthesis_constraint_artifact_report,
+    static_synthesis_constraint_artifact, static_team_threshold_policy,
+    validate_air_document_report, validate_component_universe_report,
+    validate_custom_rule_plugin_registry_report, validate_law_policy_template_registry_report,
+    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
+    validate_organization_policy_report, validate_repair_rule_registry_report,
+    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -250,6 +250,13 @@ enum Command {
     /// Emit a B10 false positive / false negative calibration review record.
     CalibrationReviewRecord {
         /// Output calibration review record JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit a B10 team-specific threshold tuning policy.
+    TeamThresholdPolicy {
+        /// Output team threshold policy JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -772,6 +779,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         Some(Command::CalibrationReviewRecord { out }) => {
             let record: CalibrationReviewRecordV0 = static_calibration_review_record();
             write_json(out, &record)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::TeamThresholdPolicy { out }) => {
+            let policy: TeamThresholdPolicyV0 = static_team_threshold_policy();
+            write_json(out, &policy)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::RelationComplexity { input, out }) => {

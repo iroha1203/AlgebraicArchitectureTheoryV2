@@ -6,7 +6,7 @@ use crate::{
     REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
     SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
     SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
-    SchemaVersionCatalogV0,
+    SchemaVersionCatalogV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -183,7 +183,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
                     "docs/design/schema_version_catalog.md#calibration-review-record-metadata",
                 ],
-                vec!["#621", "#622"],
+                vec!["#621"],
                 compatibility_boundary(
                     "Map report finding refs, witness refs, reviewer decision, outcome refs, confidence, missing evidence, calibration input, and non-conclusions separately.",
                     vec![],
@@ -192,6 +192,29 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "Reviewer decision, confidence, missing evidence, and calibration input delimit empirical policy tuning exactness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "team-threshold-policy",
+                "Team threshold policy",
+                TEAM_THRESHOLD_POLICY_SCHEMA_VERSION,
+                "operational-feedback-policy",
+                "B10",
+                "implemented",
+                vec![
+                    "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+                    "docs/design/schema_version_catalog.md#team-threshold-policy-metadata",
+                ],
+                vec!["#622"],
+                compatibility_boundary(
+                    "Map team scope, effective period, per-axis thresholds, CI modes, calibration sources, rollback policy, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New threshold axes must preserve warn / fail / advisory mode and calibration source refs.",
+                    ],
+                    vec![
+                        "Team-local threshold policy and calibration source boundaries delimit empirical policy tuning exactness.",
                     ],
                 ),
             ),
