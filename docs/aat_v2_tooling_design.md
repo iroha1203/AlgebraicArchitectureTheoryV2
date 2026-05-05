@@ -2103,6 +2103,14 @@ missing evidence、calibration input を保持する。reviewer decision は thr
 CI policy の empirical calibration に使うが、obstruction witness の存在、formal claim
 promotion、theorem precondition discharge、因果証明を結論しない。
 
+Issue [#622](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/622) では
+`team-threshold-policy-v0` を team-specific threshold tuning policy artifact として
+追加する。この policy は team scope、effective period、axis ごとの warn / fail /
+advisory threshold と CI mode、calibration source refs、rollback policy、
+non-conclusions を保持する。team-local threshold tuning は empirical calibration であり、
+formal claim promotion、theorem precondition discharge、architecture lawfulness を
+結論しない。
+
 ## 14. 成功基準
 
 短期成功:

@@ -1,0 +1,222 @@
+{
+  "schemaVersion": "team-threshold-policy-v0",
+  "schemaCompatibility": {
+    "artifactId": "team-threshold-policy",
+    "schemaVersionName": "team-threshold-policy-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "policyId",
+        "targetField": "policyId",
+        "mappingKind": "stable",
+        "requiredReview": "preserve team policy identity"
+      },
+      {
+        "sourceField": "organizationRef",
+        "targetField": "organizationRef",
+        "mappingKind": "stable",
+        "requiredReview": "preserve organization scope"
+      },
+      {
+        "sourceField": "teamRef",
+        "targetField": "teamRef",
+        "mappingKind": "stable",
+        "requiredReview": "preserve team scope"
+      },
+      {
+        "sourceField": "effectivePeriod",
+        "targetField": "effectivePeriod",
+        "mappingKind": "stable",
+        "requiredReview": "preserve effective dates and review cadence"
+      },
+      {
+        "sourceField": "axisThresholds",
+        "targetField": "axisThresholds",
+        "mappingKind": "stable",
+        "requiredReview": "preserve axis thresholds and CI modes separately"
+      },
+      {
+        "sourceField": "calibrationSourceRefs",
+        "targetField": "calibrationSourceRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve calibration source traceability"
+      },
+      {
+        "sourceField": "rollbackPolicy",
+        "targetField": "rollbackPolicy",
+        "mappingKind": "stable",
+        "requiredReview": "preserve operational rollback governance"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve empirical / formal-claim guardrails"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "team-scope-and-effective-period-are-preserved",
+        "appliesTo": "team-threshold-policy",
+        "requiredFor": "team threshold tuning",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "axis-thresholds-preserve-warn-fail-and-advisory-modes",
+        "appliesTo": "team-threshold-policy",
+        "requiredFor": "team threshold tuning",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "calibration-sources-remain-empirical-policy-inputs",
+        "appliesTo": "team-threshold-policy",
+        "requiredFor": "team threshold tuning",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "policy-tuning-is-not-theorem-precondition-discharge",
+        "appliesTo": "team-threshold-policy",
+        "requiredFor": "team threshold tuning",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "team-threshold-policy.axis-threshold",
+        "measurementBoundary": "teamLocalEmpiricalCalibration",
+        "coverageAssumptions": [
+          "axisThresholds identify metric refs and warn / fail / advisory modes"
+        ],
+        "exactnessAssumptions": [
+          "thresholds are scoped to the stated team and effective period",
+          "team thresholds do not become global architecture invariants"
+        ]
+      },
+      {
+        "axisOrLayer": "team-threshold-policy.calibration-source",
+        "measurementBoundary": "boundedOperationalEvidence",
+        "coverageAssumptions": [
+          "calibrationSourceRefs identify review and ledger inputs",
+          "source boundary preserves missing / private / unavailable data"
+        ],
+        "exactnessAssumptions": [
+          "calibration source refs do not prove causal relationships"
+        ]
+      },
+      {
+        "axisOrLayer": "team-threshold-policy.rollback",
+        "measurementBoundary": "operationalGovernance",
+        "coverageAssumptions": [
+          "rollbackPolicy records trigger, fallback policy, and approvals"
+        ],
+        "exactnessAssumptions": [
+          "policy rollback does not prove semantic preservation"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "team threshold policy schema compatibility metadata does not prove semantic preservation",
+      "team threshold policy schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+      "team threshold tuning is empirical calibration, not architecture lawfulness"
+    ]
+  },
+  "policyId": "fixture-b10-checkout-team-threshold-policy-v0",
+  "organizationRef": "org:example-commerce",
+  "teamRef": "team:checkout-platform",
+  "effectivePeriod": {
+    "startsAt": "2026-05-05T00:00:00Z",
+    "reviewCadence": "monthly",
+    "decisionRef": "architecture-review:threshold-tuning-2026-05"
+  },
+  "axisThresholds": [
+    {
+      "axisRef": "runtime.privateEvidenceCount",
+      "metricRef": "runtime.privateEvidenceCount",
+      "warnThreshold": 1.0,
+      "failThreshold": null,
+      "advisoryThreshold": 1.0,
+      "ciMode": "advisory",
+      "calibrationBoundary": "private runtime evidence is monitored as advisory until observation coverage improves",
+      "calibrationSourceRefs": [
+        "calibration-review:fixture-b10-calibration-review-false-positive-v0",
+        "daily-ledger:fixture-b10-report-outcome-daily-ledger"
+      ],
+      "rationale": "bounded review did not corroborate incident or rollback evidence, while private traces remain unmeasured",
+      "nonConclusions": [
+        "advisory mode does not prove the runtime warning is semantically false",
+        "private runtime evidence remains unmeasured rather than measured zero"
+      ]
+    },
+    {
+      "axisRef": "reviewCost.approvalLatencyHours",
+      "metricRef": "reviewCost.approvalLatencyHours",
+      "warnThreshold": 24.0,
+      "failThreshold": 72.0,
+      "advisoryThreshold": null,
+      "ciMode": "warn",
+      "calibrationBoundary": "latency threshold is team-local empirical calibration, not a theorem precondition",
+      "calibrationSourceRefs": [
+        "daily-ledger:fixture-b10-report-outcome-daily-ledger"
+      ],
+      "rationale": "team review cadence accepts short-term warning thresholds while retaining fail threshold for prolonged review delay",
+      "nonConclusions": [
+        "review latency threshold does not rank architecture quality as a single score",
+        "CI warning mode does not discharge formal claim preconditions"
+      ]
+    }
+  ],
+  "calibrationSourceRefs": [
+    {
+      "sourceRef": "calibration-review:fixture-b10-calibration-review-false-positive-v0",
+      "sourceKind": "calibration-review-record",
+      "path": "tools/archsig/tests/fixtures/minimal/calibration_review_record.json",
+      "windowRef": "bounded review window 2026-05-04/2026-05-05",
+      "boundary": "boundedEmpiricalReview",
+      "nonConclusions": [
+        "false positive review is policy input, not causal proof"
+      ]
+    },
+    {
+      "sourceRef": "daily-ledger:fixture-b10-report-outcome-daily-ledger",
+      "sourceKind": "report-outcome-daily-ledger",
+      "path": "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
+      "windowRef": "daily ledger 2026-05-04/2026-05-05",
+      "boundary": "operationalFeedback",
+      "nonConclusions": [
+        "daily ledger correlation signal is not theorem evidence",
+        "missing private outcome data is not measured-zero evidence"
+      ]
+    }
+  ],
+  "rollbackPolicy": {
+    "rollbackTrigger": "two consecutive calibration reviews show false negatives or a linked rollback / incident within the bounded window",
+    "fallbackPolicyRef": "ci-policy:runtime-private-evidence-warn-v0",
+    "approvalRefs": [
+      "architecture-review-board",
+      "checkout-platform-owner"
+    ],
+    "reviewAfter": "next monthly calibration review",
+    "nonConclusions": [
+      "rollback of the policy mode is operational governance, not semantic preservation",
+      "incident linkage alone does not prove causality"
+    ]
+  },
+  "analysisMetadata": {
+    "leanStatus": "empirical hypothesis / tooling validation",
+    "policyBoundary": "team-specific CI threshold and mode selection for bounded operational monitoring",
+    "calibrationBoundary": "threshold tuning consumes calibration and ledger artifacts but cannot promote formal claims",
+    "nonConclusions": [
+      "team threshold policy is not a Lean theorem",
+      "policy tuning does not establish architecture lawfulness",
+      "team-local thresholds are not global architecture invariants"
+    ]
+  },
+  "nonConclusions": [
+    "team threshold policy is empirical calibration, not theorem precondition discharge",
+    "warn / fail / advisory mode does not prove or refute obstruction witness existence",
+    "team-specific threshold tuning does not imply extractor completeness",
+    "missing or private evidence is not measured-zero evidence"
+  ]
+}

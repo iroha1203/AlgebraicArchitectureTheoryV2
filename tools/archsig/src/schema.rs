@@ -56,6 +56,7 @@ pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-da
 pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
 pub const REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION: &str = "report-outcome-daily-ledger-v0";
 pub const CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION: &str = "calibration-review-record-v0";
+pub const TEAM_THRESHOLD_POLICY_SCHEMA_VERSION: &str = "team-threshold-policy-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
@@ -1063,6 +1064,78 @@ pub struct CalibrationInputV0 {
 pub struct CalibrationReviewAnalysisMetadataV0 {
     pub lean_status: String,
     pub measurement_boundary: String,
+    pub calibration_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdPolicyV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub policy_id: String,
+    pub organization_ref: String,
+    pub team_ref: String,
+    pub effective_period: TeamThresholdEffectivePeriodV0,
+    pub axis_thresholds: Vec<TeamThresholdAxisPolicyV0>,
+    pub calibration_source_refs: Vec<TeamThresholdCalibrationSourceRefV0>,
+    pub rollback_policy: TeamThresholdRollbackPolicyV0,
+    pub analysis_metadata: TeamThresholdPolicyAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdEffectivePeriodV0 {
+    pub starts_at: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ends_at: Option<String>,
+    pub review_cadence: String,
+    pub decision_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdAxisPolicyV0 {
+    pub axis_ref: String,
+    pub metric_ref: String,
+    pub warn_threshold: Option<f64>,
+    pub fail_threshold: Option<f64>,
+    pub advisory_threshold: Option<f64>,
+    pub ci_mode: String,
+    pub calibration_boundary: String,
+    pub calibration_source_refs: Vec<String>,
+    pub rationale: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdCalibrationSourceRefV0 {
+    pub source_ref: String,
+    pub source_kind: String,
+    pub path: String,
+    pub window_ref: String,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdRollbackPolicyV0 {
+    pub rollback_trigger: String,
+    pub fallback_policy_ref: String,
+    pub approval_refs: Vec<String>,
+    pub review_after: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdPolicyAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub policy_boundary: String,
     pub calibration_boundary: String,
     pub non_conclusions: Vec<String>,
 }

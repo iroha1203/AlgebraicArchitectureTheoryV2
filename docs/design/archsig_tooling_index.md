@@ -542,6 +542,13 @@ fixture を出力する。reviewer decision は threshold / CI policy の empiri
 に使うが、formal claim promotion、theorem precondition discharge、obstruction witness
 existence、causal proof とは扱わない。
 
+Team threshold policy は B10 team-specific threshold tuning artifact として、
+`organizationRef`, `teamRef`, `effectivePeriod`, `axisThresholds`,
+`calibrationSourceRefs`, `rollbackPolicy`, `nonConclusions` を保持する。CLI は
+`archsig team-threshold-policy` で canonical fixture を出力する。warn / fail /
+advisory mode と calibration source refs は empirical policy boundary であり、formal
+claim promotion、theorem precondition discharge、architecture lawfulness とは扱わない。
+
 `archsig validate-air` は metadata が存在する AIR について、coverage / exactness
 boundary、theorem bridge preconditions、formal claim promotion を禁止する
 non-conclusions が metadata から落ちていないことを検査する。legacy AIR v0 fixture は

@@ -20,7 +20,8 @@ artifact、後続 checker が参照する最小 skeleton を固定する。canon
 | Architecture Drift Ledger | `architecture-drift-ledger-v0` | batch history output | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608), [#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610) |
 | Detectable values / reported axes catalog | `detectable-values-reported-axes-catalog-v0` | axis catalog | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608) |
 | Report outcome daily ledger | `report-outcome-daily-ledger-v0` | operational feedback output | implemented | [#620](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/620) |
-| Calibration review record | `calibration-review-record-v0` | operational feedback input | implemented | [#621](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/621), [#622](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/622) |
+| Calibration review record | `calibration-review-record-v0` | operational feedback input | implemented | [#621](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/621) |
+| Team threshold policy | `team-threshold-policy-v0` | operational feedback policy | implemented | [#622](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/622) |
 
 ## Compatibility Policy
 
@@ -224,6 +225,38 @@ archsig calibration-review-record \
 
 この artifact は empirical / operational signal であり、reviewer decision だけで
 obstruction witness の存在、incident / rollback / MTTR の因果関係、Lean theorem claim、
+extractor completeness、architecture lawfulness を結論しない。
+
+## Team threshold policy metadata
+
+Issue: [#622](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/622)
+
+`team-threshold-policy-v0` は、team-specific threshold tuning を B10 の operational
+feedback policy artifact として保存する。schema は `organizationRef`, `teamRef`,
+`effectivePeriod`, `axisThresholds`, `calibrationSourceRefs`, `rollbackPolicy`,
+`analysisMetadata`, `nonConclusions` を保持する。
+
+Axis policy は metric ref ごとに warn / fail / advisory threshold と CI mode を分離して
+記録する。Calibration source refs は calibration review record や daily ledger を
+empirical input として参照し、missing / private / unavailable data を measured-zero
+evidence に丸めない。Rollback policy は threshold tuning の operational governance であり、
+semantic preservation や causal proof ではない。
+
+Canonical fixture:
+
+```text
+tools/archsig/tests/fixtures/minimal/team_threshold_policy.json
+```
+
+CLI は次の形で canonical team threshold policy を出力する。
+
+```bash
+archsig team-threshold-policy \
+  --out team-threshold-policy.json
+```
+
+この artifact は empirical calibration であり、team-local threshold や warn / fail /
+advisory mode だけで formal claim promotion、theorem precondition discharge、
 extractor completeness、architecture lawfulness を結論しない。
 
 ## Non-Conclusions

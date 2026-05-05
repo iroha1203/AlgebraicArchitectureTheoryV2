@@ -4025,6 +4025,61 @@ fn cli_calibration_review_record_fixture_preserves_review_boundaries() {
 }
 
 #[test]
+fn cli_team_threshold_policy_fixture_preserves_policy_boundaries() {
+    let out_dir = temp_dir("team-threshold-policy");
+    let out = out_dir.join("team-threshold-policy.json");
+
+    run_sig0(&[
+        "team-threshold-policy",
+        "--out",
+        out.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out);
+    assert_eq!(json["schemaVersion"], "team-threshold-policy-v0");
+    assert_eq!(json["teamRef"], "team:checkout-platform");
+    assert!(
+        json["axisThresholds"]
+            .as_array()
+            .expect("axisThresholds are an array")
+            .iter()
+            .any(|axis| axis["metricRef"] == "runtime.privateEvidenceCount"
+                && axis["ciMode"] == "advisory")
+    );
+    assert!(
+        json["calibrationSourceRefs"]
+            .as_array()
+            .expect("calibrationSourceRefs are an array")
+            .iter()
+            .any(|source| source["sourceKind"] == "calibration-review-record"
+                && source["boundary"] == "boundedEmpiricalReview")
+    );
+    assert!(
+        json["rollbackPolicy"]["nonConclusions"]
+            .as_array()
+            .expect("rollback nonConclusions are an array")
+            .iter()
+            .any(|claim| claim == "incident linkage alone does not prove causality")
+    );
+    assert!(
+        json["schemaCompatibility"]["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("coverageExactnessBoundaries are an array")
+            .iter()
+            .any(|boundary| boundary["axisOrLayer"] == "team-threshold-policy.axis-threshold")
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|claim| {
+                claim == "team threshold policy is empirical calibration, not theorem precondition discharge"
+            })
+    );
+}
+
+#[test]
 fn cli_relation_complexity_fixture_outputs_observation() {
     let root = fixture_root();
     let out_dir = temp_dir("relation");

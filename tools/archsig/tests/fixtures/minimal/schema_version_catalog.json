@@ -209,7 +209,7 @@
         "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
         "docs/design/schema_version_catalog.md#calibration-review-record-metadata"
       ],
-      "downstreamIssues": ["#621", "#622"],
+      "downstreamIssues": ["#621"],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map report finding refs, witness refs, reviewer decision, outcome refs, confidence, missing evidence, calibration input, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -218,6 +218,34 @@
         ],
         "coverageExactnessBoundary": [
           "Reviewer decision, confidence, missing evidence, and calibration input delimit empirical policy tuning exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "team-threshold-policy",
+      "artifactName": "Team threshold policy",
+      "schemaVersionName": "team-threshold-policy-v0",
+      "artifactRole": "operational-feedback-policy",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#team-threshold-policy-metadata"
+      ],
+      "downstreamIssues": ["#622"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map team scope, effective period, per-axis thresholds, CI modes, calibration sources, rollback policy, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New threshold axes must preserve warn / fail / advisory mode and calibration source refs."
+        ],
+        "coverageExactnessBoundary": [
+          "Team-local threshold policy and calibration source boundaries delimit empirical policy tuning exactness."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",

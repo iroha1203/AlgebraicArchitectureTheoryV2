@@ -14,7 +14,9 @@ use crate::{
     ReportOutcomeDailyBatchV0, ReportOutcomeDailyLedgerV0, ReportOutcomeLedgerAnalysisMetadataV0,
     ReportOutcomeMetricSummaryV0, ReportOutcomeRetentionPolicyV0, ReportOutcomeSourceReportRefV0,
     SchemaArtifactCompatibilityV0, SchemaCoverageExactnessBoundaryV0, SchemaFieldMappingV0,
-    SchemaRequiredAssumptionV0,
+    SchemaRequiredAssumptionV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION, TeamThresholdAxisPolicyV0,
+    TeamThresholdCalibrationSourceRefV0, TeamThresholdEffectivePeriodV0,
+    TeamThresholdPolicyAnalysisMetadataV0, TeamThresholdPolicyV0, TeamThresholdRollbackPolicyV0,
 };
 
 const COMPATIBILITY_POLICY_REF: &str = "b9-compatibility-policy-v0";
@@ -809,6 +811,257 @@ pub fn calibration_review_schema_compatibility_metadata() -> SchemaArtifactCompa
     }
 }
 
+pub fn static_team_threshold_policy() -> TeamThresholdPolicyV0 {
+    let mut policy = TeamThresholdPolicyV0 {
+        schema_version: TEAM_THRESHOLD_POLICY_SCHEMA_VERSION.to_string(),
+        schema_compatibility: None,
+        policy_id: "fixture-b10-checkout-team-threshold-policy-v0".to_string(),
+        organization_ref: "org:example-commerce".to_string(),
+        team_ref: "team:checkout-platform".to_string(),
+        effective_period: TeamThresholdEffectivePeriodV0 {
+            starts_at: "2026-05-05T00:00:00Z".to_string(),
+            ends_at: None,
+            review_cadence: "monthly".to_string(),
+            decision_ref: "architecture-review:threshold-tuning-2026-05".to_string(),
+        },
+        axis_thresholds: vec![
+            TeamThresholdAxisPolicyV0 {
+                axis_ref: "runtime.privateEvidenceCount".to_string(),
+                metric_ref: "runtime.privateEvidenceCount".to_string(),
+                warn_threshold: Some(1.0),
+                fail_threshold: None,
+                advisory_threshold: Some(1.0),
+                ci_mode: "advisory".to_string(),
+                calibration_boundary:
+                    "private runtime evidence is monitored as advisory until observation coverage improves"
+                        .to_string(),
+                calibration_source_refs: vec![
+                    "calibration-review:fixture-b10-calibration-review-false-positive-v0"
+                        .to_string(),
+                    "daily-ledger:fixture-b10-report-outcome-daily-ledger".to_string(),
+                ],
+                rationale:
+                    "bounded review did not corroborate incident or rollback evidence, while private traces remain unmeasured"
+                        .to_string(),
+                non_conclusions: vec![
+                    "advisory mode does not prove the runtime warning is semantically false"
+                        .to_string(),
+                    "private runtime evidence remains unmeasured rather than measured zero".to_string(),
+                ],
+            },
+            TeamThresholdAxisPolicyV0 {
+                axis_ref: "reviewCost.approvalLatencyHours".to_string(),
+                metric_ref: "reviewCost.approvalLatencyHours".to_string(),
+                warn_threshold: Some(24.0),
+                fail_threshold: Some(72.0),
+                advisory_threshold: None,
+                ci_mode: "warn".to_string(),
+                calibration_boundary:
+                    "latency threshold is team-local empirical calibration, not a theorem precondition"
+                        .to_string(),
+                calibration_source_refs: vec![
+                    "daily-ledger:fixture-b10-report-outcome-daily-ledger".to_string(),
+                ],
+                rationale:
+                    "team review cadence accepts short-term warning thresholds while retaining fail threshold for prolonged review delay"
+                        .to_string(),
+                non_conclusions: vec![
+                    "review latency threshold does not rank architecture quality as a single score"
+                        .to_string(),
+                    "CI warning mode does not discharge formal claim preconditions".to_string(),
+                ],
+            },
+        ],
+        calibration_source_refs: vec![
+            TeamThresholdCalibrationSourceRefV0 {
+                source_ref: "calibration-review:fixture-b10-calibration-review-false-positive-v0"
+                    .to_string(),
+                source_kind: "calibration-review-record".to_string(),
+                path: "tools/archsig/tests/fixtures/minimal/calibration_review_record.json"
+                    .to_string(),
+                window_ref: "bounded review window 2026-05-04/2026-05-05".to_string(),
+                boundary: "boundedEmpiricalReview".to_string(),
+                non_conclusions: vec![
+                    "false positive review is policy input, not causal proof".to_string(),
+                ],
+            },
+            TeamThresholdCalibrationSourceRefV0 {
+                source_ref: "daily-ledger:fixture-b10-report-outcome-daily-ledger".to_string(),
+                source_kind: "report-outcome-daily-ledger".to_string(),
+                path: "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                    .to_string(),
+                window_ref: "daily ledger 2026-05-04/2026-05-05".to_string(),
+                boundary: "operationalFeedback".to_string(),
+                non_conclusions: vec![
+                    "daily ledger correlation signal is not theorem evidence".to_string(),
+                    "missing private outcome data is not measured-zero evidence".to_string(),
+                ],
+            },
+        ],
+        rollback_policy: TeamThresholdRollbackPolicyV0 {
+            rollback_trigger:
+                "two consecutive calibration reviews show false negatives or a linked rollback / incident within the bounded window"
+                    .to_string(),
+            fallback_policy_ref: "ci-policy:runtime-private-evidence-warn-v0".to_string(),
+            approval_refs: vec![
+                "architecture-review-board".to_string(),
+                "checkout-platform-owner".to_string(),
+            ],
+            review_after: "next monthly calibration review".to_string(),
+            non_conclusions: vec![
+                "rollback of the policy mode is operational governance, not semantic preservation"
+                    .to_string(),
+                "incident linkage alone does not prove causality".to_string(),
+            ],
+        },
+        analysis_metadata: TeamThresholdPolicyAnalysisMetadataV0 {
+            lean_status: "empirical hypothesis / tooling validation".to_string(),
+            policy_boundary:
+                "team-specific CI threshold and mode selection for bounded operational monitoring"
+                    .to_string(),
+            calibration_boundary:
+                "threshold tuning consumes calibration and ledger artifacts but cannot promote formal claims"
+                    .to_string(),
+            non_conclusions: vec![
+                "team threshold policy is not a Lean theorem".to_string(),
+                "policy tuning does not establish architecture lawfulness".to_string(),
+                "team-local thresholds are not global architecture invariants".to_string(),
+            ],
+        },
+        non_conclusions: vec![
+            "team threshold policy is empirical calibration, not theorem precondition discharge"
+                .to_string(),
+            "warn / fail / advisory mode does not prove or refute obstruction witness existence"
+                .to_string(),
+            "team-specific threshold tuning does not imply extractor completeness".to_string(),
+            "missing or private evidence is not measured-zero evidence".to_string(),
+        ],
+    };
+    policy.schema_compatibility = Some(team_threshold_policy_schema_compatibility_metadata());
+    policy
+}
+
+pub fn team_threshold_policy_schema_compatibility_metadata() -> SchemaArtifactCompatibilityV0 {
+    SchemaArtifactCompatibilityV0 {
+        artifact_id: "team-threshold-policy".to_string(),
+        schema_version_name: TEAM_THRESHOLD_POLICY_SCHEMA_VERSION.to_string(),
+        compatibility_policy_ref: COMPATIBILITY_POLICY_REF.to_string(),
+        field_mappings: vec![
+            field_mapping(
+                "policyId",
+                "policyId",
+                "stable",
+                "preserve team policy identity",
+            ),
+            field_mapping(
+                "organizationRef",
+                "organizationRef",
+                "stable",
+                "preserve organization scope",
+            ),
+            field_mapping("teamRef", "teamRef", "stable", "preserve team scope"),
+            field_mapping(
+                "effectivePeriod",
+                "effectivePeriod",
+                "stable",
+                "preserve effective dates and review cadence",
+            ),
+            field_mapping(
+                "axisThresholds",
+                "axisThresholds",
+                "stable",
+                "preserve axis thresholds and CI modes separately",
+            ),
+            field_mapping(
+                "calibrationSourceRefs",
+                "calibrationSourceRefs",
+                "stable",
+                "preserve calibration source traceability",
+            ),
+            field_mapping(
+                "rollbackPolicy",
+                "rollbackPolicy",
+                "stable",
+                "preserve operational rollback governance",
+            ),
+            field_mapping(
+                "nonConclusions",
+                "nonConclusions",
+                "stable",
+                "preserve empirical / formal-claim guardrails",
+            ),
+        ],
+        deprecated_fields: Vec::new(),
+        required_assumptions: vec![
+            required_assumption_for(
+                "team-threshold-policy",
+                "team scope and effective period are preserved",
+                "team threshold tuning",
+            ),
+            required_assumption_for(
+                "team-threshold-policy",
+                "axis thresholds preserve warn fail and advisory modes",
+                "team threshold tuning",
+            ),
+            required_assumption_for(
+                "team-threshold-policy",
+                "calibration sources remain empirical policy inputs",
+                "team threshold tuning",
+            ),
+            required_assumption_for(
+                "team-threshold-policy",
+                "policy tuning is not theorem precondition discharge",
+                "team threshold tuning",
+            ),
+        ],
+        coverage_exactness_boundaries: vec![
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "team-threshold-policy.axis-threshold".to_string(),
+                measurement_boundary: "teamLocalEmpiricalCalibration".to_string(),
+                coverage_assumptions: vec![
+                    "axisThresholds identify metric refs and warn / fail / advisory modes"
+                        .to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "thresholds are scoped to the stated team and effective period".to_string(),
+                    "team thresholds do not become global architecture invariants".to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "team-threshold-policy.calibration-source".to_string(),
+                measurement_boundary: "boundedOperationalEvidence".to_string(),
+                coverage_assumptions: vec![
+                    "calibrationSourceRefs identify review and ledger inputs".to_string(),
+                    "source boundary preserves missing / private / unavailable data".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "calibration source refs do not prove causal relationships".to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "team-threshold-policy.rollback".to_string(),
+                measurement_boundary: "operationalGovernance".to_string(),
+                coverage_assumptions: vec![
+                    "rollbackPolicy records trigger, fallback policy, and approvals".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "policy rollback does not prove semantic preservation".to_string(),
+                ],
+            },
+        ],
+        non_conclusions: vec![
+            "team threshold policy schema compatibility metadata does not prove semantic preservation"
+                .to_string(),
+            "team threshold policy schema compatibility metadata does not imply extractor completeness"
+                .to_string(),
+            "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+                .to_string(),
+            "team threshold tuning is empirical calibration, not architecture lawfulness"
+                .to_string(),
+        ],
+    }
+}
+
 fn field_mapping(
     source_field: &str,
     target_field: &str,
@@ -892,6 +1145,21 @@ mod tests {
                 .missing_evidence
                 .iter()
                 .any(|evidence| evidence.boundary == "private")
+        );
+    }
+
+    #[test]
+    fn team_threshold_policy_fixture_parses() {
+        let fixture: TeamThresholdPolicyV0 = serde_json::from_str(include_str!(
+            "../tests/fixtures/minimal/team_threshold_policy.json"
+        ))
+        .expect("team threshold policy fixture parses");
+        assert_eq!(fixture.schema_version, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION);
+        assert!(
+            fixture
+                .axis_thresholds
+                .iter()
+                .any(|axis| axis.ci_mode == "advisory")
         );
     }
 }
