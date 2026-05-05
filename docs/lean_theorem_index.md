@@ -1676,6 +1676,9 @@ finite initial-state list と bounded operation script に相対化した basin 
 Issue [#642](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/642) では、
 accepted / rejected transition boundary と selected damping assumption に相対化して、
 accepted evolution の invariant preservation と bad-axis nonincrease theorem を追加した。
+Issue [#656](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/656) では、
+`SignatureTrajectory` / `SignatureDeltaSequence` の endpoint、length、append 分解補題を
+追加し、後続 theorem package 用の有限 path API を固めた。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1692,6 +1695,12 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `SignatureDelta.RecordsNonConclusions` | `def` | delta package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `SignatureTrajectory` | `def` | `ArchitectureEvolution` の visited state を `SignatureObservation.observe` で写した signature sequence。 | `defined only` |
 | `SignatureDeltaSequence` | `def` | `ArchitectureEvolution` の各 primitive transition に沿った per-step abstract delta sequence。 | `defined only` |
+| `signatureTrajectory_endsWith_target` | `theorem` | observed trajectory が target observation を末尾に持つことを、prefix decomposition として示す。 | `proved` |
+| `signatureTrajectory_length` | `theorem` | observed trajectory の長さが `ArchitecturePath.length plan + 1` であることを示す。 | `proved` |
+| `signatureDeltaSequence_length` | `theorem` | per-step delta sequence の長さが `ArchitecturePath.length plan` と一致することを示す。 | `proved` |
+| `signatureTrajectory_head_cons_tail` | `theorem` | observed trajectory が非空であり、head observation と tail から再構成できることを示す補助補題。 | `proved` |
+| `signatureTrajectory_append` | `theorem` | appended path の observed trajectory が、左 trajectory と右 trajectory の tail の連結に分解できることを示す。 | `proved` |
+| `signatureDeltaSequence_append` | `theorem` | appended path の per-step delta sequence が左右 segment の delta sequence の連結に分解できることを示す。 | `proved` |
 | `SafeRegion` | `abbrev` | 観測 signature domain 上の selected safe region predicate。review / CI / policy capacity は結論しない。 | `defined only` |
 | `StateInSafeRegion` | `def` | state の selected observation が safe region に属すること。 | `defined only` |
 | `StepPreservesSafeRegion` | `def` | primitive transition が selected observed safe region を source から target へ保存すること。 | `defined only` |
