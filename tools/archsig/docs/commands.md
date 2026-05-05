@@ -175,6 +175,18 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- dynamics-measurements \
   --out .lake/signature-current/dynamics-measurements-validation.json
 ```
 
+PR force report の canonical fixture を出力し、既存 artifact を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- pr-force-report \
+  --fixture \
+  --out .lake/signature-current/pr-force-report.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- pr-force-report \
+  --input tools/archsig/tests/fixtures/minimal/pr_force_report.json \
+  --out .lake/signature-current/pr-force-report-validation.json
+```
+
 B5 repair / synthesis artifact を検査する。
 
 ```bash

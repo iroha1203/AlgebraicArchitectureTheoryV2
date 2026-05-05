@@ -365,6 +365,34 @@
           "renamed fields do not discharge new required assumptions"
         ]
       }
+    },
+    {
+      "artifactId": "pr-force-report",
+      "artifactName": "PR Force Report",
+      "schemaVersionName": "pr-force-report-v0",
+      "artifactRole": "architecture-dynamics-output",
+      "ownerPhase": "D5-D6",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/design/architecture_dynamics_tooling_design.md#pr-force-report-v0",
+        "docs/design/architecture_signature_dynamics.md#layer-4-pr-force-model"
+      ],
+      "downstreamIssues": ["#675"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map accepted PR transition refs, signed Signature deltas, observed force vector slots, decomposition components, evidence refs, measurement boundary, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New force axes must declare MeasurementStatus, source artifact refs, and whether they are observed, latent, dissipated, or advisory."
+        ],
+        "coverageExactnessBoundary": [
+          "ObservedForce excludes rejected raw proposal force; heuristic decomposition remains advisory tooling evidence."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {

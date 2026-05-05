@@ -239,9 +239,10 @@ Architecture Dynamics tooling は、[Architecture Signature Dynamics 設計](arc
 の `codebase as field`、operation distribution、Observed / Latent / Dissipated force、
 signature trajectory、dissipation / control を ArchSig artifact として記録する上位 layer である。
 
-初期 artifact 候補:
+初期 artifact:
 
-- `pr-force-report-v0`
+- `pr-force-report-v0`: implemented skeleton / fixture / validator. ObservedForce と
+  rejected raw proposal force を分離し、heuristic force decomposition は `advisory` に留める。
 - `signature-trajectory-report-v0`
 - `architecture-dynamics-metrics-report-v0`
 - common `DynamicsMeasuredValue` / `MeasurementStatus` / `MeasurementBoundary`
@@ -267,6 +268,14 @@ Canonical measurement contract fixture:
 - `tools/archsig/tests/fixtures/minimal/dynamics_measurement_contract.json`
 - `archsig dynamics-measurements` は `MeasurementStatus` vocabulary、null value boundary、
   estimated evidence、`MeasurementBoundary` metadata を tooling validation として検査する。
+
+Canonical PR force fixture:
+
+- `tools/archsig/tests/fixtures/minimal/pr_force_report.json`
+- `archsig pr-force-report --fixture` は minimal `pr-force-report-v0` artifact を出力する。
+- `archsig pr-force-report --input ...` は signed Signature delta、ObservedForce、
+  force decomposition、Feature Extension Report refs、theorem precondition refs、
+  measurement boundary、non-conclusions の tooling validation を検査する。
 
 次段階 CLI 候補:
 

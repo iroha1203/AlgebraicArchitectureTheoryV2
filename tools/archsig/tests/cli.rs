@@ -5385,6 +5385,146 @@ fn cli_dynamics_measurements_validate_common_contract() {
 }
 
 #[test]
+fn cli_pr_force_report_fixture_and_validator_preserve_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("pr-force-report");
+    let static_report = out_dir.join("pr-force-report-static-validation.json");
+    let fixture_artifact = out_dir.join("pr-force-report-fixture.json");
+    let fixture_validation = out_dir.join("pr-force-report-fixture-validation.json");
+    let invalid_report = out_dir.join("invalid-pr-force-report.json");
+    let invalid_validation = out_dir.join("invalid-pr-force-report-validation.json");
+
+    run_sig0(&[
+        "pr-force-report",
+        "--out",
+        static_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "pr-force-report",
+        "--fixture",
+        "--out",
+        fixture_artifact
+            .to_str()
+            .expect("fixture artifact path is utf-8"),
+    ]);
+    run_sig0(&[
+        "pr-force-report",
+        "--input",
+        root.join("pr_force_report.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let json = read_json(&static_report);
+    assert_eq!(
+        json["schemaVersion"],
+        "pr-force-report-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["report"]["observedForce"]
+            .as_array()
+            .expect("observedForce is array")
+            .iter()
+            .any(|metric| {
+                metric["metricId"] == "observedForce.boundaryViolationDelta"
+                    && metric["status"] == "measured"
+                    && metric["nonConclusions"]
+                        .as_array()
+                        .expect("nonConclusions is array")
+                        .iter()
+                        .any(|conclusion| {
+                            conclusion == "observed force excludes rejected raw proposal force"
+                        })
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "pr-force-decomposition-remains-advisory"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let artifact = read_json(&fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "pr-force-report-v0");
+    assert!(
+        artifact["forceDecomposition"]["components"]
+            .as_array()
+            .expect("components is array")
+            .iter()
+            .any(|component| {
+                component["decompositionMethod"] == "heuristic"
+                    && component["contribution"]["status"] == "advisory"
+                    && component["theoremClaimRefs"]
+                        .as_array()
+                        .expect("theoremClaimRefs is array")
+                        .is_empty()
+            })
+    );
+
+    let json = read_json(&fixture_validation);
+    assert_eq!(json["summary"]["result"], "pass");
+
+    let mut invalid_json = read_json(&root.join("pr_force_report.json"));
+    invalid_json["observedForce"][0]["metricId"] = serde_json::json!("observedForce.rejectedRaw");
+    invalid_json["observedForce"][0]["nonConclusions"] = serde_json::json!([]);
+    invalid_json["forceDecomposition"]["components"][0]["contribution"]["status"] =
+        serde_json::json!("measured");
+    invalid_json["forceDecomposition"]["components"][0]["theoremClaimRefs"] =
+        serde_json::json!(["Formal.Arch.SignatureDynamics.fakeClaim"]);
+    fs::write(
+        &invalid_report,
+        serde_json::to_string_pretty(&invalid_json).expect("json serializes"),
+    )
+    .expect("invalid PR force report is written");
+    let output = run_sig0_output(&[
+        "pr-force-report",
+        "--input",
+        invalid_report
+            .to_str()
+            .expect("invalid fixture path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid PR force report should fail validation"
+    );
+    let json = read_json(&invalid_validation);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "pr-force-observed-force-excludes-rejected-raw-force"
+                    && check["result"] == "fail"
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "pr-force-decomposition-remains-advisory"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_policy_decision_reports_fail_and_pass_boundaries() {
     let fixture = fixture_root();
     let air = air_fixture_root();

@@ -47,6 +47,9 @@ pub const MEASUREMENT_UNIT_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const DYNAMICS_MEASUREMENT_CONTRACT_SCHEMA_VERSION: &str = "dynamics-measurement-contract-v0";
 pub const DYNAMICS_MEASUREMENT_CONTRACT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "dynamics-measurement-contract-validation-report-v0";
+pub const PR_FORCE_REPORT_SCHEMA_VERSION: &str = "pr-force-report-v0";
+pub const PR_FORCE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "pr-force-report-validation-report-v0";
 pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
@@ -3139,6 +3142,101 @@ pub struct DynamicsMeasurementContractValidationInput {
 pub struct DynamicsMeasurementContractValidationSummary {
     pub result: String,
     pub metric_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrForceReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub pull_request: PullRequestRefV0,
+    pub signature_before_ref: DynamicsArtifactRefV0,
+    pub signature_after_ref: DynamicsArtifactRefV0,
+    pub delta_signature_signed: Vec<SignedSignatureDeltaV0>,
+    pub observed_force: Vec<DynamicsMeasuredValueV0>,
+    pub force_decomposition: ForceDecompositionV0,
+    pub feature_extension_report_refs: Vec<DynamicsArtifactRefV0>,
+    pub theorem_precondition_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PullRequestRefV0 {
+    pub provider: String,
+    pub repository: String,
+    pub number: u64,
+    pub transition_kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub merged_at: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignedSignatureDeltaV0 {
+    pub axis_id: String,
+    #[serde(default)]
+    pub before: Option<serde_json::Value>,
+    #[serde(default)]
+    pub after: Option<serde_json::Value>,
+    #[serde(default)]
+    pub delta: Option<serde_json::Value>,
+    pub status: String,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForceDecompositionV0 {
+    pub decomposition_id: String,
+    pub components: Vec<ForceComponentV0>,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForceComponentV0 {
+    pub component_id: String,
+    pub component_kind: String,
+    pub contribution: DynamicsMeasuredValueV0,
+    pub decomposition_method: String,
+    pub evidence_refs: Vec<DynamicsArtifactRefV0>,
+    pub theorem_claim_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrForceReportValidationReportV0 {
+    pub schema_version: String,
+    pub input: PrForceReportValidationInput,
+    pub report: PrForceReportV0,
+    pub summary: PrForceReportValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrForceReportValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub report_id: String,
+    pub pull_request: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrForceReportValidationSummary {
+    pub result: String,
+    pub observed_force_count: usize,
+    pub decomposition_component_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

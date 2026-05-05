@@ -1,0 +1,482 @@
+{
+  "schemaVersion": "pr-force-report-v0",
+  "reportId": "fixture-pr-force-report-v0",
+  "pullRequest": {
+    "provider": "github",
+    "repository": "iroha1203/AlgebraicArchitectureTheoryV2",
+    "number": 675,
+    "transitionKind": "accepted",
+    "mergedAt": "2026-01-15T12:00:00Z",
+    "nonConclusions": [
+      "accepted PR transition does not include rejected proposal force",
+      "PR outcome is not an incident-risk theorem"
+    ]
+  },
+  "signatureBeforeRef": {
+    "kind": "signature-snapshot-store",
+    "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+    "schemaVersion": "signature-snapshot-store-v0",
+    "artifactId": "fixture-pr-force-before-signature"
+  },
+  "signatureAfterRef": {
+    "kind": "signature-snapshot-store",
+    "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+    "schemaVersion": "signature-snapshot-store-v0",
+    "artifactId": "fixture-pr-force-after-signature"
+  },
+  "deltaSignatureSigned": [
+    {
+      "axisId": "boundaryViolationCount",
+      "before": 3,
+      "after": 1,
+      "delta": -2,
+      "status": "measured",
+      "sourceRefs": [
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-pr-force-before-signature"
+        },
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-pr-force-after-signature"
+        },
+        {
+          "kind": "signature-diff-report",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+          "schemaVersion": "signature-diff-report-v0",
+          "artifactId": "fixture-pr-force-signature-diff"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature",
+        "measuredAxes": [
+          "boundaryViolationCount"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-pr-force-before-signature"
+          },
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-pr-force-after-signature"
+          },
+          {
+            "kind": "signature-diff-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+            "schemaVersion": "signature-diff-report-v0",
+            "artifactId": "fixture-pr-force-signature-diff"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "pr-force-report-v0",
+        "selectedRegionRefs": [
+          "fixture:accepted-pr-675"
+        ],
+        "assumptions": [
+          "delta is scoped to retained before/after Signature artifacts"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "PR force is a vector artifact, not a single score",
+          "observed force excludes rejected raw proposal force",
+          "force decomposition is tooling evidence, not a Lean theorem claim",
+          "measured delta does not convert unmeasured semantic or runtime axes to zero"
+        ]
+      },
+      "nonConclusions": [
+        "selected before and after Signature snapshots are comparable",
+        "negative delta means fewer observed boundary violations in the selected axes"
+      ]
+    },
+    {
+      "axisId": "runtimePropagationRisk",
+      "before": null,
+      "after": null,
+      "delta": null,
+      "status": "unmeasured",
+      "sourceRefs": [],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "pr-force-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "delta source artifacts are unavailable"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "pr-force-evidence",
+            "reason": "delta source artifacts are unavailable",
+            "boundary": "unmeasured"
+          }
+        ],
+        "nonConclusions": [
+          "unmeasured PR force evidence is not measured-zero"
+        ]
+      },
+      "nonConclusions": [
+        "runtime propagation extractor was not run for this fixture",
+        "unmeasured runtime delta is not zero"
+      ]
+    }
+  ],
+  "observedForce": [
+    {
+      "metricId": "observedForce.boundaryViolationDelta",
+      "value": -2,
+      "status": "measured",
+      "sourceRefs": [
+        {
+          "kind": "signature-diff-report",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+          "schemaVersion": "signature-diff-report-v0",
+          "artifactId": "fixture-pr-force-signature-diff"
+        },
+        {
+          "kind": "empirical-signature-dataset",
+          "path": "tools/archsig/tests/fixtures/minimal/empirical_signature_dataset.json",
+          "schemaVersion": "empirical-signature-dataset-v0",
+          "artifactId": "fixture-pr-force-empirical-dataset"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature",
+        "measuredAxes": [
+          "boundaryViolationCount"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-diff-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+            "schemaVersion": "signature-diff-report-v0",
+            "artifactId": "fixture-pr-force-signature-diff"
+          },
+          {
+            "kind": "empirical-signature-dataset",
+            "path": "tools/archsig/tests/fixtures/minimal/empirical_signature_dataset.json",
+            "schemaVersion": "empirical-signature-dataset-v0",
+            "artifactId": "fixture-pr-force-empirical-dataset"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "pr-force-report-v0",
+        "selectedRegionRefs": [
+          "fixture:accepted-pr-675"
+        ],
+        "assumptions": [
+          "observed force is computed only from accepted before/after Signature artifacts"
+        ],
+        "unsupportedConstructs": [
+          "rejected proposal force"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "PR force is a vector artifact, not a single score",
+          "observed force excludes rejected raw proposal force",
+          "force decomposition is tooling evidence, not a Lean theorem claim",
+          "measured delta does not convert unmeasured semantic or runtime axes to zero"
+        ]
+      },
+      "assumptions": [
+        "accepted PR transition has comparable Signature snapshots"
+      ],
+      "nonConclusions": [
+        "observed force excludes rejected raw proposal force",
+        "observed force is not a single architecture quality score"
+      ]
+    },
+    {
+      "metricId": "observedForce.runtimePropagationRisk",
+      "value": null,
+      "status": "unmeasured",
+      "sourceRefs": [],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "pr-force-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "runtime propagation evidence is outside this PR force fixture"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "pr-force-evidence",
+            "reason": "runtime propagation evidence is outside this PR force fixture",
+            "boundary": "unmeasured"
+          }
+        ],
+        "nonConclusions": [
+          "unmeasured PR force evidence is not measured-zero"
+        ]
+      },
+      "assumptions": [
+        "runtime propagation extractor was not run for this fixture"
+      ],
+      "nonConclusions": [
+        "observed force excludes rejected raw proposal force",
+        "unmeasured observed force is not measured-zero evidence"
+      ]
+    }
+  ],
+  "forceDecomposition": {
+    "decompositionId": "fixture-pr-force-decomposition",
+    "components": [
+      {
+        "componentId": "fixture-feature-component",
+        "componentKind": "feature",
+        "contribution": {
+          "metricId": "forceDecomposition.feature",
+          "value": -1,
+          "status": "advisory",
+          "sourceRefs": [
+            {
+              "kind": "feature-extension-report",
+              "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+              "schemaVersion": "feature-extension-report-v0",
+              "artifactId": "fixture-feature-extension-report"
+            }
+          ],
+          "measurementBoundary": {
+            "measuredLayer": "feature-extension-report",
+            "measuredAxes": [
+              "featureSplitAssessment"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "feature-extension-report",
+                "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+                "schemaVersion": "feature-extension-report-v0",
+                "artifactId": "fixture-feature-extension-report"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "pr-force-report-v0",
+            "selectedRegionRefs": [
+              "fixture:accepted-pr-675"
+            ],
+            "assumptions": [
+              "feature report is available for the accepted PR"
+            ],
+            "unsupportedConstructs": [
+              "formal force attribution"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "PR force is a vector artifact, not a single score",
+              "observed force excludes rejected raw proposal force",
+              "force decomposition is tooling evidence, not a Lean theorem claim",
+              "measured delta does not convert unmeasured semantic or runtime axes to zero"
+            ]
+          },
+          "assumptions": [
+            "heuristic component is reviewer guidance only"
+          ],
+          "nonConclusions": [
+            "heuristic force decomposition remains advisory",
+            "force decomposition is tooling evidence, not a Lean theorem claim"
+          ]
+        },
+        "decompositionMethod": "heuristic",
+        "evidenceRefs": [
+          {
+            "kind": "feature-extension-report",
+            "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+            "schemaVersion": "feature-extension-report-v0",
+            "artifactId": "fixture-feature-extension-report"
+          }
+        ],
+        "theoremClaimRefs": [],
+        "nonConclusions": [
+          "heuristic force decomposition remains advisory",
+          "component does not promote a formal force theorem"
+        ]
+      },
+      {
+        "componentId": "fixture-theorem-precondition-component",
+        "componentKind": "theoremPrecondition",
+        "contribution": {
+          "metricId": "forceDecomposition.theoremPrecondition",
+          "value": null,
+          "status": "unavailable",
+          "sourceRefs": [
+            {
+              "kind": "theorem-precondition-check-report",
+              "path": "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+              "schemaVersion": "theorem-precondition-check-report-v0",
+              "artifactId": "fixture-theorem-precondition-check"
+            }
+          ],
+          "measurementBoundary": {
+            "measuredLayer": "theorem-precondition",
+            "measuredAxes": [
+              "undischargedAssumptionRefs"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "theorem-precondition-check-report",
+                "path": "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+                "schemaVersion": "theorem-precondition-check-report-v0",
+                "artifactId": "fixture-theorem-precondition-check"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "pr-force-report-v0",
+            "selectedRegionRefs": [
+              "fixture:accepted-pr-675"
+            ],
+            "assumptions": [
+              "precondition report is retained"
+            ],
+            "unsupportedConstructs": [
+              "PR outcome theorem claim"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "PR force is a vector artifact, not a single score",
+              "observed force excludes rejected raw proposal force",
+              "force decomposition is tooling evidence, not a Lean theorem claim",
+              "measured delta does not convert unmeasured semantic or runtime axes to zero"
+            ]
+          },
+          "assumptions": [
+            "precondition refs are retained as tooling evidence"
+          ],
+          "nonConclusions": [
+            "unavailable theorem-precondition force is not zero"
+          ]
+        },
+        "decompositionMethod": "source-ref",
+        "evidenceRefs": [
+          {
+            "kind": "theorem-precondition-check-report",
+            "path": "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+            "schemaVersion": "theorem-precondition-check-report-v0",
+            "artifactId": "fixture-theorem-precondition-check"
+          }
+        ],
+        "theoremClaimRefs": [],
+        "nonConclusions": [
+          "theorem precondition refs are not PR outcome theorems"
+        ]
+      }
+    ],
+    "assumptions": [
+      "decomposition uses only retained MVP fixture artifacts",
+      "heuristic components are reviewer guidance, not measured formal force"
+    ],
+    "nonConclusions": [
+      "PR force is a vector artifact, not a single score",
+      "observed force excludes rejected raw proposal force",
+      "force decomposition is tooling evidence, not a Lean theorem claim",
+      "measured delta does not convert unmeasured semantic or runtime axes to zero"
+    ]
+  },
+  "featureExtensionReportRefs": [
+    {
+      "kind": "feature-extension-report",
+      "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+      "schemaVersion": "feature-extension-report-v0",
+      "artifactId": "fixture-feature-extension-report"
+    }
+  ],
+  "theoremPreconditionRefs": [
+    {
+      "kind": "theorem-precondition-check-report",
+      "path": "tools/archsig/tests/fixtures/minimal/theorem_precondition_check_report.json",
+      "schemaVersion": "theorem-precondition-check-report-v0",
+      "artifactId": "fixture-theorem-precondition-check"
+    }
+  ],
+  "measurementBoundary": {
+    "measuredLayer": "architecture-dynamics",
+    "measuredAxes": [
+      "observedForce",
+      "deltaSignatureSigned",
+      "forceDecomposition"
+    ],
+    "sourceArtifactRefs": [
+      {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-pr-force-before-signature"
+      },
+      {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-pr-force-after-signature"
+      },
+      {
+        "kind": "signature-diff-report",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_diff_report.json",
+        "schemaVersion": "signature-diff-report-v0",
+        "artifactId": "fixture-pr-force-signature-diff"
+      },
+      {
+        "kind": "empirical-signature-dataset",
+        "path": "tools/archsig/tests/fixtures/minimal/empirical_signature_dataset.json",
+        "schemaVersion": "empirical-signature-dataset-v0",
+        "artifactId": "fixture-pr-force-empirical-dataset"
+      }
+    ],
+    "extractorVersion": "0.1.0",
+    "policyVersion": "fixture-policy-v0",
+    "schemaVersion": "pr-force-report-v0",
+    "aggregationWindow": {
+      "windowStart": "2026-01-01T00:00:00Z",
+      "windowEnd": "2026-01-31T23:59:59Z",
+      "windowKind": "selected-pr"
+    },
+    "selectedRegionRefs": [
+      "fixture:accepted-pr-675"
+    ],
+    "assumptions": [
+      "fixture records one accepted PR transition",
+      "source artifacts are retained as tooling evidence"
+    ],
+    "unsupportedConstructs": [
+      "rejected raw proposal force",
+      "global force field inference"
+    ],
+    "missingEvidence": [
+      {
+        "evidenceKind": "operation-proposal-log",
+        "reason": "rejected raw proposals are outside this MVP fixture",
+        "boundary": "unmeasured"
+      }
+    ],
+    "nonConclusions": [
+      "PR force is a vector artifact, not a single score",
+      "observed force excludes rejected raw proposal force",
+      "force decomposition is tooling evidence, not a Lean theorem claim",
+      "measured delta does not convert unmeasured semantic or runtime axes to zero"
+    ]
+  },
+  "nonConclusions": [
+    "PR force is a vector artifact, not a single score",
+    "observed force excludes rejected raw proposal force",
+    "force decomposition is tooling evidence, not a Lean theorem claim",
+    "measured delta does not convert unmeasured semantic or runtime axes to zero"
+  ]
+}
