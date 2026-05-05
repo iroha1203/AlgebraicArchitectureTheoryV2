@@ -100,6 +100,30 @@ def SignatureTrajectoryInSafeRegion
   ∀ sig, sig ∈ trajectory -> R sig
 
 /--
+A bounded recurrence witness inside an explicitly supplied finite trajectory.
+
+The predicate asks for a nonempty repeated finite block containing the selected
+signature. It is a finite-list witness only; it does not assert a global
+recurrent class, convergence theorem, or empirical attractor discovery claim.
+-/
+def SignatureTrajectoryHasBoundedReturn
+    (trajectory : List Sig) (sig : Sig) : Prop :=
+  ∃ pre cycle post : List Sig,
+    cycle ≠ [] ∧ sig ∈ cycle ∧
+      trajectory = pre ++ cycle ++ cycle ++ post
+
+/--
+A selected recurrent signature region for a finite observed trajectory.
+
+Every signature in the supplied region must have a bounded repeated-block
+witness in the supplied trajectory. The region is still caller-selected and
+finite-trajectory relative.
+-/
+def RecurrentSignatureRegion
+    (trajectory : List Sig) (region : SafeRegion Sig) : Prop :=
+  ∀ sig, region sig -> SignatureTrajectoryHasBoundedReturn trajectory sig
+
+/--
 Observe every state visited by an endpoint-indexed architecture evolution path.
 
 For a path `X -> ... -> Y`, the resulting list starts with the observation of
@@ -504,11 +528,33 @@ structure AttractorCandidate (Sig : Type v) where
 
 namespace AttractorCandidate
 
-variable {Sig : Type v}
+variable {Sig : Type v} {Score : Type w}
 
 /-- The selected suffix of the finite trajectory that stays in the region. -/
 def observedSuffix (candidate : AttractorCandidate Sig) : List Sig :=
   candidate.trajectory.drop candidate.entryIndex
+
+/-- The candidate region is recurrent relative to the selected observed suffix. -/
+def RecurrentRegion (candidate : AttractorCandidate Sig) : Prop :=
+  RecurrentSignatureRegion candidate.observedSuffix candidate.region
+
+/--
+The selected observed suffix is safe with respect to a caller-supplied safe
+region.
+-/
+def IsSafeAttractor
+    (candidate : AttractorCandidate Sig) (safeRegion : SafeRegion Sig) :
+    Prop :=
+  SignatureTrajectoryInSafeRegion safeRegion candidate.observedSuffix
+
+/--
+The selected observed suffix contains a signature that is bad according to a
+caller-supplied bad-axis measurement and bad-score predicate.
+-/
+def IsBadAttractor
+    (candidate : AttractorCandidate Sig)
+    (badAxis : Sig -> Score) (isBad : Score -> Prop) : Prop :=
+  ∃ sig, sig ∈ candidate.observedSuffix ∧ isBad (badAxis sig)
 
 /-- The attractor candidate explicitly records its non-conclusion boundary. -/
 def RecordsNonConclusions (candidate : AttractorCandidate Sig) : Prop :=
@@ -520,6 +566,22 @@ theorem observedSuffix_in_region (candidate : AttractorCandidate Sig) :
       candidate.region candidate.observedSuffix := by
   intro sig hMem
   exact candidate.staysAfterEntry sig hMem
+
+/-- The candidate is safe with respect to its own selected region. -/
+theorem isSafeAttractor_region (candidate : AttractorCandidate Sig) :
+    candidate.IsSafeAttractor candidate.region :=
+  candidate.observedSuffix_in_region
+
+/--
+If the candidate region is included in another selected safe region, the
+candidate suffix is safe for that region as well.
+-/
+theorem isSafeAttractor_of_region_subset
+    (candidate : AttractorCandidate Sig) (safeRegion : SafeRegion Sig)
+    (hSubset : ∀ sig, candidate.region sig -> safeRegion sig) :
+    candidate.IsSafeAttractor safeRegion := by
+  intro sig hMem
+  exact hSubset sig (candidate.observedSuffix_in_region sig hMem)
 
 end AttractorCandidate
 
@@ -557,6 +619,16 @@ def CoversSelectedInitialStates
   ∀ X, X ∈ candidate.initialStates -> candidate.reachesAttractor X
 
 /--
+The selected initial states reach a caller-supplied safe suffix predicate for
+the candidate attractor.
+-/
+def SelectedInitialStatesReachSafeSuffix
+    (candidate : BasinCandidate State Sig Op) (safeRegion : SafeRegion Sig) :
+    Prop :=
+  candidate.attractor.IsSafeAttractor safeRegion ∧
+    candidate.CoversSelectedInitialStates
+
+/--
 The finite initial-state list is covered by the caller-supplied reachability
 predicate.
 -/
@@ -564,6 +636,26 @@ theorem coversSelectedInitialStates
     (candidate : BasinCandidate State Sig Op) :
     candidate.CoversSelectedInitialStates :=
   candidate.everyInitialReaches
+
+/--
+If the attractor suffix is safe for a selected region, the basin package shows
+that every selected initial state reaches that safe suffix.
+-/
+theorem selectedInitialStates_reach_safeSuffix_of_safeAttractor
+    (candidate : BasinCandidate State Sig Op) (safeRegion : SafeRegion Sig)
+    (hSafe : candidate.attractor.IsSafeAttractor safeRegion) :
+    candidate.SelectedInitialStatesReachSafeSuffix safeRegion :=
+  ⟨hSafe, candidate.coversSelectedInitialStates⟩
+
+/--
+Every selected initial state reaches the attractor suffix that is safe for the
+candidate's own selected region.
+-/
+theorem selectedInitialStates_reach_attractorRegionSuffix
+    (candidate : BasinCandidate State Sig Op) :
+    candidate.SelectedInitialStatesReachSafeSuffix candidate.attractor.region :=
+  candidate.selectedInitialStates_reach_safeSuffix_of_safeAttractor
+    candidate.attractor.region candidate.attractor.isSafeAttractor_region
 
 end BasinCandidate
 

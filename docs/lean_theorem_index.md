@@ -1676,6 +1676,9 @@ finite initial-state list と bounded operation script に相対化した basin 
 Issue [#657](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/657) では、
 explicit finite state universe と mathlib の finite pigeonhole principle に接続し、
 deterministic self-map の eventually periodic theorem を証明した。
+Issue [#658](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/658) では、
+finite observed suffix に相対化した bounded recurrence predicate、safe / bad attractor
+predicate、basin から selected safe suffix への accessor theorem を追加した。
 Issue [#642](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/642) では、
 accepted / rejected transition boundary と selected damping assumption に相対化して、
 accepted evolution の invariant preservation と bad-axis nonincrease theorem を追加した。
@@ -1709,6 +1712,8 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `StepPreservesSafeRegion` | `def` | primitive transition が selected observed safe region を source から target へ保存すること。 | `defined only` |
 | `EveryStepPreservesSafeRegion` | `def` | path 上のすべての primitive transition が selected safe region を保存すること。 | `defined only` |
 | `SignatureTrajectoryInSafeRegion` | `def` | trajectory 内のすべての observed signature が selected safe region に属すること。 | `defined only` |
+| `SignatureTrajectoryHasBoundedReturn` | `def` | finite observed trajectory 内で、selected signature が非空 repeated block に含まれることを表す bounded recurrence witness predicate。 | `defined only` |
+| `RecurrentSignatureRegion` | `def` | selected region 内の各 signature が supplied finite trajectory 内の bounded return witness を持つこと。global recurrent class は結論しない。 | `defined only` |
 | `NetSignatureDelta` | `def` | selected per-step signature deltas を `Delta` の `0` / `+` で集計する fold API。unmeasured axis や empirical PR outcome は結論しない。 | `defined only` |
 | `EndpointSignatureDelta` | `def` | evolution path の start / target observation の間の selected endpoint delta。 | `defined only` |
 | `AdditiveSignatureDeltaLaw` | `structure` | `self_zero` と `step_telescope` を明示前提として持つ selected additive delta law package。coverage 外の軸、cost、incident risk、PR outcome は non-conclusions に残す。 | `defined only` |
@@ -1729,12 +1734,20 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `DampingControlSchema.badAxis_nonincrease_of_acceptedEvolution` | `theorem` | explicit damping assumption の下で、accepted finite evolution が source から target へ selected bad-axis measure を非増加にすることを示す。 | `proved` |
 | `AttractorCandidate` | `structure` | finite observed trajectory と selected region に相対化し、selected entry index 以降の observed suffix が region 内に留まることを記録する schema。 | `defined only` |
 | `AttractorCandidate.observedSuffix` | `def` | attractor candidate の selected entry index 以降の finite observed suffix を取り出す。 | `defined only` |
+| `AttractorCandidate.RecurrentRegion` | `def` | candidate の selected observed suffix と selected region に相対化した recurrent signature region predicate。 | `defined only` |
+| `AttractorCandidate.IsSafeAttractor` | `def` | candidate suffix が caller-supplied safe region 内に留まることを表す selected safe attractor predicate。 | `defined only` |
+| `AttractorCandidate.IsBadAttractor` | `def` | caller-supplied bad-axis measurement と bad-score predicate により、candidate suffix に bad signature が含まれることを表す selected bad attractor predicate。 | `defined only` |
 | `AttractorCandidate.RecordsNonConclusions` | `def` | attractor candidate package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `AttractorCandidate.observedSuffix_in_region` | `theorem` | selected observed suffix が candidate region 内に留まることを schema field から取り出す accessor theorem。 | `proved` |
+| `AttractorCandidate.isSafeAttractor_region` | `theorem` | candidate suffix が candidate 自身の selected region に対して safe attractor であることを示す accessor theorem。 | `proved` |
+| `AttractorCandidate.isSafeAttractor_of_region_subset` | `theorem` | candidate region が別の selected safe region に含まれるなら、その region に対しても candidate suffix が safe attractor であることを示す。 | `proved` |
 | `BasinCandidate` | `structure` | selected observation、finite initial-state list、attractor candidate、bounded operation script、caller-supplied reachability predicate を束ねる basin candidate schema。 | `defined only` |
 | `BasinCandidate.RecordsNonConclusions` | `def` | basin candidate package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `BasinCandidate.CoversSelectedInitialStates` | `def` | finite initial-state list の各 state が caller-supplied reachability predicate を満たすこと。 | `defined only` |
+| `BasinCandidate.SelectedInitialStatesReachSafeSuffix` | `def` | candidate suffix が selected safe region にあり、selected initial-state list が reachability predicate で cover されることを束ねる bounded basin predicate。 | `defined only` |
 | `BasinCandidate.coversSelectedInitialStates` | `theorem` | basin candidate が selected initial-state list を cover することを schema field から取り出す accessor theorem。 | `proved` |
+| `BasinCandidate.selectedInitialStates_reach_safeSuffix_of_safeAttractor` | `theorem` | safe attractor predicate と basin coverage から、selected initial states が selected safe suffix へ到達する bounded predicate を得る。 | `proved` |
+| `BasinCandidate.selectedInitialStates_reach_attractorRegionSuffix` | `theorem` | selected initial states が candidate 自身の region-safe suffix へ到達することを schema field から取り出す accessor theorem。 | `proved` |
 | `FiniteStateUniverse` | `structure` | deterministic signature dynamics 用の duplicate-free finite state list と coverage を束ねる explicit finite universe。 | `defined only` |
 | `FiniteStateUniverse.StepClosed` | `def` | selected self-map が explicit finite universe の state list 内に閉じていることを表す closure predicate。 | `defined only` |
 | `FiniteStateUniverse.stepClosed_of_covers` | `theorem` | full finite state universe では selected self-map closure が coverage から従うことを示す。 | `proved` |
