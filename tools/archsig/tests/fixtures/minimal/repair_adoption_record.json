@@ -1,0 +1,217 @@
+{
+  "schemaVersion": "repair-adoption-record-v0",
+  "schemaCompatibility": {
+    "artifactId": "repair-adoption-record",
+    "schemaVersionName": "repair-adoption-record-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "suggestionRefs",
+        "targetField": "suggestionRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve repair suggestion, witness, rule, component, and evidence refs"
+      },
+      {
+        "sourceField": "adoptionDecision",
+        "targetField": "adoptionDecision",
+        "mappingKind": "stable",
+        "requiredReview": "preserve adopted / rejected / deferred decision and reason"
+      },
+      {
+        "sourceField": "followUpOutcomeRefs",
+        "targetField": "followUpOutcomeRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve follow-up operational outcome refs"
+      },
+      {
+        "sourceField": "sideEffectNotes",
+        "targetField": "sideEffectNotes",
+        "mappingKind": "stable",
+        "requiredReview": "preserve side-effect notes as empirical risk tracking"
+      },
+      {
+        "sourceField": "missingEvidence",
+        "targetField": "missingEvidence",
+        "mappingKind": "stable",
+        "requiredReview": "preserve missing / private evidence boundaries"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve empirical / formal-claim guardrails"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "repair-suggestion-refs-preserve-witness-and-rule-traceability",
+        "appliesTo": "repair-adoption-record",
+        "requiredFor": "repair adoption tracking",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "adoption-decision-preserves-adopted-rejected-or-deferred-status",
+        "appliesTo": "repair-adoption-record",
+        "requiredFor": "repair adoption tracking",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "follow-up-outcomes-remain-operational-signal",
+        "appliesTo": "repair-adoption-record",
+        "requiredFor": "repair adoption tracking",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "missing-repair-evidence-remains-private-or-unavailable",
+        "appliesTo": "repair-adoption-record",
+        "requiredFor": "repair adoption tracking",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "repair-adoption.suggestion-ref",
+        "measurementBoundary": "suggestionTraceability",
+        "coverageAssumptions": [
+          "suggestionRefs preserve source report, witness, rule, and component refs"
+        ],
+        "exactnessAssumptions": [
+          "repair suggestion traceability does not prove obstruction semantics"
+        ]
+      },
+      {
+        "axisOrLayer": "repair-adoption.decision",
+        "measurementBoundary": "operationalWorkflowState",
+        "coverageAssumptions": [
+          "adoptionDecision records adopted / rejected / deferred and reason"
+        ],
+        "exactnessAssumptions": [
+          "workflow decision does not prove repair correctness"
+        ]
+      },
+      {
+        "axisOrLayer": "repair-adoption.missing-evidence",
+        "measurementBoundary": "unavailable",
+        "coverageAssumptions": [
+          "missingEvidence preserves unavailable and private follow-up evidence"
+        ],
+        "exactnessAssumptions": [
+          "missing follow-up outcome evidence is not measured-zero evidence"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "repair adoption schema compatibility metadata does not prove semantic preservation",
+      "repair adoption schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+      "repair adoption tracking does not prove global flatness preservation or cost improvement"
+    ]
+  },
+  "recordId": "fixture-b10-repair-adoption-record-v0",
+  "reviewedAt": "2026-05-05T11:00:00Z",
+  "reviewer": "architecture-reviewer@example.com",
+  "suggestionRefs": [
+    {
+      "suggestionRef": "repair-suggestion:split-runtime-adapter-boundary",
+      "sourceReportRef": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+      "obstructionWitnessRef": "obstruction-witness:private-runtime-evidence",
+      "repairRuleRef": "repair-rule:extract-runtime-adapter",
+      "targetComponentRefs": [
+        "component:checkout.payment_adapter",
+        "component:billing.gateway"
+      ],
+      "evidenceBoundary": "suggestionFromUnmeasuredRuntimeEvidence",
+      "nonConclusions": [
+        "repair suggestion ref does not prove obstruction witness semantics",
+        "suggested repair is not a proof of global flatness preservation"
+      ]
+    }
+  ],
+  "adoptionDecision": {
+    "decision": "deferred",
+    "reason": "team accepted boundary review but deferred code movement until private runtime evidence can be redacted",
+    "decisionRefs": [
+      "review-thread:repair-adoption-2026-05-05",
+      "issue:#623"
+    ],
+    "adoptedAt": null,
+    "deferredUntil": "2026-06-05T00:00:00Z",
+    "nonConclusions": [
+      "deferred adoption is operational workflow state, not repair failure proof",
+      "decision does not establish cost improvement or obstruction removal"
+    ]
+  },
+  "followUpOutcomeRefs": [
+    {
+      "outcomeRef": "daily-ledger:fixture-b10-report-outcome-daily-ledger",
+      "outcomeKind": "report-outcome-daily-ledger",
+      "boundary": "operationalFeedback",
+      "metricRefs": [
+        "driftLedger.private_runtime_evidence_count",
+        "reviewCost.approvalLatencyHours"
+      ],
+      "nonConclusions": [
+        "follow-up ledger signal is not causal evidence of repair effect"
+      ]
+    },
+    {
+      "outcomeRef": "ownership-monitor:fixture-b10-ownership-boundary-monitor-v0",
+      "outcomeKind": "ownership-boundary-monitor",
+      "boundary": "boundedOperationalObservation",
+      "metricRefs": [
+        "ownership.missingOwnerEvidenceCount"
+      ],
+      "nonConclusions": [
+        "ownership monitor signal does not prove boundary repair correctness"
+      ]
+    }
+  ],
+  "sideEffectNotes": [
+    {
+      "noteId": "side-effect:review-latency-risk",
+      "affectedAxisRefs": [
+        "reviewCost.approvalLatencyHours",
+        "ownership.missingOwnerEvidenceCount"
+      ],
+      "description": "adapter extraction may require cross-team review and temporarily increase approval latency",
+      "severity": "watch",
+      "evidenceRefs": [
+        "team-threshold-policy:fixture-b10-checkout-team-threshold-policy-v0"
+      ],
+      "nonConclusions": [
+        "side-effect note is risk tracking, not a prediction theorem"
+      ]
+    }
+  ],
+  "missingEvidence": [
+    {
+      "evidenceKind": "post-adoption-outcome-window",
+      "reason": "repair is deferred, so post-adoption outcome evidence is unavailable",
+      "boundary": "unavailable",
+      "followUpRef": "repair-review:post-adoption-window"
+    },
+    {
+      "evidenceKind": "private-runtime-trace",
+      "reason": "runtime trace must be redacted before deciding the exact extraction",
+      "boundary": "private",
+      "followUpRef": "evidence-request:runtime-trace-redaction-policy"
+    }
+  ],
+  "analysisMetadata": {
+    "leanStatus": "empirical hypothesis / tooling validation",
+    "adoptionBoundary": "repair suggestion adoption state with follow-up outcome refs and missing evidence",
+    "repairCorrectnessBoundary": "adoption tracking records workflow outcome and cannot prove repair correctness",
+    "nonConclusions": [
+      "repair adoption record is not a proof that obstruction was removed",
+      "repair adoption record is not a proof of global flatness preservation",
+      "repair adoption record is not a proof of cost improvement"
+    ]
+  },
+  "nonConclusions": [
+    "repair adoption tracking is empirical / operational signal, not a Lean theorem",
+    "adopted, rejected, or deferred decision does not prove repair correctness",
+    "follow-up outcomes do not establish causal repair success",
+    "missing or private evidence is not measured-zero evidence"
+  ]
+}

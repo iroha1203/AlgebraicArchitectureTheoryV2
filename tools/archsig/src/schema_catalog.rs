@@ -3,6 +3,7 @@ use crate::{
     CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
+    OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, REPAIR_ADOPTION_RECORD_SCHEMA_VERSION,
     REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
     SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
     SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
@@ -215,6 +216,52 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "Team-local threshold policy and calibration source boundaries delimit empirical policy tuning exactness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "ownership-boundary-monitor",
+                "Ownership boundary monitor",
+                OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION,
+                "operational-feedback-monitor",
+                "B10",
+                "implemented",
+                vec![
+                    "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+                    "docs/design/schema_version_catalog.md#ownership-boundary-monitor-metadata",
+                ],
+                vec!["#623"],
+                compatibility_boundary(
+                    "Map source refs, ownership scopes, boundary erosion signals, missing evidence, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New ownership or boundary erosion metrics must preserve measurement boundary and missing / private evidence refs.",
+                    ],
+                    vec![
+                        "Ownership scope and boundary erosion signal metadata delimit empirical monitoring exactness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "repair-adoption-record",
+                "Repair adoption record",
+                REPAIR_ADOPTION_RECORD_SCHEMA_VERSION,
+                "operational-feedback-record",
+                "B10",
+                "implemented",
+                vec![
+                    "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+                    "docs/design/schema_version_catalog.md#repair-adoption-record-metadata",
+                ],
+                vec!["#623"],
+                compatibility_boundary(
+                    "Map suggestion refs, adopted / rejected / deferred decision, follow-up outcomes, side-effect notes, missing evidence, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New adoption fields must preserve repair suggestion traceability, workflow state, side effects, and missing / private evidence boundaries.",
+                    ],
+                    vec![
+                        "Repair adoption workflow state and follow-up outcome refs delimit empirical repair tracking exactness.",
                     ],
                 ),
             ),

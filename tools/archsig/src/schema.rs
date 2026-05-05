@@ -57,6 +57,8 @@ pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-datase
 pub const REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION: &str = "report-outcome-daily-ledger-v0";
 pub const CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION: &str = "calibration-review-record-v0";
 pub const TEAM_THRESHOLD_POLICY_SCHEMA_VERSION: &str = "team-threshold-policy-v0";
+pub const OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION: &str = "ownership-boundary-monitor-v0";
+pub const REPAIR_ADOPTION_RECORD_SCHEMA_VERSION: &str = "repair-adoption-record-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
@@ -1137,6 +1139,162 @@ pub struct TeamThresholdPolicyAnalysisMetadataV0 {
     pub lean_status: String,
     pub policy_boundary: String,
     pub calibration_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipBoundaryMonitorV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub monitor_id: String,
+    pub generated_at: String,
+    pub organization_ref: String,
+    pub team_ref: String,
+    pub architecture_id: String,
+    pub aggregation_window: DriftLedgerAggregationWindowV0,
+    pub source_refs: Vec<OwnershipBoundarySourceRefV0>,
+    pub ownership_scopes: Vec<OwnershipScopeObservationV0>,
+    pub boundary_erosion_signals: Vec<BoundaryErosionSignalV0>,
+    pub missing_evidence: Vec<OwnershipBoundaryMissingEvidenceV0>,
+    pub analysis_metadata: OwnershipBoundaryAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipBoundarySourceRefV0 {
+    pub source_ref: String,
+    pub source_kind: String,
+    pub path: String,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipScopeObservationV0 {
+    pub scope_ref: String,
+    pub owner_ref: String,
+    pub component_refs: Vec<String>,
+    pub boundary_policy_refs: Vec<String>,
+    pub observation_boundary: String,
+    pub evidence_refs: Vec<String>,
+    pub missing_evidence_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BoundaryErosionSignalV0 {
+    pub signal_id: String,
+    pub boundary_ref: String,
+    pub metric_ref: String,
+    pub observed_value: Option<f64>,
+    pub severity: String,
+    pub trend: String,
+    pub measurement_boundary: String,
+    pub evidence_refs: Vec<String>,
+    pub recommended_follow_up_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipBoundaryMissingEvidenceV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+    pub follow_up_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipBoundaryAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub source_join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairAdoptionRecordV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub record_id: String,
+    pub reviewed_at: String,
+    pub reviewer: String,
+    pub suggestion_refs: Vec<RepairSuggestionRefV0>,
+    pub adoption_decision: RepairAdoptionDecisionV0,
+    pub follow_up_outcome_refs: Vec<RepairFollowUpOutcomeRefV0>,
+    pub side_effect_notes: Vec<RepairSideEffectNoteV0>,
+    pub missing_evidence: Vec<RepairAdoptionMissingEvidenceV0>,
+    pub analysis_metadata: RepairAdoptionAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairSuggestionRefV0 {
+    pub suggestion_ref: String,
+    pub source_report_ref: String,
+    pub obstruction_witness_ref: String,
+    pub repair_rule_ref: String,
+    pub target_component_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairAdoptionDecisionV0 {
+    pub decision: String,
+    pub reason: String,
+    pub decision_refs: Vec<String>,
+    pub adopted_at: Option<String>,
+    pub deferred_until: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairFollowUpOutcomeRefV0 {
+    pub outcome_ref: String,
+    pub outcome_kind: String,
+    pub boundary: String,
+    pub metric_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairSideEffectNoteV0 {
+    pub note_id: String,
+    pub affected_axis_refs: Vec<String>,
+    pub description: String,
+    pub severity: String,
+    pub evidence_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairAdoptionMissingEvidenceV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+    pub follow_up_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairAdoptionAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub adoption_boundary: String,
+    pub repair_correctness_boundary: String,
     pub non_conclusions: Vec<String>,
 }
 

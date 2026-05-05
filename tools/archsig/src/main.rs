@@ -13,25 +13,27 @@ use archsig::{
     LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
     MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
-    OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
-    RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
-    ReportArtifactRetentionValidationReportV0, ReportOutcomeDailyLedgerInput,
-    RepositoryRevisionRef, RiskDispositionV0, ScanMetadata, SchemaCompatibilityCheckReportV0,
-    SchemaVersionCatalogV0, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
-    SnapshotRecordInput, SnapshotRepositoryRef, SynthesisConstraintArtifactV0,
-    SynthesisConstraintValidationReportV0, TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0,
-    attach_framework_adapter_evidence, build_air_document, build_baseline_suppression_report,
-    build_empirical_dataset, build_feature_extension_dataset_from_files,
-    build_feature_extension_report, build_outcome_linkage_dataset_from_files,
-    build_policy_decision_report, build_pr_history_dataset_from_github_files,
-    build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
-    build_schema_compatibility_check_report, build_signature_diff_report,
-    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
+    OrganizationPolicyValidationReportV0, OwnershipBoundaryMonitorV0, PolicyDecisionReportV0,
+    RepairAdoptionRecordV0, RepairRuleRegistryV0, RepairRuleRegistryValidationReportV0,
+    ReportArtifactRetentionManifestV0, ReportArtifactRetentionValidationReportV0,
+    ReportOutcomeDailyLedgerInput, RepositoryRevisionRef, RiskDispositionV0, ScanMetadata,
+    SchemaCompatibilityCheckReportV0, SchemaVersionCatalogV0, Sig0Document, SignatureDiffReportV0,
+    SignatureSnapshotStoreRecordV0, SnapshotRecordInput, SnapshotRepositoryRef,
+    SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0, TeamThresholdPolicyV0,
+    TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence, build_air_document,
+    build_baseline_suppression_report, build_empirical_dataset,
+    build_feature_extension_dataset_from_files, build_feature_extension_report,
+    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
+    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
+    build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
+    build_signature_diff_report, build_signature_snapshot_record,
+    build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_calibration_review_record,
     static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
     static_law_policy_template_registry, static_measurement_unit_registry,
-    static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
+    static_no_solution_certificate, static_organization_policy, static_ownership_boundary_monitor,
+    static_repair_adoption_record, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_schema_version_catalog,
     static_synthesis_constraint_artifact, static_team_threshold_policy,
     validate_air_document_report, validate_component_universe_report,
@@ -257,6 +259,20 @@ enum Command {
     /// Emit a B10 team-specific threshold tuning policy.
     TeamThresholdPolicy {
         /// Output team threshold policy JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit a B10 ownership / boundary erosion monitoring artifact.
+    OwnershipBoundaryMonitor {
+        /// Output ownership boundary monitor JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit a B10 repair suggestion adoption tracking record.
+    RepairAdoptionRecord {
+        /// Output repair adoption record JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -784,6 +800,16 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         Some(Command::TeamThresholdPolicy { out }) => {
             let policy: TeamThresholdPolicyV0 = static_team_threshold_policy();
             write_json(out, &policy)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::OwnershipBoundaryMonitor { out }) => {
+            let monitor: OwnershipBoundaryMonitorV0 = static_ownership_boundary_monitor();
+            write_json(out, &monitor)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::RepairAdoptionRecord { out }) => {
+            let record: RepairAdoptionRecordV0 = static_repair_adoption_record();
+            write_json(out, &record)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::RelationComplexity { input, out }) => {
