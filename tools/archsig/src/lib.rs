@@ -25,6 +25,7 @@ mod repair_rule;
 mod runtime;
 pub mod schema;
 mod schema_catalog;
+mod schema_compatibility;
 mod schema_versioning;
 mod snapshot;
 mod synthesis_constraint;
@@ -77,6 +78,7 @@ pub use relation_complexity::{
 pub use repair_rule::{static_repair_rule_registry, validate_repair_rule_registry_report};
 pub use schema::*;
 pub use schema_catalog::static_schema_version_catalog;
+pub use schema_compatibility::build_schema_compatibility_check_report;
 pub use snapshot::{build_signature_diff_report, build_signature_snapshot_record};
 pub use synthesis_constraint::{
     static_synthesis_constraint_artifact, validate_synthesis_constraint_artifact_report,

@@ -14,25 +14,27 @@ use archsig::{
     OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
     ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, RiskDispositionV0,
-    ScanMetadata, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
-    SnapshotRecordInput, SnapshotRepositoryRef, SynthesisConstraintArtifactV0,
-    SynthesisConstraintValidationReportV0, TheoremPreconditionCheckReportV0,
-    attach_framework_adapter_evidence, build_air_document, build_baseline_suppression_report,
-    build_empirical_dataset, build_feature_extension_dataset_from_files,
-    build_feature_extension_report, build_outcome_linkage_dataset_from_files,
-    build_policy_decision_report, build_pr_history_dataset_from_github_files,
-    build_pr_metadata_from_github_files, build_signature_diff_report,
+    ScanMetadata, SchemaCompatibilityCheckReportV0, SchemaVersionCatalogV0, Sig0Document,
+    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
+    SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
+    TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence, build_air_document,
+    build_baseline_suppression_report, build_empirical_dataset,
+    build_feature_extension_dataset_from_files, build_feature_extension_report,
+    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
+    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
+    build_schema_compatibility_check_report, build_signature_diff_report,
     build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_custom_rule_plugin_registry,
     static_law_policy_template_registry, static_measurement_unit_registry,
     static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
-    static_report_artifact_retention_manifest, static_synthesis_constraint_artifact,
-    validate_air_document_report, validate_component_universe_report,
-    validate_custom_rule_plugin_registry_report, validate_law_policy_template_registry_report,
-    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
-    validate_organization_policy_report, validate_repair_rule_registry_report,
-    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
+    static_report_artifact_retention_manifest, static_schema_version_catalog,
+    static_synthesis_constraint_artifact, validate_air_document_report,
+    validate_component_universe_report, validate_custom_rule_plugin_registry_report,
+    validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
+    validate_no_solution_certificate_report, validate_organization_policy_report,
+    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
+    validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -546,6 +548,25 @@ enum Command {
         accepted_risk: Vec<PathBuf>,
 
         /// Output baseline suppression report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Check B9 schema migration / compatibility metadata between two artifacts.
+    SchemaCompatibility {
+        /// Baseline artifact JSON path.
+        #[arg(long)]
+        before: PathBuf,
+
+        /// Current or migrated artifact JSON path.
+        #[arg(long)]
+        after: PathBuf,
+
+        /// Optional schema version catalog JSON path. If omitted, the static B9 catalog is used.
+        #[arg(long)]
+        catalog: Option<PathBuf>,
+
+        /// Output schema compatibility check report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1085,6 +1106,34 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &accepted_risks,
             );
             let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::SchemaCompatibility {
+            before,
+            after,
+            catalog,
+            out,
+        }) => {
+            let before_value: serde_json::Value = read_json(&before)?;
+            let after_value: serde_json::Value = read_json(&after)?;
+            let catalog_value: SchemaVersionCatalogV0 = catalog
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_schema_version_catalog);
+            let report: SchemaCompatibilityCheckReportV0 = build_schema_compatibility_check_report(
+                &before_value,
+                &before.display().to_string(),
+                &after_value,
+                &after.display().to_string(),
+                &catalog_value,
+            );
+            let failed = report.summary.result != "pass";
             write_json(out, &report)?;
             Ok(if failed {
                 ExitCode::from(1)
