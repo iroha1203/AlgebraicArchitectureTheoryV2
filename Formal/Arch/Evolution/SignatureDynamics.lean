@@ -126,6 +126,86 @@ def SignatureDeltaSequence
         SignatureDeltaSequence O D rest
 
 /--
+The observed trajectory can be decomposed into a prefix followed by the target
+observation.
+-/
+theorem signatureTrajectory_endsWith_target
+    (O : SignatureObservation State Sig) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      ∃ pre : List Sig,
+        SignatureTrajectory O plan = pre ++ [O.observe Y]
+  | _, _, ArchitecturePath.nil _ => by
+      exact ⟨[], by simp [SignatureTrajectory]⟩
+  | X, _, ArchitecturePath.cons _step rest => by
+      obtain ⟨pre, hPre⟩ :=
+        signatureTrajectory_endsWith_target O rest
+      exact ⟨O.observe X :: pre, by simp [SignatureTrajectory, hPre]⟩
+
+/-- The observed trajectory has one more entry than the path step length. -/
+theorem signatureTrajectory_length
+    (O : SignatureObservation State Sig) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      (SignatureTrajectory O plan).length = ArchitecturePath.length plan + 1
+  | _, _, ArchitecturePath.nil _ => by
+      simp [SignatureTrajectory, ArchitecturePath.length]
+  | _, _, ArchitecturePath.cons _step rest => by
+      simp [SignatureTrajectory, ArchitecturePath.length,
+        signatureTrajectory_length O rest]
+
+/-- The per-step delta sequence has exactly the path step length. -/
+theorem signatureDeltaSequence_length
+    (O : SignatureObservation State Sig) (D : SignatureDelta Sig Delta) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      (SignatureDeltaSequence O D plan).length = ArchitecturePath.length plan
+  | _, _, ArchitecturePath.nil _ => by
+      simp [SignatureDeltaSequence, ArchitecturePath.length]
+  | _, _, ArchitecturePath.cons _step rest => by
+      simp [SignatureDeltaSequence, ArchitecturePath.length,
+        signatureDeltaSequence_length O D rest]
+
+/-- A trajectory is nonempty, so its head consed with its tail reconstructs it. -/
+theorem signatureTrajectory_head_cons_tail
+    (O : SignatureObservation State Sig) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      O.observe X :: (SignatureTrajectory O plan).tail =
+        SignatureTrajectory O plan
+  | _, _, ArchitecturePath.nil _ => by
+      simp [SignatureTrajectory]
+  | _, _, ArchitecturePath.cons _step rest => by
+      simp [SignatureTrajectory]
+
+/--
+Observed trajectory over an appended path splits by segment, with the shared
+middle observation contributed by the left segment and dropped from the right
+segment via `List.tail`.
+-/
+theorem signatureTrajectory_append
+    (O : SignatureObservation State Sig)
+    {X Y Z : State} (left : ArchitectureEvolution State X Y)
+    (right : ArchitectureEvolution State Y Z) :
+    SignatureTrajectory O (ArchitecturePath.append left right) =
+      SignatureTrajectory O left ++ (SignatureTrajectory O right).tail := by
+  induction left with
+  | nil X =>
+      simpa [ArchitecturePath.append, SignatureTrajectory] using
+        (signatureTrajectory_head_cons_tail O right).symm
+  | cons step rest ih =>
+      simp [ArchitecturePath.append, SignatureTrajectory, ih]
+
+/-- Per-step delta sequences concatenate exactly under path append. -/
+theorem signatureDeltaSequence_append
+    (O : SignatureObservation State Sig) (D : SignatureDelta Sig Delta)
+    {X Y Z : State} (left : ArchitectureEvolution State X Y)
+    (right : ArchitectureEvolution State Y Z) :
+    SignatureDeltaSequence O D (ArchitecturePath.append left right) =
+      SignatureDeltaSequence O D left ++ SignatureDeltaSequence O D right := by
+  induction left with
+  | nil X =>
+      simp [ArchitecturePath.append, SignatureDeltaSequence]
+  | cons step rest ih =>
+      simp [ArchitecturePath.append, SignatureDeltaSequence, ih]
+
+/--
 Add the selected per-step signature deltas into one net delta.
 
 This is only a fold API over the supplied `Delta` type. It does not assert that
