@@ -58,6 +58,47 @@ end SignatureDelta
 variable {State : Type u} {Sig : Type v} {Delta : Type w}
 
 /--
+A selected safe region in the observed signature domain.
+
+This is a predicate on signatures, not a claim that review, CI, policy, or an
+empirical process has enough capacity to keep a real codebase inside it.
+-/
+abbrev SafeRegion (Sig : Type v) :=
+  Sig -> Prop
+
+/-- A state is safe when its selected observation is inside the safe region. -/
+def StateInSafeRegion
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig) (X : State) :
+    Prop :=
+  R (O.observe X)
+
+/--
+A primitive evolution transition preserves the selected observed safe region.
+
+The predicate is relative to the supplied observation schema and safe region;
+it does not follow from the transition tag or from the existence of a review /
+CI / policy process.
+-/
+def StepPreservesSafeRegion
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig)
+    {X Y : State} (_step : ArchitectureTransition State X Y) : Prop :=
+  StateInSafeRegion O R X -> StateInSafeRegion O R Y
+
+/-- Every primitive transition in a path preserves the selected safe region. -/
+def EveryStepPreservesSafeRegion
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig) :
+    {X Y : State} -> ArchitectureEvolution State X Y -> Prop
+  | _, _, ArchitecturePath.nil _ => True
+  | _, _, ArchitecturePath.cons step rest =>
+      StepPreservesSafeRegion O R step ∧
+        EveryStepPreservesSafeRegion O R rest
+
+/-- Every observed signature in a trajectory lies inside the selected region. -/
+def SignatureTrajectoryInSafeRegion
+    (R : SafeRegion Sig) (trajectory : List Sig) : Prop :=
+  ∀ sig, sig ∈ trajectory -> R sig
+
+/--
 Observe every state visited by an endpoint-indexed architecture evolution path.
 
 For a path `X -> ... -> Y`, the resulting list starts with the observation of
@@ -166,5 +207,34 @@ theorem netSignatureDelta_telescopes [Zero Delta] [Add Delta]
                   simpa [EndpointSignatureDelta] using
                     law.step_telescope
                       (O.observe X) (O.observe Y) (O.observe Z)
+
+/--
+If the initial observation is safe and every selected transition preserves the
+safe region, then the whole observed signature trajectory stays inside it.
+
+The theorem is only about the explicit path and explicit preservation
+assumption. It does not claim that empirical review / CI / policy mechanisms
+automatically provide those preserving steps.
+-/
+theorem trajectory_preserves_safeRegion
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      StateInSafeRegion O R X ->
+      EveryStepPreservesSafeRegion O R plan ->
+        SignatureTrajectoryInSafeRegion R (SignatureTrajectory O plan)
+  | X, _, ArchitecturePath.nil _, hStart, _hEvery => by
+      intro sig hMem
+      simp [SignatureTrajectory] at hMem
+      simpa [StateInSafeRegion, hMem] using hStart
+  | X, _, ArchitecturePath.cons _step rest, hStart, hEvery => by
+      intro sig hMem
+      simp [SignatureTrajectory] at hMem
+      cases hMem with
+      | inl hHead =>
+          simpa [StateInSafeRegion, hHead] using hStart
+      | inr hTail =>
+          exact
+            trajectory_preserves_safeRegion O R rest
+              (hEvery.1 hStart) hEvery.2 sig hTail
 
 end Formal.Arch

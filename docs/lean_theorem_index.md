@@ -1663,8 +1663,9 @@ Architecture Signature Dynamics の最小 Lean core として、AI patch distrib
 dataset schema に依存しない observation / trajectory / delta schema を切ることである。
 Issue [#640](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/640) では、
 selected additive delta law に相対化して net delta の telescoping theorem を追加した。
-safe-region preservation は後続 Issue [#641](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/641)
-の future proof obligation として扱う。
+Issue [#641](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/641) では、
+selected safe region と stepwise preservation assumption に相対化して、
+observed trajectory が safe region 内に留まる theorem を追加した。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1676,11 +1677,17 @@ safe-region preservation は後続 Issue [#641](https://github.com/iroha1203/Alg
 | `SignatureDelta.RecordsNonConclusions` | `def` | delta package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `SignatureTrajectory` | `def` | `ArchitectureEvolution` の visited state を `SignatureObservation.observe` で写した signature sequence。 | `defined only` |
 | `SignatureDeltaSequence` | `def` | `ArchitectureEvolution` の各 primitive transition に沿った per-step abstract delta sequence。 | `defined only` |
+| `SafeRegion` | `abbrev` | 観測 signature domain 上の selected safe region predicate。review / CI / policy capacity は結論しない。 | `defined only` |
+| `StateInSafeRegion` | `def` | state の selected observation が safe region に属すること。 | `defined only` |
+| `StepPreservesSafeRegion` | `def` | primitive transition が selected observed safe region を source から target へ保存すること。 | `defined only` |
+| `EveryStepPreservesSafeRegion` | `def` | path 上のすべての primitive transition が selected safe region を保存すること。 | `defined only` |
+| `SignatureTrajectoryInSafeRegion` | `def` | trajectory 内のすべての observed signature が selected safe region に属すること。 | `defined only` |
 | `NetSignatureDelta` | `def` | selected per-step signature deltas を `Delta` の `0` / `+` で集計する fold API。unmeasured axis や empirical PR outcome は結論しない。 | `defined only` |
 | `EndpointSignatureDelta` | `def` | evolution path の start / target observation の間の selected endpoint delta。 | `defined only` |
 | `AdditiveSignatureDeltaLaw` | `structure` | `self_zero` と `step_telescope` を明示前提として持つ selected additive delta law package。coverage 外の軸、cost、incident risk、PR outcome は non-conclusions に残す。 | `defined only` |
 | `AdditiveSignatureDeltaLaw.RecordsNonConclusions` | `def` | additive delta law package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `netSignatureDelta_telescopes` | `theorem` | `AdditiveSignatureDeltaLaw` の下で、path 上の per-step delta の net sum が endpoint delta と一致することを示す。 | `proved` |
+| `trajectory_preserves_safeRegion` | `theorem` | initial observation が safe region にあり、各 selected transition が safe region を保存するなら、observed trajectory 全体が safe region に属することを示す。 | `proved` |
 
 ## Diagram Filler
 
