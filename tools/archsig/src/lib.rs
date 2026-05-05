@@ -23,6 +23,7 @@ mod pr_comment;
 mod python_extractor;
 mod relation_complexity;
 mod repair_rule;
+mod reported_axes_catalog;
 mod runtime;
 pub mod schema;
 mod schema_catalog;
@@ -80,6 +81,7 @@ pub use relation_complexity::{
     extract_relation_complexity_observation, extract_relation_complexity_observation_from_file,
 };
 pub use repair_rule::{static_repair_rule_registry, validate_repair_rule_registry_report};
+pub use reported_axes_catalog::static_detectable_values_reported_axes_catalog;
 pub use schema::*;
 pub use schema_catalog::static_schema_version_catalog;
 pub use schema_compatibility::build_schema_compatibility_check_report;

@@ -7,9 +7,10 @@ use std::process::ExitCode;
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
     CustomRulePluginRegistryV0, CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
-    EmpiricalDatasetInput, FeatureExtensionReportV0, FrameworkAdapterEvidenceV0,
-    LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0,
-    MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
+    DetectableValuesReportedAxesCatalogV0, EmpiricalDatasetInput, FeatureExtensionReportV0,
+    FrameworkAdapterEvidenceV0, LawPolicyTemplateRegistryV0,
+    LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
+    MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
@@ -26,15 +27,15 @@ use archsig::{
     build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_custom_rule_plugin_registry,
-    static_law_policy_template_registry, static_measurement_unit_registry,
-    static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
-    static_report_artifact_retention_manifest, static_schema_version_catalog,
-    static_synthesis_constraint_artifact, validate_air_document_report,
-    validate_component_universe_report, validate_custom_rule_plugin_registry_report,
-    validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
-    validate_no_solution_certificate_report, validate_organization_policy_report,
-    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
-    validate_synthesis_constraint_artifact_report,
+    static_detectable_values_reported_axes_catalog, static_law_policy_template_registry,
+    static_measurement_unit_registry, static_no_solution_certificate, static_organization_policy,
+    static_repair_rule_registry, static_report_artifact_retention_manifest,
+    static_schema_version_catalog, static_synthesis_constraint_artifact,
+    validate_air_document_report, validate_component_universe_report,
+    validate_custom_rule_plugin_registry_report, validate_law_policy_template_registry_report,
+    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
+    validate_organization_policy_report, validate_repair_rule_registry_report,
+    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -472,6 +473,13 @@ enum Command {
         input: Option<PathBuf>,
 
         /// Output measurement unit registry validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit the B9 detectable values / reported axes catalog.
+    ReportedAxesCatalog {
+        /// Output reported axes catalog JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -996,6 +1004,12 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             } else {
                 ExitCode::SUCCESS
             })
+        }
+        Some(Command::ReportedAxesCatalog { out }) => {
+            let catalog: DetectableValuesReportedAxesCatalogV0 =
+                static_detectable_values_reported_axes_catalog();
+            write_json(out, &catalog)?;
+            Ok(ExitCode::SUCCESS)
         }
         Some(Command::PolicyDecision {
             feature_report,

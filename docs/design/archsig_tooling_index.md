@@ -468,7 +468,8 @@ Parent Issue: [#607](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/
 Issues: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/613),
 [#609](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/609),
 [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608),
-[#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610)
+[#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610),
+[#612](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/612)
 
 B9 は AIR、Feature Extension Report、Obstruction Witness、Architecture Drift Ledger、
 detectable values / reported axes catalog など、複数 tooling artifact の schema version と
@@ -481,6 +482,7 @@ Canonical fixture:
 tools/archsig/tests/fixtures/minimal/schema_version_catalog.json
 tools/archsig/tests/fixtures/minimal/obstruction_witness.json
 tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json
+tools/archsig/tests/fixtures/minimal/detectable_values_reported_axes_catalog.json
 ```
 
 Rust schema skeleton:
@@ -492,6 +494,9 @@ SchemaCompatibilityBoundaryV0
 SchemaArtifactCompatibilityV0
 ObstructionWitnessArtifactV0
 ArchitectureDriftLedgerV0
+DetectableValuesReportedAxesCatalogV0
+ReportedAxisCatalogEntryV0
+BenchmarkSuiteFixtureV0
 ```
 
 Compatibility policy は field mapping、deprecated fields、new required assumptions、
@@ -512,6 +517,14 @@ measurement boundary、suppression、retention manifest、baseline、suppression
 non-conclusions を保持する。private / missing / unmeasured evidence は compatibility
 boundary として `unmeasured` のまま保持し、`measuredZero` に丸めない。
 
+Detectable values / reported axes catalog は `axisId`, layer, value type,
+reported artifact、allowed / default measurement boundary、evidence requirements、
+theorem refs、compatibility notes、non-conclusions を保持する。benchmark suite は
+`archsig-benchmark-suite-v0` として static split、runtime measured zero /
+measured nonzero / unmeasured、semantic unmeasured、generated-change metadata gap の
+canonical AIR fixtures と expected boundary を固定する。fixture 更新時は、axis の追加、
+改名、削除、measurement boundary 変更を compatibility review の対象にする。
+
 `archsig validate-air` は metadata が存在する AIR について、coverage / exactness
 boundary、theorem bridge preconditions、formal claim promotion を禁止する
 non-conclusions が metadata から落ちていないことを検査する。legacy AIR v0 fixture は
@@ -524,6 +537,10 @@ boundaries を別軸で保持し、schemaVersion 未登録、metadata 欠落、n
 formal claim promotion boundary の欠落を `pass` / `requiresMigration` /
 `blockedFormalClaimPromotion` / `fail` に分類する。metadata がない同一 schemaVersion の
 B0-B8 artifact は backward-compatible input として warning 付きで受け入れる。
+`detectable-values-reported-axes-catalog-v0` 同士の比較では、axis の追加、削除、改名候補、
+`allowedMeasurementBoundaries` / `defaultMeasurementBoundary` 変更を
+`requiresMigration` として報告し、`measuredZero`, `measuredNonzero`, `unmeasured`,
+`outOfScope` の区別が migration で失われないことを backward compatibility test で固定する。
 
 Non-conclusions:
 

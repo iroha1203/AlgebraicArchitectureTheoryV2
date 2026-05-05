@@ -3049,6 +3049,85 @@ fn cli_schema_compatibility_locks_obstruction_witness_and_drift_boundaries() {
 }
 
 #[test]
+fn cli_reported_axes_catalog_locks_benchmark_and_axis_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("reported-axes-catalog");
+    let generated = out_dir.join("reported-axes-catalog.json");
+    let changed = out_dir.join("reported-axes-catalog-boundary-change.json");
+    let report = out_dir.join("reported-axes-compatibility-report.json");
+
+    run_sig0(&[
+        "reported-axes-catalog",
+        "--out",
+        generated.to_str().expect("catalog path is utf-8"),
+    ]);
+    let json = read_json(&generated);
+    assert_eq!(
+        json["schemaVersion"],
+        "detectable-values-reported-axes-catalog-v0"
+    );
+    assert_eq!(json["benchmarkSuiteVersion"], "archsig-benchmark-suite-v0");
+    assert!(
+        json["frozenFixtures"]
+            .as_array()
+            .expect("frozenFixtures are an array")
+            .iter()
+            .any(|fixture| fixture["expectedBoundaries"]
+                .as_array()
+                .expect("expectedBoundaries are an array")
+                .iter()
+                .any(|boundary| boundary == "runtimePropagation:unmeasured"))
+    );
+
+    let mut changed_json = read_json(&root.join("detectable_values_reported_axes_catalog.json"));
+    changed_json["axes"]
+        .as_array_mut()
+        .expect("axes are an array")
+        .iter_mut()
+        .find(|axis| axis["axisId"] == "runtimePropagation")
+        .expect("runtimePropagation axis exists")["defaultMeasurementBoundary"] =
+        serde_json::json!("measuredZero");
+    fs::write(
+        &changed,
+        serde_json::to_string_pretty(&changed_json).expect("changed catalog serializes"),
+    )
+    .expect("changed catalog is written");
+
+    let output = run_sig0_output(&[
+        "schema-compatibility",
+        "--before",
+        root.join("detectable_values_reported_axes_catalog.json")
+            .to_str()
+            .expect("before catalog path is utf-8"),
+        "--after",
+        changed.to_str().expect("changed catalog path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "measurement boundary change should require migration"
+    );
+
+    let report = read_json(&report);
+    assert_eq!(report["summary"]["result"], "requiresMigration");
+    assert!(
+        report["checks"]
+            .as_array()
+            .expect("checks are an array")
+            .iter()
+            .any(
+                |check| check["id"] == "reported-axes-measurement-boundary-preserved"
+                    && check["severity"] == "migrationRequired"
+                    && check["message"]
+                        .as_str()
+                        .expect("message is a string")
+                        .contains("runtimePropagation")
+            )
+    );
+}
+
+#[test]
 fn cli_validate_air_detects_runtime_metadata_inconsistency() {
     let root = air_fixture_root();
     let out_dir = temp_dir("validate-air-runtime-invalid");

@@ -1,12 +1,14 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
 
 use crate::{
-    SCHEMA_COMPATIBILITY_CHECK_REPORT_SCHEMA_VERSION, SchemaArtifactCompatibilityV0,
-    SchemaCompatibilityArtifactRefV0, SchemaCompatibilityCheckReportV0,
-    SchemaCompatibilityCheckSummaryV0, SchemaCompatibilityCheckV0, SchemaCompatibilityPolicyV0,
-    SchemaCoverageExactnessBoundaryV0, SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
+    DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION, DetectableValuesReportedAxesCatalogV0,
+    ReportedAxisCatalogEntryV0, SCHEMA_COMPATIBILITY_CHECK_REPORT_SCHEMA_VERSION,
+    SchemaArtifactCompatibilityV0, SchemaCompatibilityArtifactRefV0,
+    SchemaCompatibilityCheckReportV0, SchemaCompatibilityCheckSummaryV0,
+    SchemaCompatibilityCheckV0, SchemaCompatibilityPolicyV0, SchemaCoverageExactnessBoundaryV0,
+    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0,
 };
 
 pub fn build_schema_compatibility_check_report(
@@ -75,6 +77,12 @@ pub fn build_schema_compatibility_check_report(
     {
         checks.extend(check_preserved_metadata(before_metadata, after_metadata));
     }
+    checks.extend(check_reported_axes_catalog_changes(
+        before_schema,
+        before,
+        after_schema,
+        after,
+    ));
 
     let non_conclusions = merged_non_conclusions(catalog, after_metadata.as_ref());
     let field_mappings = after_metadata
@@ -140,6 +148,10 @@ fn schema_compatibility_metadata(value: &Value) -> Option<SchemaArtifactCompatib
     value
         .get("schemaCompatibility")
         .and_then(|metadata| serde_json::from_value(metadata.clone()).ok())
+}
+
+fn reported_axes_catalog(value: &Value) -> Option<DetectableValuesReportedAxesCatalogV0> {
+    serde_json::from_value(value.clone()).ok()
 }
 
 fn artifact_ref(
@@ -559,6 +571,186 @@ fn check_preserved_metadata(
     ]
 }
 
+fn check_reported_axes_catalog_changes(
+    before_schema: Option<&str>,
+    before: &Value,
+    after_schema: Option<&str>,
+    after: &Value,
+) -> Vec<SchemaCompatibilityCheckV0> {
+    if before_schema != Some(DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION)
+        || after_schema != Some(DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION)
+    {
+        return Vec::new();
+    }
+
+    let Some(before_catalog) = reported_axes_catalog(before) else {
+        return vec![check(
+            "reported-axes-before-catalog-parses",
+            "coverage_exactness_boundary",
+            "fail",
+            "fail",
+            "before reported axes catalog does not parse".to_string(),
+            Some("make before artifact match DetectableValuesReportedAxesCatalogV0".to_string()),
+            Some("malformed axis catalog is not compatibility evidence".to_string()),
+        )];
+    };
+    let Some(after_catalog) = reported_axes_catalog(after) else {
+        return vec![check(
+            "reported-axes-after-catalog-parses",
+            "coverage_exactness_boundary",
+            "fail",
+            "fail",
+            "after reported axes catalog does not parse".to_string(),
+            Some("make after artifact match DetectableValuesReportedAxesCatalogV0".to_string()),
+            Some("malformed axis catalog is not compatibility evidence".to_string()),
+        )];
+    };
+
+    let before_axes = axis_map(&before_catalog.axes);
+    let after_axes = axis_map(&after_catalog.axes);
+    let before_ids: BTreeSet<_> = before_axes.keys().cloned().collect();
+    let after_ids: BTreeSet<_> = after_axes.keys().cloned().collect();
+    let added_axes = after_ids
+        .difference(&before_ids)
+        .cloned()
+        .collect::<Vec<_>>();
+    let removed_axes = before_ids
+        .difference(&after_ids)
+        .cloned()
+        .collect::<Vec<_>>();
+    let mut changed_boundaries = Vec::new();
+
+    for axis_id in before_ids.intersection(&after_ids) {
+        let before_axis = before_axes
+            .get(axis_id)
+            .expect("axis id from intersection exists before");
+        let after_axis = after_axes
+            .get(axis_id)
+            .expect("axis id from intersection exists after");
+        if before_axis.allowed_measurement_boundaries != after_axis.allowed_measurement_boundaries
+            || before_axis.default_measurement_boundary != after_axis.default_measurement_boundary
+        {
+            changed_boundaries.push((*axis_id).clone());
+        }
+    }
+
+    let renamed_axes = detect_axis_renames(&before_catalog.axes, &after_catalog.axes);
+
+    vec![
+        axis_catalog_delta_check(
+            "reported-axes-added-axis-reviewed",
+            "new_required_assumptions",
+            added_axes,
+            "no reported axes were added",
+            "reported axes were added",
+            "review added axes and add required assumptions / coverage boundary metadata",
+            "new reported axis support does not imply extractor completeness",
+        ),
+        axis_catalog_delta_check(
+            "reported-axes-removed-axis-reviewed",
+            "deprecated_fields",
+            removed_axes,
+            "no reported axes were removed",
+            "reported axes were removed",
+            "record removed axes as deprecated or provide explicit migration notes",
+            "removed reported axes are not silently outOfScope",
+        ),
+        axis_catalog_delta_check(
+            "reported-axes-renamed-axis-reviewed",
+            "field_mapping",
+            renamed_axes,
+            "no reported axes were renamed",
+            "reported axes appear to be renamed",
+            "declare explicit axis id fieldMappings for renamed axes",
+            "renamed axes do not preserve semantics by name alone",
+        ),
+        axis_catalog_delta_check(
+            "reported-axes-measurement-boundary-preserved",
+            "coverage_exactness_boundary",
+            changed_boundaries,
+            "reported axis measurement boundaries are preserved",
+            "reported axis measurement boundaries changed",
+            "preserve measuredZero / measuredNonzero / unmeasured / outOfScope distinction or record a migration",
+            "unmeasured axis evidence is not measured-zero evidence",
+        ),
+    ]
+}
+
+fn axis_map<'a>(
+    axes: &'a [ReportedAxisCatalogEntryV0],
+) -> BTreeMap<String, &'a ReportedAxisCatalogEntryV0> {
+    axes.iter()
+        .map(|axis| (axis.axis_id.clone(), axis))
+        .collect()
+}
+
+fn detect_axis_renames(
+    before_axes: &[ReportedAxisCatalogEntryV0],
+    after_axes: &[ReportedAxisCatalogEntryV0],
+) -> Vec<String> {
+    let before_ids: BTreeSet<_> = before_axes
+        .iter()
+        .map(|axis| axis.axis_id.as_str())
+        .collect();
+    let after_ids: BTreeSet<_> = after_axes
+        .iter()
+        .map(|axis| axis.axis_id.as_str())
+        .collect();
+    let removed = before_axes
+        .iter()
+        .filter(|axis| !after_ids.contains(axis.axis_id.as_str()));
+    let added = after_axes
+        .iter()
+        .filter(|axis| !before_ids.contains(axis.axis_id.as_str()))
+        .collect::<Vec<_>>();
+
+    removed
+        .filter_map(|before_axis| {
+            added
+                .iter()
+                .find(|after_axis| {
+                    before_axis.layer == after_axis.layer
+                        && before_axis.value_type == after_axis.value_type
+                        && before_axis.default_measurement_boundary
+                            == after_axis.default_measurement_boundary
+                })
+                .map(|after_axis| format!("{} -> {}", before_axis.axis_id, after_axis.axis_id))
+        })
+        .collect()
+}
+
+fn axis_catalog_delta_check(
+    id: &str,
+    dimension: &str,
+    changed: Vec<String>,
+    pass_message: &str,
+    changed_message: &str,
+    required_action: &str,
+    non_conclusion: &str,
+) -> SchemaCompatibilityCheckV0 {
+    if changed.is_empty() {
+        check(
+            id,
+            dimension,
+            "pass",
+            "compatible",
+            pass_message.to_string(),
+            None,
+            Some(non_conclusion.to_string()),
+        )
+    } else {
+        check(
+            id,
+            dimension,
+            "requiresMigration",
+            "migrationRequired",
+            format!("{changed_message}: {}", changed.join(", ")),
+            Some(required_action.to_string()),
+            Some(non_conclusion.to_string()),
+        )
+    }
+}
+
 fn nonempty_check(
     id: &str,
     dimension: &str,
@@ -705,7 +897,7 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::static_schema_version_catalog;
+    use crate::{static_detectable_values_reported_axes_catalog, static_schema_version_catalog};
 
     #[test]
     fn unchanged_cataloged_artifact_without_metadata_is_backward_compatible() {
@@ -762,5 +954,68 @@ mod tests {
             check.id == "formal-claim-promotion-blocked"
                 && check.result == "blockedFormalClaimPromotion"
         }));
+    }
+
+    #[test]
+    fn reported_axes_catalog_changes_require_migration_review() {
+        let catalog = static_schema_version_catalog();
+        let before_catalog = static_detectable_values_reported_axes_catalog();
+        let mut after_catalog = before_catalog.clone();
+
+        let mut added_axis = after_catalog.axes[0].clone();
+        added_axis.axis_id = "newRuntimeRiskAxis".to_string();
+        added_axis.default_measurement_boundary = "unmeasured".to_string();
+        after_catalog.axes.push(added_axis);
+        after_catalog.axes.retain(|axis| axis.axis_id != "hasCycle");
+        after_catalog
+            .axes
+            .iter_mut()
+            .find(|axis| axis.axis_id == "sccMaxSize")
+            .expect("sccMaxSize axis exists")
+            .axis_id = "maxStrongComponentSize".to_string();
+        let runtime_axis = after_catalog
+            .axes
+            .iter_mut()
+            .find(|axis| axis.axis_id == "runtimePropagation")
+            .expect("runtimePropagation axis exists");
+        runtime_axis.default_measurement_boundary = "measuredZero".to_string();
+
+        let before =
+            serde_json::to_value(before_catalog).expect("before catalog serializes to json");
+        let after = serde_json::to_value(after_catalog).expect("after catalog serializes to json");
+        let report = build_schema_compatibility_check_report(
+            &before,
+            "before-reported-axes.json",
+            &after,
+            "after-reported-axes.json",
+            &catalog,
+        );
+
+        assert_eq!(report.summary.result, "requiresMigration");
+        for expected in [
+            "reported-axes-added-axis-reviewed",
+            "reported-axes-removed-axis-reviewed",
+            "reported-axes-renamed-axis-reviewed",
+            "reported-axes-measurement-boundary-preserved",
+        ] {
+            assert!(
+                report.checks.iter().any(|check| {
+                    check.id == expected
+                        && check.result == "requiresMigration"
+                        && check.severity == "migrationRequired"
+                }),
+                "missing migration check {expected}"
+            );
+        }
+        assert!(
+            report
+                .checks
+                .iter()
+                .find(|check| check.id == "reported-axes-measurement-boundary-preserved")
+                .expect("boundary check exists")
+                .non_conclusion
+                .as_deref()
+                == Some("unmeasured axis evidence is not measured-zero evidence")
+        );
     }
 }
