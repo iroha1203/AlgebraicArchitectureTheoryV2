@@ -1661,7 +1661,10 @@ File: `Formal/Arch/Evolution/SignatureDynamics.lean`
 Issue [#638](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/638) の対象範囲は、
 Architecture Signature Dynamics の最小 Lean core として、AI patch distribution、GitHub PR、
 dataset schema に依存しない observation / trajectory / delta schema を切ることである。
-endpoint、telescoping、safe-region preservation は後続 Issue の future proof obligation として扱う。
+Issue [#640](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/640) では、
+selected additive delta law に相対化して net delta の telescoping theorem を追加した。
+safe-region preservation は後続 Issue [#641](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/641)
+の future proof obligation として扱う。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1673,6 +1676,11 @@ endpoint、telescoping、safe-region preservation は後続 Issue の future pro
 | `SignatureDelta.RecordsNonConclusions` | `def` | delta package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `SignatureTrajectory` | `def` | `ArchitectureEvolution` の visited state を `SignatureObservation.observe` で写した signature sequence。 | `defined only` |
 | `SignatureDeltaSequence` | `def` | `ArchitectureEvolution` の各 primitive transition に沿った per-step abstract delta sequence。 | `defined only` |
+| `NetSignatureDelta` | `def` | selected per-step signature deltas を `Delta` の `0` / `+` で集計する fold API。unmeasured axis や empirical PR outcome は結論しない。 | `defined only` |
+| `EndpointSignatureDelta` | `def` | evolution path の start / target observation の間の selected endpoint delta。 | `defined only` |
+| `AdditiveSignatureDeltaLaw` | `structure` | `self_zero` と `step_telescope` を明示前提として持つ selected additive delta law package。coverage 外の軸、cost、incident risk、PR outcome は non-conclusions に残す。 | `defined only` |
+| `AdditiveSignatureDeltaLaw.RecordsNonConclusions` | `def` | additive delta law package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `netSignatureDelta_telescopes` | `theorem` | `AdditiveSignatureDeltaLaw` の下で、path 上の per-step delta の net sum が endpoint delta と一致することを示す。 | `proved` |
 
 ## Diagram Filler
 
