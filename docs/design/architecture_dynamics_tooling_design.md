@@ -388,6 +388,112 @@ ControlInputRecord =
 architecture transition distribution に与えた可能性を、後続の metrics report が検証できる形で
 参照可能にする。
 
+## Development field tooling bridge
+
+Development Field Theory の tooling layer は、組織判断を直接 theorem claim にせず、
+architecture transition distribution への作用を artifact として記録する。初期 schema は
+次の四つに分ける。
+
+| schema | 役割 | source / join |
+| --- | --- | --- |
+| `indirect-force-leverage-dataset-v0` | requirement、design boundary、prompt、policy などの indirect control input と、後続 force / trajectory / outcome signal を join する。 | `development-control-input-log-v0`, PR force report, trajectory report, outcome linkage |
+| `design-field-strength-report-v0` | architecture field snapshot が future operation distribution をどの方向へ誘導したかを selected signal で読む。 | field snapshot, operation proposal log, PR force report |
+| `organization-damping-capacity-protocol-v0` | review / CI / type / policy / ownership が raw force を rejection / projection / modification / delay した境界を記録する。 | proposal log, force dissipation ledger, policy decision report |
+| `ai-agent-team-dynamics-protocol-v0` | 複数 agent / human / automation の proposal、merge order sensitivity、prompt basin bias、dissipation demand を測る。 | proposal log, merge sensitivity refs, trajectory report |
+
+### indirect-force-leverage-dataset-v0
+
+```text
+IndirectForceLeverageDatasetV0 =
+  schemaVersion: "indirect-force-leverage-dataset-v0"
+  repository: RepositoryRef
+  records: List IndirectForceLeverageRecord
+  analysisMetadata: DevelopmentFieldAnalysisMetadata
+
+IndirectForceLeverageRecord =
+  controlInputRef: ArtifactRef
+  fieldKind: "demand" | "requirement" | "design" | "operation" |
+             "dissipation" | "observation" | "unknown"
+  beforeWindow: AggregationWindow
+  afterWindow: AggregationWindow
+  operationDistributionRefs: List ArtifactRef
+  prForceReportRefs: List ArtifactRef
+  trajectoryReportRefs: List ArtifactRef
+  outcomeLinkageRefs: List ArtifactRef
+  estimatedEffect: DynamicsMeasuredValue String
+  confounderNotes: List String
+  measurementBoundary: MeasurementBoundary
+  nonConclusions: List String
+```
+
+この dataset は causal proof ではない。同じ selected window、比較可能な schema version、
+比較可能な measurement boundary に相対化した empirical signal として扱う。
+
+### design-field-strength-report-v0
+
+```text
+DesignFieldStrengthReportV0 =
+  schemaVersion: "design-field-strength-report-v0"
+  repository: RepositoryRef
+  architectureFieldSnapshotRef: ArtifactRef
+  selectedRegionRefs: List String
+  fieldSignalScores: List DynamicsMeasuredValue FieldSignalScore
+  distributionShiftRefs: List ArtifactRef
+  seedAttractorSignals: List DynamicsMeasuredValue String
+  badForceLocalizationSignals: List DynamicsMeasuredValue String
+  measurementBoundary: MeasurementBoundary
+  nonConclusions: List String
+```
+
+`DesignFieldStrengthReportV0` は design field の真値を返さない。canonical example、
+boundary strength、ownership、local grammar、test observability などの selected signal を
+operation proposal / accepted transition と join し、future operation distribution の
+完全予測ではなく bounded signal として出す。
+
+### organization-damping-capacity-protocol-v0
+
+```text
+OrganizationDampingCapacityProtocolV0 =
+  schemaVersion: "organization-damping-capacity-protocol-v0"
+  repository: RepositoryRef
+  controlPolicyRefs: List ArtifactRef
+  proposalLogRefs: List ArtifactRef
+  dissipationLedgerRefs: List ArtifactRef
+  acceptedTrajectoryRefs: List ArtifactRef
+  selectedInvariantRefs: List String
+  badAxisRefs: List String
+  boundedWindow: AggregationWindow
+  dampingAssumptions: List String
+  measurementBoundary: MeasurementBoundary
+  nonConclusions: List String
+```
+
+この protocol は Lean 側の explicit damping assumption を tooling / empirical evidence へ
+接続する入口である。review、CI、type checker、policy、ownership が存在するだけで、
+safe-region preservation や bad-axis nonincrease が証明されたとは読まない。
+
+### ai-agent-team-dynamics-protocol-v0
+
+```text
+AIAgentTeamDynamicsProtocolV0 =
+  schemaVersion: "ai-agent-team-dynamics-protocol-v0"
+  repository: RepositoryRef
+  agentPolicyRefs: List ArtifactRef
+  promptRefs: List ArtifactRef
+  proposalLogRefs: List ArtifactRef
+  mergeOrderSensitivityRefs: List ArtifactRef
+  dissipationLedgerRefs: List ArtifactRef
+  trajectoryReportRefs: List ArtifactRef
+  selectedTaskClass: String
+  selectedArchitectureRegion: String
+  measurementBoundary: MeasurementBoundary
+  nonConclusions: List String
+```
+
+AI provenance は source metadata であり、risk claim や theorem claim ではない。この protocol は
+agent team の proposal diversity、merge order sensitivity、prompt basin bias、dissipation demand
+を selected finite window 上で測る。
+
 ## CLI surface
 
 初期 CLI は既存 `archsig` に次を追加する想定にする。
@@ -435,6 +541,33 @@ archsig force-dissipation-ledger \
   --out force-dissipation-ledger.json
 ```
 
+Development field artifacts は、上の次段階 artifact が揃った後に追加する。
+
+```bash
+archsig indirect-force-leverage-dataset \
+  --control-inputs development-control-input-log.json \
+  --force-reports pr-force-report.json \
+  --trajectory signature-trajectory-report.json \
+  --out indirect-force-leverage-dataset.json
+
+archsig design-field-strength-report \
+  --field-snapshot architecture-field-snapshot.json \
+  --operation-proposals operation-proposal-log.json \
+  --force-reports pr-force-report.json \
+  --out design-field-strength-report.json
+
+archsig organization-damping-capacity-protocol \
+  --proposals operation-proposal-log.json \
+  --dissipation force-dissipation-ledger.json \
+  --trajectory signature-trajectory-report.json \
+  --out organization-damping-capacity-protocol.json
+
+archsig ai-agent-team-dynamics-protocol \
+  --operation-proposals operation-proposal-log.json \
+  --trajectory signature-trajectory-report.json \
+  --out ai-agent-team-dynamics-protocol.json
+```
+
 ## Existing artifact connections
 
 | 既存 artifact | Dynamics tooling での役割 |
@@ -472,6 +605,13 @@ archsig force-dissipation-ledger \
   observation boundary、comparison baseline を固定する。
 - Vibe coding success condition は empirical hypothesis として扱い、formal / tooling claim に
   昇格しない。
+- indirect force leverage は causal proof ではなく、selected window と比較可能な boundary に
+  相対化した empirical signal として扱う。
+- design field strength は真値ではなく、selected field signal と operation distribution refs の
+  bounded report として扱う。
+- organization damping capacity は policy の存在だけでなく、proposal / dissipation / trajectory
+  evidence への refs と missing evidence を持つ。
+- AI agent team dynamics は AI provenance を theorem claim や risk claim に変換しない。
 - extractor / policy / schema version が異なる比較は sensitivity analysis または migration
   boundary を必要とする。
 - formal claim promotion は theorem precondition checker の明示 precondition なしに通さない。
@@ -487,6 +627,9 @@ Architecture Dynamics tooling は次を結論しない。
 - PR force と incident / rollback / MTTR の因果関係。
 - organization policy の正しさ。
 - design field strength の真値。
+- indirect force leverage の因果効果。
+- organization-level damping capacity の十分性。
+- AI agent team の lawfulness や incident reduction。
 - finite selected window からの global attractor claim。
 - unmeasured axis や private evidence の measured-zero 化。
 
@@ -505,3 +648,6 @@ Architecture Dynamics tooling は次を結論しない。
 
 次段階で `operation-proposal-log-v0` と `force-dissipation-ledger-v0` を追加し、
 Observed / Latent / Dissipated force を分けた PR Force Report へ進む。
+Development field artifacts はさらにその後の段階とし、indirect force leverage、design field
+strength、organization damping capacity、AI agent team dynamics を empirical / tooling boundary
+つきで扱う。

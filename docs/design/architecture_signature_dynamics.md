@@ -609,16 +609,137 @@ claim ではない。
 
 ### Phase D6: development field theory
 
-候補:
+Development Field Theory は、開発組織や AI agent team を theorem object として
+直接形式化する段階ではない。目的は、要求、要件、設計、operation、dissipation、
+observation が architecture transition distribution に与える作用を、AAT の
+field / control input / observed trajectory 語彙へ分解することである。
 
-- demand / requirement / design / operation / dissipation / observation field schema
-- indirect force leverage dataset schema
-- design field strength report
-- organization-level damping capacity protocol
-- AI agent team dynamics protocol
+最小 field taxonomy は次である。
+
+| field | 主な input | 観測する作用 | 主な artifact entry |
+| --- | --- | --- | --- |
+| `DemandField` | customer value、KPI、roadmap、incident pressure | feature / repair / debt-reduction force の方向と頻度。 | demand / outcome refs、roadmap metadata |
+| `RequirementField` | requirement split、acceptance criteria、priority、deadline | operation script の粒度、順序、局所性、bounded horizon。 | requirement refs、issue / task refs |
+| `DesignField` | boundary decision、canonical pattern、non-goal、ownership | operation distribution の流路、bad force の局所化、seed attractor。 | architecture field snapshot、design boundary refs |
+| `OperationField` | developer、AI agent、automation、prompt | proposed / accepted transition distribution。 | operation proposal log、PR force report |
+| `DissipationField` | review、CI、type checker、policy、approval rule | raw force の rejection / projection / modification / delay。 | force dissipation ledger、policy decision report |
+| `ObservationField` | Signature、Feature Extension Report、drift ledger、metrics report | trajectory を観測し、control input へ feedback する。 | trajectory report、dynamics metrics report |
+
+これらの field は mutually exclusive な実体分類ではない。同じ evidence が複数 field に
+寄与してよい。ただし report 上では、どの field effect として読んだか、claim level が
+`tooling` / `empirical` / `hypothesis` のどれか、missing evidence を zero と読んでいないかを
+明示する。
+
+#### Indirect force leverage
+
+`IndirectForceLeverage` は、要求分割、設計境界、prompt、policy などの間接入力が、
+後続の observed force / latent distribution estimate / dissipated force にどの程度
+作用したかを測る empirical dataset schema である。
+
+```text
+IndirectForceLeverageDataset =
+  controlInputRef
+  fieldKind
+  beforeWindow
+  afterWindow
+  operationDistributionRefs
+  prForceReportRefs
+  trajectoryReportRefs
+  outcomeLinkageRefs
+  estimatedEffect
+  confidence
+  confounderNotes
+  measurementBoundary
+  nonConclusions
+```
+
+これは causal proof ではない。`estimatedEffect` は、同じ selected window と比較可能な
+measurement boundary に相対化した correlation / contrast / case-study signal であり、
+組織判断が特定 trajectory を一意に引き起こしたとは結論しない。
+
+#### Design field strength
+
+`DesignFieldStrength` は、architecture state が future operation distribution を
+どの程度方向づけるかを測る tooling / empirical report である。入力は
+boundary strength、canonical examples、module ownership、local grammar、test observability、
+known debt wells、generated-code quarantine、policy context などである。
+
+```text
+DesignFieldStrengthReport =
+  architectureFieldSnapshotRef
+  selectedRegionRefs
+  fieldSignalScores
+  distributionShiftRefs
+  seedAttractorSignals
+  badForceLocalizationSignals
+  measurementBoundary
+  nonConclusions
+```
+
+この report は設計の「真の強さ」を返さない。selected signal が揃っている範囲で、
+operation proposal や accepted transition がどの方向に偏ったかを読むための
+artifact である。
+
+#### Organization-level damping capacity
+
+`OrganizationDampingCapacityProtocol` は、review / CI / type checker / policy / ownership が
+raw force をどの程度 rejection、projection、modification、delay したかを観測する protocol である。
+
+```text
+OrganizationDampingCapacityProtocol =
+  controlPolicyRefs
+  proposalLogRefs
+  dissipationLedgerRefs
+  acceptedTrajectoryRefs
+  selectedInvariantRefs
+  badAxisRefs
+  boundedWindow
+  dampingAssumptions
+  measurementBoundary
+  nonConclusions
+```
+
+Lean 側の `DampingControlSchema` は accepted step と explicit damping assumption に
+相対化した theorem boundary を与える。この protocol は、その assumption を tooling / empirical
+evidence でどこまで support できるかを記録するだけであり、review / CI policy の存在から
+十分な dissipation capacity を結論しない。
+
+#### AI agent team dynamics
+
+`AIAgentTeamDynamicsProtocol` は、複数 AI agent / human reviewer / automation が同時に
+operation proposal を生成する場合の merge order sensitivity、proposal diversity、
+prompt basin bias、dissipation demand を測る empirical protocol である。
+
+```text
+AIAgentTeamDynamicsProtocol =
+  agentPolicyRefs
+  promptRefs
+  proposalLogRefs
+  mergeOrderSensitivityRefs
+  dissipationLedgerRefs
+  trajectoryReportRefs
+  selectedTaskClass
+  selectedArchitectureRegion
+  measurementBoundary
+  nonConclusions
+```
+
+AI agent team は empirical / tooling layer の対象である。AI 由来であること、
+agent 数が多いこと、prompt policy があることから、lawfulness、safe-region preservation、
+review cost reduction、incident risk reduction を theorem claim として読まない。
 
 この段階で、AAT は個別コードベース診断から、開発組織全体の trajectory governance へ
 射程を広げる。
+
+後続 tooling / empirical Issue に分解する場合の粒度は次である。
+
+| slice | 主な artifact / protocol | 残す境界 |
+| --- | --- | --- |
+| field taxonomy fixture | demand / requirement / design / operation / dissipation / observation field refs | 組織判断そのものの正しさは主張しない。 |
+| indirect force leverage dataset | `indirect-force-leverage-dataset-v0` | causal proof ではなく bounded empirical signal として扱う。 |
+| design field strength report | `design-field-strength-report-v0` | design field の真値や future operation distribution の完全予測を主張しない。 |
+| organization damping protocol | `organization-damping-capacity-protocol-v0` | review / CI / policy の存在だけで十分な damping を結論しない。 |
+| AI agent team protocol | `ai-agent-team-dynamics-protocol-v0` | AI provenance を theorem claim や risk claim に昇格しない。 |
 
 ## 既存文書との関係
 
