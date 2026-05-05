@@ -44,6 +44,9 @@ pub const CUSTOM_RULE_PLUGIN_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const MEASUREMENT_UNIT_REGISTRY_SCHEMA_VERSION: &str = "measurement-unit-registry-v0";
 pub const MEASUREMENT_UNIT_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "measurement-unit-registry-validation-report-v0";
+pub const DYNAMICS_MEASUREMENT_CONTRACT_SCHEMA_VERSION: &str = "dynamics-measurement-contract-v0";
+pub const DYNAMICS_MEASUREMENT_CONTRACT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "dynamics-measurement-contract-validation-report-v0";
 pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
@@ -3032,6 +3035,110 @@ pub struct MeasurementUnitRegistryValidationSummary {
     pub result: String,
     pub unit_count: usize,
     pub evidence_adapter_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasurementContractV0 {
+    pub schema_version: String,
+    pub artifact_id: String,
+    pub scope: String,
+    pub metrics: Vec<DynamicsMeasuredValueV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasuredValueV0 {
+    pub metric_id: String,
+    #[serde(default)]
+    pub value: Option<serde_json::Value>,
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<String>,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsArtifactRefV0 {
+    pub kind: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artifact_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementBoundaryV0 {
+    pub measured_layer: String,
+    pub measured_axes: Vec<String>,
+    pub source_artifact_refs: Vec<DynamicsArtifactRefV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extractor_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub policy_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub aggregation_window: Option<DynamicsAggregationWindowV0>,
+    pub selected_region_refs: Vec<String>,
+    pub assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsAggregationWindowV0 {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub window_start: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub window_end: Option<String>,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMissingEvidenceV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasurementContractValidationReportV0 {
+    pub schema_version: String,
+    pub input: DynamicsMeasurementContractValidationInput,
+    pub contract: DynamicsMeasurementContractV0,
+    pub summary: DynamicsMeasurementContractValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasurementContractValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub artifact_id: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasurementContractValidationSummary {
+    pub result: String,
+    pub metric_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }
