@@ -1654,6 +1654,26 @@ flatness predicate の自動保存は主張しない。
 | `eventuallyFlat_of_targetFlat` | `theorem` | `MigrationSequence plan`, `EveryStepLawful plan`, `TargetFlat plan` から `EventuallyFlat plan` を得る bounded theorem package。 | `proved` |
 | `evolutionPathPreservesFlatness` | `theorem` | 既存 `ArchitecturePath.pathPreservesInvariant` を evolution-specific な `EventuallyFlat` 名へ bridge する theorem。 | `proved` |
 
+## Signature Dynamics
+
+File: `Formal/Arch/Evolution/SignatureDynamics.lean`
+
+Issue [#638](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/638) の対象範囲は、
+Architecture Signature Dynamics の最小 Lean core として、AI patch distribution、GitHub PR、
+dataset schema に依存しない observation / trajectory / delta schema を切ることである。
+endpoint、telescoping、safe-region preservation は後続 Issue の future proof obligation として扱う。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `SignatureObservation` | `structure` | architecture state から抽象 signature domain `Sig` への観測写像と、coverage assumptions / non-conclusions を束ねる schema。 | `defined only` |
+| `SignatureObservation.Observes` | `def` | selected state の観測値が指定 signature と一致すること。 | `defined only` |
+| `SignatureObservation.RecordsNonConclusions` | `def` | observation package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `SignatureDelta` | `structure` | 抽象 signature 間の delta operation と non-conclusions を束ねる schema。加法・符号・telescoping law は仮定しない。 | `defined only` |
+| `SignatureDelta.between` | `def` | selected abstract delta operation を二つの signature に適用する。 | `defined only` |
+| `SignatureDelta.RecordsNonConclusions` | `def` | delta package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `SignatureTrajectory` | `def` | `ArchitectureEvolution` の visited state を `SignatureObservation.observe` で写した signature sequence。 | `defined only` |
+| `SignatureDeltaSequence` | `def` | `ArchitectureEvolution` の各 primitive transition に沿った per-step abstract delta sequence。 | `defined only` |
+
 ## Diagram Filler
 
 File: `Formal/Arch/Evolution/DiagramFiller.lean`
