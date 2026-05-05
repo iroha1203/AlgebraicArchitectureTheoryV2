@@ -28,6 +28,9 @@ Lean status: `empirical hypothesis` / tooling output.
 | Law policy template registry validation report | `law-policy-template-registry-validation-report-v0` | policy template registry の boundary refs と non-conclusions を検査する。 |
 | Custom rule plugin registry validation report | `custom-rule-plugin-registry-validation-report-v0` | custom rule plugin registry の theorem refs と claim boundary を検査する。 |
 | Measurement unit registry validation report | `measurement-unit-registry-validation-report-v0` | measurement unit selection と evidence adapter boundary を検査する。 |
+| Repair rule registry validation report | `repair-rule-registry-validation-report-v0` | repair rule registry の selected obstruction boundary と advisory non-conclusions を検査する。 |
+| Synthesis constraint validation report | `synthesis-constraint-validation-report-v0` | synthesis candidate / no-solution boundary と solver completeness non-conclusion を検査する。 |
+| No-solution certificate validation report | `no-solution-certificate-validation-report-v0` | valid certificate claim refs と finite candidate universe boundary を検査する。 |
 | Schema compatibility report | `schema-compatibility-check-report-v0` | schema migration / compatibility の field mapping、non-conclusions、coverage / exactness boundary を検査する。 |
 | Detectable values / reported axes catalog | `detectable-values-reported-axes-catalog-v0` | reported axes と detectable values の catalog。 |
 
@@ -39,6 +42,18 @@ Lean status: `empirical hypothesis` / tooling output.
 | PR history dataset | `pr-history-dataset-v0` | GitHub PR metadata と artifact refs を履歴 record として保存する。 |
 | Feature extension dataset | `feature-extension-dataset-v0` | PR history と Feature Extension Report / theorem check を join する。 |
 | Outcome linkage dataset | `outcome-linkage-dataset-v0` | feature extension dataset と rollback / incident / MTTR などの outcome observation を join する。 |
+
+## Operational Feedback Artifacts
+
+| 出力 | schemaVersion | 用途 |
+| --- | --- | --- |
+| Report outcome daily ledger | `report-outcome-daily-ledger-v0` | outcome linkage dataset と architecture drift ledger を daily aggregation window で join する。 |
+| Calibration review record | `calibration-review-record-v0` | false positive / false negative review と metric calibration input を保存する。 |
+| Team threshold policy | `team-threshold-policy-v0` | team-specific threshold tuning と CI mode policy を保存する。 |
+| Ownership boundary monitor | `ownership-boundary-monitor-v0` | ownership scope と boundary erosion signal を operational observation として保存する。 |
+| Repair adoption record | `repair-adoption-record-v0` | repair suggestion の adopted / rejected / deferred decision と follow-up outcome refs を保存する。 |
+| Incident correlation monitor | `incident-correlation-monitor-v0` | incident / rollback / MTTR correlation、confounder、missing / private data boundary を保存する。 |
+| Hypothesis refresh cycle | `hypothesis-refresh-cycle-v0` | empirical hypothesis の retained / rejected / proposed update を versioned research tracking として保存する。 |
 
 ## Measurement Boundary
 
