@@ -238,6 +238,116 @@ theorem trajectory_preserves_safeRegion
               (hEvery.1 hStart) hEvery.2 sig hTail
 
 /--
+A finite observed-trajectory attractor candidate.
+
+The candidate is relative to a supplied finite signature trajectory and selected
+region. It records that, after a selected entry index, all remaining observed
+signatures stay in that region. It does not assert a global attractor theorem,
+completeness of a real codebase universe, stochastic convergence, or empirical
+AI patch behavior.
+-/
+structure AttractorCandidate (Sig : Type v) where
+  trajectory : List Sig
+  region : SafeRegion Sig
+  entryIndex : Nat
+  entryWithinTrajectory : entryIndex < trajectory.length
+  staysAfterEntry :
+    ∀ sig, sig ∈ trajectory.drop entryIndex -> region sig
+  coverageAssumptions : Prop
+  nonConclusions : Prop
+
+namespace AttractorCandidate
+
+variable {Sig : Type v}
+
+/-- The selected suffix of the finite trajectory that stays in the region. -/
+def observedSuffix (candidate : AttractorCandidate Sig) : List Sig :=
+  candidate.trajectory.drop candidate.entryIndex
+
+/-- The attractor candidate explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions (candidate : AttractorCandidate Sig) : Prop :=
+  candidate.nonConclusions
+
+/-- The selected observed suffix stays inside the candidate region. -/
+theorem observedSuffix_in_region (candidate : AttractorCandidate Sig) :
+    SignatureTrajectoryInSafeRegion
+      candidate.region candidate.observedSuffix := by
+  intro sig hMem
+  exact candidate.staysAfterEntry sig hMem
+
+end AttractorCandidate
+
+/--
+A finite-list basin candidate for a selected attractor candidate.
+
+The schema is intentionally bounded: it speaks only about the supplied finite
+initial-state list and bounded operation script. The `reachesAttractor`
+predicate is caller-supplied so later modules can instantiate it with a concrete
+operation semantics, simulation report, or proof-carrying transition package.
+-/
+structure BasinCandidate (State : Type u) (Sig : Type v) (Op : Type w) where
+  observation : SignatureObservation State Sig
+  initialStates : List State
+  attractor : AttractorCandidate Sig
+  script : List Op
+  reachesAttractor : State -> Prop
+  everyInitialReaches :
+    ∀ X, X ∈ initialStates -> reachesAttractor X
+  coverageAssumptions : Prop
+  nonConclusions : Prop
+
+namespace BasinCandidate
+
+variable {State : Type u} {Sig : Type v} {Op : Type w}
+
+/-- The basin candidate explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions
+    (candidate : BasinCandidate State Sig Op) : Prop :=
+  candidate.nonConclusions
+
+/-- Every selected initial state is classified as reaching the candidate. -/
+def CoversSelectedInitialStates
+    (candidate : BasinCandidate State Sig Op) : Prop :=
+  ∀ X, X ∈ candidate.initialStates -> candidate.reachesAttractor X
+
+/--
+The finite initial-state list is covered by the caller-supplied reachability
+predicate.
+-/
+theorem coversSelectedInitialStates
+    (candidate : BasinCandidate State Sig Op) :
+    candidate.CoversSelectedInitialStates :=
+  candidate.everyInitialReaches
+
+end BasinCandidate
+
+/--
+Iterating a deterministic self-map for a bounded dynamics proof obligation.
+
+This is kept separate from `ArchitectureEvolution`: it is a small future-proof
+obligation substrate for eventually periodic finite dynamics, not a theorem
+that every observed architecture trajectory is globally periodic.
+-/
+def IterateSelfMap (step : State -> State) : Nat -> State -> State
+  | 0, X => X
+  | n + 1, X => IterateSelfMap step n (step X)
+
+/--
+Future proof-obligation statement for deterministic finite dynamics.
+
+Later theorem packages can prove this under an explicit finite universe and
+orbit-closure assumption. Keeping it as a predicate here prevents the attractor
+candidate schema from silently claiming global convergence.
+-/
+def DeterministicSelfMapEventuallyPeriodic
+    (step : State -> State) (start : State) : Prop :=
+  ∃ preperiod period : Nat,
+    0 < period ∧
+      ∀ n, preperiod ≤ n ->
+        IterateSelfMap step (n + period) start =
+          IterateSelfMap step n start
+
+/--
 Two two-step transition orders are observationally commutative when they start
 from the same state and their selected final observations agree.
 
