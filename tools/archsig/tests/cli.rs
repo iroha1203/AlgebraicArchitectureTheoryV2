@@ -5252,6 +5252,139 @@ fn cli_measurement_units_validate_fixture_and_boundary_refs() {
 }
 
 #[test]
+fn cli_dynamics_measurements_validate_common_contract() {
+    let root = fixture_root();
+    let out_dir = temp_dir("dynamics-measurements");
+    let static_report = out_dir.join("dynamics-measurements-static.json");
+    let fixture_report = out_dir.join("dynamics-measurements-fixture.json");
+    let invalid_contract = out_dir.join("invalid-dynamics-measurements.json");
+    let invalid_report = out_dir.join("invalid-dynamics-measurements-report.json");
+
+    run_sig0(&[
+        "dynamics-measurements",
+        "--out",
+        static_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "dynamics-measurements",
+        "--input",
+        root.join("dynamics_measurement_contract.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        fixture_report.to_str().expect("report path is utf-8"),
+    ]);
+
+    let json = read_json(&static_report);
+    assert_eq!(
+        json["schemaVersion"],
+        "dynamics-measurement-contract-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["contract"]["metrics"]
+            .as_array()
+            .expect("metrics is array")
+            .iter()
+            .any(|metric| {
+                metric["status"] == "estimated"
+                    && metric["confidence"] == "medium"
+                    && metric["sourceRefs"]
+                        .as_array()
+                        .expect("sourceRefs is array")
+                        .iter()
+                        .any(|source| source["kind"] == "pr-history-dataset")
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "dynamics-null-value-not-measured-or-derived"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let json = read_json(&fixture_report);
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["contract"]["metrics"]
+            .as_array()
+            .expect("metrics is array")
+            .iter()
+            .any(|metric| {
+                metric["status"] == "unmeasured"
+                    && metric["value"].is_null()
+                    && metric["nonConclusions"]
+                        .as_array()
+                        .expect("nonConclusions is array")
+                        .iter()
+                        .any(|conclusion| {
+                            conclusion == "unmeasured dynamics metric is not measured-zero evidence"
+                        })
+            })
+    );
+
+    let mut invalid_json = read_json(&root.join("dynamics_measurement_contract.json"));
+    invalid_json["metrics"][0]["value"] = serde_json::Value::Null;
+    invalid_json["metrics"][1]["confidence"] = serde_json::Value::Null;
+    invalid_json["metrics"][1]["sourceRefs"] = serde_json::json!([]);
+    invalid_json["metrics"][2]["status"] = serde_json::json!("forecast");
+    fs::write(
+        &invalid_contract,
+        serde_json::to_string_pretty(&invalid_json).expect("json serializes"),
+    )
+    .expect("invalid contract is written");
+    let output = run_sig0_output(&[
+        "dynamics-measurements",
+        "--input",
+        invalid_contract
+            .to_str()
+            .expect("invalid fixture path is utf-8"),
+        "--out",
+        invalid_report.to_str().expect("report path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid dynamics measurement contract should fail validation"
+    );
+    let json = read_json(&invalid_report);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "dynamics-measurement-status-values-supported"
+                    && check["result"] == "fail"
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "dynamics-null-value-not-measured-or-derived"
+                    && check["result"] == "fail"
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "dynamics-estimated-metric-evidence-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_policy_decision_reports_fail_and_pass_boundaries() {
     let fixture = fixture_root();
     let air = air_fixture_root();

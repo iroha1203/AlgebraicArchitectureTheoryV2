@@ -8,9 +8,10 @@ use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, CalibrationReviewRecordV0,
     ComponentUniverseValidationReport, CustomRulePluginRegistryV0,
     CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
-    DetectableValuesReportedAxesCatalogV0, DriftLedgerAggregationWindowV0, EmpiricalDatasetInput,
-    FeatureExtensionReportV0, FrameworkAdapterEvidenceV0, HypothesisRefreshCycleV0,
-    IncidentCorrelationMonitorV0, LawPolicyTemplateRegistryV0,
+    DetectableValuesReportedAxesCatalogV0, DriftLedgerAggregationWindowV0,
+    DynamicsMeasurementContractV0, DynamicsMeasurementContractValidationReportV0,
+    EmpiricalDatasetInput, FeatureExtensionReportV0, FrameworkAdapterEvidenceV0,
+    HypothesisRefreshCycleV0, IncidentCorrelationMonitorV0, LawPolicyTemplateRegistryV0,
     LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
     MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
@@ -32,17 +33,18 @@ use archsig::{
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_calibration_review_record,
     static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
-    static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
-    static_law_policy_template_registry, static_measurement_unit_registry,
-    static_no_solution_certificate, static_organization_policy, static_ownership_boundary_monitor,
-    static_repair_adoption_record, static_repair_rule_registry,
+    static_dynamics_measurement_contract, static_hypothesis_refresh_cycle,
+    static_incident_correlation_monitor, static_law_policy_template_registry,
+    static_measurement_unit_registry, static_no_solution_certificate, static_organization_policy,
+    static_ownership_boundary_monitor, static_repair_adoption_record, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_schema_version_catalog,
     static_synthesis_constraint_artifact, static_team_threshold_policy,
     validate_air_document_report, validate_component_universe_report,
-    validate_custom_rule_plugin_registry_report, validate_law_policy_template_registry_report,
-    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
-    validate_organization_policy_report, validate_repair_rule_registry_report,
-    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
+    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
+    validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
+    validate_no_solution_certificate_report, validate_organization_policy_report,
+    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
+    validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -564,6 +566,17 @@ enum Command {
         input: Option<PathBuf>,
 
         /// Output measurement unit registry validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Validate the Architecture Dynamics common measurement contract.
+    DynamicsMeasurements {
+        /// Optional dynamics measurement contract JSON path.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Output dynamics measurement contract validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1146,6 +1159,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-measurement-unit-registry".to_string());
             let report: MeasurementUnitRegistryValidationReportV0 =
                 validate_measurement_unit_registry_report(&registry, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::DynamicsMeasurements { input, out }) => {
+            let contract: DynamicsMeasurementContractV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_dynamics_measurement_contract);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-dynamics-measurement-contract".to_string());
+            let report: DynamicsMeasurementContractValidationReportV0 =
+                validate_dynamics_measurement_contract_report(&contract, &input_path);
             let failed = report.summary.result == "fail";
             write_json(out, &report)?;
             Ok(if failed {

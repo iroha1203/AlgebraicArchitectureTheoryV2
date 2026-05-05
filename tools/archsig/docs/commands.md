@@ -167,6 +167,14 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- measurement-units \
   --out .lake/signature-current/measurement-units-validation.json
 ```
 
+Architecture Dynamics 共通 measurement contract を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- dynamics-measurements \
+  --input tools/archsig/tests/fixtures/minimal/dynamics_measurement_contract.json \
+  --out .lake/signature-current/dynamics-measurements-validation.json
+```
+
 B5 repair / synthesis artifact を検査する。
 
 ```bash

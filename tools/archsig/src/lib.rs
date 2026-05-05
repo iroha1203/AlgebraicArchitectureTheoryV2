@@ -5,6 +5,7 @@ mod baseline_suppression;
 mod component_validation;
 mod custom_rule_plugin;
 mod dataset;
+mod dynamics_measurement;
 mod extractor;
 mod feature_dataset;
 mod feature_report;
@@ -49,6 +50,9 @@ pub use custom_rule_plugin::{
     static_custom_rule_plugin_registry, validate_custom_rule_plugin_registry_report,
 };
 pub use dataset::build_empirical_dataset;
+pub use dynamics_measurement::{
+    static_dynamics_measurement_contract, validate_dynamics_measurement_contract_report,
+};
 pub use extractor::{extract_sig0, extract_sig0_with_policy, extract_sig0_with_runtime};
 pub use feature_dataset::{
     build_feature_extension_dataset, build_feature_extension_dataset_from_files,

@@ -1,0 +1,173 @@
+{
+  "schemaVersion": "dynamics-measurement-contract-v0",
+  "artifactId": "fixture-dynamics-measurement-contract-v0",
+  "scope": "canonical Architecture Dynamics measurement status boundary fixture",
+  "metrics": [
+    {
+      "metricId": "observedForce.boundaryViolationDelta",
+      "value": 2,
+      "status": "measured",
+      "sourceRefs": [
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_store.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-signature-snapshot"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature",
+        "measuredAxes": ["boundaryViolationCount"],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_store.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-signature-snapshot"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "dynamics-measurement-contract-v0",
+        "selectedRegionRefs": ["fixture:selected-pr-window"],
+        "assumptions": ["selected PR before and after signatures are available"],
+        "unsupportedConstructs": [],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "measured force delta is limited to the selected Signature axis",
+          "measured delta is not a global architecture lawfulness claim"
+        ]
+      },
+      "assumptions": ["selected Signature snapshots are comparable"],
+      "nonConclusions": [
+        "measured force delta is limited to the selected Signature axis",
+        "measured delta is not a global architecture lawfulness claim"
+      ]
+    },
+    {
+      "metricId": "latentForce.reviewPressure",
+      "value": 0.63,
+      "status": "estimated",
+      "confidence": "medium",
+      "sourceRefs": [
+        {
+          "kind": "pr-history-dataset",
+          "path": "tools/archsig/tests/fixtures/minimal/pr_history_dataset.json",
+          "schemaVersion": "pr-history-dataset-v0",
+          "artifactId": "fixture-pr-history"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "review",
+        "measuredAxes": ["reviewPressure"],
+        "sourceArtifactRefs": [
+          {
+            "kind": "pr-history-dataset",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_history_dataset.json",
+            "schemaVersion": "pr-history-dataset-v0",
+            "artifactId": "fixture-pr-history"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "dynamics-measurement-contract-v0",
+        "selectedRegionRefs": ["fixture:selected-pr-window"],
+        "assumptions": ["review metadata is available for the selected PR window"],
+        "unsupportedConstructs": [],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "estimated review pressure is not a measured force value",
+          "estimated value is not a theorem claim"
+        ]
+      },
+      "assumptions": [
+        "review pressure is estimated from bounded PR metadata",
+        "missing rejected proposals are outside this fixture"
+      ],
+      "nonConclusions": [
+        "estimated review pressure is not a measured force value",
+        "estimated value is not a theorem claim"
+      ]
+    },
+    {
+      "metricId": "field.localGrammar",
+      "value": null,
+      "status": "unmeasured",
+      "sourceRefs": [],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "dynamics-measurement-contract-v0",
+        "selectedRegionRefs": [],
+        "assumptions": ["local grammar extractor not run"],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "dynamics-evidence",
+            "reason": "local grammar extractor not run",
+            "boundary": "unmeasured"
+          }
+        ],
+        "nonConclusions": ["unmeasured dynamics evidence is not measured-zero"]
+      },
+      "assumptions": ["local grammar extractor not run"],
+      "nonConclusions": ["unmeasured dynamics metric is not measured-zero evidence"]
+    }
+  ],
+  "measurementBoundary": {
+    "measuredLayer": "architecture-dynamics",
+    "measuredAxes": ["observedForce", "latentForce"],
+    "sourceArtifactRefs": [
+      {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_store.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-signature-snapshot"
+      },
+      {
+        "kind": "pr-history-dataset",
+        "path": "tools/archsig/tests/fixtures/minimal/pr_history_dataset.json",
+        "schemaVersion": "pr-history-dataset-v0",
+        "artifactId": "fixture-pr-history"
+      }
+    ],
+    "extractorVersion": "0.1.0",
+    "policyVersion": "fixture-policy-v0",
+    "schemaVersion": "dynamics-measurement-contract-v0",
+    "aggregationWindow": {
+      "windowStart": "2026-01-01T00:00:00Z",
+      "windowEnd": "2026-01-31T23:59:59Z",
+      "windowKind": "fixture-window"
+    },
+    "selectedRegionRefs": ["fixture:selected-pr-window"],
+    "assumptions": [
+      "fixture covers a selected finite PR window",
+      "source artifact refs are retained only as tooling evidence"
+    ],
+    "unsupportedConstructs": [
+      "proposal completeness",
+      "global attractor inference"
+    ],
+    "missingEvidence": [
+      {
+        "evidenceKind": "operation-proposal-log",
+        "reason": "proposal log is not part of the MVP fixture",
+        "boundary": "unmeasured"
+      }
+    ],
+    "nonConclusions": [
+      "dynamics measurement contract is tooling validation, not a Lean theorem",
+      "unmeasured, unavailable, private, notComparable, and outOfScope values are not measured zero",
+      "estimated dynamics metrics are not formal measured values",
+      "dynamics artifacts do not conclude architecture lawfulness"
+    ]
+  },
+  "nonConclusions": [
+    "dynamics measurement contract is tooling validation, not a Lean theorem",
+    "unmeasured, unavailable, private, notComparable, and outOfScope values are not measured zero",
+    "estimated dynamics metrics are not formal measured values",
+    "dynamics artifacts do not conclude architecture lawfulness"
+  ]
+}
