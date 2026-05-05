@@ -7,9 +7,9 @@ use crate::{
     OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, PR_FORCE_REPORT_SCHEMA_VERSION,
     REPAIR_ADOPTION_RECORD_SCHEMA_VERSION, REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION,
     SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
-    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
-    SchemaVersionCatalogV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION,
+    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION,
+    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
+    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -357,6 +357,31 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     vec![
                         "Metrics report remains a multi-axis diagnostic artifact and does not promote tooling evidence to Lean theorem claims.",
                         "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes.",
+                    ],
+                ),
+            ),
+            artifact(
+                "signature-trajectory-report",
+                "Signature Trajectory Report",
+                SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION,
+                "architecture-dynamics-output",
+                "D5-D6",
+                "implemented",
+                vec![
+                    "docs/design/architecture_dynamics_tooling_design.md#signature-trajectory-report-v0",
+                    "docs/design/architecture_signature_dynamics.md#signature-trajectory-metrics",
+                ],
+                vec!["#676"],
+                compatibility_boundary(
+                    "Map repository, selected window, trajectory points, force refs, drift / stability / excursion / endpoint-compression signals, selected regions, measurement boundary, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New trajectory fields must preserve MeasurementStatus, source refs, selected region refs, and bounded-window assumptions.",
+                        "Extractor, policy, or schema version differences require notComparable or explicit migration boundary evidence.",
+                    ],
+                    vec![
+                        "Trajectory report remains finite observed trajectory tooling evidence, not a global attractor or basin theorem.",
+                        "Endpoint safe-region membership does not imply path safety.",
                     ],
                 ),
             ),

@@ -50,6 +50,9 @@ pub const DYNAMICS_MEASUREMENT_CONTRACT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const PR_FORCE_REPORT_SCHEMA_VERSION: &str = "pr-force-report-v0";
 pub const PR_FORCE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "pr-force-report-validation-report-v0";
+pub const SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION: &str = "signature-trajectory-report-v0";
+pub const SIGNATURE_TRAJECTORY_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "signature-trajectory-report-validation-report-v0";
 pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION: &str =
     "architecture-dynamics-metrics-report-v0";
 pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
@@ -3241,6 +3244,88 @@ pub struct PrForceReportValidationSummary {
     pub result: String,
     pub observed_force_count: usize,
     pub decomposition_component_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub repository: RepositoryRef,
+    pub window: DynamicsAggregationWindowV0,
+    pub trajectory_points: Vec<SignatureTrajectoryPointV0>,
+    pub force_refs: Vec<DynamicsArtifactRefV0>,
+    pub drift_signals: Vec<DynamicsMeasuredValueV0>,
+    pub stability_signals: Vec<DynamicsMeasuredValueV0>,
+    pub excursion_signals: Vec<DynamicsMeasuredValueV0>,
+    pub endpoint_compression_signals: Vec<DynamicsMeasuredValueV0>,
+    pub selected_regions: Vec<SelectedSignatureRegionV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryPointV0 {
+    pub point_id: String,
+    pub sequence_index: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub observed_at: Option<String>,
+    pub revision: RepositoryRevisionRef,
+    pub signature_snapshot_ref: DynamicsArtifactRefV0,
+    pub axis_values: Vec<DynamicsMeasuredValueV0>,
+    pub region_refs: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub force_ref: Option<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SelectedSignatureRegionV0 {
+    pub region_id: String,
+    pub region_kind: String,
+    pub defining_axes: Vec<String>,
+    pub bounds: serde_json::Value,
+    pub trajectory_point_refs: Vec<String>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryReportValidationReportV0 {
+    pub schema_version: String,
+    pub input: SignatureTrajectoryReportValidationInput,
+    pub report: SignatureTrajectoryReportV0,
+    pub summary: SignatureTrajectoryReportValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryReportValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub report_id: String,
+    pub repository: String,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryReportValidationSummary {
+    pub result: String,
+    pub trajectory_point_count: usize,
+    pub force_ref_count: usize,
+    pub drift_signal_count: usize,
+    pub stability_signal_count: usize,
+    pub excursion_signal_count: usize,
+    pub endpoint_compression_signal_count: usize,
+    pub selected_region_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

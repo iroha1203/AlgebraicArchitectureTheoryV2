@@ -422,6 +422,36 @@
           "renamed fields do not discharge new required assumptions"
         ]
       }
+    },
+    {
+      "artifactId": "signature-trajectory-report",
+      "artifactName": "Signature Trajectory Report",
+      "schemaVersionName": "signature-trajectory-report-v0",
+      "artifactRole": "architecture-dynamics-output",
+      "ownerPhase": "D5-D6",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/design/architecture_dynamics_tooling_design.md#signature-trajectory-report-v0",
+        "docs/design/architecture_signature_dynamics.md#signature-trajectory-metrics"
+      ],
+      "downstreamIssues": ["#676"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map repository, selected window, trajectory points, force refs, drift / stability / excursion / endpoint-compression signals, selected regions, measurement boundary, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New trajectory fields must preserve MeasurementStatus, source refs, selected region refs, and bounded-window assumptions.",
+          "Extractor, policy, or schema version differences require notComparable or explicit migration boundary evidence."
+        ],
+        "coverageExactnessBoundary": [
+          "Trajectory report remains finite observed trajectory tooling evidence, not a global attractor or basin theorem.",
+          "Endpoint safe-region membership does not imply path safety."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {
