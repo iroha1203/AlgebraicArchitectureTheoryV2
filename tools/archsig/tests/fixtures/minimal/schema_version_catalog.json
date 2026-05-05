@@ -94,7 +94,7 @@
       "schemaVersionName": "obstruction-witness-v0",
       "artifactRole": "embedded-witness",
       "ownerPhase": "B1-B9",
-      "status": "schema-skeleton",
+      "status": "implemented",
       "primaryDocs": [
         "docs/aat_v2_tooling_design.md#6-obstruction-witness-schema"
       ],
@@ -121,7 +121,7 @@
       "schemaVersionName": "architecture-drift-ledger-v0",
       "artifactRole": "batch-history-output",
       "ownerPhase": "B1-B9",
-      "status": "schema-skeleton",
+      "status": "implemented",
       "primaryDocs": [
         "docs/aat_v2_tooling_design.md#51-architecture-drift-ledger"
       ],

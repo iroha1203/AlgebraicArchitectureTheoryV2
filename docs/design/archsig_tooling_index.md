@@ -467,7 +467,8 @@ Parent Issue: [#607](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/
 
 Issues: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/613),
 [#609](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/609),
-[#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608)
+[#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608),
+[#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610)
 
 B9 は AIR、Feature Extension Report、Obstruction Witness、Architecture Drift Ledger、
 detectable values / reported axes catalog など、複数 tooling artifact の schema version と
@@ -478,6 +479,8 @@ Canonical fixture:
 
 ```text
 tools/archsig/tests/fixtures/minimal/schema_version_catalog.json
+tools/archsig/tests/fixtures/minimal/obstruction_witness.json
+tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json
 ```
 
 Rust schema skeleton:
@@ -487,6 +490,8 @@ SchemaVersionCatalogV0
 SchemaCompatibilityPolicyV0
 SchemaCompatibilityBoundaryV0
 SchemaArtifactCompatibilityV0
+ObstructionWitnessArtifactV0
+ArchitectureDriftLedgerV0
 ```
 
 Compatibility policy は field mapping、deprecated fields、new required assumptions、
@@ -499,6 +504,13 @@ AIR metadata は `coverage.layers[].extractionScope`、
 保持する。Feature Extension Report metadata は `coverageGaps[].nonConclusions`、
 `theoremPreconditionChecks[].missingPreconditions`、`unsupportedConstructs`、
 `nonConclusions` を保持する。
+
+Obstruction Witness metadata は `witnessId`, `layer`, `kind`, `evidence`,
+`claimClassification`, `measurementBoundary`, `nonConclusions` を保持する。
+Architecture Drift Ledger metadata は stable grouping keys、aggregation window、
+measurement boundary、suppression、retention manifest、baseline、suppression workflow、
+non-conclusions を保持する。private / missing / unmeasured evidence は compatibility
+boundary として `unmeasured` のまま保持し、`measuredZero` に丸めない。
 
 `archsig validate-air` は metadata が存在する AIR について、coverage / exactness
 boundary、theorem bridge preconditions、formal claim promotion を禁止する

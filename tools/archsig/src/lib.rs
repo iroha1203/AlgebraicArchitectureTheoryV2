@@ -14,6 +14,7 @@ mod graph;
 mod law_policy_template;
 mod measurement_unit;
 mod no_solution_certificate;
+mod obstruction_drift;
 mod organization_policy;
 mod outcome_linkage;
 mod policy;
@@ -64,6 +65,9 @@ pub use measurement_unit::{
 };
 pub use no_solution_certificate::{
     static_no_solution_certificate, validate_no_solution_certificate_report,
+};
+pub use obstruction_drift::{
+    static_architecture_drift_ledger, static_obstruction_witness_artifact,
 };
 pub use organization_policy::{static_organization_policy, validate_organization_policy_report};
 pub use outcome_linkage::{
