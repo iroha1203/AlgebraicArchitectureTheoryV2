@@ -4,9 +4,10 @@ use crate::{
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
     INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
-    OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, REPAIR_ADOPTION_RECORD_SCHEMA_VERSION,
-    REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
-    SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
+    OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, PR_FORCE_REPORT_SCHEMA_VERSION,
+    REPAIR_ADOPTION_RECORD_SCHEMA_VERSION, REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION,
+    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION,
+    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
     SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
     SchemaVersionCatalogV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION,
 };
@@ -312,6 +313,29 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                 ),
             ),
+            artifact(
+                "pr-force-report",
+                "PR Force Report",
+                PR_FORCE_REPORT_SCHEMA_VERSION,
+                "architecture-dynamics-output",
+                "D5-D6",
+                "implemented",
+                vec![
+                    "docs/design/architecture_dynamics_tooling_design.md#pr-force-report-v0",
+                    "docs/design/architecture_signature_dynamics.md#layer-4-pr-force-model",
+                ],
+                vec!["#675"],
+                compatibility_boundary(
+                    "Map accepted PR transition refs, signed Signature deltas, observed force vector slots, decomposition components, evidence refs, measurement boundary, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New force axes must declare MeasurementStatus, source artifact refs, and whether they are observed, latent, dissipated, or advisory.",
+                    ],
+                    vec![
+                        "ObservedForce excludes rejected raw proposal force; heuristic decomposition remains advisory tooling evidence.",
+                    ],
+                ),
+            ),
         ],
         compatibility_policy: compatibility_policy(catalog_version),
         non_conclusions: vec![
@@ -487,6 +511,7 @@ mod tests {
             CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
             INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION,
             HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
+            PR_FORCE_REPORT_SCHEMA_VERSION,
         ] {
             assert!(
                 versions.contains(expected),
