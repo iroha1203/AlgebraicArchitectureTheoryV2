@@ -1698,6 +1698,10 @@ Issue [#661](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 `Option Nat` axis の `some n` evidence を持つ trajectory 上で net delta が endpoint delta に
 telescope することを証明した。`none` / unavailable axis は measured-axis trajectory domain に
 入らず、available zero evidence としても扱わない。
+Issue [#662](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/662) では、
+accepted transition sequence に相対化した abstract force reading schema を追加し、
+selected additive delta law の下で net force が endpoint force と一致する theorem を、
+selected invariant preservation / bad-axis nonincrease theorem と bounded に接続した。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1757,6 +1761,21 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `DampingControlSchema.BadAxisDampingAssumption.RecordsNonConclusions` | `def` | bad-axis damping assumption package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `DampingControlSchema.badAxis_nonincrease_of_acceptedStep` | `theorem` | explicit damping assumption の下で、accepted step が selected bad-axis measure を非増加にすることを示す。 | `proved` |
 | `DampingControlSchema.badAxis_nonincrease_of_acceptedEvolution` | `theorem` | explicit damping assumption の下で、accepted finite evolution が source から target へ selected bad-axis measure を非増加にすることを示す。 | `proved` |
+| `AcceptedTransitionForceSchema` | `structure` | selected control schema、signature delta、additive law、accepted-transition / PR outcome / incident / review cost / GitHub metadata / report calibration boundary を束ねる abstract accepted-transition force reading schema。 | `defined only` |
+| `AcceptedTransitionForceSchema.AcceptedSequence` | `def` | selected finite evolution が supplied controller に accepted されていること。 | `defined only` |
+| `AcceptedTransitionForceSchema.ObservedForceSequence` | `def` | accepted-transition reading の per-step selected force sequence を `SignatureDeltaSequence` として読む。 | `defined only` |
+| `AcceptedTransitionForceSchema.NetForce` | `def` | selected per-step force sequence を `NetSignatureDelta` で集計した net force。 | `defined only` |
+| `AcceptedTransitionForceSchema.EndpointForce` | `def` | source / target observation の selected endpoint delta として読む endpoint force。 | `defined only` |
+| `AcceptedTransitionForceSchema.RecordsAcceptedTransitionBoundary` | `def` | accepted-transition boundary を predicate として取り出す。 | `defined only` |
+| `AcceptedTransitionForceSchema.RecordsPROutcomeBoundary` | `def` | PR outcome が theorem claim 外である boundary を predicate として取り出す。 | `defined only` |
+| `AcceptedTransitionForceSchema.RecordsIncidentBoundary` | `def` | incident が theorem claim 外である boundary を predicate として取り出す。 | `defined only` |
+| `AcceptedTransitionForceSchema.RecordsReviewCostBoundary` | `def` | review cost が theorem claim 外である boundary を predicate として取り出す。 | `defined only` |
+| `AcceptedTransitionForceSchema.RecordsGitHubMetadataBoundary` | `def` | GitHub metadata が theorem claim 外である boundary を predicate として取り出す。 | `defined only` |
+| `AcceptedTransitionForceSchema.RecordsReportCalibrationBoundary` | `def` | report calibration が theorem claim 外である boundary を predicate として取り出す。 | `defined only` |
+| `AcceptedTransitionForceSchema.RecordsNonConclusions` | `def` | accepted-transition force schema の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `AcceptedTransitionForceSchema.netForce_eq_endpointForce` | `theorem` | accepted sequence に相対化された force reading で、selected additive delta law の下で net force が endpoint force と一致することを示す。 | `proved` |
+| `AcceptedTransitionForceSchema.preservesInvariant_and_netForce_eq_endpointForce` | `theorem` | accepted sequence について selected invariant preservation と net force endpoint equality を同時に得る bounded theorem。 | `proved` |
+| `AcceptedTransitionForceSchema.badAxisNonincrease_and_netForce_eq_endpointForce` | `theorem` | explicit bad-axis damping assumption の下で、accepted sequence の bad-axis nonincrease と net force endpoint equality を同時に得る bounded theorem。 | `proved` |
 | `OperationTransitionSemantics` | `structure` | operation ID と primitive `ArchitectureTransition` の bounded realization relation、coverage / non-conclusions を束ねる schema。operation tag だけから preservation / acceptance は結論しない。 | `defined only` |
 | `OperationTransitionSemantics.Realizes` | `def` | selected operation ID が primitive transition を realize すること。 | `defined only` |
 | `OperationTransitionSemantics.RecordsNonConclusions` | `def` | operation semantics package の non-conclusion clause を predicate として取り出す。 | `defined only` |

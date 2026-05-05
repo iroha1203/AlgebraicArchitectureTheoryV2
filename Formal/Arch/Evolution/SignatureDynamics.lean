@@ -657,6 +657,152 @@ theorem badAxis_nonincrease_of_acceptedEvolution [LE Score]
 end DampingControlSchema
 
 /--
+Abstract force reading for an accepted finite transition sequence.
+
+The schema is deliberately relative to a selected `DampingControlSchema`,
+selected signature delta, and selected additive law. It does not mention real
+GitHub PR metadata, report calibration, incidents, review cost, or PR outcome;
+those remain explicit boundary propositions.
+-/
+structure AcceptedTransitionForceSchema
+    (State : Type u) (Sig : Type v) (Delta : Type w)
+    [Zero Delta] [Add Delta] where
+  control : DampingControlSchema State Sig
+  delta : SignatureDelta Sig Delta
+  additiveLaw : AdditiveSignatureDeltaLaw delta
+  acceptedTransitionBoundary : Prop
+  coverageAssumptions : Prop
+  prOutcomeBoundary : Prop
+  incidentBoundary : Prop
+  reviewCostBoundary : Prop
+  githubMetadataBoundary : Prop
+  reportCalibrationBoundary : Prop
+  nonConclusions : Prop
+
+namespace AcceptedTransitionForceSchema
+
+variable {State : Type u} {Sig : Type v} {Delta : Type w}
+variable [Zero Delta] [Add Delta]
+
+/-- The selected finite evolution is accepted by the supplied controller. -/
+def AcceptedSequence
+    (schema : AcceptedTransitionForceSchema State Sig Delta)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) : Prop :=
+  schema.control.AcceptedEvolution plan
+
+/-- The per-step observed force sequence of an accepted-transition reading. -/
+def ObservedForceSequence
+    (schema : AcceptedTransitionForceSchema State Sig Delta)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) : List Delta :=
+  SignatureDeltaSequence schema.control.observation schema.delta plan
+
+/-- Net force obtained by adding the selected per-step force sequence. -/
+def NetForce
+    (schema : AcceptedTransitionForceSchema State Sig Delta)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) : Delta :=
+  NetSignatureDelta (schema.ObservedForceSequence plan)
+
+/-- Endpoint force read directly from the selected source / target signatures. -/
+def EndpointForce
+    (schema : AcceptedTransitionForceSchema State Sig Delta)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) : Delta :=
+  EndpointSignatureDelta schema.control.observation schema.delta plan
+
+/-- The schema explicitly records its accepted-transition boundary. -/
+def RecordsAcceptedTransitionBoundary
+    (schema : AcceptedTransitionForceSchema State Sig Delta) : Prop :=
+  schema.acceptedTransitionBoundary
+
+/-- The schema explicitly records that PR outcomes are outside the theorem. -/
+def RecordsPROutcomeBoundary
+    (schema : AcceptedTransitionForceSchema State Sig Delta) : Prop :=
+  schema.prOutcomeBoundary
+
+/-- The schema explicitly records that incidents are outside the theorem. -/
+def RecordsIncidentBoundary
+    (schema : AcceptedTransitionForceSchema State Sig Delta) : Prop :=
+  schema.incidentBoundary
+
+/-- The schema explicitly records that review cost is outside the theorem. -/
+def RecordsReviewCostBoundary
+    (schema : AcceptedTransitionForceSchema State Sig Delta) : Prop :=
+  schema.reviewCostBoundary
+
+/-- The schema explicitly records that GitHub metadata is outside the theorem. -/
+def RecordsGitHubMetadataBoundary
+    (schema : AcceptedTransitionForceSchema State Sig Delta) : Prop :=
+  schema.githubMetadataBoundary
+
+/-- The schema explicitly records that report calibration is outside the theorem. -/
+def RecordsReportCalibrationBoundary
+    (schema : AcceptedTransitionForceSchema State Sig Delta) : Prop :=
+  schema.reportCalibrationBoundary
+
+/-- The schema explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions
+    (schema : AcceptedTransitionForceSchema State Sig Delta) : Prop :=
+  schema.nonConclusions
+
+/--
+For an accepted transition sequence, the net observed force equals the selected
+endpoint delta under the supplied additive delta law.
+
+The acceptedness premise bounds the interpretation as an accepted-transition
+force reading; the algebraic equality itself is the endpoint telescoping law.
+-/
+theorem netForce_eq_endpointForce
+    (schema : AcceptedTransitionForceSchema State Sig Delta)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (_hAccepted : schema.AcceptedSequence plan) :
+    schema.NetForce plan = schema.EndpointForce plan :=
+  netSignatureDelta_telescopes
+    schema.control.observation schema.delta schema.additiveLaw plan
+
+/--
+Accepted force reading together with selected invariant preservation.
+
+This packages the two bounded conclusions that are valid for an accepted
+sequence: the selected observed trajectory stays in the selected invariant when
+the source starts there, and the net force telescopes to the endpoint delta.
+-/
+theorem preservesInvariant_and_netForce_eq_endpointForce
+    (schema : AcceptedTransitionForceSchema State Sig Delta)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hStart :
+      StateInSafeRegion schema.control.observation schema.control.invariant X)
+    (hAccepted : schema.AcceptedSequence plan) :
+    SignatureTrajectoryInSafeRegion
+        schema.control.invariant
+        (SignatureTrajectory schema.control.observation plan) ∧
+      schema.NetForce plan = schema.EndpointForce plan :=
+  ⟨schema.control.acceptedEvolution_preserves_selectedInvariant
+      plan hStart hAccepted,
+    schema.netForce_eq_endpointForce plan hAccepted⟩
+
+/--
+Accepted force reading together with selected bad-axis nonincrease.
+
+Bad-axis nonincrease is not derived from the force value. It is paired with the
+force endpoint theorem only under an explicit `BadAxisDampingAssumption`.
+-/
+theorem badAxisNonincrease_and_netForce_eq_endpointForce
+    {Score : Type x} [LE Score]
+    (schema : AcceptedTransitionForceSchema State Sig Delta)
+    (assumption :
+      DampingControlSchema.BadAxisDampingAssumption
+        schema.control Score)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hAccepted : schema.AcceptedSequence plan) :
+    assumption.badAxis (schema.control.observation.observe Y) ≤
+        assumption.badAxis (schema.control.observation.observe X) ∧
+      schema.NetForce plan = schema.EndpointForce plan :=
+  ⟨DampingControlSchema.badAxis_nonincrease_of_acceptedEvolution
+      schema.control assumption plan hAccepted,
+    schema.netForce_eq_endpointForce plan hAccepted⟩
+
+end AcceptedTransitionForceSchema
+
+/--
 Bounded semantics connecting operation identifiers to primitive architecture
 transitions.
 
