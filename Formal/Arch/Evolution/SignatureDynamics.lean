@@ -742,6 +742,153 @@ theorem badAxis_nonincrease_of_acceptedScript [LE Score]
 end BoundedOperationScript
 
 /--
+A finite support kernel for operation selection.
+
+The kernel records only the finite support of candidate operation identifiers
+at each source state. Weight sources, normalization, proposal completeness, and
+AI patch distributions remain boundary propositions and non-conclusions rather
+than probability-measure theorems.
+-/
+structure FiniteOperationKernel
+    (State : Type u) (OperationId : Type w) where
+  support : State -> List OperationId
+  coverageAssumptions : Prop
+  weightSourceBoundary : Prop
+  normalizationBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteOperationKernel
+
+variable {State : Type u} {Sig : Type v} {OperationId : Type w}
+
+/-- The selected operation identifier is in the finite support at this state. -/
+def Supports
+    (kernel : FiniteOperationKernel State OperationId)
+    (X : State) (op : OperationId) : Prop :=
+  op ∈ kernel.support X
+
+/-- The kernel explicitly records its weight-source boundary. -/
+def RecordsWeightSourceBoundary
+    (kernel : FiniteOperationKernel State OperationId) : Prop :=
+  kernel.weightSourceBoundary
+
+/-- The kernel explicitly records its normalization boundary. -/
+def RecordsNormalizationBoundary
+    (kernel : FiniteOperationKernel State OperationId) : Prop :=
+  kernel.normalizationBoundary
+
+/-- The kernel explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions
+    (kernel : FiniteOperationKernel State OperationId) : Prop :=
+  kernel.nonConclusions
+
+/--
+Every operation in the selected finite support preserves the selected safe
+region whenever it realizes a primitive transition.
+-/
+def SupportOperationsPreserveSafeRegion
+    (kernel : FiniteOperationKernel State OperationId)
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig) : Prop :=
+  ∀ {X : State} (op : OperationId),
+    kernel.Supports X op -> sem.OperationPreservesSafeRegion O R op
+
+/--
+The selected support operation realizes this primitive transition from its
+source state.
+-/
+def SupportStep
+    (kernel : FiniteOperationKernel State OperationId)
+    (sem : OperationTransitionSemantics State OperationId)
+    (op : OperationId) {X Y : State}
+    (t : ArchitectureTransition State X Y) : Prop :=
+  kernel.Supports X op ∧ sem.Realizes op t
+
+/--
+If every support operation preserves the selected safe region, then any
+realized step selected from the support preserves it.
+-/
+theorem supportStep_preserves_safeRegion
+    (kernel : FiniteOperationKernel State OperationId)
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig)
+    (op : OperationId) {X Y : State}
+    (t : ArchitectureTransition State X Y)
+    (hStep : kernel.SupportStep sem op t)
+    (hPreserves : kernel.SupportOperationsPreserveSafeRegion sem O R) :
+    StepPreservesSafeRegion O R t :=
+  hPreserves op hStep.1 t hStep.2
+
+/--
+The operation list uses only operations in the selected finite support along
+the endpoint-indexed evolution. A length mismatch is false, matching bounded
+script realization semantics.
+-/
+def ScriptUsesSupport
+    (kernel : FiniteOperationKernel State OperationId) :
+    List OperationId -> {X Y : State} -> ArchitectureEvolution State X Y -> Prop
+  | [], _, _, ArchitecturePath.nil _ => True
+  | [], _, _, ArchitecturePath.cons _step _rest => False
+  | _op :: _ops, _, _, ArchitecturePath.nil _ => False
+  | op :: ops, X, _, ArchitecturePath.cons _step rest =>
+      kernel.Supports X op ∧ ScriptUsesSupport kernel ops rest
+
+/--
+If a realized operation list uses only finite-support operations and all
+support operations preserve the safe region, then every realized transition
+preserves that region.
+-/
+theorem everyStepPreservesSafeRegion_of_scriptUsesSupport
+    (kernel : FiniteOperationKernel State OperationId)
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig) :
+    (operations : List OperationId) ->
+      {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      BoundedOperationScript.ScriptRealizesEvolution sem operations plan ->
+      kernel.ScriptUsesSupport operations plan ->
+      kernel.SupportOperationsPreserveSafeRegion sem O R ->
+        EveryStepPreservesSafeRegion O R plan
+  | [], _, _, ArchitecturePath.nil _, _hRealizes, _hSupport, _hPreserves =>
+      trivial
+  | [], _, _, ArchitecturePath.cons _step _rest, hRealizes, _hSupport,
+      _hPreserves =>
+      False.elim hRealizes
+  | _op :: _ops, _, _, ArchitecturePath.nil _, hRealizes, _hSupport,
+      _hPreserves =>
+      False.elim hRealizes
+  | op :: ops, _, _, ArchitecturePath.cons step rest, hRealizes, hSupport,
+      hPreserves => by
+      have hStep : StepPreservesSafeRegion O R step :=
+        supportStep_preserves_safeRegion
+          kernel sem O R op step ⟨hSupport.1, hRealizes.1⟩ hPreserves
+      exact
+        And.intro hStep
+          (everyStepPreservesSafeRegion_of_scriptUsesSupport
+            kernel sem O R ops rest hRealizes.2 hSupport.2 hPreserves)
+
+/--
+A bounded sampled script preserves the selected observed safe region when the
+script realizes the plan, uses only operations from the finite support at each
+source state, and all support operations preserve that region.
+-/
+theorem boundedSampledScript_preserves_safeRegion
+    (kernel : FiniteOperationKernel State OperationId)
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig)
+    (script : BoundedOperationScript OperationId)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hStart : StateInSafeRegion O R X)
+    (hRealizes : script.RealizesEvolution sem plan)
+    (hSupport : kernel.ScriptUsesSupport script.operations plan)
+    (hPreserves : kernel.SupportOperationsPreserveSafeRegion sem O R) :
+    SignatureTrajectoryInSafeRegion R (SignatureTrajectory O plan) :=
+  trajectory_preserves_safeRegion O R plan hStart
+    (everyStepPreservesSafeRegion_of_scriptUsesSupport
+      kernel sem O R script.operations plan hRealizes hSupport hPreserves)
+
+end FiniteOperationKernel
+
+/--
 A finite observed-trajectory attractor candidate.
 
 The candidate is relative to a supplied finite signature trajectory and selected

@@ -1689,6 +1689,10 @@ Issue [#659](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 bounded operation script、operation family、operation-to-transition semantics を追加し、
 script family preservation と accepted script を既存 safe-region / bad-axis theorem に
 接続した。
+Issue [#660](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/660) では、
+finite support operation kernel を追加し、support 内 operation が selected safe region を
+保存するという明示前提から、support から選ばれた任意 step と bounded sampled script の
+safe-region preservation を証明した。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1752,6 +1756,17 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `BoundedOperationScript.script_preserves_safeRegion` | `theorem` | initial state が safe で、script family preservation と realization があれば、observed signature trajectory 全体が safe region 内に留まる。 | `proved` |
 | `BoundedOperationScript.acceptedEvolution_of_scriptAccepted` | `theorem` | accepted operation script から既存 `DampingControlSchema.AcceptedEvolution` を得る。 | `proved` |
 | `BoundedOperationScript.badAxis_nonincrease_of_acceptedScript` | `theorem` | explicit damping assumption の下で、accepted bounded operation script が selected bad-axis measure を endpoint で非増加にする。 | `proved` |
+| `FiniteOperationKernel` | `structure` | state ごとの finite support operation list と、coverage / weight source / normalization / non-conclusion boundary を束ねる operation selection kernel。確率分布そのものは主張しない。 | `defined only` |
+| `FiniteOperationKernel.Supports` | `def` | selected operation ID が source state の finite support に含まれること。 | `defined only` |
+| `FiniteOperationKernel.RecordsWeightSourceBoundary` | `def` | finite support kernel の weight-source boundary を predicate として取り出す。 | `defined only` |
+| `FiniteOperationKernel.RecordsNormalizationBoundary` | `def` | finite support kernel の normalization boundary を predicate として取り出す。 | `defined only` |
+| `FiniteOperationKernel.RecordsNonConclusions` | `def` | finite support kernel の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `FiniteOperationKernel.SupportOperationsPreserveSafeRegion` | `def` | finite support 内の各 operation が、realize する任意 transition で selected safe region を保存すること。 | `defined only` |
+| `FiniteOperationKernel.SupportStep` | `def` | source state の finite support から選ばれた operation が primitive transition を realize すること。 | `defined only` |
+| `FiniteOperationKernel.supportStep_preserves_safeRegion` | `theorem` | support 内 operation が safe region を保存するなら、support から選ばれて realize された任意 step も safe region を保存する。 | `proved` |
+| `FiniteOperationKernel.ScriptUsesSupport` | `def` | operation list が endpoint-indexed evolution の各 source state で finite support 内 operation だけを使うこと。length mismatch は false。 | `defined only` |
+| `FiniteOperationKernel.everyStepPreservesSafeRegion_of_scriptUsesSupport` | `theorem` | realized operation list が各 source state の finite support 内 operation だけを使い、support operation が safe region を保存するなら、plan の各 transition が safe region を保存する。 | `proved` |
+| `FiniteOperationKernel.boundedSampledScript_preserves_safeRegion` | `theorem` | bounded sampled script が plan を realize し、各 source state の finite support 内 operation だけを使うなら、support preservation 前提の下で observed signature trajectory 全体が safe region 内に留まる。 | `proved` |
 | `AttractorCandidate` | `structure` | finite observed trajectory と selected region に相対化し、selected entry index 以降の observed suffix が region 内に留まることを記録する schema。 | `defined only` |
 | `AttractorCandidate.observedSuffix` | `def` | attractor candidate の selected entry index 以降の finite observed suffix を取り出す。 | `defined only` |
 | `AttractorCandidate.RecurrentRegion` | `def` | candidate の selected observed suffix と selected region に相対化した recurrent signature region predicate。 | `defined only` |
