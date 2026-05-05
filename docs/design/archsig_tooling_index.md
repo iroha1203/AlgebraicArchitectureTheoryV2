@@ -534,6 +534,14 @@ unmeasured outcome data を measured-zero evidence に丸めない。CLI は
 aggregation window、source report refs、retention policy、boundary count、non-conclusions
 を migration boundary として扱う。
 
+Calibration review record は B10 false positive / false negative review と metric
+calibration の入力 artifact として、`reportFindingRefs`, `witnessRefs`,
+`reviewerDecision`, `outcomeRefs`, `rationale`, `confidence`, `missingEvidence`,
+`calibrationInput` を保持する。CLI は `archsig calibration-review-record` で canonical
+fixture を出力する。reviewer decision は threshold / CI policy の empirical calibration
+に使うが、formal claim promotion、theorem precondition discharge、obstruction witness
+existence、causal proof とは扱わない。
+
 `archsig validate-air` は metadata が存在する AIR について、coverage / exactness
 boundary、theorem bridge preconditions、formal claim promotion を禁止する
 non-conclusions が metadata から落ちていないことを検査する。legacy AIR v0 fixture は

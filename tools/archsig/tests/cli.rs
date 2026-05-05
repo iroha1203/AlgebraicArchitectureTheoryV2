@@ -3968,6 +3968,63 @@ fn cli_outcome_linkage_dataset_joins_feature_dataset_and_bounded_outcomes() {
 }
 
 #[test]
+fn cli_calibration_review_record_fixture_preserves_review_boundaries() {
+    let out_dir = temp_dir("calibration-review-record");
+    let out = out_dir.join("calibration-review-record.json");
+
+    run_sig0(&[
+        "calibration-review-record",
+        "--out",
+        out.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&out);
+    assert_eq!(json["schemaVersion"], "calibration-review-record-v0");
+    assert_eq!(json["reviewerDecision"]["decision"], "falsePositive");
+    assert!(
+        json["reportFindingRefs"]
+            .as_array()
+            .expect("reportFindingRefs are an array")
+            .iter()
+            .any(
+                |finding| finding["metricRef"] == "runtime.privateEvidenceCount"
+                    && finding["measurementBoundary"] == "unmeasured"
+            )
+    );
+    assert!(
+        json["missingEvidence"]
+            .as_array()
+            .expect("missingEvidence is an array")
+            .iter()
+            .any(|evidence| evidence["boundary"] == "private")
+    );
+    assert!(
+        json["calibrationInput"]["nonConclusions"]
+            .as_array()
+            .expect("calibration nonConclusions are an array")
+            .iter()
+            .any(|claim| claim == "calibration input is not theorem precondition discharge")
+    );
+    assert!(
+        json["schemaCompatibility"]["coverageExactnessBoundaries"]
+            .as_array()
+            .expect("coverageExactnessBoundaries are an array")
+            .iter()
+            .any(
+                |boundary| boundary["axisOrLayer"] == "calibration-review.missing-evidence"
+                    && boundary["measurementBoundary"] == "unmeasured"
+            )
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|claim| claim == "missing or private evidence is not measured-zero evidence")
+    );
+}
+
+#[test]
 fn cli_relation_complexity_fixture_outputs_observation() {
     let root = fixture_root();
     let out_dir = temp_dir("relation");
