@@ -26,6 +26,13 @@ artifact、後続 checker が参照する最小 skeleton を固定する。canon
 | Repair adoption record | `repair-adoption-record-v0` | operational feedback record | implemented | [#623](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/623) |
 | Incident / rollback / MTTR correlation monitor | `incident-correlation-monitor-v0` | operational feedback monitor | implemented | [#624](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/624) |
 | Empirical hypothesis refresh cycle | `hypothesis-refresh-cycle-v0` | operational feedback research cycle | implemented | [#624](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/624) |
+| Architecture field snapshot | `architecture-field-snapshot-v0` | Architecture Dynamics input | proposed | Architecture Dynamics tooling design |
+| Operation proposal log | `operation-proposal-log-v0` | Architecture Dynamics input | proposed | Architecture Dynamics tooling design |
+| PR force report | `pr-force-report-v0` | Architecture Dynamics report | proposed | Architecture Dynamics tooling design |
+| Force dissipation ledger | `force-dissipation-ledger-v0` | Architecture Dynamics report | proposed | Architecture Dynamics tooling design |
+| Signature trajectory report | `signature-trajectory-report-v0` | Architecture Dynamics report | proposed | Architecture Dynamics tooling design |
+| Architecture Dynamics metrics report | `architecture-dynamics-metrics-report-v0` | Architecture Dynamics metrics | proposed | Architecture Dynamics tooling design |
+| Development control input log | `development-control-input-log-v0` | Architecture Dynamics input | proposed | Architecture Dynamics tooling design |
 
 ## Compatibility Policy
 
