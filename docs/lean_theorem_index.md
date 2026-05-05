@@ -1673,6 +1673,9 @@ Issue [#637](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 finite observed trajectory と selected region に相対化した attractor candidate、
 finite initial-state list と bounded operation script に相対化した basin candidate、
 および deterministic self-map の eventually periodic future proof obligation を追加した。
+Issue [#642](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/642) では、
+accepted / rejected transition boundary と selected damping assumption に相対化して、
+accepted evolution の invariant preservation と bad-axis nonincrease theorem を追加した。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -1695,6 +1698,18 @@ finite initial-state list と bounded operation script に相対化した basin 
 | `AdditiveSignatureDeltaLaw.RecordsNonConclusions` | `def` | additive delta law package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `netSignatureDelta_telescopes` | `theorem` | `AdditiveSignatureDeltaLaw` の下で、path 上の per-step delta の net sum が endpoint delta と一致することを示す。 | `proved` |
 | `trajectory_preserves_safeRegion` | `theorem` | initial observation が safe region にあり、各 selected transition が safe region を保存するなら、observed trajectory 全体が safe region に属することを示す。 | `proved` |
+| `DampingControlSchema` | `structure` | selected observation / safe region、accepted / rejected transition predicate、accepted step が selected invariant を保存する explicit assumption、coverage / non-conclusions を束ねる control schema。 | `defined only` |
+| `DampingControlSchema.AcceptedStep` | `def` | selected controller が primitive transition を accepted と分類すること。 | `defined only` |
+| `DampingControlSchema.RejectedStep` | `def` | selected controller が primitive transition を rejected と分類すること。target-state guarantee は結論しない。 | `defined only` |
+| `DampingControlSchema.RecordsNonConclusions` | `def` | control package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `DampingControlSchema.AcceptedEvolution` | `def` | finite evolution path 上のすべての primitive transition が accepted であること。 | `defined only` |
+| `DampingControlSchema.acceptedStep_preserves_selectedInvariant` | `theorem` | accepted step が selected invariant を保存することを explicit controller assumption から取り出す。 | `proved` |
+| `DampingControlSchema.everyStepPreservesSafeRegion_of_acceptedEvolution` | `theorem` | accepted evolution から path 上の各 step の selected safe-region preservation を得る。 | `proved` |
+| `DampingControlSchema.acceptedEvolution_preserves_selectedInvariant` | `theorem` | initial observation が selected invariant 内にあり、evolution が accepted なら observed trajectory 全体が selected invariant 内に留まる。 | `proved` |
+| `DampingControlSchema.BadAxisDampingAssumption` | `structure` | selected bad-axis measure、order reflexivity / transitivity、accepted step nonincrease、non-conclusions を束ねる explicit damping assumption。 | `defined only` |
+| `DampingControlSchema.BadAxisDampingAssumption.RecordsNonConclusions` | `def` | bad-axis damping assumption package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `DampingControlSchema.badAxis_nonincrease_of_acceptedStep` | `theorem` | explicit damping assumption の下で、accepted step が selected bad-axis measure を非増加にすることを示す。 | `proved` |
+| `DampingControlSchema.badAxis_nonincrease_of_acceptedEvolution` | `theorem` | explicit damping assumption の下で、accepted finite evolution が source から target へ selected bad-axis measure を非増加にすることを示す。 | `proved` |
 | `AttractorCandidate` | `structure` | finite observed trajectory と selected region に相対化し、selected entry index 以降の observed suffix が region 内に留まることを記録する schema。 | `defined only` |
 | `AttractorCandidate.observedSuffix` | `def` | attractor candidate の selected entry index 以降の finite observed suffix を取り出す。 | `defined only` |
 | `AttractorCandidate.RecordsNonConclusions` | `def` | attractor candidate package の non-conclusion clause を predicate として取り出す。 | `defined only` |
