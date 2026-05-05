@@ -1,3 +1,4 @@
+import Mathlib.Data.Fintype.Pigeonhole
 import Formal.Arch.Evolution.ArchitectureEvolution
 
 namespace Formal.Arch
@@ -578,11 +579,71 @@ def IterateSelfMap (step : State -> State) : Nat -> State -> State
   | n + 1, X => IterateSelfMap step n (step X)
 
 /--
-Future proof-obligation statement for deterministic finite dynamics.
+An explicit finite universe for deterministic signature dynamics states.
 
-Later theorem packages can prove this under an explicit finite universe and
-orbit-closure assumption. Keeping it as a predicate here prevents the attractor
-candidate schema from silently claiming global convergence.
+The list is proof-carrying. Closure under a selected self-map is named
+separately as `FiniteStateUniverse.StepClosed`, even though full coverage can
+discharge it.
+-/
+structure FiniteStateUniverse (State : Type u) where
+  states : List State
+  nodup : states.Nodup
+  covers : ∀ X : State, X ∈ states
+
+namespace FiniteStateUniverse
+
+variable {State : Type u}
+
+/-- The selected self-map stays inside the listed finite universe. -/
+def StepClosed (U : FiniteStateUniverse State) (step : State -> State) : Prop :=
+  ∀ X : State, X ∈ U.states -> step X ∈ U.states
+
+/--
+For a full finite state universe, self-map closure follows from coverage.
+
+It remains an explicit theorem so later theorem statements can name the closure
+precondition without deriving it silently from the transition function.
+-/
+theorem stepClosed_of_covers (U : FiniteStateUniverse State)
+    (step : State -> State) : U.StepClosed step := by
+  intro X _hMem
+  exact U.covers (step X)
+
+/-- Build a full finite state universe from a duplicate-free covering list. -/
+def full (states : List State) (nodup : states.Nodup)
+    (covers : ∀ X : State, X ∈ states) :
+    FiniteStateUniverse State where
+  states := states
+  nodup := nodup
+  covers := covers
+
+/-- The explicit universe induces a `Fintype` instance for finite dynamics. -/
+noncomputable def fintype [DecidableEq State]
+    (U : FiniteStateUniverse State) : Fintype State where
+  elems := U.states.toFinset
+  complete := by
+    intro X
+    simpa using U.covers X
+
+end FiniteStateUniverse
+
+/-- Iterating a self-map over an added horizon composes the two iterates. -/
+theorem iterateSelfMap_add
+    (step : State -> State) (m n : Nat) (X : State) :
+    IterateSelfMap step (m + n) X =
+      IterateSelfMap step m (IterateSelfMap step n X) := by
+  induction n generalizing X with
+  | zero =>
+      simp [IterateSelfMap]
+  | succ n ih =>
+      simp [IterateSelfMap, ih]
+
+/--
+Statement for deterministic finite dynamics.
+
+The theorem below proves this under finite-state assumptions. Keeping it as a
+predicate prevents the attractor candidate schema from silently claiming global
+convergence.
 -/
 def DeterministicSelfMapEventuallyPeriodic
     (step : State -> State) (start : State) : Prop :=
@@ -591,6 +652,89 @@ def DeterministicSelfMapEventuallyPeriodic
       ∀ n, preperiod ≤ n ->
         IterateSelfMap step (n + period) start =
           IterateSelfMap step n start
+
+/--
+Once an orbit revisits a previous state, the suffix from that point is periodic
+with the selected positive period.
+-/
+theorem deterministicSelfMap_periodic_from_repetition
+    (step : State -> State) (start : State)
+    {preperiod period : Nat} (hCycle : 0 < period)
+    (hRepeat :
+      IterateSelfMap step (preperiod + period) start =
+        IterateSelfMap step preperiod start) :
+    DeterministicSelfMapEventuallyPeriodic step start := by
+  refine ⟨preperiod, period, hCycle, ?_⟩
+  intro n hn
+  let offset := n - preperiod
+  have hn_eq : n = preperiod + offset := by
+    omega
+  rw [hn_eq]
+  have hReassoc :
+      preperiod + offset + period = offset + (preperiod + period) := by
+    omega
+  calc
+    IterateSelfMap step (preperiod + offset + period) start =
+        IterateSelfMap step (offset + (preperiod + period)) start := by
+          rw [hReassoc]
+    _ = IterateSelfMap step offset
+          (IterateSelfMap step (preperiod + period) start) := by
+          rw [iterateSelfMap_add]
+    _ = IterateSelfMap step offset (IterateSelfMap step preperiod start) := by
+          rw [hRepeat]
+    _ = IterateSelfMap step (offset + preperiod) start := by
+          rw [iterateSelfMap_add]
+    _ = IterateSelfMap step (preperiod + offset) start := by
+          rw [Nat.add_comm offset preperiod]
+
+/--
+Finite deterministic self-map dynamics are eventually periodic.
+
+This is only a finite-state orbit theorem. It does not assert a global
+attractor, stochastic convergence, empirical AI patch behavior, or completeness
+of a real codebase extraction universe.
+-/
+theorem deterministicSelfMapEventuallyPeriodic_of_finite
+    [Finite State] (step : State -> State) (start : State) :
+    DeterministicSelfMapEventuallyPeriodic step start := by
+  obtain ⟨i, j, hNe, hEq⟩ :=
+    Finite.exists_ne_map_eq_of_infinite
+      (fun n : Nat => IterateSelfMap step n start)
+  rcases lt_or_gt_of_ne hNe with hlt | hgt
+  · have hPeriod : 0 < j - i := by
+      omega
+    have hRepeat :
+        IterateSelfMap step (i + (j - i)) start =
+          IterateSelfMap step i start := by
+      have hSum : i + (j - i) = j := by
+        omega
+      simpa [hSum] using hEq.symm
+    exact deterministicSelfMap_periodic_from_repetition
+      step start hPeriod hRepeat
+  · have hPeriod : 0 < i - j := by
+      omega
+    have hRepeat :
+        IterateSelfMap step (j + (i - j)) start =
+          IterateSelfMap step j start := by
+      have hSum : j + (i - j) = i := by
+        omega
+      simpa [hSum] using hEq
+    exact deterministicSelfMap_periodic_from_repetition
+      step start hPeriod hRepeat
+
+/--
+Explicit-universe version of finite deterministic eventual periodicity.
+
+The universe supplies a duplicate-free covering list and an explicit closure
+predicate for the selected self-map. The conclusion remains only the bounded
+eventual-periodicity predicate.
+-/
+theorem deterministicSelfMapEventuallyPeriodic_of_finiteUniverse
+    [DecidableEq State] (U : FiniteStateUniverse State)
+    (step : State -> State) (_hClosed : U.StepClosed step) (start : State) :
+    DeterministicSelfMapEventuallyPeriodic step start := by
+  letI : Fintype State := U.fintype
+  exact deterministicSelfMapEventuallyPeriodic_of_finite step start
 
 /--
 Two two-step transition orders are observationally commutative when they start
