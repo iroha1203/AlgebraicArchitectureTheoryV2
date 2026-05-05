@@ -838,6 +838,7 @@ Lean 側で固定する。
 | `FeatureExtensionReport` | PR force の theorem precondition / obstruction witness context。 |
 | `OutcomeLinkageDatasetV0` | PR force と review / incident / rollback outcome の empirical join。 |
 | `architecture-drift-ledger-v0` | 時系列 drift の tooling artifact。 |
+| [Attractor Engineering](attractor_engineering.md) | architecture field を設計して、望ましい operation distribution と signature trajectory を selected safe / productive region へ誘導する design vocabulary。 |
 
 ## Non-conclusions
 
