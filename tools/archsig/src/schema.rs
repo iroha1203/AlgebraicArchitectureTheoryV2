@@ -13,6 +13,12 @@ pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report-v0
 pub const AIR_SCHEMA_VERSION: &str = "aat-air-v0";
 pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report-v0";
 pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report-v0";
+pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness-v0";
+pub const ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION: &str = "architecture-drift-ledger-v0";
+pub const DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION: &str =
+    "detectable-values-reported-axes-catalog-v0";
+pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog-v0";
+pub const SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION: &str = "schema-compatibility-policy-v0";
 pub const THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION: &str =
     "theorem-precondition-check-report-v0";
 pub const REPAIR_RULE_REGISTRY_SCHEMA_VERSION: &str = "repair-rule-registry-v0";
@@ -57,6 +63,62 @@ pub const EXTRACTOR_NAME: &str = "archsig";
 pub const EXTRACTOR_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const RULE_SET_VERSION: &str = "sig0-v0";
 pub const DEFAULT_UNIVERSE_MODE: &str = "local-only";
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaVersionCatalogV0 {
+    pub schema_version: String,
+    pub catalog_id: String,
+    pub catalog_version: String,
+    pub phase: String,
+    pub artifacts: Vec<SchemaVersionCatalogEntryV0>,
+    pub compatibility_policy: SchemaCompatibilityPolicyV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaVersionCatalogEntryV0 {
+    pub artifact_id: String,
+    pub artifact_name: String,
+    pub schema_version_name: String,
+    pub artifact_role: String,
+    pub owner_phase: String,
+    pub status: String,
+    pub primary_docs: Vec<String>,
+    pub downstream_issues: Vec<String>,
+    pub compatibility_boundary: SchemaCompatibilityBoundaryV0,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityBoundaryV0 {
+    pub field_mapping_policy: String,
+    pub deprecated_fields: Vec<String>,
+    pub new_required_assumptions: Vec<String>,
+    pub coverage_exactness_boundary: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityPolicyV0 {
+    pub schema_version: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub applies_to_catalog_version: String,
+    pub dimensions: Vec<SchemaCompatibilityDimensionV0>,
+    pub required_checks: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityDimensionV0 {
+    pub dimension: String,
+    pub required_metadata: Vec<String>,
+    pub checker_boundary: String,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
