@@ -238,6 +238,171 @@ theorem trajectory_preserves_safeRegion
               (hEvery.1 hStart) hEvery.2 sig hTail
 
 /--
+Selected damping / control schema for accepted architecture transitions.
+
+The schema treats review, CI, type checking, policy, or another controller as a
+boundary predicate on primitive transitions. It only proves consequences for
+steps explicitly classified as accepted, and records rejected steps as a
+separate boundary without deriving target-state guarantees from rejection
+alone.
+-/
+structure DampingControlSchema (State : Type u) (Sig : Type v) where
+  observation : SignatureObservation State Sig
+  invariant : SafeRegion Sig
+  accepted : {X Y : State} -> ArchitectureTransition State X Y -> Prop
+  rejected : {X Y : State} -> ArchitectureTransition State X Y -> Prop
+  acceptedPreservesInvariant :
+    ∀ {X Y : State} (t : ArchitectureTransition State X Y),
+      accepted t -> StepPreservesSafeRegion observation invariant t
+  coverageAssumptions : Prop
+  nonConclusions : Prop
+
+namespace DampingControlSchema
+
+variable {State : Type u} {Sig : Type v} {Score : Type w}
+
+/-- The selected controller accepts this primitive transition. -/
+def AcceptedStep
+    (control : DampingControlSchema State Sig)
+    {X Y : State} (t : ArchitectureTransition State X Y) : Prop :=
+  control.accepted t
+
+/-- The selected controller rejects this primitive transition. -/
+def RejectedStep
+    (control : DampingControlSchema State Sig)
+    {X Y : State} (t : ArchitectureTransition State X Y) : Prop :=
+  control.rejected t
+
+/-- The control package explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions
+    (control : DampingControlSchema State Sig) : Prop :=
+  control.nonConclusions
+
+/-- Every primitive transition in the evolution path is accepted. -/
+def AcceptedEvolution
+    (control : DampingControlSchema State Sig) :
+    {X Y : State} -> ArchitectureEvolution State X Y -> Prop
+  | _, _, ArchitecturePath.nil _ => True
+  | _, _, ArchitecturePath.cons step rest =>
+      control.AcceptedStep step ∧ AcceptedEvolution control rest
+
+/--
+An accepted step preserves the selected invariant by the explicit controller
+assumption.
+-/
+theorem acceptedStep_preserves_selectedInvariant
+    (control : DampingControlSchema State Sig)
+    {X Y : State} (t : ArchitectureTransition State X Y)
+    (hAccepted : control.AcceptedStep t) :
+    StepPreservesSafeRegion control.observation control.invariant t :=
+  control.acceptedPreservesInvariant t hAccepted
+
+/--
+If every step in a finite evolution is accepted, every step preserves the
+selected invariant.
+-/
+theorem everyStepPreservesSafeRegion_of_acceptedEvolution
+    (control : DampingControlSchema State Sig) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      control.AcceptedEvolution plan ->
+        EveryStepPreservesSafeRegion
+          control.observation control.invariant plan
+  | _, _, ArchitecturePath.nil _, _hAccepted => trivial
+  | _, _, ArchitecturePath.cons step rest, hAccepted => by
+      exact
+        And.intro
+          (control.acceptedStep_preserves_selectedInvariant step hAccepted.1)
+          (everyStepPreservesSafeRegion_of_acceptedEvolution
+            control rest hAccepted.2)
+
+/--
+Accepted finite evolutions preserve the selected invariant over the observed
+signature trajectory.
+-/
+theorem acceptedEvolution_preserves_selectedInvariant
+    (control : DampingControlSchema State Sig) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      StateInSafeRegion control.observation control.invariant X ->
+      control.AcceptedEvolution plan ->
+        SignatureTrajectoryInSafeRegion
+          control.invariant (SignatureTrajectory control.observation plan)
+  | _, _, plan, hStart, hAccepted =>
+      trajectory_preserves_safeRegion
+        control.observation control.invariant plan hStart
+        (control.everyStepPreservesSafeRegion_of_acceptedEvolution
+          plan hAccepted)
+
+/--
+Explicit damping assumption for a selected bad-axis measure.
+
+The bad-axis order is caller supplied. This package is the only place where
+nonincrease is assumed; a controller, review process, CI run, or policy label
+does not imply a bad-axis decrease by itself.
+-/
+structure BadAxisDampingAssumption
+    (control : DampingControlSchema State Sig) (Score : Type w)
+    [LE Score] where
+  badAxis : Sig -> Score
+  selfNonincreasing :
+    ∀ sig : Sig, badAxis sig ≤ badAxis sig
+  transNonincreasing :
+    ∀ {lower middle upper : Score},
+      lower ≤ middle -> middle ≤ upper -> lower ≤ upper
+  acceptedStepNonincreasing :
+    ∀ {X Y : State} (t : ArchitectureTransition State X Y),
+      control.AcceptedStep t ->
+        badAxis (control.observation.observe Y) ≤
+          badAxis (control.observation.observe X)
+  nonConclusions : Prop
+
+namespace BadAxisDampingAssumption
+
+variable [LE Score]
+variable {control : DampingControlSchema State Sig}
+
+/-- The damping assumption explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions
+    (assumption : BadAxisDampingAssumption control Score) : Prop :=
+  assumption.nonConclusions
+
+end BadAxisDampingAssumption
+
+/--
+Under an explicit damping assumption, an accepted step is nonincreasing on the
+selected bad-axis measure.
+-/
+theorem badAxis_nonincrease_of_acceptedStep [LE Score]
+    (control : DampingControlSchema State Sig)
+    (assumption : BadAxisDampingAssumption control Score)
+    {X Y : State} (t : ArchitectureTransition State X Y)
+    (hAccepted : control.AcceptedStep t) :
+    assumption.badAxis (control.observation.observe Y) ≤
+      assumption.badAxis (control.observation.observe X) :=
+  assumption.acceptedStepNonincreasing t hAccepted
+
+/--
+Under an explicit damping assumption, an accepted finite evolution is
+nonincreasing from target to source on the selected bad-axis measure.
+-/
+theorem badAxis_nonincrease_of_acceptedEvolution [LE Score]
+    (control : DampingControlSchema State Sig)
+    (assumption : BadAxisDampingAssumption control Score) :
+    {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      control.AcceptedEvolution plan ->
+        assumption.badAxis (control.observation.observe Y) ≤
+          assumption.badAxis (control.observation.observe X)
+  | X, _, ArchitecturePath.nil _, _hAccepted => by
+      exact assumption.selfNonincreasing (control.observation.observe X)
+  | X, Z, ArchitecturePath.cons (Y := Y) step rest, hAccepted => by
+      exact
+        assumption.transNonincreasing
+          (badAxis_nonincrease_of_acceptedEvolution
+            control assumption rest hAccepted.2)
+          (assumption.acceptedStepNonincreasing step hAccepted.1)
+
+end DampingControlSchema
+
+/--
 A finite observed-trajectory attractor candidate.
 
 The candidate is relative to a supplied finite signature trajectory and selected
