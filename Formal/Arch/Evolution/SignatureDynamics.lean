@@ -3,7 +3,7 @@ import Formal.Arch.Evolution.ArchitectureEvolution
 
 namespace Formal.Arch
 
-universe u v w
+universe u v w x
 
 /--
 An observation schema from architecture states to a signature domain.
@@ -506,6 +506,240 @@ theorem badAxis_nonincrease_of_acceptedEvolution [LE Score]
           (assumption.acceptedStepNonincreasing step hAccepted.1)
 
 end DampingControlSchema
+
+/--
+Bounded semantics connecting operation identifiers to primitive architecture
+transitions.
+
+The relation is intentionally explicit: an operation identifier, tag, proposal,
+or script entry does not produce preservation, acceptance, or nonincrease by
+itself. Later tooling can instantiate this relation with a proof-carrying
+transition package.
+-/
+structure OperationTransitionSemantics
+    (State : Type u) (OperationId : Type w) where
+  realizes :
+    OperationId -> {X Y : State} -> ArchitectureTransition State X Y -> Prop
+  coverageAssumptions : Prop
+  nonConclusions : Prop
+
+namespace OperationTransitionSemantics
+
+variable {State : Type u} {Sig : Type v} {OperationId : Type w}
+
+/-- The selected operation identifier realizes this primitive transition. -/
+def Realizes
+    (sem : OperationTransitionSemantics State OperationId)
+    (op : OperationId) {X Y : State}
+    (t : ArchitectureTransition State X Y) : Prop :=
+  sem.realizes op t
+
+/-- The semantics package explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions
+    (sem : OperationTransitionSemantics State OperationId) : Prop :=
+  sem.nonConclusions
+
+/--
+The selected operation identifier preserves the selected safe region whenever
+it realizes a primitive transition.
+-/
+def OperationPreservesSafeRegion
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig)
+    (op : OperationId) : Prop :=
+  ∀ {X Y : State} (t : ArchitectureTransition State X Y),
+    sem.Realizes op t -> StepPreservesSafeRegion O R t
+
+/--
+Every operation in a selected operation family preserves the selected safe
+region, relative to the supplied transition semantics.
+-/
+def OperationFamilyPreservesSafeRegion
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig)
+    (operationFamily : OperationId -> Prop) : Prop :=
+  ∀ op, operationFamily op -> sem.OperationPreservesSafeRegion O R op
+
+end OperationTransitionSemantics
+
+/--
+A bounded operation script with an explicit selected operation family.
+
+`operationsInFamily` only says that the listed operation identifiers are in the
+selected family. It does not assert that the family preserves any invariant;
+that remains a separate theorem assumption.
+-/
+structure BoundedOperationScript (OperationId : Type w) where
+  operations : List OperationId
+  operationFamily : OperationId -> Prop
+  operationsInFamily : ∀ op, op ∈ operations -> operationFamily op
+  coverageAssumptions : Prop
+  nonConclusions : Prop
+
+namespace BoundedOperationScript
+
+variable {State : Type u} {Sig : Type v} {OperationId : Type w}
+variable {Score : Type x}
+
+/-- The script package explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions (script : BoundedOperationScript OperationId) :
+    Prop :=
+  script.nonConclusions
+
+/--
+The selected operation list realizes an endpoint-indexed architecture evolution.
+
+The relation requires one operation identifier per primitive transition. A
+length mismatch is false, keeping bounded script semantics separate from any
+total interpreter or proposal-completeness claim.
+-/
+def ScriptRealizesEvolution
+    (sem : OperationTransitionSemantics State OperationId) :
+    List OperationId -> {X Y : State} -> ArchitectureEvolution State X Y -> Prop
+  | [], _, _, ArchitecturePath.nil _ => True
+  | [], _, _, ArchitecturePath.cons _step _rest => False
+  | _op :: _ops, _, _, ArchitecturePath.nil _ => False
+  | op :: ops, _, _, ArchitecturePath.cons step rest =>
+      sem.Realizes op step ∧ ScriptRealizesEvolution sem ops rest
+
+/-- This bounded script realizes the selected architecture evolution. -/
+def RealizesEvolution
+    (script : BoundedOperationScript OperationId)
+    (sem : OperationTransitionSemantics State OperationId)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) : Prop :=
+  ScriptRealizesEvolution sem script.operations plan
+
+/--
+Every step in a realized operation script is accepted by the selected control
+schema.
+-/
+def EveryScriptStepAccepted
+    (control : DampingControlSchema State Sig)
+    (sem : OperationTransitionSemantics State OperationId) :
+    List OperationId -> {X Y : State} -> ArchitectureEvolution State X Y -> Prop
+  | [], _, _, ArchitecturePath.nil _ => True
+  | [], _, _, ArchitecturePath.cons _step _rest => False
+  | _op :: _ops, _, _, ArchitecturePath.nil _ => False
+  | op :: ops, _, _, ArchitecturePath.cons step rest =>
+      sem.Realizes op step ∧ control.AcceptedStep step ∧
+        EveryScriptStepAccepted control sem ops rest
+
+/-- This bounded script is realized as accepted steps in the selected plan. -/
+def AcceptedEvolution
+    (script : BoundedOperationScript OperationId)
+    (control : DampingControlSchema State Sig)
+    (sem : OperationTransitionSemantics State OperationId)
+    {X Y : State} (plan : ArchitectureEvolution State X Y) : Prop :=
+  EveryScriptStepAccepted control sem script.operations plan
+
+/--
+If each realized operation in a script preserves the selected safe region, each
+primitive transition in the realized plan preserves that safe region.
+-/
+theorem everyStepPreservesSafeRegion_of_scriptRealizes
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig) :
+    (operations : List OperationId) ->
+      {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      ScriptRealizesEvolution sem operations plan ->
+      (∀ op, op ∈ operations -> sem.OperationPreservesSafeRegion O R op) ->
+        EveryStepPreservesSafeRegion O R plan
+  | [], _, _, ArchitecturePath.nil _, _hRealizes, _hOps => trivial
+  | [], _, _, ArchitecturePath.cons _step _rest, hRealizes, _hOps =>
+      False.elim hRealizes
+  | _op :: _ops, _, _, ArchitecturePath.nil _, hRealizes, _hOps =>
+      False.elim hRealizes
+  | op :: ops, _, _, ArchitecturePath.cons step rest, hRealizes, hOps => by
+      have hStep : StepPreservesSafeRegion O R step :=
+        hOps op (by simp) step hRealizes.1
+      have hOpsRest :
+          ∀ op', op' ∈ ops -> sem.OperationPreservesSafeRegion O R op' := by
+        intro op' hMem
+        exact hOps op' (by simp [hMem])
+      exact
+        And.intro hStep
+          (everyStepPreservesSafeRegion_of_scriptRealizes
+            sem O R ops rest hRealizes.2 hOpsRest)
+
+/--
+If the selected operation family preserves the safe region and the bounded
+script only contains family members, then the realized plan preserves the safe
+region step-by-step.
+-/
+theorem everyStepPreservesSafeRegion_of_scriptFamily
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig)
+    (script : BoundedOperationScript OperationId)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hRealizes : script.RealizesEvolution sem plan)
+    (hFamily :
+      sem.OperationFamilyPreservesSafeRegion O R script.operationFamily) :
+    EveryStepPreservesSafeRegion O R plan :=
+  everyStepPreservesSafeRegion_of_scriptRealizes
+    sem O R script.operations plan hRealizes
+    (by
+      intro op hMem
+      exact hFamily op (script.operationsInFamily op hMem))
+
+/--
+A bounded operation script preserves the selected observed safe region along
+the whole signature trajectory, provided preservation is supplied for the
+selected operation family.
+-/
+theorem script_preserves_safeRegion
+    (sem : OperationTransitionSemantics State OperationId)
+    (O : SignatureObservation State Sig) (R : SafeRegion Sig)
+    (script : BoundedOperationScript OperationId)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hStart : StateInSafeRegion O R X)
+    (hRealizes : script.RealizesEvolution sem plan)
+    (hFamily :
+      sem.OperationFamilyPreservesSafeRegion O R script.operationFamily) :
+    SignatureTrajectoryInSafeRegion R (SignatureTrajectory O plan) :=
+  trajectory_preserves_safeRegion O R plan hStart
+    (everyStepPreservesSafeRegion_of_scriptFamily
+      sem O R script plan hRealizes hFamily)
+
+/--
+An accepted operation script induces an accepted finite architecture evolution.
+-/
+theorem acceptedEvolution_of_scriptAccepted
+    (control : DampingControlSchema State Sig)
+    (sem : OperationTransitionSemantics State OperationId) :
+    (operations : List OperationId) ->
+      {X Y : State} -> (plan : ArchitectureEvolution State X Y) ->
+      EveryScriptStepAccepted control sem operations plan ->
+        control.AcceptedEvolution plan
+  | [], _, _, ArchitecturePath.nil _, _hAccepted => trivial
+  | [], _, _, ArchitecturePath.cons _step _rest, hAccepted =>
+      False.elim hAccepted
+  | _op :: _ops, _, _, ArchitecturePath.nil _, hAccepted =>
+      False.elim hAccepted
+  | _op :: ops, _, _, ArchitecturePath.cons _step rest, hAccepted => by
+      exact
+        And.intro hAccepted.2.1
+          (acceptedEvolution_of_scriptAccepted
+            control sem ops rest hAccepted.2.2)
+
+/--
+Under an explicit bad-axis damping assumption, an accepted bounded operation
+script is nonincreasing from target to source on the selected bad-axis measure.
+-/
+theorem badAxis_nonincrease_of_acceptedScript [LE Score]
+    (control : DampingControlSchema State Sig)
+    (assumption : DampingControlSchema.BadAxisDampingAssumption control Score)
+    (sem : OperationTransitionSemantics State OperationId)
+    (script : BoundedOperationScript OperationId)
+    {X Y : State} (plan : ArchitectureEvolution State X Y)
+    (hAccepted : script.AcceptedEvolution control sem plan) :
+    assumption.badAxis (control.observation.observe Y) ≤
+      assumption.badAxis (control.observation.observe X) :=
+  DampingControlSchema.badAxis_nonincrease_of_acceptedEvolution
+    control assumption plan
+    (acceptedEvolution_of_scriptAccepted
+      control sem script.operations plan hAccepted)
+
+end BoundedOperationScript
 
 /--
 A finite observed-trajectory attractor candidate.
