@@ -1,0 +1,186 @@
+{
+  "schemaVersion": "report-outcome-daily-ledger-v0",
+  "schemaCompatibility": {
+    "artifactId": "report-outcome-daily-ledger",
+    "schemaVersionName": "report-outcome-daily-ledger-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "aggregationWindow",
+        "targetField": "aggregationWindow",
+        "mappingKind": "stable",
+        "requiredReview": "preserve daily batch scope"
+      },
+      {
+        "sourceField": "sourceReportRefs",
+        "targetField": "sourceReportRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve report traceability"
+      },
+      {
+        "sourceField": "retention",
+        "targetField": "retention",
+        "mappingKind": "stable",
+        "requiredReview": "preserve retention and private / missing data policy"
+      },
+      {
+        "sourceField": "batches[].missingPrivateUnmeasuredBoundaries",
+        "targetField": "batches[].missingPrivateUnmeasuredBoundaries",
+        "mappingKind": "stable",
+        "requiredReview": "preserve missing / private / unmeasured boundary counts"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve empirical / operational guardrails"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "source-report-refs-are-preserved",
+        "appliesTo": "report-outcome-daily-ledger",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "report-outcome-ledger.aggregation-window",
+        "measurementBoundary": "operationalMetadata",
+        "coverageAssumptions": [
+          "aggregationWindow.windowStart and windowEnd delimit daily batch scope"
+        ],
+        "exactnessAssumptions": [
+          "aggregation window metadata is not evidence of semantic preservation"
+        ]
+      },
+      {
+        "axisOrLayer": "report-outcome-ledger.missing-private-unmeasured",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "missing outcome observations remain unavailable",
+          "private incident / retained-report refs remain private"
+        ],
+        "exactnessAssumptions": [
+          "missing / private / unmeasured data is never rounded to measuredZero"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "report outcome ledger schema compatibility metadata does not prove semantic preservation",
+      "report outcome ledger schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+      "missing / private / unmeasured evidence is not measured-zero evidence"
+    ]
+  },
+  "ledgerId": "fixture-b10-report-outcome-daily-ledger",
+  "generatedAt": "2026-05-05T00:00:00Z",
+  "aggregationWindow": {
+    "windowStart": "2026-05-04T00:00:00Z",
+    "windowEnd": "2026-05-05T00:00:00Z",
+    "windowKind": "daily"
+  },
+  "sourceReportRefs": [
+    {
+      "kind": "outcome-linkage-dataset",
+      "path": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+      "schemaVersion": "outcome-linkage-dataset-v0",
+      "boundary": "PR-level bounded outcome observations"
+    },
+    {
+      "kind": "architecture-drift-ledger",
+      "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+      "schemaVersion": "architecture-drift-ledger-v0",
+      "reportId": "fixture-b9-architecture-drift-ledger",
+      "boundary": "daily drift / suppression / retention operational state"
+    }
+  ],
+  "retention": {
+    "retentionManifestRef": "report-artifacts:fixture-b7-report-artifact-retention",
+    "retentionPeriodDays": 90,
+    "retainedArtifactRefs": [
+      "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+      "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json"
+    ],
+    "privateDataPolicy": "private source artifacts remain traceability refs and are not treated as measured-zero",
+    "missingDataPolicy": "missing outcome, incident, or retained-report data is preserved as unavailable / unmeasured",
+    "nonConclusions": [
+      "retention metadata is operational audit state, not semantic preservation"
+    ]
+  },
+  "batches": [
+    {
+      "batchId": "daily-batch-2026-05-05",
+      "architectureId": "checkout-service",
+      "outcomeDatasetRef": "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+      "driftLedgerRef": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+      "outcomeRecordCount": 1,
+      "driftEntryCount": 2,
+      "sourceReportRefs": [
+        "tools/archsig/tests/fixtures/minimal/outcome_linkage_dataset.json",
+        "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json"
+      ],
+      "outcomeMetricSummaries": [
+        {
+          "metricRef": "reviewCost.approvalLatencyHours",
+          "measuredCount": 0,
+          "unavailableCount": 1,
+          "privateCount": 0,
+          "unmeasuredCount": 0,
+          "sourceRefs": [],
+          "nonConclusions": [
+            "unavailable approval latency is not measured-zero evidence"
+          ]
+        }
+      ],
+      "missingPrivateUnmeasuredBoundaries": [
+        {
+          "boundary": "unavailable",
+          "metricRef": "reviewCost.approvalLatencyHours",
+          "count": 1,
+          "sourceRefs": [],
+          "nonConclusions": [
+            "unavailable approval latency is not measured-zero evidence"
+          ]
+        },
+        {
+          "boundary": "unmeasured",
+          "metricRef": "driftLedger.private_runtime_evidence_count",
+          "count": 1,
+          "sourceRefs": [
+            "missing-private-artifact:runtime-log"
+          ],
+          "nonConclusions": [
+            "private / missing runtime evidence is not measured-zero evidence"
+          ]
+        }
+      ],
+      "nonConclusions": [
+        "daily batch aggregation is operational monitoring, not causal proof",
+        "missing / private / unmeasured boundaries are preserved and not rounded to zero"
+      ]
+    }
+  ],
+  "analysisMetadata": {
+    "leanStatus": "empirical hypothesis / tooling validation",
+    "measurementBoundary": "daily operational ledger joining outcome linkage observations and Architecture Drift Ledger entries",
+    "sourceJoinKeys": [
+      "repository owner/name",
+      "pull request number where present",
+      "drift ledger aggregation window"
+    ],
+    "nonConclusions": [
+      "does not infer causal effects from report warnings to outcomes",
+      "does not promote empirical correlation to a Lean theorem claim",
+      "does not treat missing / private / unmeasured data as measured-zero evidence",
+      "does not rank architecture quality with a single score"
+    ]
+  },
+  "nonConclusions": [
+    "report outcome daily ledger is empirical / operational signal, not a Lean theorem",
+    "schema migration pass is not semantic preservation",
+    "ledger accumulation does not imply extractor completeness"
+  ]
+}

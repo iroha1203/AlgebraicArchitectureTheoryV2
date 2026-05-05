@@ -525,6 +525,15 @@ measured nonzero / unmeasured、semantic unmeasured、generated-change metadata 
 canonical AIR fixtures と expected boundary を固定する。fixture 更新時は、axis の追加、
 改名、削除、measurement boundary 変更を compatibility review の対象にする。
 
+Report outcome daily ledger は B10 operational feedback artifact として、
+`outcome-linkage-dataset-v0` と `architecture-drift-ledger-v0` を daily aggregation window
+で join する。`sourceReportRefs`, `retention`, `outcomeMetricSummaries`,
+`missingPrivateUnmeasuredBoundaries` を保持し、unavailable / private / missing /
+unmeasured outcome data を measured-zero evidence に丸めない。CLI は
+`archsig report-outcome-daily-ledger` で fixture 化し、schema compatibility metadata は
+aggregation window、source report refs、retention policy、boundary count、non-conclusions
+を migration boundary として扱う。
+
 `archsig validate-air` は metadata が存在する AIR について、coverage / exactness
 boundary、theorem bridge preconditions、formal claim promotion を禁止する
 non-conclusions が metadata から落ちていないことを検査する。legacy AIR v0 fixture は

@@ -3635,6 +3635,7 @@ fn cli_outcome_linkage_dataset_joins_feature_dataset_and_bounded_outcomes() {
     let feature_dataset = out_dir.join("feature-extension-dataset.json");
     let outcome_input = out_dir.join("outcome-observations.json");
     let outcome_dataset = out_dir.join("outcome-linkage-dataset.json");
+    let daily_ledger = out_dir.join("report-outcome-daily-ledger.json");
 
     run_sig0(&[
         "feature-report",
@@ -3893,6 +3894,76 @@ fn cli_outcome_linkage_dataset_joins_feature_dataset_and_bounded_outcomes() {
             .expect("analysis non-conclusions are an array")
             .iter()
             .any(|claim| claim == "does not rank architecture quality with a single score")
+    );
+
+    run_sig0(&[
+        "report-outcome-daily-ledger",
+        "--outcome-linkage",
+        outcome_dataset
+            .to_str()
+            .expect("outcome dataset path is utf-8"),
+        "--drift-ledger",
+        github_root
+            .join("architecture_drift_ledger.json")
+            .to_str()
+            .expect("drift ledger path is utf-8"),
+        "--generated-at",
+        "2026-05-05T00:00:00Z",
+        "--window-start",
+        "2026-05-04T00:00:00Z",
+        "--window-end",
+        "2026-05-05T00:00:00Z",
+        "--out",
+        daily_ledger.to_str().expect("daily ledger path is utf-8"),
+    ]);
+
+    let ledger = read_json(&daily_ledger);
+    assert_eq!(ledger["schemaVersion"], "report-outcome-daily-ledger-v0");
+    assert!(
+        ledger["sourceReportRefs"]
+            .as_array()
+            .expect("sourceReportRefs are an array")
+            .iter()
+            .any(|source| source["kind"] == "outcome-linkage-dataset")
+    );
+    assert_eq!(
+        ledger["retention"]["retentionManifestRef"],
+        "report-artifacts:fixture-b7-report-artifact-retention"
+    );
+    assert!(
+        ledger["batches"][0]["missingPrivateUnmeasuredBoundaries"]
+            .as_array()
+            .expect("boundary counts are an array")
+            .iter()
+            .any(
+                |boundary| boundary["metricRef"] == "reviewCost.approvalLatencyHours"
+                    && boundary["boundary"] == "unavailable"
+            )
+    );
+    assert!(
+        ledger["batches"][0]["missingPrivateUnmeasuredBoundaries"]
+            .as_array()
+            .expect("boundary counts are an array")
+            .iter()
+            .any(
+                |boundary| boundary["metricRef"] == "driftLedger.private_runtime_evidence_count"
+                    && boundary["boundary"] == "unmeasured"
+            )
+    );
+    assert!(
+        ledger["schemaCompatibility"]["fieldMappings"]
+            .as_array()
+            .expect("fieldMappings are an array")
+            .iter()
+            .any(|mapping| mapping["sourceField"]
+                == "batches[].missingPrivateUnmeasuredBoundaries")
+    );
+    assert!(
+        ledger["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|claim| claim == "schema migration pass is not semantic preservation")
     );
 }
 

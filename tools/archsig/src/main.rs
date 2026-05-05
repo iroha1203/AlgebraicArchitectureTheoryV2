@@ -7,22 +7,23 @@ use std::process::ExitCode;
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
     CustomRulePluginRegistryV0, CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
-    DetectableValuesReportedAxesCatalogV0, EmpiricalDatasetInput, FeatureExtensionReportV0,
-    FrameworkAdapterEvidenceV0, LawPolicyTemplateRegistryV0,
+    DetectableValuesReportedAxesCatalogV0, DriftLedgerAggregationWindowV0, EmpiricalDatasetInput,
+    FeatureExtensionReportV0, FrameworkAdapterEvidenceV0, LawPolicyTemplateRegistryV0,
     LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
     MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
-    ReportArtifactRetentionValidationReportV0, RepositoryRevisionRef, RiskDispositionV0,
-    ScanMetadata, SchemaCompatibilityCheckReportV0, SchemaVersionCatalogV0, Sig0Document,
-    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SnapshotRecordInput,
-    SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
-    TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence, build_air_document,
-    build_baseline_suppression_report, build_empirical_dataset,
-    build_feature_extension_dataset_from_files, build_feature_extension_report,
-    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
-    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
+    ReportArtifactRetentionValidationReportV0, ReportOutcomeDailyLedgerInput,
+    RepositoryRevisionRef, RiskDispositionV0, ScanMetadata, SchemaCompatibilityCheckReportV0,
+    SchemaVersionCatalogV0, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
+    SnapshotRecordInput, SnapshotRepositoryRef, SynthesisConstraintArtifactV0,
+    SynthesisConstraintValidationReportV0, TheoremPreconditionCheckReportV0,
+    attach_framework_adapter_evidence, build_air_document, build_baseline_suppression_report,
+    build_empirical_dataset, build_feature_extension_dataset_from_files,
+    build_feature_extension_report, build_outcome_linkage_dataset_from_files,
+    build_policy_decision_report, build_pr_history_dataset_from_github_files,
+    build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
     build_schema_compatibility_check_report, build_signature_diff_report,
     build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
@@ -198,6 +199,48 @@ enum Command {
         outcome: PathBuf,
 
         /// Output outcome linkage dataset JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Build a B10 report outcome daily ledger from outcome and drift artifacts.
+    ReportOutcomeDailyLedger {
+        /// Input outcome linkage dataset JSON path.
+        #[arg(long = "outcome-linkage")]
+        outcome_linkage: PathBuf,
+
+        /// Input Architecture Drift Ledger JSON path.
+        #[arg(long = "drift-ledger")]
+        drift_ledger: PathBuf,
+
+        /// Ledger id for the generated daily artifact.
+        #[arg(
+            long = "ledger-id",
+            default_value = "fixture-b10-report-outcome-daily-ledger"
+        )]
+        ledger_id: String,
+
+        /// Generation timestamp.
+        #[arg(long = "generated-at")]
+        generated_at: String,
+
+        /// Aggregation window start timestamp.
+        #[arg(long = "window-start")]
+        window_start: Option<String>,
+
+        /// Aggregation window end timestamp.
+        #[arg(long = "window-end")]
+        window_end: Option<String>,
+
+        /// Aggregation window kind.
+        #[arg(long = "window-kind", default_value = "daily")]
+        window_kind: String,
+
+        /// Retention period in days for source reports.
+        #[arg(long = "retention-days", default_value_t = 90)]
+        retention_days: usize,
+
+        /// Output report outcome daily ledger JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -687,6 +730,34 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }) => {
             let dataset = build_outcome_linkage_dataset_from_files(&feature_dataset, &outcome)?;
             write_json(out, &dataset)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::ReportOutcomeDailyLedger {
+            outcome_linkage,
+            drift_ledger,
+            ledger_id,
+            generated_at,
+            window_start,
+            window_end,
+            window_kind,
+            retention_days,
+            out,
+        }) => {
+            let ledger = build_report_outcome_daily_ledger_from_files(
+                &outcome_linkage,
+                &drift_ledger,
+                ReportOutcomeDailyLedgerInput {
+                    ledger_id,
+                    generated_at,
+                    aggregation_window: DriftLedgerAggregationWindowV0 {
+                        window_start,
+                        window_end,
+                        window_kind,
+                    },
+                    retention_period_days: retention_days,
+                },
+            )?;
+            write_json(out, &ledger)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::RelationComplexity { input, out }) => {

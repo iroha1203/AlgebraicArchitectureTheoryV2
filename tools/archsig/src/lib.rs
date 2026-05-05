@@ -15,6 +15,7 @@ mod law_policy_template;
 mod measurement_unit;
 mod no_solution_certificate;
 mod obstruction_drift;
+mod operational_feedback;
 mod organization_policy;
 mod outcome_linkage;
 mod policy;
@@ -69,6 +70,10 @@ pub use no_solution_certificate::{
 };
 pub use obstruction_drift::{
     static_architecture_drift_ledger, static_obstruction_witness_artifact,
+};
+pub use operational_feedback::{
+    ReportOutcomeDailyLedgerInput, build_report_outcome_daily_ledger,
+    build_report_outcome_daily_ledger_from_files,
 };
 pub use organization_policy::{static_organization_policy, validate_organization_policy_report};
 pub use outcome_linkage::{
