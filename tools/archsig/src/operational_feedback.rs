@@ -5,6 +5,9 @@ use std::path::Path;
 
 use crate::{
     ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION, ArchitectureDriftLedgerV0,
+    CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION, CalibrationConfidenceV0, CalibrationInputV0,
+    CalibrationMissingEvidenceV0, CalibrationOutcomeRefV0, CalibrationReportFindingRefV0,
+    CalibrationReviewAnalysisMetadataV0, CalibrationReviewRecordV0, CalibrationReviewerDecisionV0,
     DriftLedgerAggregationWindowV0, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
     OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION, OutcomeLinkageDatasetV0, OutcomeMetric,
     REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, ReportOutcomeBoundaryCountV0,
@@ -559,6 +562,253 @@ pub fn report_outcome_daily_ledger_schema_compatibility_metadata(
     }
 }
 
+pub fn static_calibration_review_record() -> CalibrationReviewRecordV0 {
+    let mut record = CalibrationReviewRecordV0 {
+        schema_version: CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION.to_string(),
+        schema_compatibility: None,
+        record_id: "fixture-b10-calibration-review-false-positive-v0".to_string(),
+        reviewed_at: "2026-05-05T09:00:00Z".to_string(),
+        reviewer: "architecture-reviewer@example.com".to_string(),
+        report_finding_refs: vec![CalibrationReportFindingRefV0 {
+            report_ref: "tools/archsig/tests/fixtures/minimal/feature_extension_report.json"
+                .to_string(),
+            finding_id: "finding-runtime-private-evidence-warning".to_string(),
+            metric_ref: "runtime.privateEvidenceCount".to_string(),
+            finding_kind: "boundary-warning".to_string(),
+            severity: "warn".to_string(),
+            measurement_boundary: "unmeasured".to_string(),
+        }],
+        witness_refs: vec![
+            "witness-hidden-runtime-edge".to_string(),
+            "obstruction-witness:private-runtime-evidence".to_string(),
+        ],
+        reviewer_decision: CalibrationReviewerDecisionV0 {
+            decision: "falsePositive".to_string(),
+            reviewed_finding_status: "warning did not correspond to observed incident or rollback in the bounded review window".to_string(),
+            recommended_calibration_action:
+                "lower CI policy from fail to advisory for this metric until more outcome evidence is available"
+                    .to_string(),
+            calibration_scope: "checkout-service runtime private evidence warnings".to_string(),
+            decision_refs: vec!["review-thread:calibration-2026-05-05".to_string()],
+        },
+        outcome_refs: vec![
+            CalibrationOutcomeRefV0 {
+                kind: "pull-request".to_string(),
+                id: "example/repo#42".to_string(),
+                url: Some("https://github.com/example/repo/pull/42".to_string()),
+                boundary: "boundedOutcomeObservation".to_string(),
+                metric_refs: vec![
+                    "reviewCost.approvalLatencyHours".to_string(),
+                    "followUpFixCount".to_string(),
+                ],
+            },
+            CalibrationOutcomeRefV0 {
+                kind: "daily-ledger".to_string(),
+                id: "fixture-b10-report-outcome-daily-ledger".to_string(),
+                url: None,
+                boundary: "operationalFeedback".to_string(),
+                metric_refs: vec!["driftLedger.private_runtime_evidence_count".to_string()],
+            },
+        ],
+        rationale:
+            "The report finding preserved an unmeasured private runtime boundary, but the bounded outcome window did not include corroborating incident, rollback, or follow-up fix evidence."
+                .to_string(),
+        confidence: CalibrationConfidenceV0 {
+            level: "medium".to_string(),
+            score: 0.64,
+            evidence_boundary: "bounded empirical review; missing private runtime traces remain unmeasured".to_string(),
+            non_conclusions: vec![
+                "medium confidence does not prove the warning was semantically wrong".to_string(),
+                "absence of observed incident evidence is not measured-zero incident evidence"
+                    .to_string(),
+            ],
+        },
+        missing_evidence: vec![
+            CalibrationMissingEvidenceV0 {
+                evidence_kind: "private-runtime-trace".to_string(),
+                reason: "runtime trace is retained as a private artifact reference only".to_string(),
+                boundary: "private".to_string(),
+                follow_up_ref: "evidence-request:runtime-trace-redaction-policy".to_string(),
+            },
+            CalibrationMissingEvidenceV0 {
+                evidence_kind: "post-merge-observation-window".to_string(),
+                reason: "only one daily ledger window is available for this fixture".to_string(),
+                boundary: "unavailable".to_string(),
+                follow_up_ref: "calibration-backlog:extend-observation-window".to_string(),
+            },
+        ],
+        calibration_input: CalibrationInputV0 {
+            metric_refs: vec![
+                "runtime.privateEvidenceCount".to_string(),
+                "driftLedger.private_runtime_evidence_count".to_string(),
+                "reviewCost.approvalLatencyHours".to_string(),
+            ],
+            threshold_policy_refs: vec!["ci-policy:runtime-private-evidence-advisory-v0".to_string()],
+            source_ledger_refs: vec![
+                "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+                    .to_string(),
+            ],
+            downstream_issue_refs: vec!["#622".to_string()],
+            non_conclusions: vec![
+                "calibration input is an empirical signal for policy tuning".to_string(),
+                "calibration input is not theorem precondition discharge".to_string(),
+            ],
+        },
+        analysis_metadata: CalibrationReviewAnalysisMetadataV0 {
+            lean_status: "empirical hypothesis / tooling validation".to_string(),
+            measurement_boundary:
+                "bounded false positive / false negative review over report findings and outcome refs"
+                    .to_string(),
+            calibration_boundary:
+                "review decision can tune warning thresholds but cannot promote formal claims"
+                    .to_string(),
+            non_conclusions: vec![
+                "reviewer decision does not prove or refute obstruction witness existence".to_string(),
+                "metric calibration does not establish architecture lawfulness".to_string(),
+                "false positive / false negative labels are bounded operational review outcomes"
+                    .to_string(),
+            ],
+        },
+        non_conclusions: vec![
+            "calibration review record is empirical / operational signal, not a Lean theorem"
+                .to_string(),
+            "false positive review does not imply absence of architecture risk".to_string(),
+            "false negative review does not imply causal proof from warning to outcome".to_string(),
+            "missing or private evidence is not measured-zero evidence".to_string(),
+        ],
+    };
+    record.schema_compatibility = Some(calibration_review_schema_compatibility_metadata());
+    record
+}
+
+pub fn calibration_review_schema_compatibility_metadata() -> SchemaArtifactCompatibilityV0 {
+    SchemaArtifactCompatibilityV0 {
+        artifact_id: "calibration-review-record".to_string(),
+        schema_version_name: CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION.to_string(),
+        compatibility_policy_ref: COMPATIBILITY_POLICY_REF.to_string(),
+        field_mappings: vec![
+            field_mapping(
+                "reportFindingRefs",
+                "reportFindingRefs",
+                "stable",
+                "preserve report finding traceability",
+            ),
+            field_mapping(
+                "witnessRefs",
+                "witnessRefs",
+                "stable",
+                "preserve witness traceability without proving witness semantics",
+            ),
+            field_mapping(
+                "reviewerDecision",
+                "reviewerDecision",
+                "stable",
+                "preserve false positive / false negative review decision",
+            ),
+            field_mapping(
+                "outcomeRefs",
+                "outcomeRefs",
+                "stable",
+                "preserve bounded outcome observation refs",
+            ),
+            field_mapping(
+                "confidence",
+                "confidence",
+                "stable",
+                "preserve empirical confidence boundary",
+            ),
+            field_mapping(
+                "missingEvidence",
+                "missingEvidence",
+                "stable",
+                "preserve missing / private evidence boundaries",
+            ),
+            field_mapping(
+                "calibrationInput",
+                "calibrationInput",
+                "stable",
+                "preserve policy tuning inputs as empirical signal",
+            ),
+            field_mapping(
+                "nonConclusions",
+                "nonConclusions",
+                "stable",
+                "preserve empirical / formal-claim guardrails",
+            ),
+        ],
+        deprecated_fields: Vec::new(),
+        required_assumptions: vec![
+            required_assumption_for(
+                "calibration-review-record",
+                "report finding refs are preserved",
+                "metric calibration review",
+            ),
+            required_assumption_for(
+                "calibration-review-record",
+                "reviewer decision boundary is preserved",
+                "metric calibration review",
+            ),
+            required_assumption_for(
+                "calibration-review-record",
+                "missing evidence remains missing or private",
+                "metric calibration review",
+            ),
+            required_assumption_for(
+                "calibration-review-record",
+                "calibration input is not theorem precondition discharge",
+                "metric calibration review",
+            ),
+        ],
+        coverage_exactness_boundaries: vec![
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "calibration-review.report-finding".to_string(),
+                measurement_boundary: "boundedReview".to_string(),
+                coverage_assumptions: vec![
+                    "reportFindingRefs identify the selected report warnings".to_string(),
+                    "witnessRefs preserve witness traceability without re-proving them".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "finding review is scoped to the selected outcome refs".to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "calibration-review.decision".to_string(),
+                measurement_boundary: "empiricalReview".to_string(),
+                coverage_assumptions: vec![
+                    "reviewerDecision records false positive / false negative classification"
+                        .to_string(),
+                    "confidence records empirical review strength".to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "review decision can tune policy but cannot promote a formal theorem claim"
+                        .to_string(),
+                ],
+            },
+            SchemaCoverageExactnessBoundaryV0 {
+                axis_or_layer: "calibration-review.missing-evidence".to_string(),
+                measurement_boundary: "unmeasured".to_string(),
+                coverage_assumptions: vec![
+                    "missingEvidence entries preserve unavailable and private evidence refs"
+                        .to_string(),
+                ],
+                exactness_assumptions: vec![
+                    "missing or private evidence is never rounded to measuredZero".to_string(),
+                ],
+            },
+        ],
+        non_conclusions: vec![
+            "calibration review schema compatibility metadata does not prove semantic preservation"
+                .to_string(),
+            "calibration review schema compatibility metadata does not imply extractor completeness"
+                .to_string(),
+            "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+                .to_string(),
+            "false positive / false negative review is empirical policy input, not causal proof"
+                .to_string(),
+        ],
+    }
+}
+
 fn field_mapping(
     source_field: &str,
     target_field: &str,
@@ -574,6 +824,14 @@ fn field_mapping(
 }
 
 fn required_assumption(assumption: &str, required_for: &str) -> SchemaRequiredAssumptionV0 {
+    required_assumption_for("report-outcome-daily-ledger", assumption, required_for)
+}
+
+fn required_assumption_for(
+    applies_to: &str,
+    assumption: &str,
+    required_for: &str,
+) -> SchemaRequiredAssumptionV0 {
     SchemaRequiredAssumptionV0 {
         assumption_id: assumption
             .chars()
@@ -589,7 +847,7 @@ fn required_assumption(assumption: &str, required_for: &str) -> SchemaRequiredAs
             .filter(|part| !part.is_empty())
             .collect::<Vec<_>>()
             .join("-"),
-        applies_to: "report-outcome-daily-ledger".to_string(),
+        applies_to: applies_to.to_string(),
         required_for: required_for.to_string(),
         fallback_when_missing:
             "report as missing or undischarged; do not infer semantic preservation".to_string(),
@@ -616,6 +874,24 @@ mod tests {
                 .iter()
                 .flat_map(|batch| batch.missing_private_unmeasured_boundaries.iter())
                 .any(|boundary| boundary.boundary == "unmeasured")
+        );
+    }
+
+    #[test]
+    fn calibration_review_record_fixture_parses() {
+        let fixture: CalibrationReviewRecordV0 = serde_json::from_str(include_str!(
+            "../tests/fixtures/minimal/calibration_review_record.json"
+        ))
+        .expect("calibration review record fixture parses");
+        assert_eq!(
+            fixture.schema_version,
+            CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION
+        );
+        assert!(
+            fixture
+                .missing_evidence
+                .iter()
+                .any(|evidence| evidence.boundary == "private")
         );
     }
 }

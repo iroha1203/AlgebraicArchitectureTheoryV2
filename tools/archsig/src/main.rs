@@ -5,8 +5,9 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    AirDocumentInput, AirDocumentV0, AirValidationReport, ComponentUniverseValidationReport,
-    CustomRulePluginRegistryV0, CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
+    AirDocumentInput, AirDocumentV0, AirValidationReport, CalibrationReviewRecordV0,
+    ComponentUniverseValidationReport, CustomRulePluginRegistryV0,
+    CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
     DetectableValuesReportedAxesCatalogV0, DriftLedgerAggregationWindowV0, EmpiricalDatasetInput,
     FeatureExtensionReportV0, FrameworkAdapterEvidenceV0, LawPolicyTemplateRegistryV0,
     LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
@@ -27,16 +28,17 @@ use archsig::{
     build_schema_compatibility_check_report, build_signature_diff_report,
     build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    render_pr_comment_markdown, static_custom_rule_plugin_registry,
-    static_detectable_values_reported_axes_catalog, static_law_policy_template_registry,
-    static_measurement_unit_registry, static_no_solution_certificate, static_organization_policy,
-    static_repair_rule_registry, static_report_artifact_retention_manifest,
-    static_schema_version_catalog, static_synthesis_constraint_artifact,
-    validate_air_document_report, validate_component_universe_report,
-    validate_custom_rule_plugin_registry_report, validate_law_policy_template_registry_report,
-    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
-    validate_organization_policy_report, validate_repair_rule_registry_report,
-    validate_report_artifact_retention_report, validate_synthesis_constraint_artifact_report,
+    render_pr_comment_markdown, static_calibration_review_record,
+    static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
+    static_law_policy_template_registry, static_measurement_unit_registry,
+    static_no_solution_certificate, static_organization_policy, static_repair_rule_registry,
+    static_report_artifact_retention_manifest, static_schema_version_catalog,
+    static_synthesis_constraint_artifact, validate_air_document_report,
+    validate_component_universe_report, validate_custom_rule_plugin_registry_report,
+    validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
+    validate_no_solution_certificate_report, validate_organization_policy_report,
+    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
+    validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -241,6 +243,13 @@ enum Command {
         retention_days: usize,
 
         /// Output report outcome daily ledger JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit a B10 false positive / false negative calibration review record.
+    CalibrationReviewRecord {
+        /// Output calibration review record JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -758,6 +767,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 },
             )?;
             write_json(out, &ledger)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::CalibrationReviewRecord { out }) => {
+            let record: CalibrationReviewRecordV0 = static_calibration_review_record();
+            write_json(out, &record)?;
             Ok(ExitCode::SUCCESS)
         }
         Some(Command::RelationComplexity { input, out }) => {

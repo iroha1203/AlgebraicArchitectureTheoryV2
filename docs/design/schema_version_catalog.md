@@ -20,6 +20,7 @@ artifact、後続 checker が参照する最小 skeleton を固定する。canon
 | Architecture Drift Ledger | `architecture-drift-ledger-v0` | batch history output | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608), [#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610) |
 | Detectable values / reported axes catalog | `detectable-values-reported-axes-catalog-v0` | axis catalog | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608) |
 | Report outcome daily ledger | `report-outcome-daily-ledger-v0` | operational feedback output | implemented | [#620](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/620) |
+| Calibration review record | `calibration-review-record-v0` | operational feedback input | implemented | [#621](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/621), [#622](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/622) |
 
 ## Compatibility Policy
 
@@ -190,6 +191,39 @@ archsig report-outcome-daily-ledger \
 
 この artifact は empirical / operational signal であり、report warning と incident /
 rollback / MTTR の因果関係、schema migration の意味保存、Lean theorem claim、
+extractor completeness、architecture lawfulness を結論しない。
+
+## Calibration review record metadata
+
+Issue: [#621](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/621)
+
+`calibration-review-record-v0` は、false positive / false negative review と metric
+calibration の入力を B10 の operational feedback artifact として保存する。schema は
+`reportFindingRefs`, `witnessRefs`, `reviewerDecision`, `outcomeRefs`, `rationale`,
+`confidence`, `missingEvidence`, `calibrationInput`, `analysisMetadata`, `nonConclusions`
+を保持する。
+
+Review record は report finding、witness refs、bounded outcome refs、reviewer decision、
+rationale、confidence を分離して保存する。`missingEvidence` は unavailable / private /
+unmeasured boundary を保持し、欠測や非公開 evidence を measured-zero evidence に丸めない。
+`calibrationInput` は team threshold や CI policy tuning の empirical signal であり、
+theorem precondition discharge や formal claim promotion ではない。
+
+Canonical fixture:
+
+```text
+tools/archsig/tests/fixtures/minimal/calibration_review_record.json
+```
+
+CLI は次の形で canonical calibration review record を出力する。
+
+```bash
+archsig calibration-review-record \
+  --out calibration-review-record.json
+```
+
+この artifact は empirical / operational signal であり、reviewer decision だけで
+obstruction witness の存在、incident / rollback / MTTR の因果関係、Lean theorem claim、
 extractor completeness、architecture lawfulness を結論しない。
 
 ## Non-Conclusions

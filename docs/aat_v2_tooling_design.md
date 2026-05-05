@@ -2095,6 +2095,14 @@ unmeasured boundary count を保持する。欠測・非公開・未測定 outco
 measured-zero evidence に丸めず、schema migration pass を semantic preservation とも
 読まない。
 
+Issue [#621](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/621) では
+`calibration-review-record-v0` を false positive / false negative review と metric
+calibration の入力 artifact として追加する。この record は report finding refs、
+witness refs、reviewer decision、outcome refs、rationale、confidence、
+missing evidence、calibration input を保持する。reviewer decision は threshold や
+CI policy の empirical calibration に使うが、obstruction witness の存在、formal claim
+promotion、theorem precondition discharge、因果証明を結論しない。
+
 ## 14. 成功基準
 
 短期成功:

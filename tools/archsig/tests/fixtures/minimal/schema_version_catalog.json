@@ -197,6 +197,34 @@
           "renamed fields do not discharge new required assumptions"
         ]
       }
+    },
+    {
+      "artifactId": "calibration-review-record",
+      "artifactName": "Calibration review record",
+      "schemaVersionName": "calibration-review-record-v0",
+      "artifactRole": "operational-feedback-input",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#calibration-review-record-metadata"
+      ],
+      "downstreamIssues": ["#621", "#622"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map report finding refs, witness refs, reviewer decision, outcome refs, confidence, missing evidence, calibration input, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New calibration fields must preserve missing / private evidence boundaries and formal-claim non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "Reviewer decision, confidence, missing evidence, and calibration input delimit empirical policy tuning exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {

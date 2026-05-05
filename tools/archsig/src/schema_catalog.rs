@@ -1,5 +1,6 @@
 use crate::{
     AIR_SCHEMA_VERSION, ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
+    CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
     REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
@@ -168,6 +169,29 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "Missing, private, unavailable, and unmeasured outcome data delimit the operational feedback exactness boundary.",
+                    ],
+                ),
+            ),
+            artifact(
+                "calibration-review-record",
+                "Calibration review record",
+                CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
+                "operational-feedback-input",
+                "B10",
+                "implemented",
+                vec![
+                    "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+                    "docs/design/schema_version_catalog.md#calibration-review-record-metadata",
+                ],
+                vec!["#621", "#622"],
+                compatibility_boundary(
+                    "Map report finding refs, witness refs, reviewer decision, outcome refs, confidence, missing evidence, calibration input, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New calibration fields must preserve missing / private evidence boundaries and formal-claim non-conclusions.",
+                    ],
+                    vec![
+                        "Reviewer decision, confidence, missing evidence, and calibration input delimit empirical policy tuning exactness.",
                     ],
                 ),
             ),
@@ -343,6 +367,7 @@ mod tests {
             OBSTRUCTION_WITNESS_SCHEMA_VERSION,
             ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
             DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
+            CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
         ] {
             assert!(
                 versions.contains(expected),

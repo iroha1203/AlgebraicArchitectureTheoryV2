@@ -73,7 +73,7 @@ pub use obstruction_drift::{
 };
 pub use operational_feedback::{
     ReportOutcomeDailyLedgerInput, build_report_outcome_daily_ledger,
-    build_report_outcome_daily_ledger_from_files,
+    build_report_outcome_daily_ledger_from_files, static_calibration_review_record,
 };
 pub use organization_policy::{static_organization_policy, validate_organization_policy_report};
 pub use outcome_linkage::{

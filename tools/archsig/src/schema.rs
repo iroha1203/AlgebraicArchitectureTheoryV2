@@ -55,6 +55,7 @@ pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
 pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
 pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
 pub const REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION: &str = "report-outcome-daily-ledger-v0";
+pub const CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION: &str = "calibration-review-record-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
@@ -973,6 +974,96 @@ pub struct ReportOutcomeLedgerAnalysisMetadataV0 {
     pub lean_status: String,
     pub measurement_boundary: String,
     pub source_join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReviewRecordV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub record_id: String,
+    pub reviewed_at: String,
+    pub reviewer: String,
+    pub report_finding_refs: Vec<CalibrationReportFindingRefV0>,
+    pub witness_refs: Vec<String>,
+    pub reviewer_decision: CalibrationReviewerDecisionV0,
+    pub outcome_refs: Vec<CalibrationOutcomeRefV0>,
+    pub rationale: String,
+    pub confidence: CalibrationConfidenceV0,
+    pub missing_evidence: Vec<CalibrationMissingEvidenceV0>,
+    pub calibration_input: CalibrationInputV0,
+    pub analysis_metadata: CalibrationReviewAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReportFindingRefV0 {
+    pub report_ref: String,
+    pub finding_id: String,
+    pub metric_ref: String,
+    pub finding_kind: String,
+    pub severity: String,
+    pub measurement_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReviewerDecisionV0 {
+    pub decision: String,
+    pub reviewed_finding_status: String,
+    pub recommended_calibration_action: String,
+    pub calibration_scope: String,
+    pub decision_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationOutcomeRefV0 {
+    pub kind: String,
+    pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+    pub boundary: String,
+    pub metric_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationConfidenceV0 {
+    pub level: String,
+    pub score: f64,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationMissingEvidenceV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+    pub follow_up_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationInputV0 {
+    pub metric_refs: Vec<String>,
+    pub threshold_policy_refs: Vec<String>,
+    pub source_ledger_refs: Vec<String>,
+    pub downstream_issue_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReviewAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub calibration_boundary: String,
     pub non_conclusions: Vec<String>,
 }
 
