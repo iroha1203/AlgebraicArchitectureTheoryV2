@@ -32,6 +32,8 @@
 - [Lean module 階層整理方針](formal/lean_module_organization.md): `Formal/Arch` 以下の facade / import 方針、責務分類、段階移行ルール。
 - [アーキテクチャ零曲率定理 Lean 化設計](formal/flatness_obstruction_lean_design.md): 数学草案を Lean の generic witness-count kernel / law diagram / finite zero-count bridge へ落とす設計。
 - [runtimePropagation 設計](design/runtime_propagation_design.md): runtime metric を static structural core から分け、0/1 runtime graph 上の zero bridge は bounded Lean theorem package、policy-aware coverage、extractor completeness、incident 相関は実用・実証層として扱う設計。
+- [Architecture Signature Dynamics 設計](design/architecture_signature_dynamics.md): `ArchitectureEvolution` と `ArchitectureSignature` を土台に、`codebase as field`、operation distribution、Observed / Latent / Dissipated force、signature trajectory、dissipation、AI dynamics 指標を接続する設計。
+- [Architecture Dynamics tooling 設計](design/architecture_dynamics_tooling_design.md): Architecture Signature Dynamics を PR force report、trajectory report、dynamics metrics report、共通 measurement contract へ落とす tool 側設計。
 - [B6 empirical hypothesis evaluation plan](design/b6_empirical_hypothesis_evaluation.md): Feature Extension Report / Architecture Signature / obstruction profile と outcome linkage を H1-H5 の evaluation query へ接続する Phase B6 の研究検証計画。
 - [B9/B10 schema version catalog](design/schema_version_catalog.md): schema version、compatibility policy、B10 operational feedback artifact の catalog と non-conclusion boundary。
 - [ArchSig tooling index](design/archsig_tooling_index.md): ArchSig tooling の schema、CLI、fixture、non-conclusion boundary の索引。

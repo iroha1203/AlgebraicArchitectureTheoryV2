@@ -183,6 +183,59 @@ archsig feature-report --air air.json --out report.json
 CLI 名と option は実装時に調整してよい。ただし、conceptual flow は
 `source artifacts -> AIR -> report` として固定する。
 
+### 0.2 Architecture Dynamics tooling
+
+Architecture Signature Dynamics は、AAT を「構造の診断」から
+「構造が未来の変更分布を誘導する場の観測」へ拡張する。tool 側では、この拡張を
+既存 ArchSig artifact の上位 layer として扱う。
+
+中心となる閉ループは次である。
+
+```text
+current architecture field
+  -> operation proposals
+  -> accepted / rejected transitions
+  -> observed / latent / dissipated force
+  -> signature trajectory
+  -> updated architecture field
+```
+
+初期 MVP は、すべての場を測ろうとせず、まず次の三 artifact を固定する。
+
+```text
+pr-force-report-v0
+signature-trajectory-report-v0
+architecture-dynamics-metrics-report-v0
+```
+
+`pr-force-report-v0` は PR の before / after Signature delta を `ObservedForce` として記録する。
+`signature-trajectory-report-v0` は selected window の Signature trajectory を記録する。
+`architecture-dynamics-metrics-report-v0` は、測定済み、推定、派生、補助 signal、
+未測定、取得不能、非公開、比較不能、対象外を分けて Dynamics 指標を集計する。
+
+この layer で最も重要なのは、値そのものよりも測定境界を壊さないことである。
+共通 measurement contract は、少なくとも次を区別する。
+
+```text
+measured
+estimated
+derived
+advisory
+unmeasured
+unavailable
+private
+notComparable
+outOfScope
+```
+
+`architecture-field-snapshot-v0`、`operation-proposal-log-v0`、
+`force-dissipation-ledger-v0`、`development-control-input-log-v0` は次段階 artifact として扱う。
+これらは `LatentForce` や `DissipatedForce` の推定に重要だが、proposal completeness、
+raw force estimate、organization metadata の収集境界が難しいため、最初の実装単位にはしない。
+
+詳細 schema と CLI 方針は
+[Architecture Dynamics tooling 設計](design/architecture_dynamics_tooling_design.md) に置く。
+
 ## 1. 数学設計書 / ツール設計書の境界
 
 数学設計書:
@@ -2128,6 +2181,31 @@ updates、non-conclusions を保持する。相関 monitoring と hypothesis ref
 empirical / operational feedback であり、因果証明、formal claim promotion、
 theorem precondition discharge、extractor completeness を結論しない。
 
+### Phase B11: Architecture Dynamics tooling
+
+```text
+- PR force report
+- Signature trajectory report
+- Architecture Dynamics metrics report
+- common DynamicsMeasuredValue / MeasurementStatus / MeasurementBoundary
+- field snapshot / proposal log / dissipation ledger は次段階 artifact とする
+```
+
+この段階では、Architecture Signature Dynamics の閉ループを tool 側で継続観測できる
+skeleton と validator を作る。初期 MVP は `pr-force-report-v0`、
+`signature-trajectory-report-v0`、`architecture-dynamics-metrics-report-v0` に絞る。
+tool は Dynamics theorem を証明しない。tool が固定するのは、PR が Signature 空間へ加えた
+`ObservedForce`、一定 window の trajectory、そして各 dynamics metric の
+measurement status / boundary / non-conclusions である。
+
+`architecture-dynamics-metrics-report-v0` は、`measured`、`estimated`、`derived`、
+`advisory`、`unmeasured`、`unavailable`、`private`、`notComparable`、`outOfScope` を
+区別する。unmeasured / unavailable / private evidence は measured-zero evidence に
+丸めない。
+
+詳細設計は
+[Architecture Dynamics tooling 設計](design/architecture_dynamics_tooling_design.md) で管理する。
+
 ## 14. 成功基準
 
 短期成功:
@@ -2155,6 +2233,8 @@ theorem precondition discharge、extractor completeness を結論しない。
 - AAT report が設計レビューの共通言語になる。
 - split / non-split extension の empirical validation が進む。
 - repair / synthesis / migration planning が practical toolchain へ接続される。
+- PR force、Signature trajectory、Dynamics metrics を継続観測し、
+  Architecture Signature Dynamics の仮説を更新できる。
 ```
 
 ## 15. 非目標

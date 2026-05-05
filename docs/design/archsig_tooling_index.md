@@ -231,6 +231,58 @@ Non-conclusions:
 - private / missing baseline artifact は measured-zero evidence ではない。
 - policy decision delta は architecture lawfulness を承認しない。
 
+## Architecture Dynamics tooling
+
+Design source: [Architecture Dynamics tooling 設計](architecture_dynamics_tooling_design.md)
+
+Architecture Dynamics tooling は、[Architecture Signature Dynamics 設計](architecture_signature_dynamics.md)
+の `codebase as field`、operation distribution、Observed / Latent / Dissipated force、
+signature trajectory、dissipation / control を ArchSig artifact として記録する上位 layer である。
+
+初期 artifact 候補:
+
+- `pr-force-report-v0`
+- `signature-trajectory-report-v0`
+- `architecture-dynamics-metrics-report-v0`
+- common `DynamicsMeasuredValue` / `MeasurementStatus` / `MeasurementBoundary`
+
+次段階 artifact 候補:
+
+- `architecture-field-snapshot-v0`
+- `operation-proposal-log-v0`
+- `force-dissipation-ledger-v0`
+- `development-control-input-log-v0`
+
+初期 CLI 候補:
+
+```bash
+archsig pr-force-report
+archsig signature-trajectory-report
+archsig architecture-dynamics-metrics
+```
+
+次段階 CLI 候補:
+
+```bash
+archsig architecture-field-snapshot
+archsig operation-proposal-log
+archsig force-dissipation-ledger
+```
+
+この layer は既存の Signature snapshot store、PR history dataset、Feature Extension Report、
+policy decision report、Architecture Drift Ledger、outcome linkage dataset を置き換えず、
+source artifact として参照する。
+
+Non-conclusions:
+
+- Dynamics artifact は architecture lawfulness を結論しない。
+- Observed / Latent / Dissipated force を混同しない。
+- `measured` / `estimated` / `derived` / `advisory` / `unmeasured` /
+  `unavailable` / `private` / `notComparable` / `outOfScope` を混同しない。
+- operation proposal log は proposal distribution の完全標本ではない。
+- finite observed trajectory 上の attractor / basin candidate は global attractor claim ではない。
+- AI provenance は theorem claim や risk claim に単独変換しない。
+
 ## B8 Extractor / policy ecosystem
 
 Parent Issues:
