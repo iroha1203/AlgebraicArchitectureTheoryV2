@@ -1,5 +1,6 @@
 import Mathlib.Data.Fintype.Pigeonhole
 import Formal.Arch.Evolution.ArchitectureEvolution
+import Formal.Arch.Signature.Signature
 
 namespace Formal.Arch
 
@@ -312,6 +313,154 @@ theorem netSignatureDelta_telescopes [Zero Delta] [Add Delta]
                   simpa [EndpointSignatureDelta] using
                     law.step_telescope
                       (O.observe X) (O.observe Y) (O.observe Z)
+
+namespace ArchitectureSignatureV1MeasuredAxisDelta
+
+abbrev V1Signature := ArchitectureSignature.ArchitectureSignatureV1
+abbrev V1Axis := ArchitectureSignature.ArchitectureSignatureV1Axis
+
+/--
+Selected measured-axis delta schema for concrete `ArchitectureSignatureV1`
+values.
+
+The schema records the axes selected for signed endpoint / net-delta reading.
+It does not assert that every `ArchitectureSignatureV1` value measures those
+axes; the measured trajectory domain below carries `some n` evidence per
+state.
+-/
+structure Schema where
+  selectedAxes : List V1Axis
+  coverageAssumptions : Prop
+  nonConclusions : Prop
+
+namespace Schema
+
+/-- The selected axis predicate for the concrete V1 measured-delta schema. -/
+def AxisSelected (schema : Schema) (axis : V1Axis) : Prop :=
+  axis ∈ schema.selectedAxes
+
+/-- The schema explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions (schema : Schema) : Prop :=
+  schema.nonConclusions
+
+/--
+The concrete measured-axis package keeps `none` outside available-zero
+evidence, even for selected axes.
+-/
+def RecordsUnmeasuredNonConclusion (schema : Schema) : Prop :=
+  ∀ sig axis,
+    schema.AxisSelected axis ->
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis =
+        none ->
+        ¬ ArchitectureSignature.ArchitectureSignatureV1.axisAvailableAndZero
+          sig axis
+
+/-- A selected unmeasured axis is not available-and-zero evidence. -/
+theorem unmeasured_not_axisAvailableAndZero
+    (schema : Schema) {sig : V1Signature} {axis : V1Axis}
+    (_hSelected : schema.AxisSelected axis)
+    (hNone :
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis =
+        none) :
+    ¬ ArchitectureSignature.ArchitectureSignatureV1.axisAvailableAndZero
+        sig axis :=
+  ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none
+    hNone
+
+end Schema
+
+/--
+A concrete Signature V1 sample whose selected axis is actually measured.
+
+The `value_eq` field is the bridge from `Option Nat` to the measured natural
+value used by the signed additive delta theorem.
+-/
+structure MeasuredAxisSignature (axis : V1Axis) where
+  signature : V1Signature
+  value : Nat
+  value_eq :
+    ArchitectureSignature.ArchitectureSignatureV1.axisValue signature axis =
+      some value
+
+/--
+An unmeasured V1 axis cannot be represented as a measured-axis signature
+sample for the same axis.
+-/
+theorem not_measuredAxisSignature_of_axisValue_none
+    {axis : V1Axis} {sig : V1Signature}
+    (hNone :
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis =
+        none) :
+    ¬ ∃ sample : MeasuredAxisSignature axis, sample.signature = sig := by
+  intro hSample
+  rcases hSample with ⟨sample, hSig⟩
+  have hSome :
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis =
+        some sample.value := by
+    simpa [hSig] using sample.value_eq
+  rw [hNone] at hSome
+  cases hSome
+
+/-- Observe the measured value of a fixed concrete Signature V1 axis. -/
+def measuredAxisObservation (axis : V1Axis) :
+    SignatureObservation (MeasuredAxisSignature axis) Nat where
+  observe := fun sig => sig.value
+  coverageAssumptions := True
+  nonConclusions :=
+    ∀ sig : V1Signature,
+      ArchitectureSignature.ArchitectureSignatureV1.axisValue sig axis =
+        none ->
+        ¬ ArchitectureSignature.ArchitectureSignatureV1.axisAvailableAndZero
+          sig axis
+
+/-- Signed natural-number delta used for measured V1 axis values. -/
+def signedNatAxisDelta : SignatureDelta Nat Int where
+  delta source target := (target : Int) - (source : Int)
+  nonConclusions := True
+
+/-- The signed natural-number delta satisfies the selected additive law. -/
+def signedNatAxisDelta_additiveLaw :
+    AdditiveSignatureDeltaLaw signedNatAxisDelta where
+  self_zero := by
+    intro sig
+    simp [SignatureDelta.between, signedNatAxisDelta]
+  step_telescope := by
+    intro source mid target
+    simp [SignatureDelta.between, signedNatAxisDelta]
+  nonConclusions := True
+
+/--
+For a selected measured V1 axis, the net sum of per-step signed deltas equals
+the endpoint signed delta.
+
+The theorem is intentionally over `MeasuredAxisSignature axis`, so states with
+`axisValue = none` are not silently treated as zero-valued measurements.
+-/
+theorem selectedMeasuredAxis_netDelta_telescopes
+    (schema : Schema) {axis : V1Axis}
+    (_hSelected : schema.AxisSelected axis) :
+    {X Y : MeasuredAxisSignature axis} ->
+      (plan : ArchitectureEvolution (MeasuredAxisSignature axis) X Y) ->
+        NetSignatureDelta
+            (SignatureDeltaSequence (measuredAxisObservation axis)
+              signedNatAxisDelta plan) =
+          EndpointSignatureDelta (measuredAxisObservation axis)
+            signedNatAxisDelta plan
+  | _, _, plan =>
+      netSignatureDelta_telescopes
+        (measuredAxisObservation axis) signedNatAxisDelta
+        signedNatAxisDelta_additiveLaw plan
+
+/-- Endpoint delta for a measured V1 axis is the signed target-source value. -/
+theorem measuredAxis_endpointDelta_eq
+    {axis : V1Axis} {X Y : MeasuredAxisSignature axis}
+    (plan : ArchitectureEvolution (MeasuredAxisSignature axis) X Y) :
+    EndpointSignatureDelta (measuredAxisObservation axis)
+        signedNatAxisDelta plan =
+      (Y.value : Int) - (X.value : Int) := by
+  rfl
+
+end ArchitectureSignatureV1MeasuredAxisDelta
 
 /--
 If the initial observation is safe and every selected transition preserves the

@@ -1693,6 +1693,11 @@ Issue [#660](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 finite support operation kernel を追加し、support 内 operation が selected safe region を
 保存するという明示前提から、support から選ばれた任意 step と bounded sampled script の
 safe-region preservation を証明した。
+Issue [#661](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/661) では、
+`ArchitectureSignatureV1` の selected measured axis に限定した signed delta bridge を追加し、
+`Option Nat` axis の `some n` evidence を持つ trajectory 上で net delta が endpoint delta に
+telescope することを証明した。`none` / unavailable axis は measured-axis trajectory domain に
+入らず、available zero evidence としても扱わない。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1727,6 +1732,18 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `AdditiveSignatureDeltaLaw` | `structure` | `self_zero` と `step_telescope` を明示前提として持つ selected additive delta law package。coverage 外の軸、cost、incident risk、PR outcome は non-conclusions に残す。 | `defined only` |
 | `AdditiveSignatureDeltaLaw.RecordsNonConclusions` | `def` | additive delta law package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `netSignatureDelta_telescopes` | `theorem` | `AdditiveSignatureDeltaLaw` の下で、path 上の per-step delta の net sum が endpoint delta と一致することを示す。 | `proved` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.Schema` | `structure` | `ArchitectureSignatureV1` の signed delta 読み取り対象になる selected measured axis list、coverage assumptions、non-conclusions を束ねる concrete bridge schema。 | `defined only` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.Schema.AxisSelected` | `def` | concrete bridge schema で axis が selected であること。 | `defined only` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.Schema.RecordsNonConclusions` | `def` | concrete bridge schema の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.Schema.RecordsUnmeasuredNonConclusion` | `def` | selected axis の `none` を available zero evidence と読まない boundary を schema から読む predicate。 | `defined only` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.Schema.unmeasured_not_axisAvailableAndZero` | `theorem` | selected axis が `none` の場合、`ArchitectureSignatureV1.axisAvailableAndZero` ではないことを示す。 | `proved` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.MeasuredAxisSignature` | `structure` | fixed axis について `ArchitectureSignatureV1.axisValue = some value` の evidence を持つ measured sample。 | `defined only` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.not_measuredAxisSignature_of_axisValue_none` | `theorem` | `axisValue = none` の V1 signature は同じ axis の measured sample として表現できない。 | `proved` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.measuredAxisObservation` | `def` | measured sample から fixed axis の `Nat` value を観測する concrete observation schema。 | `defined only` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.signedNatAxisDelta` | `def` | measured `Nat` axis value の signed target-source delta。 | `defined only` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.signedNatAxisDelta_additiveLaw` | `def` | signed natural axis delta が selected additive law を満たす package。 | `defined only` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.selectedMeasuredAxis_netDelta_telescopes` | `theorem` | selected measured V1 axis の trajectory 上で per-step signed delta の net sum が endpoint delta と一致することを示す。 | `proved` |
+| `ArchitectureSignatureV1MeasuredAxisDelta.measuredAxis_endpointDelta_eq` | `theorem` | measured V1 axis の endpoint delta が signed target-source value であることを示す。 | `proved` |
 | `trajectory_preserves_safeRegion` | `theorem` | initial observation が safe region にあり、各 selected transition が safe region を保存するなら、observed trajectory 全体が safe region に属することを示す。 | `proved` |
 | `DampingControlSchema` | `structure` | selected observation / safe region、accepted / rejected transition predicate、accepted step が selected invariant を保存する explicit assumption、coverage / non-conclusions を束ねる control schema。 | `defined only` |
 | `DampingControlSchema.AcceptedStep` | `def` | selected controller が primitive transition を accepted と分類すること。 | `defined only` |
