@@ -18,7 +18,7 @@ Issue: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 | Feature Extension Report | `feature-extension-report-v0` | review output | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608), [#609](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/609) |
 | Obstruction Witness | `obstruction-witness-v0` | embedded witness | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608), [#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610) |
 | Architecture Drift Ledger | `architecture-drift-ledger-v0` | batch history output | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608), [#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610) |
-| Detectable values / reported axes catalog | `detectable-values-reported-axes-catalog-v0` | axis catalog | schema skeleton | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608), [#612](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/612) |
+| Detectable values / reported axes catalog | `detectable-values-reported-axes-catalog-v0` | axis catalog | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608) |
 
 ## Compatibility Policy
 
@@ -119,6 +119,39 @@ tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json
 `archsig schema-compatibility` の fixture test は、private / missing / unmeasured evidence
 boundary が `measuredZero` へ変更された場合に `requiresMigration` として報告することを
 固定する。
+
+## Detectable values / reported axes catalog
+
+Issue: [#612](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/612)
+
+`detectable-values-reported-axes-catalog-v0` は、report に出す axis と benchmark suite の
+freeze boundary を同じ artifact として versioning する。canonical fixture は
+`tools/archsig/tests/fixtures/minimal/detectable_values_reported_axes_catalog.json` であり、
+`ReportedAxesCatalogEntryV0` と `BenchmarkSuiteFixtureV0` を Rust 側の static builder と
+一致させる。
+
+Catalog entry は次を保持する。
+
+- `axisId`, `layer`, `valueType`
+- `reportedIn`
+- `allowedMeasurementBoundaries`
+- `defaultMeasurementBoundary`
+- evidence requirements
+- theorem refs
+- compatibility notes
+- non-conclusions
+
+Benchmark suite freeze は `benchmarkSuiteVersion = archsig-benchmark-suite-v0` として、
+canonical AIR fixtures の expected measurement boundary を固定する。対象には static split、
+runtime measured zero / measured nonzero / unmeasured、semantic unmeasured、
+generated-change metadata gap を含める。
+
+Axis の追加・改名・削除・measurement boundary 変更は backward-compatible な変更として
+黙って受け入れない。`archsig schema-compatibility` は
+`detectable-values-reported-axes-catalog-v0` 同士の比較で、追加、削除、改名候補、
+`allowedMeasurementBoundaries` または `defaultMeasurementBoundary` の変更を
+`requiresMigration` として報告する。特に `measuredZero`, `measuredNonzero`,
+`unmeasured`, `outOfScope` の区別は migration で失われてはならない。
 
 ## Non-Conclusions
 

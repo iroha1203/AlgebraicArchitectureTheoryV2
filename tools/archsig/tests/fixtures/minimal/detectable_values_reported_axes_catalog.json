@@ -1,0 +1,410 @@
+{
+  "schemaVersion": "detectable-values-reported-axes-catalog-v0",
+  "catalogId": "archsig-detectable-values-reported-axes-catalog",
+  "catalogVersion": "archsig-reported-axes-catalog-v0",
+  "benchmarkSuiteVersion": "archsig-benchmark-suite-v0",
+  "frozenFixtures": [
+    {
+      "fixtureId": "air-static-split-success",
+      "path": "tools/archsig/tests/fixtures/air/good_extension.json",
+      "artifactKind": "AIR",
+      "frozenFor": [
+        "static split classification",
+        "runtime unmeasured boundary"
+      ],
+      "expectedBoundaries": [
+        "hasCycle:measuredZero",
+        "runtimePropagation:unmeasured"
+      ],
+      "updateRuleRefs": [
+        "axis-addition-requires-version-review",
+        "axis-rename-requires-explicit-field-mapping",
+        "axis-removal-requires-migration-note",
+        "measurement-boundary-change-requires-review"
+      ]
+    },
+    {
+      "fixtureId": "air-runtime-measured-zero",
+      "path": "tools/archsig/tests/fixtures/air/runtime_measured_zero.json",
+      "artifactKind": "AIR",
+      "frozenFor": [
+        "runtime measured zero boundary"
+      ],
+      "expectedBoundaries": [
+        "runtimePropagation:measuredZero"
+      ],
+      "updateRuleRefs": [
+        "axis-addition-requires-version-review",
+        "axis-rename-requires-explicit-field-mapping",
+        "axis-removal-requires-migration-note",
+        "measurement-boundary-change-requires-review"
+      ]
+    },
+    {
+      "fixtureId": "air-runtime-measured-nonzero",
+      "path": "tools/archsig/tests/fixtures/air/runtime_measured_nonzero.json",
+      "artifactKind": "AIR",
+      "frozenFor": [
+        "runtime measured nonzero boundary"
+      ],
+      "expectedBoundaries": [
+        "runtimePropagation:measuredNonzero"
+      ],
+      "updateRuleRefs": [
+        "axis-addition-requires-version-review",
+        "axis-rename-requires-explicit-field-mapping",
+        "axis-removal-requires-migration-note",
+        "measurement-boundary-change-requires-review"
+      ]
+    },
+    {
+      "fixtureId": "air-runtime-unmeasured",
+      "path": "tools/archsig/tests/fixtures/air/runtime_unmeasured.json",
+      "artifactKind": "AIR",
+      "frozenFor": [
+        "runtime unmeasured boundary"
+      ],
+      "expectedBoundaries": [
+        "runtimePropagation:unmeasured"
+      ],
+      "updateRuleRefs": [
+        "axis-addition-requires-version-review",
+        "axis-rename-requires-explicit-field-mapping",
+        "axis-removal-requires-migration-note",
+        "measurement-boundary-change-requires-review"
+      ]
+    },
+    {
+      "fixtureId": "air-semantic-unmeasured",
+      "path": "tools/archsig/tests/fixtures/air/semantic_unmeasured.json",
+      "artifactKind": "AIR",
+      "frozenFor": [
+        "semantic unmeasured boundary"
+      ],
+      "expectedBoundaries": [
+        "semanticDiagramFillability:unmeasured"
+      ],
+      "updateRuleRefs": [
+        "axis-addition-requires-version-review",
+        "axis-rename-requires-explicit-field-mapping",
+        "axis-removal-requires-migration-note",
+        "measurement-boundary-change-requires-review"
+      ]
+    },
+    {
+      "fixtureId": "air-ai-metadata-missing-unmeasured",
+      "path": "tools/archsig/tests/fixtures/air/ai_metadata_missing_unmeasured.json",
+      "artifactKind": "AIR",
+      "frozenFor": [
+        "generated-change metadata gap"
+      ],
+      "expectedBoundaries": [
+        "aiSessionTraceability:unmeasured",
+        "boundaryViolationCount:unmeasured"
+      ],
+      "updateRuleRefs": [
+        "axis-addition-requires-version-review",
+        "axis-rename-requires-explicit-field-mapping",
+        "axis-removal-requires-migration-note",
+        "measurement-boundary-change-requires-review"
+      ]
+    }
+  ],
+  "updateRules": [
+    {
+      "ruleId": "axis-addition-requires-version-review",
+      "appliesTo": "axes[] addition",
+      "requiredReview": "add schemaCompatibility.requiredAssumptions and coverageExactnessBoundaries for the new axis",
+      "compatibilityCheck": "archsig schema-compatibility must report requiresMigration for the added axis until reviewed",
+      "nonConclusion": "new axis support does not imply extractor completeness"
+    },
+    {
+      "ruleId": "axis-rename-requires-explicit-field-mapping",
+      "appliesTo": "axes[].axisId rename",
+      "requiredReview": "declare the source and target axis id in schemaCompatibility.fieldMappings",
+      "compatibilityCheck": "archsig schema-compatibility must surface renamed axis ids as requiresMigration",
+      "nonConclusion": "renamed axes do not preserve semantics by name alone"
+    },
+    {
+      "ruleId": "axis-removal-requires-migration-note",
+      "appliesTo": "axes[] removal",
+      "requiredReview": "record the removed axis as deprecated or require a migration note",
+      "compatibilityCheck": "archsig schema-compatibility must report requiresMigration when a boundary disappears",
+      "nonConclusion": "removed axes are not silently outOfScope"
+    },
+    {
+      "ruleId": "measurement-boundary-change-requires-review",
+      "appliesTo": "axes[].allowedMeasurementBoundaries or defaultMeasurementBoundary change",
+      "requiredReview": "preserve measuredZero / measuredNonzero / unmeasured / outOfScope distinction",
+      "compatibilityCheck": "archsig schema-compatibility must report requiresMigration for boundary changes",
+      "nonConclusion": "unmeasured is never rounded to measuredZero by migration"
+    }
+  ],
+  "axes": [
+    {
+      "axisId": "hasCycle",
+      "layer": "static",
+      "valueType": "usize",
+      "reportedIn": [
+        "Signature artifact",
+        "AIR",
+        "Feature Extension Report"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "unmeasured",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "measuredZero",
+      "evidenceRequirements": [
+        "static import graph edges are extracted inside the selected measurement unit"
+      ],
+      "theoremRefs": [
+        "StrictLayered.noCycle"
+      ],
+      "compatibilityNotes": [
+        "0 is measuredZero only when metricStatus.hasCycle is measured"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
+    },
+    {
+      "axisId": "sccMaxSize",
+      "layer": "static",
+      "valueType": "usize",
+      "reportedIn": [
+        "Signature artifact",
+        "AIR",
+        "Feature Extension Report"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "unmeasured",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "measuredZero",
+      "evidenceRequirements": [
+        "static component graph is measured"
+      ],
+      "theoremRefs": [],
+      "compatibilityNotes": [
+        "missing SCC evidence remains unmeasured rather than 0"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
+    },
+    {
+      "axisId": "boundaryViolationCount",
+      "layer": "policy",
+      "valueType": "usize",
+      "reportedIn": [
+        "Signature artifact",
+        "AIR",
+        "Feature Extension Report"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "unmeasured",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "measuredZero",
+      "evidenceRequirements": [
+        "boundary policy file or policy selector is present"
+      ],
+      "theoremRefs": [],
+      "compatibilityNotes": [
+        "absence of policy evidence is unmeasured, not policy compliance"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
+    },
+    {
+      "axisId": "runtimePropagation",
+      "layer": "runtime",
+      "valueType": "Option Nat",
+      "reportedIn": [
+        "AIR",
+        "Feature Extension Report"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "unmeasured",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "unmeasured",
+      "evidenceRequirements": [
+        "runtime edge evidence is supplied with runtime-edge-projection-v0"
+      ],
+      "theoremRefs": [
+        "ArchitectureSignature.runtimePropagationOfFinite_eq_zero_iff_noRuntimeExposureObstruction"
+      ],
+      "compatibilityNotes": [
+        "None is unmeasured, not measuredZero",
+        "some 0 requires coverage, projection, exactness, and theorem preconditions before a formal claim"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
+    },
+    {
+      "axisId": "semanticDiagramFillability",
+      "layer": "semantic",
+      "valueType": "observed | obstructed | unmeasured",
+      "reportedIn": [
+        "AIR",
+        "Feature Extension Report"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "unmeasured",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "unmeasured",
+      "evidenceRequirements": [
+        "selected diagram observation evidence and contract/test evidence are present"
+      ],
+      "theoremRefs": [],
+      "compatibilityNotes": [
+        "unmeasured semantic evidence is not treated as commuting"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
+    }
+  ],
+  "schemaCompatibility": {
+    "artifactId": "detectable-values-reported-axes-catalog",
+    "schemaVersionName": "detectable-values-reported-axes-catalog-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "axes[].axisId",
+        "targetField": "axes[].axisId",
+        "mappingKind": "stable",
+        "requiredReview": "axis identity"
+      },
+      {
+        "sourceField": "axes[].allowedMeasurementBoundaries",
+        "targetField": "axes[].allowedMeasurementBoundaries",
+        "mappingKind": "stable",
+        "requiredReview": "preserve measuredZero / measuredNonzero / unmeasured / outOfScope distinction"
+      },
+      {
+        "sourceField": "axes[].defaultMeasurementBoundary",
+        "targetField": "axes[].defaultMeasurementBoundary",
+        "mappingKind": "stable",
+        "requiredReview": "default boundary changes require migration review"
+      },
+      {
+        "sourceField": "frozenFixtures[].expectedBoundaries",
+        "targetField": "frozenFixtures[].expectedBoundaries",
+        "mappingKind": "stable",
+        "requiredReview": "benchmark expected boundaries are part of compatibility review"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "axis-addition-reviewed",
+        "appliesTo": "axes[]",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report added axis as missing migration review; do not infer extractor completeness or a formal claim"
+      },
+      {
+        "assumptionId": "axis-rename-explicit-field-mapping",
+        "appliesTo": "axes[].axisId",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report rename as missing migration review unless fieldMappings declare source and target; do not infer a formal claim"
+      },
+      {
+        "assumptionId": "measurement-boundary-distinction-preserved",
+        "appliesTo": "axes[].allowedMeasurementBoundaries",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report changed boundary as missing migration review; do not infer a formal claim"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "hasCycle",
+        "measurementBoundary": "measuredZero",
+        "coverageAssumptions": [
+          "static import graph edges are extracted inside the selected measurement unit"
+        ],
+        "exactnessAssumptions": [
+          "0 is measuredZero only when metricStatus.hasCycle is measured"
+        ]
+      },
+      {
+        "axisOrLayer": "sccMaxSize",
+        "measurementBoundary": "measuredZero",
+        "coverageAssumptions": [
+          "static component graph is measured"
+        ],
+        "exactnessAssumptions": [
+          "missing SCC evidence remains unmeasured rather than 0"
+        ]
+      },
+      {
+        "axisOrLayer": "boundaryViolationCount",
+        "measurementBoundary": "measuredZero",
+        "coverageAssumptions": [
+          "boundary policy file or policy selector is present"
+        ],
+        "exactnessAssumptions": [
+          "absence of policy evidence is unmeasured, not policy compliance"
+        ]
+      },
+      {
+        "axisOrLayer": "runtimePropagation",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "runtime edge evidence is supplied with runtime-edge-projection-v0"
+        ],
+        "exactnessAssumptions": [
+          "None is unmeasured, not measuredZero",
+          "some 0 requires coverage, projection, exactness, and theorem preconditions before a formal claim"
+        ]
+      },
+      {
+        "axisOrLayer": "semanticDiagramFillability",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "selected diagram observation evidence and contract/test evidence are present"
+        ],
+        "exactnessAssumptions": [
+          "unmeasured semantic evidence is not treated as commuting"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "reported axes catalog compatibility metadata does not prove semantic preservation",
+      "reported axes catalog compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+      "unmeasured axis evidence is not measured-zero evidence"
+    ]
+  },
+  "nonConclusions": [
+    "reported axis catalog membership does not imply extractor completeness",
+    "benchmark fixture pass does not prove architecture lawfulness",
+    "measuredZero is distinct from unmeasured and outOfScope",
+    "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+  ]
+}

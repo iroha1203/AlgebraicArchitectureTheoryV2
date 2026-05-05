@@ -148,11 +148,12 @@
       "schemaVersionName": "detectable-values-reported-axes-catalog-v0",
       "artifactRole": "axis-catalog",
       "ownerPhase": "B9",
-      "status": "schema-skeleton",
+      "status": "implemented",
       "primaryDocs": [
-        "docs/aat_v2_tooling_design.md#41-detectable-values--reported-axes"
+        "docs/aat_v2_tooling_design.md#41-detectable-values--reported-axes",
+        "docs/design/schema_version_catalog.md#detectable-values--reported-axes-catalog"
       ],
-      "downstreamIssues": ["#608", "#612"],
+      "downstreamIssues": ["#608"],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map axis id, layer, value type, measurement boundary, evidence requirements, theorem refs, and non-conclusions explicitly.",
         "deprecatedFields": [],

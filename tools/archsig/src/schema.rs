@@ -137,6 +137,57 @@ pub struct SchemaArtifactCompatibilityV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct DetectableValuesReportedAxesCatalogV0 {
+    pub schema_version: String,
+    pub catalog_id: String,
+    pub catalog_version: String,
+    pub benchmark_suite_version: String,
+    pub frozen_fixtures: Vec<BenchmarkSuiteFixtureV0>,
+    pub update_rules: Vec<BenchmarkSuiteUpdateRuleV0>,
+    pub axes: Vec<ReportedAxisCatalogEntryV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BenchmarkSuiteFixtureV0 {
+    pub fixture_id: String,
+    pub path: String,
+    pub artifact_kind: String,
+    pub frozen_for: Vec<String>,
+    pub expected_boundaries: Vec<String>,
+    pub update_rule_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BenchmarkSuiteUpdateRuleV0 {
+    pub rule_id: String,
+    pub applies_to: String,
+    pub required_review: String,
+    pub compatibility_check: String,
+    pub non_conclusion: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportedAxisCatalogEntryV0 {
+    pub axis_id: String,
+    pub layer: String,
+    pub value_type: String,
+    pub reported_in: Vec<String>,
+    pub allowed_measurement_boundaries: Vec<String>,
+    pub default_measurement_boundary: String,
+    pub evidence_requirements: Vec<String>,
+    pub theorem_refs: Vec<String>,
+    pub compatibility_notes: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SchemaFieldMappingV0 {
     pub source_field: String,
     pub target_field: String,

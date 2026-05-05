@@ -131,9 +131,12 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
                 "axis-catalog",
                 "B9",
-                "schema-skeleton",
-                vec!["docs/aat_v2_tooling_design.md#41-detectable-values--reported-axes"],
-                vec!["#608", "#612"],
+                "implemented",
+                vec![
+                    "docs/aat_v2_tooling_design.md#41-detectable-values--reported-axes",
+                    "docs/design/schema_version_catalog.md#detectable-values--reported-axes-catalog",
+                ],
+                vec!["#608"],
                 compatibility_boundary(
                     "Map axis id, layer, value type, measurement boundary, evidence requirements, theorem refs, and non-conclusions explicitly.",
                     vec![],
