@@ -1,8 +1,8 @@
 {
   "schemaVersion": "schema-version-catalog-v0",
-  "catalogId": "archsig-b9-schema-version-catalog",
-  "catalogVersion": "b9-schema-catalog-v0",
-  "phase": "B9 Schema standardization and compatibility",
+  "catalogId": "archsig-b9-b10-schema-version-catalog",
+  "catalogVersion": "b10-schema-catalog-v0",
+  "phase": "B9 Schema standardization and compatibility / B10 operational feedback",
   "artifacts": [
     {
       "artifactId": "signature-artifact",
@@ -169,13 +169,41 @@
           "renamed fields do not discharge new required assumptions"
         ]
       }
+    },
+    {
+      "artifactId": "report-outcome-daily-ledger",
+      "artifactName": "Report outcome daily ledger",
+      "schemaVersionName": "report-outcome-daily-ledger-v0",
+      "artifactRole": "operational-feedback-output",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#report-outcome-daily-ledger-metadata"
+      ],
+      "downstreamIssues": ["#620"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map aggregation window, source report refs, retention policy, outcome metric summaries, missing/private/unmeasured boundaries, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New daily batch metrics must preserve source report refs, retention policy, and missing/private/unmeasured boundary counts."
+        ],
+        "coverageExactnessBoundary": [
+          "Missing, private, unavailable, and unmeasured outcome data delimit the operational feedback exactness boundary."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {
     "schemaVersion": "schema-compatibility-policy-v0",
     "policyId": "archsig-b9-schema-compatibility-policy",
     "policyVersion": "b9-compatibility-policy-v0",
-    "appliesToCatalogVersion": "b9-schema-catalog-v0",
+    "appliesToCatalogVersion": "b10-schema-catalog-v0",
     "dimensions": [
       {
         "dimension": "field_mapping",

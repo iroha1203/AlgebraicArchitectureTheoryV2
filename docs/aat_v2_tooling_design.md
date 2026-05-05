@@ -2087,6 +2087,14 @@ threshold や CI policy は empirical calibration の対象であり、数学 th
 B10 の結果は、B0-B6 の schema / witness / theorem package へ feedback されるが、
 実証相関だけで formal claim を強めてはならない。
 
+Issue [#620](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/620) では
+`report-outcome-daily-ledger-v0` を daily batch の operational artifact として追加する。
+この ledger は `outcome-linkage-dataset-v0` と `architecture-drift-ledger-v0` を
+aggregation window で join し、source report refs、retention、missing / private /
+unmeasured boundary count を保持する。欠測・非公開・未測定 outcome は
+measured-zero evidence に丸めず、schema migration pass を semantic preservation とも
+読まない。
+
 ## 14. 成功基準
 
 短期成功:

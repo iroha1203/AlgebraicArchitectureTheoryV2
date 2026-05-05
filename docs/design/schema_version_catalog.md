@@ -1,11 +1,11 @@
-# B9 schema version catalog
+# B9/B10 schema version catalog
 
 Lean status: `empirical hypothesis` / `tooling validation`.
 
 Issue: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/613)
 
-この文書は、Phase B9 の schema version 名、互換性 policy、後続 checker が参照する
-最小 skeleton を固定する。canonical fixture は
+この文書は、Phase B9 の schema version 名、互換性 policy、B10 operational feedback
+artifact、後続 checker が参照する最小 skeleton を固定する。canonical fixture は
 `tools/archsig/tests/fixtures/minimal/schema_version_catalog.json` であり、Rust 側の
 `static_schema_version_catalog` と一致することを test で確認する。
 
@@ -19,6 +19,7 @@ Issue: [#613](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 | Obstruction Witness | `obstruction-witness-v0` | embedded witness | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608), [#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610) |
 | Architecture Drift Ledger | `architecture-drift-ledger-v0` | batch history output | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608), [#610](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/610) |
 | Detectable values / reported axes catalog | `detectable-values-reported-axes-catalog-v0` | axis catalog | implemented | [#608](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/608) |
+| Report outcome daily ledger | `report-outcome-daily-ledger-v0` | operational feedback output | implemented | [#620](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/620) |
 
 ## Compatibility Policy
 
@@ -152,6 +153,44 @@ Axis の追加・改名・削除・measurement boundary 変更は backward-compa
 `allowedMeasurementBoundaries` または `defaultMeasurementBoundary` の変更を
 `requiresMigration` として報告する。特に `measuredZero`, `measuredNonzero`,
 `unmeasured`, `outOfScope` の区別は migration で失われてはならない。
+
+## Report outcome daily ledger metadata
+
+Issue: [#620](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/620)
+
+`report-outcome-daily-ledger-v0` は、B6 の `outcome-linkage-dataset-v0` と B9 の
+`architecture-drift-ledger-v0` を B10 の daily batch operational artifact として
+蓄積する。schema は `aggregationWindow`, `sourceReportRefs`, `retention`,
+`batches[].outcomeMetricSummaries`, `batches[].missingPrivateUnmeasuredBoundaries`,
+`analysisMetadata`, `nonConclusions` を保持する。
+
+Daily batch は source report refs と retention manifest ref を明示し、review outcome、
+follow-up fix、rollback、incident affected component count、MTTR、drift ledger metric の
+boundary count を保存する。`unavailable`, `private`, `missingOrPrivate`, `unmeasured`
+は measured-zero evidence に丸めず、operational monitoring の exactness boundary として
+残す。
+
+Canonical fixture:
+
+```text
+tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json
+```
+
+CLI は次の形で outcome linkage dataset と Architecture Drift Ledger を join する。
+
+```bash
+archsig report-outcome-daily-ledger \
+  --outcome-linkage outcome-linkage-dataset.json \
+  --drift-ledger architecture-drift-ledger.json \
+  --generated-at 2026-05-05T00:00:00Z \
+  --window-start 2026-05-04T00:00:00Z \
+  --window-end 2026-05-05T00:00:00Z \
+  --out report-outcome-daily-ledger.json
+```
+
+この artifact は empirical / operational signal であり、report warning と incident /
+rollback / MTTR の因果関係、schema migration の意味保存、Lean theorem claim、
+extractor completeness、architecture lawfulness を結論しない。
 
 ## Non-Conclusions
 

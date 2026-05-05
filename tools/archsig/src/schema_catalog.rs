@@ -2,19 +2,19 @@ use crate::{
     AIR_SCHEMA_VERSION, ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
-    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
+    REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
+    SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
     SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
     SchemaVersionCatalogV0,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
-    let catalog_version = "b9-schema-catalog-v0";
+    let catalog_version = "b10-schema-catalog-v0";
     SchemaVersionCatalogV0 {
         schema_version: SCHEMA_VERSION_CATALOG_SCHEMA_VERSION.to_string(),
-        catalog_id: "archsig-b9-schema-version-catalog".to_string(),
+        catalog_id: "archsig-b9-b10-schema-version-catalog".to_string(),
         catalog_version: catalog_version.to_string(),
-        phase: "B9 Schema standardization and compatibility".to_string(),
+        phase: "B9 Schema standardization and compatibility / B10 operational feedback".to_string(),
         artifacts: vec![
             artifact(
                 "signature-artifact",
@@ -145,6 +145,29 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "Axis coverage and exactness metadata delimit what a zero or nonzero value can support.",
+                    ],
+                ),
+            ),
+            artifact(
+                "report-outcome-daily-ledger",
+                "Report outcome daily ledger",
+                REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION,
+                "operational-feedback-output",
+                "B10",
+                "implemented",
+                vec![
+                    "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+                    "docs/design/schema_version_catalog.md#report-outcome-daily-ledger-metadata",
+                ],
+                vec!["#620"],
+                compatibility_boundary(
+                    "Map aggregation window, source report refs, retention policy, outcome metric summaries, missing/private/unmeasured boundaries, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New daily batch metrics must preserve source report refs, retention policy, and missing/private/unmeasured boundary counts.",
+                    ],
+                    vec![
+                        "Missing, private, unavailable, and unmeasured outcome data delimit the operational feedback exactness boundary.",
                     ],
                 ),
             ),

@@ -54,6 +54,7 @@ pub const BASELINE_SUPPRESSION_REPORT_SCHEMA_VERSION: &str = "baseline-suppressi
 pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
 pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
 pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
+pub const REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION: &str = "report-outcome-daily-ledger-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
@@ -887,6 +888,91 @@ pub struct OutcomeLinkageAnalysisMetadata {
     pub lean_status: String,
     pub measurement_boundary: String,
     pub join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeDailyLedgerV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub ledger_id: String,
+    pub generated_at: String,
+    pub aggregation_window: DriftLedgerAggregationWindowV0,
+    pub source_report_refs: Vec<ReportOutcomeSourceReportRefV0>,
+    pub retention: ReportOutcomeRetentionPolicyV0,
+    pub batches: Vec<ReportOutcomeDailyBatchV0>,
+    pub analysis_metadata: ReportOutcomeLedgerAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeSourceReportRefV0 {
+    pub kind: String,
+    pub path: String,
+    pub schema_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub report_id: Option<String>,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeRetentionPolicyV0 {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retention_manifest_ref: Option<String>,
+    pub retention_period_days: usize,
+    pub retained_artifact_refs: Vec<String>,
+    pub private_data_policy: String,
+    pub missing_data_policy: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeDailyBatchV0 {
+    pub batch_id: String,
+    pub architecture_id: String,
+    pub outcome_dataset_ref: String,
+    pub drift_ledger_ref: String,
+    pub outcome_record_count: usize,
+    pub drift_entry_count: usize,
+    pub source_report_refs: Vec<String>,
+    pub outcome_metric_summaries: Vec<ReportOutcomeMetricSummaryV0>,
+    pub missing_private_unmeasured_boundaries: Vec<ReportOutcomeBoundaryCountV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeMetricSummaryV0 {
+    pub metric_ref: String,
+    pub measured_count: usize,
+    pub unavailable_count: usize,
+    pub private_count: usize,
+    pub unmeasured_count: usize,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeBoundaryCountV0 {
+    pub boundary: String,
+    pub metric_ref: String,
+    pub count: usize,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeLedgerAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub source_join_keys: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
