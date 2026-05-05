@@ -187,6 +187,18 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- pr-force-report \
   --out .lake/signature-current/pr-force-report-validation.json
 ```
 
+Signature trajectory report の canonical fixture を出力し、既存 artifact を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- signature-trajectory-report \
+  --fixture \
+  --out .lake/signature-current/signature-trajectory-report.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- signature-trajectory-report \
+  --input tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json \
+  --out .lake/signature-current/signature-trajectory-report-validation.json
+```
+
 Architecture Dynamics metrics report の canonical fixture を出力し、既存 artifact を検査する。
 
 ```bash

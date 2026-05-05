@@ -33,6 +33,7 @@ pub mod schema;
 mod schema_catalog;
 mod schema_compatibility;
 mod schema_versioning;
+mod signature_trajectory_report;
 mod snapshot;
 mod synthesis_constraint;
 mod theorem_precondition;
@@ -102,6 +103,9 @@ pub use reported_axes_catalog::static_detectable_values_reported_axes_catalog;
 pub use schema::*;
 pub use schema_catalog::static_schema_version_catalog;
 pub use schema_compatibility::build_schema_compatibility_check_report;
+pub use signature_trajectory_report::{
+    static_signature_trajectory_report, validate_signature_trajectory_report,
+};
 pub use snapshot::{build_signature_diff_report, build_signature_snapshot_record};
 pub use synthesis_constraint::{
     static_synthesis_constraint_artifact, validate_synthesis_constraint_artifact_report,

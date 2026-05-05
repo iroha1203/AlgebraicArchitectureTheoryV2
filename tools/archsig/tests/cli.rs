@@ -5525,6 +5525,168 @@ fn cli_pr_force_report_fixture_and_validator_preserve_boundaries() {
 }
 
 #[test]
+fn cli_signature_trajectory_report_fixture_and_validator_preserve_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("signature-trajectory-report");
+    let static_report = out_dir.join("signature-trajectory-report-static-validation.json");
+    let fixture_artifact = out_dir.join("signature-trajectory-report-fixture.json");
+    let fixture_validation = out_dir.join("signature-trajectory-report-validation.json");
+    let invalid_report = out_dir.join("signature-trajectory-report-invalid.json");
+    let invalid_validation = out_dir.join("signature-trajectory-report-invalid-validation.json");
+
+    run_sig0(&[
+        "signature-trajectory-report",
+        "--out",
+        static_report.to_str().expect("report path is utf-8"),
+    ]);
+    run_sig0(&[
+        "signature-trajectory-report",
+        "--fixture",
+        "--out",
+        fixture_artifact
+            .to_str()
+            .expect("fixture artifact path is utf-8"),
+    ]);
+    run_sig0(&[
+        "signature-trajectory-report",
+        "--input",
+        root.join("signature_trajectory_report.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let json = read_json(&static_report);
+    assert_eq!(
+        json["schemaVersion"],
+        "signature-trajectory-report-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["report"]["selectedRegions"]
+            .as_array()
+            .expect("selectedRegions is array")
+            .iter()
+            .any(|region| {
+                region["regionKind"] == "attractorCandidate"
+                    && region["nonConclusions"]
+                        .as_array()
+                        .expect("nonConclusions is array")
+                        .iter()
+                        .any(|conclusion| {
+                            conclusion == "attractor candidate is not a global attractor theorem"
+                        })
+            })
+    );
+    assert!(
+        json["report"]["excursionSignals"]
+            .as_array()
+            .expect("excursionSignals is array")
+            .iter()
+            .any(|metric| {
+                metric["metricId"] == "trajectory.excursion.selectedBadRegionVisit"
+                    && metric["status"] == "measured"
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "signature-trajectory-comparison-boundary-recorded"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let artifact = read_json(&fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "signature-trajectory-report-v0");
+    assert!(
+        artifact["selectedRegions"]
+            .as_array()
+            .expect("selectedRegions is array")
+            .iter()
+            .any(|region| region["regionKind"] == "safeRegion")
+    );
+    assert!(
+        artifact["selectedRegions"]
+            .as_array()
+            .expect("selectedRegions is array")
+            .iter()
+            .any(|region| region["regionKind"] == "badRegion")
+    );
+    assert!(
+        artifact["selectedRegions"]
+            .as_array()
+            .expect("selectedRegions is array")
+            .iter()
+            .any(|region| region["regionKind"] == "debtWell")
+    );
+    assert!(
+        artifact["selectedRegions"]
+            .as_array()
+            .expect("selectedRegions is array")
+            .iter()
+            .any(|region| region["regionKind"] == "attractorCandidate")
+    );
+
+    let json = read_json(&fixture_validation);
+    assert_eq!(json["summary"]["result"], "pass");
+
+    let mut invalid_json = read_json(&root.join("signature_trajectory_report.json"));
+    invalid_json["trajectoryPoints"][1]["measurementBoundary"]["schemaVersion"] =
+        serde_json::json!("signature-trajectory-report-v1");
+    invalid_json["driftSignals"][1]["status"] = serde_json::json!("unmeasured");
+    invalid_json["measurementBoundary"]["missingEvidence"] = serde_json::json!([]);
+    invalid_json["selectedRegions"][3]["nonConclusions"] = serde_json::json!([]);
+    fs::write(
+        &invalid_report,
+        serde_json::to_string_pretty(&invalid_json).expect("json serializes"),
+    )
+    .expect("invalid Signature trajectory report is written");
+    let output = run_sig0_output(&[
+        "signature-trajectory-report",
+        "--input",
+        invalid_report
+            .to_str()
+            .expect("invalid fixture path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid Signature trajectory report should fail validation"
+    );
+    let json = read_json(&invalid_validation);
+    assert_eq!(json["summary"]["result"], "fail");
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "signature-trajectory-comparison-boundary-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "signature-trajectory-selected-regions-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries() {
     let root = fixture_root();
     let out_dir = temp_dir("architecture-dynamics-metrics");
