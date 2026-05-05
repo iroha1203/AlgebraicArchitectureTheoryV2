@@ -1673,6 +1673,9 @@ Issue [#637](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 finite observed trajectory と selected region に相対化した attractor candidate、
 finite initial-state list と bounded operation script に相対化した basin candidate、
 および deterministic self-map の eventually periodic future proof obligation を追加した。
+Issue [#657](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/657) では、
+explicit finite state universe と mathlib の finite pigeonhole principle に接続し、
+deterministic self-map の eventually periodic theorem を証明した。
 Issue [#642](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/642) では、
 accepted / rejected transition boundary と selected damping assumption に相対化して、
 accepted evolution の invariant preservation と bad-axis nonincrease theorem を追加した。
@@ -1732,8 +1735,17 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `BasinCandidate.RecordsNonConclusions` | `def` | basin candidate package の non-conclusion clause を predicate として取り出す。 | `defined only` |
 | `BasinCandidate.CoversSelectedInitialStates` | `def` | finite initial-state list の各 state が caller-supplied reachability predicate を満たすこと。 | `defined only` |
 | `BasinCandidate.coversSelectedInitialStates` | `theorem` | basin candidate が selected initial-state list を cover することを schema field から取り出す accessor theorem。 | `proved` |
-| `IterateSelfMap` | `def` | deterministic self-map の `n` 回反復を表す future proof obligation 用 substrate。 | `defined only` |
-| `DeterministicSelfMapEventuallyPeriodic` | `def` | deterministic finite dynamics の eventually periodic theorem を将来証明するための predicate。 | `future proof obligation` |
+| `FiniteStateUniverse` | `structure` | deterministic signature dynamics 用の duplicate-free finite state list と coverage を束ねる explicit finite universe。 | `defined only` |
+| `FiniteStateUniverse.StepClosed` | `def` | selected self-map が explicit finite universe の state list 内に閉じていることを表す closure predicate。 | `defined only` |
+| `FiniteStateUniverse.stepClosed_of_covers` | `theorem` | full finite state universe では selected self-map closure が coverage から従うことを示す。 | `proved` |
+| `FiniteStateUniverse.full` | `def` | duplicate-free covering list から full finite state universe を構成する。 | `defined only` |
+| `FiniteStateUniverse.fintype` | `def` | explicit finite state universe から `Fintype State` instance を構成する bridge。 | `defined only` |
+| `IterateSelfMap` | `def` | deterministic self-map の `n` 回反復を表す finite dynamics substrate。 | `defined only` |
+| `iterateSelfMap_add` | `theorem` | self-map 反復が加法的 horizon に沿って合成されることを示す補助補題。 | `proved` |
+| `DeterministicSelfMapEventuallyPeriodic` | `def` | deterministic finite dynamics の eventually periodic property を表す predicate。 | `defined only` |
+| `deterministicSelfMap_periodic_from_repetition` | `theorem` | self-map orbit が以前の state を再訪した場合、その suffix が正の周期で periodic になることを示す。 | `proved` |
+| `deterministicSelfMapEventuallyPeriodic_of_finite` | `theorem` | `[Finite State]` の下で deterministic self-map orbit が eventually periodic になることを示す。global attractor や empirical convergence は結論しない。 | `proved` |
+| `deterministicSelfMapEventuallyPeriodic_of_finiteUniverse` | `theorem` | explicit `FiniteStateUniverse` と selected self-map closure 前提から `DeterministicSelfMapEventuallyPeriodic` を得る。 | `proved` |
 | `TwoStepObservationCommutative` | `def` | 同じ start state からの二つの two-step transition order が selected final observation 上で一致すること。 | `defined only` |
 | `MergeOrderSensitive` | `def` | 二つの two-step transition order の selected final observation が異なること。実 PR risk や incident との相関は結論しない。 | `defined only` |
 | `MergeOrderSensitivity` | `def` | selected final observation が一致すれば `0`、異なれば `1` を返す bounded 0/1 sensitivity metric。 | `defined only` |
