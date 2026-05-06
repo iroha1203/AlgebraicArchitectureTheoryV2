@@ -1721,6 +1721,12 @@ Issue [#686](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 selected distance function に相対化して two-step operation order の final signature 差を読む
 API へ一般化した。`EqualityDistance` では既存 0/1 `MergeOrderSensitivity` と一致し、
 既存 counterexample は距離付き curvature でも nonzero になる。
+Issue [#697](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/697) では、
+`AttractorEngineeringSupportPackage` と target trajectory wrapper を追加し、
+`FiniteOperationKernel.boundedSampledScript_preserves_safeRegion` を Attractor Engineering
+語彙で読む入口を `Formal/Arch/Evolution/AttractorEngineering.lean` に分離した。
+bad region の補集合を selected safe region として扱う wrapper も追加し、coverage /
+measurement boundary / non-conclusions を package accessor として記録する。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1847,6 +1853,16 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `FiniteOperationKernel.ScriptUsesSupport` | `def` | operation list が endpoint-indexed evolution の各 source state で finite support 内 operation だけを使うこと。length mismatch は false。 | `defined only` |
 | `FiniteOperationKernel.everyStepPreservesSafeRegion_of_scriptUsesSupport` | `theorem` | realized operation list が各 source state の finite support 内 operation だけを使い、support operation が safe region を保存するなら、plan の各 transition が safe region を保存する。 | `proved` |
 | `FiniteOperationKernel.boundedSampledScript_preserves_safeRegion` | `theorem` | bounded sampled script が plan を realize し、各 source state の finite support 内 operation だけを使うなら、support preservation 前提の下で observed signature trajectory 全体が safe region 内に留まる。 | `proved` |
+| `AvoidsBadRegion` | `abbrev` | selected bad region の補集合を selected safe region として読む Attractor Engineering wrapper。bad-region discovery や empirical guardrail capacity は結論しない。 | `defined only` |
+| `AttractorEngineeringSupportPackage` | `structure` | selected observation、finite operation support、bounded transition semantics、target region、explicit support preservation、coverage / measurement boundary / non-conclusions を束ねる薄い package。 | `defined only` |
+| `AttractorEngineeringSupportPackage.RecordsCoverageAssumptions` | `def` | support package の selected coverage assumptions を predicate として取り出す。 | `defined only` |
+| `AttractorEngineeringSupportPackage.RecordsMeasurementBoundary` | `def` | unmeasured axes、tooling coverage、calibration、empirical completeness が theorem claim 外である measurement boundary を取り出す。 | `defined only` |
+| `AttractorEngineeringSupportPackage.RecordsNonConclusions` | `def` | support package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `AttractorEngineeringSupportPackage.TargetTrajectory` | `def` | package の selected observation で `ArchitectureEvolution` の visited states を読む target trajectory wrapper。 | `defined only` |
+| `AttractorEngineeringSupportPackage.supportPreserves_targetRegion` | `theorem` | package に格納された support preservation 前提を accessor theorem として取り出す。 | `proved` |
+| `AttractorEngineeringSupportPackage.supportPackage_preserves_targetTrajectory` | `theorem` | realized bounded script が finite support だけを使い、start が target region 内なら、package の target trajectory が target region 内に留まる。 | `proved` |
+| `AttractorEngineeringSupportPackage.supportPackage_avoids_badRegion` | `theorem` | package の target region が bad region の補集合なら、bounded target trajectory がその bad region を避けることを示す。 | `proved` |
+| `AttractorEngineeringSupportPackage.supportShaping_avoids_badRegion` | `theorem` | bad region の補集合を safe region として、support operation preservation から bounded trajectory が bad region を避けることを直接得る wrapper。 | `proved` |
 | `SameObservedSignatureDifferentFutureSupport` | `def` | same selected observed signature と different finite future operation support を束ねる bounded witness predicate。future distribution / empirical weights / unmeasured axes は結論しない。 | `defined only` |
 | `SameSignatureDifferentFuture.observation` | `def` | `Nat` state を `Unit` signature へ潰して読む小さな counterexample 用 observation schema。 | `defined only` |
 | `SameSignatureDifferentFuture.kernel` | `def` | source state と target state に異なる singleton operation support を割り当てる finite kernel witness。 | `defined only` |
