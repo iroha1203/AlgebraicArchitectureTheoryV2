@@ -1448,6 +1448,133 @@ theorem not_sameObservation_implies_sameFutureSupport :
 
 end SameSignatureDifferentFuture
 
+/-
+A tiny finite-state witness for the D7 non-conclusion boundary: a coarse
+observation can look safe while a refined observation exposes a hidden measured
+axis as nonzero.
+-/
+namespace ObservabilityExpansionShock
+
+abbrev ExampleState := Unit
+abbrev CoarseSig := Unit
+abbrev AxisValue := Fin 2
+abbrev RefinedSig := CoarseSig × AxisValue
+
+def witness : ExampleState :=
+  ()
+
+def coarseObservation : SignatureObservation ExampleState CoarseSig where
+  observe := fun _ => ()
+  coverageAssumptions := True
+  nonConclusions := True
+
+def refinedObservation : SignatureObservation ExampleState RefinedSig where
+  observe := fun _ => ((), 1)
+  coverageAssumptions := True
+  nonConclusions := True
+
+def hiddenAxis (sig : RefinedSig) : AxisValue :=
+  sig.2
+
+def coarseSafe : SafeRegion CoarseSig :=
+  fun _ => True
+
+def refinedSafe : SafeRegion RefinedSig :=
+  fun sig => hiddenAxis sig = 0
+
+def HiddenAxisMeasuredNonzero (X : ExampleState) : Prop :=
+  hiddenAxis (refinedObservation.observe X) ≠ 0
+
+/--
+Boundary proposition: a coarse safe observation does not supply measured-zero
+evidence for the hidden refined axis.
+-/
+def UnmeasuredAxisIsNotMeasuredZeroBoundary : Prop :=
+  ¬ ∀ X : ExampleState,
+      StateInSafeRegion coarseObservation coarseSafe X ->
+        hiddenAxis (refinedObservation.observe X) = 0
+
+/--
+Boundary proposition: refined observability exposing a nonzero hidden axis is
+recorded as an observation-boundary event, not as an automatic empirical
+degradation theorem.
+-/
+def ObservabilityExpansionBoundary : Prop :=
+  StateInSafeRegion coarseObservation coarseSafe witness ∧
+    HiddenAxisMeasuredNonzero witness ∧
+    SignatureObservation.RecordsNonConclusions coarseObservation ∧
+    SignatureObservation.RecordsNonConclusions refinedObservation
+
+/-- The witness is safe under the selected coarse observation. -/
+theorem coarse_witness_safe :
+    StateInSafeRegion coarseObservation coarseSafe witness := by
+  simp [StateInSafeRegion, coarseSafe]
+
+/-- The refined observation exposes hidden-axis value `1`. -/
+theorem refined_hiddenAxis_eq_one :
+    hiddenAxis (refinedObservation.observe witness) = 1 := by
+  simp [hiddenAxis, refinedObservation, witness]
+
+/-- The newly measured hidden axis is nonzero. -/
+theorem refined_hiddenAxis_nonzero :
+    HiddenAxisMeasuredNonzero witness := by
+  simp [HiddenAxisMeasuredNonzero, hiddenAxis, refinedObservation, witness]
+
+/-- The same witness is not safe under the selected refined observation. -/
+theorem not_refined_witness_safe :
+    ¬ StateInSafeRegion refinedObservation refinedSafe witness := by
+  intro hSafe
+  exact refined_hiddenAxis_nonzero hSafe
+
+/--
+Bundled counterexample: selected coarse safety can hold while the refined
+hidden axis is measured nonzero.
+-/
+theorem coarseSafe_but_refinedHiddenAxis_nonzero :
+    StateInSafeRegion coarseObservation coarseSafe witness ∧
+      HiddenAxisMeasuredNonzero witness := by
+  exact ⟨coarse_witness_safe, refined_hiddenAxis_nonzero⟩
+
+/--
+Bundled counterexample: selected coarse safety does not imply selected refined
+safety once the hidden axis becomes measured.
+-/
+theorem coarseSafe_but_not_refinedSafe :
+    StateInSafeRegion coarseObservation coarseSafe witness ∧
+      ¬ StateInSafeRegion refinedObservation refinedSafe witness := by
+  exact ⟨coarse_witness_safe, not_refined_witness_safe⟩
+
+/--
+Non-conclusion boundary: coarse safety does not justify reading the unmeasured
+hidden refined axis as measured zero.
+-/
+theorem unmeasuredAxis_is_not_measuredZeroBoundary :
+    UnmeasuredAxisIsNotMeasuredZeroBoundary := by
+  intro h
+  exact refined_hiddenAxis_nonzero (h witness coarse_witness_safe)
+
+/--
+Non-conclusion boundary: coarse safety alone does not imply the selected
+refined safety predicate.
+-/
+theorem not_coarseSafe_implies_refinedSafe :
+    ¬ ∀ X : ExampleState,
+        StateInSafeRegion coarseObservation coarseSafe X ->
+          StateInSafeRegion refinedObservation refinedSafe X := by
+  intro h
+  exact not_refined_witness_safe (h witness coarse_witness_safe)
+
+/--
+The observation expansion boundary is explicit: the finite witness records
+coarse safety, newly measured hidden-axis nonzero evidence, and the
+non-conclusion clauses on both observations.
+-/
+theorem records_observabilityExpansionBoundary :
+    ObservabilityExpansionBoundary := by
+  exact ⟨coarse_witness_safe, refined_hiddenAxis_nonzero, trivial, trivial⟩
+
+end ObservabilityExpansionShock
+
 /--
 A finite observed-trajectory attractor candidate.
 

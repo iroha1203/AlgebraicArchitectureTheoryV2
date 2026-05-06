@@ -1712,6 +1712,10 @@ projection-wise safety から cross-axis relation を含む global safety は従
 Issue [#688](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/688) では、
 `SameSignatureDifferentFuture` の小さな finite kernel counterexample を追加し、
 same observed signature から same future operation support は従わない境界を証明した。
+Issue [#685](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/685) では、
+`ObservabilityExpansionShock` の小さな finite observation counterexample を追加し、
+coarse observation で safe に見えることから、refined observation の hidden axis が
+measured zero であることや refined safety が従わない境界を証明した。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1848,6 +1852,23 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `SameSignatureDifferentFuture.future_support_differs` | `theorem` | same observed signature を持つ selected state pair の finite support list が異なることを示す。 | `proved` |
 | `SameSignatureDifferentFuture.sameObservedSignature_differentFutureSupport` | `theorem` | same observed signature と different future operation support を束ねる bounded counterexample。 | `proved` |
 | `SameSignatureDifferentFuture.not_sameObservation_implies_sameFutureSupport` | `theorem` | same selected observation だけから same future operation support を結論する一般命題が成り立たないことを示す。 | `proved` |
+| `ObservabilityExpansionShock.coarseObservation` | `def` | `Unit` signature だけを観測する coarse observation schema。hidden refined axis は測定しない。 | `defined only` |
+| `ObservabilityExpansionShock.refinedObservation` | `def` | visible axis と hidden axis を持つ refined observation schema。小例では hidden axis が `1` として測定される。 | `defined only` |
+| `ObservabilityExpansionShock.hiddenAxis` | `def` | refined signature から newly measured hidden axis を取り出す。 | `defined only` |
+| `ObservabilityExpansionShock.coarseSafe` | `def` | selected coarse observation 上の safe predicate。 | `defined only` |
+| `ObservabilityExpansionShock.refinedSafe` | `def` | hidden axis が `0` であることを要求する selected refined safety predicate。 | `defined only` |
+| `ObservabilityExpansionShock.HiddenAxisMeasuredNonzero` | `def` | refined observation の hidden axis が measured nonzero であること。 | `defined only` |
+| `ObservabilityExpansionShock.UnmeasuredAxisIsNotMeasuredZeroBoundary` | `def` | coarse safe observation が hidden axis の measured-zero evidence を供給しないことを表す boundary predicate。 | `defined only` |
+| `ObservabilityExpansionShock.ObservabilityExpansionBoundary` | `def` | coarse safety、newly measured hidden-axis nonzero、observation non-conclusions を束ねる bounded boundary predicate。 | `defined only` |
+| `ObservabilityExpansionShock.coarse_witness_safe` | `theorem` | witness が selected coarse safe predicate を満たすことを示す。 | `proved` |
+| `ObservabilityExpansionShock.refined_hiddenAxis_eq_one` | `theorem` | refined observation が hidden axis を `1` として測定することを示す。 | `proved` |
+| `ObservabilityExpansionShock.refined_hiddenAxis_nonzero` | `theorem` | newly measured hidden axis が nonzero であることを示す。 | `proved` |
+| `ObservabilityExpansionShock.not_refined_witness_safe` | `theorem` | 同じ witness が selected refined safety predicate を満たさないことを示す。 | `proved` |
+| `ObservabilityExpansionShock.coarseSafe_but_refinedHiddenAxis_nonzero` | `theorem` | coarse safe だが refined hidden axis は measured nonzero である bounded counterexample を束ねる。 | `proved` |
+| `ObservabilityExpansionShock.coarseSafe_but_not_refinedSafe` | `theorem` | coarse safe から refined safe は従わない bounded counterexample を束ねる。 | `proved` |
+| `ObservabilityExpansionShock.unmeasuredAxis_is_not_measuredZeroBoundary` | `theorem` | coarse observation の未測定 hidden axis を measured zero と読めない non-conclusion boundary を示す。 | `proved` |
+| `ObservabilityExpansionShock.not_coarseSafe_implies_refinedSafe` | `theorem` | coarse safety だけから selected refined safety を結論する一般命題が成り立たないことを示す。 | `proved` |
+| `ObservabilityExpansionShock.records_observabilityExpansionBoundary` | `theorem` | observability expansion は coarse safety と hidden-axis nonzero evidence と non-conclusion clauses を同時に記録する boundary event として扱う。 | `proved` |
 | `AttractorCandidate` | `structure` | finite observed trajectory と selected region に相対化し、selected entry index 以降の observed suffix が region 内に留まることを記録する schema。 | `defined only` |
 | `AttractorCandidate.observedSuffix` | `def` | attractor candidate の selected entry index 以降の finite observed suffix を取り出す。 | `defined only` |
 | `AttractorCandidate.RecurrentRegion` | `def` | candidate の selected observed suffix と selected region に相対化した recurrent signature region predicate。 | `defined only` |
