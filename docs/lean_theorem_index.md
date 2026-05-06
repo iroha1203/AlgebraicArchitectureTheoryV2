@@ -1716,6 +1716,11 @@ Issue [#685](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 `ObservabilityExpansionShock` の小さな finite observation counterexample を追加し、
 coarse observation で safe に見えることから、refined observation の hidden axis が
 measured zero であることや refined safety が従わない境界を証明した。
+Issue [#686](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/686) では、
+`OperationCommutatorCurvature` と `DistanceMergeOrderSensitivity` を追加し、
+selected distance function に相対化して two-step operation order の final signature 差を読む
+API へ一般化した。`EqualityDistance` では既存 0/1 `MergeOrderSensitivity` と一致し、
+既存 counterexample は距離付き curvature でも nonzero になる。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1899,12 +1904,29 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `TwoStepObservationCommutative` | `def` | 同じ start state からの二つの two-step transition order が selected final observation 上で一致すること。 | `defined only` |
 | `MergeOrderSensitive` | `def` | 二つの two-step transition order の selected final observation が異なること。実 PR risk や incident との相関は結論しない。 | `defined only` |
 | `MergeOrderSensitivity` | `def` | selected final observation が一致すれば `0`、異なれば `1` を返す bounded 0/1 sensitivity metric。 | `defined only` |
+| `OperationCommutatorCurvatureSchema` | `structure` | selected signature distance、coverage assumptions、empirical PR risk / incident risk / review cost / unmeasured axes / non-conclusion boundary を束ねる距離付き curvature schema。 | `defined only` |
+| `OperationCommutatorCurvatureSchema.RecordsEmpiricalPRRiskBoundary` | `def` | distance-valued curvature schema が empirical PR-risk boundary を記録すること。 | `defined only` |
+| `OperationCommutatorCurvatureSchema.RecordsIncidentRiskBoundary` | `def` | distance-valued curvature schema が incident-risk boundary を記録すること。 | `defined only` |
+| `OperationCommutatorCurvatureSchema.RecordsReviewCostBoundary` | `def` | distance-valued curvature schema が review-cost boundary を記録すること。 | `defined only` |
+| `OperationCommutatorCurvatureSchema.RecordsUnmeasuredAxesBoundary` | `def` | distance-valued curvature schema が unmeasured axes boundary を記録すること。 | `defined only` |
+| `OperationCommutatorCurvatureSchema.RecordsNonConclusions` | `def` | distance-valued curvature schema の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `OperationCommutatorCurvature` | `def` | supplied distance function で二つの selected final observations の差を読む距離付き commutator curvature。 | `defined only` |
+| `DistanceMergeOrderSensitivity` | `def` | `OperationCommutatorCurvature` と同じ bounded quantity を merge-order sensitivity 側の名前で読む API。 | `defined only` |
+| `OperationCommutatorCurvatureOfSchema` | `def` | boundary-recording schema の `distance` から距離付き commutator curvature を読む。 | `defined only` |
+| `EqualityDistance` | `def` | equality / disequality を `0` / `1` に読む selected distance。 | `defined only` |
+| `operationCommutatorCurvature_eq_mergeOrderSensitivity_of_equalityDistance` | `theorem` | `EqualityDistance` を選ぶと距離付き curvature が既存 0/1 `MergeOrderSensitivity` と一致することを示す。 | `proved` |
+| `distanceMergeOrderSensitivity_eq_zero_of_twoStepObservationCommutative` | `theorem` | selected distance が self-zero を満たすなら、観測可換性から距離付き sensitivity が `0` になることを示す。 | `proved` |
 | `mergeOrderSensitivity_eq_zero_of_twoStepObservationCommutative` | `theorem` | two-step order が観測上可換なら bounded merge-order sensitivity が `0` になることを示す。 | `proved` |
 | `not_mergeOrderSensitive_of_twoStepObservationCommutative` | `theorem` | two-step order の観測可換性から selected merge-order sensitivity がないことを示す。 | `proved` |
 | `MergeOrderCounterexample.steps_lawful` | `theorem` | counterexample の各 primitive transition が locally lawful であることを示す。 | `proved` |
 | `MergeOrderCounterexample.not_twoStepObservationCommutative` | `theorem` | locally lawful な二つの two-step order が観測上可換でない小例を示す。 | `proved` |
 | `MergeOrderCounterexample.mergeOrderSensitive` | `theorem` | 同じ小例が selected merge-order sensitive であることを示す。 | `proved` |
 | `MergeOrderCounterexample.mergeOrderSensitivity_eq_one` | `theorem` | 同じ小例の bounded sensitivity metric が `1` に評価されることを示す。 | `proved` |
+| `MergeOrderCounterexample.selectedDistance` | `def` | counterexample の final observation 差を equality distance で読む selected distance。 | `defined only` |
+| `MergeOrderCounterexample.curvatureSchema` | `def` | counterexample 用 distance と empirical / measurement non-conclusion boundary を束ねる schema。 | `defined only` |
+| `MergeOrderCounterexample.operationCommutatorCurvature_eq_one` | `theorem` | 同じ counterexample の距離付き commutator curvature が `1` に評価されることを示す。 | `proved` |
+| `MergeOrderCounterexample.operationCommutatorCurvature_ne_zero` | `theorem` | 同じ counterexample の距離付き commutator curvature が nonzero であることを示す。 | `proved` |
+| `MergeOrderCounterexample.curvatureSchema_records_boundaries` | `theorem` | curvature schema が empirical PR risk、incident risk、review cost、unmeasured axes、non-conclusions の境界を記録することを示す。 | `proved` |
 
 ## Diagram Filler
 
