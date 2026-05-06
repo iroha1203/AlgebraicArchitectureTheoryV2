@@ -683,7 +683,9 @@ archsig ai-agent-team-dynamics-protocol \
 - `ForceCancellationRatio` は additive / comparable axes、同一 measurement boundary、非零 denominator を必要とする。
 - `OperationCommutatorCurvature` は同一 source state、同一 observation boundary、二つの order result refs を必要とする。
 - `CrossAxisClosureGap` は axis-wise measurement と cross-axis invariant / theorem precondition refs を分けて保持する。
-- `SupportRiskMass` は finite support、weight status、operation preservation precondition status を明示する。
+- `SupportRiskMass` は finite support、weight status、risk state、operation preservation
+  precondition status、`safePreservingProved` の theorem / theorem-index refs を明示し、
+  unknown / unavailable / private / notComparable / outOfScope support を measured zero に畳み込まない。
 - `SignatureAliasingRisk` は same signature observation を same future field claim に昇格しない。
 - `ObservabilityExpansionShock` は newly measured nonzero と architecture degradation を分けて報告する。
 - `PathCompressionLoss` は endpoint-only report と trajectory report の比較可能性を検査する。

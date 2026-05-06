@@ -348,10 +348,15 @@ safe-preserving measured
 safe-preserving estimated
 unsafe witness measured
 unmeasured
+unavailable
+private
 notComparable
 outOfScope
 ```
 
+tooling artifact では、finite support weight、risk state、preservation precondition status、
+`safe-preserving proved` の theorem / theorem-index refs を保持し、`measuredRiskMass` と
+unknown / private / unavailable / notComparable / outOfScope support weight を分けて集計する。
 これにより、AAT の「測れていないものを zero と読まない」原則を守る。
 
 ## Empirical Hypotheses

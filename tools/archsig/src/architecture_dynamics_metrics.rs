@@ -563,6 +563,12 @@ fn attractor_engineering_section(
             "future operation distribution completeness",
         ],
     );
+    let support_risk_entries = support_risk_entries(section_boundary.clone());
+    let support_risk_mass = support_risk_mass_metric(
+        &support_risk_entries,
+        source_refs.clone(),
+        section_boundary.clone(),
+    );
     AttractorEngineeringMetricsV0 {
         selected_regions: vec![SelectedSignatureRegionV0 {
             region_id: "fixture:selected-safe-region".to_string(),
@@ -641,7 +647,7 @@ fn attractor_engineering_section(
                 ],
             ),
         ],
-        support_risk_entries: support_risk_entries(section_boundary.clone()),
+        support_risk_entries,
         design_field_signals: vec![
             attractor_signal(
                 "fixture:design-field-boundary-signal",
@@ -697,22 +703,7 @@ fn attractor_engineering_section(
                 "seed attractor signal does not prove future patch distribution completeness",
             ],
         )],
-        support_risk_mass: metric(
-            "attractorEngineering.supportRiskMass",
-            None,
-            "unmeasured",
-            None,
-            source_refs.clone(),
-            section_boundary.clone(),
-            &[
-                "SupportRiskMass calculator is not implemented; operation proposal log is retained as input boundary",
-            ],
-            &[
-                "unmeasured SupportRiskMass is not zero support risk",
-                SUPPORT_RISK_HISTORY_NON_CONCLUSION,
-                "operation proposal log refs do not conclude AI proposal distribution completeness",
-            ],
-        ),
+        support_risk_mass,
         design_field_strength: metric(
             "attractorEngineering.designFieldStrength",
             None,
@@ -929,6 +920,10 @@ fn support_risk_entries(section_boundary: MeasurementBoundaryV0) -> Vec<SupportR
             "boundary-preserving-refactor",
             0.32,
             "proved",
+            &[
+                "docs/lean_theorem_index.md#operation-role-schema",
+                "Formal.Arch.OperationRoleSchema.preservesInvariant_of_discharged_preserve",
+            ],
             "safePreservingProved",
             "measured",
             Some(json!(0.0)),
@@ -945,6 +940,7 @@ fn support_risk_entries(section_boundary: MeasurementBoundaryV0) -> Vec<SupportR
             "policy-cleanup",
             0.21,
             "measured",
+            &[],
             "safePreservingMeasured",
             "measured",
             Some(json!(0.0)),
@@ -961,6 +957,7 @@ fn support_risk_entries(section_boundary: MeasurementBoundaryV0) -> Vec<SupportR
             "test-hardening",
             0.18,
             "estimated",
+            &[],
             "safePreservingEstimated",
             "estimated",
             Some(json!(0.0)),
@@ -977,6 +974,7 @@ fn support_risk_entries(section_boundary: MeasurementBoundaryV0) -> Vec<SupportR
             "runtime-bypass",
             0.04,
             "measured",
+            &[],
             "unsafeWitnessMeasured",
             "measured",
             Some(json!(0.04)),
@@ -993,6 +991,7 @@ fn support_risk_entries(section_boundary: MeasurementBoundaryV0) -> Vec<SupportR
             "framework-convention",
             0.25,
             "unmeasured",
+            &[],
             "unmeasured",
             "unmeasured",
             None,
@@ -1007,12 +1006,104 @@ fn support_risk_entries(section_boundary: MeasurementBoundaryV0) -> Vec<SupportR
     ]
 }
 
+fn support_risk_mass_metric(
+    entries: &[SupportRiskMassEntryV0],
+    source_refs: Vec<DynamicsArtifactRefV0>,
+    measurement_boundary: MeasurementBoundaryV0,
+) -> DynamicsMeasuredValueV0 {
+    metric(
+        "attractorEngineering.supportRiskMass",
+        Some(calculate_support_risk_mass(entries)),
+        "derived",
+        Some("bounded-fixture-calculation"),
+        source_refs,
+        measurement_boundary,
+        &[
+            "SupportRiskMass is calculated over the finite retained support entries",
+            "unknown, unavailable, private, notComparable, and outOfScope support is retained outside measuredRiskMass",
+        ],
+        &[
+            "derived SupportRiskMass is bounded fixture evidence, not future operation distribution completeness",
+            "unknown support risk mass is not measured zero",
+            SUPPORT_RISK_HISTORY_NON_CONCLUSION,
+            "operation proposal log refs do not conclude AI proposal distribution completeness",
+        ],
+    )
+}
+
+fn calculate_support_risk_mass(entries: &[SupportRiskMassEntryV0]) -> serde_json::Value {
+    let mut finite_support_weight = 0.0;
+    let mut measured_risk_mass = 0.0;
+    let mut estimated_risk_mass = 0.0;
+    let mut unknown_support_weight = 0.0;
+    let mut risk_state_support_weight = std::collections::BTreeMap::<String, f64>::new();
+    let mut preservation_precondition_status_weight =
+        std::collections::BTreeMap::<String, f64>::new();
+    let mut theorem_precondition_refs = BTreeSet::<String>::new();
+
+    for entry in entries {
+        let support_weight = metric_number(&entry.support_weight).unwrap_or(0.0);
+        finite_support_weight += support_weight;
+        *risk_state_support_weight
+            .entry(entry.risk_state.clone())
+            .or_insert(0.0) += support_weight;
+        *preservation_precondition_status_weight
+            .entry(entry.preservation_precondition_status.clone())
+            .or_insert(0.0) += support_weight;
+        theorem_precondition_refs.extend(entry.theorem_precondition_refs.iter().cloned());
+
+        if UNKNOWN_SUPPORT_RISK_STATES.contains(&entry.risk_state.as_str()) {
+            unknown_support_weight += support_weight;
+            continue;
+        }
+
+        if let Some(contribution) = metric_number(&entry.risk_mass_contribution) {
+            match entry.risk_mass_contribution.status.as_str() {
+                "estimated" => estimated_risk_mass += contribution,
+                "measured" | "derived" => measured_risk_mass += contribution,
+                _ => {}
+            }
+        }
+    }
+
+    json!({
+        "calculationKind": "finite-support-risk-mass",
+        "entryCount": entries.len(),
+        "finiteSupportWeight": rounded(finite_support_weight),
+        "measuredRiskMass": rounded(measured_risk_mass),
+        "estimatedRiskMass": rounded(estimated_risk_mass),
+        "unknownSupportWeight": rounded(unknown_support_weight),
+        "riskStateSupportWeight": rounded_map(risk_state_support_weight),
+        "preservationPreconditionStatusWeight": rounded_map(preservation_precondition_status_weight),
+        "theoremPreconditionRefs": theorem_precondition_refs.into_iter().collect::<Vec<_>>(),
+        "calculationBoundary": "unknown, unavailable, private, notComparable, and outOfScope support is retained outside measuredRiskMass"
+    })
+}
+
+fn metric_number(metric: &DynamicsMeasuredValueV0) -> Option<f64> {
+    metric.value.as_ref()?.as_f64()
+}
+
+fn rounded(value: f64) -> f64 {
+    (value * 1_000_000.0).round() / 1_000_000.0
+}
+
+fn rounded_map(
+    values: std::collections::BTreeMap<String, f64>,
+) -> std::collections::BTreeMap<String, f64> {
+    values
+        .into_iter()
+        .map(|(key, value)| (key, rounded(value)))
+        .collect()
+}
+
 #[allow(clippy::too_many_arguments)]
 fn support_risk_entry(
     operation_id: &str,
     operation_kind: &str,
     support_weight: f64,
     preservation_precondition_status: &str,
+    theorem_precondition_refs: &[&str],
     risk_state: &str,
     risk_mass_status: &str,
     risk_mass_value: Option<serde_json::Value>,
@@ -1047,6 +1138,7 @@ fn support_risk_entry(
         support_scope_refs: vec!["fixture:selected-safe-region".to_string()],
         support_weight: support_weight_metric,
         preservation_precondition_status: preservation_precondition_status.to_string(),
+        theorem_precondition_refs: strings(theorem_precondition_refs),
         risk_state: risk_state.to_string(),
         risk_mass_contribution,
         measurement_boundary,
@@ -1602,6 +1694,21 @@ fn check_attractor_engineering_section(
                 "unsupported operation preservation precondition status",
             ));
         }
+        if entry.risk_state == "safePreservingProved" && entry.theorem_precondition_refs.is_empty()
+        {
+            invalid.push(generic_validation_example(
+                &entry.operation_id,
+                "theoremPreconditionRefs",
+                "safePreservingProved support risk entries must retain Lean theorem or theorem index precondition refs",
+            ));
+        }
+        if has_blank(&entry.theorem_precondition_refs) {
+            invalid.push(generic_validation_example(
+                &entry.operation_id,
+                "theoremPreconditionRefs",
+                "theorem precondition refs must not contain blank refs",
+            ));
+        }
         validate_boundary(
             &entry.operation_id,
             "measurementBoundary",
@@ -1645,6 +1752,7 @@ fn check_attractor_engineering_section(
             ));
         }
     }
+    validate_support_risk_mass_calculation(section, &mut invalid);
     validate_safe_preserving_confidence_distinction(section, &mut invalid);
     validate_basin_return_observability_boundaries(section, &mut invalid);
     validate_field_shaping_delta(section, &mut invalid);
@@ -1667,6 +1775,98 @@ fn check_attractor_engineering_section(
         "Attractor Engineering section records bounded candidates, metric slots, and non-conclusions",
         invalid,
     )
+}
+
+fn validate_support_risk_mass_calculation(
+    section: &AttractorEngineeringMetricsV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    let metric = &section.support_risk_mass;
+    if metric.metric_id != "attractorEngineering.supportRiskMass" {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "metricId",
+            "SupportRiskMass must be recorded in the attractorEngineering supportRiskMass slot",
+        ));
+    }
+    if metric.status != "derived" {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "status",
+            "SupportRiskMass calculator output must be emitted as a derived bounded calculation",
+        ));
+    }
+    let Some(value) = metric.value.as_ref().and_then(|value| value.as_object()) else {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "value",
+            "SupportRiskMass calculator output must record aggregate calculation fields",
+        ));
+        return;
+    };
+
+    let expected = calculate_support_risk_mass(&section.support_risk_entries);
+    let expected_object = expected
+        .as_object()
+        .expect("calculated SupportRiskMass value is an object");
+    for field in [
+        "entryCount",
+        "finiteSupportWeight",
+        "measuredRiskMass",
+        "estimatedRiskMass",
+        "unknownSupportWeight",
+        "riskStateSupportWeight",
+        "preservationPreconditionStatusWeight",
+    ] {
+        if value.get(field) != expected_object.get(field) {
+            invalid.push(generic_validation_example(
+                &metric.metric_id,
+                field,
+                "SupportRiskMass aggregate must match finite support entries",
+            ));
+        }
+    }
+
+    let unknown_entry_count = section
+        .support_risk_entries
+        .iter()
+        .filter(|entry| UNKNOWN_SUPPORT_RISK_STATES.contains(&entry.risk_state.as_str()))
+        .count();
+    let unknown_support_weight = value
+        .get("unknownSupportWeight")
+        .and_then(serde_json::Value::as_f64)
+        .unwrap_or(0.0);
+    if unknown_entry_count > 0 && unknown_support_weight == 0.0 {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "unknownSupportWeight",
+            "unknown, unavailable, private, notComparable, and outOfScope support must not be collapsed to measured zero",
+        ));
+    }
+
+    let aggregate_refs = value
+        .get("theoremPreconditionRefs")
+        .and_then(serde_json::Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    for entry in section
+        .support_risk_entries
+        .iter()
+        .filter(|entry| entry.risk_state == "safePreservingProved")
+    {
+        for theorem_ref in &entry.theorem_precondition_refs {
+            if !aggregate_refs
+                .iter()
+                .any(|value| value.as_str() == Some(theorem_ref.as_str()))
+            {
+                invalid.push(generic_validation_example(
+                    &entry.operation_id,
+                    "theoremPreconditionRefs",
+                    "SupportRiskMass aggregate must retain safePreservingProved theorem precondition refs",
+                ));
+            }
+        }
+    }
 }
 
 fn validate_field_shaping_signal(

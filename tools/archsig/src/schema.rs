@@ -3412,6 +3412,8 @@ pub struct SupportRiskMassEntryV0 {
     pub support_scope_refs: Vec<String>,
     pub support_weight: DynamicsMeasuredValueV0,
     pub preservation_precondition_status: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub theorem_precondition_refs: Vec<String>,
     pub risk_state: String,
     pub risk_mass_contribution: DynamicsMeasuredValueV0,
     pub measurement_boundary: MeasurementBoundaryV0,

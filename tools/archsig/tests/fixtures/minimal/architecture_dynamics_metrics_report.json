@@ -1111,6 +1111,10 @@
           ]
         },
         "preservationPreconditionStatus": "proved",
+        "theoremPreconditionRefs": [
+          "docs/lean_theorem_index.md#operation-role-schema",
+          "Formal.Arch.OperationRoleSchema.preservesInvariant_of_discharged_preserve"
+        ],
         "riskState": "safePreservingProved",
         "riskMassContribution": {
           "metricId": "fixture:preserve-boundary-law.riskMassContribution",
@@ -2645,8 +2649,34 @@
     ],
     "supportRiskMass": {
       "metricId": "attractorEngineering.supportRiskMass",
-      "value": null,
-      "status": "unmeasured",
+      "value": {
+        "calculationBoundary": "unknown, unavailable, private, notComparable, and outOfScope support is retained outside measuredRiskMass",
+        "calculationKind": "finite-support-risk-mass",
+        "entryCount": 5,
+        "estimatedRiskMass": 0.0,
+        "finiteSupportWeight": 1.0,
+        "measuredRiskMass": 0.04,
+        "preservationPreconditionStatusWeight": {
+          "estimated": 0.18,
+          "measured": 0.25,
+          "proved": 0.32,
+          "unmeasured": 0.25
+        },
+        "riskStateSupportWeight": {
+          "safePreservingEstimated": 0.18,
+          "safePreservingMeasured": 0.21,
+          "safePreservingProved": 0.32,
+          "unmeasured": 0.25,
+          "unsafeWitnessMeasured": 0.04
+        },
+        "theoremPreconditionRefs": [
+          "Formal.Arch.OperationRoleSchema.preservesInvariant_of_discharged_preserve",
+          "docs/lean_theorem_index.md#operation-role-schema"
+        ],
+        "unknownSupportWeight": 0.25
+      },
+      "status": "derived",
+      "confidence": "bounded-fixture-calculation",
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
@@ -2750,10 +2780,12 @@
         ]
       },
       "assumptions": [
-        "SupportRiskMass calculator is not implemented; operation proposal log is retained as input boundary"
+        "SupportRiskMass is calculated over the finite retained support entries",
+        "unknown, unavailable, private, notComparable, and outOfScope support is retained outside measuredRiskMass"
       ],
       "nonConclusions": [
-        "unmeasured SupportRiskMass is not zero support risk",
+        "derived SupportRiskMass is bounded fixture evidence, not future operation distribution completeness",
+        "unknown support risk mass is not measured zero",
         "accepted PR history safety does not conclude future support risk is zero",
         "operation proposal log refs do not conclude AI proposal distribution completeness"
       ]
