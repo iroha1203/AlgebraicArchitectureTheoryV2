@@ -5957,7 +5957,7 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
     );
     assert_eq!(json["summary"]["attractorSelectedRegionCount"], 1);
     assert!(
-        json["report"]["attractorEngineering"]["supportRiskMass"]["status"] == "unmeasured"
+        json["report"]["attractorEngineering"]["supportRiskMass"]["status"] == "derived"
             && json["report"]["attractorEngineering"]["designFieldStrength"]["status"]
                 == "advisory"
             && json["report"]["attractorEngineering"]["seedAttractorStrength"]["status"]
@@ -5968,6 +5968,25 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                 == "unavailable"
             && json["report"]["attractorEngineering"]["observabilityDebt"]["status"]
                 == "notComparable"
+    );
+    assert_eq!(
+        json["report"]["attractorEngineering"]["supportRiskMass"]["value"]["measuredRiskMass"],
+        serde_json::json!(0.04)
+    );
+    assert_eq!(
+        json["report"]["attractorEngineering"]["supportRiskMass"]["value"]["unknownSupportWeight"],
+        serde_json::json!(0.25)
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["supportRiskMass"]["value"]
+            ["theoremPreconditionRefs"]
+            .as_array()
+            .expect("theoremPreconditionRefs is array")
+            .iter()
+            .any(|reference| {
+                reference
+                    == "Formal.Arch.OperationRoleSchema.preservesInvariant_of_discharged_preserve"
+            })
     );
     assert_eq!(json["summary"]["basinCandidateCount"], 2);
     assert!(
@@ -6010,6 +6029,13 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                 entry["riskState"] == "safePreservingProved"
                     && entry["preservationPreconditionStatus"] == "proved"
                     && entry["riskMassContribution"]["confidence"] == "formal-proof"
+                    && entry["theoremPreconditionRefs"]
+                        .as_array()
+                        .expect("theoremPreconditionRefs is array")
+                        .iter()
+                        .any(|reference| {
+                            reference == "docs/lean_theorem_index.md#operation-role-schema"
+                        })
             })
     );
     assert!(
@@ -6215,6 +6241,10 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
         ["status"] = serde_json::json!("measured");
     invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][4]["riskMassContribution"]
         ["value"] = serde_json::json!(0.0);
+    invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][0]["theoremPreconditionRefs"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["supportRiskMass"]["value"]["unknownSupportWeight"] =
+        serde_json::json!(0.0);
     invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][1]["riskMassContribution"]
         ["confidence"] = serde_json::json!("formal-proof");
     invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][2]["riskMassContribution"]
@@ -6320,6 +6350,26 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                 .as_str()
                 .unwrap_or_default()
                 .contains("must not be emitted as measured numeric zero"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("must retain Lean theorem or theorem index precondition refs"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("must not be collapsed to measured zero"))
     );
     assert!(
         attractor_check["examples"]
