@@ -254,9 +254,11 @@ conclusion:
   implies exists n <= k * B, bad sigma_n = 0
 ```
 
-Lean status: future proof obligation。
+Lean status: proved for trace-relative strict fair-block theorem
+`ConstructiveDampingFiniteReturn.StrictFairBlockDampingAssumption.strictFairBlockDamping_finiteReturn`。
 
 これは `DampingControlSchema.BadAxisDampingAssumption` を strict / fair block へ拡張する候補である。
+Lean theorem は explicit nonincrease と strict fair-block hypothesis に相対化し、
 tooling / empirical layer では、この strict damping assumption がどれだけ support されるかを測る。
 
 ### Observability Expansion Shock

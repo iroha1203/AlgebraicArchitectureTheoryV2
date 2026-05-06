@@ -1727,6 +1727,12 @@ Issue [#697](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 語彙で読む入口を `Formal/Arch/Evolution/AttractorEngineering.lean` に分離した。
 bad region の補集合を selected safe region として扱う wrapper も追加し、coverage /
 measurement boundary / non-conclusions を package accessor として記録する。
+Issue [#699](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/699) では、
+`ConstructiveDampingFiniteReturn.StrictFairBlockDampingAssumption` を追加し、
+Nat 値の selected bad-axis trace が explicit nonincrease と strict fair-block hypothesis を
+満たすとき、`exists n <= blockLength * B, bad sigma_n = 0` となる finite return theorem を
+証明した。accepted nonincrease だけから finite return は結論せず、strict damping support の
+tooling / empirical claim は boundary accessor 側に残す。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1863,6 +1869,15 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `AttractorEngineeringSupportPackage.supportPackage_preserves_targetTrajectory` | `theorem` | realized bounded script が finite support だけを使い、start が target region 内なら、package の target trajectory が target region 内に留まる。 | `proved` |
 | `AttractorEngineeringSupportPackage.supportPackage_avoids_badRegion` | `theorem` | package の target region が bad region の補集合なら、bounded target trajectory がその bad region を避けることを示す。 | `proved` |
 | `AttractorEngineeringSupportPackage.supportShaping_avoids_badRegion` | `theorem` | bad region の補集合を safe region として、support operation preservation から bounded trajectory が bad region を避けることを直接得る wrapper。 | `proved` |
+| `ConstructiveDampingFiniteReturn.StrictFairBlockDampingAssumption` | `structure` | selected bad-axis `Sig -> Nat`、finite block length、accepted nonincrease / empirical support / non-conclusion boundary を束ねる strict fair-block damping package。 | `defined only` |
+| `StrictFairBlockDampingAssumption.scoreAt` | `def` | selected signature trajectory の index `n` における bad-axis score を読む。 | `defined only` |
+| `StrictFairBlockDampingAssumption.TraceNonincreasing` | `def` | selected score trace が隣接 step ごとに非増加であること。finite return はこれだけからは結論しない。 | `defined only` |
+| `StrictFairBlockDampingAssumption.TraceHasStrictFairBlocks` | `def` | positive-score block ごとに、selected finite block length 内で strict decrease が現れること。 | `defined only` |
+| `StrictFairBlockDampingAssumption.RecordsAcceptedNonincreaseBoundary` | `def` | accepted nonincrease だけでは finite return を結論しない boundary を predicate として取り出す。 | `defined only` |
+| `StrictFairBlockDampingAssumption.RecordsEmpiricalSupportBoundary` | `def` | tooling / empirical layer が strict fair-block hypothesis を support するかは theorem claim 外である boundary を取り出す。 | `defined only` |
+| `StrictFairBlockDampingAssumption.RecordsNonConclusions` | `def` | strict fair-block damping package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `StrictFairBlockDampingAssumption.strictFairBlockDamping_finiteReturn` | `theorem` | score が `B` から始まり、非増加かつ positive block ごとに strict decrease を持つなら、`exists n <= blockLength * B, score n = 0` を示す。 | `proved` |
+| `StrictFairBlockDampingAssumption.strictFairBlockDamping_finiteReturn_with_boundaries` | `theorem` | finite return conclusion と、明示的に与えられた accepted nonincrease / empirical support / non-conclusion boundary records を束ねる。 | `proved` |
 | `AcceptedPreservationNotSupportPreservation.observation` | `def` | `Bool` state をそのまま observed signature として読む小さな Attractor Engineering counterexample 用 observation schema。 | `defined only` |
 | `AcceptedPreservationNotSupportPreservation.control` | `def` | safe self-step のみを accepted とし、accepted step が selected invariant を保存する小例用 control schema。 | `defined only` |
 | `AcceptedPreservationNotSupportPreservation.semantics` | `def` | accepted noop と unsafe drift operation の bounded realization relation を持つ小例用 semantics。 | `defined only` |
