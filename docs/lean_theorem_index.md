@@ -1888,15 +1888,28 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `AcceptedPreservationNotSupportPreservation.unsafeOperation_not_preserves_safeRegion` | `theorem` | unsafe drift operation が selected safe region を保存しないことを示す。 | `proved` |
 | `AcceptedPreservationNotSupportPreservation.acceptedPreservation_not_supportPreservation_counterexample` | `theorem` | accepted-step invariant preservation と、support 内 unsafe operation の存在が同時に成り立つ finite counterexample を束ねる。 | `proved` |
 | `SameObservedSignatureDifferentFutureSupport` | `def` | same selected observed signature と different finite future operation support を束ねる bounded witness predicate。future distribution / empirical weights / unmeasured axes は結論しない。 | `defined only` |
-| `SameSignatureDifferentFuture.observation` | `def` | `Nat` state を `Unit` signature へ潰して読む小さな counterexample 用 observation schema。 | `defined only` |
+| `SameObservedSignatureDifferentFutureTrajectory` | `def` | same selected observed signature と realized finite scripts / support use から異なる future signature trajectory が生じる bounded witness predicate。global distribution / empirical proposal probability / AI behavior theorem は結論しない。 | `defined only` |
+| `SameSignatureDifferentFuture.observation` | `def` | `Nat` state を `Bool` signature へ潰して読み、source / target の current signature を同一にする小さな counterexample 用 observation schema。 | `defined only` |
 | `SameSignatureDifferentFuture.kernel` | `def` | source state と target state に異なる singleton operation support を割り当てる finite kernel witness。 | `defined only` |
+| `SameSignatureDifferentFuture.semantics` | `def` | selected left / right operation をそれぞれ source / target から別の future state へ進める bounded transition semantics。 | `defined only` |
+| `SameSignatureDifferentFuture.leftPlan` | `def` | source から left future state へ進む 1-step finite evolution。 | `defined only` |
+| `SameSignatureDifferentFuture.rightPlan` | `def` | target から right future state へ進む 1-step finite evolution。 | `defined only` |
+| `SameSignatureDifferentFuture.leftScript` | `def` | left operation だけを含む bounded operation script。 | `defined only` |
+| `SameSignatureDifferentFuture.rightScript` | `def` | right operation だけを含む bounded operation script。 | `defined only` |
 | `SameSignatureDifferentFuture.source_ne_target` | `theorem` | 小例の source と target が distinct state pair であることを示す。 | `proved` |
 | `SameSignatureDifferentFuture.same_observed_signature` | `theorem` | distinct state pair が same selected observed signature を持つことを示す。 | `proved` |
 | `SameSignatureDifferentFuture.source_supports_leftOperation` | `theorem` | source state の finite support が selected left operation を含むことを示す。 | `proved` |
 | `SameSignatureDifferentFuture.target_not_supports_leftOperation` | `theorem` | target state の finite support が selected left operation を含まないことを示す。 | `proved` |
+| `SameSignatureDifferentFuture.leftScript_uses_sourceSupport` | `theorem` | left script が left plan 上で source state の finite support operation だけを使うことを示す。 | `proved` |
+| `SameSignatureDifferentFuture.rightScript_uses_targetSupport` | `theorem` | right script が right plan 上で target state の finite support operation だけを使うことを示す。 | `proved` |
+| `SameSignatureDifferentFuture.leftScript_realizes_leftPlan` | `theorem` | selected semantics の下で left script が left plan を realize することを示す。 | `proved` |
+| `SameSignatureDifferentFuture.rightScript_realizes_rightPlan` | `theorem` | selected semantics の下で right script が right plan を realize することを示す。 | `proved` |
 | `SameSignatureDifferentFuture.future_support_differs` | `theorem` | same observed signature を持つ selected state pair の finite support list が異なることを示す。 | `proved` |
+| `SameSignatureDifferentFuture.future_trajectory_differs` | `theorem` | same current observed signature から始まる selected realized scripts の future signature trajectory が異なることを示す。 | `proved` |
 | `SameSignatureDifferentFuture.sameObservedSignature_differentFutureSupport` | `theorem` | same observed signature と different future operation support を束ねる bounded counterexample。 | `proved` |
+| `SameSignatureDifferentFuture.sameObservedSignature_differentFutureTrajectory` | `theorem` | same observed signature、finite support use、selected script realization、different future signature trajectory を束ねる bounded counterexample。 | `proved` |
 | `SameSignatureDifferentFuture.not_sameObservation_implies_sameFutureSupport` | `theorem` | same selected observation だけから same future operation support を結論する一般命題が成り立たないことを示す。 | `proved` |
+| `SameSignatureDifferentFuture.not_sameObservation_implies_sameFutureTrajectory` | `theorem` | same selected observation だけから same future signature trajectory を結論する一般命題が成り立たないことを示す。 | `proved` |
 | `ObservabilityExpansionShock.coarseObservation` | `def` | `Unit` signature だけを観測する coarse observation schema。hidden refined axis は測定しない。 | `defined only` |
 | `ObservabilityExpansionShock.refinedObservation` | `def` | visible axis と hidden axis を持つ refined observation schema。小例では hidden axis が `1` として測定される。 | `defined only` |
 | `ObservabilityExpansionShock.hiddenAxis` | `def` | refined signature から newly measured hidden axis を取り出す。 | `defined only` |

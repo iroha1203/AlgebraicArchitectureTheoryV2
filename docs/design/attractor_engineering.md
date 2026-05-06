@@ -214,7 +214,8 @@ exists X Y,
 さらに transition semantics と script を与えると、同じ current signature から異なる future
 signature trajectory が生じる counterexample にできる。
 
-Lean status: future counterexample。
+Lean status: proved bounded counterexample
+`SameSignatureDifferentFuture.sameObservedSignature_differentFutureTrajectory`。
 
 この theorem は Attractor Engineering の必要性を示す。current signature snapshot だけでは、
 future operation distribution を誘導する field は決まらない。
