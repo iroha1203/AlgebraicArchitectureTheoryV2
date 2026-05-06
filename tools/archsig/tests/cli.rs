@@ -5771,6 +5771,46 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
             && json["report"]["attractorEngineering"]["seedAttractorStrength"]["status"]
                 == "unavailable"
     );
+    assert_eq!(
+        json["report"]["attractorEngineering"]["supportRiskEntries"]
+            .as_array()
+            .expect("supportRiskEntries is array")
+            .len(),
+        5
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["supportRiskEntries"]
+            .as_array()
+            .expect("supportRiskEntries is array")
+            .iter()
+            .any(|entry| {
+                entry["riskState"] == "safePreservingProved"
+                    && entry["preservationPreconditionStatus"] == "proved"
+                    && entry["riskMassContribution"]["confidence"] == "formal-proof"
+            })
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["supportRiskEntries"]
+            .as_array()
+            .expect("supportRiskEntries is array")
+            .iter()
+            .any(|entry| {
+                entry["riskState"] == "safePreservingMeasured"
+                    && entry["preservationPreconditionStatus"] == "measured"
+                    && entry["riskMassContribution"]["confidence"] == "empirical-measured"
+            })
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["supportRiskEntries"]
+            .as_array()
+            .expect("supportRiskEntries is array")
+            .iter()
+            .any(|entry| {
+                entry["riskState"] == "safePreservingEstimated"
+                    && entry["preservationPreconditionStatus"] == "estimated"
+                    && entry["riskMassContribution"]["confidence"] == "model-estimate"
+            })
+    );
 
     let artifact = read_json(&fixture_artifact);
     assert_eq!(
@@ -5886,6 +5926,16 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
     invalid_attractor_json["attractorEngineering"]["nonConclusions"] = serde_json::json!([]);
     invalid_attractor_json["attractorEngineering"]["attractorCandidates"][0]["status"] =
         serde_json::json!("global");
+    invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][4]["riskState"] =
+        serde_json::json!("private");
+    invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][4]["riskMassContribution"]
+        ["status"] = serde_json::json!("measured");
+    invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][4]["riskMassContribution"]
+        ["value"] = serde_json::json!(0.0);
+    invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][1]["riskMassContribution"]
+        ["confidence"] = serde_json::json!("formal-proof");
+    invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][2]["riskMassContribution"]
+        ["confidence"] = serde_json::json!("formal-proof");
     fs::write(
         &invalid_attractor_report,
         serde_json::to_string_pretty(&invalid_attractor_json).expect("json serializes"),
@@ -5927,6 +5977,34 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                     == "architecture-dynamics-metrics-attractor-engineering-section-recorded"
                     && check["result"] == "fail"
             })
+    );
+    let attractor_check = json["checks"]
+        .as_array()
+        .expect("checks is array")
+        .iter()
+        .find(|check| {
+            check["id"] == "architecture-dynamics-metrics-attractor-engineering-section-recorded"
+        })
+        .expect("Attractor Engineering validation check exists");
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("must not be emitted as measured numeric zero"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("must not share one confidence level"))
     );
 }
 

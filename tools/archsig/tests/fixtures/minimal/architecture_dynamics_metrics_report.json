@@ -129,7 +129,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -191,7 +191,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -284,7 +284,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -342,7 +342,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -413,7 +413,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -518,7 +518,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -609,7 +609,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -729,7 +729,7 @@
           "missingEvidence": [],
           "nonConclusions": [
             "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-            "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
             "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
             "global attractor, causal proof, and incident-risk conclusions are out of scope"
           ]
@@ -805,7 +805,7 @@
           "missingEvidence": [],
           "nonConclusions": [
             "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-            "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
             "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
             "global attractor, causal proof, and incident-risk conclusions are out of scope"
           ]
@@ -863,6 +863,1092 @@
         ]
       }
     ],
+    "supportRiskEntries": [
+      {
+        "operationId": "fixture:preserve-boundary-law",
+        "operationKind": "boundary-preserving-refactor",
+        "supportScopeRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "supportWeight": {
+          "metricId": "fixture:preserve-boundary-law.supportWeight",
+          "value": 0.32,
+          "status": "measured",
+          "confidence": "fixture-normalized-support",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "support weight is normalized over the finite fixture support"
+          ],
+          "nonConclusions": [
+            "finite fixture support weight is not future distribution completeness"
+          ]
+        },
+        "preservationPreconditionStatus": "proved",
+        "riskState": "safePreservingProved",
+        "riskMassContribution": {
+          "metricId": "fixture:preserve-boundary-law.riskMassContribution",
+          "value": 0.0,
+          "status": "measured",
+          "confidence": "formal-proof",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "risk contribution is relative to the finite support entry risk state"
+          ],
+          "nonConclusions": [
+            "proved safe-preserving support is still relative to the selected operation semantics",
+            "accepted PR history safety does not conclude future support risk is zero"
+          ]
+        },
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "Lean theorem package ref discharges the selected preservation precondition"
+        ],
+        "nonConclusions": [
+          "proved safe-preserving support is still relative to the selected operation semantics",
+          "accepted PR history safety does not conclude future support risk is zero"
+        ]
+      },
+      {
+        "operationId": "fixture:measured-policy-cleanup",
+        "operationKind": "policy-cleanup",
+        "supportScopeRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "supportWeight": {
+          "metricId": "fixture:measured-policy-cleanup.supportWeight",
+          "value": 0.21,
+          "status": "measured",
+          "confidence": "fixture-normalized-support",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "support weight is normalized over the finite fixture support"
+          ],
+          "nonConclusions": [
+            "finite fixture support weight is not future distribution completeness"
+          ]
+        },
+        "preservationPreconditionStatus": "measured",
+        "riskState": "safePreservingMeasured",
+        "riskMassContribution": {
+          "metricId": "fixture:measured-policy-cleanup.riskMassContribution",
+          "value": 0.0,
+          "status": "measured",
+          "confidence": "empirical-measured",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "risk contribution is relative to the finite support entry risk state"
+          ],
+          "nonConclusions": [
+            "measured safe-preserving support is not a Lean proof",
+            "accepted PR history safety does not conclude future support risk is zero"
+          ]
+        },
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "policy report measured the selected preservation precondition"
+        ],
+        "nonConclusions": [
+          "measured safe-preserving support is not a Lean proof",
+          "accepted PR history safety does not conclude future support risk is zero"
+        ]
+      },
+      {
+        "operationId": "fixture:estimated-test-hardening",
+        "operationKind": "test-hardening",
+        "supportScopeRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "supportWeight": {
+          "metricId": "fixture:estimated-test-hardening.supportWeight",
+          "value": 0.18,
+          "status": "measured",
+          "confidence": "fixture-normalized-support",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "support weight is normalized over the finite fixture support"
+          ],
+          "nonConclusions": [
+            "finite fixture support weight is not future distribution completeness"
+          ]
+        },
+        "preservationPreconditionStatus": "estimated",
+        "riskState": "safePreservingEstimated",
+        "riskMassContribution": {
+          "metricId": "fixture:estimated-test-hardening.riskMassContribution",
+          "value": 0.0,
+          "status": "estimated",
+          "confidence": "model-estimate",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "risk contribution is relative to the finite support entry risk state"
+          ],
+          "nonConclusions": [
+            "estimated safe-preserving support has lower confidence than proof or measurement",
+            "accepted PR history safety does not conclude future support risk is zero"
+          ]
+        },
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "preservation is estimated from bounded fixture evidence"
+        ],
+        "nonConclusions": [
+          "estimated safe-preserving support has lower confidence than proof or measurement",
+          "accepted PR history safety does not conclude future support risk is zero"
+        ]
+      },
+      {
+        "operationId": "fixture:unsafe-runtime-bypass",
+        "operationKind": "runtime-bypass",
+        "supportScopeRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "supportWeight": {
+          "metricId": "fixture:unsafe-runtime-bypass.supportWeight",
+          "value": 0.04,
+          "status": "measured",
+          "confidence": "fixture-normalized-support",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "support weight is normalized over the finite fixture support"
+          ],
+          "nonConclusions": [
+            "finite fixture support weight is not future distribution completeness"
+          ]
+        },
+        "preservationPreconditionStatus": "measured",
+        "riskState": "unsafeWitnessMeasured",
+        "riskMassContribution": {
+          "metricId": "fixture:unsafe-runtime-bypass.riskMassContribution",
+          "value": 0.04,
+          "status": "measured",
+          "confidence": "empirical-measured",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "risk contribution is relative to the finite support entry risk state"
+          ],
+          "nonConclusions": [
+            "measured unsafe witness contributes support risk for the selected support only",
+            "accepted PR history safety does not conclude future support risk is zero"
+          ]
+        },
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "runtime bypass witness is measured in the selected support fixture"
+        ],
+        "nonConclusions": [
+          "measured unsafe witness contributes support risk for the selected support only",
+          "accepted PR history safety does not conclude future support risk is zero"
+        ]
+      },
+      {
+        "operationId": "fixture:unknown-framework-convention",
+        "operationKind": "framework-convention",
+        "supportScopeRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "supportWeight": {
+          "metricId": "fixture:unknown-framework-convention.supportWeight",
+          "value": 0.25,
+          "status": "measured",
+          "confidence": "fixture-normalized-support",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "support weight is normalized over the finite fixture support"
+          ],
+          "nonConclusions": [
+            "finite fixture support weight is not future distribution completeness"
+          ]
+        },
+        "preservationPreconditionStatus": "unmeasured",
+        "riskState": "unmeasured",
+        "riskMassContribution": {
+          "metricId": "fixture:unknown-framework-convention.riskMassContribution",
+          "value": null,
+          "status": "unmeasured",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "attractor-engineering",
+            "measuredAxes": [
+              "SupportRiskMass",
+              "DesignFieldStrength",
+              "SeedAttractorStrength",
+              "BasinBoundaryFragility",
+              "TrajectoryReturnTime",
+              "ObservabilityDebt"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-trajectory-report",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+                "schemaVersion": "signature-trajectory-report-v0",
+                "artifactId": "fixture-signature-trajectory-report-v0"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "architecture-drift-ledger",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+                "schemaVersion": "architecture-drift-ledger-v0",
+                "artifactId": "fixture-architecture-drift-ledger"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "architecture-dynamics-metrics-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-fixture-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-dynamics-window"
+            ],
+            "assumptions": [
+              "Attractor Engineering is evaluated only for the selected fixture window",
+              "candidate regions are selected finite observations, not global state-space partitions"
+            ],
+            "unsupportedConstructs": [
+              "global attractor theorem",
+              "complete basin decomposition",
+              "future operation distribution completeness"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+              "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+              "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+              "global attractor, causal proof, and incident-risk conclusions are out of scope"
+            ]
+          },
+          "assumptions": [
+            "risk contribution is relative to the finite support entry risk state"
+          ],
+          "nonConclusions": [
+            "unmeasured support risk entry is not zero support risk",
+            "accepted PR history safety does not conclude future support risk is zero"
+          ]
+        },
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "operation semantics ref is missing for the framework convention"
+        ],
+        "nonConclusions": [
+          "unmeasured support risk entry is not zero support risk",
+          "accepted PR history safety does not conclude future support risk is zero"
+        ]
+      }
+    ],
     "supportRiskMass": {
       "metricId": "attractorEngineering.supportRiskMass",
       "value": null,
@@ -894,7 +1980,8 @@
         "SupportRiskMass needs finite operation support and risk labels"
       ],
       "nonConclusions": [
-        "unmeasured SupportRiskMass is not zero support risk"
+        "unmeasured SupportRiskMass is not zero support risk",
+        "accepted PR history safety does not conclude future support risk is zero"
       ]
     },
     "designFieldStrength": {
@@ -1000,7 +2087,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -1115,7 +2202,7 @@
         "missingEvidence": [],
         "nonConclusions": [
           "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
           "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
           "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
@@ -1214,14 +2301,14 @@
       "missingEvidence": [],
       "nonConclusions": [
         "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-        "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+        "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
         "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
         "global attractor, causal proof, and incident-risk conclusions are out of scope"
       ]
     },
     "nonConclusions": [
       "attractorEngineering is bounded tooling evidence, not a global attractor theorem",
-      "unmeasured, unavailable, notComparable, and outOfScope Attractor Engineering metrics are not measured zero",
+      "unmeasured, unavailable, private, notComparable, and outOfScope Attractor Engineering metrics are not measured zero",
       "attractor and basin candidates are selected-region candidates, not global convergence claims"
     ]
   },
@@ -1306,14 +2393,14 @@
     ],
     "nonConclusions": [
       "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-      "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+      "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
       "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
       "global attractor, causal proof, and incident-risk conclusions are out of scope"
     ]
   },
   "nonConclusions": [
     "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-    "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+    "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
     "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
     "global attractor, causal proof, and incident-risk conclusions are out of scope"
   ]
