@@ -57,6 +57,12 @@ pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION: &str =
     "architecture-dynamics-metrics-report-v0";
 pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "architecture-dynamics-metrics-report-validation-report-v0";
+pub const ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION: &str = "architecture-field-snapshot-v0";
+pub const ARCHITECTURE_FIELD_SNAPSHOT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "architecture-field-snapshot-validation-report-v0";
+pub const OPERATION_PROPOSAL_LOG_SCHEMA_VERSION: &str = "operation-proposal-log-v0";
+pub const OPERATION_PROPOSAL_LOG_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "operation-proposal-log-validation-report-v0";
 pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
 pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
     "report-artifact-retention-manifest-v0";
@@ -3445,6 +3451,110 @@ pub struct ArchitectureDynamicsMetricsReportValidationSummary {
     pub attractor_selected_region_count: usize,
     pub attractor_candidate_count: usize,
     pub basin_candidate_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureFieldSnapshotV0 {
+    pub schema_version: String,
+    pub snapshot_id: String,
+    pub repository: RepositoryRef,
+    pub window: DynamicsAggregationWindowV0,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub selected_context_refs: Vec<String>,
+    pub field_signals: Vec<AttractorEngineeringSignalV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureFieldSnapshotValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArchitectureFieldSnapshotValidationInput,
+    pub snapshot: ArchitectureFieldSnapshotV0,
+    pub summary: ArchitectureFieldSnapshotValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureFieldSnapshotValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub snapshot_id: String,
+    pub repository: String,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureFieldSnapshotValidationSummary {
+    pub result: String,
+    pub field_signal_count: usize,
+    pub source_ref_count: usize,
+    pub selected_context_ref_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalLogV0 {
+    pub schema_version: String,
+    pub log_id: String,
+    pub repository: RepositoryRef,
+    pub window: DynamicsAggregationWindowV0,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub proposals: Vec<OperationProposalEntryV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalEntryV0 {
+    pub proposal_id: String,
+    pub operation_kind: String,
+    pub source_kind: String,
+    pub status: String,
+    #[serde(default)]
+    pub support_weight: Option<f64>,
+    pub selected_region_refs: Vec<String>,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalLogValidationReportV0 {
+    pub schema_version: String,
+    pub input: OperationProposalLogValidationInput,
+    pub log: OperationProposalLogV0,
+    pub summary: OperationProposalLogValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalLogValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub log_id: String,
+    pub repository: String,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalLogValidationSummary {
+    pub result: String,
+    pub proposal_count: usize,
+    pub source_ref_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

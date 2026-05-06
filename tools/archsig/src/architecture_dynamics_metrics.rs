@@ -6,13 +6,15 @@ use crate::validation::{count_checks, generic_validation_example, validation_che
 use crate::{
     ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION,
     ARCHITECTURE_DYNAMICS_METRICS_REPORT_VALIDATION_REPORT_SCHEMA_VERSION,
-    ArchitectureDynamicsMetricsReportV0, ArchitectureDynamicsMetricsReportValidationInput,
+    ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION, ArchitectureDynamicsMetricsReportV0,
+    ArchitectureDynamicsMetricsReportValidationInput,
     ArchitectureDynamicsMetricsReportValidationReportV0,
     ArchitectureDynamicsMetricsReportValidationSummary, AttractorEngineeringCandidateV0,
     AttractorEngineeringMetricsV0, AttractorEngineeringSignalV0, DynamicsAggregationWindowV0,
     DynamicsArtifactRefV0, DynamicsMeasuredValueV0, DynamicsMissingEvidenceV0, EXTRACTOR_VERSION,
-    MeasurementBoundaryV0, PR_FORCE_REPORT_SCHEMA_VERSION, RepositoryRef,
-    SelectedSignatureRegionV0, SupportRiskMassEntryV0, ValidationCheck, ValidationExample,
+    MeasurementBoundaryV0, OPERATION_PROPOSAL_LOG_SCHEMA_VERSION, PR_FORCE_REPORT_SCHEMA_VERSION,
+    RepositoryRef, SelectedSignatureRegionV0, SupportRiskMassEntryV0, ValidationCheck,
+    ValidationExample,
 };
 
 const ALLOWED_STATUSES: [&str; 9] = [
@@ -40,7 +42,7 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 4] = [
 const FORCE_CLASS_NON_CONCLUSION: &str =
     "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes";
 
-const REQUIRED_ATTRACTOR_NON_CONCLUSIONS: [&str; 7] = [
+const REQUIRED_ATTRACTOR_NON_CONCLUSIONS: [&str; 9] = [
     "attractorEngineering is bounded tooling evidence, not a global attractor theorem",
     "unmeasured, unavailable, private, notComparable, and outOfScope Attractor Engineering metrics are not measured zero",
     "attractor and basin candidates are selected-region candidates, not global convergence claims",
@@ -48,6 +50,8 @@ const REQUIRED_ATTRACTOR_NON_CONCLUSIONS: [&str; 7] = [
     "Attractor Engineering tooling does not conclude incident reduction",
     "Attractor Engineering tooling does not conclude an AI behavior theorem",
     "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+    "architecture field snapshot refs do not conclude global architecture field completeness",
+    "operation proposal log refs do not conclude AI proposal distribution completeness",
 ];
 
 const ALLOWED_ATTRACTOR_CANDIDATE_STATUSES: [&str; 5] = [
@@ -151,6 +155,18 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
         None,
         Some("fixture-ai-provenance-log"),
     );
+    let field_snapshot_ref = artifact_ref(
+        "architecture-field-snapshot",
+        "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+        Some(ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION),
+        Some("fixture-architecture-field-snapshot-v0"),
+    );
+    let proposal_log_ref = artifact_ref(
+        "operation-proposal-log",
+        "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+        Some(OPERATION_PROPOSAL_LOG_SCHEMA_VERSION),
+        Some("fixture-operation-proposal-log-v0"),
+    );
 
     let window = DynamicsAggregationWindowV0 {
         window_start: Some("2026-01-01T00:00:00Z".to_string()),
@@ -174,6 +190,8 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
             outcome_ref.clone(),
             policy_ref.clone(),
             ai_ref.clone(),
+            field_snapshot_ref.clone(),
+            proposal_log_ref.clone(),
         ],
         trajectory_metrics: vec![
             metric(
@@ -239,9 +257,9 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
                 None,
                 "unmeasured",
                 None,
-                Vec::new(),
+                vec![proposal_log_ref.clone()],
                 gap_boundary(
-                    "operation proposal log is not available for latent force estimation",
+                    "operation proposal log is retained but latent force estimation is not implemented",
                     "unmeasured",
                 ),
                 &["latent force needs proposal or review pressure evidence"],
@@ -341,15 +359,22 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
             metric(
                 "fieldControl.designFieldStrength",
                 None,
-                "outOfScope",
+                "advisory",
                 None,
-                Vec::new(),
-                gap_boundary(
-                    "development field snapshot is outside the MVP fixture scope",
-                    "outOfScope",
+                vec![field_snapshot_ref.clone()],
+                boundary(
+                    "architecture-field-snapshot",
+                    &["DesignFieldStrength"],
+                    vec![field_snapshot_ref.clone()],
+                    Some(window.clone()),
+                    &["architecture field snapshot is retained as selected-window tooling input"],
+                    &["global architecture field completeness"],
                 ),
-                &["field snapshot artifact is not part of the MVP fixture"],
-                &["outOfScope DesignFieldStrength is not weak design field evidence"],
+                &["field snapshot artifact is retained as advisory DesignFieldStrength input"],
+                &[
+                    "advisory DesignFieldStrength is not causal proof",
+                    "architecture field snapshot refs do not conclude global architecture field completeness",
+                ],
             ),
         ],
         ai_dynamics_metrics: vec![
@@ -390,6 +415,8 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
                 trajectory_ref.clone(),
                 pr_force_ref.clone(),
                 drift_ref.clone(),
+                field_snapshot_ref.clone(),
+                proposal_log_ref.clone(),
             ],
         )),
         measurement_boundary: MeasurementBoundaryV0 {
@@ -409,6 +436,8 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
                 outcome_ref,
                 policy_ref,
                 ai_ref,
+                field_snapshot_ref,
+                proposal_log_ref,
             ],
             extractor_version: Some(EXTRACTOR_VERSION.to_string()),
             policy_version: Some("fixture-policy-v0".to_string()),
@@ -434,7 +463,7 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
                 ),
                 missing_evidence(
                     "operation-proposal-log",
-                    "proposal log is not retained in the MVP fixture",
+                    "proposal log is retained as a boundary but latent force calculator is not implemented",
                     "unmeasured",
                 ),
             ],
@@ -629,6 +658,7 @@ fn attractor_engineering_section(
                 &[
                     "selected DesignFieldStrength signal is not a causal proof",
                     "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+                    "architecture field snapshot refs do not conclude global architecture field completeness",
                 ],
             ),
             attractor_signal(
@@ -646,6 +676,7 @@ fn attractor_engineering_section(
                 &[
                     "selected DesignFieldStrength signal is not a causal proof",
                     "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+                    "architecture field snapshot refs do not conclude global architecture field completeness",
                 ],
             ),
         ],
@@ -671,29 +702,30 @@ fn attractor_engineering_section(
             None,
             "unmeasured",
             None,
-            Vec::new(),
-            gap_boundary(
-                "finite operation support weights are not retained in the MVP fixture",
-                "unmeasured",
-            ),
-            &["SupportRiskMass needs finite operation support and risk labels"],
+            source_refs.clone(),
+            section_boundary.clone(),
+            &[
+                "SupportRiskMass calculator is not implemented; operation proposal log is retained as input boundary",
+            ],
             &[
                 "unmeasured SupportRiskMass is not zero support risk",
                 SUPPORT_RISK_HISTORY_NON_CONCLUSION,
+                "operation proposal log refs do not conclude AI proposal distribution completeness",
             ],
         ),
         design_field_strength: metric(
             "attractorEngineering.designFieldStrength",
             None,
-            "outOfScope",
+            "advisory",
             None,
-            Vec::new(),
-            gap_boundary(
-                "architecture field snapshot is outside this MVP fixture",
-                "outOfScope",
-            ),
-            &["DesignFieldStrength needs field snapshot and policy context evidence"],
-            &["outOfScope DesignFieldStrength is not weak field evidence"],
+            source_refs.clone(),
+            section_boundary.clone(),
+            &["DesignFieldStrength reads selected field snapshot refs as advisory tooling input"],
+            &[
+                "advisory DesignFieldStrength is not causal proof",
+                "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+                "architecture field snapshot refs do not conclude global architecture field completeness",
+            ],
         ),
         seed_attractor_strength: metric(
             "attractorEngineering.seedAttractorStrength",
@@ -1450,6 +1482,19 @@ fn check_attractor_engineering_section(
         true,
         &mut invalid,
     );
+    if !has_artifact_kind(
+        &section.measurement_boundary.source_artifact_refs,
+        "architecture-field-snapshot",
+    ) || !has_artifact_kind(
+        &section.measurement_boundary.source_artifact_refs,
+        "operation-proposal-log",
+    ) {
+        invalid.push(generic_validation_example(
+            &report.report_id,
+            "attractorEngineering.measurementBoundary.sourceArtifactRefs",
+            "Attractor Engineering must reference architecture-field-snapshot and operation-proposal-log artifact refs",
+        ));
+    }
     for region in &section.selected_regions {
         if region.region_id.trim().is_empty()
             || region.region_kind.trim().is_empty()
@@ -2112,6 +2157,10 @@ fn has_blank_artifact_refs(refs: &[DynamicsArtifactRefV0]) -> bool {
     refs.iter().any(|artifact_ref| {
         artifact_ref.kind.trim().is_empty() || artifact_ref.path.trim().is_empty()
     })
+}
+
+fn has_artifact_kind(refs: &[DynamicsArtifactRefV0], kind: &str) -> bool {
+    refs.iter().any(|artifact_ref| artifact_ref.kind == kind)
 }
 
 fn string_set<const N: usize>(values: [&'static str; N]) -> BTreeSet<&'static str> {

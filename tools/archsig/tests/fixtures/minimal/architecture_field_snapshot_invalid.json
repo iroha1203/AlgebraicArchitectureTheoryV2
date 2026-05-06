@@ -1,0 +1,249 @@
+{
+  "schemaVersion": "architecture-field-snapshot-v0",
+  "snapshotId": "fixture-architecture-field-snapshot-v0",
+  "repository": {
+    "owner": "iroha1203",
+    "name": "AlgebraicArchitectureTheoryV2",
+    "defaultBranch": "main"
+  },
+  "window": {
+    "windowStart": "2026-01-01T00:00:00Z",
+    "windowEnd": "2026-01-31T23:59:59Z",
+    "windowKind": "selected-fixture-window"
+  },
+  "sourceRefs": [
+    {
+      "kind": "signature-trajectory-report",
+      "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+      "schemaVersion": "signature-trajectory-report-v0",
+      "artifactId": "fixture-signature-trajectory-report-v0"
+    },
+    {
+      "kind": "organization-policy",
+      "path": "tools/archsig/tests/fixtures/minimal/organization_policy.json",
+      "schemaVersion": "organization-policy-v0",
+      "artifactId": "fixture-b7-organization-policy"
+    },
+    {
+      "kind": "law-policy-template-registry",
+      "path": "tools/archsig/tests/fixtures/minimal/law_policy_templates.json",
+      "schemaVersion": "law-policy-template-registry-v0",
+      "artifactId": "fixture-law-policy-template-registry-v0"
+    },
+    {
+      "kind": "measurement-unit-registry",
+      "path": "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+      "schemaVersion": "measurement-unit-registry-v0",
+      "artifactId": "fixture-measurement-unit-registry-v0"
+    }
+  ],
+  "selectedContextRefs": [
+    "fixture:selected-dynamics-window",
+    "docs/design/attractor_engineering.md#aat-dynamics-mapping"
+  ],
+  "fieldSignals": [
+    {
+      "signalId": "fixture:field-boundary-signal",
+      "signalKind": "DesignFieldStrength",
+      "selectedSignal": "boundary-and-non-goal-alignment",
+      "status": "advisory",
+      "sourceRefs": [
+
+      ],
+      "confidence": "selected-window-fixture-signal",
+      "measurementBoundary": {
+        "measuredLayer": "architecture-field-snapshot",
+        "measuredAxes": [
+          "DesignFieldStrength",
+          "SeedAttractorStrength"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "organization-policy",
+            "path": "tools/archsig/tests/fixtures/minimal/organization_policy.json",
+            "schemaVersion": "organization-policy-v0",
+            "artifactId": "fixture-b7-organization-policy"
+          },
+          {
+            "kind": "law-policy-template-registry",
+            "path": "tools/archsig/tests/fixtures/minimal/law_policy_templates.json",
+            "schemaVersion": "law-policy-template-registry-v0",
+            "artifactId": "fixture-law-policy-template-registry-v0"
+          },
+          {
+            "kind": "measurement-unit-registry",
+            "path": "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+            "schemaVersion": "measurement-unit-registry-v0",
+            "artifactId": "fixture-measurement-unit-registry-v0"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-field-snapshot-v0",
+        "selectedRegionRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "assumptions": [
+          "field snapshot is retained only for the selected fixture window",
+          "boundary, policy, law template, and measurement unit refs delimit the field evidence"
+        ],
+        "unsupportedConstructs": [
+          "global architecture field completeness",
+          "future operation distribution theorem"
+        ],
+        "missingEvidence": [
+
+        ],
+        "nonConclusions": [
+          "architecture field snapshot is selected-window tooling evidence, not global architecture field completeness",
+          "selected field signals are not causal proof of future operation outcomes",
+          "missing, private, and unmeasured field evidence is not measured zero"
+        ]
+      },
+      "assumptions": [
+        "selected policy and law template refs are read as field-shaping context",
+        "signal is advisory because it does not sample the global architecture field"
+      ],
+      "nonConclusions": [
+
+      ]
+    },
+    {
+      "signalId": "fixture:field-observability-signal",
+      "signalKind": "DesignFieldStrength",
+      "selectedSignal": "measurement-unit-and-trajectory-visibility",
+      "status": "advisory",
+      "sourceRefs": [
+        {
+          "kind": "signature-trajectory-report",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "schemaVersion": "signature-trajectory-report-v0",
+          "artifactId": "fixture-signature-trajectory-report-v0"
+        },
+        {
+          "kind": "measurement-unit-registry",
+          "path": "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+          "schemaVersion": "measurement-unit-registry-v0",
+          "artifactId": "fixture-measurement-unit-registry-v0"
+        }
+      ],
+      "confidence": "selected-window-fixture-signal",
+      "measurementBoundary": {
+        "measuredLayer": "architecture-field-snapshot",
+        "measuredAxes": [
+          "DesignFieldStrength",
+          "SeedAttractorStrength"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "organization-policy",
+            "path": "tools/archsig/tests/fixtures/minimal/organization_policy.json",
+            "schemaVersion": "organization-policy-v0",
+            "artifactId": "fixture-b7-organization-policy"
+          },
+          {
+            "kind": "law-policy-template-registry",
+            "path": "tools/archsig/tests/fixtures/minimal/law_policy_templates.json",
+            "schemaVersion": "law-policy-template-registry-v0",
+            "artifactId": "fixture-law-policy-template-registry-v0"
+          },
+          {
+            "kind": "measurement-unit-registry",
+            "path": "tools/archsig/tests/fixtures/minimal/measurement_units.json",
+            "schemaVersion": "measurement-unit-registry-v0",
+            "artifactId": "fixture-measurement-unit-registry-v0"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-field-snapshot-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "assumptions": [
+          "field snapshot is retained only for the selected fixture window",
+          "boundary, policy, law template, and measurement unit refs delimit the field evidence"
+        ],
+        "unsupportedConstructs": [
+          "global architecture field completeness",
+          "future operation distribution theorem"
+        ],
+        "missingEvidence": [
+
+        ],
+        "nonConclusions": [
+          "architecture field snapshot is selected-window tooling evidence, not global architecture field completeness",
+          "selected field signals are not causal proof of future operation outcomes",
+          "missing, private, and unmeasured field evidence is not measured zero"
+        ]
+      },
+      "assumptions": [
+        "measurement unit and trajectory refs delimit observed visibility",
+        "unobserved field context remains outside the selected fixture window"
+      ],
+      "nonConclusions": [
+        "selected observability signal is not architecture field completeness",
+        "missing, private, and unmeasured field evidence is not measured zero"
+      ]
+    }
+  ],
+  "measurementBoundary": {
+    "measuredLayer": "architecture-field-snapshot",
+    "measuredAxes": [
+      "DesignFieldStrength",
+      "SeedAttractorStrength"
+    ],
+    "sourceArtifactRefs": [
+
+    ],
+    "extractorVersion": "0.1.0",
+    "policyVersion": "fixture-policy-v0",
+    "schemaVersion": "architecture-field-snapshot-v0",
+    "aggregationWindow": {
+      "windowStart": "2026-01-01T00:00:00Z",
+      "windowEnd": "2026-01-31T23:59:59Z",
+      "windowKind": "selected-fixture-window"
+    },
+    "selectedRegionRefs": [
+      "fixture:selected-safe-region"
+    ],
+    "assumptions": [
+      "field snapshot is retained only for the selected fixture window",
+      "boundary, policy, law template, and measurement unit refs delimit the field evidence"
+    ],
+    "unsupportedConstructs": [
+      "global architecture field completeness",
+      "future operation distribution theorem"
+    ],
+    "missingEvidence": [
+
+    ],
+    "nonConclusions": [
+      "architecture field snapshot is selected-window tooling evidence, not global architecture field completeness",
+      "selected field signals are not causal proof of future operation outcomes",
+      "missing, private, and unmeasured field evidence is not measured zero"
+    ]
+  },
+  "nonConclusions": [
+    "architecture field snapshot is selected-window tooling evidence, not global architecture field completeness",
+    "selected field signals are not causal proof of future operation outcomes",
+    "missing, private, and unmeasured field evidence is not measured zero"
+  ]
+}

@@ -6,7 +6,8 @@ use std::process::ExitCode;
 
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ArchitectureDynamicsMetricsReportV0,
-    ArchitectureDynamicsMetricsReportValidationReportV0, CalibrationReviewRecordV0,
+    ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
+    ArchitectureFieldSnapshotValidationReportV0, CalibrationReviewRecordV0,
     ComponentUniverseValidationReport, CustomRulePluginRegistryV0,
     CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
     DetectableValuesReportedAxesCatalogV0, DriftLedgerAggregationWindowV0,
@@ -15,7 +16,8 @@ use archsig::{
     HypothesisRefreshCycleV0, IncidentCorrelationMonitorV0, LawPolicyTemplateRegistryV0,
     LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
     MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
-    NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
+    NoSolutionCertificateValidationReportV0, OperationProposalLogV0,
+    OperationProposalLogValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, OwnershipBoundaryMonitorV0, PolicyDecisionReportV0,
     PrForceReportV0, PrForceReportValidationReportV0, RepairAdoptionRecordV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
@@ -34,22 +36,23 @@ use archsig::{
     build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_architecture_dynamics_metrics_report,
-    static_calibration_review_record, static_custom_rule_plugin_registry,
-    static_detectable_values_reported_axes_catalog, static_dynamics_measurement_contract,
-    static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
-    static_law_policy_template_registry, static_measurement_unit_registry,
-    static_no_solution_certificate, static_organization_policy, static_ownership_boundary_monitor,
+    static_architecture_field_snapshot, static_calibration_review_record,
+    static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
+    static_dynamics_measurement_contract, static_hypothesis_refresh_cycle,
+    static_incident_correlation_monitor, static_law_policy_template_registry,
+    static_measurement_unit_registry, static_no_solution_certificate,
+    static_operation_proposal_log, static_organization_policy, static_ownership_boundary_monitor,
     static_pr_force_report, static_repair_adoption_record, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_schema_version_catalog,
     static_signature_trajectory_report, static_synthesis_constraint_artifact,
     static_team_threshold_policy, validate_air_document_report,
-    validate_architecture_dynamics_metrics_report, validate_component_universe_report,
-    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
-    validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
-    validate_no_solution_certificate_report, validate_organization_policy_report,
-    validate_pr_force_report, validate_repair_rule_registry_report,
-    validate_report_artifact_retention_report, validate_signature_trajectory_report,
-    validate_synthesis_constraint_artifact_report,
+    validate_architecture_dynamics_metrics_report, validate_architecture_field_snapshot,
+    validate_component_universe_report, validate_custom_rule_plugin_registry_report,
+    validate_dynamics_measurement_contract_report, validate_law_policy_template_registry_report,
+    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
+    validate_operation_proposal_log, validate_organization_policy_report, validate_pr_force_report,
+    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
+    validate_signature_trajectory_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -627,6 +630,36 @@ enum Command {
         fixture: bool,
 
         /// Output metrics report or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate an architecture-field-snapshot-v0 artifact.
+    ArchitectureFieldSnapshot {
+        /// Optional Architecture field snapshot JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical minimal architecture-field-snapshot-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output field snapshot or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate an operation-proposal-log-v0 artifact.
+    OperationProposalLog {
+        /// Optional Operation proposal log JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical minimal operation-proposal-log-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output proposal log or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1317,6 +1350,64 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-architecture-dynamics-metrics-report".to_string());
             let validation: ArchitectureDynamicsMetricsReportValidationReportV0 =
                 validate_architecture_dynamics_metrics_report(&report, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::ArchitectureFieldSnapshot {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let snapshot: ArchitectureFieldSnapshotV0 = static_architecture_field_snapshot();
+                write_json(out, &snapshot)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let snapshot: ArchitectureFieldSnapshotV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_architecture_field_snapshot);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-architecture-field-snapshot".to_string());
+            let validation: ArchitectureFieldSnapshotValidationReportV0 =
+                validate_architecture_field_snapshot(&snapshot, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::OperationProposalLog {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let log: OperationProposalLogV0 = static_operation_proposal_log();
+                write_json(out, &log)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let log: OperationProposalLogV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_operation_proposal_log);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-operation-proposal-log".to_string());
+            let validation: OperationProposalLogValidationReportV0 =
+                validate_operation_proposal_log(&log, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
             Ok(if failed {
