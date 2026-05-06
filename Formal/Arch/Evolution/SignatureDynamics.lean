@@ -1371,23 +1371,51 @@ def SameObservedSignatureDifferentFutureSupport
     (X Y : State) : Prop :=
   O.observe X = O.observe Y ∧ kernel.support X ≠ kernel.support Y
 
+/--
+Two realized bounded scripts can start from states with the same selected
+observed signature while producing different future signature trajectories.
+
+This is still a selected finite witness: it records script realization and
+support use, but it does not claim a global future distribution, empirical
+proposal probability, or AI behavior theorem.
+-/
+def SameObservedSignatureDifferentFutureTrajectory
+    (O : SignatureObservation State Sig)
+    (kernel : FiniteOperationKernel State OperationId)
+    (sem : OperationTransitionSemantics State OperationId)
+    (leftScript rightScript : BoundedOperationScript OperationId)
+    {X X' Y Y' : State}
+    (leftPlan : ArchitectureEvolution State X X')
+    (rightPlan : ArchitectureEvolution State Y Y') : Prop :=
+  O.observe X = O.observe Y ∧
+    kernel.ScriptUsesSupport leftScript.operations leftPlan ∧
+    kernel.ScriptUsesSupport rightScript.operations rightPlan ∧
+    leftScript.RealizesEvolution sem leftPlan ∧
+    rightScript.RealizesEvolution sem rightPlan ∧
+    SignatureTrajectory O leftPlan ≠ SignatureTrajectory O rightPlan
+
 /-
 A tiny finite-state witness for the D7 non-conclusion boundary: the current
-observed signature does not determine future operation support.
+observed signature does not determine future operation support or future
+signature trajectory.
 -/
 namespace SameSignatureDifferentFuture
 
 abbrev ExampleState := Nat
-abbrev ExampleSig := Unit
+abbrev ExampleSig := Bool
 abbrev OperationId := Nat
 
 def source : ExampleState := 0
 def target : ExampleState := 1
+def leftFuture : ExampleState := 2
+def rightFuture : ExampleState := 3
 def leftOperation : OperationId := 0
 def rightOperation : OperationId := 1
 
 def observation : SignatureObservation ExampleState ExampleSig where
-  observe := fun _ => ()
+  observe
+    | 3 => true
+    | _ => false
   coverageAssumptions := True
   nonConclusions := True
 
@@ -1399,6 +1427,53 @@ def kernel : FiniteOperationKernel ExampleState OperationId where
   coverageAssumptions := True
   weightSourceBoundary := True
   normalizationBoundary := True
+  nonConclusions := True
+
+def semantics : OperationTransitionSemantics ExampleState OperationId where
+  realizes := fun op {X Y} _t =>
+    (op = leftOperation ∧ X = source ∧ Y = leftFuture) ∨
+      (op = rightOperation ∧ X = target ∧ Y = rightFuture)
+  coverageAssumptions := True
+  nonConclusions := True
+
+def leftTransition :
+    ArchitectureTransition ExampleState source leftFuture where
+  kind := ArchitectureTransitionKind.drift
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def rightTransition :
+    ArchitectureTransition ExampleState target rightFuture where
+  kind := ArchitectureTransitionKind.drift
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def leftPlan : ArchitectureEvolution ExampleState source leftFuture :=
+  ArchitecturePath.cons leftTransition (ArchitecturePath.nil leftFuture)
+
+def rightPlan : ArchitectureEvolution ExampleState target rightFuture :=
+  ArchitecturePath.cons rightTransition (ArchitecturePath.nil rightFuture)
+
+def leftScript : BoundedOperationScript OperationId where
+  operations := [leftOperation]
+  operationFamily := fun op => op = leftOperation
+  operationsInFamily := by
+    intro op hMem
+    simpa using hMem
+  coverageAssumptions := True
+  nonConclusions := True
+
+def rightScript : BoundedOperationScript OperationId where
+  operations := [rightOperation]
+  operationFamily := fun op => op = rightOperation
+  operationsInFamily := by
+    intro op hMem
+    simpa using hMem
+  coverageAssumptions := True
   nonConclusions := True
 
 /-- The selected states are distinct architecture states. -/
@@ -1422,10 +1497,47 @@ theorem target_not_supports_leftOperation :
   simp [FiniteOperationKernel.Supports, kernel, target, leftOperation,
     rightOperation]
 
+/-- The left script uses finite support operations along the left plan. -/
+theorem leftScript_uses_sourceSupport :
+    kernel.ScriptUsesSupport leftScript.operations leftPlan := by
+  simp [FiniteOperationKernel.ScriptUsesSupport,
+    FiniteOperationKernel.Supports, kernel, leftScript, leftPlan, source,
+    leftOperation]
+
+/-- The right script uses finite support operations along the right plan. -/
+theorem rightScript_uses_targetSupport :
+    kernel.ScriptUsesSupport rightScript.operations rightPlan := by
+  simp [FiniteOperationKernel.ScriptUsesSupport,
+    FiniteOperationKernel.Supports, kernel, rightScript, rightPlan, target,
+    rightOperation]
+
+/-- The selected left operation realizes the left transition script. -/
+theorem leftScript_realizes_leftPlan :
+    leftScript.RealizesEvolution semantics leftPlan := by
+  simp [BoundedOperationScript.RealizesEvolution,
+    BoundedOperationScript.ScriptRealizesEvolution,
+    OperationTransitionSemantics.Realizes, semantics, leftScript, leftPlan,
+    leftOperation, source, leftFuture]
+
+/-- The selected right operation realizes the right transition script. -/
+theorem rightScript_realizes_rightPlan :
+    rightScript.RealizesEvolution semantics rightPlan := by
+  simp [BoundedOperationScript.RealizesEvolution,
+    BoundedOperationScript.ScriptRealizesEvolution,
+    OperationTransitionSemantics.Realizes, semantics, rightScript, rightPlan,
+    rightOperation, target, rightFuture]
+
 /-- The selected finite future operation supports differ. -/
 theorem future_support_differs :
     kernel.support source ≠ kernel.support target := by
   simp [kernel, source, target, leftOperation, rightOperation]
+
+/-- The selected realized future signature trajectories differ. -/
+theorem future_trajectory_differs :
+    SignatureTrajectory observation leftPlan ≠
+      SignatureTrajectory observation rightPlan := by
+  simp [SignatureTrajectory, observation, leftPlan, rightPlan, source, target,
+    leftFuture, rightFuture]
 
 /--
 Bundled counterexample: the two states share the selected observation but have
@@ -1434,6 +1546,22 @@ different finite future operation support.
 theorem sameObservedSignature_differentFutureSupport :
     SameObservedSignatureDifferentFutureSupport observation kernel source target := by
   exact ⟨same_observed_signature, future_support_differs⟩
+
+/--
+Bundled counterexample: the two states share the selected current observation,
+their bounded scripts are realized by the selected semantics using finite
+support, but the observed future signature trajectories differ.
+-/
+theorem sameObservedSignature_differentFutureTrajectory :
+    SameObservedSignatureDifferentFutureTrajectory observation kernel semantics
+      leftScript rightScript leftPlan rightPlan := by
+  exact
+    ⟨same_observed_signature,
+      leftScript_uses_sourceSupport,
+      rightScript_uses_targetSupport,
+      leftScript_realizes_leftPlan,
+      rightScript_realizes_rightPlan,
+      future_trajectory_differs⟩
 
 /--
 Non-conclusion boundary: equal current observation does not imply equal future
@@ -1445,6 +1573,21 @@ theorem not_sameObservation_implies_sameFutureSupport :
           kernel.support X = kernel.support Y := by
   intro h
   exact future_support_differs (h source target same_observed_signature)
+
+/--
+Non-conclusion boundary: equal current observation alone does not imply equal
+future signature trajectory for selected realized scripts.
+-/
+theorem not_sameObservation_implies_sameFutureTrajectory :
+    ¬ ∀ {X X' Y Y' : ExampleState}
+        (leftPlan : ArchitectureEvolution ExampleState X X')
+        (rightPlan : ArchitectureEvolution ExampleState Y Y'),
+          observation.observe X = observation.observe Y ->
+            SignatureTrajectory observation leftPlan =
+              SignatureTrajectory observation rightPlan := by
+  intro h
+  exact future_trajectory_differs
+    (h leftPlan rightPlan same_observed_signature)
 
 end SameSignatureDifferentFuture
 
