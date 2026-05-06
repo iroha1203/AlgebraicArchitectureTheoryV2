@@ -400,8 +400,10 @@ measured / estimated / derived evidence に昇格しない。揃う場合も `ba
 stability や recurrence theorem へ昇格しない。`ObservabilityDebt` は required axis の `unmeasured` / `private` /
 `unavailable` / `notComparable` を measured zero として集計しない。
 field shaping 系 signal は selected signal、source refs、confidence、measurement boundary を
-保持し、causal proof、incident reduction、AI behavior theorem、`DesignFieldStrength` の真値
-claim を non-conclusion として明示する。`FieldShapingDelta` は field update 前後の
+保持する。`DesignFieldStrength` は selected source refs、`SeedAttractorStrength` は
+canonical example refs と patch similarity evidence を pilot input として保持し、causal proof、
+incident reduction、AI behavior theorem、`DesignFieldStrength` の真値 claim を
+non-conclusion として明示する。`FieldShapingDelta` は field update 前後の
 `SupportRiskMass`、`GoodAttractorBasinMass`、`SeedAttractorStrength` の差分候補であり、
 比較可能な before / after measurement boundary がない場合は `notComparable` として出す。
 `VibeCodingReadiness` は単一 numeric score ではなく、`DesignFieldStrength`、

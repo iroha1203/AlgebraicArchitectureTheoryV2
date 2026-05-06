@@ -5961,7 +5961,7 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
             && json["report"]["attractorEngineering"]["designFieldStrength"]["status"]
                 == "advisory"
             && json["report"]["attractorEngineering"]["seedAttractorStrength"]["status"]
-                == "unavailable"
+                == "advisory"
             && json["report"]["attractorEngineering"]["basinBoundaryFragility"]["status"]
                 == "derived"
             && json["report"]["attractorEngineering"]["trajectoryReturnTime"]["status"]
@@ -6121,7 +6121,31 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
             .any(|signal| {
                 signal["selectedSignal"] == "canonical-example-copyability"
                     && signal["confidence"] == "bounded-fixture-signal"
+                    && signal["sourceRefs"]
+                        .as_array()
+                        .expect("seed signal sourceRefs is array")
+                        .iter()
+                        .any(|artifact_ref| artifact_ref["kind"] == "canonical-example-ref")
+                    && signal["sourceRefs"]
+                        .as_array()
+                        .expect("seed signal sourceRefs is array")
+                        .iter()
+                        .any(|artifact_ref| artifact_ref["kind"] == "patch-similarity-evidence")
             })
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["seedAttractorStrength"]["sourceRefs"]
+            .as_array()
+            .expect("SeedAttractorStrength sourceRefs is array")
+            .iter()
+            .any(|artifact_ref| artifact_ref["kind"] == "canonical-example-ref")
+            && json["report"]["attractorEngineering"]["seedAttractorStrength"]["sourceRefs"]
+                .as_array()
+                .expect("SeedAttractorStrength sourceRefs is array")
+                .iter()
+                .any(|artifact_ref| artifact_ref["kind"] == "patch-similarity-evidence")
+            && json["report"]["attractorEngineering"]["seedAttractorStrength"]["value"]["protocol"]
+                == "selected-seed-attractor-pilot"
     );
     assert!(
         json["report"]["attractorEngineering"]["fieldShapingDelta"]["status"] == "notComparable"
@@ -6316,6 +6340,14 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
         serde_json::json!(null);
     invalid_attractor_json["attractorEngineering"]["designFieldSignals"][0]["nonConclusions"] =
         serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["seedAttractorSignals"][0]["sourceRefs"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["seedAttractorStrength"]["sourceRefs"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["seedAttractorStrength"]["confidence"] =
+        serde_json::json!(null);
+    invalid_attractor_json["attractorEngineering"]["seedAttractorStrength"]["value"] =
+        serde_json::json!({});
     invalid_attractor_json["attractorEngineering"]["fieldShapingDelta"]["status"] =
         serde_json::json!("measured");
     invalid_attractor_json["attractorEngineering"]["fieldShapingDelta"]["value"] =
@@ -6411,6 +6443,16 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                 .as_str()
                 .unwrap_or_default()
                 .contains("must not be collapsed to measured zero"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("must retain canonical example refs and patch similarity evidence"))
     );
     assert!(
         attractor_check["examples"]

@@ -58,6 +58,18 @@
       "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
       "schemaVersion": "operation-proposal-log-v0",
       "artifactId": "fixture-operation-proposal-log-v0"
+    },
+    {
+      "kind": "canonical-example-ref",
+      "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+      "schemaVersion": "architecture-field-snapshot-v0",
+      "artifactId": "fixture-canonical-example-refs"
+    },
+    {
+      "kind": "patch-similarity-evidence",
+      "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+      "schemaVersion": "operation-proposal-log-v0",
+      "artifactId": "fixture-patch-similarity-evidence"
     }
   ],
   "trajectoryMetrics": [
@@ -725,8 +737,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -813,8 +827,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -905,8 +921,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -995,8 +1013,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -1130,8 +1150,10 @@
                   "SupportRiskMass",
                   "DesignFieldStrength",
                   "SeedAttractorStrength",
+                  "GoodAttractorBasinMass",
                   "BasinBoundaryFragility",
                   "TrajectoryReturnTime",
+                  "DampingToThroughputMargin",
                   "ObservabilityDebt"
                 ],
                 "sourceArtifactRefs": [
@@ -1222,8 +1244,10 @@
                   "SupportRiskMass",
                   "DesignFieldStrength",
                   "SeedAttractorStrength",
+                  "GoodAttractorBasinMass",
                   "BasinBoundaryFragility",
                   "TrajectoryReturnTime",
+                  "DampingToThroughputMargin",
                   "ObservabilityDebt"
                 ],
                 "sourceArtifactRefs": [
@@ -1314,8 +1338,10 @@
                   "SupportRiskMass",
                   "DesignFieldStrength",
                   "SeedAttractorStrength",
+                  "GoodAttractorBasinMass",
                   "BasinBoundaryFragility",
                   "TrajectoryReturnTime",
+                  "DampingToThroughputMargin",
                   "ObservabilityDebt"
                 ],
                 "sourceArtifactRefs": [
@@ -1444,8 +1470,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -1559,8 +1587,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -1730,8 +1760,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -1847,8 +1879,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -2004,8 +2038,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -2126,8 +2162,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -2256,8 +2294,10 @@
                   "SupportRiskMass",
                   "DesignFieldStrength",
                   "SeedAttractorStrength",
+                  "GoodAttractorBasinMass",
                   "BasinBoundaryFragility",
                   "TrajectoryReturnTime",
+                  "DampingToThroughputMargin",
                   "ObservabilityDebt"
                 ],
                 "sourceArtifactRefs": [
@@ -2366,8 +2406,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -2451,8 +2493,10 @@
                   "SupportRiskMass",
                   "DesignFieldStrength",
                   "SeedAttractorStrength",
+                  "GoodAttractorBasinMass",
                   "BasinBoundaryFragility",
                   "TrajectoryReturnTime",
+                  "DampingToThroughputMargin",
                   "ObservabilityDebt"
                 ],
                 "sourceArtifactRefs": [
@@ -2561,8 +2605,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -2646,8 +2692,10 @@
                   "SupportRiskMass",
                   "DesignFieldStrength",
                   "SeedAttractorStrength",
+                  "GoodAttractorBasinMass",
                   "BasinBoundaryFragility",
                   "TrajectoryReturnTime",
+                  "DampingToThroughputMargin",
                   "ObservabilityDebt"
                 ],
                 "sourceArtifactRefs": [
@@ -2725,8 +2773,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -2810,8 +2860,10 @@
                   "SupportRiskMass",
                   "DesignFieldStrength",
                   "SeedAttractorStrength",
+                  "GoodAttractorBasinMass",
                   "BasinBoundaryFragility",
                   "TrajectoryReturnTime",
+                  "DampingToThroughputMargin",
                   "ObservabilityDebt"
                 ],
                 "sourceArtifactRefs": [
@@ -2889,8 +2941,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -2974,8 +3028,10 @@
                   "SupportRiskMass",
                   "DesignFieldStrength",
                   "SeedAttractorStrength",
+                  "GoodAttractorBasinMass",
                   "BasinBoundaryFragility",
                   "TrajectoryReturnTime",
+                  "DampingToThroughputMargin",
                   "ObservabilityDebt"
                 ],
                 "sourceArtifactRefs": [
@@ -3053,8 +3109,10 @@
                 "SupportRiskMass",
                 "DesignFieldStrength",
                 "SeedAttractorStrength",
+                "GoodAttractorBasinMass",
                 "BasinBoundaryFragility",
                 "TrajectoryReturnTime",
+                "DampingToThroughputMargin",
                 "ObservabilityDebt"
               ],
               "sourceArtifactRefs": [
@@ -3258,8 +3316,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -3347,8 +3407,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -3425,8 +3487,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -3515,8 +3579,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -3600,8 +3666,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -3678,8 +3746,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -3768,8 +3838,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -3853,8 +3925,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -3931,8 +4005,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -4021,8 +4097,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -4106,8 +4184,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -4184,8 +4264,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -4274,8 +4356,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -4358,8 +4442,10 @@
               "SupportRiskMass",
               "DesignFieldStrength",
               "SeedAttractorStrength",
+              "GoodAttractorBasinMass",
               "BasinBoundaryFragility",
               "TrajectoryReturnTime",
+              "DampingToThroughputMargin",
               "ObservabilityDebt"
             ],
             "sourceArtifactRefs": [
@@ -4436,8 +4522,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -4554,8 +4642,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -4672,8 +4762,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -4783,6 +4875,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
+          },
+          {
+            "kind": "canonical-example-ref",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-canonical-example-refs"
+          },
+          {
+            "kind": "patch-similarity-evidence",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-patch-similarity-evidence"
           }
         ],
         "confidence": "bounded-fixture-signal",
@@ -4792,8 +4896,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -4857,12 +4963,13 @@
           ]
         },
         "assumptions": [
-          "canonical examples are treated as seed signal refs for the selected window",
+          "canonical example refs and patch similarity evidence are retained for the selected window",
           "copyability signal is not promoted to future patch convergence"
         ],
         "nonConclusions": [
           "selected SeedAttractorStrength signal is not a convergence theorem",
-          "seed attractor signal does not prove future patch distribution completeness"
+          "seed attractor signal does not prove future patch distribution completeness",
+          "operation proposal log refs do not conclude AI proposal distribution completeness"
         ]
       }
     ],
@@ -4934,8 +5041,10 @@
           "SupportRiskMass",
           "DesignFieldStrength",
           "SeedAttractorStrength",
+          "GoodAttractorBasinMass",
           "BasinBoundaryFragility",
           "TrajectoryReturnTime",
+          "DampingToThroughputMargin",
           "ObservabilityDebt"
         ],
         "sourceArtifactRefs": [
@@ -5011,8 +5120,19 @@
     },
     "designFieldStrength": {
       "metricId": "attractorEngineering.designFieldStrength",
-      "value": null,
+      "value": {
+        "protocol": "selected-design-field-signal-pilot",
+        "selectedSignalIds": [
+          "fixture:design-field-boundary-signal",
+          "fixture:design-field-observability-signal"
+        ],
+        "sourceRefKinds": [
+          "architecture-field-snapshot",
+          "operation-proposal-log"
+        ]
+      },
       "status": "advisory",
+      "confidence": "bounded-fixture-signal",
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
@@ -5051,8 +5171,10 @@
           "SupportRiskMass",
           "DesignFieldStrength",
           "SeedAttractorStrength",
+          "GoodAttractorBasinMass",
           "BasinBoundaryFragility",
           "TrajectoryReturnTime",
+          "DampingToThroughputMargin",
           "ObservabilityDebt"
         ],
         "sourceArtifactRefs": [
@@ -5126,8 +5248,18 @@
     },
     "seedAttractorStrength": {
       "metricId": "attractorEngineering.seedAttractorStrength",
-      "value": null,
-      "status": "unavailable",
+      "value": {
+        "protocol": "selected-seed-attractor-pilot",
+        "selectedSignalIds": [
+          "fixture:seed-attractor-canonical-example-signal"
+        ],
+        "sourceRefKinds": [
+          "canonical-example-ref",
+          "patch-similarity-evidence"
+        ]
+      },
+      "status": "advisory",
+      "confidence": "bounded-fixture-signal",
       "sourceRefs": [
         {
           "kind": "signature-trajectory-report",
@@ -5158,6 +5290,18 @@
           "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
           "schemaVersion": "operation-proposal-log-v0",
           "artifactId": "fixture-operation-proposal-log-v0"
+        },
+        {
+          "kind": "canonical-example-ref",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+          "schemaVersion": "architecture-field-snapshot-v0",
+          "artifactId": "fixture-canonical-example-refs"
+        },
+        {
+          "kind": "patch-similarity-evidence",
+          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+          "schemaVersion": "operation-proposal-log-v0",
+          "artifactId": "fixture-patch-similarity-evidence"
         }
       ],
       "measurementBoundary": {
@@ -5195,6 +5339,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
+          },
+          {
+            "kind": "canonical-example-ref",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-canonical-example-refs"
+          },
+          {
+            "kind": "patch-similarity-evidence",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-patch-similarity-evidence"
           }
         ],
         "extractorVersion": "0.1.0",
@@ -5209,10 +5365,11 @@
           "fixture:selected-dynamics-window"
         ],
         "assumptions": [
-          "canonical example evidence is not retained in this fixture"
+          "canonical example refs and patch similarity evidence are retained as selected pilot inputs"
         ],
         "unsupportedConstructs": [
-          "seed attractor convergence theorem"
+          "seed attractor convergence theorem",
+          "future patch distribution completeness"
         ],
         "missingEvidence": [],
         "nonConclusions": [
@@ -5223,10 +5380,11 @@
         ]
       },
       "assumptions": [
-        "SeedAttractorStrength needs canonical examples and patch similarity evidence"
+        "SeedAttractorStrength reads selected canonical example refs and patch similarity evidence"
       ],
       "nonConclusions": [
-        "unavailable SeedAttractorStrength is not zero seed effect evidence"
+        "selected SeedAttractorStrength signal is not a convergence theorem",
+        "SeedAttractorStrength pilot evidence is not a future patch distribution claim"
       ]
     },
     "fieldShapingDelta": {
@@ -5344,8 +5502,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -5451,6 +5611,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
             "schemaVersion": "operation-proposal-log-v0",
             "artifactId": "fixture-operation-proposal-log-v0"
+          },
+          {
+            "kind": "canonical-example-ref",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-canonical-example-refs"
+          },
+          {
+            "kind": "patch-similarity-evidence",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-patch-similarity-evidence"
           }
         ],
         "measurementBoundary": {
@@ -5459,8 +5631,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -5542,8 +5716,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -5625,8 +5801,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -5708,8 +5886,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -5791,8 +5971,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -5874,8 +6056,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -5957,8 +6141,10 @@
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt"
           ],
           "sourceArtifactRefs": [
@@ -6084,8 +6270,10 @@
           "SupportRiskMass",
           "DesignFieldStrength",
           "SeedAttractorStrength",
+          "GoodAttractorBasinMass",
           "BasinBoundaryFragility",
           "TrajectoryReturnTime",
+          "DampingToThroughputMargin",
           "ObservabilityDebt"
         ],
         "sourceArtifactRefs": [
@@ -6212,8 +6400,10 @@
           "SupportRiskMass",
           "DesignFieldStrength",
           "SeedAttractorStrength",
+          "GoodAttractorBasinMass",
           "BasinBoundaryFragility",
           "TrajectoryReturnTime",
+          "DampingToThroughputMargin",
           "ObservabilityDebt"
         ],
         "sourceArtifactRefs": [
@@ -6346,8 +6536,10 @@
           "SupportRiskMass",
           "DesignFieldStrength",
           "SeedAttractorStrength",
+          "GoodAttractorBasinMass",
           "BasinBoundaryFragility",
           "TrajectoryReturnTime",
+          "DampingToThroughputMargin",
           "ObservabilityDebt"
         ],
         "sourceArtifactRefs": [
@@ -6424,8 +6616,10 @@
         "SupportRiskMass",
         "DesignFieldStrength",
         "SeedAttractorStrength",
+        "GoodAttractorBasinMass",
         "BasinBoundaryFragility",
         "TrajectoryReturnTime",
+        "DampingToThroughputMargin",
         "ObservabilityDebt"
       ],
       "sourceArtifactRefs": [
