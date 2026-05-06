@@ -357,6 +357,7 @@ ArchitectureDynamicsMetricsReportV0 =
   gapMetrics: GapMetrics
   fieldControlMetrics: FieldControlMetrics
   aiDynamicsMetrics: AiDynamicsMetrics
+  attractorEngineering: AttractorEngineeringMetrics
   measurementBoundary: MeasurementBoundary
   nonConclusions: List String
 ```
@@ -370,9 +371,17 @@ ArchitectureDynamicsMetricsReportV0 =
 | gap | `TransientExcursionDebt`, `ForceCancellationRatio`, `OperationCommutatorCurvature`, `CrossAxisClosureGap`, `SupportRiskMass`, `SignatureAliasingRisk`, `ObservabilityExpansionShock`, `PathCompressionLoss`, `EscapeCostLowerBound` |
 | field / control | `DissipationCapacity`, `ConstraintSaturation`, `FeedbackDelayInstability`, `DesignFieldStrength`, `IndirectForceLeverage` |
 | AI dynamics | `OperationDistributionShift`, `AIPatchLyapunov`, `PromptBasinBias`, `SeedAttractorStrength`, `AISafetyMargin` |
+| attractor engineering | `SupportRiskMass`, `DesignFieldStrength`, `SeedAttractorStrength`, `BasinBoundaryFragility`, `TrajectoryReturnTime`, `ObservabilityDebt` |
 
 各 metric は `value`, `status`, `sourceRefs`, `confidence`, `measurementBoundary`,
 `nonConclusions` を持つ。推定値と測定値を同じ confidence で扱わない。
+
+`attractorEngineering` は独立 artifact ではなく、初期段階ではこの report の bounded
+section として出す。section は `selectedRegions`, `attractorCandidates`,
+`basinCandidates`, metric slots, `measurementBoundary`, `nonConclusions` を持つ。
+validator は section の欠落、status vocabulary の逸脱、required non-conclusions の欠落を
+検出する。`unmeasured` / `unavailable` / `notComparable` / `outOfScope` の Attractor
+Engineering metrics を 0 と読まない。
 
 `gapMetrics` は、endpoint / axis-wise / measured な見え方と、path / cross-axis /
 future support / unmeasured axis の間にある差分を測る group である。
