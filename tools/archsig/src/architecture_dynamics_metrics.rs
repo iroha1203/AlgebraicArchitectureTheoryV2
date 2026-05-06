@@ -171,6 +171,18 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
         Some(OPERATION_PROPOSAL_LOG_SCHEMA_VERSION),
         Some("fixture-operation-proposal-log-v0"),
     );
+    let canonical_example_ref = artifact_ref(
+        "canonical-example-ref",
+        "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json#canonicalExamples",
+        Some(ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION),
+        Some("fixture-canonical-example-refs"),
+    );
+    let patch_similarity_ref = artifact_ref(
+        "patch-similarity-evidence",
+        "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json#patchSimilarityEvidence",
+        Some(OPERATION_PROPOSAL_LOG_SCHEMA_VERSION),
+        Some("fixture-patch-similarity-evidence"),
+    );
 
     let window = DynamicsAggregationWindowV0 {
         window_start: Some("2026-01-01T00:00:00Z".to_string()),
@@ -196,6 +208,8 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
             ai_ref.clone(),
             field_snapshot_ref.clone(),
             proposal_log_ref.clone(),
+            canonical_example_ref.clone(),
+            patch_similarity_ref.clone(),
         ],
         trajectory_metrics: vec![
             metric(
@@ -422,6 +436,8 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
                 field_snapshot_ref.clone(),
                 proposal_log_ref.clone(),
             ],
+            canonical_example_ref.clone(),
+            patch_similarity_ref.clone(),
         )),
         measurement_boundary: MeasurementBoundaryV0 {
             measured_layer: "architecture-dynamics".to_string(),
@@ -544,15 +560,22 @@ pub fn validate_architecture_dynamics_metrics_report(
 fn attractor_engineering_section(
     window: DynamicsAggregationWindowV0,
     source_refs: Vec<DynamicsArtifactRefV0>,
+    canonical_example_ref: DynamicsArtifactRefV0,
+    patch_similarity_ref: DynamicsArtifactRefV0,
 ) -> AttractorEngineeringMetricsV0 {
+    let mut seed_source_refs = source_refs.clone();
+    seed_source_refs.push(canonical_example_ref);
+    seed_source_refs.push(patch_similarity_ref);
     let section_boundary = boundary(
         "attractor-engineering",
         &[
             "SupportRiskMass",
             "DesignFieldStrength",
             "SeedAttractorStrength",
+            "GoodAttractorBasinMass",
             "BasinBoundaryFragility",
             "TrajectoryReturnTime",
+            "DampingToThroughputMargin",
             "ObservabilityDebt",
         ],
         source_refs.clone(),
@@ -719,25 +742,36 @@ fn attractor_engineering_section(
             "fixture:seed-attractor-canonical-example-signal",
             "SeedAttractorStrength",
             "canonical-example-copyability",
-            source_refs.clone(),
+            seed_source_refs.clone(),
             "advisory",
             Some("bounded-fixture-signal"),
             section_boundary.clone(),
             &[
-                "canonical examples are treated as seed signal refs for the selected window",
+                "canonical example refs and patch similarity evidence are retained for the selected window",
                 "copyability signal is not promoted to future patch convergence",
             ],
             &[
                 "selected SeedAttractorStrength signal is not a convergence theorem",
                 "seed attractor signal does not prove future patch distribution completeness",
+                "operation proposal log refs do not conclude AI proposal distribution completeness",
             ],
         )],
         support_risk_mass,
         design_field_strength: metric(
             "attractorEngineering.designFieldStrength",
-            None,
+            Some(json!({
+                "protocol": "selected-design-field-signal-pilot",
+                "selectedSignalIds": [
+                    "fixture:design-field-boundary-signal",
+                    "fixture:design-field-observability-signal"
+                ],
+                "sourceRefKinds": [
+                    "architecture-field-snapshot",
+                    "operation-proposal-log"
+                ]
+            })),
             "advisory",
-            None,
+            Some("bounded-fixture-signal"),
             source_refs.clone(),
             section_boundary.clone(),
             &["DesignFieldStrength reads selected field snapshot refs as advisory tooling input"],
@@ -749,20 +783,37 @@ fn attractor_engineering_section(
         ),
         seed_attractor_strength: metric(
             "attractorEngineering.seedAttractorStrength",
-            None,
-            "unavailable",
-            None,
-            source_refs.clone(),
+            Some(json!({
+                "protocol": "selected-seed-attractor-pilot",
+                "selectedSignalIds": ["fixture:seed-attractor-canonical-example-signal"],
+                "sourceRefKinds": [
+                    "canonical-example-ref",
+                    "patch-similarity-evidence"
+                ]
+            })),
+            "advisory",
+            Some("bounded-fixture-signal"),
+            seed_source_refs.clone(),
             boundary(
                 "attractor-engineering",
                 &["SeedAttractorStrength"],
-                source_refs.clone(),
+                seed_source_refs.clone(),
                 Some(window.clone()),
-                &["canonical example evidence is not retained in this fixture"],
-                &["seed attractor convergence theorem"],
+                &[
+                    "canonical example refs and patch similarity evidence are retained as selected pilot inputs",
+                ],
+                &[
+                    "seed attractor convergence theorem",
+                    "future patch distribution completeness",
+                ],
             ),
-            &["SeedAttractorStrength needs canonical examples and patch similarity evidence"],
-            &["unavailable SeedAttractorStrength is not zero seed effect evidence"],
+            &[
+                "SeedAttractorStrength reads selected canonical example refs and patch similarity evidence",
+            ],
+            &[
+                "selected SeedAttractorStrength signal is not a convergence theorem",
+                "SeedAttractorStrength pilot evidence is not a future patch distribution claim",
+            ],
         ),
         field_shaping_delta: metric(
             "attractorEngineering.fieldShapingDelta",
@@ -807,7 +858,7 @@ fn attractor_engineering_section(
                 "SeedAttractorStrength",
                 "advisory",
                 Some("bounded-fixture-signal"),
-                source_refs.clone(),
+                seed_source_refs.clone(),
                 &["SeedAttractorStrength is read from selected canonical-example signal refs"],
                 &[
                     VIBE_CODING_READINESS_NON_CONCLUSION,
@@ -2265,6 +2316,7 @@ fn check_attractor_engineering_section(
     {
         validate_field_shaping_signal(signal, &mut invalid);
     }
+    validate_field_shaping_metric_protocol(section, &mut invalid);
     validate_basin_simulations(section, &mut invalid);
     for entry in &section.support_risk_entries {
         if entry.operation_id.trim().is_empty()
@@ -2808,6 +2860,26 @@ fn validate_field_shaping_signal(
             "DesignFieldStrength signal must not be emitted as a truth claim",
         ));
     }
+    if signal.signal_kind == "DesignFieldStrength"
+        && (!has_artifact_kind(&signal.source_refs, "architecture-field-snapshot")
+            || !has_artifact_kind(&signal.source_refs, "operation-proposal-log"))
+    {
+        invalid.push(generic_validation_example(
+            &signal.signal_id,
+            "sourceRefs",
+            "DesignFieldStrength pilot signals must retain architecture-field-snapshot and operation-proposal-log refs",
+        ));
+    }
+    if signal.signal_kind == "SeedAttractorStrength"
+        && (!has_artifact_kind(&signal.source_refs, "canonical-example-ref")
+            || !has_artifact_kind(&signal.source_refs, "patch-similarity-evidence"))
+    {
+        invalid.push(generic_validation_example(
+            &signal.signal_id,
+            "sourceRefs",
+            "SeedAttractorStrength pilot signals must retain canonical example refs and patch similarity evidence",
+        ));
+    }
     validate_boundary(
         &signal.signal_id,
         "measurementBoundary",
@@ -2815,6 +2887,93 @@ fn validate_field_shaping_signal(
         true,
         invalid,
     );
+}
+
+fn validate_field_shaping_metric_protocol(
+    section: &AttractorEngineeringMetricsV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    let design = &section.design_field_strength;
+    if design.metric_id != "attractorEngineering.designFieldStrength" {
+        invalid.push(generic_validation_example(
+            &design.metric_id,
+            "metricId",
+            "DesignFieldStrength must be recorded in the attractorEngineering designFieldStrength slot",
+        ));
+    }
+    if EVIDENCE_REQUIRED_STATUSES.contains(&design.status.as_str()) {
+        if design
+            .confidence
+            .as_deref()
+            .unwrap_or_default()
+            .trim()
+            .is_empty()
+            || !has_artifact_kind(&design.source_refs, "architecture-field-snapshot")
+            || !has_artifact_kind(&design.source_refs, "operation-proposal-log")
+        {
+            invalid.push(generic_validation_example(
+                &design.metric_id,
+                "sourceRefs",
+                "DesignFieldStrength pilot metrics must retain selected source refs and confidence",
+            ));
+        }
+    }
+    if !design.non_conclusions.iter().any(|conclusion| {
+        conclusion == "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field"
+    }) {
+        invalid.push(generic_validation_example(
+            &design.metric_id,
+            "nonConclusions",
+            "DesignFieldStrength metric must keep the selected empirical signal boundary explicit",
+        ));
+    }
+
+    let seed = &section.seed_attractor_strength;
+    if seed.metric_id != "attractorEngineering.seedAttractorStrength" {
+        invalid.push(generic_validation_example(
+            &seed.metric_id,
+            "metricId",
+            "SeedAttractorStrength must be recorded in the attractorEngineering seedAttractorStrength slot",
+        ));
+    }
+    if EVIDENCE_REQUIRED_STATUSES.contains(&seed.status.as_str()) {
+        if seed
+            .confidence
+            .as_deref()
+            .unwrap_or_default()
+            .trim()
+            .is_empty()
+            || !has_artifact_kind(&seed.source_refs, "canonical-example-ref")
+            || !has_artifact_kind(&seed.source_refs, "patch-similarity-evidence")
+        {
+            invalid.push(generic_validation_example(
+                &seed.metric_id,
+                "sourceRefs",
+                "SeedAttractorStrength pilot metrics must retain canonical example refs, patch similarity evidence, and confidence",
+            ));
+        }
+        let value = seed.value.as_ref().and_then(serde_json::Value::as_object);
+        let has_protocol = value
+            .and_then(|object| object.get("protocol"))
+            .and_then(serde_json::Value::as_str)
+            == Some("selected-seed-attractor-pilot");
+        if !has_protocol {
+            invalid.push(generic_validation_example(
+                &seed.metric_id,
+                "value.protocol",
+                "SeedAttractorStrength pilot metrics must record the selected empirical protocol",
+            ));
+        }
+    }
+    if !seed.non_conclusions.iter().any(|conclusion| {
+        conclusion == "selected SeedAttractorStrength signal is not a convergence theorem"
+    }) {
+        invalid.push(generic_validation_example(
+            &seed.metric_id,
+            "nonConclusions",
+            "SeedAttractorStrength metric must keep convergence-theorem non-conclusion explicit",
+        ));
+    }
 }
 
 fn validate_field_shaping_delta(
