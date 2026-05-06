@@ -1702,6 +1702,10 @@ Issue [#662](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 accepted transition sequence に相対化した abstract force reading schema を追加し、
 selected additive delta law の下で net force が endpoint force と一致する theorem を、
 selected invariant preservation / bad-axis nonincrease theorem と bounded に接続した。
+Issue [#684](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/684) では、
+`ZeroNetForceNonZeroExcursion` の小さな finite counterexample を追加し、
+endpoint delta が 0 で start / target が selected safe region に入っていても、
+observed trajectory 全体の safe-region preservation は従わない境界を証明した。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1776,6 +1780,17 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `AcceptedTransitionForceSchema.netForce_eq_endpointForce` | `theorem` | accepted sequence に相対化された force reading で、selected additive delta law の下で net force が endpoint force と一致することを示す。 | `proved` |
 | `AcceptedTransitionForceSchema.preservesInvariant_and_netForce_eq_endpointForce` | `theorem` | accepted sequence について selected invariant preservation と net force endpoint equality を同時に得る bounded theorem。 | `proved` |
 | `AcceptedTransitionForceSchema.badAxisNonincrease_and_netForce_eq_endpointForce` | `theorem` | explicit bad-axis damping assumption の下で、accepted sequence の bad-axis nonincrease と net force endpoint equality を同時に得る bounded theorem。 | `proved` |
+| `ZeroNetForceNonZeroExcursion.observation` | `def` | `Nat` state をそのまま observed signature として読む小さな counterexample 用 observation schema。 | `defined only` |
+| `ZeroNetForceNonZeroExcursion.signedNatDelta` | `def` | selected endpoint / per-step 差分を signed target-source delta として読む小例用 delta schema。 | `defined only` |
+| `ZeroNetForceNonZeroExcursion.safeRegion` | `def` | selected safe region を signature `0` に限定する小例用 predicate。 | `defined only` |
+| `ZeroNetForceNonZeroExcursion.excursionPlan` | `def` | `0 -> 2 -> 0` の finite architecture evolution witness。 | `defined only` |
+| `ZeroNetForceNonZeroExcursion.endpointSignatureDelta_eq_zero` | `theorem` | 小例の endpoint-only selected signature delta が `0` であることを示す。 | `proved` |
+| `ZeroNetForceNonZeroExcursion.netSignatureDelta_eq_zero` | `theorem` | 小例の per-step selected delta の net sum も `0` に評価されることを示す。 | `proved` |
+| `ZeroNetForceNonZeroExcursion.source_in_safeRegion` | `theorem` | source state が selected safe region に入ることを示す。 | `proved` |
+| `ZeroNetForceNonZeroExcursion.target_in_safeRegion` | `theorem` | target state が selected safe region に入ることを示す。 | `proved` |
+| `ZeroNetForceNonZeroExcursion.excursion_signature_mem` | `theorem` | observed trajectory が unsafe excursion signature `2` を含むことを示す。 | `proved` |
+| `ZeroNetForceNonZeroExcursion.not_signatureTrajectoryInSafeRegion` | `theorem` | 小例の observed trajectory 全体は selected safe region 内に留まらないことを示す。 | `proved` |
+| `ZeroNetForceNonZeroExcursion.endpointSafe_and_zeroDelta_but_not_pathSafe` | `theorem` | endpoint delta zero と safe endpoints から path safety を結論しない bounded counterexample を束ねる。 | `proved` |
 | `OperationTransitionSemantics` | `structure` | operation ID と primitive `ArchitectureTransition` の bounded realization relation、coverage / non-conclusions を束ねる schema。operation tag だけから preservation / acceptance は結論しない。 | `defined only` |
 | `OperationTransitionSemantics.Realizes` | `def` | selected operation ID が primitive transition を realize すること。 | `defined only` |
 | `OperationTransitionSemantics.RecordsNonConclusions` | `def` | operation semantics package の non-conclusion clause を predicate として取り出す。 | `defined only` |

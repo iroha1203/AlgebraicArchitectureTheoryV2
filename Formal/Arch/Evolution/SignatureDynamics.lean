@@ -491,6 +491,99 @@ theorem trajectory_preserves_safeRegion
             trajectory_preserves_safeRegion O R rest
               (hEvery.1 hStart) hEvery.2 sig hTail
 
+/-
+A tiny finite-state witness for the D7 non-conclusion boundary: endpoint
+delta zero and safe endpoints do not force the whole trajectory to stay in the
+selected safe region.
+-/
+namespace ZeroNetForceNonZeroExcursion
+
+abbrev ExampleState := Nat
+abbrev ExampleSig := Nat
+
+def observation : SignatureObservation ExampleState ExampleSig where
+  observe := id
+  coverageAssumptions := True
+  nonConclusions := True
+
+def signedNatDelta : SignatureDelta ExampleSig Int where
+  delta source target := (target : Int) - (source : Int)
+  nonConclusions := True
+
+def safeRegion : SafeRegion ExampleSig :=
+  fun sig => sig = 0
+
+def outwardStep : ArchitectureTransition ExampleState 0 2 where
+  kind := ArchitectureTransitionKind.drift
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def returnStep : ArchitectureTransition ExampleState 2 0 where
+  kind := ArchitectureTransitionKind.repair
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def excursionPlan : ArchitectureEvolution ExampleState 0 0 :=
+  ArchitecturePath.cons outwardStep
+    (ArchitecturePath.cons returnStep (ArchitecturePath.nil 0))
+
+/-- The endpoint-only selected signature delta is zero. -/
+theorem endpointSignatureDelta_eq_zero :
+    EndpointSignatureDelta observation signedNatDelta excursionPlan = 0 := by
+  simp [EndpointSignatureDelta, SignatureDelta.between, signedNatDelta,
+    observation]
+
+/-- The per-step selected deltas also sum to zero on this finite path. -/
+theorem netSignatureDelta_eq_zero :
+    NetSignatureDelta (SignatureDeltaSequence observation signedNatDelta
+      excursionPlan) = 0 := by
+  simp [NetSignatureDelta, SignatureDeltaSequence, SignatureDelta.between,
+    signedNatDelta, observation, excursionPlan]
+
+/-- The source state is inside the selected safe region. -/
+theorem source_in_safeRegion :
+    StateInSafeRegion observation safeRegion 0 := by
+  simp [StateInSafeRegion, observation, safeRegion]
+
+/-- The target state is inside the selected safe region. -/
+theorem target_in_safeRegion :
+    StateInSafeRegion observation safeRegion 0 := by
+  simp [StateInSafeRegion, observation, safeRegion]
+
+/-- The trajectory visits the selected out-of-region excursion signature. -/
+theorem excursion_signature_mem :
+    2 ∈ SignatureTrajectory observation excursionPlan := by
+  simp [SignatureTrajectory, observation, excursionPlan]
+
+/-- The whole observed trajectory is not contained in the selected safe region. -/
+theorem not_signatureTrajectoryInSafeRegion :
+    ¬ SignatureTrajectoryInSafeRegion safeRegion
+        (SignatureTrajectory observation excursionPlan) := by
+  intro hSafeTrajectory
+  have hMidSafe : safeRegion 2 :=
+    hSafeTrajectory 2 excursion_signature_mem
+  change (2 : Nat) = 0 at hMidSafe
+  cases hMidSafe
+
+/--
+Bundled counterexample: endpoint delta zero and safe endpoints do not imply
+path safety for the selected trajectory.
+-/
+theorem endpointSafe_and_zeroDelta_but_not_pathSafe :
+    EndpointSignatureDelta observation signedNatDelta excursionPlan = 0 ∧
+      StateInSafeRegion observation safeRegion 0 ∧
+      StateInSafeRegion observation safeRegion 0 ∧
+      ¬ SignatureTrajectoryInSafeRegion safeRegion
+          (SignatureTrajectory observation excursionPlan) := by
+  exact ⟨endpointSignatureDelta_eq_zero, source_in_safeRegion,
+    target_in_safeRegion, not_signatureTrajectoryInSafeRegion⟩
+
+end ZeroNetForceNonZeroExcursion
+
 /--
 Selected damping / control schema for accepted architecture transitions.
 
