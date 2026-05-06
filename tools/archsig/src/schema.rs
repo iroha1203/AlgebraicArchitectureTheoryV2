@@ -3356,9 +3356,13 @@ pub struct AttractorEngineeringMetricsV0 {
     pub attractor_candidates: Vec<AttractorEngineeringCandidateV0>,
     pub basin_candidates: Vec<AttractorEngineeringCandidateV0>,
     pub support_risk_entries: Vec<SupportRiskMassEntryV0>,
+    pub design_field_signals: Vec<AttractorEngineeringSignalV0>,
+    pub seed_attractor_signals: Vec<AttractorEngineeringSignalV0>,
     pub support_risk_mass: DynamicsMeasuredValueV0,
     pub design_field_strength: DynamicsMeasuredValueV0,
     pub seed_attractor_strength: DynamicsMeasuredValueV0,
+    pub field_shaping_delta: DynamicsMeasuredValueV0,
+    pub vibe_coding_readiness_axes: Vec<DynamicsMeasuredValueV0>,
     pub basin_boundary_fragility: DynamicsMeasuredValueV0,
     pub trajectory_return_time: DynamicsMeasuredValueV0,
     pub observability_debt: DynamicsMeasuredValueV0,
@@ -3374,6 +3378,21 @@ pub struct AttractorEngineeringCandidateV0 {
     pub status: String,
     pub region_refs: Vec<String>,
     pub metric_refs: Vec<String>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttractorEngineeringSignalV0 {
+    pub signal_id: String,
+    pub signal_kind: String,
+    pub selected_signal: String,
+    pub status: String,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<String>,
     pub measurement_boundary: MeasurementBoundaryV0,
     pub assumptions: Vec<String>,
     pub non_conclusions: Vec<String>,

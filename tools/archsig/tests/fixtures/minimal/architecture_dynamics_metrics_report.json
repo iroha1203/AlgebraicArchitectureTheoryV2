@@ -2027,6 +2027,289 @@
         ]
       }
     ],
+    "designFieldSignals": [
+      {
+        "signalId": "fixture:design-field-boundary-signal",
+        "signalKind": "DesignFieldStrength",
+        "selectedSignal": "boundary-and-non-goal-alignment",
+        "status": "advisory",
+        "sourceRefs": [
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "architecture-drift-ledger",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "schemaVersion": "architecture-drift-ledger-v0",
+            "artifactId": "fixture-architecture-drift-ledger"
+          }
+        ],
+        "confidence": "bounded-fixture-signal",
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "boundary, ownership, test, and non-goal refs are read as selected field-shaping signal inputs",
+          "signal is evaluated only for the selected fixture window"
+        ],
+        "nonConclusions": [
+          "selected DesignFieldStrength signal is not a causal proof",
+          "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field"
+        ]
+      },
+      {
+        "signalId": "fixture:design-field-observability-signal",
+        "signalKind": "DesignFieldStrength",
+        "selectedSignal": "test-and-observability-support",
+        "status": "advisory",
+        "sourceRefs": [
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "architecture-drift-ledger",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "schemaVersion": "architecture-drift-ledger-v0",
+            "artifactId": "fixture-architecture-drift-ledger"
+          }
+        ],
+        "confidence": "bounded-fixture-signal",
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "test and observability context is retained as a selected signal, not a complete field snapshot",
+          "signal source refs delimit the measured boundary"
+        ],
+        "nonConclusions": [
+          "selected DesignFieldStrength signal is not a causal proof",
+          "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field"
+        ]
+      }
+    ],
+    "seedAttractorSignals": [
+      {
+        "signalId": "fixture:seed-attractor-canonical-example-signal",
+        "signalKind": "SeedAttractorStrength",
+        "selectedSignal": "canonical-example-copyability",
+        "status": "advisory",
+        "sourceRefs": [
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "architecture-drift-ledger",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "schemaVersion": "architecture-drift-ledger-v0",
+            "artifactId": "fixture-architecture-drift-ledger"
+          }
+        ],
+        "confidence": "bounded-fixture-signal",
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "canonical examples are treated as seed signal refs for the selected window",
+          "copyability signal is not promoted to future patch convergence"
+        ],
+        "nonConclusions": [
+          "selected SeedAttractorStrength signal is not a convergence theorem",
+          "seed attractor signal does not prove future patch distribution completeness"
+        ]
+      }
+    ],
     "supportRiskMass": {
       "metricId": "attractorEngineering.supportRiskMass",
       "value": null,
@@ -2177,6 +2460,675 @@
         "unavailable SeedAttractorStrength is not zero seed effect evidence"
       ]
     },
+    "fieldShapingDelta": {
+      "metricId": "attractorEngineering.fieldShapingDelta",
+      "value": {
+        "comparisonStatus": "notComparable",
+        "goodAttractorBasinMassDelta": null,
+        "seedAttractorStrengthDelta": null,
+        "supportRiskMassDelta": null
+      },
+      "status": "notComparable",
+      "sourceRefs": [
+        {
+          "kind": "signature-trajectory-report",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "schemaVersion": "signature-trajectory-report-v0",
+          "artifactId": "fixture-signature-trajectory-report-v0"
+        },
+        {
+          "kind": "pr-force-report",
+          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "schemaVersion": "pr-force-report-v0",
+          "artifactId": "fixture-pr-force-report-v0"
+        },
+        {
+          "kind": "architecture-drift-ledger",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "schemaVersion": "architecture-drift-ledger-v0",
+          "artifactId": "fixture-architecture-drift-ledger"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "field update before/after windows do not share comparable measurement boundaries in the MVP fixture"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "architecture-dynamics-evidence",
+            "reason": "field update before/after windows do not share comparable measurement boundaries in the MVP fixture",
+            "boundary": "notComparable"
+          }
+        ],
+        "nonConclusions": [
+          "notComparable dynamics metric is not measured-zero evidence"
+        ]
+      },
+      "assumptions": [
+        "FieldShapingDelta compares SupportRiskMass, GoodAttractorBasinMass, and SeedAttractorStrength only across comparable before/after boundaries"
+      ],
+      "nonConclusions": [
+        "notComparable FieldShapingDelta is not zero field shaping effect",
+        "FieldShapingDelta is comparable only across matching measurement boundaries"
+      ]
+    },
+    "vibeCodingReadinessAxes": [
+      {
+        "metricId": "vibeCodingReadiness.DesignFieldStrength",
+        "value": null,
+        "status": "advisory",
+        "confidence": "bounded-fixture-signal",
+        "sourceRefs": [
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "architecture-drift-ledger",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "schemaVersion": "architecture-drift-ledger-v0",
+            "artifactId": "fixture-architecture-drift-ledger"
+          }
+        ],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "DesignFieldStrength contributes one readiness axis and is not aggregated into a score"
+        ],
+        "nonConclusions": [
+          "VibeCodingReadiness is multi-axis readiness, not a single numeric score",
+          "DesignFieldStrength readiness is not a causal truth claim"
+        ]
+      },
+      {
+        "metricId": "vibeCodingReadiness.SeedAttractorStrength",
+        "value": null,
+        "status": "advisory",
+        "confidence": "bounded-fixture-signal",
+        "sourceRefs": [
+          {
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "architecture-drift-ledger",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "schemaVersion": "architecture-drift-ledger-v0",
+            "artifactId": "fixture-architecture-drift-ledger"
+          }
+        ],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "SeedAttractorStrength is read from selected canonical-example signal refs"
+        ],
+        "nonConclusions": [
+          "VibeCodingReadiness is multi-axis readiness, not a single numeric score",
+          "seed readiness does not prove future patch convergence"
+        ]
+      },
+      {
+        "metricId": "vibeCodingReadiness.SupportRiskMass",
+        "value": null,
+        "status": "unmeasured",
+        "sourceRefs": [],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "SupportRiskMass readiness awaits finite operation support weights"
+        ],
+        "nonConclusions": [
+          "VibeCodingReadiness is multi-axis readiness, not a single numeric score",
+          "unmeasured support risk readiness is not low risk evidence"
+        ]
+      },
+      {
+        "metricId": "vibeCodingReadiness.GoodAttractorBasinMass",
+        "value": null,
+        "status": "notComparable",
+        "sourceRefs": [],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "GoodAttractorBasinMass readiness needs comparable bounded basin simulation"
+        ],
+        "nonConclusions": [
+          "VibeCodingReadiness is multi-axis readiness, not a single numeric score",
+          "notComparable basin mass readiness is not zero basin mass"
+        ]
+      },
+      {
+        "metricId": "vibeCodingReadiness.BasinBoundaryFragility",
+        "value": null,
+        "status": "unmeasured",
+        "sourceRefs": [],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "BasinBoundaryFragility readiness needs bounded perturbation simulation"
+        ],
+        "nonConclusions": [
+          "VibeCodingReadiness is multi-axis readiness, not a single numeric score",
+          "BasinBoundaryFragility is bounded perturbation evidence, not global basin stability"
+        ]
+      },
+      {
+        "metricId": "vibeCodingReadiness.TrajectoryReturnTime",
+        "value": null,
+        "status": "unavailable",
+        "sourceRefs": [],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "TrajectoryReturnTime readiness needs selected excursion and return evidence"
+        ],
+        "nonConclusions": [
+          "VibeCodingReadiness is multi-axis readiness, not a single numeric score",
+          "TrajectoryReturnTime is bounded observed return evidence, not a global recurrence theorem"
+        ]
+      },
+      {
+        "metricId": "vibeCodingReadiness.DampingToThroughputMargin",
+        "value": null,
+        "status": "outOfScope",
+        "sourceRefs": [],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "DampingToThroughputMargin is reserved for future proposal throughput and damping evidence"
+        ],
+        "nonConclusions": [
+          "VibeCodingReadiness is multi-axis readiness, not a single numeric score",
+          "outOfScope damping margin is not zero throughput risk"
+        ]
+      },
+      {
+        "metricId": "vibeCodingReadiness.ObservabilityDebt",
+        "value": null,
+        "status": "notComparable",
+        "sourceRefs": [],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "ObservabilityDebt readiness needs comparable observed and latent support axes"
+        ],
+        "nonConclusions": [
+          "VibeCodingReadiness is multi-axis readiness, not a single numeric score",
+          "unmeasured, private, and unavailable required axes are not zero ObservabilityDebt"
+        ]
+      }
+    ],
     "basinBoundaryFragility": {
       "metricId": "attractorEngineering.basinBoundaryFragility",
       "value": null,
@@ -2343,7 +3295,11 @@
     "nonConclusions": [
       "attractorEngineering is bounded tooling evidence, not a global attractor theorem",
       "unmeasured, unavailable, private, notComparable, and outOfScope Attractor Engineering metrics are not measured zero",
-      "attractor and basin candidates are selected-region candidates, not global convergence claims"
+      "attractor and basin candidates are selected-region candidates, not global convergence claims",
+      "field shaping signals are empirical tooling signals, not causal proof",
+      "Attractor Engineering tooling does not conclude incident reduction",
+      "Attractor Engineering tooling does not conclude an AI behavior theorem",
+      "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field"
     ]
   },
   "measurementBoundary": {

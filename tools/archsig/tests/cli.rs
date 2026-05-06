@@ -5842,6 +5842,52 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                     && entry["riskMassContribution"]["confidence"] == "model-estimate"
             })
     );
+    assert!(
+        json["report"]["attractorEngineering"]["designFieldSignals"]
+            .as_array()
+            .expect("designFieldSignals is array")
+            .iter()
+            .any(|signal| {
+                signal["selectedSignal"] == "boundary-and-non-goal-alignment"
+                    && signal["status"] == "advisory"
+                    && signal["confidence"] == "bounded-fixture-signal"
+                    && signal["sourceRefs"]
+                        .as_array()
+                        .expect("signal sourceRefs is array")
+                        .len()
+                        > 0
+            })
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["seedAttractorSignals"]
+            .as_array()
+            .expect("seedAttractorSignals is array")
+            .iter()
+            .any(|signal| {
+                signal["selectedSignal"] == "canonical-example-copyability"
+                    && signal["confidence"] == "bounded-fixture-signal"
+            })
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["fieldShapingDelta"]["status"] == "notComparable"
+            && json["report"]["attractorEngineering"]["fieldShapingDelta"]["value"]["comparisonStatus"]
+                == "notComparable"
+    );
+    let readiness_axes = json["report"]["attractorEngineering"]["vibeCodingReadinessAxes"]
+        .as_array()
+        .expect("vibeCodingReadinessAxes is array");
+    assert_eq!(readiness_axes.len(), 8);
+    assert!(readiness_axes.iter().any(|axis| {
+        axis["metricId"] == "vibeCodingReadiness.GoodAttractorBasinMass"
+            && axis["status"] == "notComparable"
+    }));
+    assert!(readiness_axes.iter().all(|axis| {
+        !axis["metricId"]
+            .as_str()
+            .expect("readiness metricId is string")
+            .to_ascii_lowercase()
+            .contains("score")
+    }));
 
     let artifact = read_json(&fixture_artifact);
     assert_eq!(
@@ -5987,6 +6033,28 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
         serde_json::json!(0.0);
     invalid_attractor_json["attractorEngineering"]["observabilityDebt"]["nonConclusions"] =
         serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["designFieldSignals"][0]["sourceRefs"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["designFieldSignals"][0]["confidence"] =
+        serde_json::json!(null);
+    invalid_attractor_json["attractorEngineering"]["designFieldSignals"][0]["nonConclusions"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["fieldShapingDelta"]["status"] =
+        serde_json::json!("measured");
+    invalid_attractor_json["attractorEngineering"]["fieldShapingDelta"]["value"] =
+        serde_json::json!(0.0);
+    invalid_attractor_json["attractorEngineering"]["fieldShapingDelta"]["nonConclusions"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["fieldShapingDelta"]["measurementBoundary"]["missingEvidence"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["vibeCodingReadinessAxes"][0]["metricId"] =
+        serde_json::json!("vibeCodingReadiness.score");
+    invalid_attractor_json["attractorEngineering"]["vibeCodingReadinessAxes"][0]["nonConclusions"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["vibeCodingReadinessAxes"]
+        .as_array_mut()
+        .expect("readiness axes is array")
+        .pop();
     fs::write(
         &invalid_attractor_report,
         serde_json::to_string_pretty(&invalid_attractor_json).expect("json serializes"),
@@ -6076,6 +6144,36 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                 .as_str()
                 .unwrap_or_default()
                 .contains("missing evidence must not be emitted as measured numeric zero"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("field shaping signals must record selected signal"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("FieldShapingDelta must keep its comparability non-conclusion explicit"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("VibeCodingReadiness must not be emitted as a single numeric score"))
     );
 }
 

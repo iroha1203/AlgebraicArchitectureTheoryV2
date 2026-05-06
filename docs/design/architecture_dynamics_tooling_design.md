@@ -378,7 +378,9 @@ ArchitectureDynamicsMetricsReportV0 =
 
 `attractorEngineering` は独立 artifact ではなく、初期段階ではこの report の bounded
 section として出す。section は `selectedRegions`, `attractorCandidates`,
-`basinCandidates`, metric slots, `measurementBoundary`, `nonConclusions` を持つ。
+`basinCandidates`, `supportRiskEntries`, `designFieldSignals`, `seedAttractorSignals`,
+metric slots, `fieldShapingDelta`, `vibeCodingReadinessAxes`, `measurementBoundary`,
+`nonConclusions` を持つ。
 validator は section の欠落、status vocabulary の逸脱、required non-conclusions の欠落を
 検出する。`unmeasured` / `unavailable` / `notComparable` / `outOfScope` の Attractor
 Engineering metrics を 0 と読まない。
@@ -386,6 +388,15 @@ basin / return / observability 系 metric は、finite trajectory、selected reg
 bounded horizon、source refs が揃うまで measured / estimated / derived evidence に
 昇格しない。`ObservabilityDebt` は required axis の `unmeasured` / `private` /
 `unavailable` / `notComparable` を measured zero として集計しない。
+field shaping 系 signal は selected signal、source refs、confidence、measurement boundary を
+保持し、causal proof、incident reduction、AI behavior theorem、`DesignFieldStrength` の真値
+claim を non-conclusion として明示する。`FieldShapingDelta` は field update 前後の
+`SupportRiskMass`、`GoodAttractorBasinMass`、`SeedAttractorStrength` の差分候補であり、
+比較可能な before / after measurement boundary がない場合は `notComparable` として出す。
+`VibeCodingReadiness` は単一 numeric score ではなく、`DesignFieldStrength`、
+`SeedAttractorStrength`、`SupportRiskMass`、`GoodAttractorBasinMass`、
+`BasinBoundaryFragility`、`TrajectoryReturnTime`、`DampingToThroughputMargin`、
+`ObservabilityDebt` の multi-axis readiness として扱う。
 
 `gapMetrics` は、endpoint / axis-wise / measured な見え方と、path / cross-axis /
 future support / unmeasured axis の間にある差分を測る group である。

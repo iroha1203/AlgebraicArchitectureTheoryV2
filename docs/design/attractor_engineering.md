@@ -509,9 +509,14 @@ attractorEngineering =
   selectedRegions
   attractorCandidates
   basinCandidates
+  supportRiskEntries
+  designFieldSignals
+  seedAttractorSignals
   supportRiskMass
   designFieldStrength
   seedAttractorStrength
+  fieldShapingDelta
+  vibeCodingReadinessAxes
   basinBoundaryFragility
   trajectoryReturnTime
   observabilityDebt
@@ -521,6 +526,14 @@ attractorEngineering =
 
 validator の最初の仕事は、数値の正しさよりも、`unmeasured` / `unavailable` / `private` /
 `notComparable` を 0 と読ませないことである。
+`designFieldSignals` と `seedAttractorSignals` は selected signal、source refs、confidence、
+measurement boundary を明示し、`DesignFieldStrength` の真値や causal proof を結論しない。
+`fieldShapingDelta` は field update 前後の `SupportRiskMass`、`GoodAttractorBasinMass`、
+`SeedAttractorStrength` の差分候補であり、measurement boundary が比較不能なら
+`notComparable` とする。`vibeCodingReadinessAxes` は単一 numeric score ではなく、
+`DesignFieldStrength`、`SeedAttractorStrength`、`SupportRiskMass`、
+`GoodAttractorBasinMass`、`BasinBoundaryFragility`、`TrajectoryReturnTime`、
+`DampingToThroughputMargin`、`ObservabilityDebt` の multi-axis readiness として出す。
 
 ## Research Message
 
