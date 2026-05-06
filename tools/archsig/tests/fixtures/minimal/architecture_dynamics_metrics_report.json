@@ -824,6 +824,84 @@
       {
         "candidateId": "fixture:bounded-basin-candidate",
         "candidateKind": "basin-candidate",
+        "status": "candidate",
+        "regionRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "metricRefs": [
+          "attractorEngineering.basinBoundaryFragility",
+          "attractorEngineering.trajectoryReturnTime"
+        ],
+        "measurementBoundary": {
+          "measuredLayer": "attractor-engineering",
+          "measuredAxes": [
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt"
+          ],
+          "sourceArtifactRefs": [
+            {
+              "kind": "signature-trajectory-report",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+              "schemaVersion": "signature-trajectory-report-v0",
+              "artifactId": "fixture-signature-trajectory-report-v0"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "architecture-drift-ledger",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+              "schemaVersion": "architecture-drift-ledger-v0",
+              "artifactId": "fixture-architecture-drift-ledger"
+            }
+          ],
+          "extractorVersion": "0.1.0",
+          "policyVersion": "fixture-policy-v0",
+          "schemaVersion": "architecture-dynamics-metrics-report-v0",
+          "aggregationWindow": {
+            "windowStart": "2026-01-01T00:00:00Z",
+            "windowEnd": "2026-01-31T23:59:59Z",
+            "windowKind": "selected-fixture-window"
+          },
+          "selectedRegionRefs": [
+            "fixture:selected-dynamics-window"
+          ],
+          "assumptions": [
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions"
+          ],
+          "unsupportedConstructs": [
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness"
+          ],
+          "missingEvidence": [],
+          "nonConclusions": [
+            "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+            "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+            "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+            "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          ]
+        },
+        "assumptions": [
+          "candidate is scoped to the selected fixture window",
+          "basin membership is finite observed tooling evidence"
+        ],
+        "nonConclusions": [
+          "bounded basin candidate is not a global basin theorem",
+          "basin candidate status does not prove reachability for all states"
+        ]
+      },
+      {
+        "candidateId": "fixture:missing-evidence-basin-candidate",
+        "candidateKind": "basin-candidate",
         "status": "unmeasured",
         "regionRefs": [
           "fixture:selected-safe-region"
@@ -2130,88 +2208,43 @@
         "BasinBoundaryFragility needs bounded perturbation simulation"
       ],
       "nonConclusions": [
-        "unmeasured BasinBoundaryFragility is not stable basin evidence"
+        "unmeasured BasinBoundaryFragility is not stable basin evidence",
+        "BasinBoundaryFragility is bounded perturbation evidence, not global basin stability"
       ]
     },
     "trajectoryReturnTime": {
       "metricId": "attractorEngineering.trajectoryReturnTime",
       "value": null,
       "status": "unavailable",
-      "sourceRefs": [
-        {
-          "kind": "signature-trajectory-report",
-          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
-          "schemaVersion": "signature-trajectory-report-v0",
-          "artifactId": "fixture-signature-trajectory-report-v0"
-        },
-        {
-          "kind": "pr-force-report",
-          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
-          "schemaVersion": "pr-force-report-v0",
-          "artifactId": "fixture-pr-force-report-v0"
-        },
-        {
-          "kind": "architecture-drift-ledger",
-          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
-          "schemaVersion": "architecture-drift-ledger-v0",
-          "artifactId": "fixture-architecture-drift-ledger"
-        }
-      ],
+      "sourceRefs": [],
       "measurementBoundary": {
-        "measuredLayer": "signature-trajectory",
-        "measuredAxes": [
-          "TrajectoryReturnTime"
+        "measuredLayer": "architecture-dynamics",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "selected excursion and return observation are not retained in this fixture"
         ],
-        "sourceArtifactRefs": [
+        "unsupportedConstructs": [],
+        "missingEvidence": [
           {
-            "kind": "signature-trajectory-report",
-            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
-            "schemaVersion": "signature-trajectory-report-v0",
-            "artifactId": "fixture-signature-trajectory-report-v0"
-          },
-          {
-            "kind": "pr-force-report",
-            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
-            "schemaVersion": "pr-force-report-v0",
-            "artifactId": "fixture-pr-force-report-v0"
-          },
-          {
-            "kind": "architecture-drift-ledger",
-            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
-            "schemaVersion": "architecture-drift-ledger-v0",
-            "artifactId": "fixture-architecture-drift-ledger"
+            "evidenceKind": "architecture-dynamics-evidence",
+            "reason": "selected excursion and return observation are not retained in this fixture",
+            "boundary": "unavailable"
           }
         ],
-        "extractorVersion": "0.1.0",
-        "policyVersion": "fixture-policy-v0",
-        "schemaVersion": "architecture-dynamics-metrics-report-v0",
-        "aggregationWindow": {
-          "windowStart": "2026-01-01T00:00:00Z",
-          "windowEnd": "2026-01-31T23:59:59Z",
-          "windowKind": "selected-fixture-window"
-        },
-        "selectedRegionRefs": [
-          "fixture:selected-dynamics-window"
-        ],
-        "assumptions": [
-          "trajectory suffix evidence is not retained in this fixture"
-        ],
-        "unsupportedConstructs": [
-          "global recurrence theorem"
-        ],
-        "missingEvidence": [],
         "nonConclusions": [
-          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
-          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
-          "global attractor, causal proof, and incident-risk conclusions are out of scope"
+          "unavailable dynamics metric is not measured-zero evidence"
         ]
       },
       "assumptions": [
         "TrajectoryReturnTime needs a selected excursion and return observation"
       ],
       "nonConclusions": [
-        "unavailable TrajectoryReturnTime is not immediate-return evidence"
+        "unavailable TrajectoryReturnTime is not immediate-return evidence",
+        "TrajectoryReturnTime is bounded observed return evidence, not a global recurrence theorem"
       ]
     },
     "observabilityDebt": {
@@ -2245,7 +2278,8 @@
         "ObservabilityDebt needs comparable observed and latent support axes"
       ],
       "nonConclusions": [
-        "notComparable ObservabilityDebt is not zero observability debt"
+        "notComparable ObservabilityDebt is not zero observability debt",
+        "unmeasured, private, and unavailable required axes are not zero ObservabilityDebt"
       ]
     },
     "measurementBoundary": {

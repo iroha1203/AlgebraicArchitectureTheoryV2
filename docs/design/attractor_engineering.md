@@ -324,6 +324,11 @@ AttractorEngineeringReportV0 =
 | `ObservabilityDebt` | required axis のうち unmeasured / private / unavailable の mass。 | tooling |
 | `FieldShapingDelta` | field update 前後の `SupportRiskMass`, `GoodBasinMass`, `SeedAttractorStrength` の差。 | empirical |
 
+`BasinBoundaryFragility`、`TrajectoryReturnTime`、`ObservabilityDebt` は selected region と
+bounded horizon に相対化する。finite trajectory、selected region、bounded horizon、
+source refs が欠ける場合は `unmeasured` / `unavailable` / `notComparable` として出し、
+missing evidence を measured zero と読まない。
+
 中心 metric は `SupportRiskMass` である。
 
 ```text
