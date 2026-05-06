@@ -1,6 +1,8 @@
 # 個別設計メモ
 
 このディレクトリには、全体方針から切り出した個別 design / protocol 文書を置く。
+tool 側の総合入口は [AAT Tooling Documentation](../tooling/README.md) に置き、
+ここには個別 schema、protocol、design bridge を置く。
 
 ## 文書一覧
 

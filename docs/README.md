@@ -8,18 +8,23 @@
 初見では次の順に読む。
 
 1. [研究の全体目標](research_goal.md)
-2. [AAT v2 数学設計書](aat_v2_mathematical_design.md)
-3. [AAT v2 ツール設計書](aat_v2_tooling_design.md)
-4. [証明義務と実証仮説](proof_obligations.md)
-5. [Lean 定義・定理索引](lean_theorem_index.md)
-6. 必要に応じて [個別設計メモ](design/README.md), [PRD 一覧](prd/README.md), `docs/empirical/`
+2. [AAT 総合理論](aat/README.md)
+3. [Part 1: AAT 基礎編](aat/part1_foundations.md)
+4. [Part 2: AAT 発展編](aat/part2_advanced_theory.md)
+5. [Part 3: Architecture Dynamics / Chaos Game 編](aat/part3_dynamics_chaos_game.md)
+6. [証明義務と実証仮説](proof_obligations.md)
+7. [Lean 定義・定理索引](lean_theorem_index.md)
+8. [AAT Tooling Documentation](tooling/README.md)
+9. 必要に応じて [個別設計メモ](design/README.md), [PRD 一覧](prd/README.md), `docs/empirical/`
 
 ## 全体文書
 
 - [研究の全体目標](research_goal.md): AAT v2 の全体目標と研究全体像を示す入口文書。
-- [AAT v2 数学設計書](aat_v2_mathematical_design.md): AAT を機能追加による architecture extension theory として整理し、split extension、obstruction witness、Architecture Extension Formula、homotopy skeleton、解析的 representation の責務境界を定義する。
-- [AAT v2 ツール設計書](aat_v2_tooling_design.md): Feature Extension Report、AIR、claim taxonomy、coverage metadata、AI session の厳格扱い、CI integration を定義する。
-- [AAT v2 数学設計書の Design principle classification](aat_v2_mathematical_design.md#41-design-principle-classification): SOLID, Layered, Clean Architecture, Event Sourcing, Saga, CRUD などの役割分担。
+- [AAT 総合理論](aat/README.md): AAT の第一級理論入口。実装状況、Issue、tool artifact への接続を持たない。
+- [Part 1: AAT 基礎編](aat/part1_foundations.md): `ArchitectureCore`, `FeatureExtension`, split, invariant, obstruction, proof obligation, signature の基礎。
+- [Part 2: AAT 発展編](aat/part2_advanced_theory.md): Architecture Calculus、repair / synthesis、homotopy skeleton、diagram filling、Architecture Extension Formula、analytic representation。
+- [Part 3: Architecture Dynamics / Chaos Game 編](aat/part3_dynamics_chaos_game.md): signature trajectory、operation distribution、attractor / basin、support shaping、chaos-game 的進化。
+- [設計原則の分類](aat/README.md#設計原則): SOLID, Layered, Clean Architecture, Event Sourcing, Saga, CRUD などの役割分担。
 - [証明義務と実証仮説](proof_obligations.md): 未解決の proof obligation と empirical hypothesis の台帳。
 
 ## 外部向けドラフト
@@ -34,6 +39,8 @@
 - [runtimePropagation 設計](design/runtime_propagation_design.md): runtime metric を static structural core から分け、0/1 runtime graph 上の zero bridge は bounded Lean theorem package、policy-aware coverage、extractor completeness、incident 相関は実用・実証層として扱う設計。
 - [Architecture Signature Dynamics 設計](design/architecture_signature_dynamics.md): `ArchitectureEvolution` と `ArchitectureSignature` を土台に、`codebase as field`、operation distribution、Observed / Latent / Dissipated force、signature trajectory、dissipation、AI dynamics 指標を接続する設計。
 - [Architecture Dynamics tooling 設計](design/architecture_dynamics_tooling_design.md): Architecture Signature Dynamics を PR force report、trajectory report、dynamics metrics report、共通 measurement contract へ落とす tool 側設計。
+- [AAT Tooling Documentation](tooling/README.md): AIR、claim boundary、signature artifact、report、extractor、workflow、schema compatibility の tool 側総合入口。
+- [AAT Tooling 総合入口](aat_v2_tooling_design.md): 旧 `AAT v2 ツール設計書` の互換入口。既存 anchor を受け、新しい `docs/tooling/` へ誘導する。
 - [B6 empirical hypothesis evaluation plan](design/b6_empirical_hypothesis_evaluation.md): Feature Extension Report / Architecture Signature / obstruction profile と outcome linkage を H1-H5 の evaluation query へ接続する Phase B6 の研究検証計画。
 - [B9/B10 schema version catalog](design/schema_version_catalog.md): schema version、compatibility policy、B10 operational feedback artifact の catalog と non-conclusion boundary。
 - [ArchSig tooling index](design/archsig_tooling_index.md): ArchSig tooling の schema、CLI、fixture、non-conclusion boundary の索引。
