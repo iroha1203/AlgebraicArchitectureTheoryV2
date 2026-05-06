@@ -232,7 +232,8 @@ and exists X op,
   and not (sem.OperationPreservesSafeRegion O R op)
 ```
 
-Lean status: future counterexample。
+Lean status: proved for finite witness
+`AcceptedPreservationNotSupportPreservation.acceptedPreservation_not_supportPreservation_counterexample`。
 
 この theorem は、guardrail 成功と Attractor Engineering 成功を分離する。
 

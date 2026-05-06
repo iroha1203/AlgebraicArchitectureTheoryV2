@@ -1863,6 +1863,15 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `AttractorEngineeringSupportPackage.supportPackage_preserves_targetTrajectory` | `theorem` | realized bounded script が finite support だけを使い、start が target region 内なら、package の target trajectory が target region 内に留まる。 | `proved` |
 | `AttractorEngineeringSupportPackage.supportPackage_avoids_badRegion` | `theorem` | package の target region が bad region の補集合なら、bounded target trajectory がその bad region を避けることを示す。 | `proved` |
 | `AttractorEngineeringSupportPackage.supportShaping_avoids_badRegion` | `theorem` | bad region の補集合を safe region として、support operation preservation から bounded trajectory が bad region を避けることを直接得る wrapper。 | `proved` |
+| `AcceptedPreservationNotSupportPreservation.observation` | `def` | `Bool` state をそのまま observed signature として読む小さな Attractor Engineering counterexample 用 observation schema。 | `defined only` |
+| `AcceptedPreservationNotSupportPreservation.control` | `def` | safe self-step のみを accepted とし、accepted step が selected invariant を保存する小例用 control schema。 | `defined only` |
+| `AcceptedPreservationNotSupportPreservation.semantics` | `def` | accepted noop と unsafe drift operation の bounded realization relation を持つ小例用 semantics。 | `defined only` |
+| `AcceptedPreservationNotSupportPreservation.kernel` | `def` | safe state の finite support に unsafe drift operation も含める小例用 kernel。 | `defined only` |
+| `AcceptedPreservationNotSupportPreservation.acceptedTransition_accepted` | `theorem` | 小例の safe self-step が selected controller に accepted されることを示す。 | `proved` |
+| `AcceptedPreservationNotSupportPreservation.acceptedTransition_preserves_selectedInvariant` | `theorem` | 小例の accepted safe self-step が selected invariant を保存することを示す。 | `proved` |
+| `AcceptedPreservationNotSupportPreservation.source_supports_unsafeOperation` | `theorem` | safe source state の finite support が unsafe drift operation を含むことを示す。 | `proved` |
+| `AcceptedPreservationNotSupportPreservation.unsafeOperation_not_preserves_safeRegion` | `theorem` | unsafe drift operation が selected safe region を保存しないことを示す。 | `proved` |
+| `AcceptedPreservationNotSupportPreservation.acceptedPreservation_not_supportPreservation_counterexample` | `theorem` | accepted-step invariant preservation と、support 内 unsafe operation の存在が同時に成り立つ finite counterexample を束ねる。 | `proved` |
 | `SameObservedSignatureDifferentFutureSupport` | `def` | same selected observed signature と different finite future operation support を束ねる bounded witness predicate。future distribution / empirical weights / unmeasured axes は結論しない。 | `defined only` |
 | `SameSignatureDifferentFuture.observation` | `def` | `Nat` state を `Unit` signature へ潰して読む小さな counterexample 用 observation schema。 | `defined only` |
 | `SameSignatureDifferentFuture.kernel` | `def` | source state と target state に異なる singleton operation support を割り当てる finite kernel witness。 | `defined only` |
