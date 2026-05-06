@@ -6,7 +6,8 @@ Lean status: `empirical hypothesis` / research validation.
 `outcome-linkage-dataset-v0` を接続し、Feature Extension Report / Architecture Signature /
 obstruction profile と開発 outcome の対応を評価するための最小計画を固定する。
 
-ここで扱う H1-H5 は `docs/aat_v2_tooling_design.md` の Phase B6 仮説である。
+ここで扱う H1-H5 は [Tooling Roadmap の Phase B6](../tooling/roadmap.md#phase-b6-empirical-validation)
+に置く empirical hypothesis である。
 `docs/design/empirical_protocol.md` の Signature pilot 用 `H1a` / `H1b` / `H2` ...
 とは別の番号体系として読む。
 
