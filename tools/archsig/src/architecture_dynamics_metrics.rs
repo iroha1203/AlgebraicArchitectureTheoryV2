@@ -8,9 +8,10 @@ use crate::{
     ARCHITECTURE_DYNAMICS_METRICS_REPORT_VALIDATION_REPORT_SCHEMA_VERSION,
     ArchitectureDynamicsMetricsReportV0, ArchitectureDynamicsMetricsReportValidationInput,
     ArchitectureDynamicsMetricsReportValidationReportV0,
-    ArchitectureDynamicsMetricsReportValidationSummary, DynamicsAggregationWindowV0,
-    DynamicsArtifactRefV0, DynamicsMeasuredValueV0, DynamicsMissingEvidenceV0, EXTRACTOR_VERSION,
-    MeasurementBoundaryV0, PR_FORCE_REPORT_SCHEMA_VERSION, RepositoryRef, ValidationCheck,
+    ArchitectureDynamicsMetricsReportValidationSummary, AttractorEngineeringCandidateV0,
+    AttractorEngineeringMetricsV0, DynamicsAggregationWindowV0, DynamicsArtifactRefV0,
+    DynamicsMeasuredValueV0, DynamicsMissingEvidenceV0, EXTRACTOR_VERSION, MeasurementBoundaryV0,
+    PR_FORCE_REPORT_SCHEMA_VERSION, RepositoryRef, SelectedSignatureRegionV0, ValidationCheck,
     ValidationExample,
 };
 
@@ -38,6 +39,20 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 4] = [
 
 const FORCE_CLASS_NON_CONCLUSION: &str =
     "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes";
+
+const REQUIRED_ATTRACTOR_NON_CONCLUSIONS: [&str; 3] = [
+    "attractorEngineering is bounded tooling evidence, not a global attractor theorem",
+    "unmeasured, unavailable, notComparable, and outOfScope Attractor Engineering metrics are not measured zero",
+    "attractor and basin candidates are selected-region candidates, not global convergence claims",
+];
+
+const ALLOWED_ATTRACTOR_CANDIDATE_STATUSES: [&str; 5] = [
+    "candidate",
+    "unmeasured",
+    "unavailable",
+    "notComparable",
+    "outOfScope",
+];
 
 pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetricsReportV0 {
     let pr_force_ref = artifact_ref(
@@ -309,6 +324,14 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
                 &["AI patch Lyapunov-like metric is not a formal convergence theorem"],
             ),
         ],
+        attractor_engineering: Some(attractor_engineering_section(
+            window.clone(),
+            vec![
+                trajectory_ref.clone(),
+                pr_force_ref.clone(),
+                drift_ref.clone(),
+            ],
+        )),
         measurement_boundary: MeasurementBoundaryV0 {
             measured_layer: "architecture-dynamics".to_string(),
             measured_axes: vec![
@@ -317,6 +340,7 @@ pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetr
                 "gap".to_string(),
                 "fieldControl".to_string(),
                 "aiDynamics".to_string(),
+                "attractorEngineering".to_string(),
             ],
             source_artifact_refs: vec![
                 pr_force_ref,
@@ -371,7 +395,23 @@ pub fn validate_architecture_dynamics_metrics_report(
         check_null_value_statuses(report),
         check_measurement_boundaries(report),
         check_force_class_boundaries(report),
+        check_attractor_engineering_section(report),
     ];
+    let attractor_selected_region_count = report
+        .attractor_engineering
+        .as_ref()
+        .map(|section| section.selected_regions.len())
+        .unwrap_or(0);
+    let attractor_candidate_count = report
+        .attractor_engineering
+        .as_ref()
+        .map(|section| section.attractor_candidates.len())
+        .unwrap_or(0);
+    let basin_candidate_count = report
+        .attractor_engineering
+        .as_ref()
+        .map(|section| section.basin_candidates.len())
+        .unwrap_or(0);
     let summary = ArchitectureDynamicsMetricsReportValidationSummary {
         result: if checks.iter().any(|check| check.result == "fail") {
             "fail".to_string()
@@ -385,6 +425,9 @@ pub fn validate_architecture_dynamics_metrics_report(
         gap_metric_count: report.gap_metrics.len(),
         field_control_metric_count: report.field_control_metrics.len(),
         ai_dynamics_metric_count: report.ai_dynamics_metrics.len(),
+        attractor_selected_region_count,
+        attractor_candidate_count,
+        basin_candidate_count,
         failed_check_count: count_checks(&checks, "fail"),
         warning_check_count: count_checks(&checks, "warn"),
     };
@@ -402,6 +445,202 @@ pub fn validate_architecture_dynamics_metrics_report(
         report: report.clone(),
         summary,
         checks,
+    }
+}
+
+fn attractor_engineering_section(
+    window: DynamicsAggregationWindowV0,
+    source_refs: Vec<DynamicsArtifactRefV0>,
+) -> AttractorEngineeringMetricsV0 {
+    let section_boundary = boundary(
+        "attractor-engineering",
+        &[
+            "SupportRiskMass",
+            "DesignFieldStrength",
+            "SeedAttractorStrength",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt",
+        ],
+        source_refs.clone(),
+        Some(window.clone()),
+        &[
+            "Attractor Engineering is evaluated only for the selected fixture window",
+            "candidate regions are selected finite observations, not global state-space partitions",
+        ],
+        &[
+            "global attractor theorem",
+            "complete basin decomposition",
+            "future operation distribution completeness",
+        ],
+    );
+    AttractorEngineeringMetricsV0 {
+        selected_regions: vec![SelectedSignatureRegionV0 {
+            region_id: "fixture:selected-safe-region".to_string(),
+            region_kind: "safe-target-region".to_string(),
+            defining_axes: vec![
+                "boundaryViolation".to_string(),
+                "runtimePropagation".to_string(),
+            ],
+            bounds: json!({
+                "boundaryViolation": {"max": 0},
+                "runtimePropagation": {"max": 0}
+            }),
+            trajectory_point_refs: vec!["trajectory:point:end".to_string()],
+            measurement_boundary: section_boundary.clone(),
+            non_conclusions: strings(&[
+                "selected safe region does not classify the global state space",
+                "endpoint membership does not prove path safety",
+            ]),
+        }],
+        attractor_candidates: vec![attractor_candidate(
+            "fixture:good-attractor-candidate",
+            "good-attractor-candidate",
+            "candidate",
+            &["fixture:selected-safe-region"],
+            &[
+                "attractorEngineering.designFieldStrength",
+                "attractorEngineering.seedAttractorStrength",
+            ],
+            section_boundary.clone(),
+            &[
+                "candidate is retained for bounded tooling validation",
+                "seed examples are treated as evidence boundaries, not convergence proof",
+            ],
+            &[
+                "candidate attractor status is not a global attractor theorem",
+                "seed attractor evidence does not imply future patch convergence",
+            ],
+        )],
+        basin_candidates: vec![attractor_candidate(
+            "fixture:bounded-basin-candidate",
+            "basin-candidate",
+            "unmeasured",
+            &["fixture:selected-safe-region"],
+            &[
+                "attractorEngineering.basinBoundaryFragility",
+                "attractorEngineering.trajectoryReturnTime",
+            ],
+            gap_boundary(
+                "basin membership simulation is not implemented in the MVP fixture",
+                "unmeasured",
+            ),
+            &["basin candidate awaits bounded simulation evidence"],
+            &[
+                "unmeasured basin candidate is not empty basin evidence",
+                "basin candidate status does not prove reachability",
+            ],
+        )],
+        support_risk_mass: metric(
+            "attractorEngineering.supportRiskMass",
+            None,
+            "unmeasured",
+            None,
+            Vec::new(),
+            gap_boundary(
+                "finite operation support weights are not retained in the MVP fixture",
+                "unmeasured",
+            ),
+            &["SupportRiskMass needs finite operation support and risk labels"],
+            &["unmeasured SupportRiskMass is not zero support risk"],
+        ),
+        design_field_strength: metric(
+            "attractorEngineering.designFieldStrength",
+            None,
+            "outOfScope",
+            None,
+            Vec::new(),
+            gap_boundary(
+                "architecture field snapshot is outside this MVP fixture",
+                "outOfScope",
+            ),
+            &["DesignFieldStrength needs field snapshot and policy context evidence"],
+            &["outOfScope DesignFieldStrength is not weak field evidence"],
+        ),
+        seed_attractor_strength: metric(
+            "attractorEngineering.seedAttractorStrength",
+            None,
+            "unavailable",
+            None,
+            source_refs.clone(),
+            boundary(
+                "attractor-engineering",
+                &["SeedAttractorStrength"],
+                source_refs.clone(),
+                Some(window.clone()),
+                &["canonical example evidence is not retained in this fixture"],
+                &["seed attractor convergence theorem"],
+            ),
+            &["SeedAttractorStrength needs canonical examples and patch similarity evidence"],
+            &["unavailable SeedAttractorStrength is not zero seed effect evidence"],
+        ),
+        basin_boundary_fragility: metric(
+            "attractorEngineering.basinBoundaryFragility",
+            None,
+            "unmeasured",
+            None,
+            Vec::new(),
+            gap_boundary(
+                "bounded perturbation simulation is not implemented in the MVP fixture",
+                "unmeasured",
+            ),
+            &["BasinBoundaryFragility needs bounded perturbation simulation"],
+            &["unmeasured BasinBoundaryFragility is not stable basin evidence"],
+        ),
+        trajectory_return_time: metric(
+            "attractorEngineering.trajectoryReturnTime",
+            None,
+            "unavailable",
+            None,
+            source_refs.clone(),
+            boundary(
+                "signature-trajectory",
+                &["TrajectoryReturnTime"],
+                source_refs,
+                Some(window),
+                &["trajectory suffix evidence is not retained in this fixture"],
+                &["global recurrence theorem"],
+            ),
+            &["TrajectoryReturnTime needs a selected excursion and return observation"],
+            &["unavailable TrajectoryReturnTime is not immediate-return evidence"],
+        ),
+        observability_debt: metric(
+            "attractorEngineering.observabilityDebt",
+            None,
+            "notComparable",
+            None,
+            Vec::new(),
+            gap_boundary(
+                "observability coverage denominator is not comparable in this fixture",
+                "notComparable",
+            ),
+            &["ObservabilityDebt needs comparable observed and latent support axes"],
+            &["notComparable ObservabilityDebt is not zero observability debt"],
+        ),
+        measurement_boundary: section_boundary,
+        non_conclusions: strings(&REQUIRED_ATTRACTOR_NON_CONCLUSIONS),
+    }
+}
+
+fn attractor_candidate(
+    candidate_id: &str,
+    candidate_kind: &str,
+    status: &str,
+    region_refs: &[&str],
+    metric_refs: &[&str],
+    measurement_boundary: MeasurementBoundaryV0,
+    assumptions: &[&str],
+    non_conclusions: &[&str],
+) -> AttractorEngineeringCandidateV0 {
+    AttractorEngineeringCandidateV0 {
+        candidate_id: candidate_id.to_string(),
+        candidate_kind: candidate_kind.to_string(),
+        status: status.to_string(),
+        region_refs: strings(region_refs),
+        metric_refs: strings(metric_refs),
+        measurement_boundary,
+        assumptions: strings(assumptions),
+        non_conclusions: strings(non_conclusions),
     }
 }
 
@@ -554,11 +793,12 @@ fn check_report_identity(report: &ArchitectureDynamicsMetricsReportV0) -> Valida
         || report.gap_metrics.is_empty()
         || report.field_control_metrics.is_empty()
         || report.ai_dynamics_metrics.is_empty()
+        || report.attractor_engineering.is_none()
     {
         invalid.push(generic_validation_example(
             &report.report_id,
             "metric groups",
-            "trajectory, force, gap, fieldControl, and aiDynamics metric groups must be present",
+            "trajectory, force, gap, fieldControl, aiDynamics, and attractorEngineering metric groups must be present",
         ));
     }
     for required in REQUIRED_NON_CONCLUSIONS {
@@ -708,6 +948,130 @@ fn check_force_class_boundaries(report: &ArchitectureDynamicsMetricsReportV0) ->
     )
 }
 
+fn check_attractor_engineering_section(
+    report: &ArchitectureDynamicsMetricsReportV0,
+) -> ValidationCheck {
+    let allowed_candidate_statuses = string_set(ALLOWED_ATTRACTOR_CANDIDATE_STATUSES);
+    let mut invalid = Vec::new();
+    let Some(section) = &report.attractor_engineering else {
+        invalid.push(generic_validation_example(
+            &report.report_id,
+            "attractorEngineering",
+            "attractorEngineering section must be present",
+        ));
+        return check_examples(
+            "architecture-dynamics-metrics-attractor-engineering-section-recorded",
+            "Attractor Engineering section records bounded candidates, metric slots, and non-conclusions",
+            invalid,
+        );
+    };
+
+    if section.selected_regions.is_empty()
+        || section.attractor_candidates.is_empty()
+        || section.basin_candidates.is_empty()
+    {
+        invalid.push(generic_validation_example(
+            &report.report_id,
+            "attractorEngineering",
+            "selectedRegions, attractorCandidates, and basinCandidates must be present",
+        ));
+    }
+    for required in REQUIRED_ATTRACTOR_NON_CONCLUSIONS {
+        if !section
+            .non_conclusions
+            .iter()
+            .any(|conclusion| conclusion == required)
+        {
+            invalid.push(generic_validation_example(
+                &report.report_id,
+                "attractorEngineering.nonConclusions",
+                &format!("missing required Attractor Engineering non-conclusion: {required}"),
+            ));
+        }
+    }
+    validate_boundary(
+        &report.report_id,
+        "attractorEngineering.measurementBoundary",
+        &section.measurement_boundary,
+        true,
+        &mut invalid,
+    );
+    for region in &section.selected_regions {
+        if region.region_id.trim().is_empty()
+            || region.region_kind.trim().is_empty()
+            || region.defining_axes.is_empty()
+            || has_blank(&region.defining_axes)
+            || region.non_conclusions.is_empty()
+            || has_blank(&region.non_conclusions)
+        {
+            invalid.push(generic_validation_example(
+                &region.region_id,
+                "attractorEngineering.selectedRegions",
+                "selected regions must record id, kind, defining axes, and non-conclusions",
+            ));
+        }
+        validate_boundary(
+            &region.region_id,
+            "measurementBoundary",
+            &region.measurement_boundary,
+            true,
+            &mut invalid,
+        );
+    }
+    for candidate in section
+        .attractor_candidates
+        .iter()
+        .chain(section.basin_candidates.iter())
+    {
+        if candidate.candidate_id.trim().is_empty()
+            || candidate.candidate_kind.trim().is_empty()
+            || candidate.region_refs.is_empty()
+            || has_blank(&candidate.region_refs)
+            || candidate.metric_refs.is_empty()
+            || has_blank(&candidate.metric_refs)
+        {
+            invalid.push(generic_validation_example(
+                &candidate.candidate_id,
+                "attractorEngineering.candidates",
+                "candidates must record id, kind, region refs, and metric refs",
+            ));
+        }
+        if !allowed_candidate_statuses.contains(candidate.status.as_str()) {
+            invalid.push(generic_validation_example(
+                &candidate.candidate_id,
+                &candidate.status,
+                "unsupported Attractor Engineering candidate status",
+            ));
+        }
+        if candidate.assumptions.is_empty() || has_blank(&candidate.assumptions) {
+            invalid.push(generic_validation_example(
+                &candidate.candidate_id,
+                "assumptions",
+                "candidate assumptions must be explicit",
+            ));
+        }
+        if candidate.non_conclusions.is_empty() || has_blank(&candidate.non_conclusions) {
+            invalid.push(generic_validation_example(
+                &candidate.candidate_id,
+                "nonConclusions",
+                "candidate non-conclusions must be explicit",
+            ));
+        }
+        validate_boundary(
+            &candidate.candidate_id,
+            "measurementBoundary",
+            &candidate.measurement_boundary,
+            candidate.status == "candidate",
+            &mut invalid,
+        );
+    }
+    check_examples(
+        "architecture-dynamics-metrics-attractor-engineering-section-recorded",
+        "Attractor Engineering section records bounded candidates, metric slots, and non-conclusions",
+        invalid,
+    )
+}
+
 fn validate_boundary(
     owner: &str,
     field: &str,
@@ -770,14 +1134,25 @@ fn validate_boundary(
 }
 
 fn report_metrics(report: &ArchitectureDynamicsMetricsReportV0) -> Vec<&DynamicsMeasuredValueV0> {
-    report
+    let mut metrics: Vec<&DynamicsMeasuredValueV0> = report
         .trajectory_metrics
         .iter()
         .chain(report.force_metrics.iter())
         .chain(report.gap_metrics.iter())
         .chain(report.field_control_metrics.iter())
         .chain(report.ai_dynamics_metrics.iter())
-        .collect()
+        .collect();
+    if let Some(section) = &report.attractor_engineering {
+        metrics.extend([
+            &section.support_risk_mass,
+            &section.design_field_strength,
+            &section.seed_attractor_strength,
+            &section.basin_boundary_fragility,
+            &section.trajectory_return_time,
+            &section.observability_debt,
+        ]);
+    }
+    metrics
 }
 
 fn force_class_count(metric_id: &str) -> usize {

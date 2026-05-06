@@ -5695,6 +5695,14 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
     let fixture_validation = out_dir.join("architecture-dynamics-metrics-validation.json");
     let invalid_report = out_dir.join("architecture-dynamics-metrics-invalid.json");
     let invalid_validation = out_dir.join("architecture-dynamics-metrics-invalid-validation.json");
+    let missing_attractor_report =
+        out_dir.join("architecture-dynamics-metrics-missing-attractor.json");
+    let missing_attractor_validation =
+        out_dir.join("architecture-dynamics-metrics-missing-attractor-validation.json");
+    let invalid_attractor_report =
+        out_dir.join("architecture-dynamics-metrics-invalid-attractor.json");
+    let invalid_attractor_validation =
+        out_dir.join("architecture-dynamics-metrics-invalid-attractor-validation.json");
 
     run_sig0(&[
         "architecture-dynamics-metrics",
@@ -5755,6 +5763,14 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                     && check["result"] == "pass"
             })
     );
+    assert_eq!(json["summary"]["attractorSelectedRegionCount"], 1);
+    assert!(
+        json["report"]["attractorEngineering"]["supportRiskMass"]["status"] == "unmeasured"
+            && json["report"]["attractorEngineering"]["designFieldStrength"]["status"]
+                == "outOfScope"
+            && json["report"]["attractorEngineering"]["seedAttractorStrength"]["status"]
+                == "unavailable"
+    );
 
     let artifact = read_json(&fixture_artifact);
     assert_eq!(
@@ -5769,6 +5785,16 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
             .any(|metric| {
                 metric["metricId"] == "gap.forceCancellationRatio"
                     && metric["status"] == "notComparable"
+            })
+    );
+    assert!(
+        artifact["attractorEngineering"]["nonConclusions"]
+            .as_array()
+            .expect("Attractor Engineering nonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion
+                    == "attractorEngineering is bounded tooling evidence, not a global attractor theorem"
             })
     );
 
@@ -5810,6 +5836,95 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
             .iter()
             .any(|check| {
                 check["id"] == "architecture-dynamics-metrics-force-classes-separated"
+                    && check["result"] == "fail"
+            })
+    );
+
+    let mut missing_attractor_json =
+        read_json(&root.join("architecture_dynamics_metrics_report.json"));
+    missing_attractor_json
+        .as_object_mut()
+        .expect("Architecture Dynamics metrics report is object")
+        .remove("attractorEngineering");
+    fs::write(
+        &missing_attractor_report,
+        serde_json::to_string_pretty(&missing_attractor_json).expect("json serializes"),
+    )
+    .expect("missing Attractor Engineering report is written");
+    let output = run_sig0_output(&[
+        "architecture-dynamics-metrics",
+        "--input",
+        missing_attractor_report
+            .to_str()
+            .expect("missing Attractor Engineering path is utf-8"),
+        "--out",
+        missing_attractor_validation
+            .to_str()
+            .expect("missing Attractor Engineering validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "missing Attractor Engineering section should fail validation"
+    );
+    let json = read_json(&missing_attractor_validation);
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"]
+                    == "architecture-dynamics-metrics-attractor-engineering-section-recorded"
+                    && check["result"] == "fail"
+            })
+    );
+
+    let mut invalid_attractor_json =
+        read_json(&root.join("architecture_dynamics_metrics_report.json"));
+    invalid_attractor_json["attractorEngineering"]["supportRiskMass"]["status"] =
+        serde_json::json!("measuredish");
+    invalid_attractor_json["attractorEngineering"]["nonConclusions"] = serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["attractorCandidates"][0]["status"] =
+        serde_json::json!("global");
+    fs::write(
+        &invalid_attractor_report,
+        serde_json::to_string_pretty(&invalid_attractor_json).expect("json serializes"),
+    )
+    .expect("invalid Attractor Engineering report is written");
+    let output = run_sig0_output(&[
+        "architecture-dynamics-metrics",
+        "--input",
+        invalid_attractor_report
+            .to_str()
+            .expect("invalid Attractor Engineering path is utf-8"),
+        "--out",
+        invalid_attractor_validation
+            .to_str()
+            .expect("invalid Attractor Engineering validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid Attractor Engineering status and non-conclusions should fail validation"
+    );
+    let json = read_json(&invalid_attractor_validation);
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "architecture-dynamics-metrics-status-values-supported"
+                    && check["result"] == "fail"
+            })
+    );
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"]
+                    == "architecture-dynamics-metrics-attractor-engineering-section-recorded"
                     && check["result"] == "fail"
             })
     );

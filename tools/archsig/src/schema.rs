@@ -3343,7 +3343,38 @@ pub struct ArchitectureDynamicsMetricsReportV0 {
     pub gap_metrics: Vec<DynamicsMeasuredValueV0>,
     pub field_control_metrics: Vec<DynamicsMeasuredValueV0>,
     pub ai_dynamics_metrics: Vec<DynamicsMeasuredValueV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attractor_engineering: Option<AttractorEngineeringMetricsV0>,
     pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttractorEngineeringMetricsV0 {
+    pub selected_regions: Vec<SelectedSignatureRegionV0>,
+    pub attractor_candidates: Vec<AttractorEngineeringCandidateV0>,
+    pub basin_candidates: Vec<AttractorEngineeringCandidateV0>,
+    pub support_risk_mass: DynamicsMeasuredValueV0,
+    pub design_field_strength: DynamicsMeasuredValueV0,
+    pub seed_attractor_strength: DynamicsMeasuredValueV0,
+    pub basin_boundary_fragility: DynamicsMeasuredValueV0,
+    pub trajectory_return_time: DynamicsMeasuredValueV0,
+    pub observability_debt: DynamicsMeasuredValueV0,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttractorEngineeringCandidateV0 {
+    pub candidate_id: String,
+    pub candidate_kind: String,
+    pub status: String,
+    pub region_refs: Vec<String>,
+    pub metric_refs: Vec<String>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -3376,6 +3407,9 @@ pub struct ArchitectureDynamicsMetricsReportValidationSummary {
     pub gap_metric_count: usize,
     pub field_control_metric_count: usize,
     pub ai_dynamics_metric_count: usize,
+    pub attractor_selected_region_count: usize,
+    pub attractor_candidate_count: usize,
+    pub basin_candidate_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }
