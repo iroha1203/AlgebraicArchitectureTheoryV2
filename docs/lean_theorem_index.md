@@ -1706,6 +1706,9 @@ Issue [#684](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6
 `ZeroNetForceNonZeroExcursion` の小さな finite counterexample を追加し、
 endpoint delta が 0 で start / target が selected safe region に入っていても、
 observed trajectory 全体の safe-region preservation は従わない境界を証明した。
+Issue [#687](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/687) では、
+`AxisWiseSafeNotGlobalSafe` の小さな finite pair-signature counterexample を追加し、
+projection-wise safety から cross-axis relation を含む global safety は従わない境界を証明した。
 Issue [#643](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/643) は
 stochastic / empirical bridge の設計境界であり、新しい Lean API は追加しない。
 finite weighted operation distribution、simulation protocol、PR force / trajectory /
@@ -1791,6 +1794,20 @@ tooling validation / empirical hypothesis として扱い、下表の Lean theor
 | `ZeroNetForceNonZeroExcursion.excursion_signature_mem` | `theorem` | observed trajectory が unsafe excursion signature `2` を含むことを示す。 | `proved` |
 | `ZeroNetForceNonZeroExcursion.not_signatureTrajectoryInSafeRegion` | `theorem` | 小例の observed trajectory 全体は selected safe region 内に留まらないことを示す。 | `proved` |
 | `ZeroNetForceNonZeroExcursion.endpointSafe_and_zeroDelta_but_not_pathSafe` | `theorem` | endpoint delta zero と safe endpoints から path safety を結論しない bounded counterexample を束ねる。 | `proved` |
+| `AxisWiseSafeNotGlobalSafe.AxisValue` | `abbrev` | `Fin 2` を使う小さな finite axis value domain。 | `defined only` |
+| `AxisWiseSafeNotGlobalSafe.ExampleSig` | `abbrev` | 二つの measured axis を持つ finite pair signature domain。 | `defined only` |
+| `AxisWiseSafeNotGlobalSafe.projectionSafe` | `def` | selected per-axis safety predicate。membership in `Fin 2` に相対化された局所 predicate として扱う。 | `defined only` |
+| `AxisWiseSafeNotGlobalSafe.AxisWiseSafe` | `def` | pair signature の各 projection が selected per-axis predicate を満たすこと。 | `defined only` |
+| `AxisWiseSafeNotGlobalSafe.CrossAxisInvariant` | `def` | pair signature の二つの axis が一致するという selected cross-axis relation。 | `defined only` |
+| `AxisWiseSafeNotGlobalSafe.GlobalSafe` | `def` | axis-wise safety と selected cross-axis invariant を同時に要求する bounded global safety predicate。 | `defined only` |
+| `AxisWiseSafeNotGlobalSafe.witness` | `def` | axis-wise safe だが cross-axis invariant を破る finite witness `(0, 1)`。 | `defined only` |
+| `AxisWiseSafeNotGlobalSafe.firstProjection_safe` | `theorem` | witness の第一 projection が selected per-axis predicate を満たすことを示す。 | `proved` |
+| `AxisWiseSafeNotGlobalSafe.secondProjection_safe` | `theorem` | witness の第二 projection が selected per-axis predicate を満たすことを示す。 | `proved` |
+| `AxisWiseSafeNotGlobalSafe.axisWiseSafe_witness` | `theorem` | witness が axis-wise safe であることを示す。 | `proved` |
+| `AxisWiseSafeNotGlobalSafe.not_crossAxisInvariant_witness` | `theorem` | witness が selected cross-axis invariant を破ることを示す。 | `proved` |
+| `AxisWiseSafeNotGlobalSafe.not_globalSafe_witness` | `theorem` | witness が selected global safety predicate を満たさないことを示す。 | `proved` |
+| `AxisWiseSafeNotGlobalSafe.axisWiseSafe_but_not_globalSafe` | `theorem` | axis-wise safe だが global safe ではない bounded counterexample を束ねる。 | `proved` |
+| `AxisWiseSafeNotGlobalSafe.not_axisWiseSafe_implies_globalSafe` | `theorem` | axis-wise safety だけから selected global safety を結論する一般命題が成り立たないことを示す。 | `proved` |
 | `OperationTransitionSemantics` | `structure` | operation ID と primitive `ArchitectureTransition` の bounded realization relation、coverage / non-conclusions を束ねる schema。operation tag だけから preservation / acceptance は結論しない。 | `defined only` |
 | `OperationTransitionSemantics.Realizes` | `def` | selected operation ID が primitive transition を realize すること。 | `defined only` |
 | `OperationTransitionSemantics.RecordsNonConclusions` | `def` | operation semantics package の non-conclusion clause を predicate として取り出す。 | `defined only` |
