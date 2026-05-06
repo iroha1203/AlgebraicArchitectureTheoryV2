@@ -1946,6 +1946,147 @@ def MergeOrderSensitivity [DecidableEq Sig]
   if O.observe ZLeft = O.observe ZRight then 0 else 1
 
 /--
+Selected distance package for reading a two-step operation commutator as
+curvature in a signature domain.
+
+The distance is supplied by the caller. The boundary fields keep empirical PR
+risk, incident risk, review cost, and unmeasured axes outside the Lean metric
+claim.
+-/
+structure OperationCommutatorCurvatureSchema
+    (Sig : Type v) (Curvature : Type x) where
+  distance : Sig -> Sig -> Curvature
+  coverageAssumptions : Prop
+  empiricalPRRiskBoundary : Prop
+  incidentRiskBoundary : Prop
+  reviewCostBoundary : Prop
+  unmeasuredAxesBoundary : Prop
+  nonConclusions : Prop
+
+namespace OperationCommutatorCurvatureSchema
+
+variable {Sig : Type v} {Curvature : Type x}
+
+/-- The schema explicitly records its empirical PR-risk boundary. -/
+def RecordsEmpiricalPRRiskBoundary
+    (schema : OperationCommutatorCurvatureSchema Sig Curvature) : Prop :=
+  schema.empiricalPRRiskBoundary
+
+/-- The schema explicitly records its incident-risk boundary. -/
+def RecordsIncidentRiskBoundary
+    (schema : OperationCommutatorCurvatureSchema Sig Curvature) : Prop :=
+  schema.incidentRiskBoundary
+
+/-- The schema explicitly records its review-cost boundary. -/
+def RecordsReviewCostBoundary
+    (schema : OperationCommutatorCurvatureSchema Sig Curvature) : Prop :=
+  schema.reviewCostBoundary
+
+/-- The schema explicitly records that unmeasured axes remain outside the metric. -/
+def RecordsUnmeasuredAxesBoundary
+    (schema : OperationCommutatorCurvatureSchema Sig Curvature) : Prop :=
+  schema.unmeasuredAxesBoundary
+
+/-- The schema explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions
+    (schema : OperationCommutatorCurvatureSchema Sig Curvature) : Prop :=
+  schema.nonConclusions
+
+end OperationCommutatorCurvatureSchema
+
+/--
+Distance-valued commutator curvature for two selected two-step orders.
+
+This reads operation order sensitivity as distance between selected final
+observations. It is bounded by the supplied observation schema and distance
+function; no empirical PR, incident, review-cost, or unmeasured-axis conclusion
+is derived from the value.
+-/
+def OperationCommutatorCurvature
+    (distance : Sig -> Sig -> Curvature)
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (_leftFirst : ArchitectureTransition State X YLeft)
+    (_leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (_rightFirst : ArchitectureTransition State X YRight)
+    (_rightSecond : ArchitectureTransition State YRight ZRight) : Curvature :=
+  distance (O.observe ZLeft) (O.observe ZRight)
+
+/--
+Distance-valued merge-order sensitivity.
+
+This is the same bounded quantity as `OperationCommutatorCurvature`, named from
+the merge-order perspective for API users.
+-/
+def DistanceMergeOrderSensitivity
+    (distance : Sig -> Sig -> Curvature)
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (leftFirst : ArchitectureTransition State X YLeft)
+    (leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (rightFirst : ArchitectureTransition State X YRight)
+    (rightSecond : ArchitectureTransition State YRight ZRight) : Curvature :=
+  OperationCommutatorCurvature distance O
+    leftFirst leftSecond rightFirst rightSecond
+
+/-- Read curvature through a boundary-recording distance schema. -/
+def OperationCommutatorCurvatureOfSchema
+    (schema : OperationCommutatorCurvatureSchema Sig Curvature)
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (leftFirst : ArchitectureTransition State X YLeft)
+    (leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (rightFirst : ArchitectureTransition State X YRight)
+    (rightSecond : ArchitectureTransition State YRight ZRight) : Curvature :=
+  OperationCommutatorCurvature schema.distance O
+    leftFirst leftSecond rightFirst rightSecond
+
+/-- Equality distance recovers the old bounded 0/1 metric. -/
+def EqualityDistance [DecidableEq Sig] (source target : Sig) : Nat :=
+  if source = target then 0 else 1
+
+/--
+The distance-valued API is compatible with the existing 0/1
+`MergeOrderSensitivity` when the selected distance is equality distance.
+-/
+theorem operationCommutatorCurvature_eq_mergeOrderSensitivity_of_equalityDistance
+    [DecidableEq Sig]
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (leftFirst : ArchitectureTransition State X YLeft)
+    (leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (rightFirst : ArchitectureTransition State X YRight)
+    (rightSecond : ArchitectureTransition State YRight ZRight) :
+    OperationCommutatorCurvature (EqualityDistance (Sig := Sig)) O
+        leftFirst leftSecond rightFirst rightSecond =
+      MergeOrderSensitivity O
+        leftFirst leftSecond rightFirst rightSecond := by
+  rfl
+
+/--
+Observational commutativity forces zero distance-valued sensitivity when the
+selected distance is zero on identical signatures.
+-/
+theorem distanceMergeOrderSensitivity_eq_zero_of_twoStepObservationCommutative
+    [Zero Curvature]
+    (distance : Sig -> Sig -> Curvature)
+    (hSelfZero : ∀ sig : Sig, distance sig sig = 0)
+    (O : SignatureObservation State Sig)
+    {X YLeft ZLeft YRight ZRight : State}
+    (leftFirst : ArchitectureTransition State X YLeft)
+    (leftSecond : ArchitectureTransition State YLeft ZLeft)
+    (rightFirst : ArchitectureTransition State X YRight)
+    (rightSecond : ArchitectureTransition State YRight ZRight)
+    (hCommutes :
+      TwoStepObservationCommutative O leftFirst leftSecond rightFirst rightSecond) :
+    DistanceMergeOrderSensitivity distance O
+        leftFirst leftSecond rightFirst rightSecond = 0 := by
+  dsimp [DistanceMergeOrderSensitivity, OperationCommutatorCurvature]
+  rw [show O.observe ZLeft = O.observe ZRight by
+    simpa [TwoStepObservationCommutative] using hCommutes]
+  exact hSelfZero (O.observe ZRight)
+
+/--
 If two selected two-step transition orders are observationally commutative, the
 bounded merge-order sensitivity metric is zero.
 -/
@@ -2049,6 +2190,55 @@ theorem mergeOrderSensitivity_eq_one :
     MergeOrderSensitivity
         observation leftFirst leftSecond rightFirst rightSecond = 1 := by
   simp [MergeOrderSensitivity, observation]
+
+/-- Selected equality distance for the counterexample final observations. -/
+def selectedDistance : ExampleSig -> ExampleSig -> Nat :=
+  EqualityDistance
+
+/--
+The counterexample records the non-conclusion boundaries for the selected
+distance-valued curvature reading.
+-/
+def curvatureSchema :
+    OperationCommutatorCurvatureSchema ExampleSig Nat where
+  distance := selectedDistance
+  coverageAssumptions := True
+  empiricalPRRiskBoundary := True
+  incidentRiskBoundary := True
+  reviewCostBoundary := True
+  unmeasuredAxesBoundary := True
+  nonConclusions := True
+
+/-- The same counterexample has distance-valued commutator curvature `1`. -/
+theorem operationCommutatorCurvature_eq_one :
+    OperationCommutatorCurvature selectedDistance
+        observation leftFirst leftSecond rightFirst rightSecond = 1 := by
+  simp [OperationCommutatorCurvature, selectedDistance, EqualityDistance,
+    observation]
+
+/-- The selected distance-valued order sensitivity is nonzero on the example. -/
+theorem operationCommutatorCurvature_ne_zero :
+    OperationCommutatorCurvature selectedDistance
+        observation leftFirst leftSecond rightFirst rightSecond ≠ 0 := by
+  simp [OperationCommutatorCurvature, selectedDistance, EqualityDistance,
+    observation]
+
+/--
+The counterexample curvature schema records the empirical and measurement
+boundaries instead of turning the curvature value into those conclusions.
+-/
+theorem curvatureSchema_records_boundaries :
+    curvatureSchema.RecordsEmpiricalPRRiskBoundary ∧
+      curvatureSchema.RecordsIncidentRiskBoundary ∧
+      curvatureSchema.RecordsReviewCostBoundary ∧
+      curvatureSchema.RecordsUnmeasuredAxesBoundary ∧
+      curvatureSchema.RecordsNonConclusions := by
+  simp [OperationCommutatorCurvatureSchema.RecordsEmpiricalPRRiskBoundary,
+    OperationCommutatorCurvatureSchema.RecordsIncidentRiskBoundary,
+    OperationCommutatorCurvatureSchema.RecordsReviewCostBoundary,
+    OperationCommutatorCurvatureSchema.RecordsUnmeasuredAxesBoundary,
+    OperationCommutatorCurvatureSchema.RecordsNonConclusions,
+    curvatureSchema]
 
 end MergeOrderCounterexample
 
