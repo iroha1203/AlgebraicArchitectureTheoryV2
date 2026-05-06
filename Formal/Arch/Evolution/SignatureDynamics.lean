@@ -584,6 +584,87 @@ theorem endpointSafe_and_zeroDelta_but_not_pathSafe :
 
 end ZeroNetForceNonZeroExcursion
 
+/-
+A tiny finite-signature witness for the D7 non-conclusion boundary: each
+projection can satisfy its selected axis-wise predicate while a cross-axis
+relation is still violated.
+-/
+namespace AxisWiseSafeNotGlobalSafe
+
+abbrev AxisValue := Fin 2
+abbrev ExampleSig := AxisValue × AxisValue
+
+def firstProjection (sig : ExampleSig) : AxisValue :=
+  sig.1
+
+def secondProjection (sig : ExampleSig) : AxisValue :=
+  sig.2
+
+/--
+The selected per-axis predicate is intentionally local to one projection.
+Membership in `Fin 2` is the whole bounded per-axis safety condition here.
+-/
+def projectionSafe (_axis : AxisValue) : Prop :=
+  True
+
+def AxisWiseSafe (sig : ExampleSig) : Prop :=
+  projectionSafe (firstProjection sig) ∧
+    projectionSafe (secondProjection sig)
+
+def CrossAxisInvariant (sig : ExampleSig) : Prop :=
+  firstProjection sig = secondProjection sig
+
+def GlobalSafe (sig : ExampleSig) : Prop :=
+  AxisWiseSafe sig ∧ CrossAxisInvariant sig
+
+def witness : ExampleSig :=
+  (0, 1)
+
+/-- The first projection of the witness satisfies the selected axis predicate. -/
+theorem firstProjection_safe :
+    projectionSafe (firstProjection witness) := by
+  trivial
+
+/-- The second projection of the witness satisfies the selected axis predicate. -/
+theorem secondProjection_safe :
+    projectionSafe (secondProjection witness) := by
+  trivial
+
+/-- The witness is safe when checked axis by axis. -/
+theorem axisWiseSafe_witness :
+    AxisWiseSafe witness := by
+  exact ⟨firstProjection_safe, secondProjection_safe⟩
+
+/-- The cross-axis equality invariant is violated by the same witness. -/
+theorem not_crossAxisInvariant_witness :
+    ¬ CrossAxisInvariant witness := by
+  simp [CrossAxisInvariant, firstProjection, secondProjection, witness]
+
+/-- The witness is therefore not globally safe under the selected relation. -/
+theorem not_globalSafe_witness :
+    ¬ GlobalSafe witness := by
+  intro hGlobal
+  exact not_crossAxisInvariant_witness hGlobal.2
+
+/--
+Bundled counterexample: projection-wise safety does not imply global safety
+when global safety includes a cross-axis relation.
+-/
+theorem axisWiseSafe_but_not_globalSafe :
+    AxisWiseSafe witness ∧ ¬ GlobalSafe witness := by
+  exact ⟨axisWiseSafe_witness, not_globalSafe_witness⟩
+
+/--
+Non-conclusion boundary: it is not valid to conclude the selected global
+cross-axis safety predicate from axis-wise safety alone.
+-/
+theorem not_axisWiseSafe_implies_globalSafe :
+    ¬ ∀ sig : ExampleSig, AxisWiseSafe sig -> GlobalSafe sig := by
+  intro h
+  exact not_globalSafe_witness (h witness axisWiseSafe_witness)
+
+end AxisWiseSafeNotGlobalSafe
+
 /--
 Selected damping / control schema for accepted architecture transitions.
 
