@@ -3361,6 +3361,7 @@ pub struct AttractorEngineeringMetricsV0 {
     pub selected_regions: Vec<SelectedSignatureRegionV0>,
     pub attractor_candidates: Vec<AttractorEngineeringCandidateV0>,
     pub basin_candidates: Vec<AttractorEngineeringCandidateV0>,
+    pub basin_simulations: Vec<BasinSimulationV0>,
     pub support_risk_entries: Vec<SupportRiskMassEntryV0>,
     pub design_field_signals: Vec<AttractorEngineeringSignalV0>,
     pub seed_attractor_signals: Vec<AttractorEngineeringSignalV0>,
@@ -3373,6 +3374,107 @@ pub struct AttractorEngineeringMetricsV0 {
     pub trajectory_return_time: DynamicsMeasuredValueV0,
     pub observability_debt: DynamicsMeasuredValueV0,
     pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinSimulationV0 {
+    pub simulation_id: String,
+    pub bounded_horizon: usize,
+    pub selected_initial_states: Vec<BasinSimulationInitialStateV0>,
+    pub operation_scripts: Vec<BasinSimulationScriptV0>,
+    pub basin_classifications: Vec<BasinSimulationClassificationV0>,
+    pub perturbation_evidence: Vec<BasinPerturbationEvidenceV0>,
+    pub return_evidence: Vec<TrajectoryReturnEvidenceV0>,
+    pub observability_axes: Vec<ObservabilityAxisEvidenceV0>,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinSimulationInitialStateV0 {
+    pub state_id: String,
+    pub state_kind: String,
+    pub state_weight: DynamicsMeasuredValueV0,
+    pub region_refs: Vec<String>,
+    pub evidence_status: String,
+    pub missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinSimulationScriptV0 {
+    pub script_id: String,
+    pub operation_ids: Vec<String>,
+    pub bounded_horizon: usize,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinSimulationClassificationV0 {
+    pub state_id: String,
+    pub script_id: String,
+    pub classification: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_region_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps_to_target: Option<usize>,
+    pub status: String,
+    pub missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinPerturbationEvidenceV0 {
+    pub evidence_id: String,
+    pub source_state_id: String,
+    pub perturbation_kind: String,
+    pub perturbation_steps: usize,
+    pub baseline_classification: String,
+    pub perturbed_classification: String,
+    pub status: String,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrajectoryReturnEvidenceV0 {
+    pub evidence_id: String,
+    pub state_id: String,
+    pub excursion_region_ref: String,
+    pub return_region_ref: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps_to_return: Option<usize>,
+    pub status: String,
+    pub missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObservabilityAxisEvidenceV0 {
+    pub axis_id: String,
+    pub required_weight: DynamicsMeasuredValueV0,
+    pub evidence_status: String,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 

@@ -347,17 +347,19 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-v0",
                     "docs/design/architecture_signature_dynamics.md#quantitative-metric-derivation",
                 ],
-                vec!["#671"],
+                vec!["#671", "#718"],
                 compatibility_boundary(
-                    "Map repository, selected window, source refs, trajectory / force / gap / field-control / AI dynamics / attractor-engineering metric groups, field shaping signals, readiness axes, measurement boundary, and non-conclusions separately.",
+                    "Map repository, selected window, source refs, trajectory / force / gap / field-control / AI dynamics / attractor-engineering metric groups, basin simulations, field shaping signals, readiness axes, measurement boundary, and non-conclusions separately.",
                     vec![],
                     vec![
                         "New dynamics metrics must declare MeasurementStatus, source refs, measurement boundary, assumptions, and non-conclusions.",
+                        "New basin simulations must declare selected initial states, finite operation scripts, selected regions, bounded horizon, classification status, missing evidence, and non-conclusions.",
                         "New field shaping signals must declare selected signal, source refs, confidence, measurement boundary, and non-conclusions.",
                         "VibeCodingReadiness must remain a multi-axis readiness artifact, not a single numeric score.",
                     ],
                     vec![
                         "Metrics report remains a multi-axis diagnostic artifact and does not promote tooling evidence to Lean theorem claims.",
+                        "BasinBoundaryFragility and TrajectoryReturnTime remain bounded simulation evidence, not global basin stability or recurrence theorems.",
                         "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes.",
                         "FieldShapingDelta uses notComparable when before/after measurement boundaries are not comparable.",
                     ],

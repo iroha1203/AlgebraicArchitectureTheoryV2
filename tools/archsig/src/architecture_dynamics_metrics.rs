@@ -10,11 +10,13 @@ use crate::{
     ArchitectureDynamicsMetricsReportValidationInput,
     ArchitectureDynamicsMetricsReportValidationReportV0,
     ArchitectureDynamicsMetricsReportValidationSummary, AttractorEngineeringCandidateV0,
-    AttractorEngineeringMetricsV0, AttractorEngineeringSignalV0, DynamicsAggregationWindowV0,
-    DynamicsArtifactRefV0, DynamicsMeasuredValueV0, DynamicsMissingEvidenceV0, EXTRACTOR_VERSION,
-    MeasurementBoundaryV0, OPERATION_PROPOSAL_LOG_SCHEMA_VERSION, PR_FORCE_REPORT_SCHEMA_VERSION,
-    RepositoryRef, SelectedSignatureRegionV0, SupportRiskMassEntryV0, ValidationCheck,
-    ValidationExample,
+    AttractorEngineeringMetricsV0, AttractorEngineeringSignalV0, BasinPerturbationEvidenceV0,
+    BasinSimulationClassificationV0, BasinSimulationInitialStateV0, BasinSimulationScriptV0,
+    BasinSimulationV0, DynamicsAggregationWindowV0, DynamicsArtifactRefV0, DynamicsMeasuredValueV0,
+    DynamicsMissingEvidenceV0, EXTRACTOR_VERSION, MeasurementBoundaryV0,
+    OPERATION_PROPOSAL_LOG_SCHEMA_VERSION, ObservabilityAxisEvidenceV0,
+    PR_FORCE_REPORT_SCHEMA_VERSION, RepositoryRef, SelectedSignatureRegionV0,
+    SupportRiskMassEntryV0, TrajectoryReturnEvidenceV0, ValidationCheck, ValidationExample,
 };
 
 const ALLOWED_STATUSES: [&str; 9] = [
@@ -54,8 +56,10 @@ const REQUIRED_ATTRACTOR_NON_CONCLUSIONS: [&str; 9] = [
     "operation proposal log refs do not conclude AI proposal distribution completeness",
 ];
 
-const ALLOWED_ATTRACTOR_CANDIDATE_STATUSES: [&str; 5] = [
+const ALLOWED_ATTRACTOR_CANDIDATE_STATUSES: [&str; 7] = [
     "candidate",
+    "nonCandidate",
+    "missingEvidence",
     "unmeasured",
     "unavailable",
     "notComparable",
@@ -569,6 +573,11 @@ fn attractor_engineering_section(
         source_refs.clone(),
         section_boundary.clone(),
     );
+    let basin_simulations = vec![bounded_basin_simulation(
+        window.clone(),
+        source_refs.clone(),
+        section_boundary.clone(),
+    )];
     AttractorEngineeringMetricsV0 {
         selected_regions: vec![SelectedSignatureRegionV0 {
             region_id: "fixture:selected-safe-region".to_string(),
@@ -620,7 +629,7 @@ fn attractor_engineering_section(
                 section_boundary.clone(),
                 &[
                     "candidate is scoped to the selected fixture window",
-                    "basin membership is finite observed tooling evidence",
+                    "basin membership is derived from fixture:bounded-basin-simulation",
                 ],
                 &[
                     "bounded basin candidate is not a global basin theorem",
@@ -628,9 +637,28 @@ fn attractor_engineering_section(
                 ],
             ),
             attractor_candidate(
+                "fixture:bounded-non-candidate-basin-entry",
+                "basin-candidate",
+                "nonCandidate",
+                &["fixture:selected-safe-region"],
+                &[
+                    "attractorEngineering.basinBoundaryFragility",
+                    "attractorEngineering.trajectoryReturnTime",
+                ],
+                section_boundary.clone(),
+                &[
+                    "selected initial state reaches a bad region or fails to return within the bounded horizon",
+                    "non-candidate classification is local to fixture:bounded-basin-simulation",
+                ],
+                &[
+                    "non-candidate basin entry is not a global non-reachability theorem",
+                    "bounded simulation failure does not prove impossible repair",
+                ],
+            ),
+            attractor_candidate(
                 "fixture:missing-evidence-basin-candidate",
                 "basin-candidate",
-                "unmeasured",
+                "missingEvidence",
                 &["fixture:selected-safe-region"],
                 &[
                     "attractorEngineering.basinBoundaryFragility",
@@ -647,6 +675,7 @@ fn attractor_engineering_section(
                 ],
             ),
         ],
+        basin_simulations: basin_simulations.clone(),
         support_risk_entries,
         design_field_signals: vec![
             attractor_signal(
@@ -862,54 +891,485 @@ fn attractor_engineering_section(
         ],
         basin_boundary_fragility: metric(
             "attractorEngineering.basinBoundaryFragility",
-            None,
-            "unmeasured",
-            None,
-            Vec::new(),
-            gap_boundary(
-                "bounded perturbation simulation is not implemented in the MVP fixture",
-                "unmeasured",
-            ),
-            &["BasinBoundaryFragility needs bounded perturbation simulation"],
+            Some(calculate_basin_boundary_fragility(&basin_simulations)),
+            "derived",
+            Some("bounded-fixture-simulation"),
+            source_refs.clone(),
+            section_boundary.clone(),
             &[
-                "unmeasured BasinBoundaryFragility is not stable basin evidence",
+                "BasinBoundaryFragility is derived from selected 1-step / k-step perturbation evidence",
+            ],
+            &[
+                "derived BasinBoundaryFragility is selected bounded evidence only",
                 BASIN_BOUNDARY_FRAGILITY_NON_CONCLUSION,
             ],
         ),
         trajectory_return_time: metric(
             "attractorEngineering.trajectoryReturnTime",
-            None,
-            "unavailable",
-            None,
-            Vec::new(),
-            gap_boundary(
-                "selected excursion and return observation are not retained in this fixture",
-                "unavailable",
-            ),
-            &["TrajectoryReturnTime needs a selected excursion and return observation"],
+            Some(calculate_trajectory_return_time(&basin_simulations)),
+            "derived",
+            Some("bounded-fixture-simulation"),
+            source_refs.clone(),
+            section_boundary.clone(),
             &[
-                "unavailable TrajectoryReturnTime is not immediate-return evidence",
+                "TrajectoryReturnTime is derived from selected excursion and return evidence within the bounded horizon",
+            ],
+            &[
+                "derived TrajectoryReturnTime keeps missing and non-returning evidence separate",
                 TRAJECTORY_RETURN_TIME_NON_CONCLUSION,
             ],
         ),
         observability_debt: metric(
             "attractorEngineering.observabilityDebt",
-            None,
-            "notComparable",
-            None,
-            Vec::new(),
-            gap_boundary(
-                "observability coverage denominator is not comparable in this fixture",
-                "notComparable",
-            ),
-            &["ObservabilityDebt needs comparable observed and latent support axes"],
+            Some(calculate_observability_debt(&basin_simulations)),
+            "derived",
+            Some("bounded-fixture-simulation"),
+            source_refs.clone(),
+            section_boundary.clone(),
+            &["ObservabilityDebt is derived from required axis evidence in the bounded fixture"],
             &[
-                "notComparable ObservabilityDebt is not zero observability debt",
+                "derived ObservabilityDebt preserves unmeasured, private, and unavailable axis mass",
                 OBSERVABILITY_DEBT_NON_CONCLUSION,
             ],
         ),
         measurement_boundary: section_boundary,
         non_conclusions: strings(&REQUIRED_ATTRACTOR_NON_CONCLUSIONS),
+    }
+}
+
+fn bounded_basin_simulation(
+    window: DynamicsAggregationWindowV0,
+    source_refs: Vec<DynamicsArtifactRefV0>,
+    section_boundary: MeasurementBoundaryV0,
+) -> BasinSimulationV0 {
+    let simulation_boundary = boundary(
+        "attractor-engineering-basin-simulation",
+        &[
+            "selectedInitialStates",
+            "finiteOperationScripts",
+            "selectedRegions",
+            "boundedHorizon",
+            "BasinBoundaryFragility",
+            "TrajectoryReturnTime",
+            "ObservabilityDebt",
+        ],
+        source_refs.clone(),
+        Some(window),
+        &[
+            "simulation is evaluated over selected fixture initial states and scripts only",
+            "bounded horizon is finite and does not classify the global state space",
+        ],
+        &[
+            "global basin stability",
+            "global recurrence theorem",
+            "complete operation distribution",
+        ],
+    );
+
+    BasinSimulationV0 {
+        simulation_id: "fixture:bounded-basin-simulation".to_string(),
+        bounded_horizon: 4,
+        selected_initial_states: vec![
+            basin_initial_state(
+                "fixture:state:clean-boundary",
+                "selected-initial-state",
+                0.5,
+                "measured",
+                &["fixture:selected-safe-region"],
+                Vec::new(),
+                section_boundary.clone(),
+            ),
+            basin_initial_state(
+                "fixture:state:runtime-bypass",
+                "selected-initial-state",
+                0.3,
+                "measured",
+                &["fixture:selected-safe-region"],
+                Vec::new(),
+                section_boundary.clone(),
+            ),
+            basin_initial_state(
+                "fixture:state:private-axis",
+                "selected-initial-state",
+                0.2,
+                "private",
+                &["fixture:selected-safe-region"],
+                vec![missing_evidence(
+                    "selected-initial-state-axis",
+                    "private axis prevents bounded basin classification for this state",
+                    "private",
+                )],
+                section_boundary.clone(),
+            ),
+        ],
+        operation_scripts: vec![
+            basin_script(
+                "fixture:script:repair-to-safe",
+                &[
+                    "fixture:preserve-boundary-law",
+                    "fixture:measured-policy-cleanup",
+                ],
+                2,
+                source_refs.clone(),
+                section_boundary.clone(),
+            ),
+            basin_script(
+                "fixture:script:runtime-bypass",
+                &["fixture:unsafe-runtime-bypass"],
+                1,
+                source_refs.clone(),
+                section_boundary.clone(),
+            ),
+        ],
+        basin_classifications: vec![
+            basin_classification(
+                "fixture:state:clean-boundary",
+                "fixture:script:repair-to-safe",
+                "candidate",
+                Some("fixture:selected-safe-region"),
+                Some(2),
+                "measured",
+                Vec::new(),
+                &[
+                    "selected script reaches the selected safe region within the bounded horizon",
+                ],
+                &[
+                    "candidate classification is bounded simulation evidence only",
+                    "candidate classification is not a global basin theorem",
+                ],
+            ),
+            basin_classification(
+                "fixture:state:runtime-bypass",
+                "fixture:script:runtime-bypass",
+                "nonCandidate",
+                None,
+                None,
+                "measured",
+                Vec::new(),
+                &[
+                    "selected script enters the bad runtime bypass region and has no retained return within the bounded horizon",
+                ],
+                &[
+                    "non-candidate classification is not a global non-reachability theorem",
+                    "bounded non-return does not prove impossible repair",
+                ],
+            ),
+            basin_classification(
+                "fixture:state:private-axis",
+                "fixture:script:repair-to-safe",
+                "missingEvidence",
+                None,
+                None,
+                "private",
+                vec![missing_evidence(
+                    "selected-initial-state-axis",
+                    "private axis prevents classifying this selected state as candidate or non-candidate",
+                    "private",
+                )],
+                &["private axis evidence is retained as missing evidence"],
+                &[
+                    "missing-evidence classification is not empty basin evidence",
+                    "private required axes are not measured zero",
+                ],
+            ),
+        ],
+        perturbation_evidence: vec![
+            basin_perturbation(
+                "fixture:perturbation:stable-clean-boundary",
+                "fixture:state:clean-boundary",
+                "one-step-preserving-operation",
+                1,
+                "candidate",
+                "candidate",
+                "measured",
+                source_refs.clone(),
+                section_boundary.clone(),
+            ),
+            basin_perturbation(
+                "fixture:perturbation:runtime-bypass-flip",
+                "fixture:state:runtime-bypass",
+                "one-step-runtime-bypass",
+                1,
+                "candidate",
+                "nonCandidate",
+                "measured",
+                source_refs.clone(),
+                section_boundary.clone(),
+            ),
+            basin_perturbation(
+                "fixture:perturbation:private-axis-missing",
+                "fixture:state:private-axis",
+                "private-axis-perturbation",
+                1,
+                "missingEvidence",
+                "missingEvidence",
+                "private",
+                Vec::new(),
+                gap_boundary(
+                    "private perturbation axis is unavailable for bounded fragility classification",
+                    "private",
+                ),
+            ),
+        ],
+        return_evidence: vec![
+            trajectory_return_evidence(
+                "fixture:return:clean-boundary",
+                "fixture:state:clean-boundary",
+                "fixture:selected-bad-runtime-region",
+                "fixture:selected-safe-region",
+                Some(2),
+                "measured",
+                Vec::new(),
+                source_refs.clone(),
+                section_boundary.clone(),
+            ),
+            trajectory_return_evidence(
+                "fixture:return:runtime-bypass",
+                "fixture:state:runtime-bypass",
+                "fixture:selected-bad-runtime-region",
+                "fixture:selected-safe-region",
+                None,
+                "unavailable",
+                vec![missing_evidence(
+                    "bounded-return-observation",
+                    "no return observation is retained before the bounded horizon",
+                    "unavailable",
+                )],
+                source_refs.clone(),
+                section_boundary.clone(),
+            ),
+            trajectory_return_evidence(
+                "fixture:return:private-axis",
+                "fixture:state:private-axis",
+                "fixture:selected-bad-runtime-region",
+                "fixture:selected-safe-region",
+                None,
+                "private",
+                vec![missing_evidence(
+                    "bounded-return-observation",
+                    "private axis hides the selected return observation",
+                    "private",
+                )],
+                Vec::new(),
+                gap_boundary(
+                    "private return observation is not retained in this fixture",
+                    "private",
+                ),
+            ),
+        ],
+        observability_axes: vec![
+            observability_axis(
+                "boundaryViolation",
+                0.4,
+                "measured",
+                source_refs.clone(),
+                section_boundary.clone(),
+            ),
+            observability_axis(
+                "runtimePropagation",
+                0.3,
+                "measured",
+                source_refs.clone(),
+                section_boundary.clone(),
+            ),
+            observability_axis(
+                "latentFrameworkConvention",
+                0.15,
+                "unmeasured",
+                Vec::new(),
+                section_boundary.clone(),
+            ),
+            observability_axis(
+                "privateReviewContext",
+                0.1,
+                "private",
+                Vec::new(),
+                section_boundary.clone(),
+            ),
+            observability_axis(
+                "unavailableRuntimeTrace",
+                0.05,
+                "unavailable",
+                Vec::new(),
+                section_boundary.clone(),
+            ),
+        ],
+        source_refs,
+        measurement_boundary: simulation_boundary,
+        assumptions: vec![
+            "selected initial states, finite scripts, selected regions, and bounded horizon are fixture inputs".to_string(),
+            "simulation output is bounded tooling evidence and may be incomplete".to_string(),
+        ],
+        non_conclusions: vec![
+            "bounded basin simulation does not prove global basin stability".to_string(),
+            "bounded return evidence does not prove global recurrence".to_string(),
+            "missing, private, and unavailable simulation axes are not measured zero".to_string(),
+        ],
+    }
+}
+
+fn basin_initial_state(
+    state_id: &str,
+    state_kind: &str,
+    state_weight: f64,
+    evidence_status: &str,
+    region_refs: &[&str],
+    missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    measurement_boundary: MeasurementBoundaryV0,
+) -> BasinSimulationInitialStateV0 {
+    BasinSimulationInitialStateV0 {
+        state_id: state_id.to_string(),
+        state_kind: state_kind.to_string(),
+        state_weight: metric(
+            &format!("{state_id}.stateWeight"),
+            Some(json!(state_weight)),
+            "measured",
+            Some("bounded-fixture-state-weight"),
+            Vec::new(),
+            measurement_boundary,
+            &["state weight is normalized over selected fixture initial states"],
+            &["selected initial-state weight is not global state-space mass"],
+        ),
+        region_refs: strings(region_refs),
+        evidence_status: evidence_status.to_string(),
+        missing_evidence,
+    }
+}
+
+fn basin_script(
+    script_id: &str,
+    operation_ids: &[&str],
+    bounded_horizon: usize,
+    source_refs: Vec<DynamicsArtifactRefV0>,
+    measurement_boundary: MeasurementBoundaryV0,
+) -> BasinSimulationScriptV0 {
+    BasinSimulationScriptV0 {
+        script_id: script_id.to_string(),
+        operation_ids: strings(operation_ids),
+        bounded_horizon,
+        source_refs,
+        measurement_boundary,
+        assumptions: vec![
+            "script is finite and evaluated only within the selected bounded horizon".to_string(),
+        ],
+        non_conclusions: vec![
+            "finite script evidence does not describe complete future operation support"
+                .to_string(),
+        ],
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn basin_classification(
+    state_id: &str,
+    script_id: &str,
+    classification: &str,
+    target_region_ref: Option<&str>,
+    steps_to_target: Option<usize>,
+    status: &str,
+    missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    assumptions: &[&str],
+    non_conclusions: &[&str],
+) -> BasinSimulationClassificationV0 {
+    BasinSimulationClassificationV0 {
+        state_id: state_id.to_string(),
+        script_id: script_id.to_string(),
+        classification: classification.to_string(),
+        target_region_ref: target_region_ref.map(str::to_string),
+        steps_to_target,
+        status: status.to_string(),
+        missing_evidence,
+        assumptions: strings(assumptions),
+        non_conclusions: strings(non_conclusions),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn basin_perturbation(
+    evidence_id: &str,
+    source_state_id: &str,
+    perturbation_kind: &str,
+    perturbation_steps: usize,
+    baseline_classification: &str,
+    perturbed_classification: &str,
+    status: &str,
+    source_refs: Vec<DynamicsArtifactRefV0>,
+    measurement_boundary: MeasurementBoundaryV0,
+) -> BasinPerturbationEvidenceV0 {
+    BasinPerturbationEvidenceV0 {
+        evidence_id: evidence_id.to_string(),
+        source_state_id: source_state_id.to_string(),
+        perturbation_kind: perturbation_kind.to_string(),
+        perturbation_steps,
+        baseline_classification: baseline_classification.to_string(),
+        perturbed_classification: perturbed_classification.to_string(),
+        status: status.to_string(),
+        source_refs,
+        measurement_boundary,
+        assumptions: vec![
+            "perturbation evidence is evaluated against the selected bounded basin classification"
+                .to_string(),
+        ],
+        non_conclusions: vec![BASIN_BOUNDARY_FRAGILITY_NON_CONCLUSION.to_string()],
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn trajectory_return_evidence(
+    evidence_id: &str,
+    state_id: &str,
+    excursion_region_ref: &str,
+    return_region_ref: &str,
+    steps_to_return: Option<usize>,
+    status: &str,
+    missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    source_refs: Vec<DynamicsArtifactRefV0>,
+    measurement_boundary: MeasurementBoundaryV0,
+) -> TrajectoryReturnEvidenceV0 {
+    TrajectoryReturnEvidenceV0 {
+        evidence_id: evidence_id.to_string(),
+        state_id: state_id.to_string(),
+        excursion_region_ref: excursion_region_ref.to_string(),
+        return_region_ref: return_region_ref.to_string(),
+        steps_to_return,
+        status: status.to_string(),
+        missing_evidence,
+        source_refs,
+        measurement_boundary,
+        assumptions: vec![
+            "return evidence is bounded by the selected trajectory window and horizon".to_string(),
+        ],
+        non_conclusions: vec![TRAJECTORY_RETURN_TIME_NON_CONCLUSION.to_string()],
+    }
+}
+
+fn observability_axis(
+    axis_id: &str,
+    required_weight: f64,
+    evidence_status: &str,
+    source_refs: Vec<DynamicsArtifactRefV0>,
+    measurement_boundary: MeasurementBoundaryV0,
+) -> ObservabilityAxisEvidenceV0 {
+    ObservabilityAxisEvidenceV0 {
+        axis_id: axis_id.to_string(),
+        required_weight: metric(
+            &format!("attractorEngineering.observabilityDebt.{axis_id}.requiredWeight"),
+            Some(json!(required_weight)),
+            "measured",
+            Some("bounded-fixture-required-axis-weight"),
+            Vec::new(),
+            measurement_boundary.clone(),
+            &["required axis weight is normalized over fixture observability requirements"],
+            &[OBSERVABILITY_DEBT_NON_CONCLUSION],
+        ),
+        evidence_status: evidence_status.to_string(),
+        source_refs,
+        measurement_boundary,
+        assumptions: vec![
+            "axis status records whether a required basin simulation axis is observable"
+                .to_string(),
+        ],
+        non_conclusions: vec![OBSERVABILITY_DEBT_NON_CONCLUSION.to_string()],
     }
 }
 
@@ -1077,6 +1537,147 @@ fn calculate_support_risk_mass(entries: &[SupportRiskMassEntryV0]) -> serde_json
         "preservationPreconditionStatusWeight": rounded_map(preservation_precondition_status_weight),
         "theoremPreconditionRefs": theorem_precondition_refs.into_iter().collect::<Vec<_>>(),
         "calculationBoundary": "unknown, unavailable, private, notComparable, and outOfScope support is retained outside measuredRiskMass"
+    })
+}
+
+fn calculate_basin_boundary_fragility(simulations: &[BasinSimulationV0]) -> serde_json::Value {
+    let mut observed_perturbation_count = 0usize;
+    let mut classification_flip_count = 0usize;
+    let mut missing_perturbation_evidence_count = 0usize;
+    let mut max_perturbation_steps = 0usize;
+    let mut simulation_refs = Vec::new();
+
+    for simulation in simulations {
+        simulation_refs.push(simulation.simulation_id.clone());
+        for evidence in &simulation.perturbation_evidence {
+            max_perturbation_steps = max_perturbation_steps.max(evidence.perturbation_steps);
+            if EVIDENCE_REQUIRED_STATUSES.contains(&evidence.status.as_str()) {
+                observed_perturbation_count += 1;
+                if evidence.baseline_classification != evidence.perturbed_classification {
+                    classification_flip_count += 1;
+                }
+            } else {
+                missing_perturbation_evidence_count += 1;
+            }
+        }
+    }
+
+    let fragility_ratio = if observed_perturbation_count == 0 {
+        0.0
+    } else {
+        classification_flip_count as f64 / observed_perturbation_count as f64
+    };
+
+    json!({
+        "calculationKind": "bounded-basin-boundary-fragility",
+        "simulationRefs": simulation_refs,
+        "maxPerturbationSteps": max_perturbation_steps,
+        "observedPerturbationCount": observed_perturbation_count,
+        "classificationFlipCount": classification_flip_count,
+        "fragilityRatio": rounded(fragility_ratio),
+        "missingPerturbationEvidenceCount": missing_perturbation_evidence_count,
+        "calculationBoundary": "classification flips are selected bounded perturbation evidence, not global basin stability"
+    })
+}
+
+fn calculate_trajectory_return_time(simulations: &[BasinSimulationV0]) -> serde_json::Value {
+    let mut observed_return_count = 0usize;
+    let mut non_returning_within_horizon_count = 0usize;
+    let mut missing_return_evidence_count = 0usize;
+    let mut return_steps = Vec::<usize>::new();
+    let mut max_bounded_horizon = 0usize;
+    let mut simulation_refs = Vec::new();
+
+    for simulation in simulations {
+        simulation_refs.push(simulation.simulation_id.clone());
+        max_bounded_horizon = max_bounded_horizon.max(simulation.bounded_horizon);
+        for evidence in &simulation.return_evidence {
+            if evidence.status == "measured" {
+                if let Some(steps) = evidence.steps_to_return {
+                    observed_return_count += 1;
+                    return_steps.push(steps);
+                } else {
+                    non_returning_within_horizon_count += 1;
+                }
+            } else if evidence.status == "unavailable" && evidence.steps_to_return.is_none() {
+                non_returning_within_horizon_count += 1;
+                missing_return_evidence_count += evidence.missing_evidence.len().max(1);
+            } else {
+                missing_return_evidence_count += evidence.missing_evidence.len().max(1);
+            }
+        }
+    }
+
+    let min_steps_to_return = return_steps.iter().min().copied();
+    let max_steps_to_return = return_steps.iter().max().copied();
+    let average_steps_to_return = if return_steps.is_empty() {
+        None
+    } else {
+        Some(rounded(
+            return_steps.iter().sum::<usize>() as f64 / return_steps.len() as f64,
+        ))
+    };
+
+    json!({
+        "calculationKind": "bounded-trajectory-return-time",
+        "simulationRefs": simulation_refs,
+        "boundedHorizon": max_bounded_horizon,
+        "observedReturnCount": observed_return_count,
+        "minStepsToReturn": min_steps_to_return,
+        "maxStepsToReturn": max_steps_to_return,
+        "averageStepsToReturn": average_steps_to_return,
+        "nonReturningWithinHorizonCount": non_returning_within_horizon_count,
+        "missingReturnEvidenceCount": missing_return_evidence_count,
+        "calculationBoundary": "return time is selected bounded evidence and missing returns are not immediate-return evidence"
+    })
+}
+
+fn calculate_observability_debt(simulations: &[BasinSimulationV0]) -> serde_json::Value {
+    let mut required_axis_weight = 0.0;
+    let mut measured_axis_weight = 0.0;
+    let mut unmeasured_axis_weight = 0.0;
+    let mut private_axis_weight = 0.0;
+    let mut unavailable_axis_weight = 0.0;
+    let mut status_weight = std::collections::BTreeMap::<String, f64>::new();
+    let mut simulation_refs = Vec::new();
+
+    for simulation in simulations {
+        simulation_refs.push(simulation.simulation_id.clone());
+        for axis in &simulation.observability_axes {
+            let weight = metric_number(&axis.required_weight).unwrap_or(0.0);
+            required_axis_weight += weight;
+            *status_weight
+                .entry(axis.evidence_status.clone())
+                .or_insert(0.0) += weight;
+            match axis.evidence_status.as_str() {
+                "measured" | "derived" => measured_axis_weight += weight,
+                "unmeasured" => unmeasured_axis_weight += weight,
+                "private" => private_axis_weight += weight,
+                "unavailable" => unavailable_axis_weight += weight,
+                _ => {}
+            }
+        }
+    }
+
+    let debt_weight = unmeasured_axis_weight + private_axis_weight + unavailable_axis_weight;
+    let debt_ratio = if required_axis_weight == 0.0 {
+        0.0
+    } else {
+        debt_weight / required_axis_weight
+    };
+
+    json!({
+        "calculationKind": "bounded-observability-debt",
+        "simulationRefs": simulation_refs,
+        "requiredAxisWeight": rounded(required_axis_weight),
+        "measuredAxisWeight": rounded(measured_axis_weight),
+        "unmeasuredAxisWeight": rounded(unmeasured_axis_weight),
+        "privateAxisWeight": rounded(private_axis_weight),
+        "unavailableAxisWeight": rounded(unavailable_axis_weight),
+        "debtWeight": rounded(debt_weight),
+        "debtRatio": rounded(debt_ratio),
+        "axisStatusWeight": rounded_map(status_weight),
+        "calculationBoundary": "unmeasured, private, and unavailable required axes are retained as debt, not measured zero"
     })
 }
 
@@ -1543,6 +2144,7 @@ fn check_attractor_engineering_section(
     if section.selected_regions.is_empty()
         || section.attractor_candidates.is_empty()
         || section.basin_candidates.is_empty()
+        || section.basin_simulations.is_empty()
         || section.support_risk_entries.is_empty()
         || section.design_field_signals.is_empty()
         || section.seed_attractor_signals.is_empty()
@@ -1551,7 +2153,7 @@ fn check_attractor_engineering_section(
         invalid.push(generic_validation_example(
             &report.report_id,
             "attractorEngineering",
-            "selectedRegions, attractorCandidates, basinCandidates, supportRiskEntries, field signals, and readiness axes must be present",
+            "selectedRegions, attractorCandidates, basinCandidates, basinSimulations, supportRiskEntries, field signals, and readiness axes must be present",
         ));
     }
     for required in REQUIRED_ATTRACTOR_NON_CONCLUSIONS {
@@ -1663,6 +2265,7 @@ fn check_attractor_engineering_section(
     {
         validate_field_shaping_signal(signal, &mut invalid);
     }
+    validate_basin_simulations(section, &mut invalid);
     for entry in &section.support_risk_entries {
         if entry.operation_id.trim().is_empty()
             || entry.operation_kind.trim().is_empty()
@@ -1775,6 +2378,293 @@ fn check_attractor_engineering_section(
         "Attractor Engineering section records bounded candidates, metric slots, and non-conclusions",
         invalid,
     )
+}
+
+fn validate_basin_simulations(
+    section: &AttractorEngineeringMetricsV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    let allowed_statuses = string_set(ALLOWED_STATUSES);
+    let allowed_classifications = string_set(["candidate", "nonCandidate", "missingEvidence"]);
+    let mut has_candidate = false;
+    let mut has_non_candidate = false;
+    let mut has_missing_evidence = false;
+    let mut has_fragility_flip = false;
+    let mut has_return = false;
+    let mut has_return_missing_evidence = false;
+    let mut unknown_axis_weight = 0.0;
+
+    for simulation in &section.basin_simulations {
+        if simulation.simulation_id.trim().is_empty()
+            || simulation.bounded_horizon == 0
+            || simulation.selected_initial_states.is_empty()
+            || simulation.operation_scripts.is_empty()
+            || simulation.basin_classifications.is_empty()
+            || simulation.perturbation_evidence.is_empty()
+            || simulation.return_evidence.is_empty()
+            || simulation.observability_axes.is_empty()
+            || simulation.source_refs.is_empty()
+            || has_blank_artifact_refs(&simulation.source_refs)
+            || simulation.assumptions.is_empty()
+            || has_blank(&simulation.assumptions)
+            || simulation.non_conclusions.is_empty()
+            || has_blank(&simulation.non_conclusions)
+        {
+            invalid.push(generic_validation_example(
+                &simulation.simulation_id,
+                "attractorEngineering.basinSimulations",
+                "basin simulations must record selected initial states, scripts, classifications, bounded horizon, source refs, assumptions, and non-conclusions",
+            ));
+        }
+        validate_boundary(
+            &simulation.simulation_id,
+            "measurementBoundary",
+            &simulation.measurement_boundary,
+            true,
+            invalid,
+        );
+
+        for state in &simulation.selected_initial_states {
+            if state.state_id.trim().is_empty()
+                || state.state_kind.trim().is_empty()
+                || state.region_refs.is_empty()
+                || has_blank(&state.region_refs)
+                || !allowed_statuses.contains(state.evidence_status.as_str())
+            {
+                invalid.push(generic_validation_example(
+                    &state.state_id,
+                    "selectedInitialStates",
+                    "selected initial states must record id, kind, region refs, and supported evidence status",
+                ));
+            }
+            validate_support_risk_metric(
+                &state.state_id,
+                "stateWeight",
+                &state.state_weight,
+                invalid,
+            );
+            if UNKNOWN_SUPPORT_RISK_STATES.contains(&state.evidence_status.as_str())
+                && state.missing_evidence.is_empty()
+            {
+                invalid.push(generic_validation_example(
+                    &state.state_id,
+                    "missingEvidence",
+                    "missing, private, unavailable, notComparable, and outOfScope initial-state evidence must be retained",
+                ));
+            }
+        }
+
+        for script in &simulation.operation_scripts {
+            if script.script_id.trim().is_empty()
+                || script.operation_ids.is_empty()
+                || has_blank(&script.operation_ids)
+                || script.bounded_horizon == 0
+                || script.bounded_horizon > simulation.bounded_horizon
+                || script.source_refs.is_empty()
+                || has_blank_artifact_refs(&script.source_refs)
+                || script.assumptions.is_empty()
+                || has_blank(&script.assumptions)
+                || script.non_conclusions.is_empty()
+                || has_blank(&script.non_conclusions)
+            {
+                invalid.push(generic_validation_example(
+                    &script.script_id,
+                    "operationScripts",
+                    "finite operation scripts must record operation ids, source refs, non-conclusions, and a horizon within the simulation horizon",
+                ));
+            }
+            validate_boundary(
+                &script.script_id,
+                "measurementBoundary",
+                &script.measurement_boundary,
+                true,
+                invalid,
+            );
+        }
+
+        for classification in &simulation.basin_classifications {
+            has_candidate |= classification.classification == "candidate";
+            has_non_candidate |= classification.classification == "nonCandidate";
+            has_missing_evidence |= classification.classification == "missingEvidence";
+            if classification.state_id.trim().is_empty()
+                || classification.script_id.trim().is_empty()
+                || !allowed_classifications.contains(classification.classification.as_str())
+                || !allowed_statuses.contains(classification.status.as_str())
+                || classification.assumptions.is_empty()
+                || has_blank(&classification.assumptions)
+                || classification.non_conclusions.is_empty()
+                || has_blank(&classification.non_conclusions)
+            {
+                invalid.push(generic_validation_example(
+                    &classification.state_id,
+                    "basinClassifications",
+                    "basin classifications must distinguish candidate, nonCandidate, and missingEvidence entries with explicit assumptions and non-conclusions",
+                ));
+            }
+            if classification.classification == "candidate"
+                && (classification.target_region_ref.is_none()
+                    || classification
+                        .steps_to_target
+                        .is_none_or(|steps| steps > simulation.bounded_horizon))
+            {
+                invalid.push(generic_validation_example(
+                    &classification.state_id,
+                    "stepsToTarget",
+                    "candidate basin classifications must reach a selected target region within the bounded horizon",
+                ));
+            }
+            if classification.classification == "missingEvidence"
+                && classification.missing_evidence.is_empty()
+            {
+                invalid.push(generic_validation_example(
+                    &classification.state_id,
+                    "missingEvidence",
+                    "missing-evidence basin classifications must retain missing evidence instead of implying a candidate or non-candidate result",
+                ));
+            }
+        }
+
+        for perturbation in &simulation.perturbation_evidence {
+            has_fragility_flip |= EVIDENCE_REQUIRED_STATUSES
+                .contains(&perturbation.status.as_str())
+                && perturbation.baseline_classification != perturbation.perturbed_classification;
+            if perturbation.evidence_id.trim().is_empty()
+                || perturbation.source_state_id.trim().is_empty()
+                || perturbation.perturbation_kind.trim().is_empty()
+                || perturbation.perturbation_steps == 0
+                || perturbation.perturbation_steps > simulation.bounded_horizon
+                || !allowed_statuses.contains(perturbation.status.as_str())
+                || perturbation.assumptions.is_empty()
+                || has_blank(&perturbation.assumptions)
+                || !perturbation
+                    .non_conclusions
+                    .iter()
+                    .any(|conclusion| conclusion == BASIN_BOUNDARY_FRAGILITY_NON_CONCLUSION)
+            {
+                invalid.push(generic_validation_example(
+                    &perturbation.evidence_id,
+                    "perturbationEvidence",
+                    "perturbation evidence must be bounded, status-tagged, and retain BasinBoundaryFragility non-conclusion",
+                ));
+            }
+            validate_boundary(
+                &perturbation.evidence_id,
+                "measurementBoundary",
+                &perturbation.measurement_boundary,
+                EVIDENCE_REQUIRED_STATUSES.contains(&perturbation.status.as_str()),
+                invalid,
+            );
+        }
+
+        for evidence in &simulation.return_evidence {
+            has_return |= evidence.status == "measured" && evidence.steps_to_return.is_some();
+            has_return_missing_evidence |= !evidence.missing_evidence.is_empty();
+            if evidence.evidence_id.trim().is_empty()
+                || evidence.state_id.trim().is_empty()
+                || evidence.excursion_region_ref.trim().is_empty()
+                || evidence.return_region_ref.trim().is_empty()
+                || !allowed_statuses.contains(evidence.status.as_str())
+                || evidence
+                    .steps_to_return
+                    .is_some_and(|steps| steps > simulation.bounded_horizon)
+                || evidence.assumptions.is_empty()
+                || has_blank(&evidence.assumptions)
+                || !evidence
+                    .non_conclusions
+                    .iter()
+                    .any(|conclusion| conclusion == TRAJECTORY_RETURN_TIME_NON_CONCLUSION)
+            {
+                invalid.push(generic_validation_example(
+                    &evidence.evidence_id,
+                    "returnEvidence",
+                    "return evidence must be bounded, status-tagged, and retain TrajectoryReturnTime non-conclusion",
+                ));
+            }
+            if UNKNOWN_SUPPORT_RISK_STATES.contains(&evidence.status.as_str())
+                && evidence.missing_evidence.is_empty()
+            {
+                invalid.push(generic_validation_example(
+                    &evidence.evidence_id,
+                    "missingEvidence",
+                    "missing bounded return evidence must be retained separately from observed returns",
+                ));
+            }
+            validate_boundary(
+                &evidence.evidence_id,
+                "measurementBoundary",
+                &evidence.measurement_boundary,
+                EVIDENCE_REQUIRED_STATUSES.contains(&evidence.status.as_str()),
+                invalid,
+            );
+        }
+
+        for axis in &simulation.observability_axes {
+            let weight = metric_number(&axis.required_weight).unwrap_or(0.0);
+            if matches!(
+                axis.evidence_status.as_str(),
+                "unmeasured" | "private" | "unavailable"
+            ) {
+                unknown_axis_weight += weight;
+            }
+            if axis.axis_id.trim().is_empty()
+                || !allowed_statuses.contains(axis.evidence_status.as_str())
+                || axis.assumptions.is_empty()
+                || has_blank(&axis.assumptions)
+                || !axis
+                    .non_conclusions
+                    .iter()
+                    .any(|conclusion| conclusion == OBSERVABILITY_DEBT_NON_CONCLUSION)
+            {
+                invalid.push(generic_validation_example(
+                    &axis.axis_id,
+                    "observabilityAxes",
+                    "observability axes must record required weight, supported evidence status, and ObservabilityDebt non-conclusion",
+                ));
+            }
+            validate_support_risk_metric(
+                &axis.axis_id,
+                "requiredWeight",
+                &axis.required_weight,
+                invalid,
+            );
+            validate_boundary(
+                &axis.axis_id,
+                "measurementBoundary",
+                &axis.measurement_boundary,
+                EVIDENCE_REQUIRED_STATUSES.contains(&axis.evidence_status.as_str()),
+                invalid,
+            );
+        }
+    }
+
+    if !(has_candidate && has_non_candidate && has_missing_evidence) {
+        invalid.push(generic_validation_example(
+            "attractorEngineering.basinSimulations",
+            "basinClassifications",
+            "bounded basin simulation must distinguish candidate, nonCandidate, and missingEvidence classifications",
+        ));
+    }
+    if !has_fragility_flip {
+        invalid.push(generic_validation_example(
+            "attractorEngineering.basinSimulations",
+            "perturbationEvidence",
+            "BasinBoundaryFragility needs selected 1-step or k-step perturbation evidence with a classification flip",
+        ));
+    }
+    if !(has_return && has_return_missing_evidence) {
+        invalid.push(generic_validation_example(
+            "attractorEngineering.basinSimulations",
+            "returnEvidence",
+            "TrajectoryReturnTime must keep observed bounded returns and missing return evidence separate",
+        ));
+    }
+    if unknown_axis_weight == 0.0 {
+        invalid.push(generic_validation_example(
+            "attractorEngineering.basinSimulations",
+            "observabilityAxes",
+            "ObservabilityDebt must retain nonzero unmeasured, private, or unavailable required-axis weight",
+        ));
+    }
 }
 
 fn validate_support_risk_mass_calculation(
@@ -2054,13 +2944,24 @@ fn validate_basin_return_observability_boundaries(
         ));
     }
     if !basin_candidates.clone().any(|candidate| {
-        UNKNOWN_SUPPORT_RISK_STATES.contains(&candidate.status.as_str())
+        (candidate.status == "missingEvidence"
+            || UNKNOWN_SUPPORT_RISK_STATES.contains(&candidate.status.as_str()))
             && !candidate.measurement_boundary.missing_evidence.is_empty()
     }) {
         invalid.push(generic_validation_example(
             "attractorEngineering.basinCandidates",
             "missingEvidence",
             "at least one non-candidate basin entry must preserve missing evidence instead of implying empty basin evidence",
+        ));
+    }
+    if !basin_candidates
+        .clone()
+        .any(|candidate| candidate.status == "nonCandidate")
+    {
+        invalid.push(generic_validation_example(
+            "attractorEngineering.basinCandidates",
+            "nonCandidate",
+            "at least one basin entry must explicitly distinguish bounded non-candidate evidence",
         ));
     }
 
