@@ -1358,6 +1358,97 @@ theorem boundedSampledScript_preserves_safeRegion
 end FiniteOperationKernel
 
 /--
+Two states can have the same selected observed signature while exposing
+different future operation support under a selected finite kernel.
+
+This predicate is only a bounded witness shape. It does not claim that the
+observed signature determines future operation distributions, empirical support
+weights, or unmeasured axes.
+-/
+def SameObservedSignatureDifferentFutureSupport
+    (O : SignatureObservation State Sig)
+    (kernel : FiniteOperationKernel State OperationId)
+    (X Y : State) : Prop :=
+  O.observe X = O.observe Y ∧ kernel.support X ≠ kernel.support Y
+
+/-
+A tiny finite-state witness for the D7 non-conclusion boundary: the current
+observed signature does not determine future operation support.
+-/
+namespace SameSignatureDifferentFuture
+
+abbrev ExampleState := Nat
+abbrev ExampleSig := Unit
+abbrev OperationId := Nat
+
+def source : ExampleState := 0
+def target : ExampleState := 1
+def leftOperation : OperationId := 0
+def rightOperation : OperationId := 1
+
+def observation : SignatureObservation ExampleState ExampleSig where
+  observe := fun _ => ()
+  coverageAssumptions := True
+  nonConclusions := True
+
+def kernel : FiniteOperationKernel ExampleState OperationId where
+  support
+    | 0 => [leftOperation]
+    | 1 => [rightOperation]
+    | _ => []
+  coverageAssumptions := True
+  weightSourceBoundary := True
+  normalizationBoundary := True
+  nonConclusions := True
+
+/-- The selected states are distinct architecture states. -/
+theorem source_ne_target :
+    source ≠ target := by
+  simp [source, target]
+
+/-- The selected states have the same current observed signature. -/
+theorem same_observed_signature :
+    observation.observe source = observation.observe target := by
+  simp [observation, source, target]
+
+/-- The left operation is in the finite support at the source state. -/
+theorem source_supports_leftOperation :
+    kernel.Supports source leftOperation := by
+  simp [FiniteOperationKernel.Supports, kernel, source, leftOperation]
+
+/-- The same operation is not in the finite support at the target state. -/
+theorem target_not_supports_leftOperation :
+    ¬ kernel.Supports target leftOperation := by
+  simp [FiniteOperationKernel.Supports, kernel, target, leftOperation,
+    rightOperation]
+
+/-- The selected finite future operation supports differ. -/
+theorem future_support_differs :
+    kernel.support source ≠ kernel.support target := by
+  simp [kernel, source, target, leftOperation, rightOperation]
+
+/--
+Bundled counterexample: the two states share the selected observation but have
+different finite future operation support.
+-/
+theorem sameObservedSignature_differentFutureSupport :
+    SameObservedSignatureDifferentFutureSupport observation kernel source target := by
+  exact ⟨same_observed_signature, future_support_differs⟩
+
+/--
+Non-conclusion boundary: equal current observation does not imply equal future
+operation support for the selected finite kernel.
+-/
+theorem not_sameObservation_implies_sameFutureSupport :
+    ¬ ∀ X Y : ExampleState,
+        observation.observe X = observation.observe Y ->
+          kernel.support X = kernel.support Y := by
+  intro h
+  exact future_support_differs (h source target same_observed_signature)
+
+end SameSignatureDifferentFuture
+
+/--
 A finite observed-trajectory attractor candidate.
 
 The candidate is relative to a supplied finite signature trajectory and selected
