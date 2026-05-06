@@ -5770,6 +5770,37 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                 == "outOfScope"
             && json["report"]["attractorEngineering"]["seedAttractorStrength"]["status"]
                 == "unavailable"
+            && json["report"]["attractorEngineering"]["basinBoundaryFragility"]["status"]
+                == "unmeasured"
+            && json["report"]["attractorEngineering"]["trajectoryReturnTime"]["status"]
+                == "unavailable"
+            && json["report"]["attractorEngineering"]["observabilityDebt"]["status"]
+                == "notComparable"
+    );
+    assert_eq!(json["summary"]["basinCandidateCount"], 2);
+    assert!(
+        json["report"]["attractorEngineering"]["basinCandidates"]
+            .as_array()
+            .expect("basinCandidates is array")
+            .iter()
+            .any(|candidate| {
+                candidate["status"] == "candidate"
+                    && candidate["measurementBoundary"]["aggregationWindow"].is_object()
+            })
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["basinCandidates"]
+            .as_array()
+            .expect("basinCandidates is array")
+            .iter()
+            .any(|candidate| {
+                candidate["status"] == "unmeasured"
+                    && candidate["measurementBoundary"]["missingEvidence"]
+                        .as_array()
+                        .expect("missingEvidence is array")
+                        .iter()
+                        .any(|evidence| evidence["boundary"] == "unmeasured")
+            })
     );
     assert_eq!(
         json["report"]["attractorEngineering"]["supportRiskEntries"]
@@ -5936,6 +5967,26 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
         ["confidence"] = serde_json::json!("formal-proof");
     invalid_attractor_json["attractorEngineering"]["supportRiskEntries"][2]["riskMassContribution"]
         ["confidence"] = serde_json::json!("formal-proof");
+    invalid_attractor_json["attractorEngineering"]["basinCandidates"][0]["measurementBoundary"]["sourceArtifactRefs"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["basinCandidates"][0]["measurementBoundary"]
+        .as_object_mut()
+        .expect("bounded basin measurementBoundary is object")
+        .remove("aggregationWindow");
+    invalid_attractor_json["attractorEngineering"]["basinCandidates"][1]["measurementBoundary"]["missingEvidence"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["basinBoundaryFragility"]["status"] =
+        serde_json::json!("measured");
+    invalid_attractor_json["attractorEngineering"]["basinBoundaryFragility"]["value"] =
+        serde_json::json!(0.0);
+    invalid_attractor_json["attractorEngineering"]["basinBoundaryFragility"]["sourceRefs"] =
+        serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["observabilityDebt"]["status"] =
+        serde_json::json!("measured");
+    invalid_attractor_json["attractorEngineering"]["observabilityDebt"]["value"] =
+        serde_json::json!(0.0);
+    invalid_attractor_json["attractorEngineering"]["observabilityDebt"]["nonConclusions"] =
+        serde_json::json!([]);
     fs::write(
         &invalid_attractor_report,
         serde_json::to_string_pretty(&invalid_attractor_json).expect("json serializes"),
@@ -6005,6 +6056,26 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                 .as_str()
                 .unwrap_or_default()
                 .contains("must not share one confidence level"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("finite source refs, selected region refs, and an aggregation window"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(|example| example["evidence"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("missing evidence must not be emitted as measured numeric zero"))
     );
 }
 

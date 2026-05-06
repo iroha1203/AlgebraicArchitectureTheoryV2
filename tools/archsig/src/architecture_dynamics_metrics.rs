@@ -88,6 +88,13 @@ const UNKNOWN_SUPPORT_RISK_STATES: [&str; 5] = [
 const SUPPORT_RISK_HISTORY_NON_CONCLUSION: &str =
     "accepted PR history safety does not conclude future support risk is zero";
 
+const BASIN_BOUNDARY_FRAGILITY_NON_CONCLUSION: &str =
+    "BasinBoundaryFragility is bounded perturbation evidence, not global basin stability";
+const TRAJECTORY_RETURN_TIME_NON_CONCLUSION: &str =
+    "TrajectoryReturnTime is bounded observed return evidence, not a global recurrence theorem";
+const OBSERVABILITY_DEBT_NON_CONCLUSION: &str =
+    "unmeasured, private, and unavailable required axes are not zero ObservabilityDebt";
+
 pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetricsReportV0 {
     let pr_force_ref = artifact_ref(
         "pr-force-report",
@@ -546,25 +553,46 @@ fn attractor_engineering_section(
                 "seed attractor evidence does not imply future patch convergence",
             ],
         )],
-        basin_candidates: vec![attractor_candidate(
-            "fixture:bounded-basin-candidate",
-            "basin-candidate",
-            "unmeasured",
-            &["fixture:selected-safe-region"],
-            &[
-                "attractorEngineering.basinBoundaryFragility",
-                "attractorEngineering.trajectoryReturnTime",
-            ],
-            gap_boundary(
-                "basin membership simulation is not implemented in the MVP fixture",
-                "unmeasured",
+        basin_candidates: vec![
+            attractor_candidate(
+                "fixture:bounded-basin-candidate",
+                "basin-candidate",
+                "candidate",
+                &["fixture:selected-safe-region"],
+                &[
+                    "attractorEngineering.basinBoundaryFragility",
+                    "attractorEngineering.trajectoryReturnTime",
+                ],
+                section_boundary.clone(),
+                &[
+                    "candidate is scoped to the selected fixture window",
+                    "basin membership is finite observed tooling evidence",
+                ],
+                &[
+                    "bounded basin candidate is not a global basin theorem",
+                    "basin candidate status does not prove reachability for all states",
+                ],
             ),
-            &["basin candidate awaits bounded simulation evidence"],
-            &[
-                "unmeasured basin candidate is not empty basin evidence",
-                "basin candidate status does not prove reachability",
-            ],
-        )],
+            attractor_candidate(
+                "fixture:missing-evidence-basin-candidate",
+                "basin-candidate",
+                "unmeasured",
+                &["fixture:selected-safe-region"],
+                &[
+                    "attractorEngineering.basinBoundaryFragility",
+                    "attractorEngineering.trajectoryReturnTime",
+                ],
+                gap_boundary(
+                    "basin membership simulation is not implemented in the MVP fixture",
+                    "unmeasured",
+                ),
+                &["basin candidate awaits bounded simulation evidence"],
+                &[
+                    "unmeasured basin candidate is not empty basin evidence",
+                    "basin candidate status does not prove reachability",
+                ],
+            ),
+        ],
         support_risk_entries: support_risk_entries(section_boundary.clone()),
         support_risk_mass: metric(
             "attractorEngineering.supportRiskMass",
@@ -623,24 +651,26 @@ fn attractor_engineering_section(
                 "unmeasured",
             ),
             &["BasinBoundaryFragility needs bounded perturbation simulation"],
-            &["unmeasured BasinBoundaryFragility is not stable basin evidence"],
+            &[
+                "unmeasured BasinBoundaryFragility is not stable basin evidence",
+                BASIN_BOUNDARY_FRAGILITY_NON_CONCLUSION,
+            ],
         ),
         trajectory_return_time: metric(
             "attractorEngineering.trajectoryReturnTime",
             None,
             "unavailable",
             None,
-            source_refs.clone(),
-            boundary(
-                "signature-trajectory",
-                &["TrajectoryReturnTime"],
-                source_refs,
-                Some(window),
-                &["trajectory suffix evidence is not retained in this fixture"],
-                &["global recurrence theorem"],
+            Vec::new(),
+            gap_boundary(
+                "selected excursion and return observation are not retained in this fixture",
+                "unavailable",
             ),
             &["TrajectoryReturnTime needs a selected excursion and return observation"],
-            &["unavailable TrajectoryReturnTime is not immediate-return evidence"],
+            &[
+                "unavailable TrajectoryReturnTime is not immediate-return evidence",
+                TRAJECTORY_RETURN_TIME_NON_CONCLUSION,
+            ],
         ),
         observability_debt: metric(
             "attractorEngineering.observabilityDebt",
@@ -653,7 +683,10 @@ fn attractor_engineering_section(
                 "notComparable",
             ),
             &["ObservabilityDebt needs comparable observed and latent support axes"],
-            &["notComparable ObservabilityDebt is not zero observability debt"],
+            &[
+                "notComparable ObservabilityDebt is not zero observability debt",
+                OBSERVABILITY_DEBT_NON_CONCLUSION,
+            ],
         ),
         measurement_boundary: section_boundary,
         non_conclusions: strings(&REQUIRED_ATTRACTOR_NON_CONCLUSIONS),
@@ -1315,6 +1348,7 @@ fn check_attractor_engineering_section(
         }
     }
     validate_safe_preserving_confidence_distinction(section, &mut invalid);
+    validate_basin_return_observability_boundaries(section, &mut invalid);
     if !section
         .support_risk_mass
         .non_conclusions
@@ -1333,6 +1367,129 @@ fn check_attractor_engineering_section(
         "Attractor Engineering section records bounded candidates, metric slots, and non-conclusions",
         invalid,
     )
+}
+
+fn validate_basin_return_observability_boundaries(
+    section: &AttractorEngineeringMetricsV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    let basin_candidates = section
+        .basin_candidates
+        .iter()
+        .filter(|candidate| candidate.candidate_kind.contains("basin"));
+    if !basin_candidates.clone().any(|candidate| {
+        candidate.status == "candidate"
+            && candidate.measurement_boundary.aggregation_window.is_some()
+            && !candidate
+                .measurement_boundary
+                .source_artifact_refs
+                .is_empty()
+            && !has_blank_artifact_refs(&candidate.measurement_boundary.source_artifact_refs)
+            && !candidate
+                .measurement_boundary
+                .selected_region_refs
+                .is_empty()
+            && !has_blank(&candidate.measurement_boundary.selected_region_refs)
+    }) {
+        invalid.push(generic_validation_example(
+            "attractorEngineering.basinCandidates",
+            "candidate",
+            "at least one basin candidate must be bounded by finite source refs, selected region refs, and an aggregation window",
+        ));
+    }
+    if !basin_candidates.clone().any(|candidate| {
+        UNKNOWN_SUPPORT_RISK_STATES.contains(&candidate.status.as_str())
+            && !candidate.measurement_boundary.missing_evidence.is_empty()
+    }) {
+        invalid.push(generic_validation_example(
+            "attractorEngineering.basinCandidates",
+            "missingEvidence",
+            "at least one non-candidate basin entry must preserve missing evidence instead of implying empty basin evidence",
+        ));
+    }
+
+    for metric in [
+        &section.basin_boundary_fragility,
+        &section.trajectory_return_time,
+        &section.observability_debt,
+    ] {
+        validate_bounded_attractor_metric(metric, invalid);
+    }
+}
+
+fn validate_bounded_attractor_metric(
+    metric: &DynamicsMeasuredValueV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    let Some(required_non_conclusion) = bounded_metric_non_conclusion(&metric.metric_id) else {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "metricId",
+            "unsupported bounded Attractor Engineering metric slot",
+        ));
+        return;
+    };
+    if !metric
+        .non_conclusions
+        .iter()
+        .any(|conclusion| conclusion == required_non_conclusion)
+    {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "nonConclusions",
+            "bounded basin / return / observability metrics must keep their non-conclusion boundary explicit",
+        ));
+    }
+
+    if EVIDENCE_REQUIRED_STATUSES.contains(&metric.status.as_str()) {
+        if metric.source_refs.is_empty() || has_blank_artifact_refs(&metric.source_refs) {
+            invalid.push(generic_validation_example(
+                &metric.metric_id,
+                "sourceRefs",
+                "measured, estimated, derived, and advisory bounded Attractor Engineering metrics must keep source refs",
+            ));
+        }
+        if metric.measurement_boundary.aggregation_window.is_none()
+            || metric.measurement_boundary.selected_region_refs.is_empty()
+            || has_blank(&metric.measurement_boundary.selected_region_refs)
+        {
+            invalid.push(generic_validation_example(
+                &metric.metric_id,
+                "measurementBoundary",
+                "finite trajectory, selected region, and bounded horizon must be explicit before emitting bounded Attractor Engineering evidence",
+            ));
+        }
+    }
+
+    let has_missing_evidence = !metric.measurement_boundary.missing_evidence.is_empty();
+    if UNKNOWN_SUPPORT_RISK_STATES.contains(&metric.status.as_str()) && !has_missing_evidence {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "missingEvidence",
+            "unmeasured, unavailable, private, notComparable, and outOfScope bounded Attractor Engineering metrics must record missing evidence",
+        ));
+    }
+    if (metric.status == "measured" || metric.status == "derived")
+        && has_missing_evidence
+        && is_numeric_zero(metric.value.as_ref())
+    {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "value",
+            "bounded Attractor Engineering missing evidence must not be emitted as measured numeric zero",
+        ));
+    }
+}
+
+fn bounded_metric_non_conclusion(metric_id: &str) -> Option<&'static str> {
+    match metric_id {
+        "attractorEngineering.basinBoundaryFragility" => {
+            Some(BASIN_BOUNDARY_FRAGILITY_NON_CONCLUSION)
+        }
+        "attractorEngineering.trajectoryReturnTime" => Some(TRAJECTORY_RETURN_TIME_NON_CONCLUSION),
+        "attractorEngineering.observabilityDebt" => Some(OBSERVABILITY_DEBT_NON_CONCLUSION),
+        _ => None,
+    }
 }
 
 fn validate_support_risk_metric(

@@ -382,6 +382,10 @@ section として出す。section は `selectedRegions`, `attractorCandidates`,
 validator は section の欠落、status vocabulary の逸脱、required non-conclusions の欠落を
 検出する。`unmeasured` / `unavailable` / `notComparable` / `outOfScope` の Attractor
 Engineering metrics を 0 と読まない。
+basin / return / observability 系 metric は、finite trajectory、selected region、
+bounded horizon、source refs が揃うまで measured / estimated / derived evidence に
+昇格しない。`ObservabilityDebt` は required axis の `unmeasured` / `private` /
+`unavailable` / `notComparable` を measured zero として集計しない。
 
 `gapMetrics` は、endpoint / axis-wise / measured な見え方と、path / cross-axis /
 future support / unmeasured axis の間にある差分を測る group である。
