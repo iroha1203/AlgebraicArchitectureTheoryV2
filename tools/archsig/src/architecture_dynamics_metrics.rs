@@ -11,8 +11,8 @@ use crate::{
     ArchitectureDynamicsMetricsReportValidationSummary, AttractorEngineeringCandidateV0,
     AttractorEngineeringMetricsV0, DynamicsAggregationWindowV0, DynamicsArtifactRefV0,
     DynamicsMeasuredValueV0, DynamicsMissingEvidenceV0, EXTRACTOR_VERSION, MeasurementBoundaryV0,
-    PR_FORCE_REPORT_SCHEMA_VERSION, RepositoryRef, SelectedSignatureRegionV0, ValidationCheck,
-    ValidationExample,
+    PR_FORCE_REPORT_SCHEMA_VERSION, RepositoryRef, SelectedSignatureRegionV0,
+    SupportRiskMassEntryV0, ValidationCheck, ValidationExample,
 };
 
 const ALLOWED_STATUSES: [&str; 9] = [
@@ -32,7 +32,7 @@ const EVIDENCE_REQUIRED_STATUSES: [&str; 4] = ["measured", "estimated", "derived
 
 const REQUIRED_NON_CONCLUSIONS: [&str; 4] = [
     "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
-    "unmeasured, unavailable, notComparable, and outOfScope metrics are not measured zero",
+    "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
     "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
     "global attractor, causal proof, and incident-risk conclusions are out of scope",
 ];
@@ -42,7 +42,7 @@ const FORCE_CLASS_NON_CONCLUSION: &str =
 
 const REQUIRED_ATTRACTOR_NON_CONCLUSIONS: [&str; 3] = [
     "attractorEngineering is bounded tooling evidence, not a global attractor theorem",
-    "unmeasured, unavailable, notComparable, and outOfScope Attractor Engineering metrics are not measured zero",
+    "unmeasured, unavailable, private, notComparable, and outOfScope Attractor Engineering metrics are not measured zero",
     "attractor and basin candidates are selected-region candidates, not global convergence claims",
 ];
 
@@ -53,6 +53,40 @@ const ALLOWED_ATTRACTOR_CANDIDATE_STATUSES: [&str; 5] = [
     "notComparable",
     "outOfScope",
 ];
+
+const ALLOWED_SUPPORT_RISK_STATES: [&str; 9] = [
+    "safePreservingProved",
+    "safePreservingMeasured",
+    "safePreservingEstimated",
+    "unsafeWitnessMeasured",
+    "unmeasured",
+    "unavailable",
+    "private",
+    "notComparable",
+    "outOfScope",
+];
+
+const ALLOWED_PRESERVATION_PRECONDITION_STATUSES: [&str; 8] = [
+    "proved",
+    "measured",
+    "estimated",
+    "unmeasured",
+    "unavailable",
+    "private",
+    "notComparable",
+    "outOfScope",
+];
+
+const UNKNOWN_SUPPORT_RISK_STATES: [&str; 5] = [
+    "unmeasured",
+    "unavailable",
+    "private",
+    "notComparable",
+    "outOfScope",
+];
+
+const SUPPORT_RISK_HISTORY_NON_CONCLUSION: &str =
+    "accepted PR history safety does not conclude future support risk is zero";
 
 pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetricsReportV0 {
     let pr_force_ref = artifact_ref(
@@ -531,6 +565,7 @@ fn attractor_engineering_section(
                 "basin candidate status does not prove reachability",
             ],
         )],
+        support_risk_entries: support_risk_entries(section_boundary.clone()),
         support_risk_mass: metric(
             "attractorEngineering.supportRiskMass",
             None,
@@ -542,7 +577,10 @@ fn attractor_engineering_section(
                 "unmeasured",
             ),
             &["SupportRiskMass needs finite operation support and risk labels"],
-            &["unmeasured SupportRiskMass is not zero support risk"],
+            &[
+                "unmeasured SupportRiskMass is not zero support risk",
+                SUPPORT_RISK_HISTORY_NON_CONCLUSION,
+            ],
         ),
         design_field_strength: metric(
             "attractorEngineering.designFieldStrength",
@@ -619,6 +657,139 @@ fn attractor_engineering_section(
         ),
         measurement_boundary: section_boundary,
         non_conclusions: strings(&REQUIRED_ATTRACTOR_NON_CONCLUSIONS),
+    }
+}
+
+fn support_risk_entries(section_boundary: MeasurementBoundaryV0) -> Vec<SupportRiskMassEntryV0> {
+    vec![
+        support_risk_entry(
+            "fixture:preserve-boundary-law",
+            "boundary-preserving-refactor",
+            0.32,
+            "proved",
+            "safePreservingProved",
+            "measured",
+            Some(json!(0.0)),
+            Some("formal-proof"),
+            section_boundary.clone(),
+            &["Lean theorem package ref discharges the selected preservation precondition"],
+            &[
+                "proved safe-preserving support is still relative to the selected operation semantics",
+                SUPPORT_RISK_HISTORY_NON_CONCLUSION,
+            ],
+        ),
+        support_risk_entry(
+            "fixture:measured-policy-cleanup",
+            "policy-cleanup",
+            0.21,
+            "measured",
+            "safePreservingMeasured",
+            "measured",
+            Some(json!(0.0)),
+            Some("empirical-measured"),
+            section_boundary.clone(),
+            &["policy report measured the selected preservation precondition"],
+            &[
+                "measured safe-preserving support is not a Lean proof",
+                SUPPORT_RISK_HISTORY_NON_CONCLUSION,
+            ],
+        ),
+        support_risk_entry(
+            "fixture:estimated-test-hardening",
+            "test-hardening",
+            0.18,
+            "estimated",
+            "safePreservingEstimated",
+            "estimated",
+            Some(json!(0.0)),
+            Some("model-estimate"),
+            section_boundary.clone(),
+            &["preservation is estimated from bounded fixture evidence"],
+            &[
+                "estimated safe-preserving support has lower confidence than proof or measurement",
+                SUPPORT_RISK_HISTORY_NON_CONCLUSION,
+            ],
+        ),
+        support_risk_entry(
+            "fixture:unsafe-runtime-bypass",
+            "runtime-bypass",
+            0.04,
+            "measured",
+            "unsafeWitnessMeasured",
+            "measured",
+            Some(json!(0.04)),
+            Some("empirical-measured"),
+            section_boundary.clone(),
+            &["runtime bypass witness is measured in the selected support fixture"],
+            &[
+                "measured unsafe witness contributes support risk for the selected support only",
+                SUPPORT_RISK_HISTORY_NON_CONCLUSION,
+            ],
+        ),
+        support_risk_entry(
+            "fixture:unknown-framework-convention",
+            "framework-convention",
+            0.25,
+            "unmeasured",
+            "unmeasured",
+            "unmeasured",
+            None,
+            None,
+            section_boundary,
+            &["operation semantics ref is missing for the framework convention"],
+            &[
+                "unmeasured support risk entry is not zero support risk",
+                SUPPORT_RISK_HISTORY_NON_CONCLUSION,
+            ],
+        ),
+    ]
+}
+
+#[allow(clippy::too_many_arguments)]
+fn support_risk_entry(
+    operation_id: &str,
+    operation_kind: &str,
+    support_weight: f64,
+    preservation_precondition_status: &str,
+    risk_state: &str,
+    risk_mass_status: &str,
+    risk_mass_value: Option<serde_json::Value>,
+    risk_mass_confidence: Option<&str>,
+    measurement_boundary: MeasurementBoundaryV0,
+    assumptions: &[&str],
+    non_conclusions: &[&str],
+) -> SupportRiskMassEntryV0 {
+    let support_weight_metric = metric(
+        &format!("{operation_id}.supportWeight"),
+        Some(json!(support_weight)),
+        "measured",
+        Some("fixture-normalized-support"),
+        Vec::new(),
+        measurement_boundary.clone(),
+        &["support weight is normalized over the finite fixture support"],
+        &["finite fixture support weight is not future distribution completeness"],
+    );
+    let risk_mass_contribution = metric(
+        &format!("{operation_id}.riskMassContribution"),
+        risk_mass_value,
+        risk_mass_status,
+        risk_mass_confidence,
+        Vec::new(),
+        measurement_boundary.clone(),
+        &["risk contribution is relative to the finite support entry risk state"],
+        non_conclusions,
+    );
+    SupportRiskMassEntryV0 {
+        operation_id: operation_id.to_string(),
+        operation_kind: operation_kind.to_string(),
+        support_scope_refs: vec!["fixture:selected-safe-region".to_string()],
+        support_weight: support_weight_metric,
+        preservation_precondition_status: preservation_precondition_status.to_string(),
+        risk_state: risk_state.to_string(),
+        risk_mass_contribution,
+        measurement_boundary,
+        assumptions: strings(assumptions),
+        non_conclusions: strings(non_conclusions),
     }
 }
 
@@ -952,6 +1123,9 @@ fn check_attractor_engineering_section(
     report: &ArchitectureDynamicsMetricsReportV0,
 ) -> ValidationCheck {
     let allowed_candidate_statuses = string_set(ALLOWED_ATTRACTOR_CANDIDATE_STATUSES);
+    let allowed_support_risk_states = string_set(ALLOWED_SUPPORT_RISK_STATES);
+    let allowed_preservation_statuses = string_set(ALLOWED_PRESERVATION_PRECONDITION_STATUSES);
+    let unknown_support_risk_states = string_set(UNKNOWN_SUPPORT_RISK_STATES);
     let mut invalid = Vec::new();
     let Some(section) = &report.attractor_engineering else {
         invalid.push(generic_validation_example(
@@ -969,11 +1143,12 @@ fn check_attractor_engineering_section(
     if section.selected_regions.is_empty()
         || section.attractor_candidates.is_empty()
         || section.basin_candidates.is_empty()
+        || section.support_risk_entries.is_empty()
     {
         invalid.push(generic_validation_example(
             &report.report_id,
             "attractorEngineering",
-            "selectedRegions, attractorCandidates, and basinCandidates must be present",
+            "selectedRegions, attractorCandidates, basinCandidates, and supportRiskEntries must be present",
         ));
     }
     for required in REQUIRED_ATTRACTOR_NON_CONCLUSIONS {
@@ -1065,11 +1240,172 @@ fn check_attractor_engineering_section(
             &mut invalid,
         );
     }
+    for entry in &section.support_risk_entries {
+        if entry.operation_id.trim().is_empty()
+            || entry.operation_kind.trim().is_empty()
+            || entry.support_scope_refs.is_empty()
+            || has_blank(&entry.support_scope_refs)
+            || entry.assumptions.is_empty()
+            || has_blank(&entry.assumptions)
+            || entry.non_conclusions.is_empty()
+            || has_blank(&entry.non_conclusions)
+        {
+            invalid.push(generic_validation_example(
+                &entry.operation_id,
+                "attractorEngineering.supportRiskEntries",
+                "support risk entries must record operation id, kind, scope refs, assumptions, and non-conclusions",
+            ));
+        }
+        if !allowed_support_risk_states.contains(entry.risk_state.as_str()) {
+            invalid.push(generic_validation_example(
+                &entry.operation_id,
+                &entry.risk_state,
+                "unsupported SupportRiskMass risk state",
+            ));
+        }
+        if !allowed_preservation_statuses.contains(entry.preservation_precondition_status.as_str())
+        {
+            invalid.push(generic_validation_example(
+                &entry.operation_id,
+                &entry.preservation_precondition_status,
+                "unsupported operation preservation precondition status",
+            ));
+        }
+        validate_boundary(
+            &entry.operation_id,
+            "measurementBoundary",
+            &entry.measurement_boundary,
+            true,
+            &mut invalid,
+        );
+        validate_support_risk_metric(
+            &entry.operation_id,
+            "supportWeight",
+            &entry.support_weight,
+            &mut invalid,
+        );
+        validate_support_risk_metric(
+            &entry.operation_id,
+            "riskMassContribution",
+            &entry.risk_mass_contribution,
+            &mut invalid,
+        );
+        if unknown_support_risk_states.contains(entry.risk_state.as_str())
+            && is_numeric_zero(entry.risk_mass_contribution.value.as_ref())
+            && (entry.risk_mass_contribution.status == "measured"
+                || entry.risk_mass_contribution.status == "derived")
+        {
+            invalid.push(generic_validation_example(
+                &entry.operation_id,
+                "riskMassContribution",
+                "unmeasured, unavailable, private, notComparable, and outOfScope support risk states must not be emitted as measured numeric zero",
+            ));
+        }
+        if !entry
+            .non_conclusions
+            .iter()
+            .chain(entry.risk_mass_contribution.non_conclusions.iter())
+            .any(|conclusion| conclusion == SUPPORT_RISK_HISTORY_NON_CONCLUSION)
+        {
+            invalid.push(generic_validation_example(
+                &entry.operation_id,
+                "nonConclusions",
+                "accepted PR history and future support risk must remain separate",
+            ));
+        }
+    }
+    validate_safe_preserving_confidence_distinction(section, &mut invalid);
+    if !section
+        .support_risk_mass
+        .non_conclusions
+        .iter()
+        .chain(section.non_conclusions.iter())
+        .any(|conclusion| conclusion == SUPPORT_RISK_HISTORY_NON_CONCLUSION)
+    {
+        invalid.push(generic_validation_example(
+            &report.report_id,
+            "attractorEngineering.supportRiskMass.nonConclusions",
+            "accepted PR history safety and future support risk must be separated",
+        ));
+    }
     check_examples(
         "architecture-dynamics-metrics-attractor-engineering-section-recorded",
         "Attractor Engineering section records bounded candidates, metric slots, and non-conclusions",
         invalid,
     )
+}
+
+fn validate_support_risk_metric(
+    owner: &str,
+    field: &str,
+    metric: &DynamicsMeasuredValueV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    if metric.metric_id.trim().is_empty()
+        || metric.assumptions.is_empty()
+        || has_blank(&metric.assumptions)
+        || metric.non_conclusions.is_empty()
+        || has_blank(&metric.non_conclusions)
+    {
+        invalid.push(generic_validation_example(
+            owner,
+            field,
+            "support risk metric must record metric id, assumptions, and non-conclusions",
+        ));
+    }
+    let source_refs_required = EVIDENCE_REQUIRED_STATUSES.contains(&metric.status.as_str());
+    validate_boundary(
+        owner,
+        field,
+        &metric.measurement_boundary,
+        source_refs_required,
+        invalid,
+    );
+}
+
+fn validate_safe_preserving_confidence_distinction(
+    section: &AttractorEngineeringMetricsV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    let required = [
+        "safePreservingProved",
+        "safePreservingMeasured",
+        "safePreservingEstimated",
+    ];
+    let mut confidences = Vec::new();
+    for risk_state in required {
+        let Some(entry) = section
+            .support_risk_entries
+            .iter()
+            .find(|entry| entry.risk_state == risk_state)
+        else {
+            invalid.push(generic_validation_example(
+                "attractorEngineering.supportRiskEntries",
+                risk_state,
+                "safe-preserving proved, measured, and estimated risk states must all be represented",
+            ));
+            continue;
+        };
+        let Some(confidence) = &entry.risk_mass_contribution.confidence else {
+            invalid.push(generic_validation_example(
+                &entry.operation_id,
+                "confidence",
+                "safe-preserving proved, measured, and estimated states must record confidence",
+            ));
+            continue;
+        };
+        confidences.push(confidence.as_str());
+    }
+    if confidences.len() == required.len() {
+        let distinct = confidences.iter().collect::<BTreeSet<_>>().len();
+        if distinct != required.len() {
+            invalid.push(generic_validation_example(
+                "attractorEngineering.supportRiskEntries",
+                "confidence",
+                "safe-preserving proved, measured, and estimated states must not share one confidence level",
+            ));
+        }
+    }
 }
 
 fn validate_boundary(
@@ -1151,8 +1487,22 @@ fn report_metrics(report: &ArchitectureDynamicsMetricsReportV0) -> Vec<&Dynamics
             &section.trajectory_return_time,
             &section.observability_debt,
         ]);
+        for entry in &section.support_risk_entries {
+            metrics.push(&entry.support_weight);
+            metrics.push(&entry.risk_mass_contribution);
+        }
     }
     metrics
+}
+
+fn is_numeric_zero(value: Option<&serde_json::Value>) -> bool {
+    match value {
+        Some(serde_json::Value::Number(number)) => number.as_f64() == Some(0.0),
+        Some(serde_json::Value::Object(object)) => {
+            object.values().any(|nested| is_numeric_zero(Some(nested)))
+        }
+        _ => false,
+    }
 }
 
 fn force_class_count(metric_id: &str) -> usize {

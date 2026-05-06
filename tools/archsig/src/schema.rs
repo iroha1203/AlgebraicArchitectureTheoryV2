@@ -3355,6 +3355,7 @@ pub struct AttractorEngineeringMetricsV0 {
     pub selected_regions: Vec<SelectedSignatureRegionV0>,
     pub attractor_candidates: Vec<AttractorEngineeringCandidateV0>,
     pub basin_candidates: Vec<AttractorEngineeringCandidateV0>,
+    pub support_risk_entries: Vec<SupportRiskMassEntryV0>,
     pub support_risk_mass: DynamicsMeasuredValueV0,
     pub design_field_strength: DynamicsMeasuredValueV0,
     pub seed_attractor_strength: DynamicsMeasuredValueV0,
@@ -3373,6 +3374,21 @@ pub struct AttractorEngineeringCandidateV0 {
     pub status: String,
     pub region_refs: Vec<String>,
     pub metric_refs: Vec<String>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportRiskMassEntryV0 {
+    pub operation_id: String,
+    pub operation_kind: String,
+    pub support_scope_refs: Vec<String>,
+    pub support_weight: DynamicsMeasuredValueV0,
+    pub preservation_precondition_status: String,
+    pub risk_state: String,
+    pub risk_mass_contribution: DynamicsMeasuredValueV0,
     pub measurement_boundary: MeasurementBoundaryV0,
     pub assumptions: Vec<String>,
     pub non_conclusions: Vec<String>,
