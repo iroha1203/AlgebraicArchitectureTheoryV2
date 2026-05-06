@@ -64,8 +64,13 @@ architecture-dynamics-metrics-report-v0
 
 `architecture-field-snapshot-v0`、`operation-proposal-log-v0`、
 `force-dissipation-ledger-v0`、`development-control-input-log-v0` は次段階の artifact とする。
-これらは理論上重要だが、proposal completeness、raw force estimation、organization metadata の
-収集境界が難しいため、最初の skeleton / validator の主戦場にはしない。
+Issue #716 で `architecture-field-snapshot-v0` と `operation-proposal-log-v0` は
+source refs、selected window、measurement boundary、non-conclusions を固定する
+tooling artifact として skeleton / fixture / validator を追加した。これらは
+`attractorEngineering` の input boundary であり、global architecture field completeness や
+AI proposal distribution completeness は結論しない。
+`force-dissipation-ledger-v0` と `development-control-input-log-v0` は、raw force estimation、
+organization metadata の収集境界が難しいため引き続き後続 artifact とする。
 
 ## Common measurement contract
 
@@ -384,6 +389,10 @@ metric slots, `fieldShapingDelta`, `vibeCodingReadinessAxes`, `measurementBounda
 validator は section の欠落、status vocabulary の逸脱、required non-conclusions の欠落を
 検出する。`unmeasured` / `unavailable` / `notComparable` / `outOfScope` の Attractor
 Engineering metrics を 0 と読まない。
+`attractorEngineering.measurementBoundary.sourceArtifactRefs` は
+`architecture-field-snapshot-v0` と `operation-proposal-log-v0` を参照できる。
+ただし、field snapshot ref は global field completeness ではなく、proposal log ref は
+AI proposal distribution completeness ではない。
 basin / return / observability 系 metric は、finite trajectory、selected region、
 bounded horizon、source refs が揃うまで measured / estimated / derived evidence に
 昇格しない。`ObservabilityDebt` は required axis の `unmeasured` / `private` /

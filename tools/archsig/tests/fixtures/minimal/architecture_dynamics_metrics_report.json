@@ -46,6 +46,18 @@
       "kind": "ai-provenance-log",
       "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
       "artifactId": "fixture-ai-provenance-log"
+    },
+    {
+      "kind": "architecture-field-snapshot",
+      "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+      "schemaVersion": "architecture-field-snapshot-v0",
+      "artifactId": "fixture-architecture-field-snapshot-v0"
+    },
+    {
+      "kind": "operation-proposal-log",
+      "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+      "schemaVersion": "operation-proposal-log-v0",
+      "artifactId": "fixture-operation-proposal-log-v0"
     }
   ],
   "trajectoryMetrics": [
@@ -208,7 +220,14 @@
       "metricId": "force.latentForceEstimate",
       "value": null,
       "status": "unmeasured",
-      "sourceRefs": [],
+      "sourceRefs": [
+        {
+          "kind": "operation-proposal-log",
+          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "schemaVersion": "operation-proposal-log-v0",
+          "artifactId": "fixture-operation-proposal-log-v0"
+        }
+      ],
       "measurementBoundary": {
         "measuredLayer": "architecture-dynamics",
         "measuredAxes": [],
@@ -217,13 +236,13 @@
         "schemaVersion": "architecture-dynamics-metrics-report-v0",
         "selectedRegionRefs": [],
         "assumptions": [
-          "operation proposal log is not available for latent force estimation"
+          "operation proposal log is retained but latent force estimation is not implemented"
         ],
         "unsupportedConstructs": [],
         "missingEvidence": [
           {
             "evidenceKind": "architecture-dynamics-evidence",
-            "reason": "operation proposal log is not available for latent force estimation",
+            "reason": "operation proposal log is retained but latent force estimation is not implemented",
             "boundary": "unmeasured"
           }
         ],
@@ -533,35 +552,59 @@
     {
       "metricId": "fieldControl.designFieldStrength",
       "value": null,
-      "status": "outOfScope",
-      "sourceRefs": [],
+      "status": "advisory",
+      "sourceRefs": [
+        {
+          "kind": "architecture-field-snapshot",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "schemaVersion": "architecture-field-snapshot-v0",
+          "artifactId": "fixture-architecture-field-snapshot-v0"
+        }
+      ],
       "measurementBoundary": {
-        "measuredLayer": "architecture-dynamics",
-        "measuredAxes": [],
-        "sourceArtifactRefs": [],
-        "extractorVersion": "0.1.0",
-        "schemaVersion": "architecture-dynamics-metrics-report-v0",
-        "selectedRegionRefs": [],
-        "assumptions": [
-          "development field snapshot is outside the MVP fixture scope"
+        "measuredLayer": "architecture-field-snapshot",
+        "measuredAxes": [
+          "DesignFieldStrength"
         ],
-        "unsupportedConstructs": [],
-        "missingEvidence": [
+        "sourceArtifactRefs": [
           {
-            "evidenceKind": "architecture-dynamics-evidence",
-            "reason": "development field snapshot is outside the MVP fixture scope",
-            "boundary": "outOfScope"
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
           }
         ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "architecture field snapshot is retained as selected-window tooling input"
+        ],
+        "unsupportedConstructs": [
+          "global architecture field completeness"
+        ],
+        "missingEvidence": [],
         "nonConclusions": [
-          "outOfScope dynamics metric is not measured-zero evidence"
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
       },
       "assumptions": [
-        "field snapshot artifact is not part of the MVP fixture"
+        "field snapshot artifact is retained as advisory DesignFieldStrength input"
       ],
       "nonConclusions": [
-        "outOfScope DesignFieldStrength is not weak design field evidence"
+        "advisory DesignFieldStrength is not causal proof",
+        "architecture field snapshot refs do not conclude global architecture field completeness"
       ]
     }
   ],
@@ -704,6 +747,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -780,6 +835,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -860,6 +927,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -982,6 +1061,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1055,6 +1146,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1121,6 +1224,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -1199,6 +1314,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1272,6 +1399,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1338,6 +1477,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -1416,6 +1567,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1489,6 +1652,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1555,6 +1730,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -1633,6 +1820,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1706,6 +1905,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1772,6 +1983,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -1850,6 +2073,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1922,6 +2157,18 @@
                 "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
                 "schemaVersion": "architecture-drift-ledger-v0",
                 "artifactId": "fixture-architecture-drift-ledger"
+              },
+              {
+                "kind": "architecture-field-snapshot",
+                "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+                "schemaVersion": "architecture-field-snapshot-v0",
+                "artifactId": "fixture-architecture-field-snapshot-v0"
+              },
+              {
+                "kind": "operation-proposal-log",
+                "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+                "schemaVersion": "operation-proposal-log-v0",
+                "artifactId": "fixture-operation-proposal-log-v0"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -1988,6 +2235,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2051,6 +2310,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
+          },
+          {
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
+          },
+          {
+            "kind": "operation-proposal-log",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-operation-proposal-log-v0"
           }
         ],
         "confidence": "bounded-fixture-signal",
@@ -2082,6 +2353,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2118,7 +2401,8 @@
         ],
         "nonConclusions": [
           "selected DesignFieldStrength signal is not a causal proof",
-          "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field"
+          "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+          "architecture field snapshot refs do not conclude global architecture field completeness"
         ]
       },
       {
@@ -2144,6 +2428,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
+          },
+          {
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
+          },
+          {
+            "kind": "operation-proposal-log",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-operation-proposal-log-v0"
           }
         ],
         "confidence": "bounded-fixture-signal",
@@ -2175,6 +2471,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2211,7 +2519,8 @@
         ],
         "nonConclusions": [
           "selected DesignFieldStrength signal is not a causal proof",
-          "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field"
+          "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+          "architecture field snapshot refs do not conclude global architecture field completeness"
         ]
       }
     ],
@@ -2239,6 +2548,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
+          },
+          {
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
+          },
+          {
+            "kind": "operation-proposal-log",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-operation-proposal-log-v0"
           }
         ],
         "confidence": "bounded-fixture-signal",
@@ -2270,6 +2591,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2314,69 +2647,230 @@
       "metricId": "attractorEngineering.supportRiskMass",
       "value": null,
       "status": "unmeasured",
-      "sourceRefs": [],
+      "sourceRefs": [
+        {
+          "kind": "signature-trajectory-report",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "schemaVersion": "signature-trajectory-report-v0",
+          "artifactId": "fixture-signature-trajectory-report-v0"
+        },
+        {
+          "kind": "pr-force-report",
+          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "schemaVersion": "pr-force-report-v0",
+          "artifactId": "fixture-pr-force-report-v0"
+        },
+        {
+          "kind": "architecture-drift-ledger",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "schemaVersion": "architecture-drift-ledger-v0",
+          "artifactId": "fixture-architecture-drift-ledger"
+        },
+        {
+          "kind": "architecture-field-snapshot",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "schemaVersion": "architecture-field-snapshot-v0",
+          "artifactId": "fixture-architecture-field-snapshot-v0"
+        },
+        {
+          "kind": "operation-proposal-log",
+          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "schemaVersion": "operation-proposal-log-v0",
+          "artifactId": "fixture-operation-proposal-log-v0"
+        }
+      ],
       "measurementBoundary": {
-        "measuredLayer": "architecture-dynamics",
-        "measuredAxes": [],
-        "sourceArtifactRefs": [],
-        "extractorVersion": "0.1.0",
-        "schemaVersion": "architecture-dynamics-metrics-report-v0",
-        "selectedRegionRefs": [],
-        "assumptions": [
-          "finite operation support weights are not retained in the MVP fixture"
+        "measuredLayer": "attractor-engineering",
+        "measuredAxes": [
+          "SupportRiskMass",
+          "DesignFieldStrength",
+          "SeedAttractorStrength",
+          "BasinBoundaryFragility",
+          "TrajectoryReturnTime",
+          "ObservabilityDebt"
         ],
-        "unsupportedConstructs": [],
-        "missingEvidence": [
+        "sourceArtifactRefs": [
           {
-            "evidenceKind": "architecture-dynamics-evidence",
-            "reason": "finite operation support weights are not retained in the MVP fixture",
-            "boundary": "unmeasured"
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "architecture-drift-ledger",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "schemaVersion": "architecture-drift-ledger-v0",
+            "artifactId": "fixture-architecture-drift-ledger"
+          },
+          {
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
+          },
+          {
+            "kind": "operation-proposal-log",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-operation-proposal-log-v0"
           }
         ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "Attractor Engineering is evaluated only for the selected fixture window",
+          "candidate regions are selected finite observations, not global state-space partitions"
+        ],
+        "unsupportedConstructs": [
+          "global attractor theorem",
+          "complete basin decomposition",
+          "future operation distribution completeness"
+        ],
+        "missingEvidence": [],
         "nonConclusions": [
-          "unmeasured dynamics metric is not measured-zero evidence"
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
       },
       "assumptions": [
-        "SupportRiskMass needs finite operation support and risk labels"
+        "SupportRiskMass calculator is not implemented; operation proposal log is retained as input boundary"
       ],
       "nonConclusions": [
         "unmeasured SupportRiskMass is not zero support risk",
-        "accepted PR history safety does not conclude future support risk is zero"
+        "accepted PR history safety does not conclude future support risk is zero",
+        "operation proposal log refs do not conclude AI proposal distribution completeness"
       ]
     },
     "designFieldStrength": {
       "metricId": "attractorEngineering.designFieldStrength",
       "value": null,
-      "status": "outOfScope",
-      "sourceRefs": [],
+      "status": "advisory",
+      "sourceRefs": [
+        {
+          "kind": "signature-trajectory-report",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+          "schemaVersion": "signature-trajectory-report-v0",
+          "artifactId": "fixture-signature-trajectory-report-v0"
+        },
+        {
+          "kind": "pr-force-report",
+          "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+          "schemaVersion": "pr-force-report-v0",
+          "artifactId": "fixture-pr-force-report-v0"
+        },
+        {
+          "kind": "architecture-drift-ledger",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "schemaVersion": "architecture-drift-ledger-v0",
+          "artifactId": "fixture-architecture-drift-ledger"
+        },
+        {
+          "kind": "architecture-field-snapshot",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "schemaVersion": "architecture-field-snapshot-v0",
+          "artifactId": "fixture-architecture-field-snapshot-v0"
+        },
+        {
+          "kind": "operation-proposal-log",
+          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "schemaVersion": "operation-proposal-log-v0",
+          "artifactId": "fixture-operation-proposal-log-v0"
+        }
+      ],
       "measurementBoundary": {
-        "measuredLayer": "architecture-dynamics",
-        "measuredAxes": [],
-        "sourceArtifactRefs": [],
-        "extractorVersion": "0.1.0",
-        "schemaVersion": "architecture-dynamics-metrics-report-v0",
-        "selectedRegionRefs": [],
-        "assumptions": [
-          "architecture field snapshot is outside this MVP fixture"
+        "measuredLayer": "attractor-engineering",
+        "measuredAxes": [
+          "SupportRiskMass",
+          "DesignFieldStrength",
+          "SeedAttractorStrength",
+          "BasinBoundaryFragility",
+          "TrajectoryReturnTime",
+          "ObservabilityDebt"
         ],
-        "unsupportedConstructs": [],
-        "missingEvidence": [
+        "sourceArtifactRefs": [
           {
-            "evidenceKind": "architecture-dynamics-evidence",
-            "reason": "architecture field snapshot is outside this MVP fixture",
-            "boundary": "outOfScope"
+            "kind": "signature-trajectory-report",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_trajectory_report.json",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "artifactId": "fixture-signature-trajectory-report-v0"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "architecture-drift-ledger",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+            "schemaVersion": "architecture-drift-ledger-v0",
+            "artifactId": "fixture-architecture-drift-ledger"
+          },
+          {
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
+          },
+          {
+            "kind": "operation-proposal-log",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-operation-proposal-log-v0"
           }
         ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "architecture-dynamics-metrics-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-dynamics-window"
+        ],
+        "assumptions": [
+          "Attractor Engineering is evaluated only for the selected fixture window",
+          "candidate regions are selected finite observations, not global state-space partitions"
+        ],
+        "unsupportedConstructs": [
+          "global attractor theorem",
+          "complete basin decomposition",
+          "future operation distribution completeness"
+        ],
+        "missingEvidence": [],
         "nonConclusions": [
-          "outOfScope dynamics metric is not measured-zero evidence"
+          "architecture dynamics metrics report is tooling validation, not a Lean theorem claim",
+          "unmeasured, unavailable, private, notComparable, and outOfScope metrics are not measured zero",
+          "Architecture Signature Dynamics is a multi-axis diagnostic, not a single score",
+          "global attractor, causal proof, and incident-risk conclusions are out of scope"
         ]
       },
       "assumptions": [
-        "DesignFieldStrength needs field snapshot and policy context evidence"
+        "DesignFieldStrength reads selected field snapshot refs as advisory tooling input"
       ],
       "nonConclusions": [
-        "outOfScope DesignFieldStrength is not weak field evidence"
+        "advisory DesignFieldStrength is not causal proof",
+        "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+        "architecture field snapshot refs do not conclude global architecture field completeness"
       ]
     },
     "seedAttractorStrength": {
@@ -2401,6 +2895,18 @@
           "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
+        },
+        {
+          "kind": "architecture-field-snapshot",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "schemaVersion": "architecture-field-snapshot-v0",
+          "artifactId": "fixture-architecture-field-snapshot-v0"
+        },
+        {
+          "kind": "operation-proposal-log",
+          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "schemaVersion": "operation-proposal-log-v0",
+          "artifactId": "fixture-operation-proposal-log-v0"
         }
       ],
       "measurementBoundary": {
@@ -2426,6 +2932,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
+          },
+          {
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
+          },
+          {
+            "kind": "operation-proposal-log",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-operation-proposal-log-v0"
           }
         ],
         "extractorVersion": "0.1.0",
@@ -2487,6 +3005,18 @@
           "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
+        },
+        {
+          "kind": "architecture-field-snapshot",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "schemaVersion": "architecture-field-snapshot-v0",
+          "artifactId": "fixture-architecture-field-snapshot-v0"
+        },
+        {
+          "kind": "operation-proposal-log",
+          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "schemaVersion": "operation-proposal-log-v0",
+          "artifactId": "fixture-operation-proposal-log-v0"
         }
       ],
       "measurementBoundary": {
@@ -2543,6 +3073,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
+          },
+          {
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
+          },
+          {
+            "kind": "operation-proposal-log",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-operation-proposal-log-v0"
           }
         ],
         "measurementBoundary": {
@@ -2573,6 +3115,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2634,6 +3188,18 @@
             "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
             "schemaVersion": "architecture-drift-ledger-v0",
             "artifactId": "fixture-architecture-drift-ledger"
+          },
+          {
+            "kind": "architecture-field-snapshot",
+            "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+            "schemaVersion": "architecture-field-snapshot-v0",
+            "artifactId": "fixture-architecture-field-snapshot-v0"
+          },
+          {
+            "kind": "operation-proposal-log",
+            "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+            "schemaVersion": "operation-proposal-log-v0",
+            "artifactId": "fixture-operation-proposal-log-v0"
           }
         ],
         "measurementBoundary": {
@@ -2664,6 +3230,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2735,6 +3313,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2806,6 +3396,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2877,6 +3479,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -2948,6 +3562,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -3019,6 +3645,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -3090,6 +3728,18 @@
               "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
               "schemaVersion": "architecture-drift-ledger-v0",
               "artifactId": "fixture-architecture-drift-ledger"
+            },
+            {
+              "kind": "architecture-field-snapshot",
+              "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+              "schemaVersion": "architecture-field-snapshot-v0",
+              "artifactId": "fixture-architecture-field-snapshot-v0"
+            },
+            {
+              "kind": "operation-proposal-log",
+              "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+              "schemaVersion": "operation-proposal-log-v0",
+              "artifactId": "fixture-operation-proposal-log-v0"
             }
           ],
           "extractorVersion": "0.1.0",
@@ -3262,6 +3912,18 @@
           "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
           "schemaVersion": "architecture-drift-ledger-v0",
           "artifactId": "fixture-architecture-drift-ledger"
+        },
+        {
+          "kind": "architecture-field-snapshot",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+          "schemaVersion": "architecture-field-snapshot-v0",
+          "artifactId": "fixture-architecture-field-snapshot-v0"
+        },
+        {
+          "kind": "operation-proposal-log",
+          "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+          "schemaVersion": "operation-proposal-log-v0",
+          "artifactId": "fixture-operation-proposal-log-v0"
         }
       ],
       "extractorVersion": "0.1.0",
@@ -3299,7 +3961,9 @@
       "field shaping signals are empirical tooling signals, not causal proof",
       "Attractor Engineering tooling does not conclude incident reduction",
       "Attractor Engineering tooling does not conclude an AI behavior theorem",
-      "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field"
+      "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+      "architecture field snapshot refs do not conclude global architecture field completeness",
+      "operation proposal log refs do not conclude AI proposal distribution completeness"
     ]
   },
   "measurementBoundary": {
@@ -3347,6 +4011,18 @@
         "kind": "ai-provenance-log",
         "path": "tools/archsig/tests/fixtures/minimal/ai_provenance_log.json",
         "artifactId": "fixture-ai-provenance-log"
+      },
+      {
+        "kind": "architecture-field-snapshot",
+        "path": "tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json",
+        "schemaVersion": "architecture-field-snapshot-v0",
+        "artifactId": "fixture-architecture-field-snapshot-v0"
+      },
+      {
+        "kind": "operation-proposal-log",
+        "path": "tools/archsig/tests/fixtures/minimal/operation_proposal_log.json",
+        "schemaVersion": "operation-proposal-log-v0",
+        "artifactId": "fixture-operation-proposal-log-v0"
       }
     ],
     "extractorVersion": "0.1.0",
@@ -3377,7 +4053,7 @@
       },
       {
         "evidenceKind": "operation-proposal-log",
-        "reason": "proposal log is not retained in the MVP fixture",
+        "reason": "proposal log is retained as a boundary but latent force calculator is not implemented",
         "boundary": "unmeasured"
       }
     ],

@@ -247,12 +247,16 @@ signature trajectory、dissipation / control を ArchSig artifact として記�
 - `architecture-dynamics-metrics-report-v0`: trajectory / force / gap / field-control /
   AI dynamics / attractorEngineering を集計し、field shaping signal と
   multi-axis VibeCodingReadiness を theorem claim へ昇格しない。
+- `architecture-field-snapshot-v0`: implemented skeleton / fixture / validator.
+  source refs、selected window、measurement boundary、non-conclusions を固定し、
+  global architecture field completeness を結論しない。
+- `operation-proposal-log-v0`: implemented skeleton / fixture / validator.
+  finite selected-window proposal entries と support weight boundary を保持し、
+  AI proposal distribution completeness を結論しない。
 - common `DynamicsMeasuredValue` / `MeasurementStatus` / `MeasurementBoundary`
 
 次段階 artifact 候補:
 
-- `architecture-field-snapshot-v0`
-- `operation-proposal-log-v0`
 - `force-dissipation-ledger-v0`
 - `development-control-input-log-v0`
 
@@ -262,6 +266,8 @@ signature trajectory、dissipation / control を ArchSig artifact として記�
 archsig pr-force-report
 archsig signature-trajectory-report
 archsig architecture-dynamics-metrics
+archsig architecture-field-snapshot
+archsig operation-proposal-log
 archsig dynamics-measurements
 ```
 
@@ -279,11 +285,21 @@ Canonical PR force fixture:
   force decomposition、Feature Extension Report refs、theorem precondition refs、
   measurement boundary、non-conclusions の tooling validation を検査する。
 
+Canonical field / proposal fixtures:
+
+- `tools/archsig/tests/fixtures/minimal/architecture_field_snapshot.json`
+- `tools/archsig/tests/fixtures/minimal/operation_proposal_log.json`
+- invalid fixtures:
+  `tools/archsig/tests/fixtures/minimal/architecture_field_snapshot_invalid.json`,
+  `tools/archsig/tests/fixtures/minimal/operation_proposal_log_invalid.json`
+- `archsig architecture-field-snapshot --input ...` は source refs、selected window、
+  measurement boundary、non-conclusions を検査する。
+- `archsig operation-proposal-log --input ...` は proposal entries、support weight boundary、
+  selected window、measurement boundary、non-conclusions を検査する。
+
 次段階 CLI 候補:
 
 ```bash
-archsig architecture-field-snapshot
-archsig operation-proposal-log
 archsig force-dissipation-ledger
 ```
 

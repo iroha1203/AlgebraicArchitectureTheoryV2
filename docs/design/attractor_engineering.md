@@ -305,6 +305,10 @@ AttractorEngineeringReportV0 =
 
 初期段階では独立 artifact にせず、`architecture-dynamics-metrics-report-v0` の section として
 出してよい。
+`architecture-field-snapshot-v0` と `operation-proposal-log-v0` は、この section が参照する
+input artifact boundary として使う。これらの artifact refs は `DesignFieldStrength`、
+`SupportRiskMass`、field shaping signal の evidence 境界を固定するが、global architecture
+field completeness や AI proposal distribution completeness は結論しない。
 
 | Metric | 定義方向 | claim level |
 | --- | --- | --- |
@@ -528,6 +532,9 @@ validator の最初の仕事は、数値の正しさよりも、`unmeasured` / `
 `notComparable` を 0 と読ませないことである。
 `designFieldSignals` と `seedAttractorSignals` は selected signal、source refs、confidence、
 measurement boundary を明示し、`DesignFieldStrength` の真値や causal proof を結論しない。
+`architecture-field-snapshot-v0` と `operation-proposal-log-v0` から読めるのは selected window
+内の field / proposal log boundary であり、global field や future proposal distribution の
+完全標本ではない。
 `fieldShapingDelta` は field update 前後の `SupportRiskMass`、`GoodAttractorBasinMass`、
 `SeedAttractorStrength` の差分候補であり、measurement boundary が比較不能なら
 `notComparable` とする。`vibeCodingReadinessAxes` は単一 numeric score ではなく、

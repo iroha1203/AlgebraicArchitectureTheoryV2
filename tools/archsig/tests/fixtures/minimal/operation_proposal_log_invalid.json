@@ -1,0 +1,312 @@
+{
+  "schemaVersion": "operation-proposal-log-v0",
+  "logId": "fixture-operation-proposal-log-v0",
+  "repository": {
+    "owner": "iroha1203",
+    "name": "AlgebraicArchitectureTheoryV2",
+    "defaultBranch": "main"
+  },
+  "window": {
+    "windowStart": "2026-01-01T00:00:00Z",
+    "windowEnd": "2026-01-31T23:59:59Z",
+    "windowKind": "selected-fixture-window"
+  },
+  "sourceRefs": [
+    {
+      "kind": "github-pr",
+      "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+      "artifactId": "fixture-github-pr"
+    },
+    {
+      "kind": "pr-force-report",
+      "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+      "schemaVersion": "pr-force-report-v0",
+      "artifactId": "fixture-pr-force-report-v0"
+    },
+    {
+      "kind": "policy-decision-report",
+      "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+      "schemaVersion": "policy-decision-report-v0",
+      "artifactId": "fixture-policy-decision-report"
+    }
+  ],
+  "proposals": [
+    {
+      "proposalId": "fixture:proposal-preserve-boundary",
+      "operationKind": "boundary-preserving-refactor",
+      "sourceKind": "human-review",
+      "status": "accepted",
+      "supportWeight": 1.4,
+      "selectedRegionRefs": [
+        "fixture:selected-safe-region"
+      ],
+      "sourceRefs": [
+
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "operation-proposal-log",
+        "measuredAxes": [
+          "FiniteOperationSupport",
+          "ProposalStatus",
+          "SupportRiskMass"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "github-pr",
+            "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+            "artifactId": "fixture-github-pr"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "policy-decision-report",
+            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "schemaVersion": "policy-decision-report-v0",
+            "artifactId": "fixture-policy-decision-report"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "operation-proposal-log-v0",
+        "selectedRegionRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "assumptions": [
+          "proposal log is retained only for the selected fixture window",
+          "support weights are normalized over retained proposal entries"
+        ],
+        "unsupportedConstructs": [
+          "AI proposal distribution completeness",
+          "future operation distribution theorem"
+        ],
+        "missingEvidence": [
+
+        ],
+        "nonConclusions": [
+          "operation proposal log is selected-window tooling evidence, not AI proposal distribution completeness",
+          "proposal support weights are finite log weights, not future operation distribution completeness",
+          "missing, private, and unmeasured proposal evidence is not measured zero"
+        ]
+      },
+      "assumptions": [
+        "accepted proposal is observed in retained PR force evidence",
+        "support weight is scoped to this finite fixture log"
+      ],
+      "nonConclusions": [
+
+      ]
+    },
+    {
+      "proposalId": "fixture:proposal-runtime-bypass",
+      "operationKind": "runtime-bypass",
+      "sourceKind": "ai-session",
+      "status": "rejected",
+      "supportWeight": 0.08,
+      "selectedRegionRefs": [
+        "fixture:selected-safe-region"
+      ],
+      "sourceRefs": [
+        {
+          "kind": "github-pr",
+          "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+          "artifactId": "fixture-github-pr"
+        },
+        {
+          "kind": "policy-decision-report",
+          "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+          "schemaVersion": "policy-decision-report-v0",
+          "artifactId": "fixture-policy-decision-report"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "operation-proposal-log",
+        "measuredAxes": [
+          "FiniteOperationSupport",
+          "ProposalStatus",
+          "SupportRiskMass"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "github-pr",
+            "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+            "artifactId": "fixture-github-pr"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "policy-decision-report",
+            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "schemaVersion": "policy-decision-report-v0",
+            "artifactId": "fixture-policy-decision-report"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "operation-proposal-log-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "assumptions": [
+          "proposal log is retained only for the selected fixture window",
+          "support weights are normalized over retained proposal entries"
+        ],
+        "unsupportedConstructs": [
+          "AI proposal distribution completeness",
+          "future operation distribution theorem"
+        ],
+        "missingEvidence": [
+
+        ],
+        "nonConclusions": [
+          "operation proposal log is selected-window tooling evidence, not AI proposal distribution completeness",
+          "proposal support weights are finite log weights, not future operation distribution completeness",
+          "missing, private, and unmeasured proposal evidence is not measured zero"
+        ]
+      },
+      "assumptions": [
+        "rejected proposal is retained as latent support evidence",
+        "rejection does not remove future proposal support"
+      ],
+      "nonConclusions": [
+        "operation proposal log is selected-window tooling evidence, not AI proposal distribution completeness",
+        "rejected proposal evidence is not an AI behavior theorem"
+      ]
+    },
+    {
+      "proposalId": "fixture:proposal-private-framework-convention",
+      "operationKind": "framework-convention",
+      "sourceKind": "private-ai-session",
+      "status": "private",
+      "supportWeight": null,
+      "selectedRegionRefs": [
+        "fixture:selected-safe-region"
+      ],
+      "sourceRefs": [
+        {
+          "kind": "policy-decision-report",
+          "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+          "schemaVersion": "policy-decision-report-v0",
+          "artifactId": "fixture-policy-decision-report"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "operation-proposal-log",
+        "measuredAxes": [
+          "FiniteOperationSupport",
+          "ProposalStatus",
+          "SupportRiskMass"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "github-pr",
+            "path": "tools/archsig/tests/fixtures/minimal/github_pr.json",
+            "artifactId": "fixture-github-pr"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          },
+          {
+            "kind": "policy-decision-report",
+            "path": "tools/archsig/tests/fixtures/minimal/policy_decision_report.json",
+            "schemaVersion": "policy-decision-report-v0",
+            "artifactId": "fixture-policy-decision-report"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "operation-proposal-log-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-fixture-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-safe-region"
+        ],
+        "assumptions": [
+          "proposal log is retained only for the selected fixture window",
+          "support weights are normalized over retained proposal entries"
+        ],
+        "unsupportedConstructs": [
+          "AI proposal distribution completeness",
+          "future operation distribution theorem"
+        ],
+        "missingEvidence": [
+
+        ],
+        "nonConclusions": [
+          "operation proposal log is selected-window tooling evidence, not AI proposal distribution completeness",
+          "proposal support weights are finite log weights, not future operation distribution completeness",
+          "missing, private, and unmeasured proposal evidence is not measured zero"
+        ]
+      },
+      "assumptions": [
+        "private proposal source is retained as a boundary, not a zero-weight entry",
+        "operation semantics remain unmeasured for this proposal"
+      ],
+      "nonConclusions": [
+        "missing, private, and unmeasured proposal evidence is not measured zero",
+        "private proposal evidence is not zero latent support"
+      ]
+    }
+  ],
+  "measurementBoundary": {
+    "measuredLayer": "operation-proposal-log",
+    "measuredAxes": [
+      "FiniteOperationSupport",
+      "ProposalStatus",
+      "SupportRiskMass"
+    ],
+    "sourceArtifactRefs": [
+
+    ],
+    "extractorVersion": "0.1.0",
+    "policyVersion": "fixture-policy-v0",
+    "schemaVersion": "operation-proposal-log-v0",
+    "aggregationWindow": {
+      "windowStart": "2026-01-01T00:00:00Z",
+      "windowEnd": "2026-01-31T23:59:59Z",
+      "windowKind": "selected-fixture-window"
+    },
+    "selectedRegionRefs": [
+      "fixture:selected-safe-region"
+    ],
+    "assumptions": [
+      "proposal log is retained only for the selected fixture window",
+      "support weights are normalized over retained proposal entries"
+    ],
+    "unsupportedConstructs": [
+      "AI proposal distribution completeness",
+      "future operation distribution theorem"
+    ],
+    "missingEvidence": [
+
+    ],
+    "nonConclusions": [
+      "operation proposal log is selected-window tooling evidence, not AI proposal distribution completeness",
+      "proposal support weights are finite log weights, not future operation distribution completeness",
+      "missing, private, and unmeasured proposal evidence is not measured zero"
+    ]
+  },
+  "nonConclusions": [
+    "operation proposal log is selected-window tooling evidence, not AI proposal distribution completeness",
+    "proposal support weights are finite log weights, not future operation distribution completeness",
+    "missing, private, and unmeasured proposal evidence is not measured zero"
+  ]
+}

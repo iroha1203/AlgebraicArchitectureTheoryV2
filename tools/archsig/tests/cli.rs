@@ -5687,6 +5687,198 @@ fn cli_signature_trajectory_report_fixture_and_validator_preserve_boundaries() {
 }
 
 #[test]
+fn cli_field_snapshot_and_operation_proposal_log_preserve_selected_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("architecture-field-artifacts");
+    let field_static_validation = out_dir.join("architecture-field-snapshot-static.json");
+    let field_fixture_artifact = out_dir.join("architecture-field-snapshot-fixture.json");
+    let field_fixture_validation = out_dir.join("architecture-field-snapshot-validation.json");
+    let field_invalid_validation = out_dir.join("architecture-field-snapshot-invalid.json");
+    let proposal_static_validation = out_dir.join("operation-proposal-log-static.json");
+    let proposal_fixture_artifact = out_dir.join("operation-proposal-log-fixture.json");
+    let proposal_fixture_validation = out_dir.join("operation-proposal-log-validation.json");
+    let proposal_invalid_validation = out_dir.join("operation-proposal-log-invalid.json");
+
+    run_sig0(&[
+        "architecture-field-snapshot",
+        "--out",
+        field_static_validation
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "architecture-field-snapshot",
+        "--fixture",
+        "--out",
+        field_fixture_artifact
+            .to_str()
+            .expect("fixture artifact path is utf-8"),
+    ]);
+    run_sig0(&[
+        "architecture-field-snapshot",
+        "--input",
+        root.join("architecture_field_snapshot.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        field_fixture_validation
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+
+    let json = read_json(&field_static_validation);
+    assert_eq!(
+        json["schemaVersion"],
+        "architecture-field-snapshot-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["snapshot"]["fieldSignals"]
+            .as_array()
+            .expect("fieldSignals is array")
+            .iter()
+            .any(|signal| {
+                signal["selectedSignal"] == "boundary-and-non-goal-alignment"
+                    && signal["sourceRefs"]
+                        .as_array()
+                        .expect("sourceRefs is array")
+                        .len()
+                        > 0
+                    && signal["measurementBoundary"]["aggregationWindow"].is_object()
+            })
+    );
+    assert!(json["snapshot"]["nonConclusions"]
+        .as_array()
+        .expect("nonConclusions is array")
+        .iter()
+        .any(|conclusion| {
+            conclusion
+                == "architecture field snapshot is selected-window tooling evidence, not global architecture field completeness"
+        }));
+
+    let artifact = read_json(&field_fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "architecture-field-snapshot-v0");
+    assert_eq!(
+        read_json(&field_fixture_validation)["summary"]["result"],
+        "pass"
+    );
+
+    let output = run_sig0_output(&[
+        "architecture-field-snapshot",
+        "--input",
+        root.join("architecture_field_snapshot_invalid.json")
+            .to_str()
+            .expect("invalid fixture path is utf-8"),
+        "--out",
+        field_invalid_validation
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid architecture field snapshot should fail validation"
+    );
+    let json = read_json(&field_invalid_validation);
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["id"] == "architecture-field-snapshot-boundaries-recorded"
+                    && check["result"] == "fail"
+            )
+    );
+
+    run_sig0(&[
+        "operation-proposal-log",
+        "--out",
+        proposal_static_validation
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-proposal-log",
+        "--fixture",
+        "--out",
+        proposal_fixture_artifact
+            .to_str()
+            .expect("fixture artifact path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-proposal-log",
+        "--input",
+        root.join("operation_proposal_log.json")
+            .to_str()
+            .expect("fixture path is utf-8"),
+        "--out",
+        proposal_fixture_validation
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+
+    let json = read_json(&proposal_static_validation);
+    assert_eq!(
+        json["schemaVersion"],
+        "operation-proposal-log-validation-report-v0"
+    );
+    assert_eq!(json["summary"]["result"], "pass");
+    assert!(
+        json["log"]["proposals"]
+            .as_array()
+            .expect("proposals is array")
+            .iter()
+            .any(|proposal| {
+                proposal["operationKind"] == "runtime-bypass"
+                    && proposal["status"] == "rejected"
+                    && proposal["measurementBoundary"]["aggregationWindow"].is_object()
+            })
+    );
+    assert!(json["log"]["nonConclusions"]
+        .as_array()
+        .expect("nonConclusions is array")
+        .iter()
+        .any(|conclusion| {
+            conclusion
+                == "operation proposal log is selected-window tooling evidence, not AI proposal distribution completeness"
+        }));
+
+    let artifact = read_json(&proposal_fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "operation-proposal-log-v0");
+    assert_eq!(
+        read_json(&proposal_fixture_validation)["summary"]["result"],
+        "pass"
+    );
+
+    let output = run_sig0_output(&[
+        "operation-proposal-log",
+        "--input",
+        root.join("operation_proposal_log_invalid.json")
+            .to_str()
+            .expect("invalid fixture path is utf-8"),
+        "--out",
+        proposal_invalid_validation
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid operation proposal log should fail validation"
+    );
+    let json = read_json(&proposal_invalid_validation);
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(
+                |check| check["id"] == "operation-proposal-log-boundaries-recorded"
+                    && check["result"] == "fail"
+            )
+    );
+}
+
+#[test]
 fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries() {
     let root = fixture_root();
     let out_dir = temp_dir("architecture-dynamics-metrics");
@@ -5767,7 +5959,7 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
     assert!(
         json["report"]["attractorEngineering"]["supportRiskMass"]["status"] == "unmeasured"
             && json["report"]["attractorEngineering"]["designFieldStrength"]["status"]
-                == "outOfScope"
+                == "advisory"
             && json["report"]["attractorEngineering"]["seedAttractorStrength"]["status"]
                 == "unavailable"
             && json["report"]["attractorEngineering"]["basinBoundaryFragility"]["status"]
@@ -5913,6 +6105,20 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                 conclusion
                     == "attractorEngineering is bounded tooling evidence, not a global attractor theorem"
             })
+    );
+    assert!(
+        artifact["attractorEngineering"]["measurementBoundary"]["sourceArtifactRefs"]
+            .as_array()
+            .expect("Attractor Engineering sourceArtifactRefs is array")
+            .iter()
+            .any(|artifact_ref| artifact_ref["kind"] == "architecture-field-snapshot")
+    );
+    assert!(
+        artifact["attractorEngineering"]["measurementBoundary"]["sourceArtifactRefs"]
+            .as_array()
+            .expect("Attractor Engineering sourceArtifactRefs is array")
+            .iter()
+            .any(|artifact_ref| artifact_ref["kind"] == "operation-proposal-log")
     );
 
     let json = read_json(&fixture_validation);
