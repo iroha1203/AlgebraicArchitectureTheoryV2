@@ -383,7 +383,7 @@ ArchitectureDynamicsMetricsReportV0 =
 
 `attractorEngineering` は独立 artifact ではなく、初期段階ではこの report の bounded
 section として出す。section は `selectedRegions`, `attractorCandidates`,
-`basinCandidates`, `supportRiskEntries`, `designFieldSignals`, `seedAttractorSignals`,
+`basinCandidates`, `basinSimulations`, `supportRiskEntries`, `designFieldSignals`, `seedAttractorSignals`,
 metric slots, `fieldShapingDelta`, `vibeCodingReadinessAxes`, `measurementBoundary`,
 `nonConclusions` を持つ。
 validator は section の欠落、status vocabulary の逸脱、required non-conclusions の欠落を
@@ -393,9 +393,11 @@ Engineering metrics を 0 と読まない。
 `architecture-field-snapshot-v0` と `operation-proposal-log-v0` を参照できる。
 ただし、field snapshot ref は global field completeness ではなく、proposal log ref は
 AI proposal distribution completeness ではない。
-basin / return / observability 系 metric は、finite trajectory、selected region、
-bounded horizon、source refs が揃うまで measured / estimated / derived evidence に
-昇格しない。`ObservabilityDebt` は required axis の `unmeasured` / `private` /
+basin / return / observability 系 metric は、finite trajectory、selected initial states、
+finite operation scripts、selected region、bounded horizon、source refs が揃うまで
+measured / estimated / derived evidence に昇格しない。揃う場合も `basinSimulations`
+内で candidate、non-candidate、missing-evidence classification を分け、global basin
+stability や recurrence theorem へ昇格しない。`ObservabilityDebt` は required axis の `unmeasured` / `private` /
 `unavailable` / `notComparable` を measured zero として集計しない。
 field shaping 系 signal は selected signal、source refs、confidence、measurement boundary を
 保持し、causal proof、incident reduction、AI behavior theorem、`DesignFieldStrength` の真値

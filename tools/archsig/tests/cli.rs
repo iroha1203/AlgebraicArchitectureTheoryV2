@@ -5963,11 +5963,10 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
             && json["report"]["attractorEngineering"]["seedAttractorStrength"]["status"]
                 == "unavailable"
             && json["report"]["attractorEngineering"]["basinBoundaryFragility"]["status"]
-                == "unmeasured"
+                == "derived"
             && json["report"]["attractorEngineering"]["trajectoryReturnTime"]["status"]
-                == "unavailable"
-            && json["report"]["attractorEngineering"]["observabilityDebt"]["status"]
-                == "notComparable"
+                == "derived"
+            && json["report"]["attractorEngineering"]["observabilityDebt"]["status"] == "derived"
     );
     assert_eq!(
         json["report"]["attractorEngineering"]["supportRiskMass"]["value"]["measuredRiskMass"],
@@ -5988,7 +5987,7 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
                     == "Formal.Arch.OperationRoleSchema.preservesInvariant_of_discharged_preserve"
             })
     );
-    assert_eq!(json["summary"]["basinCandidateCount"], 2);
+    assert_eq!(json["summary"]["basinCandidateCount"], 3);
     assert!(
         json["report"]["attractorEngineering"]["basinCandidates"]
             .as_array()
@@ -6004,14 +6003,52 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
             .as_array()
             .expect("basinCandidates is array")
             .iter()
+            .any(|candidate| candidate["status"] == "nonCandidate")
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["basinCandidates"]
+            .as_array()
+            .expect("basinCandidates is array")
+            .iter()
             .any(|candidate| {
-                candidate["status"] == "unmeasured"
+                candidate["status"] == "missingEvidence"
                     && candidate["measurementBoundary"]["missingEvidence"]
                         .as_array()
                         .expect("missingEvidence is array")
                         .iter()
                         .any(|evidence| evidence["boundary"] == "unmeasured")
             })
+    );
+    assert!(
+        json["report"]["attractorEngineering"]["basinSimulations"]
+            .as_array()
+            .expect("basinSimulations is array")
+            .iter()
+            .any(|simulation| {
+                simulation["boundedHorizon"] == 4
+                    && simulation["basinClassifications"]
+                        .as_array()
+                        .expect("basinClassifications is array")
+                        .iter()
+                        .any(|entry| entry["classification"] == "nonCandidate")
+                    && simulation["basinClassifications"]
+                        .as_array()
+                        .expect("basinClassifications is array")
+                        .iter()
+                        .any(|entry| entry["classification"] == "missingEvidence")
+            })
+    );
+    assert_eq!(
+        json["report"]["attractorEngineering"]["basinBoundaryFragility"]["value"]["fragilityRatio"],
+        serde_json::json!(0.5)
+    );
+    assert_eq!(
+        json["report"]["attractorEngineering"]["trajectoryReturnTime"]["value"]["missingReturnEvidenceCount"],
+        serde_json::json!(2)
+    );
+    assert_eq!(
+        json["report"]["attractorEngineering"]["observabilityDebt"]["value"]["debtWeight"],
+        serde_json::json!(0.3)
     );
     assert_eq!(
         json["report"]["attractorEngineering"]["supportRiskEntries"]
@@ -6255,8 +6292,12 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
         .as_object_mut()
         .expect("bounded basin measurementBoundary is object")
         .remove("aggregationWindow");
-    invalid_attractor_json["attractorEngineering"]["basinCandidates"][1]["measurementBoundary"]["missingEvidence"] =
+    invalid_attractor_json["attractorEngineering"]["basinCandidates"][2]["measurementBoundary"]["missingEvidence"] =
         serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["basinSimulations"][0]["basinClassifications"]
+        [2]["missingEvidence"] = serde_json::json!([]);
+    invalid_attractor_json["attractorEngineering"]["basinSimulations"][0]["perturbationEvidence"]
+        [1]["perturbedClassification"] = serde_json::json!("candidate");
     invalid_attractor_json["attractorEngineering"]["basinBoundaryFragility"]["status"] =
         serde_json::json!("measured");
     invalid_attractor_json["attractorEngineering"]["basinBoundaryFragility"]["value"] =
@@ -6399,7 +6440,18 @@ fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries()
             .any(|example| example["evidence"]
                 .as_str()
                 .unwrap_or_default()
-                .contains("missing evidence must not be emitted as measured numeric zero"))
+                .contains("missing-evidence basin classifications must retain missing evidence"))
+    );
+    assert!(
+        attractor_check["examples"]
+            .as_array()
+            .expect("examples is array")
+            .iter()
+            .any(
+                |example| example["evidence"].as_str().unwrap_or_default().contains(
+                    "BasinBoundaryFragility needs selected 1-step or k-step perturbation evidence"
+                )
+            )
     );
     assert!(
         attractor_check["examples"]
