@@ -146,4 +146,152 @@ theorem supportShaping_avoids_badRegion
 
 end AttractorEngineeringSupportPackage
 
+/-
+A finite witness separating accepted-step invariant preservation from
+support-family preservation.
+
+The selected controller accepts only safe self-steps. The selected support at
+the safe state still contains an operation that can realize an unsafe drift, so
+support preservation does not follow from accepted preservation alone.
+-/
+namespace AcceptedPreservationNotSupportPreservation
+
+inductive ExampleOperation where
+  | acceptedNoop
+  | unsafeDrift
+  deriving DecidableEq, Repr
+
+abbrev ExampleState := Bool
+abbrev ExampleSig := Bool
+
+def safeState : ExampleState := false
+def unsafeState : ExampleState := true
+
+def observation : SignatureObservation ExampleState ExampleSig where
+  observe := id
+  coverageAssumptions := True
+  nonConclusions := True
+
+def safeRegion : SafeRegion ExampleSig :=
+  fun sig => sig = false
+
+def acceptedTransition :
+    ArchitectureTransition ExampleState safeState safeState where
+  kind := ArchitectureTransitionKind.policyUpdate
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def unsafeTransition :
+    ArchitectureTransition ExampleState safeState unsafeState where
+  kind := ArchitectureTransitionKind.drift
+  lawful := True
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  nonConclusions := True
+
+def control : DampingControlSchema ExampleState ExampleSig where
+  observation := observation
+  invariant := safeRegion
+  accepted := fun {X Y} _t => X = safeState ∧ Y = safeState
+  rejected := fun {X Y} _t => Y = unsafeState
+  acceptedPreservesInvariant := by
+    intro X Y _t hAccepted _hStart
+    simpa [StateInSafeRegion, observation, safeRegion] using hAccepted.2
+  coverageAssumptions := True
+  nonConclusions := True
+
+def semantics :
+    OperationTransitionSemantics ExampleState ExampleOperation where
+  realizes := fun op {X Y} _t =>
+    match op with
+    | ExampleOperation.acceptedNoop => X = safeState ∧ Y = safeState
+    | ExampleOperation.unsafeDrift => X = safeState ∧ Y = unsafeState
+  coverageAssumptions := True
+  nonConclusions := True
+
+def kernel : FiniteOperationKernel ExampleState ExampleOperation where
+  support := fun X =>
+    if X = safeState then
+      [ExampleOperation.acceptedNoop, ExampleOperation.unsafeDrift]
+    else
+      [ExampleOperation.acceptedNoop]
+  coverageAssumptions := True
+  weightSourceBoundary := True
+  normalizationBoundary := True
+  nonConclusions := True
+
+theorem acceptedTransition_accepted :
+    control.AcceptedStep acceptedTransition := by
+  simp [DampingControlSchema.AcceptedStep, control, acceptedTransition,
+    safeState]
+
+theorem acceptedTransition_preserves_selectedInvariant :
+    StepPreservesSafeRegion control.observation control.invariant
+      acceptedTransition :=
+  control.acceptedStep_preserves_selectedInvariant
+    acceptedTransition acceptedTransition_accepted
+
+theorem source_supports_unsafeOperation :
+    kernel.Supports safeState ExampleOperation.unsafeDrift := by
+  simp [FiniteOperationKernel.Supports, kernel, safeState]
+
+theorem unsafeOperation_realizes_unsafeTransition :
+    semantics.Realizes ExampleOperation.unsafeDrift unsafeTransition := by
+  simp [OperationTransitionSemantics.Realizes, semantics, safeState,
+    unsafeState]
+
+theorem unsafeOperation_not_preserves_safeRegion :
+    ¬ semantics.OperationPreservesSafeRegion control.observation
+      control.invariant ExampleOperation.unsafeDrift := by
+  intro hPreserves
+  have hStep :
+      StepPreservesSafeRegion control.observation control.invariant
+        unsafeTransition :=
+    hPreserves unsafeTransition unsafeOperation_realizes_unsafeTransition
+  have hTarget :
+      StateInSafeRegion control.observation control.invariant unsafeState :=
+    hStep (by
+      simp [StateInSafeRegion, control, observation, safeRegion, safeState])
+  simp [StateInSafeRegion, control, observation, safeRegion, unsafeState] at hTarget
+
+/--
+Bundled counterexample: accepted-step invariant preservation can hold, and a
+nonempty accepted safe step can exist, while the operation support still
+contains an operation that does not preserve the selected safe region.
+
+This records only a finite Lean boundary. It does not claim anything about
+review capacity, CI effectiveness, policy completeness, PR outcomes, or
+empirical support estimation.
+-/
+theorem acceptedPreservation_not_supportPreservation_counterexample :
+    (∃ (t : ArchitectureTransition ExampleState safeState safeState),
+      control.AcceptedStep t ∧
+        StepPreservesSafeRegion control.observation control.invariant t) ∧
+    (∀ {X Y : ExampleState} (t : ArchitectureTransition ExampleState X Y),
+      control.AcceptedStep t ->
+        StepPreservesSafeRegion control.observation control.invariant t) ∧
+    (∃ X op,
+      kernel.Supports X op ∧
+        ¬ semantics.OperationPreservesSafeRegion control.observation
+          control.invariant op) ∧
+    DampingControlSchema.RecordsNonConclusions control ∧
+    FiniteOperationKernel.RecordsNonConclusions kernel ∧
+    OperationTransitionSemantics.RecordsNonConclusions semantics := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · exact
+      ⟨acceptedTransition, acceptedTransition_accepted,
+        acceptedTransition_preserves_selectedInvariant⟩
+  · intro X Y t hAccepted
+    exact control.acceptedStep_preserves_selectedInvariant t hAccepted
+  · exact
+      ⟨safeState, ExampleOperation.unsafeDrift, source_supports_unsafeOperation,
+        unsafeOperation_not_preserves_safeRegion⟩
+  · simp [DampingControlSchema.RecordsNonConclusions, control]
+  · simp [FiniteOperationKernel.RecordsNonConclusions, kernel]
+  · simp [OperationTransitionSemantics.RecordsNonConclusions, semantics]
+
+end AcceptedPreservationNotSupportPreservation
+
 end Formal.Arch
