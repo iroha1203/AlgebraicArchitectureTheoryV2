@@ -294,4 +294,184 @@ theorem acceptedPreservation_not_supportPreservation_counterexample :
 
 end AcceptedPreservationNotSupportPreservation
 
+/-
+Constructive finite return for a selected strict / fair damping trace.
+
+The theorem in this namespace is trace-relative: it proves a Nat-valued
+bad-axis descent fact under explicit nonincrease and strict fair-block
+assumptions. It does not assert that review, CI, policy, or tooling can
+establish those assumptions for real pull-request streams.
+-/
+namespace ConstructiveDampingFiniteReturn
+
+variable {State : Type u} {Sig : Type v}
+
+/--
+Minimal strict / fair block damping package for a selected bad-axis score.
+
+`blockLength` is the selected finite block bound. The strict decrease and
+nonincrease hypotheses are kept as theorem inputs over a concrete trace, so
+this package remains separate from empirical support estimation.
+-/
+structure StrictFairBlockDampingAssumption
+    (control : DampingControlSchema State Sig) where
+  badAxis : Sig -> Nat
+  blockLength : Nat
+  acceptedNonincreaseBoundary : Prop
+  empiricalSupportBoundary : Prop
+  nonConclusions : Prop
+
+namespace StrictFairBlockDampingAssumption
+
+variable {control : DampingControlSchema State Sig}
+
+/-- Score of the selected signature trajectory at index `n`. -/
+def scoreAt
+    (assumption : StrictFairBlockDampingAssumption control)
+    (trajectory : Nat -> Sig) (n : Nat) : Nat :=
+  assumption.badAxis (trajectory n)
+
+/-- The selected score trace is nonincreasing at every adjacent step. -/
+def TraceNonincreasing
+    (assumption : StrictFairBlockDampingAssumption control)
+    (trajectory : Nat -> Sig) : Prop :=
+  ∀ n, assumption.scoreAt trajectory (n + 1) ≤
+    assumption.scoreAt trajectory n
+
+/--
+Every positive-score block has a strict decrease within the selected finite
+block length.
+-/
+def TraceHasStrictFairBlocks
+    (assumption : StrictFairBlockDampingAssumption control)
+    (trajectory : Nat -> Sig) : Prop :=
+  ∀ n, 0 < assumption.scoreAt trajectory n ->
+    ∃ step,
+      0 < step ∧ step ≤ assumption.blockLength ∧
+        assumption.scoreAt trajectory (n + step) <
+          assumption.scoreAt trajectory n
+
+/--
+Nonincrease alone is only a boundary condition; finite return needs the
+separate strict fair-block hypothesis.
+-/
+def RecordsAcceptedNonincreaseBoundary
+    (assumption : StrictFairBlockDampingAssumption control) : Prop :=
+  assumption.acceptedNonincreaseBoundary
+
+/--
+Whether empirical tooling supports the strict fair-block hypothesis is outside
+the Lean theorem claim.
+-/
+def RecordsEmpiricalSupportBoundary
+    (assumption : StrictFairBlockDampingAssumption control) : Prop :=
+  assumption.empiricalSupportBoundary
+
+/-- The strict damping package explicitly records its non-conclusion boundary. -/
+def RecordsNonConclusions
+    (assumption : StrictFairBlockDampingAssumption control) : Prop :=
+  assumption.nonConclusions
+
+private theorem natScore_finiteReturn_of_strictFairBlocks
+    (score : Nat -> Nat) (k B : Nat)
+    (hStart : score 0 = B)
+    (hNonincrease : ∀ n, score (n + 1) ≤ score n)
+    (hStrict :
+      ∀ n, 0 < score n ->
+        ∃ step, 0 < step ∧ step ≤ k ∧ score (n + step) < score n) :
+    ∃ n, n ≤ k * B ∧ score n = 0 := by
+  revert score
+  refine Nat.strongRecOn B ?_
+  intro B ih score hStart hNonincrease hStrict
+  cases B with
+  | zero =>
+      exact ⟨0, by simp, hStart⟩
+  | succ B =>
+      by_cases hZero : score 0 = 0
+      · exact ⟨0, by simp, hZero⟩
+      · have hPositive : 0 < score 0 := Nat.pos_of_ne_zero hZero
+        obtain ⟨step, hStepPos, hStepLe, hStepDec⟩ :=
+          hStrict 0 hPositive
+        let score' : Nat -> Nat := fun n => score (step + n)
+        have hStart' : score' 0 = score step := by
+          simp [score']
+        have hScoreStepLt : score step < Nat.succ B := by
+          have hDec : score (0 + step) < score 0 := hStepDec
+          simpa [hStart] using hDec
+        have hScoreStepLe : score step ≤ B :=
+          Nat.le_of_lt_succ hScoreStepLt
+        have hNonincrease' : ∀ n, score' (n + 1) ≤ score' n := by
+          intro n
+          simpa [score', Nat.add_assoc] using hNonincrease (step + n)
+        have hStrict' :
+            ∀ n, 0 < score' n ->
+              ∃ step, 0 < step ∧ step ≤ k ∧
+                score' (n + step) < score' n := by
+          intro n hPos
+          obtain ⟨step', hStep'Pos, hStep'Le, hStep'Dec⟩ :=
+            hStrict (step + n) (by simpa [score'] using hPos)
+          refine ⟨step', hStep'Pos, hStep'Le, ?_⟩
+          simpa [score', Nat.add_assoc] using hStep'Dec
+        obtain ⟨r, hRLe, hRZero⟩ :=
+          ih (score step) hScoreStepLt score' hStart'
+            hNonincrease' hStrict'
+        refine ⟨step + r, ?_, ?_⟩
+        · have hRBound : r ≤ k * B :=
+            le_trans hRLe (Nat.mul_le_mul_left k hScoreStepLe)
+          have hTotal : step + r ≤ k + k * B :=
+            Nat.add_le_add hStepLe hRBound
+          simpa [Nat.mul_succ, Nat.add_comm, Nat.add_left_comm,
+            Nat.add_assoc] using hTotal
+        · simpa [score'] using hRZero
+
+/--
+If a selected bad-axis score starts at `B`, is nonincreasing, and every positive
+block of length `blockLength` contains a strict decrease, then the trace reaches
+score zero by some index `n <= blockLength * B`.
+-/
+theorem strictFairBlockDamping_finiteReturn
+    (assumption : StrictFairBlockDampingAssumption control)
+    (trajectory : Nat -> Sig) (B : Nat)
+    (hStart : assumption.scoreAt trajectory 0 = B)
+    (hNonincrease : assumption.TraceNonincreasing trajectory)
+    (hStrict : assumption.TraceHasStrictFairBlocks trajectory) :
+    ∃ n, n ≤ assumption.blockLength * B ∧
+      assumption.scoreAt trajectory n = 0 :=
+  natScore_finiteReturn_of_strictFairBlocks
+    (fun n => assumption.scoreAt trajectory n)
+    assumption.blockLength B hStart hNonincrease hStrict
+
+/--
+Bundled Attractor Engineering reading: the finite return conclusion is paired
+with explicit boundary records for nonincrease-only reasoning and empirical
+tooling support.
+-/
+theorem strictFairBlockDamping_finiteReturn_with_boundaries
+    (assumption : StrictFairBlockDampingAssumption control)
+    (trajectory : Nat -> Sig) (B : Nat)
+    (hStart : assumption.scoreAt trajectory 0 = B)
+    (hNonincrease : assumption.TraceNonincreasing trajectory)
+    (hStrict : assumption.TraceHasStrictFairBlocks trajectory)
+    (hAcceptedBoundary :
+      assumption.RecordsAcceptedNonincreaseBoundary)
+    (hEmpiricalBoundary :
+      assumption.RecordsEmpiricalSupportBoundary)
+    (hNonConclusions :
+      assumption.RecordsNonConclusions) :
+    (∃ n, n ≤ assumption.blockLength * B ∧
+      assumption.scoreAt trajectory n = 0) ∧
+    assumption.RecordsAcceptedNonincreaseBoundary ∧
+    assumption.RecordsEmpiricalSupportBoundary ∧
+    assumption.RecordsNonConclusions := by
+  exact
+    ⟨assumption.strictFairBlockDamping_finiteReturn
+        trajectory B hStart hNonincrease hStrict,
+      hAcceptedBoundary,
+      hEmpiricalBoundary,
+      hNonConclusions⟩
+
+end StrictFairBlockDampingAssumption
+
+end ConstructiveDampingFiniteReturn
+
 end Formal.Arch
