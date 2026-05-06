@@ -9,10 +9,10 @@ use crate::{
     ArchitectureDynamicsMetricsReportV0, ArchitectureDynamicsMetricsReportValidationInput,
     ArchitectureDynamicsMetricsReportValidationReportV0,
     ArchitectureDynamicsMetricsReportValidationSummary, AttractorEngineeringCandidateV0,
-    AttractorEngineeringMetricsV0, DynamicsAggregationWindowV0, DynamicsArtifactRefV0,
-    DynamicsMeasuredValueV0, DynamicsMissingEvidenceV0, EXTRACTOR_VERSION, MeasurementBoundaryV0,
-    PR_FORCE_REPORT_SCHEMA_VERSION, RepositoryRef, SelectedSignatureRegionV0,
-    SupportRiskMassEntryV0, ValidationCheck, ValidationExample,
+    AttractorEngineeringMetricsV0, AttractorEngineeringSignalV0, DynamicsAggregationWindowV0,
+    DynamicsArtifactRefV0, DynamicsMeasuredValueV0, DynamicsMissingEvidenceV0, EXTRACTOR_VERSION,
+    MeasurementBoundaryV0, PR_FORCE_REPORT_SCHEMA_VERSION, RepositoryRef,
+    SelectedSignatureRegionV0, SupportRiskMassEntryV0, ValidationCheck, ValidationExample,
 };
 
 const ALLOWED_STATUSES: [&str; 9] = [
@@ -40,10 +40,14 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 4] = [
 const FORCE_CLASS_NON_CONCLUSION: &str =
     "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes";
 
-const REQUIRED_ATTRACTOR_NON_CONCLUSIONS: [&str; 3] = [
+const REQUIRED_ATTRACTOR_NON_CONCLUSIONS: [&str; 7] = [
     "attractorEngineering is bounded tooling evidence, not a global attractor theorem",
     "unmeasured, unavailable, private, notComparable, and outOfScope Attractor Engineering metrics are not measured zero",
     "attractor and basin candidates are selected-region candidates, not global convergence claims",
+    "field shaping signals are empirical tooling signals, not causal proof",
+    "Attractor Engineering tooling does not conclude incident reduction",
+    "Attractor Engineering tooling does not conclude an AI behavior theorem",
+    "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
 ];
 
 const ALLOWED_ATTRACTOR_CANDIDATE_STATUSES: [&str; 5] = [
@@ -94,6 +98,21 @@ const TRAJECTORY_RETURN_TIME_NON_CONCLUSION: &str =
     "TrajectoryReturnTime is bounded observed return evidence, not a global recurrence theorem";
 const OBSERVABILITY_DEBT_NON_CONCLUSION: &str =
     "unmeasured, private, and unavailable required axes are not zero ObservabilityDebt";
+const FIELD_SHAPING_DELTA_NON_CONCLUSION: &str =
+    "FieldShapingDelta is comparable only across matching measurement boundaries";
+const VIBE_CODING_READINESS_NON_CONCLUSION: &str =
+    "VibeCodingReadiness is multi-axis readiness, not a single numeric score";
+
+const REQUIRED_VIBE_CODING_READINESS_AXES: [&str; 8] = [
+    "DesignFieldStrength",
+    "SeedAttractorStrength",
+    "SupportRiskMass",
+    "GoodAttractorBasinMass",
+    "BasinBoundaryFragility",
+    "TrajectoryReturnTime",
+    "DampingToThroughputMargin",
+    "ObservabilityDebt",
+];
 
 pub fn static_architecture_dynamics_metrics_report() -> ArchitectureDynamicsMetricsReportV0 {
     let pr_force_ref = artifact_ref(
@@ -594,6 +613,59 @@ fn attractor_engineering_section(
             ),
         ],
         support_risk_entries: support_risk_entries(section_boundary.clone()),
+        design_field_signals: vec![
+            attractor_signal(
+                "fixture:design-field-boundary-signal",
+                "DesignFieldStrength",
+                "boundary-and-non-goal-alignment",
+                source_refs.clone(),
+                "advisory",
+                Some("bounded-fixture-signal"),
+                section_boundary.clone(),
+                &[
+                    "boundary, ownership, test, and non-goal refs are read as selected field-shaping signal inputs",
+                    "signal is evaluated only for the selected fixture window",
+                ],
+                &[
+                    "selected DesignFieldStrength signal is not a causal proof",
+                    "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+                ],
+            ),
+            attractor_signal(
+                "fixture:design-field-observability-signal",
+                "DesignFieldStrength",
+                "test-and-observability-support",
+                source_refs.clone(),
+                "advisory",
+                Some("bounded-fixture-signal"),
+                section_boundary.clone(),
+                &[
+                    "test and observability context is retained as a selected signal, not a complete field snapshot",
+                    "signal source refs delimit the measured boundary",
+                ],
+                &[
+                    "selected DesignFieldStrength signal is not a causal proof",
+                    "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field",
+                ],
+            ),
+        ],
+        seed_attractor_signals: vec![attractor_signal(
+            "fixture:seed-attractor-canonical-example-signal",
+            "SeedAttractorStrength",
+            "canonical-example-copyability",
+            source_refs.clone(),
+            "advisory",
+            Some("bounded-fixture-signal"),
+            section_boundary.clone(),
+            &[
+                "canonical examples are treated as seed signal refs for the selected window",
+                "copyability signal is not promoted to future patch convergence",
+            ],
+            &[
+                "selected SeedAttractorStrength signal is not a convergence theorem",
+                "seed attractor signal does not prove future patch distribution completeness",
+            ],
+        )],
         support_risk_mass: metric(
             "attractorEngineering.supportRiskMass",
             None,
@@ -640,6 +712,131 @@ fn attractor_engineering_section(
             &["SeedAttractorStrength needs canonical examples and patch similarity evidence"],
             &["unavailable SeedAttractorStrength is not zero seed effect evidence"],
         ),
+        field_shaping_delta: metric(
+            "attractorEngineering.fieldShapingDelta",
+            Some(json!({
+                "comparisonStatus": "notComparable",
+                "supportRiskMassDelta": null,
+                "goodAttractorBasinMassDelta": null,
+                "seedAttractorStrengthDelta": null
+            })),
+            "notComparable",
+            None,
+            source_refs.clone(),
+            gap_boundary(
+                "field update before/after windows do not share comparable measurement boundaries in the MVP fixture",
+                "notComparable",
+            ),
+            &[
+                "FieldShapingDelta compares SupportRiskMass, GoodAttractorBasinMass, and SeedAttractorStrength only across comparable before/after boundaries",
+            ],
+            &[
+                "notComparable FieldShapingDelta is not zero field shaping effect",
+                FIELD_SHAPING_DELTA_NON_CONCLUSION,
+            ],
+        ),
+        vibe_coding_readiness_axes: vec![
+            readiness_axis(
+                &section_boundary,
+                "DesignFieldStrength",
+                "advisory",
+                Some("bounded-fixture-signal"),
+                source_refs.clone(),
+                &[
+                    "DesignFieldStrength contributes one readiness axis and is not aggregated into a score",
+                ],
+                &[
+                    VIBE_CODING_READINESS_NON_CONCLUSION,
+                    "DesignFieldStrength readiness is not a causal truth claim",
+                ],
+            ),
+            readiness_axis(
+                &section_boundary,
+                "SeedAttractorStrength",
+                "advisory",
+                Some("bounded-fixture-signal"),
+                source_refs.clone(),
+                &["SeedAttractorStrength is read from selected canonical-example signal refs"],
+                &[
+                    VIBE_CODING_READINESS_NON_CONCLUSION,
+                    "seed readiness does not prove future patch convergence",
+                ],
+            ),
+            readiness_axis(
+                &section_boundary,
+                "SupportRiskMass",
+                "unmeasured",
+                None,
+                Vec::new(),
+                &["SupportRiskMass readiness awaits finite operation support weights"],
+                &[
+                    VIBE_CODING_READINESS_NON_CONCLUSION,
+                    "unmeasured support risk readiness is not low risk evidence",
+                ],
+            ),
+            readiness_axis(
+                &section_boundary,
+                "GoodAttractorBasinMass",
+                "notComparable",
+                None,
+                Vec::new(),
+                &["GoodAttractorBasinMass readiness needs comparable bounded basin simulation"],
+                &[
+                    VIBE_CODING_READINESS_NON_CONCLUSION,
+                    "notComparable basin mass readiness is not zero basin mass",
+                ],
+            ),
+            readiness_axis(
+                &section_boundary,
+                "BasinBoundaryFragility",
+                "unmeasured",
+                None,
+                Vec::new(),
+                &["BasinBoundaryFragility readiness needs bounded perturbation simulation"],
+                &[
+                    VIBE_CODING_READINESS_NON_CONCLUSION,
+                    BASIN_BOUNDARY_FRAGILITY_NON_CONCLUSION,
+                ],
+            ),
+            readiness_axis(
+                &section_boundary,
+                "TrajectoryReturnTime",
+                "unavailable",
+                None,
+                Vec::new(),
+                &["TrajectoryReturnTime readiness needs selected excursion and return evidence"],
+                &[
+                    VIBE_CODING_READINESS_NON_CONCLUSION,
+                    TRAJECTORY_RETURN_TIME_NON_CONCLUSION,
+                ],
+            ),
+            readiness_axis(
+                &section_boundary,
+                "DampingToThroughputMargin",
+                "outOfScope",
+                None,
+                Vec::new(),
+                &[
+                    "DampingToThroughputMargin is reserved for future proposal throughput and damping evidence",
+                ],
+                &[
+                    VIBE_CODING_READINESS_NON_CONCLUSION,
+                    "outOfScope damping margin is not zero throughput risk",
+                ],
+            ),
+            readiness_axis(
+                &section_boundary,
+                "ObservabilityDebt",
+                "notComparable",
+                None,
+                Vec::new(),
+                &["ObservabilityDebt readiness needs comparable observed and latent support axes"],
+                &[
+                    VIBE_CODING_READINESS_NON_CONCLUSION,
+                    OBSERVABILITY_DEBT_NON_CONCLUSION,
+                ],
+            ),
+        ],
         basin_boundary_fragility: metric(
             "attractorEngineering.basinBoundaryFragility",
             None,
@@ -846,6 +1043,52 @@ fn attractor_candidate(
         assumptions: strings(assumptions),
         non_conclusions: strings(non_conclusions),
     }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn attractor_signal(
+    signal_id: &str,
+    signal_kind: &str,
+    selected_signal: &str,
+    source_refs: Vec<DynamicsArtifactRefV0>,
+    status: &str,
+    confidence: Option<&str>,
+    measurement_boundary: MeasurementBoundaryV0,
+    assumptions: &[&str],
+    non_conclusions: &[&str],
+) -> AttractorEngineeringSignalV0 {
+    AttractorEngineeringSignalV0 {
+        signal_id: signal_id.to_string(),
+        signal_kind: signal_kind.to_string(),
+        selected_signal: selected_signal.to_string(),
+        status: status.to_string(),
+        source_refs,
+        confidence: confidence.map(str::to_string),
+        measurement_boundary,
+        assumptions: strings(assumptions),
+        non_conclusions: strings(non_conclusions),
+    }
+}
+
+fn readiness_axis(
+    measurement_boundary: &MeasurementBoundaryV0,
+    axis: &str,
+    status: &str,
+    confidence: Option<&str>,
+    source_refs: Vec<DynamicsArtifactRefV0>,
+    assumptions: &[&str],
+    non_conclusions: &[&str],
+) -> DynamicsMeasuredValueV0 {
+    metric(
+        &format!("vibeCodingReadiness.{axis}"),
+        None,
+        status,
+        confidence,
+        source_refs,
+        measurement_boundary.clone(),
+        assumptions,
+        non_conclusions,
+    )
 }
 
 fn metric(
@@ -1177,11 +1420,14 @@ fn check_attractor_engineering_section(
         || section.attractor_candidates.is_empty()
         || section.basin_candidates.is_empty()
         || section.support_risk_entries.is_empty()
+        || section.design_field_signals.is_empty()
+        || section.seed_attractor_signals.is_empty()
+        || section.vibe_coding_readiness_axes.is_empty()
     {
         invalid.push(generic_validation_example(
             &report.report_id,
             "attractorEngineering",
-            "selectedRegions, attractorCandidates, basinCandidates, and supportRiskEntries must be present",
+            "selectedRegions, attractorCandidates, basinCandidates, supportRiskEntries, field signals, and readiness axes must be present",
         ));
     }
     for required in REQUIRED_ATTRACTOR_NON_CONCLUSIONS {
@@ -1273,6 +1519,13 @@ fn check_attractor_engineering_section(
             &mut invalid,
         );
     }
+    for signal in section
+        .design_field_signals
+        .iter()
+        .chain(section.seed_attractor_signals.iter())
+    {
+        validate_field_shaping_signal(signal, &mut invalid);
+    }
     for entry in &section.support_risk_entries {
         if entry.operation_id.trim().is_empty()
             || entry.operation_kind.trim().is_empty()
@@ -1349,6 +1602,8 @@ fn check_attractor_engineering_section(
     }
     validate_safe_preserving_confidence_distinction(section, &mut invalid);
     validate_basin_return_observability_boundaries(section, &mut invalid);
+    validate_field_shaping_delta(section, &mut invalid);
+    validate_vibe_coding_readiness_axes(section, &mut invalid);
     if !section
         .support_risk_mass
         .non_conclusions
@@ -1367,6 +1622,162 @@ fn check_attractor_engineering_section(
         "Attractor Engineering section records bounded candidates, metric slots, and non-conclusions",
         invalid,
     )
+}
+
+fn validate_field_shaping_signal(
+    signal: &AttractorEngineeringSignalV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    if signal.signal_id.trim().is_empty()
+        || signal.signal_kind.trim().is_empty()
+        || signal.selected_signal.trim().is_empty()
+        || signal.status.trim().is_empty()
+        || signal.source_refs.is_empty()
+        || has_blank_artifact_refs(&signal.source_refs)
+        || signal
+            .confidence
+            .as_deref()
+            .unwrap_or_default()
+            .trim()
+            .is_empty()
+        || signal.assumptions.is_empty()
+        || has_blank(&signal.assumptions)
+        || signal.non_conclusions.is_empty()
+        || has_blank(&signal.non_conclusions)
+    {
+        invalid.push(generic_validation_example(
+            &signal.signal_id,
+            "attractorEngineering.fieldSignals",
+            "field shaping signals must record selected signal, source refs, confidence, assumptions, and non-conclusions",
+        ));
+    }
+    if !ALLOWED_STATUSES.contains(&signal.status.as_str()) {
+        invalid.push(generic_validation_example(
+            &signal.signal_id,
+            &signal.status,
+            "unsupported field shaping signal status",
+        ));
+    }
+    if signal.signal_kind == "DesignFieldStrength"
+        && !signal
+            .non_conclusions
+            .iter()
+            .any(|conclusion| {
+                conclusion
+                    == "DesignFieldStrength is a selected empirical signal, not a truth claim about the architecture field"
+            })
+    {
+        invalid.push(generic_validation_example(
+            &signal.signal_id,
+            "nonConclusions",
+            "DesignFieldStrength signal must not be emitted as a truth claim",
+        ));
+    }
+    validate_boundary(
+        &signal.signal_id,
+        "measurementBoundary",
+        &signal.measurement_boundary,
+        true,
+        invalid,
+    );
+}
+
+fn validate_field_shaping_delta(
+    section: &AttractorEngineeringMetricsV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    let metric = &section.field_shaping_delta;
+    if metric.metric_id != "attractorEngineering.fieldShapingDelta" {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "metricId",
+            "FieldShapingDelta must be recorded in the attractorEngineering fieldShapingDelta slot",
+        ));
+    }
+    if metric.status == "notComparable" {
+        if !metric
+            .measurement_boundary
+            .missing_evidence
+            .iter()
+            .any(|evidence| {
+                evidence.boundary == "notComparable" && evidence.reason.contains("before/after")
+            })
+        {
+            invalid.push(generic_validation_example(
+                &metric.metric_id,
+                "missingEvidence",
+                "notComparable FieldShapingDelta must record the before/after comparability boundary",
+            ));
+        }
+    } else if EVIDENCE_REQUIRED_STATUSES.contains(&metric.status.as_str())
+        && (metric.source_refs.is_empty()
+            || has_blank_artifact_refs(&metric.source_refs)
+            || metric.measurement_boundary.aggregation_window.is_none())
+    {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "measurementBoundary",
+            "comparable FieldShapingDelta needs source refs and bounded before/after measurement boundary",
+        ));
+    }
+    if !metric
+        .non_conclusions
+        .iter()
+        .any(|conclusion| conclusion == FIELD_SHAPING_DELTA_NON_CONCLUSION)
+    {
+        invalid.push(generic_validation_example(
+            &metric.metric_id,
+            "nonConclusions",
+            "FieldShapingDelta must keep its comparability non-conclusion explicit",
+        ));
+    }
+}
+
+fn validate_vibe_coding_readiness_axes(
+    section: &AttractorEngineeringMetricsV0,
+    invalid: &mut Vec<ValidationExample>,
+) {
+    for axis in REQUIRED_VIBE_CODING_READINESS_AXES {
+        let expected_id = format!("vibeCodingReadiness.{axis}");
+        if !section
+            .vibe_coding_readiness_axes
+            .iter()
+            .any(|metric| metric.metric_id == expected_id)
+        {
+            invalid.push(generic_validation_example(
+                "attractorEngineering.vibeCodingReadinessAxes",
+                axis,
+                "VibeCodingReadiness must record each required readiness axis separately",
+            ));
+        }
+    }
+    for metric in &section.vibe_coding_readiness_axes {
+        if metric.metric_id.to_ascii_lowercase().contains("score") {
+            invalid.push(generic_validation_example(
+                &metric.metric_id,
+                "metricId",
+                "VibeCodingReadiness must not be emitted as a single numeric score",
+            ));
+        }
+        if !metric
+            .non_conclusions
+            .iter()
+            .any(|conclusion| conclusion == VIBE_CODING_READINESS_NON_CONCLUSION)
+        {
+            invalid.push(generic_validation_example(
+                &metric.metric_id,
+                "nonConclusions",
+                "each readiness axis must preserve the multi-axis non-conclusion",
+            ));
+        }
+        validate_boundary(
+            &metric.metric_id,
+            "measurementBoundary",
+            &metric.measurement_boundary,
+            EVIDENCE_REQUIRED_STATUSES.contains(&metric.status.as_str()),
+            invalid,
+        );
+    }
 }
 
 fn validate_basin_return_observability_boundaries(
@@ -1640,10 +2051,12 @@ fn report_metrics(report: &ArchitectureDynamicsMetricsReportV0) -> Vec<&Dynamics
             &section.support_risk_mass,
             &section.design_field_strength,
             &section.seed_attractor_strength,
+            &section.field_shaping_delta,
             &section.basin_boundary_fragility,
             &section.trajectory_return_time,
             &section.observability_debt,
         ]);
+        metrics.extend(section.vibe_coding_readiness_axes.iter());
         for entry in &section.support_risk_entries {
             metrics.push(&entry.support_weight);
             metrics.push(&entry.risk_mass_contribution);

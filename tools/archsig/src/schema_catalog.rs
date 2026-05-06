@@ -349,14 +349,17 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 ],
                 vec!["#671"],
                 compatibility_boundary(
-                    "Map repository, selected window, source refs, trajectory / force / gap / field-control / AI dynamics metric groups, measurement boundary, and non-conclusions separately.",
+                    "Map repository, selected window, source refs, trajectory / force / gap / field-control / AI dynamics / attractor-engineering metric groups, field shaping signals, readiness axes, measurement boundary, and non-conclusions separately.",
                     vec![],
                     vec![
                         "New dynamics metrics must declare MeasurementStatus, source refs, measurement boundary, assumptions, and non-conclusions.",
+                        "New field shaping signals must declare selected signal, source refs, confidence, measurement boundary, and non-conclusions.",
+                        "VibeCodingReadiness must remain a multi-axis readiness artifact, not a single numeric score.",
                     ],
                     vec![
                         "Metrics report remains a multi-axis diagnostic artifact and does not promote tooling evidence to Lean theorem claims.",
                         "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes.",
+                        "FieldShapingDelta uses notComparable when before/after measurement boundaries are not comparable.",
                     ],
                 ),
             ),
