@@ -199,18 +199,12 @@ attractor engineering:
 
 ここで大事なのは、ルールを増やすことではありません。良い変更が自然に選ばれる摩擦の低い経路を作り、悪い近道が選ばれにくい場を作ることです。
 
-- PdM は、要求が短期的な feature force だけに偏らないようにする。顧客価値、運用負荷、技術的負債、将来の変更容易性を同じ場に入れて、どの力を継続的に注入するかを設計する。
-- PO は、要件の粒度、優先順位、受け入れ条件を整える。曖昧な要求をそのまま AI や開発者に渡すのではなく、良い PR force に変換されやすい形へ切る。
-- エンジニア / architect は、新機能を足す場所、触ってよい境界、触ってはいけない境界を明確にする。迷ったときに `common` や巨大 service へ吸い込まれないようにする。
-- チームは、「このパターンを真似すればよい」と分かる実装例、テンプレート、テスト例を用意する。良い canonical example は、人間にも AI にも次の PR の seed attractor になります。
-- API や型は、正しく使う方が自然で、間違った使い方がしにくい形にする。レビューで頑張って止めるのではなく、型や interface で悪い接続を作りにくくする。
-- CI/CD は、dependency rule、architecture test、lint、type check、regression test を自動で見る。人間の注意力に頼らず、bad force を早い段階で散逸させる。
-- reviewer は、仕様だけでなく、責務漏れ、境界越え、隠れた依存、将来の模倣リスクを見る。この PR が次の PR の悪いお手本にならないかを確認する。
-- チームは、大きすぎる PR を避け、force を観測、議論、rollback できる粒度に分ける。PR は実装単位であると同時に、力を測る単位でもあります。
-- legacy や generated code は隔離し、悪い local grammar が新規実装へ伝播しないようにする。AI は既存コードを素直に真似るので、悪い例を近くに置きっぱなしにしない。
-- 開発基盤は、bad shortcut が便利に見える場所を減らし、正しい実装経路の方を見つけやすくする。正しい道が遠いと、人間も AI も近道を選びます。
-- 問題が起きたときに、refactor、rollback、feature flag、追加テストで safe region へ戻れるようにする。良い場は、失敗しない場ではなく、悪い basin から戻りやすい場です。
-- ArchSig や drift ledger で、PR 群がどの方向へ軌道を作っているかを見る。単発の違反検出だけでなく、PdM / PO / 実装 / review / CI が作った力の蓄積を見る。
+- 要求を、良い PR force に変換されやすい粒度へ切る。顧客価値、運用負荷、技術的負債、将来の変更容易性を同じ場に入れ、短期的な feature force だけに偏らないようにする。
+- 新機能を足す場所、触ってよい境界、触ってはいけない境界を明確にする。迷ったときに `common` や巨大 service へ吸い込まれないようにする。
+- 良い canonical example、テンプレート、テスト例、型、interface を用意する。正しく使う方が自然で、悪い接続を作りにくい local grammar を作る。
+- CI/CD、architecture test、lint、type check、review によって、bad force を早い段階で散逸させる。大きすぎる PR は、force を観測、議論、rollback できる粒度に分ける。
+- legacy や generated code を隔離し、悪い local grammar が新規実装へ伝播しないようにする。問題が起きたときは、refactor、rollback、feature flag、追加テストで safe region へ戻れるようにする。
+- ArchSig や drift ledger で、PR 群がどの方向へ軌道を作っているかを見る。単発の違反検出だけでなく、要求、実装、review、CI が作った力の蓄積を見る。
 
 アトラクターエンジニアリングは **禁止の理論ではなく、操作分布の幾何を設計する理論** です。
 
@@ -305,19 +299,15 @@ AI が作る変更が、良いアトラクタへ向かっているのか。
 
 ## ここから数学の言葉で
 
-ここから先は、数学的な定式化が多くなります。
+ここから先は、数学的な定式化が多くなります。数学が苦手な方や、まず直感だけを持ち帰りたい方は、ここを飛ばして [まとめ](#まとめ) へ進んでかまいません。
 
-数学が苦手な方や、まず直感だけを持ち帰りたい方は、ここを飛ばして [まとめ](#まとめ) へ進んでかまいません。
-
-ただし、この記事で数学の言葉を使うのは、話を難しく見せるためではありません。
-
-AI 開発の周辺には、「このプロンプトでうまくいった」「こういう運用にしたら速くなった」という経験則が大量にあります。もちろん経験則にも価値はあります。しかし、それだけでは、なぜうまくいったのか、どこまで再現できるのか、どの条件で壊れるのかを分けにくい。
-
-ここでやりたいのは、AI 開発のワザップを増やすことではありません。
+ここで数学の言葉を使うのは、話を難しく見せるためではありません。AI 開発の周辺には、「このプロンプトでうまくいった」「こういう運用にしたら速くなった」という経験則が大量にあります。もちろん経験則にも価値はあります。しかし、それだけでは、なぜうまくいったのか、どこまで再現できるのか、どの条件で壊れるのかを分けにくい。
 
 変更が選ばれ、PR になり、review / CI を通り、merge され、更新されたコードベースが次の変更分布を変える。この一連の現象を、状態、操作、観測、不変量、obstruction witness、proof obligation として分けて扱うことです。
 
-この節の背景にあるのが、AAT、つまり Algebraic Architecture Theory です。
+## AAT の基礎解説
+
+この議論の背景にあるのが、AAT、つまり Algebraic Architecture Theory（代数的アーキテクチャ論）です。ここでは、このあと使う最小限の語彙だけを導入します。
 
 AAT は、ソフトウェア開発を単なるコード変更の列としてではなく、architecture の拡大、分解、修復、合成の理論として扱います。
 
@@ -394,31 +384,15 @@ ArchitectureSignature(X)
 
 この見方では、signature は便利な metric 集ではなく、law universe に相対化された多軸不変量です。
 
-この理論は、まだすべてが完成定理になっているという意味ではありません。AAT では、定義、証明済み theorem package、bounded な bridge theorem、tooling-side evidence、empirical hypothesis を分けます。
+AAT では、すべての主張を同じ水準で扱いません。定義、証明済み theorem package、bounded な bridge theorem、tooling-side evidence、empirical hypothesis を分け、それぞれがどの universe、observation、coverage、exactness に相対化されているかを明示します。
 
-一方で、これは単なる比喩でもありません。現在の `Formal/Arch` には、AAT の中核語彙の多くが Lean の定義・定理として実装されています。`Formal` 以下の Lean ソースは数万行規模になっており、この記事で使っている語彙の一部は、その実装と証明済み API に支えられています。
+## アトラクター力学の定式化
 
-たとえば、Lean 側では次のような性質が証明済みです。
+ここからは、AAT の語彙を使って、前半で出てきた「場」「力」「散逸」「観測」をもう少し数学的に書き直します。
 
-- `Reachable`、`Walk`、`SimpleWalk`、`Path` に関する基本 bridge。
-- `StrictLayered -> Acyclic`、`Acyclic <-> WalkAcyclic`、`StrictLayered -> FinitePropagation`。
-- 現在の `Decomposable` が `StrictLayered` と同値であり、`Decomposable -> Acyclic` を与えること。
-- `ComponentCategory` が thin category であること。
-- `ProjectionSound` と projection obstruction witness 不在の対応。
-- `LSPCompatible` と LSP obstruction witness 不在の対応。
-- finite measurement universe 上で、violation count が zero であることと、選ばれた witness absence を接続する bridge。
-- `FeatureExtension`、`StaticSplitFeatureExtension`、`SplitExtensionLifting` に関する bounded theorem package。
-- `RepairStep`、selected obstruction measure、repair / synthesis / no-solution certificate に関する bounded theorem package。
-- `ArchitecturePath`、homotopy skeleton、diagram filler / non-fillability witness に関する selected observation theorem。
-- `ArchitectureSignature` の zero / unmeasured / nonzero 境界、および required law / axis exactness bridge。
+これは「AI 開発をカオスゲームっぽく語る比喩」だけではありません。AAT で整備している、状態、操作、不変量、obstruction、proof obligation、certificate、signature の上に、AI 駆動開発における PR force、operation support、trajectory、basin candidate を載せる試みです。
 
-したがって、以下の数学パートは「AI 開発をカオスゲームっぽく語る比喩」だけではありません。
-
-AAT で整備している、状態、操作、不変量、obstruction、proof obligation、certificate、signature の語彙の上に、AI 駆動開発における PR force、operation support、trajectory、basin candidate を載せる試みです。
-
-ここからは、前半で出てきた「場」「力」「散逸」「観測」を、もう少し数学的な言葉に置き換えてみます。
-
-目的は難しく見せることではありません。比喩で終わらせず、測定や検証につなげるための足場を置くことです。現時点で完成した定理というより、実務で感じている現象を、どんな構造として扱えるかを整理します。
+現時点で完成した定理というより、実務で感じている現象を、測定や検証につながる構造として整理します。
 
 ### 1. 状態、操作、観測
 
@@ -495,13 +469,7 @@ v_PR = v_feature + v_stabilize
 v_PR = v_feature + v_debt
 ```
 
-AI 生成 PR で特に見たいのは、テストが通り、仕様も満たしている一方で、小さな `v_debt`、`v_coupling`、`v_type_hole`、`v_entropy` が反復的に蓄積するケースです。
-
-一回の PR では見えにくい。
-
-しかし、軌道として見ると bad basin へ向かっている。
-
-これが Local Correctness Trap です。
+AI 生成 PR で特に見たいのは、テストが通り、仕様も満たしている一方で、小さな `v_debt`、`v_coupling`、`v_type_hole`、`v_entropy` が反復的に蓄積するケースです。一回の PR では見えにくい。しかし、軌道として見ると bad basin へ向かっている。これが Local Correctness Trap です。
 
 ### 3. force の三分類
 
@@ -562,9 +530,7 @@ finite observed trajectory
   -> attractor / basin candidate
 ```
 
-これは守りの姿勢ではありません。
-
-測れる形にするための足場です。
+これは弱い主張に逃げているのではありません。測定と反証ができる形に落とすための境界設定です。
 
 ### 5. support shaping
 
@@ -613,15 +579,11 @@ notComparable
 outOfScope
 ```
 
-測れていないものを zero と読まない。
-
-これは ArchSig でも AAT でも重要な原則です。
+測れていないものを zero と読まない。これは ArchSig でも AAT でも重要な原則です。
 
 ### 6. 同じ signature でも同じ未来とは限らない
 
-ここはとても重要です。
-
-現在の Architecture Signature が同じでも、未来の operation distribution が同じとは限りません。
+ここで重要なのは、現在の Architecture Signature が同じでも、未来の operation distribution が同じとは限らないことです。
 
 たとえば、二つの module が同じ依存違反数、同じ test coverage、同じ complexity に見えたとしても、片方には良い canonical example があり、もう片方には悪い shortcut が大量にあるかもしれません。
 
@@ -633,11 +595,7 @@ Obs(X) = Obs(Y)
 OperationSupport(X) = OperationSupport(Y)
 ```
 
-これは、snapshot metric だけでアーキテクチャ品質を見てはいけない理由です。
-
-同じ現在値でも、未来の力場が違う。
-
-アトラクターエンジニアリングは、この未来の力場を設計対象にします。
+これは、snapshot metric だけでアーキテクチャ品質を見てはいけない理由です。同じ現在値でも、未来の力場が違う。アトラクターエンジニアリングは、この未来の力場を設計対象にします。
 
 ### 7. accepted preservation と support preservation は違う
 
@@ -685,11 +643,7 @@ MergeOrderSensitivity(a, b, X) =
   )
 ```
 
-これは単なる conflict の話ではありません。
-
-operation algebra の非可換性が、signature trajectory を分岐させる話です。
-
-AI agent team の評価にも、この観点が必要になります。
+これは単なる conflict の話ではありません。operation algebra の非可換性が、signature trajectory を分岐させる話です。AI agent team の評価にも、この観点が必要になります。
 
 ### 9. trajectory の形を見る
 
@@ -738,13 +692,15 @@ refined observation:
 
 これを observability expansion shock と呼べます。
 
-重要なのは、これは必ずしもアーキテクチャが悪化したという意味ではないことです。
+重要なのは、これは必ずしもアーキテクチャが悪化したという意味ではないことです。単に、今まで見えていなかった軸が見えるようになっただけかもしれません。
 
-単に、今まで見えていなかった軸が見えるようになっただけかもしれません。
+だから、ArchSig は `unmeasured` と `zero` を分ける必要があります。測れていなかったものが見えるようになったとき、それを劣化として扱うのか、観測可能化として扱うのかを分離しなければなりません。
 
-だから、ArchSig は `unmeasured` と `zero` を分ける必要があります。
+ここまでの整理は、単なる比喩だけで組み立てているわけではありません。現在の `Formal/Arch` には、AAT の中核語彙の多くが Lean の定義・定理として実装されています。`Formal` 以下の Lean ソースは数万行規模になっており、この記事で使っている語彙の一部は、その実装と証明済み API に支えられています。
 
-測れていなかったものが見えるようになったとき、それを劣化として扱うのか、観測可能化として扱うのかを分離しなければなりません。
+リポジトリは [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) にあります。証明済み API の一覧は、リポジトリ内の [Lean 定義・定理索引](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/lean_theorem_index.md) にまとめています。
+
+たとえば、`StrictLayered -> Acyclic`、`Acyclic <-> WalkAcyclic`、`Decomposable <-> StrictLayered`、`ComponentCategory` が thin category であること、projection / LSP obstruction witness と soundness の対応、finite measurement universe 上の zero-count bridge、`ArchitectureSignature` の zero / unmeasured / nonzero 境界などは Lean 側で証明済みです。
 
 ## AI 駆動開発を成功させる条件
 
