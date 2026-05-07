@@ -777,11 +777,21 @@ refined observation:
 
 だから、ArchSig は `unmeasured` と `zero` を分ける必要があります。測れていなかったものが見えるようになったとき、それを劣化として扱うのか、観測可能化として扱うのかを分離しなければなりません。
 
+### Lean 形式化について
+
 ここまでの整理は、単なる比喩だけで組み立てているわけではありません。現在の `Formal/Arch` には、AAT の中核語彙の多くが Lean の定義・定理として実装されています。`Formal` 以下の Lean ソースは数万行規模になっており、この記事で使っている語彙の一部は、その実装と証明済み API に支えられています。
 
 リポジトリは [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) にあります。証明済み API の一覧は、リポジトリ内の [Lean 定義・定理索引](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/lean_theorem_index.md) にまとめています。
 
 たとえば、`StrictLayered -> Acyclic`、`Acyclic <-> WalkAcyclic`、`Decomposable <-> StrictLayered`、`ComponentCategory` が thin category であること、projection / LSP obstruction witness と soundness の対応、finite measurement universe 上の zero-count bridge、`ArchitectureSignature` の zero / unmeasured / nonzero 境界などは Lean 側で証明済みです。
+
+重要なのは、Lean 形式化が「この理論は正しい雰囲気がある」という飾りではないことです。
+
+AAT では、claim をそのまま大きく言い切らず、どの universe、どの observation、どの coverage、どの exactness assumption のもとで読めるのかを分けます。Lean 側の theorem package は、この境界を明示したうえで、定義同士の bridge、witness absence と zero-count の対応、selected invariant preservation、non-conclusion の記録を支えるためにあります。
+
+逆に言えば、Lean で証明されているからといって、実コード抽出器が完全であること、すべての runtime / semantic obstruction が観測済みであること、経験的な開発成果が自動的に改善することまでは主張しません。
+
+この境界を持つことで、AAT は「よく効いた運用の話」ではなく、何が形式的に言えて、何が測定に依存し、何が今後の実証課題なのかを分けて議論できます。
 
 ## まとめ
 
