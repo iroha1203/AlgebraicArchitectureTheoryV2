@@ -2,15 +2,11 @@
 
 :::note info
 
-- ソフトウェア開発をひとつの力学として解釈する。コードベースは場であり、PR はその場に加わる力
-    - その力学の中では、CI/CD やテストは単なるチェックではなく、不要な力を逃がして軌道を整える散逸系として見えてくる
-    - PdM、PO、エンジニア、レビュワー、AI エージェント も、すべて場の参加者。要求の切り方、優先順位、設計判断、実装、レビューが、次に選ばれる変更を少しずつ曲げていく
-- 良い場は、良い変更を引き寄せる。悪い場は、悪い変更を何度も選ばせる。AI が高速に PR を作る時代には、この引力はもっと強くなる
+- コードベースは場であり、PR はその場に加わる力として読める
+- 良い場は良い変更を引き寄せ、悪い場は悪い変更を何度も選ばせる。AI が高速に PR を作る時代には、この引力はさらに強くなる
 - この「未来の変更がどこへ吸い寄せられるか」を設計する考え方を、アトラクターエンジニアリングと呼ぶ
-    - アトラクターエンジニアリングは、コードベースという場を中心に、PdM、PO、エンジニア、レビュワー、AI エージェントといった場の参加者まで射程に含む
-    - ハーネスエンジニアリングは、アトラクターエンジニアリングでは散逸系として解釈することができる
-- そして ArchSig は、その吸い寄せを観測するための道具。PR がアーキテクチャをどの方向へ動かしているのかを、多軸の signature として見ようとしている。
-- アトラクターエンジニアリングは、AI開発時代のアーキテクチャ力学となる可能性を秘めている
+- CI/CD、テスト、レビュー、ハーネスは、不要な力を逃がして軌道を整える散逸系として見える
+- ArchSig は、その軌道を多軸のシグネチャとして観測するための道具である
 :::
 
 ## 最初の発見
@@ -296,6 +292,91 @@ AI が作る変更が、良いアトラクタへ向かっているのか。
 ハーネスが十分に散逸させているのか。
 
 それを議論するための共通言語を作ることができます。
+
+## AI 駆動開発を成功させる条件
+
+この見方から、AI 駆動開発の成功条件が少し変わります。
+
+成功の鍵は、AI が賢いかどうかだけではありません。
+
+AI が高速に生み出す変更案を、良い方向へ自然に流れるよう設計された場に流し込めるかどうかです。
+
+```
+Vibe Coding succeeds when high-throughput proposal generation is injected
+into an architecture field whose natural operation distribution,
+canonical examples, feedback loops, and measurement boundaries
+pull repeated patches toward selected productive basins faster than
+bad-axis force can accumulate.
+```
+
+日本語で言うと、Vibe Coding が成立するのは、高速な PR 生成が、悪い局所文法を増幅するのではなく、良い basin に落ちるよう設計された場に注入される場合です。
+
+その readiness は単一スコアでは読めません。
+
+少なくとも、次のような軸で見る必要があります。用語の細部は、後半の数学編で定式化します。
+
+- DesignFieldStrength: 境界、ownership、example、non-goal が PR の向きを整える力。
+- SeedAttractorStrength: 良い canonical example が future patch を引き寄せる力。
+- SupportRiskMass: 自然に選ばれうる operation support の危険質量。
+- GoodAttractorBasinMass: 良い basin に落ちる selected state の割合。
+- BasinBoundaryFragility: 小さな揺らぎで basin が反転する脆さ。
+- TrajectoryReturnTime: 安全領域を外れた後、何 step で戻るか。
+- DampingToThroughputMargin: PR throughput に対して散逸容量が足りているか。
+- ObservabilityDebt: まだ測れていない required axis がどれだけあるか。
+
+AI 駆動開発の成否は、AI の性能だけでなく、場、散逸、観測、要求、設計の整備度に依存します。
+
+## PR の重要性はむしろ上がる
+
+AI によってコード生成コストが下がると、PR の重要性は下がるように見えるかもしれません。
+
+しかし、力学系として見ると逆です。
+
+PR は、単なる作業単位ではありません。
+
+PR は次の機能を持っています。
+
+- 連続的な変更を観測可能な単位に区切る。
+- force vector を分解可能にする。
+- review / CI / approval という散逸プロセスをスケジューリングする。
+- rollback や revert の可逆性境界を作る。
+- 意思決定と議論の単位を作る。
+
+AI によって下がるのは、主に PR を作るコストです。
+
+しかし、観測、分解、散逸、可逆性、意思決定単位としての PR の価値は、むしろ上がります。
+
+AI 時代に PR が不要になるのではなく、PR は architecture dynamics を観測し制御する単位として、より重要になります。
+
+## 未来の開発組織
+
+未来の開発組織では、速くコードを書く力そのものよりも、その速度を安全に受け止める場の設計が重要になります。
+
+新幹線は強いモーターだけでは速く安全に走れません。
+
+レール、ブレーキ、信号機、安全装置、運行管理が必要です。
+
+開発も同じです。
+
+AI は強いモーターです。
+
+しかし、強いモーターだけでは、semantic drift、invariant decay、merge chaos、debt attractor の深化が起こりえます。
+
+必要なのは、次のような場です。
+
+- 小さく観測可能な PR
+- 速い feedback
+- 信頼できる CI
+- 型システム
+- architecture test
+- curated canonical examples
+- legacy quarantine
+- 明確な要求、要件、設計境界
+- 人間による value / acceptance boundary の設計
+
+最も安全な AI coding 環境とは、外部ハーネスが最も強い環境ではありません。
+
+良い operation が局所的に自然で、模倣しやすく、観測可能で、低摩擦であり、悪い attractor basin が浅く、見えやすく、入りにくい architecture field を持つ環境です。
 
 ## ここから数学の言葉で
 
@@ -701,91 +782,6 @@ refined observation:
 リポジトリは [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) にあります。証明済み API の一覧は、リポジトリ内の [Lean 定義・定理索引](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/lean_theorem_index.md) にまとめています。
 
 たとえば、`StrictLayered -> Acyclic`、`Acyclic <-> WalkAcyclic`、`Decomposable <-> StrictLayered`、`ComponentCategory` が thin category であること、projection / LSP obstruction witness と soundness の対応、finite measurement universe 上の zero-count bridge、`ArchitectureSignature` の zero / unmeasured / nonzero 境界などは Lean 側で証明済みです。
-
-## AI 駆動開発を成功させる条件
-
-この見方から、AI 駆動開発の成功条件が少し変わります。
-
-成功の鍵は、AI が賢いかどうかだけではありません。
-
-AI が高速に生み出す変更案を、良い方向へ自然に流れるよう設計された場に流し込めるかどうかです。
-
-```
-Vibe Coding succeeds when high-throughput proposal generation is injected
-into an architecture field whose natural operation distribution,
-canonical examples, feedback loops, and measurement boundaries
-pull repeated patches toward selected productive basins faster than
-bad-axis force can accumulate.
-```
-
-日本語で言うと、Vibe Coding が成立するのは、高速な PR 生成が、悪い局所文法を増幅するのではなく、良い basin に落ちるよう設計された場に注入される場合です。
-
-その readiness は単一スコアでは読めません。
-
-少なくとも、次のような軸で見る必要があります。
-
-- DesignFieldStrength: 境界、ownership、example、non-goal が PR の向きを整える力。
-- SeedAttractorStrength: 良い canonical example が future patch を引き寄せる力。
-- SupportRiskMass: 自然に選ばれうる operation support の危険質量。
-- GoodAttractorBasinMass: 良い basin に落ちる selected state の割合。
-- BasinBoundaryFragility: 小さな揺らぎで basin が反転する脆さ。
-- TrajectoryReturnTime: 安全領域を外れた後、何 step で戻るか。
-- DampingToThroughputMargin: PR throughput に対して散逸容量が足りているか。
-- ObservabilityDebt: まだ測れていない required axis がどれだけあるか。
-
-AI 駆動開発の成否は、AI の性能だけでなく、場、散逸、観測、要求、設計の整備度に依存します。
-
-## PR の重要性はむしろ上がる
-
-AI によってコード生成コストが下がると、PR の重要性は下がるように見えるかもしれません。
-
-しかし、力学系として見ると逆です。
-
-PR は、単なる作業単位ではありません。
-
-PR は次の機能を持っています。
-
-- 連続的な変更を観測可能な単位に区切る。
-- force vector を分解可能にする。
-- review / CI / approval という散逸プロセスをスケジューリングする。
-- rollback や revert の可逆性境界を作る。
-- 意思決定と議論の単位を作る。
-
-AI によって下がるのは、主に PR を作るコストです。
-
-しかし、観測、分解、散逸、可逆性、意思決定単位としての PR の価値は、むしろ上がります。
-
-AI 時代に PR が不要になるのではなく、PR は architecture dynamics を観測し制御する単位として、より重要になります。
-
-## 未来の開発組織
-
-未来の開発組織では、速くコードを書く力そのものよりも、その速度を安全に受け止める場の設計が重要になります。
-
-新幹線は強いモーターだけでは速く安全に走れません。
-
-レール、ブレーキ、信号機、安全装置、運行管理が必要です。
-
-開発も同じです。
-
-AI は強いモーターです。
-
-しかし、強いモーターだけでは、semantic drift、invariant decay、merge chaos、debt attractor の深化が起こりえます。
-
-必要なのは、次のような場です。
-
-- 小さく観測可能な PR
-- 速い feedback
-- 信頼できる CI
-- 型システム
-- architecture test
-- curated canonical examples
-- legacy quarantine
-- 明確な要求、要件、設計境界
-- 人間による value / acceptance boundary の設計
-
-最も安全な AI coding 環境とは、外部ハーネスが最も強い環境ではありません。
-
-良い operation が局所的に自然で、模倣しやすく、観測可能で、低摩擦であり、悪い attractor basin が浅く、見えやすく、入りにくい architecture field を持つ環境です。
 
 ## まとめ
 
