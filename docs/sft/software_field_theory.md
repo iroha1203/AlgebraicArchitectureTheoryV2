@@ -74,6 +74,37 @@ SoftwareField :=
   + runtime feedback
 ```
 
+SFT の最小 formal core は、まず確率を入れず、bounded transition system として置く。
+
+```text
+SoftwareField_t :=
+  X_t  : ArchitectureObject
+  sig_t : ArchitectureSignature
+  H_t  : History
+  U_t  : admissible operation support
+  P_t  : operation policy / preference
+  C_t  : constraint environment
+  O_t  : observation model
+  R_t  : review / CI / control filter
+  E_t  : exogenous artifact inputs
+```
+
+基本遷移は次の形で読む。
+
+```text
+E_t + field context
+  -> shaped operation support U'_t
+  -> accepted operation a_t
+  -> X_{t+1}
+  -> sig_{t+1}
+  -> SoftwareField_{t+1}
+```
+
+確率分布、entropy、stochastic dominance、Markov kernel は、この集合論的 core の後に載せる
+追加 semantics である。
+最初の SFT theorem は、operation support、transition relation、signature observation、
+forecast cone を集合として扱う。
+
 同じ `ArchitectureObject` でも、field が異なれば次の operation distribution は異なる。
 同じ module graph でも、レビュー規則、所有境界、既存 canonical pattern、テスト粒度、
 AI prompt、incident history が違えば、将来選ばれやすい操作は変わる。
@@ -93,6 +124,16 @@ field_t
 
 `Force` は、field 上の operation distribution を偏らせる作用である。
 要求、仕様、Issue、PR、レビュー、CI、incident、組織判断、AI prompt は、すべて force の発生源になりうる。
+
+最小 semantics では、force は operation support を変える写像として読む。
+
+```text
+force : OperationSupport -> OperationSupport
+```
+
+たとえば spec clause は unsafe operation を除外し、Issue 分割は support を局所化し、
+review policy は accepted support を filter する。
+確率的 semantics を採用する場合は、force を分布や preference を変える作用として読む。
 
 ```text
 ArtifactForce :=
@@ -228,6 +269,16 @@ no excursion
 ## 7. Forecast Cone
 
 `ForecastCone` は、現在の field と artifact force から到達しうる architecture path の集合または分布である。
+最小 core では、horizon `h` と operation support `U` に相対化された reachable path set として読む。
+
+```text
+ForecastCone(F, U, h) :=
+  paths reachable from field F
+  using operations in support U
+  within horizon h
+```
+
+分布付き forecast cone は、この path set に probability / preference / cost を載せた拡張である。
 
 ```text
 ForecastCone(field, force) :=
@@ -269,6 +320,21 @@ hidden interaction や ambiguity へ流れる力を減らす。
 SFT の主張は、Lean theorem ではなく、bounded field model 上の principle / theorem schema として置く。
 各 principle は `ForecastBoundary`、選択された signature axes、witness families、
 artifact set、operation support に相対化される。
+各 principle は、採用する semantics によって claim level が変わる。
+
+```text
+set-valued support semantics:
+  formal theorem schema
+
+transition-kernel semantics:
+  probabilistic theorem schema
+
+dataset-calibrated semantics:
+  empirical hypothesis
+
+incomplete observation:
+  control heuristic with non-conclusions
+```
 
 ### 8.1 Forecast Cone Narrowing Principle
 
@@ -281,6 +347,16 @@ sound constraint addition
   + selected witness family excluded
   -> forecast cone narrows with respect to that witness family
 ```
+
+集合論的 core では、最初の theorem schema は support inclusion である。
+
+```text
+U2 ⊆ U1
+  -> ForecastCone(F, U2, h) ⊆ ForecastCone(F, U1, h)
+```
+
+selected witness family に関する narrowing は、global risk reduction ではない。
+ある witness family を除外しても、別の witness family へ complexity が転送されることがある。
 
 これは SFT の看板原理である。
 良い PRD / Spec / Issue は、単に作業を増やす artifact ではなく、
@@ -312,6 +388,20 @@ raw force
    + rejected / delayed transition
    + ambiguity / coordination cost
    + runtime pressure
+```
+
+ここでいう dissipation は、物理的な保存量を仮定する概念ではない。
+拒否または変更された operation pressure が、どの observable record に現れるかを記録する
+accounting schema である。
+
+```text
+DissipationRecord :=
+  raw proposal support / distribution
+  + accepted support / distribution
+  + rejected operation log
+  + unresolved demand
+  + coordination / ambiguity record
+  + runtime pressure estimate
 ```
 
 SFT は、dissipation を単なる失敗ではなく、force がどの軸へ移ったかを追跡する対象として扱う。
@@ -400,6 +490,18 @@ FieldUpdate :=
   -> posterior field
 ```
 
+incident 後の postmortem は、field update の重要な特殊形である。
+
+```text
+PostmortemUpdate :=
+  incident observation
+  + root-cause witness classification
+  + missing invariant discovery
+  + review / CI filter update
+  + runtime observation update
+  + forecast boundary revision
+```
+
 基本ループは次である。
 
 ```text
@@ -467,6 +569,9 @@ Demand field
 
 組織判断そのものを Lean theorem 化しない。
 組織判断が architecture transition distribution に与える作用を観測対象にする。
+SFT は人間の意図や組織文化そのものを完全モデル化しない。
+組織上の意思決定は、operation support、constraints、filters、observed signature trajectory に
+現れた範囲で扱う。
 
 ## 14. AI-driven Development
 
@@ -484,6 +589,8 @@ AI agent operation :=
 AI の安全性は、生成速度ではなく operation support と feedback control の問題として扱う。
 AI agent が提案する operation が、AAT の theorem boundary と SFT の forecast / control boundary の中に
 留まるかを観測する。
+SFT は AI agent の一般的安全性を証明しない。
+AI agent が生成する operation support を bound し、観測し、review / CI feedback で制御する枠組みを与える。
 
 ## 15. Lifecycle と End of Life
 
@@ -539,6 +646,28 @@ PRD / Spec / Issue / PR / Review / Incident
 
 ArchSig は、PR 後に危険を見る tool から、PRD 時点で architecture trajectory を予報する
 tool へ拡張される。
+ただし、claim level は段階的に分ける。
+
+```text
+Stage 1:
+  PR / codebase から AAT signature と obstruction witness を抽出する
+
+Stage 2:
+  PR before / after から signature delta を測る
+
+Stage 3:
+  Issue / Spec から expected operation support を推定する
+
+Stage 4:
+  PRD から forecast boundary と missing invariant を構成する
+
+Stage 5:
+  historical prior と calibration がある範囲で forecast cone を推定する
+```
+
+初期 MVP は、未来予測そのものよりも、signature diff、selected obstruction witness report、
+theorem boundary / non-conclusion report、missing invariant / missing boundary detector に置く。
+PRD forecast は、calibration と dataset boundary がない限り empirical prediction として扱わない。
 
 ## 17. 非目標
 
@@ -552,6 +681,9 @@ accepted step から bad-axis nonincrease が無条件に従う。
 organization policy から incident reduction が Lean theorem として従う。
 AI agent policy から architecture lawfulness が無条件に従う。
 empirical correlation が因果証明である。
+observed signature delta から causal force が一意に同定できる。
+human intention や market success を予測できる。
+ArchSig extraction が ground truth architecture object である。
 ```
 
 SFT の役割は、AAT の局所代数を観測量と制約として使い、ソフトウェア進化の大域的な場を

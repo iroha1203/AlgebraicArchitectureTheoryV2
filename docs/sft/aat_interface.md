@@ -96,6 +96,17 @@ theorem boundary / non-conclusions
 SFT 側で観測された force、trajectory、forecast、dissipation から、
 AAT 側の theorem が自動的に強まるわけではない。
 
+AAT claim が SFT 側へ移るときの許される読みは、次の境界に従う。
+
+| AAT 側 | SFT 側で許される読み | 禁止される読み |
+| --- | --- | --- |
+| selected witness absence | selected local defect が観測されていない。 | future trajectory が安全である。 |
+| signature axis zero | selected measured coordinate が 0 である。 | 未測定 axis も安全である。 |
+| operation preserves invariant | one accepted transition が局所的に admissible である。 | policy 全体が globally safe である。 |
+| theorem boundary | forecast boundary の条件として使える。 | empirical prediction theorem である。 |
+| non-conclusion | forecast non-conclusion として残す。 | tool failure と同一視する。 |
+| observed signature delta | trajectory observation として使える。 | causal force を一意に同定する。 |
+
 ## 5. 非混同
 
 次を混同しない。
@@ -112,6 +123,24 @@ AAT static split
 
 AAT signature coordinate
   != empirical prediction by itself
+
+AAT operation preservation
+  != SFT policy safety
+
+AAT witness absence
+  != absence of latent force
+
+SFT forecast cone narrowing
+  != global risk reduction
+
+Observed signature delta
+  != identified causal force
+
+ArchSig extraction
+  != ground truth architecture object
+
+AI agent policy compliance
+  != architecture lawfulness
 
 SFT forecast
   != Lean theorem
@@ -132,10 +161,33 @@ real artifacts
   -> SFT field model
 ```
 
+より細かく見ると、ArchSig は次の中間層を持つ。
+
+```text
+real artifact
+  -> extracted candidate ArchitectureCore
+  -> selected ArchitectureObject presentation
+  -> AAT observable
+  -> SFT field estimate
+```
+
 AAT 側では、ArchSig は component universe、signature axes、obstruction witnesses、
 theorem boundary status、non-conclusions を抽出する。
 SFT 側では、ArchSig は force、forecast cone、expected signature delta、
 trajectory、feedback update を推定する。
+
+同じ tool family であっても、claim level は分ける。
+
+```text
+ArchSig-AAT Extractor
+  -> signature / witness / theorem-boundary report
+
+ArchSig-SFT Forecaster
+  -> force / operation-support / forecast-boundary estimate
+
+ArchSig-Control Reporter
+  -> missing invariant / review rule / issue decomposition recommendation
+```
 
 この bridge は片方向の観測・推定層である。
 ArchSig output があることから、AAT theorem が強まるわけではなく、
