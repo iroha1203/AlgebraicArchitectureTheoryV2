@@ -3,22 +3,22 @@
 このディレクトリは、Algebraic Architecture Theory, AAT の数学理論と
 Lean 形式化 status を管理する。
 
-AAT は、ソフトウェア変更を次の対象として扱う局所代数である。
+AAT は、ソフトウェアアーキテクチャを bounded な `ArchitectureObject` として切り出し、
+その上の操作がどの不変量を保存し、どの obstruction witness を生み、
+どの signature axis に現れるかを扱う局所代数である。
 
 ```text
-software architecture change
-  = extension
-  + operation
-  + invariant
-  + obstruction witness
-  + proof obligation
-  + certificate
+software architecture
+  = ArchitectureObject
+  + ArchitectureOperation
+  + InvariantFamily
+  + ObstructionWitness
+  + ArchitectureSignature
+  + theorem boundary / non-conclusions
 ```
 
-AAT の役割は、要求、組織、AI、運用の力学を直接説明することではない。
-それらが生成する変更を、どの universe、どの observation、どの coverage、
-どの exactness assumption に相対化して、何を結論でき、何を結論しないかを
-明確にすることである。
+AAT は、他の理論のための補助概念ではなく、ソフトウェアアーキテクチャの数学理論として
+独立に成立する。後続理論は AAT を使えるが、AAT 側に逆依存を作らない。
 
 ## 読む順序
 
@@ -51,8 +51,8 @@ Invariant
 LawUniverse
 ObstructionWitness
 ArchitectureSignature
-ProofObligation
-Certificate
+TheoremBoundary
+NonConclusion
 RepairStep
 Projection
 Observation
@@ -68,38 +68,20 @@ AnalyticRepresentation
 どの invariant が保存されるか。
 どの obstruction witness が存在するか。
 どの repair が selected obstruction を減らすか。
-どの theorem precondition が満たされているか。
+どの theorem boundary が満たされているか。
 何を結論し、何を結論しないか。
 ```
 
-## SFT との境界
+## 後続理論との関係
 
 ```text
-AAT = local / algebraic / formal / certifiable
-SFT = global / dynamical / predictive / controllable
+AAT = local / algebraic / theorem-boundary-aware
 ```
 
-AAT に置くもの:
+AAT に置くものは、architecture object、operation、invariant、obstruction witness、
+signature、theorem boundary、non-conclusion である。
 
-```text
-FeatureExtension
-SplitFeatureExtension
-Invariant
-ObstructionWitness
-LawUniverse
-Signature
-ProofObligation
-Certificate
-RepairStep
-DiagramFiller
-PathHomotopy
-Zero-count bridge
-Lawfulness theorem
-Theorem precondition
-Non-conclusion
-```
-
-SFT に置くもの:
+AAT が直接扱わないもの:
 
 ```text
 PRD force
@@ -118,11 +100,14 @@ Empirical prediction
 Control policy
 ```
 
+SFT は AAT に依存する後続理論として、これらを扱う。
+対応関係は [AAT / SFT Interface](../sft/aat_interface.md) に置く。
+
 ## 証明済み主張の読み方
 
 数学理論本文は、作業状態や Issue 管理状態を混ぜない。
 現在 Lean に存在する定義・定理は [Lean 定義・定理索引](lean_theorem_index.md)、
-未解決 proof obligation と empirical hypothesis は
+theorem boundary、未解決課題、empirical hypothesis は
 [証明義務と実証仮説](proof_obligations.md) で管理する。
 
 `proved`, `defined only`, `future proof obligation`, `empirical hypothesis`

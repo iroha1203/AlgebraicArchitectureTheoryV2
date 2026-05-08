@@ -9,20 +9,22 @@ tooling / empirical protocol を分けて管理する。
 2. [AAT: 代数的アーキテクチャ論](aat/README.md)
 3. [AAT 数学理論](aat/mathematical_theory.md)
 4. [SFT: ソフトウェアの場の理論](sft/README.md)
-5. [ソフトウェアの場の理論](sft/software_field_theory.md)
-6. [証明義務と実証仮説](aat/proof_obligations.md)
-7. [Lean 定義・定理索引](aat/lean_theorem_index.md)
-8. [AAT Tooling Documentation](tooling/README.md)
-9. 必要に応じて [個別設計メモ](design/README.md), [PRD 一覧](prd/README.md), `docs/empirical/`
+5. [AAT / SFT Interface](sft/aat_interface.md)
+6. [ソフトウェアの場の理論](sft/software_field_theory.md)
+7. [証明義務と実証仮説](aat/proof_obligations.md)
+8. [Lean 定義・定理索引](aat/lean_theorem_index.md)
+9. [AAT Tooling Documentation](tooling/README.md)
+10. 必要に応じて [個別設計メモ](design/README.md), [PRD 一覧](prd/README.md), `docs/empirical/`
 
 ## 全体文書
 
 - [研究の全体目標](research_goal.md): AAT / SFT / ArchSig / AI-driven Development の全体像を示す入口文書。
 - [AAT](aat/README.md): AAT の数学理論と Lean status の入口。
-- [AAT 数学理論](aat/mathematical_theory.md): `FeatureExtension`, invariant, obstruction, proof obligation, certificate, repair, path, diagram filling, analytic representation を整理する。
+- [AAT 数学理論](aat/mathematical_theory.md): `ArchitectureObject`, operation, invariant, obstruction witness, signature, theorem boundary, repair, path, diagram filling, analytic representation を整理する。
 - [SFT](sft/README.md): ソフトウェアの場の理論の入口。
+- [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存の境界を整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を force, field, trajectory, control として整理する。
-- [証明義務と実証仮説](aat/proof_obligations.md): 未解決の proof obligation と empirical hypothesis の台帳。
+- [証明義務と実証仮説](aat/proof_obligations.md): theorem boundary、未解決課題、empirical hypothesis の台帳。
 - [Lean 定義・定理索引](aat/lean_theorem_index.md): 現在 Lean に存在する主要な定義・定理の索引。
 
 ## 層の分担
@@ -40,7 +42,7 @@ Review / CI controls transitions.
 | AAT | 局所的・代数的・形式的・証明可能な核。 | `docs/aat/` |
 | ArchSig | AAT 的観測量を抽出し、SFT 的予測・制御に渡す計測層。 | `docs/tooling/`, `docs/design/archsig_tooling_index.md` |
 | SFT | 大域的・力学的・予測的・制御的な上位理論。 | `docs/sft/` |
-| AI-driven Development | SFT の forecast と AAT の certificate boundary の中で operation を生成する制御対象。 | `docs/sft/software_field_theory.md`, tooling / AIR docs |
+| AI-driven Development | SFT の forecast と AAT の theorem boundary の中で operation を生成する制御対象。 | `docs/sft/software_field_theory.md`, tooling / AIR docs |
 
 Lean で証明済みの構造的事実、定義のみの概念、将来の証明義務、実証仮説は混同しない。
 
@@ -62,7 +64,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 - [PRD 一覧](prd/README.md)
 
 `docs/prd/` には、実装前または検討中の product requirement document を置く。
-PRD の内容は、そのまま証明済み主張とは扱わず、実装・設計メモ・proof obligation へ分解してから追跡する。
+PRD の内容は、そのまま証明済み主張とは扱わず、実装・設計メモ・theorem boundary へ分解してから追跡する。
 
 ## Archive
 
