@@ -168,6 +168,17 @@ RequiredSignatureAxesZero X S
   = selected signature axes S が measured zero である
 ```
 
+`ArchitectureLawful` は、theorem boundary に相対化された略記として使う。
+明示的には次のように読む。
+
+```text
+ArchitectureLawfulWithin X B
+  := SemanticLawful X B.lawUniverse
+     under B.coverage / B.exactness / B.observation
+```
+
+境界 `B` が文脈から明らかな場合に限り、`ArchitectureLawful X` と略記する。
+
 非自明な接続は、witness completeness、axis exactness、coverage completeness、
 observation exactness を仮定して初めて得られる。
 
@@ -237,10 +248,11 @@ curvature:
 
 ```text
 finite law universe
+  + theorem boundary B
   + complete witness coverage
   + required axis exactness
   ->
-  ArchitectureLawful X
+  ArchitectureLawfulWithin X B
     <-> no selected required obstruction witness
     <-> required signature axes are zero
 ```
