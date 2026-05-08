@@ -101,7 +101,7 @@ zero-count bridge として実装する。
 
 現在の実体 module は `Formal/Arch` 直下の互換 facade ではなく、責務別の
 canonical subdirectory に置く。新規 module を追加する場合は、`Formal.lean` と
-[Lean 定義・定理索引](../lean_theorem_index.md) を同じ PR で更新し、docs では
+[Lean 定義・定理索引](../aat/lean_theorem_index.md) を同じ PR で更新し、docs では
 canonical path を主参照先にする。
 
 候補は次である。

@@ -978,7 +978,7 @@ refined observation:
 
 ここまでの整理は、比喩だけで組み立てているわけではありません。AAT の中核語彙の一部は、Lean の定義・定理として `Formal/Arch` 以下に実装されています。
 
-リポジトリは [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) にあります。証明済み API は [Lean 定義・定理索引](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/lean_theorem_index.md) にまとめています。
+リポジトリは [AlgebraicArchitectureTheoryV2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2) にあります。証明済み API は [Lean 定義・定理索引](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md) にまとめています。
 
 特にこの記事の後半で使った語彙は、主に `Formal/Arch/Evolution/SignatureDynamics.lean` と `Formal/Arch/Evolution/AttractorEngineering.lean` に対応しています。
 

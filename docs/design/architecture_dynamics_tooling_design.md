@@ -2,7 +2,7 @@
 
 Lean status: `empirical hypothesis` / `tooling validation`.
 
-この文書は [Architecture Signature Dynamics 設計](architecture_signature_dynamics.md) を
+この文書は [SFT: ソフトウェアの場の理論](../sft/software_field_theory.md) を
 tool 側へ落とすための設計である。数学側の中心命題は、`codebase as field`、
 architecture-induced operation distribution、signature trajectory、Observed / Latent /
 Dissipated force、dissipation / control である。tool 側の目的は、この理論を観測、記録、
