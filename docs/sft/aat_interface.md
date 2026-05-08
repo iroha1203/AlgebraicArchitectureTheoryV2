@@ -53,7 +53,9 @@ field state
 trajectory
 operation distribution
 forecast cone
+forecast boundary
 dissipation
+field update
 attractor / basin
 feedback control
 organization field
@@ -117,3 +119,24 @@ SFT forecast
 
 SFT は AAT の上に立つが、AAT を SFT の一部にしない。
 AAT は独立した数学理論であり、SFT はその理論を使う後続理論である。
+
+## 6. ArchSig bridge
+
+ArchSig は AAT でも SFT でもない。
+実 artifact を AAT の観測量と SFT の field estimate へ写す tooling layer である。
+
+```text
+real artifacts
+  -> ArchSig
+  -> AAT observables
+  -> SFT field model
+```
+
+AAT 側では、ArchSig は component universe、signature axes、obstruction witnesses、
+theorem boundary status、non-conclusions を抽出する。
+SFT 側では、ArchSig は force、forecast cone、expected signature delta、
+trajectory、feedback update を推定する。
+
+この bridge は片方向の観測・推定層である。
+ArchSig output があることから、AAT theorem が強まるわけではなく、
+SFT forecast が Lean theorem になるわけでもない。

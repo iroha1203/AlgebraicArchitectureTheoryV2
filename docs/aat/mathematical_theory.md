@@ -45,11 +45,25 @@ AAT は、どの universe、どの observation、どの coverage、どの exactn
 AAT の主対象は拡張そのものではなく、architecture object、operation、invariant、
 obstruction witness、signature の関係である。
 
+AAT は次を主張する理論ではない。
+
+```text
+complete model of real codebases
+single architecture quality score
+empirical cost predictor
+theory of all software evolution
+```
+
 ## 2. Architecture Object
 
 AAT の対象は、実コードベースそのものではない。
 実コード、仕様、レビュー、運用観測から切り出された、理論が扱える bounded な
 architecture object である。
+
+```text
+ArchitectureObject is the mathematical object.
+ArchitectureCore is a structured presentation / evidence-aware carrier.
+```
 
 ```text
 ArchitectureObject :=
@@ -62,7 +76,8 @@ ArchitectureObject :=
   + semantic diagram universe
 ```
 
-`ArchitectureCore` は、この bounded object を evidence-aware な形で束ねる最小 core として読む。
+`ArchitectureCore` は、`ArchitectureObject` を構成または観測するための
+evidence-aware な presentation / carrier として読む。
 static graph、runtime graph、boundary policy、abstraction policy、semantic diagram universe、
 decidability assumptions、selected measurement universe を持つが、実コードベース全体の完全抽出を
 意味しない。
