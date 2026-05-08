@@ -1,7 +1,7 @@
 # Algebraic Architecture Theory 代数的アーキテクチャ論
 
 この文書は、AAT の数学的核を整理する第一級本文である。
-実装済み API、作業状態、tooling artifact、empirical pilot の状態はここに混ぜず、
+実装済み API、作業状態、tooling artifact、empirical pilot の状態は、
 [Lean 定義・定理索引](lean_theorem_index.md) と
 [定理境界と実証仮説](proof_obligations.md) へ分離する。
 
@@ -28,8 +28,8 @@ software architecture
 ```
 
 ここで重要なのは、設計を単一の標語や単一スコアへ還元しないことである。
-AAT は、どの universe、どの observation、どの coverage、どの exactness assumption の下で、
-どの性質が保存され、どの破れが観測され、何を結論できないかを明示する。
+AAT は universe、observation、coverage、exactness assumption に相対化して、
+保存される性質、観測される破れ、結論できない範囲を明示する。
 
 設計レビューの問いは次の形になる。
 
@@ -328,10 +328,9 @@ TheoremBoundary :=
 claim level は formal、tooling、empirical、hypothesis を区別する。
 measurement boundary は measured zero、measured nonzero、unmeasured、out of scope を区別する。
 
-`nonConclusions` は必須である。
-static split から runtime flatness や semantic flatness は自動的には従わない。
-selected universe で obstruction が見つからなくても、全 universe で obstruction が存在しないとは
-限らない。
+`non-conclusions` は必須である。
+static split から runtime / semantic flatness は従わず、
+selected universe で obstruction が見つからないことは global absence を意味しない。
 
 ## 7. Projection, Observation, LSP, DIP
 
@@ -450,7 +449,7 @@ synthesize
 ```
 
 operation は tag だけでは theorem を持たない。
-各 operation は、前提、不変量、witness mapping、結論、non-conclusion を持つ
+各 operation は、前提、不変量、witness mapping、結論、non-conclusions を持つ
 theorem boundary に相対化される。
 固定された observation と theorem boundary compatibility の下では、operation は
 identity、composition、associativity under observation を持つ部分圏として扱える。

@@ -15,12 +15,11 @@ software field
   + feedback control
 ```
 
-SFT の主題は、要求、仕様、Issue、PR、組織、AI、運用が architecture state にどのような
-force を加え、どの trajectory を誘導し、どの obstruction に散逸し、どの feedback により
-制御されるかである。
-ここでいう field はコードベースだけではない。PdM、PO、アーキテクト、エンジニア、
-AI agent、レビュー、CI/CD、運用 feedback を含む開発組織全体が、operation distribution と
-signature trajectory を形作る対象である。
+SFT の主題は、要求、仕様、Issue、PR、組織、AI、運用が architecture state に加える
+force、誘導する trajectory、散逸する obstruction、制御に使われる feedback である。
+ここでいう field はコードベースに限らない。
+PdM、PO、アーキテクト、エンジニア、AI agent、レビュー、CI/CD、運用 feedback を含む
+開発組織全体が、operation distribution と signature trajectory を形作る。
 
 直感的には、曖昧な coupon PRD は checkout と payment へ feature force をかける。
 このとき `DiscountPolicy`、丸め規則、payment state boundary が仕様にないなら、
@@ -39,7 +38,7 @@ SFT depends on AAT.
 ```
 
 対応関係の詳細は [AAT / SFT Interface](aat_interface.md) に置く。
-ここでは、SFT が使う最小対応だけを再掲する。
+ここでは最小対応だけを再掲する。
 
 | SFT 側 | AAT 側 |
 | --- | --- |
@@ -51,9 +50,8 @@ SFT depends on AAT.
 | admissibility boundary | theorem boundary / non-conclusions |
 | local path skeleton | `ArchitecturePath` |
 
-SFT は、AAT theorem を empirical prediction へ変換する理論ではない。
-AAT の theorem は selected universe と selected assumptions に相対化された局所主張である。
-SFT はそれを、field model の観測量、制約、制御入力として使う。
+SFT は AAT theorem を empirical prediction へ変換しない。
+AAT の局所主張を、field model の観測量、制約、制御入力として使う。
 
 ## 2. Software Field
 
@@ -291,7 +289,7 @@ ForecastCone(field, force) :=
 
 forecast は theorem ではない。
 AAT の theorem boundary、signature axes、witness families、historical dataset、
-review / CI policy を使った bounded prediction である。
+review / CI policy に相対化された bounded prediction である。
 
 `ForecastBoundary` は、forecast が何に相対化されているかを明示する。
 
@@ -307,9 +305,8 @@ ForecastBoundary :=
   + non-conclusions
 ```
 
-したがって forecast cone は未来予言ではない。
-どの universe、どの artifact、どの prior、どの policy、どの unavailable evidence の下での
-予報なのかを持つ bounded model である。
+したがって forecast cone は未来予言ではなく、
+universe、artifact、prior、policy、unavailable evidence を明示した bounded model である。
 
 Spec は forecast cone を狭める force-shaping artifact として読む。
 良い spec clause は、operation support を狭め、lawful path を明確にし、
@@ -614,6 +611,7 @@ repair、migration、deletion のどれを選ぶかを扱う。
 ## 16. ArchSig の位置づけ
 
 ArchSig は、AAT 的観測量を抽出し、SFT 的予測・制御に渡す計測層である。
+AAT / SFT / ArchSig の claim boundary は [AAT / SFT Interface](aat_interface.md) に従う。
 
 ```text
 ArchSig :=
@@ -666,7 +664,7 @@ Stage 5:
 ```
 
 初期 MVP は、未来予測そのものよりも、signature diff、selected obstruction witness report、
-theorem boundary / non-conclusion report、missing invariant / missing boundary detector に置く。
+theorem boundary / non-conclusions report、missing invariant / missing boundary detector に置く。
 PRD forecast は、calibration と dataset boundary がない限り empirical prediction として扱わない。
 
 ## 17. 非目標
