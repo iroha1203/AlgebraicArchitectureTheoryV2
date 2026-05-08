@@ -4,8 +4,8 @@ Lean status: `empirical hypothesis` / `tooling validation`.
 
 この文書は、ArchSig tooling の schema、CLI、fixture、non-conclusion boundary を追跡する
 tooling-side index である。数学的な定義・定理候補・非目標は
-[`aat_v2_mathematical_design.md`](../aat_v2_mathematical_design.md) に置き、Lean status と
-Issue 対応は [`proof_obligations.md`](../proof_obligations.md) に置く。
+[`docs/aat/mathematical_theory.md`](../aat/mathematical_theory.md) に置き、Lean status と
+Issue 対応は [`docs/aat/proof_obligations.md`](../aat/proof_obligations.md) に置く。
 
 ここに記載する tooling artifact は、CI / PR review / empirical validation の入力または
 出力であり、artifact の存在だけで architecture lawfulness、Lean theorem claim、設計判断の
@@ -235,7 +235,7 @@ Non-conclusions:
 
 Design source: [Architecture Dynamics tooling 設計](architecture_dynamics_tooling_design.md)
 
-Architecture Dynamics tooling は、[Architecture Signature Dynamics 設計](architecture_signature_dynamics.md)
+Architecture Dynamics tooling は、[SFT: ソフトウェアの場の理論](../sft/software_field_theory.md)
 の `codebase as field`、operation distribution、Observed / Latent / Dissipated force、
 signature trajectory、dissipation / control を ArchSig artifact として記録する上位 layer である。
 

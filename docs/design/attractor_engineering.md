@@ -2,7 +2,7 @@
 
 Lean status: `future proof obligation` / `tooling validation` / `empirical hypothesis`.
 
-この文書は、[Architecture Signature Dynamics 設計](architecture_signature_dynamics.md) の上に
+この文書は、[SFT: ソフトウェアの場の理論](../sft/software_field_theory.md) の上に
 `Attractor Engineering` という設計語彙を置くためのメモである。
 
 Attractor Engineering は、AI agent を外から harness / guardrail で押さえつける考え方ではない。
