@@ -1,4 +1,4 @@
-# AAT 数学理論
+# Algebraic Architecture Theory 代数的アーキテクチャ論
 
 この文書は、AAT の数学的核を整理する第一級本文である。
 実装済み API、作業状態、tooling artifact、empirical pilot の状態はここに混ぜず、
