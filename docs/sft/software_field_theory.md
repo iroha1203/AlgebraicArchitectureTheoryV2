@@ -1,52 +1,239 @@
-# Software Field Theory ソフトウェアの場の理論
+# Software Field Theory: A Computational Theory of Field-Shaped Software Evolution
 
-SFT は、ソフトウェア進化を場の力学として扱う理論である。
-AAT はソフトウェアアーキテクチャの局所代数として独立に成立し、
-SFT はその局所代数を state space、observable coordinate、local law として使う。
+Software Field Theory (SFT) は、field-shaped software evolution の計算理論である。
+SFT は、要求、artifact、実践、ツール、AI agent、レビュー、CI/CD、運用 feedback、
+lifecycle decision が、コードベースの到達可能なアーキテクチャ未来をどう変えるかを扱う。
 
-```text
-SFT studies software evolution as:
-
-software field
-  + artifact-induced forces
-  + operation support / policies
-  + signature trajectories
-  + dissipation
-  + feedback control
-```
-
-SFT が `field`、`force`、`dissipation`、`basin` と呼ぶものは、
-物理量ではない。
-これらは bounded transition system 上の state、artifact action、filter / accounting record、
-reachable region として定義される場合に限って、力学として扱う。
+SFT の看板主張は次である。
 
 ```text
-SFT dynamics core :=
-  field state
-  + artifact action
-  + operation support / policy
-  + accepted transition
-  + observation
-  + control filter
-  + reachable path set
-  + field update
+SFT turns software evolution into a computable object.
 ```
 
-SFT の主題は、要求、仕様、Issue、PR、組織、AI、運用が architecture state に加える
-force、誘導する trajectory、散逸する obstruction、制御に使われる feedback である。
-ここでいう field はコードベースに限らない。
-PdM、PO、アーキテクト、エンジニア、AI agent、レビュー、CI/CD、運用 feedback を含む
-開発組織全体が、operation support / policy と signature trajectory を形作る。
+日本語では、SFT はソフトウェア進化を計算可能な対象にする理論である。
+ソフトウェア進化は単なるコード変更列ではない。
+artifact、実践、agent、governance mechanism、feedback loop が、何が自然な変更に見えるか、
+何が許されるか、何が観測されるか、何が制御可能かを作り替える
+field-shaped computation である。
 
-直感的には、曖昧な coupon PRD は checkout と payment へ feature force をかける。
-このとき `DiscountPolicy`、丸め規則、payment state boundary が仕様にないなら、
-forecast cone は `PaymentAdapter -> CouponRepository` のような危険な trajectory を含みうる。
-仕様がそれらの境界と不変量を明示すれば、cone は狭まり、operation support / policy は
-より lawful な path へ寄る。
+```text
+Software evolution is field-shaped:
 
-## 1. AAT との関係
+artifacts
+  + practices
+  + agents
+  + governance
+  + operational feedback
+  + lifecycle pressure
+  -> operation support
+  -> selection policy
+  -> observation boundary
+  -> governance intervention
+  -> reachable architectural futures
+```
 
-SFT は AAT の上に載る。ただし、AAT は SFT のための理論ではない。
+bounded transition-system core は、SFT 全体ではない。
+それは、この広い場の理論のうち、計算可能・検証可能な発明核である。
+
+```text
+AAT makes architecture locally algebraic.
+ArchSig makes architecture observable.
+SFT makes software evolution computable.
+```
+
+SFT が `field`、`force`、`dissipation`、`attractor`、`basin` と呼ぶものは物理量ではない。
+これらは development context、artifact-mediated change、proposal accounting、
+stable region、reachable preimage として明示された場合に限って、計算対象になる。
+
+## Part I. The New Object
+
+### 1. Software Evolution as a Computable Object
+
+SFT が導入する新しい対象は、ソフトウェア進化そのものである。
+従来の tooling は、多くの場合、すでに起きた code state、PR diff、test result、
+static dependency を観測する。
+SFT はさらに一歩進めて、次を計算対象にする。
+
+```text
+reachable architectural futures of a codebase
+```
+
+ここでいう future は未来予言ではない。
+選択された field model、operation support、policy、observation boundary、
+governance intervention、horizon に相対化された到達可能領域である。
+
+SFT における `computable` は、実際のソフトウェア進化が完全に決定可能であることを意味しない。
+明示された field model、observation boundary、operation support、policy、horizon の下で、
+選択された問いを有限または bounded な問題へ落とせることを意味する。
+
+```text
+Computable in SFT :=
+  representable under explicit modeling boundary
+  + bounded by selected horizon / universe / observation axes
+  + reducible to selected computational questions:
+      reachability
+      support inference
+      cone generation
+      safety preservation
+      proposal accounting
+      feedback update
+      calibration
+```
+
+SFT の中心命題は次である。
+
+```text
+Software evolution is not merely a sequence of code changes.
+It is a field-shaped computation in which artifacts, practices, agents,
+governance systems, and feedback loops reshape the operation space and
+observable architectural futures of a codebase.
+```
+
+SFT はこの命題を、説明、測定、計算、governance の四つの層で扱う。
+
+```text
+Theory:
+  software evolution を field-shaped computation として定義する。
+
+Measurement:
+  AAT / ArchSig により architecture object、signature、obstruction、
+  theorem boundary、field estimate を観測可能にする。
+
+Computation:
+  operation support、policy、forecast cone、consequence envelope、
+  support safety、feedback update を計算対象にする。
+
+Governance:
+  review、CI、type checker、AI policy、runtime feedback を、
+  codebase future を変える governance intervention system として扱う。
+```
+
+### 2. Codebase as Field Memory
+
+コードベースは単なる実装成果物ではない。
+過去の要求、設計判断、レビュー規則、incident、workaround、migration、組織境界、
+tooling practice が沈着した記憶である。
+同時に、未来の開発可能性を制約する媒体である。
+
+```text
+Codebase as Field Memory :=
+  implementation state
+  + sedimented requirements
+  + design decisions
+  + review and CI history
+  + incidents and repairs
+  + migrations and workarounds
+  + ownership boundaries
+  + tooling practices
+  + latent default paths
+```
+
+同じ module graph でも、field memory が違えば次に自然に選ばれる operation は変わる。
+古い workaround、暗黙の ownership、過去の incident、AI agent が学習しやすい local pattern は、
+未来の operation support と selection policy を変える。
+
+SFT は、コードベースを静的な graph としてだけでなく、過去の field action が沈着した
+development memory として扱う。
+
+### 3. Development Fields
+
+`DevelopmentField` は、コードベースと、そのコードベースを変化させる artifact、practice、
+agent、governance、feedback、lifecycle pressure の組である。
+
+```text
+DevelopmentField :=
+  codebase
+  + requirements and specs
+  + issues and planning artifacts
+  + design practices
+  + developers and AI agents
+  + review systems
+  + CI / type / test systems
+  + runtime observations
+  + incident and postmortem records
+  + lifecycle and migration pressure
+```
+
+SFT は人間の意図や組織文化を完全モデル化しない。
+それらが operation support、selection policy、observation boundary、governance intervention、
+feedback update に現れる範囲で扱う。
+
+したがって、広い field theory と computable core は対立しない。
+広い field は SFT の射程であり、computable core はその中で計算可能な断面である。
+
+広い `DevelopmentField` を完全に `SoftwareField` へ変換することは主張しない。
+SFT は modeling boundary を選び、その境界内で partial な `SoftwareFieldEstimate` を構成する。
+
+```text
+model_B : DevelopmentField -> Partial SoftwareFieldEstimate
+
+ModelingBoundary B :=
+  selected artifacts
+  + selected codebase region
+  + selected architecture universe
+  + selected observation axes
+  + selected governance records
+  + selected time horizon
+  + unavailable evidence
+  + non-conclusions
+
+SoftwareFieldEstimate :=
+  modeling boundary
+  + extracted SoftwareField
+  + evidence status
+  + unknown / unmodeled remainder
+```
+
+これにより、SFT は開発場全体の完全モデル化を避けつつ、明示境界内の計算可能な断面を扱う。
+
+### 4. Architecture Futures and Signature Trajectories
+
+SFT は endpoint だけを見ない。
+safe endpoint から safe trajectory は従わない。
+net signature delta が 0 でも、途中で unsafe excursion が起きることがある。
+
+```text
+ArchitectureFuture :=
+  field path
+  + architecture projection path
+  + observed signature trajectory
+  + obstruction witness candidates
+  + forecast boundary
+
+SignatureTrajectory :=
+  observed signature record_0
+  -> observed signature record_1
+  -> ...
+  -> observed signature record_n
+```
+
+`ArchitectureFuture` は確定未来ではない。
+選択された field model と horizon の下での reachable future である。
+SFT の重要な問いは、artifact や governance がこの reachable future をどう広げ、狭め、
+どの default path を作るかである。
+
+#### Running Example Preview: Coupon PRD
+
+曖昧な coupon PRD は、単に feature request を追加するだけではない。
+それは checkout / payment 領域で、複数の path を自然に見せる field action である。
+
+```text
+Coupon PRD may expose:
+  lawful DiscountPolicy insertion path
+  + PaymentAdapter shortcut path
+  + UI-only discount drift path
+  + rounding semantic obstruction path
+```
+
+以降では、この例を artifact、operation support、consequence envelope、review governance、
+feedback update へ展開する running example として使う。
+
+## Part II. The Algebraic and Observational Basis
+
+### 5. AAT: Local Algebra of Software Architecture
+
+SFT は AAT の上に載る。
+ただし、AAT は SFT のための理論ではない。
 依存方向は片方向である。
 
 ```text
@@ -54,428 +241,394 @@ AAT does not depend on SFT.
 SFT depends on AAT.
 ```
 
+AAT はアーキテクチャを局所代数にする。
+SFT はその局所代数を、architecture projection、local transition law、observable coordinate、
+admissibility boundary として使う。
+
 対応関係の詳細は [AAT / SFT Interface](aat_interface.md) に置く。
 ここでは最小対応だけを再掲する。
 
-| SFT 側 | AAT 側 |
+| SFT 側の役割 | AAT 側 |
 | --- | --- |
-| field state | `ArchitectureObject` |
-| local transition | `ArchitectureOperation` |
-| preserved constraint | `InvariantFamily` |
-| local resistance / defect | `ObstructionWitness` |
-| observable coordinate | `ArchitectureSignature` |
+| architecture projection | `ArchitectureObject` |
+| local transition law | `ArchitectureOperation` |
+| protected constraint | `InvariantFamily` |
+| defect / repair target / boundary axis | `ObstructionWitness` |
+| partial observation coordinate | `ArchitectureSignature` |
 | admissibility boundary | theorem boundary / non-conclusions |
 | local path skeleton | `ArchitecturePath` |
 
-SFT は AAT theorem を empirical prediction へ変換しない。
-AAT の局所主張を、field model の観測量、制約、制御入力として使う。
+SFT は AAT theorem を empirical prediction に変換しない。
+AAT theorem は、SFT reachability / safety schema の local premise として使う。
 
-## 2. Software Field
+### 6. ArchSig: Observing Architecture Signatures and Obstruction Witnesses
 
-`SoftwareField` は、architecture state と、その state から次にどの operation が選ばれやすいかを
-決める文脈を合わせた対象である。
+ArchSig は、実 artifact と codebase を AAT observables および SFT field estimates へ写す
+観測層である。
 
 ```text
+real artifacts
+  -> ArchSig
+  -> AAT observables
+  -> SFT field estimates
+```
+
+ArchSig は、単一スコアではなく多軸診断を返す。
+未測定 axis を 0 と読まない。
+signature delta は、両側で測定済みで、axis ごとの比較順序が定義されている場合に限って
+比較する。
+
+```text
+ObservedSignatureRecord :=
+  measured ArchitectureSignature axes
+  + unmeasured axes
+  + out-of-scope axes
+  + evidence boundary
+  + measurement non-conclusions
+
+SignatureDelta(S_before, S_after)
+  is defined only for comparable measured axes
+```
+
+SFT へ渡す ArchSig output は、次のような report として扱う。
+
+```text
+ArchSigSFTReport :=
+  action_class_candidates
+  + target_architecture_regions
+  + candidate_operation_families
+  + comparable_signature_axes
+  + expected_axis_delta_ranges
+  + selected_obstruction_witness_families
+  + missing_invariants
+  + theorem_boundary_items
+  + forecast_boundary
+  + unknown_unmodeled_remainder
+  + claim_level
+```
+
+### 7. Claim Boundaries
+
+SFT が大きな理論として信用されるためには、claim level discipline が必要である。
+SFT の主張は、どの観測、どの model、どの calibration に基づくかを明示する。
+
+```text
+Claim Level 0:
+  conceptual / diagnostic interpretation
+
+Claim Level 1:
+  trace-grounded field diagnosis
+
+Claim Level 2:
+  set-valued formal theorem schema
+
+Claim Level 3:
+  probabilistic / transition-kernel model
+
+Claim Level 4:
+  dataset-calibrated empirical forecast
+
+Claim Level 5:
+  deployed closed-loop governance system
+```
+
+例:
+
+```text
+良い spec は forecast cone を狭める。
+  Level 2, if support inclusion and step simulation are defined.
+  Level 4, if calibrated on historical PR / review / CI outcomes.
+
+AI proposal は shortcut を増やす。
+  Level 1, if observed in trace.
+  Level 4, if dataset-calibrated.
+
+組織 field が architecture drift を生む。
+  Level 1 or Level 4.
+  It is not an unbounded theorem.
+```
+
+## Part III. The SFT Core
+
+### 8. SoftwareField and Architecture Projection
+
+`SoftwareField` は、development field のうち、計算可能な断面として扱う state である。
+field state 自体は AAT の `ArchitectureObject` ではない。
+AAT 側の object は、field から取り出される architecture projection である。
+
+```text
+arch : SoftwareField -> ArchitectureObject
+
 SoftwareField :=
-  architecture state
-  + architecture signature
+  contextual dynamic state
+  + arch projection
+  + observed signature record
   + history
   + operation support
-  + requirement context
-  + design constraints
-  + review / CI constraints
-  + organization policy
-  + AI agent policy
-  + runtime feedback
-```
-
-SFT の最小 formal core は、まず確率を入れず、bounded transition system として置く。
-
-```text
-SoftwareField_t :=
-  X_t  : ArchitectureObject
-  sig_t : ArchitectureSignature
-  H_t  : History
-  U_t  : admissible operation support
-  π_t  : operation policy / preference
-  C_t  : constraint environment
-  O_t  : observation model
-  R_t  : review / CI / control filter
-  E_t  : exogenous artifact inputs
-```
-
-集合論的 core では、`U_t` は選択可能な operation の support、
-`π_t` は support 上の policy / preference である。
-確率的 semantics を採用する場合に限り、分布 `μ_t : OperationDistribution` を追加する。
-
-力学としての最小構造は次である。
-
-```text
-FieldSpace :=
-  set of SoftwareField states
-
-ArtifactAction a :=
-  α_a : FieldSpace -> FieldSpace
-
-SupportExtractor :=
-  U : FieldSpace -> Set ArchitectureOperation
-
-PolicyExtractor :=
-  π : FieldSpace -> OperationPolicy
-
-Step :=
-  step : FieldSpace -> ArchitectureOperation -> Option FieldSpace
-
-Observation :=
-  obs : FieldSpace -> ArchitectureSignature
-
-ControlFilter :=
-  R : FieldSpace -> FieldSpace
-```
-
-artifact action を force として扱うには、任意の endomorphism ではなく、
-少なくとも作用の境界を持つ必要がある。
-
-```text
-ArtifactActionFamily :=
-  identity action
-  + composition of actions
-  + projection to support / policy / constraint / filter / observation changes
-  + observable delta boundary
-  + non-conclusions
-```
-
-PRD、Spec、Issue、Review、CI、Incident は、直接 theorem になるのではなく、
-`ArtifactAction`、`ControlFilter`、`Observation`、`FieldUpdate` のどれとして読むかを
-明示したときに SFT の対象になる。
-
-基本遷移は次の形で読む。
-
-```text
-E_t + field context
-  -> shaped operation support U'_t
-  -> accepted operation a_t
-  -> X_{t+1}
-  -> sig_{t+1}
-  -> SoftwareField_{t+1}
-```
-
-確率分布、entropy、stochastic dominance、Markov kernel は、この集合論的 core の後に載せる
-追加 semantics である。
-最初の SFT theorem は、operation support、transition relation、signature observation、
-forecast cone を集合として扱う。
-
-同じ `ArchitectureObject` でも、field が異なれば次の operation support / policy は異なる。
-同じ module graph でも、レビュー規則、所有境界、既存 canonical pattern、テスト粒度、
-AI prompt、incident history が違えば、将来選ばれやすい操作は変わる。
-
-```text
-field_t
-  -> operation support U_t
-  -> operation policy π_t
-  -> accepted / rejected transitions
-  -> signature_t+1
-  -> field_t+1
-```
-
-この式は決定論ではない。SFT が扱うのは、field が operation support / policy と
-signature trajectory をどのように形作るかである。
-
-## 3. Force
-
-`Force` は、field を別の field へ写す artifact-induced action である。
-要求、仕様、Issue、PR、レビュー、CI、incident、組織判断、AI prompt は、すべて force の発生源になりうる。
-
-最小 semantics では、force は field action として読む。
-
-```text
-force_a : FieldSpace -> FieldSpace
-```
-
-ただし、任意の `FieldSpace -> FieldSpace` を force と呼ぶのではない。
-SFT で扱う force は、source artifact、作用する field 成分、観測可能な delta、
-合成境界、non-conclusions を持つ artifact action である。
-
-その射影として、support、policy、constraint、filter、observation model が変わる。
-
-```text
-support-shaping force:
-  U(force_a F) differs from U(F)
-
-policy-shaping force:
-  π(force_a F) differs from π(F)
-
-constraint-shaping force:
-  C(force_a F) differs from C(F)
-
-filter-shaping force:
-  R(force_a F) differs from R(F)
-
-observation-shaping force:
-  O(force_a F) differs from O(F)
-```
-
-たとえば spec clause は constraint と support を変え、Issue 分割は support を局所化し、
-review policy は filter を変え、incident は observation model や law universe update pressure を生む。
-確率的 semantics を採用する場合は、force が `μ_t` をどう変えるかを追加で読む。
-
-```text
-ArtifactForce :=
-  source artifact
-  + target field region
-  + candidate operation support
-  + expected signature delta
-  + expected obstruction pressure
-  + uncertainty boundary
-```
-
-force は一種類ではない。
-
-```text
-feature force
-deletion force
-migration force
-repair force
-coupling force
-boundary force
-invariant force
-effect force
-debt force
-refactor force
-replacement force
-incident response force
-end-of-life force
-```
-
-良い artifact は、feature force と stabilizing force を同時に持つ。
-悪い artifact は、feature force を出しながら、hidden interaction、ambiguity、coupling、
-effect leakage へ力を散らす。
-
-## 4. Force Taxonomy
-
-SFT では force を観測可能性と artifact の役割で分ける。
-
-| force class | 読み | 主な evidence |
-| --- | --- | --- |
-| `ObservedForce` | accepted transition の before / after signature delta として観測できる force。 | PR before / after signature、drift ledger、Feature Extension Report。 |
-| `LatentForce` | 要求、設計、prompt、組織判断、既存 local grammar が operation support / policy に与える見えない作用。 | requirement metadata、design boundary、prompt / agent policy、PR proposal support / policy、case study。 |
-| `DissipatedForce` | review / CI / type / policy により拒否、修正、減衰された raw force。 | rejected PR、CI failure、review-requested changes、policy decision report。 |
-
-AAT に近いのは accepted transition と selected signature delta である。
-latent force と dissipated force は、原則として tooling / empirical dataset で推定する。
-
-artifact の粒度では、次の下位型を区別する。
-
-```text
-RequirementForce :=
-  feature direction
-  + value pressure
-  + ambiguity boundary
-  + force class
-
-SpecForce :=
-  invariant channel
-  + interface constraints
+  + operation policy
+  + constraint environment
   + observation model
-
-IssueForce :=
-  operation support restriction
-  + locality boundary
-
-PRForce :=
-  realized transition
-  + actual signature delta
-
-ReviewForce :=
-  rejection / projection / repair / damping
-
-IncidentForce :=
-  runtime obstruction pressure
-  + law universe update pressure
+  + governance intervention model
+  + exogenous artifact inputs
 ```
 
-PRD、Spec、Issue、PR、Review、Incident はすべて force の source になりうるが、
-同じ種類の force ではない。PRD は方向と曖昧さを持ち、Spec は constraint channel を作り、
-Issue は operation support を狭め、PR は realized transition を観測させる。
-
-PRD の force class は、forecast cone の初期形を決める。
-新機能追加、削除、migration、repair、incident response、end-of-life は、
-同じ PRD artifact でも異なる operation support template と obstruction template を持つ。
+SFT の計算可能な核は次である。
 
 ```text
-PRDForceClass :=
-  feature_addition
-  + feature_deletion
-  + migration
-  + replacement
-  + repair
-  + refactor
-  + compliance
-  + incident_response
-  + performance_scaling
-  + observability
-  + deprecation
-  + end_of_life
+ComputableCore :=
+  SoftwareField
+  + arch projection
+  + ArtifactMediatedChange
+  + OperationSupport
+  + OperationPolicy
+  + StepRelation
+  + ObservationRecord
+  + GovernanceIntervention
+  + ForecastCone
+  + FieldUpdate
 ```
 
-## 5. Operation Support, Policy, Distribution
+これは SFT 全体ではない。
+これは、SFT を単なる比喩にしないための theorem-bearing fragment である。
 
-`OperationDistribution` は、確率的 semantics を採用したときに、
-ある field で次に選ばれうる operation の分布として現れる。
-集合論的 core では、support と policy を分けて扱う。
+### 9. Artifact-Mediated Change
+
+正式な計算概念は `ArtifactMediatedChange` または `ArtifactAction` である。
+`Force` は、その field-level reading を指す非公式名として残す。
 
 ```text
-OperationSupport(field)
-  = admissible operation set after constraints / filters
+ArtifactAction a :=
+  alpha_a : FieldSpace -> Set FieldSpaceUpdateHypothesis
 
-OperationPolicy(field)
-  = preference / selection rule on that support
+FieldSpaceUpdateHypothesis :=
+  candidate update descriptor sufficient to construct or constrain
+  a successor SoftwareField under an explicit interpretation boundary
 
-OperationDistribution(field)
-  = optional probabilistic semantics over that support
+applyUpdate :
+  FieldSpace -> FieldSpaceUpdateHypothesis -> FieldSpace
+
+DeterministicArtifactAction :=
+  special case where alpha_a(F) is singleton
 ```
 
-SFT では、「どの operation が正しいか」だけでなく、
-「どの operation が選ばれやすい field になっているか」を問う。
-同じ lawful operation が存在しても、それが選ばれにくく、unlawful shortcut が選ばれやすいなら、
-field は悪い basin へ落ちやすい。
+artifact は、field を一意に次の field へ写すとは限らない。
+PRD、Spec、Issue、AI proposal は、複数の解釈、複数の candidate update、
+複数の path class を生みうる。
+SFT で扱う action は、source artifact、target field components、action boundary、
+composition boundary、observable boundary、non-conclusions を持つ。
 
 ```text
-bad field:
-  lawful path exists
-  + unlawful shortcut is easier
+RawArtifactAction :=
+  source artifact
+  + target field components
+  + interpretation boundary
+  + candidate field updates
+  + action boundary
+  + composition boundary
+  + observable boundary
+  + non-conclusions
 
-good field:
-  lawful path exists
-  + lawful path is locally natural
-  + unlawful shortcut is filtered or expensive
+ForceDescriptor :=
+  action class
+  + target architecture regions
+  + candidate operation support families
+  + affected policy / constraint / governance / observation components
+  + uncertainty boundary
+
+ForecastedEffect :=
+  forecast boundary
+  + expected comparable signature axes
+  + expected axis delta ranges
+  + candidate obstruction witness families
+  + unknown / unmodeled remainder
+
+ObservedEffect :=
+  observed transition
+  + before / after observed signature records
+  + comparable measured axis delta
+  + unexpected obstruction witnesses
+  + review / CI / runtime outcome
 ```
 
-## 6. Signature Trajectory
+`ForecastedEffect` は forecast の出力であり、`RawArtifactAction` の定義には含めない。
+これにより、action を使って forecast するのに action 自体が forecast を含む、という循環を避ける。
 
-`SignatureTrajectory` は、field の遷移に沿って観測される signature の列である。
+### 10. Operation Support, Policy, and Selection
+
+SFT の核心は、どの operation が正しいかだけではなく、
+どの operation が自然、可能、低コスト、選択されやすいものとして field に現れるかを問う点にある。
 
 ```text
-SignatureTrajectory :=
-  signature_0
-  -> signature_1
-  -> ...
-  -> signature_n
+SupportedOperation :=
+  operation
+  + applicable theorem boundary
+  + precondition evidence
+  + expected witness mapping
+  + non-conclusions
+
+OperationSupport(F)
+  = admissible operation set after constraints / governance interventions
+
+OperationPolicy(F)
+  = preorder, cost, or selection relation on that support
 ```
 
-SFT は endpoint だけを見ない。
-safe endpoint から safe trajectory は従わない。
-net signature delta が 0 でも、途中で unsafe excursion が起きることがある。
+確率に進まない最小 core では、次のいずれかを使う。
 
 ```text
-endpoint safe
-  does not imply
-path safe
+PolicyAsPreorder:
+  op1 <=_F op2
+    := op1 is no harder / no less natural than op2 in field F
 
-net delta = 0
-  does not imply
-no excursion
+PolicyAsCost:
+  cost_F(op) : OrderedCost
+
+PolicyAsSelection:
+  Selected(F, op)
 ```
 
-この区別は、AAT の selected theorem boundary と SFT の trajectory-level safety を混同しないために重要である。
+確率的 semantics を採用する場合に限り、`mu_F : Distribution SupportedOperation` を追加する。
 
-## 7. Forecast Cone
+### 11. Forecast Cones and Consequence Envelopes
 
-`ForecastCone` は、現在の field と artifact force から到達しうる field path の集合または分布である。
-最小 core では、horizon `h` と operation support `U` に相対化された reachable field path set として読む。
-SFT の path は文脈付きの field path であり、AAT の `ArchitecturePath` へは projection して読む。
+`ForecastCone` は formal object である。
+horizon `h` と operation support `U` に相対化された reachable field path set として読む。
 
 ```text
 FieldPath :=
   path in FieldSpace
 
-ProjectArchitecturePath :=
-  FieldPath -> ArchitecturePath
-
 ReachableFieldPath(F, U, h, p)
   = p starts at F
   + length(p) <= h
-  + every step uses an operation in U(current field)
-  + every step follows step(current field, operation)
+  + for every adjacent pair F_i -> F_{i+1},
+      exists op in U(F_i) such that StepRelation(F_i, op, F_{i+1})
+
+StepRelation(F, op, F')
+  = operation op can realize a transition from F to F'
+    under the selected theorem boundary and field model
 
 ForecastCone(F, U, h) :=
   { p : FieldPath | ReachableFieldPath(F, U, h, p) }
 ```
 
-分布付き forecast cone は、この path set に probability / preference / cost を載せた拡張である。
+artifact action 付きの cone は、formal core の `ForecastCone(F, U, h)` から派生させる。
+set-valued action の場合は、candidate update ごとに cone を生成し、その族を envelope へまとめる。
 
 ```text
-ForecastCone(field, force) :=
-  possible FieldPath distribution
-  + projected ArchitecturePath distribution
-  + expected signature delta
-  + obstruction risk distribution
-  + uncertainty boundary
-  + non-conclusion boundary
+u in alpha_a(F)
+F_u := applyUpdate(F, u)
+U_u := U(F_u)
+
+ForecastConeFamilyAfterAction(F, a, h) :=
+  { ForecastCone(F_u, U_u, h) | u in alpha_a(F) }
 ```
 
-forecast は theorem ではない。
-AAT の theorem boundary、signature axes、witness families、historical dataset、
-review / CI policy に相対化された bounded prediction である。
-
-`ForecastBoundary` は、forecast が何に相対化されているかを明示する。
+`ConsequenceEnvelope` は、実務・診断・tooling 側の提示形式である。
+選択された field model と observation boundary の下で、一つ以上の `ForecastCone` を
+解釈可能な report としてまとめる。
 
 ```text
-ForecastBoundary :=
-  selected architecture universe
-  + selected artifact set
-  + historical prior / dataset boundary
-  + operation support boundary
-  + signature axes used
-  + organization / review policy assumptions
-  + unavailable / private evidence
+ConsequenceEnvelope :=
+  selected ForecastCones
+  + reachable path classes
+  + affected architecture regions
+  + comparable signature axes
+  + expected axis delta ranges
+  + obstruction witness candidates
+  + missing invariants / boundaries
+  + review / CI / issue decomposition recommendations
+  + forecast boundary
+  + unknown / unmodeled remainder
+```
+
+理論家には `ForecastCone`、実務家には `ConsequenceEnvelope`、tooling には simulator output を返す。
+
+### 12. Observation Boundaries and Governance Interventions
+
+SFT の forecast は、何が観測され、何が観測されないかに強く依存する。
+そのため、observation boundary は core concept である。
+
+```text
+Observation :=
+  obs : FieldSpace -> ObservedSignatureRecord
+
+ObservationBoundary :=
+  measured axes
+  + unavailable evidence
+  + private evidence
+  + extractor version
   + non-conclusions
 ```
 
-したがって forecast cone は未来予言ではなく、
-universe、artifact、prior、policy、unavailable evidence を明示した bounded model である。
-
-Spec は forecast cone を狭める force-shaping artifact として読む。
-良い spec clause は、operation support を狭め、lawful path を明確にし、
-hidden interaction や ambiguity へ流れる力を減らす。
-
-## 8. Fundamental Principles
-
-SFT の主張は、Lean theorem ではなく、bounded field model 上の principle / theorem schema として置く。
-各 principle は `ForecastBoundary`、選択された signature axes、witness families、
-artifact set、operation support に相対化される。
-各 principle は、採用する semantics によって claim level が変わる。
+governance intervention は、operation support、policy、observation、feedback update を変える
+governance mechanism である。
 
 ```text
-set-valued support semantics:
-  formal theorem schema
+GovernanceIntervention :=
+  support transformation
+  + policy transformation
+  + observation enrichment
+  + feedback update
+  + escalation / deferral rule
 
-transition-kernel semantics:
-  probabilistic theorem schema
+RestrictiveIntervention:
+  removes unsafe support
 
-dataset-calibrated semantics:
-  empirical hypothesis
+RedirectiveIntervention:
+  raises shortcut cost and lowers lawful path cost
 
-incomplete observation:
-  control heuristic with non-conclusions
+InstrumentingIntervention:
+  adds observation axes, tests, or runtime checks
+
+EscalatingIntervention:
+  converts proposal into review / design / incident record
+
+LearningIntervention:
+  updates field memory after observed outcome
 ```
 
-SFT の主張が単なる説明を越えるのは、次の形に落ちる場合である。
+review、CI、type checker、architecture rules、AI policy、runtime guard は、SFT では
+governance intervention として扱われる。
+
+### 13. Field Update and Closed-Loop Feedback
+
+SFT は予報だけでなく、予報と観測の差分で field model を更新する closed-loop theory である。
 
 ```text
-defined state space
-  + defined artifact action / control
-  + defined support extractor
-  + defined step relation
-  + defined observation
-  -> reachability / inclusion / preservation theorem
+FieldUpdate :=
+  prior field
+  + forecast cone / consequence envelope
+  + observed PR signature delta
+  + unexpected obstruction witnesses
+  + review / CI outcome
+  + runtime feedback
+  -> posterior field
 ```
 
-これに落ちない主張は、SFT 内では heuristic、tooling claim、または empirical hypothesis として扱う。
+`FieldUpdate` は、自動的な予測精度向上を主張しない。
+従うのは、指定された update rule の下で forecast error、missing evidence、
+unexpected witness、policy drift、non-conclusions が posterior field に保存されることである。
 
-### 8.1 Forecast Cone Narrowing Principle
+```text
+UpdateSound(update)
+  = observed delta / unexpected witness / review outcome
+    are recorded in the posterior field
+```
 
-仕様 artifact が feature 方向を保ちながら、選択された obstruction witness family を排除する
+## Part IV. Principles and Theorems
+
+### 14. Forecast Cone Narrowing
+
+Claim Level:
+
+```text
+L2 under set-valued support semantics and step simulation.
+L3 under transition-kernel semantics.
+L4 only after dataset calibration.
+```
+
+仕様 artifact が feature direction を保ちながら、選択された obstruction witness family を排除する
 健全な制約を追加するなら、その witness family に関する forecast cone は縮小する。
 
 ```text
@@ -485,15 +638,12 @@ sound constraint addition
   -> forecast cone narrows with respect to that witness family
 ```
 
-集合論的 core では、最初の theorem schema は support inclusion である。
-ただし、これは固定された step semantics と compatible な field update の下でのみ成立する。
-初期 field で `U2(F) ⊆ U1(F)` でも、1 step 後の update が support を広げるなら
-cone inclusion は従わない。
+集合論的 core では、最初の theorem schema は support inclusion と step simulation である。
 
 ```text
 PointwiseSupportInclusion(U2, U1)
   = for all reachable paired fields F2 ~ F1:
-      U2(F2) ⊆ U1(F1)
+      U2(F2) subset U1(F1)
 
 StepSimulation(U2, U1, ~)
   = every U2-step from F2 can be simulated by a U1-step from F1
@@ -505,21 +655,36 @@ PointwiseSupportInclusion(U2, U1)
   -> ForecastCone(F2, U2, h) projects into ForecastCone(F1, U1, h)
 ```
 
-同一 field、同一 step relation、support が state update によって予期せず広がらない特殊ケースでは、
-これは単純な `U2(F) ⊆ U1(F)` からの cone inclusion として読める。
-
 selected witness family に関する narrowing は、global risk reduction ではない。
-ある witness family を除外しても、別の witness family へ complexity が転送されることがある。
+別の witness family へ complexity が転送されることがある。
 
-これは SFT の看板原理である。
-良い PRD / Spec / Issue は、単に作業を増やす artifact ではなく、
-将来の architecture trajectory の cone を狭める force-shaping artifact である。
+Proof sketch:
 
-### 8.2 Support Safety Principle
+```text
+By induction on horizon h.
+
+h = 0:
+  the paired fields are related by assumption.
+
+h + 1:
+  take any U2-step from F2.
+  StepSimulation gives a matching U1-step from F1.
+  The successor fields remain related by ~.
+  Apply the induction hypothesis to the remaining horizon.
+```
+
+### 15. Support Safety
+
+Claim Level:
+
+```text
+L2 for accepted trajectories under selected safe region.
+No claim about global future safety.
+No claim about unmeasured axes.
+```
 
 safe region は operation の集合ではなく、signature / state 側の領域である。
-したがって support safety は「operation support が safe region の中にある」ことではなく、
-support 内の各 operation が selected safe region を保存することとして読む。
+support safety は、support 内の各 operation が selected safe region を保存することとして読む。
 
 ```text
 SupportOperationsPreserveSafeRegion(U, O, R)
@@ -532,302 +697,318 @@ StateInSafeRegion(O, R, F)
   -> accepted trajectory stays in R
 ```
 
-support-restricting filters compose.
+これは明示された accepted trajectory と selected safe region に相対化された主張である。
+global future safety は従わない。
+
+### 16. Proposal Accounting and Review Mediation
+
+Claim Level:
 
 ```text
-U(R1(F)) ⊆ U(F)
-  + U(R2(R1(F))) ⊆ U(R1(F))
-  ->
-  U(R2(R1(F))) ⊆ U(F)
+L1 when grounded in review / CI / incident traces.
+L2 when coverage and overlap policy are explicitly defined.
+L4 when rejection / rework / deferral categories are calibrated.
 ```
 
-ただし、これは明示された accepted trajectory と selected safe region に相対化された主張である。
-global / future trajectory safety は従わない。
-未測定軸、private evidence、future force は `ForecastBoundary` の non-conclusions に残る。
-
-### 8.3 Dissipation Boundary Principle
-
-raw force が review、CI、type、policy によって拒否、射影、修正されるとき、
-その力は消えるのではなく、accepted transition、rejected transition、ambiguity、
-coordination cost、runtime pressure のどこかへ分配される。
+`Dissipation` は正式な保存則ではない。
+正式語は `ProposalAccounting` または `ReviewMediation` である。
 
 ```text
-raw force
-  -> accepted transition
-   + rejected / delayed transition
-   + ambiguity / coordination cost
-   + runtime pressure
+ProposalAccounting(raw_proposal_universe)
+  classifies proposal pressure into
+    accepted
+    rejected
+    delayed
+    unresolved
+    coordination_record
+    runtime_pressure_estimate
+    unaccounted_remainder
+  under an explicit coverage / overlap policy
 ```
 
-ここでいう dissipation は、物理的な保存量を仮定する概念ではない。
-拒否または変更された operation pressure が、どの observable record に現れるかを記録する
-accounting schema である。
+review、CI、type checker、architecture rules は、単に proposal を止めるのではなく、
+accepted、rejected、delayed、unresolved、rework、runtime pressure の record を作る。
+SFT はこの mediation を、field update と governance design の入力として扱う。
+
+### 17. Feedback Boundary Update
+
+Claim Level:
 
 ```text
-DissipationRecord :=
-  raw proposal support / policy
-  + accepted support / policy
-  + rejected operation log
-  + delayed operation log
-  + unresolved demand
-  + coordination / ambiguity record
-  + runtime pressure estimate
-  + unaccounted remainder
-  + coverage boundary
+L1 when observed outcomes are recorded.
+L2 for update soundness as record preservation.
+L4 only if forecast quality is calibrated over a dataset.
 ```
 
-theorem schema として使うには、記録対象が raw proposal を被覆すること、
-各分類が互いにどう重なりうるか、unaccounted remainder をどう残すかを明示する。
-SFT は、dissipation を単なる失敗ではなく、force がどの軸へ移ったかを
-coverage boundary 付きで追跡する対象として扱う。
-
-### 8.4 Feedback Refinement Principle
-
-forecast と観測された transition / signature delta / obstruction witness の差分を使って
-field model を更新すれば、同じ artifact class に対する次の forecast boundary は精緻化される。
+forecast と観測された transition / signature delta / obstruction witness の差分を使うと、
+posterior field は forecast error、missing evidence、unexpected witness、policy drift、
+non-conclusions をより明示的に記録する。
 
 ```text
 forecast
   + observed transition
   + forecast error
-  -> refined field model
+  -> boundary-aware posterior field
 ```
 
-これは自動的な精度向上を主張しない。
+これは自動的な accuracy improvement theorem ではない。
+次の forecast は、狭くなる場合も、広がる場合も、境界が再分類される場合もある。
 update rule、dataset boundary、observation quality、policy drift が明示されている場合の
-closed-loop refinement schema である。
+closed-loop boundary update schema である。
 
-## 9. Issue と PR
+### 18. Stable Regions and Recurrent Development Paths
 
-Issue は、artifact force を bounded operation support へ分解する単位である。
+Claim Level:
 
 ```text
-IssueOperationSupport :=
-  allowed operation family
-  + target invariant
-  + expected witness impact
-  + theorem boundary
-  + non-conclusions
+L2 for MayReach / MustReach / StableRegion under set-valued semantics.
+L3 for recurrent or likely reachability under transition-kernel semantics.
+L4 only after calibration against traces.
 ```
 
-PR は、予測された force が実際にどの transition になったかを観測する点である。
+`Attractor` と `Basin` は、追加 semantics を必要とする語である。
+集合論的 core では、まず may reachability、must reachability、stable region を分ける。
 
 ```text
-PRSignatureDelta :=
-  actual architecture operation
-  + before signature
-  + after signature
-  + expected / actual delta comparison
-  + unexpected obstruction witnesses
+MayReach_h(F, U, A)
+  = some U-accepted path from F reaches region A within h steps
+
+MustReach_h(F, U, A)
+  = every U-accepted path from F reaches region A within h steps
+
+StableRegion(U, A)
+  = every U-accepted step from a field in A stays in A
+
+ReachablePreimage_h(U, A)
+  = { F | MayReach_h(F, U, A) }
 ```
 
-PR が局所的に通ることから、trajectory 全体が安全であることは従わない。
-SFT は single-step correctness と trajectory-level safety を分ける。
+`Attractor` と呼ぶには、少なくとも安定性、再帰性、または policy / probability semantics が必要である。
+実務的には、`DefaultPath`、`RecurrentPattern`、`StableRegion` として扱う方が安全である。
 
-## 10. Dissipation と Control
+## Part V. Computing Systems Built from SFT
 
-review、CI、type checker、architecture rules、theorem boundary checker は、raw force を
-拒否、射影、減衰、修正する control / dissipation field である。
+### 19. SFT Computational Problems
+
+SFT は概念だけでなく、計算問題の族を定義する。
 
 ```text
-raw operation support / policy
-  -> review / CI / type / policy
-  -> accepted operation support / policy
+1. Field Reconstruction Problem
+   artifact trace, codebase, review, CI, incident records から
+   SoftwareField の近似を構成する。
+
+2. Operation Support Inference Problem
+   現在の field で、どの operation family が自然・可能・危険・低コストかを推定する。
+
+3. Consequence Envelope Generation Problem
+   PRD / Spec / Issue / AI proposal から、
+   reachable path classes, affected signature axes,
+   possible obstruction witnesses, missing invariants を生成する。
+
+4. Cone Narrowing Problem
+   意図した feature direction を保ちつつ、
+   selected witness family を除外する spec / issue / review constraint を合成する。
+
+5. Support Safety Checking Problem
+   selected safe region を保存する operation support / governance intervention になっているかを調べる。
+
+6. Feedback Update Problem
+   forecast と observed PR / review / CI / incident outcome の差分から
+   posterior field model を更新する。
+
+7. AI Proposal Governance Problem
+   AI agent が生成する proposal support を bounded field model 内に収める。
+
+8. Lifecycle Decision Problem
+   repair / migration / contraction / end-of-life のどれを選ぶべきかを、
+   architecture signature, operation cost, runtime risk, field capacity から診断する。
 ```
 
-`Dissipation` は、force が intended feature へ使われず、obstruction、ambiguity、coupling、
-coordination cost へ流れる現象でもある。
+この章により、SFT は説明フレームではなく、計算機科学の問題設定になる。
+
+代表的な問題は、次のように input、output、soundness boundary、claim level を明示する。
 
 ```text
-Dissipation :=
-  feature force lost to obstruction
-  + ambiguity growth
-  + coupling growth
-  + review / CI rejection
-  + runtime incident pressure
+Problem:
+  Field Reconstruction
+
+Input:
+  DevelopmentField D
+  + modeling boundary B
+  + artifact / review / CI / incident traces
+
+Output:
+  SoftwareFieldEstimate F_hat
+
+Soundness boundary:
+  F_hat records selected evidence, unavailable evidence,
+  and unknown / unmodeled remainder under B.
+
+Claim Level:
+  L1 as trace-grounded reconstruction.
+  L4 only after validation against held-out traces.
 ```
 
-damping が十分なら bad-axis measure は非増加または減少する、という形の主張は明示前提を必要とする。
-operation が accepted されたという事実だけから bad-axis nonincrease は従わない。
-
-力学として扱う場合、control は field endomorphism または filter として読む。
-
 ```text
-control R : FieldSpace -> FieldSpace
+Problem:
+  Consequence Envelope Generation
 
-support-restricting control:
-  U(R(F)) ⊆ U(F)
+Input:
+  SoftwareFieldEstimate F_hat
+  + artifact a
+  + observation boundary O
+  + operation support extractor U
+  + horizon h
 
-boundary-preserving control:
-  SupportOperationsPreserveSafeRegion(U, O, B)
-    -> SupportOperationsPreserveSafeRegion(U_R, O, B)
-  where U_R(F) := U(R(F))
+Output:
+  ConsequenceEnvelope E
+
+Soundness boundary:
+  every reported path class is supported by at least one reachable path
+  under the selected model, or explicitly marked heuristic / empirical.
+
+Claim Level:
+  L2 if set-valued reachability is defined.
+  L4 if path classes and axis deltas are calibrated.
 ```
 
-dissipation record は、raw support / proposal が accepted、rejected、delayed、unresolved へ
-どう分配されたかを記録する。
-これは保存則ではなく、明示された partition / accounting boundary の下での記録である。
-
 ```text
-DissipationAccounting :=
-  raw proposal universe
-  + accepted / rejected / delayed / unresolved classes
-  + overlap policy
-  + coverage proof or coverage boundary
-  + unaccounted remainder
+Problem:
+  Cone Narrowing
+
+Input:
+  target artifact direction
+  + selected witness family W
+  + support extractors U1, U2
+  + step simulation relation
+
+Output:
+  constraint / spec / review intervention that excludes W
+  while preserving intended feature direction under the selected boundary
+
+Soundness boundary:
+  narrowing is relative to W, selected support, and selected horizon.
+  It does not imply global risk reduction.
+
+Claim Level:
+  L2 under support inclusion and step simulation.
+  L4 only with calibration.
 ```
 
-## 11. Field Update
-
-SFT は予報だけでなく、予報と観測の差分で field model を更新する closed-loop theory である。
-
 ```text
-FieldUpdate :=
-  prior field
-  + forecast cone
-  + observed PR signature delta
-  + unexpected obstruction witnesses
-  + review / CI outcome
-  + runtime feedback
-  -> posterior field
-```
+Problem:
+  AI Proposal Governance
 
-incident 後の postmortem は、field update の重要な特殊形である。
-
-```text
-PostmortemUpdate :=
-  incident observation
-  + root-cause witness classification
-  + missing invariant discovery
-  + review / CI filter update
-  + runtime observation update
-  + forecast boundary revision
-```
-
-基本ループは次である。
-
-```text
-forecast
-  -> transition
-  -> observation
-  -> update
-  -> next forecast
-```
-
-`FieldUpdate` は、過去の forecast が外れた理由を消去しない。
-forecast boundary、missing evidence、unexpected witness、organization / review policy drift を
-posterior field の一部として残す。
-
-field update を theorem schema として扱う場合は、posterior が prior より何を精緻化したかを
-preorder として明示する。
-
-```text
-FieldRefinement(F_post, F_prior)
-  = F_post preserves recorded forecast errors
-  + F_post records added evidence
-  + F_post refines selected support / policy / observation boundary
-  + F_post keeps non-conclusions or explicitly discharges them
-
-UpdateSound(update)
-  = observed delta / unexpected witness / review outcome
-    are recorded in the posterior field
-```
-
-自動的な予測精度向上はここから従わない。
-従うのは、指定された update rule の下で loss / correction record が posterior に保存されることだけである。
-
-## 12. Attractor Engineering
-
-attractor は、反復操作により trajectory が滞留しやすい signature 領域である。
-basin は、その attractor へ落ちやすい初期 configuration の集合である。
-
-```text
-Attractor :=
-  recurrent signature region
-  + stability condition
-  + observation boundary
-
-Basin :=
-  initial configurations that reach the attractor region
-```
-
-bounded reachability として読む場合、basin は horizon と support に相対化される。
-
-```text
-Reach_h(F, U, A)
-  = field F から support U を用いて h step 以内に region A へ到達可能
-
-Basin_h(A)
-  = { F | Reach_h(F, U_F, A) }
-
-ProbabilisticBasin_{h,p}(A)
-  = { F | Pr[reach A within h] >= p }
-```
-
-確率付き basin は追加 semantics であり、集合論的 core では `Reach_h` と `Basin_h` を使う。
-
-Attractor Engineering は、悪い operation を外から止めるだけではなく、
-良い operation が自然に選ばれやすい field を作る制御である。
-
-```text
-support shaping :=
-  remove bad operation
-  + add good operation
-  + make lawful path easier
-  + make unlawful shortcut harder
-```
-
-refactoring は、その時点の構造整理だけでなく、未来の operation support / policy を変える
-field transformation として読む。
-
-## 13. Organization Field
-
-開発組織は architecture state に force を注入する multi-agent field として読む。
-
-```text
-Demand field
-  -> Requirement field
-  -> Design field
-  -> Agent / developer operation field
-  -> Review / CI dissipation field
-  -> Architecture Signature trajectory
-```
-
-| field | 発生源 | SFT 上の作用 |
-| --- | --- | --- |
-| demand field | PdM、顧客価値、KPI、ロードマップ | feature force の方向と頻度を決める。 |
-| requirement field | PO、要件、acceptance criteria、優先順位 | operation script の粒度、順序、局所性を変える。 |
-| design field | architect、境界、canonical pattern、非目標 | future PR force の流路を作り、bad force を局所化する。 |
-| operation field | developer、AI agent、automation | 実際の architecture transition を生成する。 |
-| dissipation field | review、CI、type checker、architecture rules | raw force を減衰、射影、拒否、修正する。 |
-| observation field | Signature、Feature Extension Report、drift ledger | trajectory を観測し、制御入力へ戻す。 |
-
-組織判断そのものを Lean theorem 化しない。
-組織判断が architecture transition support / policy に与える作用を観測対象にする。
-SFT は人間の意図や組織文化そのものを完全モデル化しない。
-組織上の意思決定は、operation support、constraints、filters、observed signature trajectory に
-現れた範囲で扱う。
-
-## 14. AI-driven Development
-
-AI agent は、field の上で operation を生成する制御対象 / 操作生成器である。
-
-```text
-AI agent operation :=
-  proposal support / policy
+Input:
+  AI proposal stream
   + prompt / policy boundary
+  + SoftwareFieldEstimate F_hat
+  + theorem boundary
+  + review / CI traces
+
+Output:
+  bounded proposal support
+  + shortcut witness report
+  + review / CI intervention
+  + posterior field update
+
+Soundness boundary:
+  governs proposals within selected boundaries.
+  It does not prove general AI safety.
+
+Claim Level:
+  L1 when trace-grounded.
+  L2 for formal support restrictions.
+  L4 for benchmark-calibrated shortcut detection.
+```
+
+### 20. PRD-to-ConsequenceEnvelope Simulator
+
+simulator は SFT の応用ではない。
+SFT を計算可能な理論にする実現形である。
+
+```text
+PRD / Spec / Issue / AI Proposal
+  -> ArtifactDescriptor
+  -> OperationSupport
+  -> ForecastCone / ConsequenceEnvelope
+  -> Expected Signature Axes
+  -> Obstruction Witness Candidates
+  -> Missing Invariant / Boundary Report
+  -> Review / CI / Issue Decomposition Recommendation
+  -> Calibration by actual PR / Review / CI / Incident outcomes
+```
+
+これは `PRD-to-PR predictor` ではない。
+未来の一点予測ではなく、bounded consequence envelope を生成する。
+
+成熟度は段階的に分ける。
+
+| level | 読み | 最小出力 |
+| --- | --- | --- |
+| 0 | explanatory metaphor | field / force という説明だけ。 |
+| 1 | action classification | PRD action class / descriptor。 |
+| 2 | support generation | candidate operation support。 |
+| 3 | cone generation | bounded forecast cone / path classes。 |
+| 4 | consequence envelope | signature axes / obstruction witnesses / missing boundary。 |
+| 5 | weighting | path class weight / probability / unknown remainder。 |
+| 6 | calibration | actual Issue / PR / review / CI outcome との照合と field update。 |
+
+SFT が計算理論として成立する最低ラインは level 3 である。
+実務ツールとしての価値は level 4 から強くなり、予測理論としての主張は level 5 以降、
+科学的な検証可能性は level 6 の calibration に依存する。
+
+### 21. AI-Agent Governance under SFT
+
+SFT は AI-mediated software evolution の基礎理論である。
+AI coding agent の安全性は、モデル性能だけでは決まらない。
+その proposal がどの field で生成され、governance intervention を受け、観測され、
+feedback update されるかによって決まる。
+
+```text
+AI agent :=
+  artifact interpreter
+  + code proposal generator
+  + local pattern amplifier
+  + shortcut generator
+  + review load shifter
+  + hidden assumption reproducer
+  + field participant
+```
+
+SFT は AI agent の一般的安全性を証明しない。
+AI agent が生成する operation support を bound し、AAT theorem boundary と SFT forecast boundary の中で
+review / CI feedback により制御する枠組みを与える。
+
+```text
+AI Proposal Governance :=
+  prompt / policy boundary
   + allowed operation support
   + theorem boundary
   + review / CI feedback
+  + observed shortcut / witness report
+  + field update
 ```
 
-AI の安全性は、生成速度ではなく operation support と feedback control の問題として扱う。
-AI agent が提案する operation が、AAT の theorem boundary と SFT の forecast / control boundary の中に
-留まるかを観測する。
-SFT は AI agent の一般的安全性を証明しない。
-AI agent が生成する operation support を bound し、観測し、review / CI feedback で制御する枠組みを与える。
+### 22. Review / CI / Type Systems as Governance Interventions
 
-## 15. Lifecycle と End of Life
+review、CI、type system、architecture rule、runtime guard は、単なる quality gate ではない。
+それらは future operation support と selection policy を変える governance intervention system である。
+
+```text
+GovernanceSystem :=
+  review rule
+  + CI / test / type checker
+  + architecture rule
+  + ownership boundary
+  + runtime guard
+  + feedback update rule
+```
+
+良い governance は、unsafe shortcut を単に拒否するだけではなく、
+lawful path を低コスト化し、missing invariant を発見し、field memory へ反映する。
+
+### 23. Lifecycle, Migration, End-of-Life, and Benchmarks
 
 software field は生成と成長だけでなく、老朽化、migration、縮約、削除、終焉を含む。
 
@@ -842,250 +1023,239 @@ LifecycleTrajectory :=
   + end-of-life
 ```
 
-End-of-life は失敗ではなく、field control の一種である。
-修復コスト、migration path、runtime risk、organization damping capacity、forecast cone の広がりを見て、
-repair、migration、deletion のどれを選ぶかを扱う。
+End-of-life は失敗ではなく、lifecycle governance / field reconfiguration decision の一種である。
+修復コスト、migration path、runtime risk、organizational capacity for repair / migration、
+consequence envelope の広がりを見て、repair、migration、deletion のどれを選ぶかを扱う。
 
-## 16. SFT Simulator
-
-SFT が比喩を越えて力学として成立しているかは、
-bounded simulator を構成できるかで検査できる。
-シミュレーターは未来の PR を一点予測するものではなく、
-PRD や Spec が field に注入する force を forecast cone として展開する。
+SFT は benchmark と calibration を必要とする。
 
 ```text
-PRD-to-ForecastCone simulator :=
-  input PRD
-  + current field state
-  + force class classifier
-  + operation support templates
-  + obstruction witness templates
-  + field transition / projection model
-  + forecast boundary
-  -> reachable path classes
-   + expected signature delta range
-   + likely obstruction witnesses
-   + missing invariant / boundary report
-   + unknown / unmodeled remainder
+SFT Benchmark Suite :=
+  PRD-to-Issue Benchmark
+  + Issue-to-PR Signature Benchmark
+  + Review Mediation Benchmark
+  + Incident Feedback Benchmark
+  + AI Shortcut Benchmark
+  + Lifecycle Decision Benchmark
 ```
 
-これは `PRD-to-PR predictor` ではない。
-SFT の simulator は、点予測ではなく台風の予報円のような reachable region / distribution を返す。
-確率や重みは optional semantics であり、historical prior と calibration boundary がない限り
-empirical prediction とは呼ばない。
+benchmark があって初めて、SFT は経験科学としても評価可能になる。
+
+## Part VI. Case Studies
+
+### 24. Coupon PRD
+
+Coupon PRD は、SFT の running example として使う。
+対象領域を checkout / payment に固定し、feature addition の artifact action として読む。
 
 ```text
-structural forecast:
-  reachable path classes
-  + selected obstruction families
-  + cone-narrowing constraints
+Input artifact:
+  Coupon PRD
 
-weighted forecast:
-  structural forecast
-  + ordinal weights or probabilities
-  + unknown / unmodeled remainder
-
-calibrated forecast:
-  weighted forecast
-  + historical prior
-  + prediction-vs-actual calibration record
+RawArtifactAction:
+  source artifact = PRD
+  target field components = requirement context, constraints, operation support
+  target architecture regions = Checkout / Payment
+  action boundary = coupon feature addition only
+  non-conclusions = pricing strategy, marketing success, fraud model
 ```
 
-シミュレーターの成熟度は段階的に分ける。
-
-| level | 読み | 最小出力 |
-| --- | --- | --- |
-| 0 | explanatory metaphor | force / basin という説明だけ。 |
-| 1 | force classification | PRD force class。 |
-| 2 | support generation | candidate operation support。 |
-| 3 | cone generation | bounded forecast cone / path classes。 |
-| 4 | signature estimation | expected signature delta / obstruction witnesses。 |
-| 5 | weighting | path class weight / probability / unknown remainder。 |
-| 6 | calibration | actual Issue / PR / review / CI outcome との照合と field update。 |
-
-SFT が力学として成立する最低ラインは level 3 である。
-実務ツールとしての価値は level 4 から強くなり、予測理論としての主張は level 5 以降、
-科学的な検証可能性は level 6 の calibration に依存する。
-
-PRD force class は cone の形を変える。
+PRD が「クーポンを適用できるようにする」とだけ述べ、丸め順序、payment state boundary、
+discount policy の所有境界を明示しない場合、descriptor は複数の operation family を含む。
 
 ```text
-feature addition:
-  extension / integration / policy insertion paths
-  + hidden interaction / boundary / semantic risk
+ForceDescriptor candidates:
+  add DiscountPolicy under Checkout
+  + patch PaymentAdapter
+  + create CouponRepository dependency
+  + add UI-only discount flag
 
-feature deletion:
-  contraction / dependency removal / consumer migration paths
-  + compatibility / orphan dependency / runtime consumer risk
-
-migration:
-  bridge / dual-run / replacement / rollback paths
-  + old-new projection mismatch / partial migration risk
-
-incident response:
-  guard / fallback / protection / observation update paths
-  + complexity transfer / missing law universe risk
+Missing invariants:
+  rounding order
+  discount composition law
+  payment authorization boundary
+  refund / cancellation semantics
 ```
 
-初期 MVP は、確率分布を急がず、force class、candidate operation support、
-forecast cone、expected signature delta range、missing invariant / boundary を返す。
-`unknown / unmodeled` を明示することは、SFT の forecast boundary の一部である。
-
-### Natural-language Force Extraction
-
-PRD や設計メモは自然言語 artifact であり、そのままでは SFT の formal input ではない。
-そのため simulator 実装では、自然言語 artifact を `ForceVector` 候補へ変換する
-extraction layer が必要になる。
-この extraction layer は、人間の設計レビュー、rule-based parser、LLM、
-またはそれらの hybrid として実装できる。
-LLM は実装選択肢の一つであり、SFT の数学的構成要素や theorem engine ではない。
-
-自然言語 PRD、設計メモ、過去 Issue / PR から、structured force vector candidate を
-抽出する front-end として tooling を使う場合、流れは次の形になる。
+この段階の consequence envelope は、少なくとも次の path classes を持つ。
 
 ```text
-PRD text
-  + repo context
-  + architecture signature
-  + historical Issue / PR memory
-  -> ForceExtractor
-  -> ForceVector candidates
-  -> schema / boundary validation
-  -> SFT ForecastCone simulator
-```
-
-extractor が担うのは、自然言語 artifact を SFT の入力へ写す前処理である。
-
-```text
-ForceExtractor :=
-  force class candidates
-  + target field region candidates
-  + operation support candidates
-  + expected signature delta candidates
-  + obstruction witness candidates
-  + missing invariant / boundary candidates
-  + uncertainty boundary
-```
-
-`ForceVector` は dense embedding だけではなく、SFT が読める構造化成分を持つ。
-
-```text
-ForceVector :=
-  force class weights
-  + target region weights
-  + operation family weights
-  + obstruction axis weights
-  + missing invariant set
+ConsequenceEnvelope:
+  lawful policy insertion path
+  + hidden PaymentAdapter dependency path
+  + rounding semantic obstruction path
+  + UI-only discount drift path
   + unknown / unmodeled remainder
 ```
 
-LLM confidence は calibration 済み確率ではない。
-初期段階では ordinal weight または candidate score として扱い、
-actual Issue / PR / review / CI outcome と照合して初めて calibrated forecast に近づく。
+仕様が boundary と invariant を明示すると、support と policy は lawful path に寄る。
+この narrowing は global risk reduction ではなく、selected witness family に関する
+bounded claim である。
+
+### 25. Migration
+
+migration は、old-new projection mismatch と partial migration risk を伴う field transformation である。
 
 ```text
-LLM confidence
-  != calibrated probability
-
-CalibratedForceVector :=
-  ExtractedForceVector
-  + historical prior
-  + prediction-vs-actual calibration record
+MigrationEnvelope :=
+  bridge path
+  + dual-run path
+  + replacement path
+  + rollback path
+  + old-new projection mismatch
+  + partial migration risk
+  + consumer compatibility boundary
 ```
 
-tooling を使う場合は、抽出境界を必ず記録する。
+SFT は migration を単なる置換作業ではなく、field memory と operation support の再配置として扱う。
+
+### 26. Incident Response
+
+incident response は、runtime observation が field update を強制する case である。
 
 ```text
-ForceExtractionBoundary :=
-  extractor type / version
-  + prompt version, if applicable
-  + model version, if applicable
-  + retrieved context boundary
-  + unavailable private evidence
-  + unsupported inference list
+IncidentFeedback :=
+  incident observation
+  + root-cause witness classification
+  + missing invariant discovery
+  + review / CI governance update
+  + runtime observation update
+  + forecast boundary revision
+```
+
+incident 後の修正が局所的に通っても、future trajectory safety は従わない。
+SFT は incident を missing invariant / observation boundary / governance intervention の発見機会として扱う。
+
+### 27. AI-Generated Shortcut
+
+AI-generated proposal は、local pattern を増幅し、field 内で低コストに見える shortcut を生成しうる。
+SFT の観点では、これは model quality だけでなく field support と policy の問題である。
+
+```text
+AIShortcutCase :=
+  prompt boundary
+  + generated operation support
+  + selected shortcut path
+  + missed theorem boundary
+  + review / CI mediation
+  + observed obstruction witness
+  + posterior field update
+```
+
+AI proposal は、AAT theorem boundary と SFT consequence envelope の両方に照らして評価する。
+
+### 28. End-of-Life Decision
+
+end-of-life は、成長の失敗ではなく、lifecycle governance / field reconfiguration の選択肢である。
+
+```text
+EndOfLifeDecision :=
+  current architecture signature
+  + repair cost
+  + migration support
+  + runtime risk
+  + ownership / staffing boundary
+  + consequence envelope
   + non-conclusions
 ```
 
-したがって、extracted output から path safety、global risk reduction、
-causal force identification は従わない。
-extractor は候補を出し、SFT は support / cone / boundary を管理し、
-AAT / ArchSig は signature / witness / invariant を管理する。
+SFT は market success や human intention を予測しない。
+扱うのは、repair、migration、contraction、deletion が architecture future と field capacity に
+与える影響である。
 
-## 17. ArchSig の位置づけ
+## Part VII. Non-Conclusions and Research Program
 
-ArchSig は、AAT 的観測量を抽出し、SFT 的予測・制御に渡す計測層である。
-AAT / SFT / ArchSig の claim boundary は [AAT / SFT Interface](aat_interface.md) に従う。
+### 29. Positioning
 
-```text
-ArchSig :=
-  AAT signature / witness / theorem-boundary extractor
-  + SFT force / forecast / trajectory analyzer
-```
-
-AAT 側:
+SFT は、既存の software engineering framework の単なる言い換えではない。
 
 ```text
-codebase / PR
-  -> component universe
-  -> signature axes
-  -> obstruction witnesses
-  -> theorem boundary status
-  -> non-conclusions
+SFT is not:
+  a static architecture metric,
+  a software process model,
+  a DevOps maturity model,
+  a socio-technical metaphor,
+  a technical debt taxonomy,
+  an AI coding benchmark,
+  or a replacement for formal verification.
 ```
 
-SFT 側:
+SFT の独自性は、ソフトウェア進化そのものを計算対象にする点にある。
+artifact と feedback は operation support を変え、governance は selection policy を変え、
+observation boundary は signature trajectory を定め、consequence envelope は
+到達可能な architecture future を記述する。
 
 ```text
-PRD / Spec / Issue / PR / Review / Incident
-  -> force analysis
-  -> forecast cone
-  -> expected signature delta
-  -> obstruction risk distribution
-  -> force-shaping recommendation
-  -> feedback update
+SFT differs by treating software evolution itself as the computable object:
+  artifacts and feedback reshape operation support,
+  governance changes selection policy,
+  observations define signature trajectories,
+  and consequence envelopes describe reachable architectural futures.
 ```
 
-ArchSig は、PR 後に危険を見る tool から、PRD 時点で architecture trajectory を予報する
-tool へ拡張される。
-ただし、claim level は段階的に分ける。
-
-```text
-Stage 1:
-  PR / codebase から AAT signature と obstruction witness を抽出する
-
-Stage 2:
-  PR before / after から signature delta を測る
-
-Stage 3:
-  Issue / Spec から expected operation support を推定する
-
-Stage 4:
-  PRD から forecast boundary と missing invariant を構成する
-
-Stage 5:
-  historical prior と calibration がある範囲で forecast cone を推定する
-```
-
-初期 MVP は、未来予測そのものよりも、signature diff、selected obstruction witness report、
-theorem boundary / non-conclusions report、missing invariant / missing boundary detector に置く。
-PRD forecast は、calibration と dataset boundary がない限り empirical prediction として扱わない。
-
-## 18. 非目標
+### 30. What SFT Does Not Claim
 
 SFT は次を主張しない。
 
 ```text
-forecast cone が未来を決定する。
-same signature から same future operation support が従う。
-safe endpoint から safe trajectory が従う。
-accepted step から bad-axis nonincrease が無条件に従う。
-organization policy から incident reduction が Lean theorem として従う。
-AI agent policy から architecture lawfulness が無条件に従う。
-empirical correlation が因果証明である。
-observed signature delta から causal force が一意に同定できる。
-human intention や market success を予測できる。
-ArchSig extraction が ground truth architecture object である。
+future software behavior is mechanically determined.
+every organizational effect is formally modelable.
+forecast cones are empirical predictions without calibration.
+AAT theorem implies future trajectory safety.
+observed signature delta uniquely identifies causal artifact action.
+AI policy compliance implies architecture lawfulness.
+cone narrowing implies global risk reduction.
+unmeasured axes are safe.
+ArchSig extraction is ground truth architecture object.
+human intention or market success can be predicted.
 ```
 
-SFT の役割は、AAT の局所代数を観測量と制約として使い、ソフトウェア進化の大域的な場を
-予測・制御・検証可能な研究対象へ分解することである。
+SFT は大きな理論であるが、万能理論ではない。
+大きな射程を持つからこそ、claim boundary と non-conclusions を前面に置く。
+
+### 31. Open Problems in the Computational Theory of Software Evolution
+
+SFT の研究プログラムは、次の open problems を持つ。
+
+```text
+1. Lean formalization of ForecastCone and support simulation.
+2. Formal relation between ConsequenceEnvelope and one or more ForecastCones.
+3. Trace-grounded reconstruction of SoftwareField.
+4. Calibration of PRD-to-ConsequenceEnvelope simulators.
+5. Benchmark design for review mediation and AI shortcut detection.
+6. Integration of AAT theorem boundaries with practical review systems.
+7. Empirical study of codebase as field memory.
+8. Governance design for AI-mediated software evolution.
+9. Lifecycle and end-of-life decision models.
+10. Deployed closed-loop SFT workbench.
+```
+
+SFT の最終的な到達点は、次の tool ecosystem である。
+
+```text
+SFT Workbench
+
+Input:
+  PRD
+  design memo
+  issue plan
+  existing codebase
+  architecture signature
+  review / CI history
+  incident history
+  AI agent policy
+
+Output:
+  consequence envelope
+  affected architecture signature axes
+  likely obstruction witness families
+  missing invariant / boundary report
+  risky default paths
+  recommended issue decomposition
+  recommended review / CI governance interventions
+  AI proposal governance constraints
+  expected feedback / calibration plan
+```
+
+SFT は開発者を置き換えるものではない。
+開発ツールが何を見られるかを変える。

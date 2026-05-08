@@ -1,88 +1,85 @@
-# SFT: ソフトウェアの場の理論
+# SFT: Software Field Theory
 
 このディレクトリは、Software Field Theory, SFT を整理する。
 
-SFT は、独立した数学理論である AAT を前提に、要求、仕様、Issue、PR、レビュー、CI、
-組織、AI、運用、終焉がソフトウェア場に及ぼす力と軌道を扱う力学・制御理論である。
-AAT は SFT のための理論ではない。SFT が AAT に依存する。
+SFT は、field-shaped software evolution の計算理論である。
+要求、artifact、実践、ツール、AI agent、レビュー、CI/CD、運用 feedback、
+lifecycle decision が、コードベースの到達可能なアーキテクチャ未来をどう変えるかを扱う。
 
 ```text
-AAT provides the algebra.
-SFT studies the field.
-ArchSig observes the signature.
-AI agents act under control.
+AAT makes architecture locally algebraic.
+ArchSig makes architecture observable.
+SFT makes software evolution computable.
 ```
 
 日本語では次のように読む。
 
 ```text
-AAT は代数を与える。
-SFT は場を扱う。
-ArchSig は署名を観測する。
-AI はその場の上で操作する。
+AAT はアーキテクチャを局所代数にする。
+ArchSig はアーキテクチャを観測可能にする。
+SFT はソフトウェア進化を計算可能にする。
 ```
 
 ## 読む順序
 
-1. [AAT / SFT Interface](aat_interface.md)
-2. [ソフトウェアの場の理論](software_field_theory.md)
+1. [Software Field Theory](software_field_theory.md)
+2. [AAT / SFT Interface](aat_interface.md)
 3. [Architecture Signature Dynamics 互換入口](../design/architecture_signature_dynamics.md)
 4. [Architecture Dynamics tooling 設計](../design/architecture_dynamics_tooling_design.md)
-5. [Attractor Engineering](../design/attractor_engineering.md)
 
 ## SFT の中心対象
 
 ```text
+DevelopmentField
+CodebaseAsFieldMemory
 SoftwareField
-ArtifactForce
-RequirementForce
-PRDForce
-SpecForce
-SpecForceShaping
-IssueForce
-IssueOperationSupport
-PRForce
-PRSignatureDelta
-ReviewForce
-ReviewConstraint
-CIFilter
-RuntimeFeedback
-IncidentForce
-IncidentPressure
-PostmortemLawUpdate
-OrganizationField
-AIAgentOperationPressure
+ArchitectureProjection
+ArtifactMediatedChange
+ForceDescriptor
+OperationSupport
+OperationPolicy
+SupportedOperation
+ObservationBoundary
+GovernanceIntervention
 ForecastCone
-ForecastBoundary
-OperationDistribution
-SignatureTrajectory
-Dissipation
+ConsequenceEnvelope
+ObservedSignatureRecord
+ObstructionWitnessCandidate
+ProposalAccounting
+ReviewMediation
 FieldUpdate
-AttractorEngineering
+StableRegion
+ReachablePreimage
+AIProposalGovernance
 LifecycleTrajectory
-EndOfLifeOperation
+EndOfLifeDecision
 ```
 
 ## SFT の問い
 
 ```text
-この PRD はコードベースの場にどのくらいの力をかけるか。
-その力はどの subsystem に流れるか。
-forecast cone はどれくらい広いか。
-どの bad basin に落ちやすいか。
-どの spec clause が forecast cone を狭めるか。
-Issue は lawful operation 単位に分割されているか。
-PR は予測された signature delta と一致したか。
-組織構造はどの operation distribution を誘導しているか。
-AI agent は安全な operation support 内で動いているか。
-いつ repair し、いつ migration し、いつ終焉させるべきか。
+この PRD はどの consequence envelope を作るか。
+どの architecture region と signature axis が影響を受けるか。
+どの operation family が自然・可能・危険・低コストに見えるか。
+どの missing invariant / boundary が forecast boundary に残るか。
+どの review / CI / issue decomposition が cone を狭めるか。
+AI agent の proposal support は bounded field model 内に収まっているか。
+observed PR / review / CI / incident outcome は field model をどう更新するか。
+いつ repair し、いつ migration し、いつ contraction / end-of-life を選ぶべきか。
 ```
 
-## AAT との境界
+## AAT / ArchSig / SFT の分業
 
 ```text
-AAT = local / algebraic / theorem-boundary-aware
-SFT = global / dynamical / predictive / controllable
+AAT:
+  architecture の局所代数。
+
+ArchSig:
+  実 artifact と codebase を観測可能な signature / witness / boundary report に写す計測層。
+
+SFT:
+  artifact / practice / AI / feedback が architecture-signature trajectory の
+  reachable future をどう変えるかを扱う計算理論。
 ```
 
 SFT は AAT の数学的核を置き換えない。
@@ -90,5 +87,5 @@ SFT は AAT の architecture object、operation、invariant、obstruction witnes
 signature、theorem boundary / non-conclusions を観測量・制約・制御入力として使う。
 
 Lean theorem claim として読める範囲は [AAT](../aat/README.md) 側に置く。
-SFT の forecast、force、dissipation、organization field、AI dynamics は、
-明示された bounded formal kernel を除いて tooling / empirical / control model として扱う。
+SFT の forecast、consequence envelope、proposal accounting、organization field、AI governance は、
+明示された computable core と claim boundary の下で tooling / empirical / governance model として扱う。
