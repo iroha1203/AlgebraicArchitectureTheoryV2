@@ -233,6 +233,8 @@ force は一種類ではない。
 
 ```text
 feature force
+deletion force
+migration force
 repair force
 coupling force
 boundary force
@@ -240,7 +242,9 @@ invariant force
 effect force
 debt force
 refactor force
-deletion force
+replacement force
+incident response force
+end-of-life force
 ```
 
 良い artifact は、feature force と stabilizing force を同時に持つ。
@@ -267,6 +271,7 @@ RequirementForce :=
   feature direction
   + value pressure
   + ambiguity boundary
+  + force class
 
 SpecForce :=
   invariant channel
@@ -292,6 +297,26 @@ IncidentForce :=
 PRD、Spec、Issue、PR、Review、Incident はすべて force の source になりうるが、
 同じ種類の force ではない。PRD は方向と曖昧さを持ち、Spec は constraint channel を作り、
 Issue は operation support を狭め、PR は realized transition を観測させる。
+
+PRD の force class は、forecast cone の初期形を決める。
+新機能追加、削除、migration、repair、incident response、end-of-life は、
+同じ PRD artifact でも異なる operation support template と obstruction template を持つ。
+
+```text
+PRDForceClass :=
+  feature_addition
+  + feature_deletion
+  + migration
+  + replacement
+  + repair
+  + refactor
+  + compliance
+  + incident_response
+  + performance_scaling
+  + observability
+  + deprecation
+  + end_of_life
+```
 
 ## 5. Operation Support, Policy, Distribution
 
@@ -821,7 +846,172 @@ End-of-life は失敗ではなく、field control の一種である。
 修復コスト、migration path、runtime risk、organization damping capacity、forecast cone の広がりを見て、
 repair、migration、deletion のどれを選ぶかを扱う。
 
-## 16. ArchSig の位置づけ
+## 16. SFT Simulator
+
+SFT が比喩を越えて力学として成立しているかは、
+bounded simulator を構成できるかで検査できる。
+シミュレーターは未来の PR を一点予測するものではなく、
+PRD や Spec が field に注入する force を forecast cone として展開する。
+
+```text
+PRD-to-ForecastCone simulator :=
+  input PRD
+  + current field state
+  + force class classifier
+  + operation support templates
+  + obstruction witness templates
+  + field transition / projection model
+  + forecast boundary
+  -> reachable path classes
+   + expected signature delta range
+   + likely obstruction witnesses
+   + missing invariant / boundary report
+   + unknown / unmodeled remainder
+```
+
+これは `PRD-to-PR predictor` ではない。
+SFT の simulator は、点予測ではなく台風の予報円のような reachable region / distribution を返す。
+確率や重みは optional semantics であり、historical prior と calibration boundary がない限り
+empirical prediction とは呼ばない。
+
+```text
+structural forecast:
+  reachable path classes
+  + selected obstruction families
+  + cone-narrowing constraints
+
+weighted forecast:
+  structural forecast
+  + ordinal weights or probabilities
+  + unknown / unmodeled remainder
+
+calibrated forecast:
+  weighted forecast
+  + historical prior
+  + prediction-vs-actual calibration record
+```
+
+シミュレーターの成熟度は段階的に分ける。
+
+| level | 読み | 最小出力 |
+| --- | --- | --- |
+| 0 | explanatory metaphor | force / basin という説明だけ。 |
+| 1 | force classification | PRD force class。 |
+| 2 | support generation | candidate operation support。 |
+| 3 | cone generation | bounded forecast cone / path classes。 |
+| 4 | signature estimation | expected signature delta / obstruction witnesses。 |
+| 5 | weighting | path class weight / probability / unknown remainder。 |
+| 6 | calibration | actual Issue / PR / review / CI outcome との照合と field update。 |
+
+SFT が力学として成立する最低ラインは level 3 である。
+実務ツールとしての価値は level 4 から強くなり、予測理論としての主張は level 5 以降、
+科学的な検証可能性は level 6 の calibration に依存する。
+
+PRD force class は cone の形を変える。
+
+```text
+feature addition:
+  extension / integration / policy insertion paths
+  + hidden interaction / boundary / semantic risk
+
+feature deletion:
+  contraction / dependency removal / consumer migration paths
+  + compatibility / orphan dependency / runtime consumer risk
+
+migration:
+  bridge / dual-run / replacement / rollback paths
+  + old-new projection mismatch / partial migration risk
+
+incident response:
+  guard / fallback / protection / observation update paths
+  + complexity transfer / missing law universe risk
+```
+
+初期 MVP は、確率分布を急がず、force class、candidate operation support、
+forecast cone、expected signature delta range、missing invariant / boundary を返す。
+`unknown / unmodeled` を明示することは、SFT の forecast boundary の一部である。
+
+### Natural-language Force Extraction
+
+PRD や設計メモは自然言語 artifact であり、そのままでは SFT の formal input ではない。
+そのため simulator 実装では、自然言語 artifact を `ForceVector` 候補へ変換する
+extraction layer が必要になる。
+この extraction layer は、人間の設計レビュー、rule-based parser、LLM、
+またはそれらの hybrid として実装できる。
+LLM は実装選択肢の一つであり、SFT の数学的構成要素や theorem engine ではない。
+
+自然言語 PRD、設計メモ、過去 Issue / PR から、structured force vector candidate を
+抽出する front-end として tooling を使う場合、流れは次の形になる。
+
+```text
+PRD text
+  + repo context
+  + architecture signature
+  + historical Issue / PR memory
+  -> ForceExtractor
+  -> ForceVector candidates
+  -> schema / boundary validation
+  -> SFT ForecastCone simulator
+```
+
+extractor が担うのは、自然言語 artifact を SFT の入力へ写す前処理である。
+
+```text
+ForceExtractor :=
+  force class candidates
+  + target field region candidates
+  + operation support candidates
+  + expected signature delta candidates
+  + obstruction witness candidates
+  + missing invariant / boundary candidates
+  + uncertainty boundary
+```
+
+`ForceVector` は dense embedding だけではなく、SFT が読める構造化成分を持つ。
+
+```text
+ForceVector :=
+  force class weights
+  + target region weights
+  + operation family weights
+  + obstruction axis weights
+  + missing invariant set
+  + unknown / unmodeled remainder
+```
+
+LLM confidence は calibration 済み確率ではない。
+初期段階では ordinal weight または candidate score として扱い、
+actual Issue / PR / review / CI outcome と照合して初めて calibrated forecast に近づく。
+
+```text
+LLM confidence
+  != calibrated probability
+
+CalibratedForceVector :=
+  ExtractedForceVector
+  + historical prior
+  + prediction-vs-actual calibration record
+```
+
+tooling を使う場合は、抽出境界を必ず記録する。
+
+```text
+ForceExtractionBoundary :=
+  extractor type / version
+  + prompt version, if applicable
+  + model version, if applicable
+  + retrieved context boundary
+  + unavailable private evidence
+  + unsupported inference list
+  + non-conclusions
+```
+
+したがって、extracted output から path safety、global risk reduction、
+causal force identification は従わない。
+extractor は候補を出し、SFT は support / cone / boundary を管理し、
+AAT / ArchSig は signature / witness / invariant を管理する。
+
+## 17. ArchSig の位置づけ
 
 ArchSig は、AAT 的観測量を抽出し、SFT 的予測・制御に渡す計測層である。
 AAT / SFT / ArchSig の claim boundary は [AAT / SFT Interface](aat_interface.md) に従う。
@@ -880,7 +1070,7 @@ Stage 5:
 theorem boundary / non-conclusions report、missing invariant / missing boundary detector に置く。
 PRD forecast は、calibration と dataset boundary がない限り empirical prediction として扱わない。
 
-## 17. 非目標
+## 18. 非目標
 
 SFT は次を主張しない。
 
