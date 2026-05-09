@@ -14,4 +14,7 @@
 - [証明義務と実証仮説](../../aat/proof_obligations.md)
 - [Lean 定義・定理索引](../../aat/lean_theorem_index.md)
 
-この archive 内の facade は、旧リンクの歴史的記録であり、現行入口としては使わない。
+`math_README.md` は、第一級文書への薄い索引だけになっていた `docs/math/README.md` を
+退避したものである。
+
+この archive 内の facade と薄い索引は、旧リンクの歴史的記録であり、現行入口としては使わない。
