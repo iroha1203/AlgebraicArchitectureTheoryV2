@@ -93,6 +93,7 @@ scan
 | `policy-decision-report-v0` | organization policy に基づく pass / warn / fail / advisory decision。 |
 | `pr-comment-summary-v0` | GitHub Checks / PR comment 向け Markdown summary。 |
 | `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal を SFT forecasting MVP の入力境界へ正規化する。 |
+| `operation-support-estimate-v0` | `artifact-descriptor-v0` から候補 operation family、policy constraints、known forbidden support、unknown remainder を保持する。 |
 
 [Signature diff report workflow](../../.github/workflows/signature-diff.yml) は、PR / push /
 schedule / manual run で Sig0、validation、snapshot、`signature-diff-report-v0` を作り、

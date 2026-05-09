@@ -23,7 +23,7 @@ workflow の計画だけを書く。
 
 ## Current status snapshot
 
-2026-05-09 時点の ArchSig は、AAT diagnostic / governance tooling としては
+2026-05-10 時点の ArchSig は、AAT diagnostic / governance tooling としては
 MVP を越えている。一方で、SFT forecast engine としては schema と validator が先行しており、
 PRD / Issue / AI proposal から `ForecastCone` や `ConsequenceEnvelope` を生成する
 pipeline は未完成である。
@@ -153,12 +153,18 @@ PRD / Spec / Issue / AI proposal
 measurement boundary を持つ level 3 相当の cone skeleton を作る。
 calibration 済みの weighting や field update は B10 / B11 artifact と接続した後に扱う。
 
+現在は `artifact-descriptor-v0` と `operation-support-estimate-v0` が schema + validator
+として実装済みである。`OperationSupportEstimate` は descriptor refs、candidate
+operation families、policy constraints、known forbidden support、unknown remainder、
+confidence / evidence boundary を保持するが、accepted PR history、actual future support、
+global policy safety、future trajectory safety は主張しない。
+
 ### B12 milestones
 
 | Milestone | 目標 |
 | --- | --- |
-| B12.1 ArtifactDescriptor | PRD / Issue / AI proposal の action class、scope、source refs、missing evidence を schema 化する。 |
-| B12.2 OperationSupportEstimate | candidate operation family、policy constraints、known forbidden support、unknown remainder を出す。 |
+| B12.1 ArtifactDescriptor | PRD / Issue / AI proposal の action class、scope、source refs、missing evidence を schema 化する。schema + validator 実装済み。 |
+| B12.2 OperationSupportEstimate | candidate operation family、policy constraints、known forbidden support、unknown remainder を出す。schema + validator 実装済み。 |
 | B12.3 ForecastCone skeleton | finite support と bounded horizon に相対化した path class skeleton を保持する。 |
 | B12.4 ConsequenceEnvelope report | signature axis、obstruction candidate、missing boundary、review / CI recommendation をまとめる。 |
 | B12.5 Calibration hook | observed PR / review / CI / outcome artifact と forecast item を対応付ける hook を置く。 |
