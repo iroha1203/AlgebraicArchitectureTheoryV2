@@ -3,7 +3,8 @@
 このディレクトリは、AAT の理論を実用 artifact、schema、workflow、検証境界へ落とす
 tool 側の文書群である。
 
-数学理論の第一級本文は `docs/aat/` に置く。tool 側文書は理論を参照してよいが、
+第一級理論本文は `docs/aat/mathematical_theory.md`, `docs/sft/aat_interface.md`,
+`docs/sft/software_field_theory.md` に置く。tool 側文書は理論を参照してよいが、
 理論本文は tool artifact、CI、PR、extractor、schema version に依存しない。
 
 ## 読む順序
@@ -31,10 +32,13 @@ Tooling docs は、変化の速さごとに分ける。
 | Evolving design | `extraction.md`, `reports.md`, `workflows.md`, `theorem_preconditions.md`, `repair_suggestion.md`, `examples.md` | command、report、検証、運用 flow。 |
 | Mutable planning | `roadmap.md` | phase、standardization target、拡張候補。 |
 
-## 旧入口との関係
+## 第一級理論との関係
 
-旧 `docs/aat_v2_tooling_design.md` は、既存リンクと schema catalog のための薄い入口として残す。
-本文の source of truth はこの `docs/tooling/` 以下である。
+理論本文は [AAT 数学理論](../aat/mathematical_theory.md)、
+[AAT / SFT Interface](../sft/aat_interface.md)、
+[ソフトウェアの場の理論](../sft/software_field_theory.md) に置く。
+tool 側の source of truth はこの `docs/tooling/` 以下である。
+旧 `docs/aat_v2_tooling_design.md` は archive に退避済みであり、現行入口としては使わない。
 
 ## 基本境界
 

@@ -617,7 +617,7 @@ UpdateSound(update)
 
 ## Part IV. Principles and Theorems（原理と定理）
 
-### 14. Forecast Cone Narrowing（予測円錐の縮小）
+### 14. ForecastCone Narrowing（予測円錐の縮小）
 
 Claim Level:
 
@@ -801,7 +801,7 @@ SFT は概念だけでなく、計算問題の族を定義する。
 2. Operation Support Inference Problem
    現在の field で、どの operation family が自然・可能・危険・低コストかを推定する。
 
-3. Consequence Envelope Generation Problem
+3. ConsequenceEnvelope Generation Problem
    PRD / Spec / Issue / AI proposal から、
    reachable path classes, affected signature axes,
    possible obstruction witnesses, missing invariants を生成する。
@@ -852,7 +852,7 @@ Claim Level:
 
 ```text
 問題:
-  Consequence Envelope Generation
+  ConsequenceEnvelope Generation
 
 入力:
   SoftwareFieldEstimate F_hat
