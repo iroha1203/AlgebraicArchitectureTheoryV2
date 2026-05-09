@@ -211,6 +211,23 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- architecture-dynamics-metr
   --out .lake/signature-current/architecture-dynamics-metrics-validation.json
 ```
 
+B12 ArtifactDescriptor の canonical fixture を出力し、既存 descriptor を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- artifact-descriptor \
+  --fixture \
+  --out .lake/signature-current/artifact-descriptor.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- artifact-descriptor \
+  --input tools/archsig/tests/fixtures/minimal/artifact_descriptor.json \
+  --out .lake/signature-current/artifact-descriptor-validation.json
+```
+
+`artifact-descriptor-v0` は PRD / Spec / Issue / AI proposal を source refs、
+action class candidates、scope、missing evidence、measurement boundary、
+forecast non-conclusions に正規化する。operation support、ForecastCone、probability、
+causal forecast はこの command では生成しない。
+
 B5 repair / synthesis artifact を検査する。
 
 ```bash

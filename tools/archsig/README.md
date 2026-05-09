@@ -17,7 +17,8 @@ PR comment、dataset generation などの後段 command に渡せる。
 - Sig0 output を validation し、revision snapshot と before / after diff を作る。
 - PR metadata、AIR、theorem precondition check、Feature Extension Report、policy decision、
   PR comment summary を生成する。
-- 実証研究用 dataset と B10 operational feedback artifact を JSON として出力する。
+- 実証研究用 dataset、B10 operational feedback artifact、B12 SFT forecasting input
+  descriptor を JSON として出力する。
 
 詳細な command と artifact は次に分けている。
 
@@ -91,6 +92,7 @@ scan
 | `feature-extension-report-v0` | split status、witness、coverage gap、theorem precondition checks。 |
 | `policy-decision-report-v0` | organization policy に基づく pass / warn / fail / advisory decision。 |
 | `pr-comment-summary-v0` | GitHub Checks / PR comment 向け Markdown summary。 |
+| `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal を SFT forecasting MVP の入力境界へ正規化する。 |
 
 [Signature diff report workflow](../../.github/workflows/signature-diff.yml) は、PR / push /
 schedule / manual run で Sig0、validation、snapshot、`signature-diff-report-v0` を作り、

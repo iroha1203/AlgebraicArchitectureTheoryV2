@@ -55,6 +55,18 @@ Lean status: `empirical hypothesis` / tooling output.
 | Incident correlation monitor | `incident-correlation-monitor-v0` | incident / rollback / MTTR correlation、confounder、missing / private data boundary を保存する。 |
 | Hypothesis refresh cycle | `hypothesis-refresh-cycle-v0` | empirical hypothesis の retained / rejected / proposed update を versioned research tracking として保存する。 |
 
+## SFT Forecasting Input Artifacts
+
+| 出力 | schemaVersion | 用途 |
+| --- | --- | --- |
+| ArtifactDescriptor | `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal の source refs、action class candidates、scope、missing evidence、measurement boundary、forecast non-conclusions を保持する。 |
+| ArtifactDescriptor validation report | `artifact-descriptor-validation-report-v0` | descriptor が theorem claim、ground truth architecture object、causal forecast に昇格していないことを検査する。 |
+
+`artifact-descriptor-v0` は B12 SFT forecasting MVP の最初の入力正規化 artifact である。
+この段階では operation support estimate、ForecastCone、ConsequenceEnvelope、
+probability、causal prediction は生成しない。missing evidence、unsupported constructs、
+forecast non-conclusions は後段 artifact に引き継ぐ境界として読む。
+
 ## Measurement Boundary
 
 `archsig` は測定済み 0 と未評価を分ける。
