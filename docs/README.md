@@ -54,8 +54,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 ## Lean 形式化
 
 - [Lean 定義・定理索引](aat/lean_theorem_index.md): 実装済み Lean API の入口。
-- [Lean module 階層整理方針](formal/lean_module_organization.md): `Formal/Arch` 以下の canonical path と import 方針。
-- [アーキテクチャ零曲率定理 Lean 化設計](formal/flatness_obstruction_lean_design.md): generic witness-count kernel / law diagram / finite zero-count bridge へ落とす設計。
+- [証明義務と実証仮説](aat/proof_obligations.md): theorem boundary、未解決課題、empirical hypothesis の台帳。
 
 ## Tooling / Empirical
 

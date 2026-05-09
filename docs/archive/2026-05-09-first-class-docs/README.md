@@ -24,4 +24,10 @@
 `aat_chaos_game_dynamics_memo.md` は、SFT へ整理する前の chaos-game / dynamics 研究メモである。
 現行の力学・場・予測・制御の本文は [ソフトウェアの場の理論](../../sft/software_field_theory.md) に置く。
 
-この archive 内の facade、薄い索引、旧 PRD、旧 memo は、旧リンクの歴史的記録であり、現行入口としては使わない。
+`flatness_obstruction_lean_design.md` と `lean_module_organization.md` は、
+零曲率 theorem package と Lean module 移行の過去設計メモである。
+現行の Lean status と主要 API は [証明義務と実証仮説](../../aat/proof_obligations.md) と
+[Lean 定義・定理索引](../../aat/lean_theorem_index.md) で確認する。
+
+この archive 内の facade、薄い索引、旧 PRD、旧 memo、旧 design note は、
+旧リンクの歴史的記録であり、現行入口としては使わない。
