@@ -60,8 +60,8 @@ field state
 arch projection
 trajectory
 operation distribution
-forecast cone
-consequence envelope
+ForecastCone
+ConsequenceEnvelope
 forecast boundary
 proposal accounting
 field update
@@ -73,7 +73,7 @@ lifecycle / end-of-life dynamics
 ```
 
 これらは AAT の概念ではない。
-AAT の `ArchitectureSignature` から forecast cone は従わず、
+AAT の `ArchitectureSignature` から `ForecastCone` は従わず、
 AAT の `ArchitectureOperation` が lawful であることから trajectory-level safety は従わず、
 AAT の selected obstruction absence から empirical cost reduction は従わない。
 
@@ -141,7 +141,7 @@ local transition law または admissibility premise として使う。
 | AAT signature coordinate | empirical prediction by itself |
 | AAT operation preservation | SFT policy safety |
 | AAT witness absence | absence of latent action |
-| SFT forecast cone narrowing | global risk reduction |
+| SFT `ForecastCone` narrowing | global risk reduction |
 | observed signature delta | identified causal artifact action |
 | ArchSig extraction | ground truth architecture object |
 | AI agent policy compliance | architecture lawfulness |
@@ -174,8 +174,8 @@ real artifact
 
 AAT 側では、ArchSig は component universe、signature axes、obstruction witnesses、
 theorem boundary status、non-conclusions を抽出する。
-SFT 側では、ArchSig は artifact action / force descriptor、forecast cone、
-consequence envelope、comparable signature axes、expected axis delta range、
+SFT 側では、ArchSig は artifact action / force descriptor、ForecastCone、
+ConsequenceEnvelope、comparable signature axes、expected axis delta range、
 trajectory、feedback update を推定する。
 signature delta は、両側で測定済みで、axis ごとの比較順序が定義されている場合に限って
 比較される。
@@ -188,7 +188,7 @@ ArchSig-AAT Extractor
 
 ArchSig-SFT Forecaster
   -> force descriptor / operation-support / forecast-boundary estimate
-  -> consequence envelope report
+  -> ConsequenceEnvelope report
   -> comparable signature axis report
 
 ArchSig-Governance Reporter
