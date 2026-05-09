@@ -36,6 +36,7 @@ pub mod schema;
 mod schema_catalog;
 mod schema_compatibility;
 mod schema_versioning;
+mod sft_forecasting;
 mod signature_trajectory_report;
 mod snapshot;
 mod synthesis_constraint;
@@ -114,6 +115,11 @@ pub use reported_axes_catalog::static_detectable_values_reported_axes_catalog;
 pub use schema::*;
 pub use schema_catalog::static_schema_version_catalog;
 pub use schema_compatibility::build_schema_compatibility_check_report;
+pub use sft_forecasting::{
+    static_consequence_envelope_report, static_forecast_calibration_hook,
+    static_forecast_cone_skeleton, validate_consequence_envelope_report,
+    validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
+};
 pub use signature_trajectory_report::{
     static_signature_trajectory_report, validate_signature_trajectory_report,
 };

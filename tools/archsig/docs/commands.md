@@ -246,6 +246,45 @@ policy constraints、known forbidden support、unknown remainder、confidence /
 evidence boundary を分離する。accepted PR history、actual future support、global
 policy safety、future trajectory safety はこの command では主張しない。
 
+B12 ForecastCone / ConsequenceEnvelope / CalibrationHook の canonical fixture を出力し、
+既存 artifact を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-cone-skeleton \
+  --fixture \
+  --out .lake/signature-current/forecast-cone-skeleton.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-cone-skeleton \
+  --input tools/archsig/tests/fixtures/minimal/forecast_cone_skeleton.json \
+  --out .lake/signature-current/forecast-cone-skeleton-validation.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- consequence-envelope \
+  --fixture \
+  --out .lake/signature-current/consequence-envelope-report.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- consequence-envelope \
+  --input tools/archsig/tests/fixtures/minimal/consequence_envelope_report.json \
+  --out .lake/signature-current/consequence-envelope-validation.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-calibration-hook \
+  --fixture \
+  --out .lake/signature-current/forecast-calibration-hook.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-calibration-hook \
+  --input tools/archsig/tests/fixtures/minimal/forecast_calibration_hook.json \
+  --out .lake/signature-current/forecast-calibration-hook-validation.json
+```
+
+`forecast-cone-skeleton-v0` は finite support refs、bounded horizon、
+path class candidates、operation support refs、source refs、forecast boundary、
+unknown remainder を保持する。`consequence-envelope-report-v0` は affected
+architecture regions、comparable signature axes、expected axis delta ranges、
+selected obstruction witness candidates、missing boundary items、theorem boundary
+items、review / CI / issue recommendation を保持する。`forecast-calibration-hook-v0`
+は forecast item refs と observed PR / review / CI / outcome refs、B10 / B11 artifact
+boundary を対応付ける。これらは probability、global risk reduction、trajectory-level
+safety、forecast correctness、causal proof、Lean theorem claim を主張しない。
+
 B5 repair / synthesis artifact を検査する。
 
 ```bash

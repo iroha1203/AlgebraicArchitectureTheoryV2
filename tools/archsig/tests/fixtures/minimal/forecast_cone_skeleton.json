@@ -1,0 +1,233 @@
+{
+  "schemaVersion": "forecast-cone-skeleton-v0",
+  "coneId": "fixture-forecast-cone-skeleton-v0",
+  "operationSupportRef": {
+    "estimateSchemaVersion": "operation-support-estimate-v0",
+    "estimateId": "fixture-operation-support-estimate-v0",
+    "descriptorId": "fixture-artifact-descriptor-v0",
+    "candidateOperationFamilyIds": [
+      "family:schema-validation-artifact",
+      "family:cli-fixture-validation"
+    ],
+    "sourceRefIds": [
+      "source:issue-735",
+      "source:operation-support-estimate-fixture",
+      "source:roadmap-b12",
+      "source:sft-consequence-envelope"
+    ],
+    "nonConclusions": [
+      "forecast cone skeleton is bounded by selected finite support and horizon",
+      "forecast cone skeleton does not assign probabilities",
+      "forecast cone skeleton does not prove global risk reduction",
+      "forecast cone skeleton does not prove trajectory-level safety",
+      "forecast cone skeleton is not an empirical prediction theorem"
+    ]
+  },
+  "finiteSupportRefs": [
+    {
+      "supportRefId": "support:schema-validation-artifact",
+      "supportKind": "finite-operation-family",
+      "operationFamilyIds": [
+        "family:schema-validation-artifact"
+      ],
+      "sourceRefIds": [
+        "source:issue-735",
+        "source:operation-support-estimate-fixture"
+      ],
+      "boundary": "schema and validator support is finite under the selected B12 fixture",
+      "assumptions": [
+        "support is finite under selected fixture refs",
+        "support does not imply operation support completeness"
+      ],
+      "nonConclusions": [
+        "forecast cone skeleton is bounded by selected finite support and horizon",
+        "forecast cone skeleton does not assign probabilities",
+        "forecast cone skeleton does not prove global risk reduction",
+        "forecast cone skeleton does not prove trajectory-level safety",
+        "forecast cone skeleton is not an empirical prediction theorem"
+      ]
+    },
+    {
+      "supportRefId": "support:cli-fixture-validation",
+      "supportKind": "finite-cli-support",
+      "operationFamilyIds": [
+        "family:cli-fixture-validation"
+      ],
+      "sourceRefIds": [
+        "source:issue-735",
+        "source:roadmap-b12"
+      ],
+      "boundary": "CLI fixture validation support is finite and source-bound",
+      "assumptions": [
+        "support is finite under selected fixture refs",
+        "support does not imply operation support completeness"
+      ],
+      "nonConclusions": [
+        "forecast cone skeleton is bounded by selected finite support and horizon",
+        "forecast cone skeleton does not assign probabilities",
+        "forecast cone skeleton does not prove global risk reduction",
+        "forecast cone skeleton does not prove trajectory-level safety",
+        "forecast cone skeleton is not an empirical prediction theorem"
+      ]
+    }
+  ],
+  "boundedHorizon": {
+    "horizonId": "horizon:b12-mvp-skeleton",
+    "horizonKind": "bounded-step",
+    "maxSteps": 3,
+    "timeWindow": "Phase B12 MVP issue chain",
+    "sourceRefIds": [
+      "source:issue-735",
+      "source:operation-support-estimate-fixture",
+      "source:roadmap-b12",
+      "source:sft-consequence-envelope"
+    ],
+    "boundary": "bounded to B12.3 skeleton construction before probability or causal claims",
+    "assumptions": [
+      "horizon counts artifact pipeline steps, not calendar predictions",
+      "downstream report and calibration artifacts remain separate"
+    ],
+    "nonConclusions": [
+      "forecast cone skeleton is bounded by selected finite support and horizon",
+      "forecast cone skeleton does not assign probabilities",
+      "forecast cone skeleton does not prove global risk reduction",
+      "forecast cone skeleton does not prove trajectory-level safety",
+      "forecast cone skeleton is not an empirical prediction theorem"
+    ]
+  },
+  "pathClassCandidates": [
+    {
+      "pathClassId": "path:schema-to-envelope",
+      "pathClass": "descriptor-estimate-cone-envelope",
+      "supportRefIds": [
+        "support:schema-validation-artifact",
+        "support:cli-fixture-validation"
+      ],
+      "operationFamilyIds": [
+        "family:schema-validation-artifact",
+        "family:cli-fixture-validation"
+      ],
+      "horizonRefId": "horizon:b12-mvp-skeleton",
+      "sourceRefIds": [
+        "source:issue-735",
+        "source:operation-support-estimate-fixture",
+        "source:roadmap-b12",
+        "source:sft-consequence-envelope"
+      ],
+      "affectedAxes": [
+        "schemaCompleteness",
+        "boundaryRetention"
+      ],
+      "rationale": "The selected artifact path can feed a report skeleton without assigning probability.",
+      "probabilityBoundary": "no probability is assigned by the skeleton",
+      "nonConclusions": [
+        "forecast cone skeleton is bounded by selected finite support and horizon",
+        "forecast cone skeleton does not assign probabilities",
+        "forecast cone skeleton does not prove global risk reduction",
+        "forecast cone skeleton does not prove trajectory-level safety",
+        "forecast cone skeleton is not an empirical prediction theorem"
+      ]
+    },
+    {
+      "pathClassId": "path:cli-validation-feedback",
+      "pathClass": "fixture-validation-feedback",
+      "supportRefIds": [
+        "support:cli-fixture-validation"
+      ],
+      "operationFamilyIds": [
+        "family:cli-fixture-validation"
+      ],
+      "horizonRefId": "horizon:b12-mvp-skeleton",
+      "sourceRefIds": [
+        "source:issue-735",
+        "source:roadmap-b12"
+      ],
+      "affectedAxes": [
+        "validatorCoverage",
+        "unknownRemainder"
+      ],
+      "rationale": "CLI validation can expose missing boundaries while retaining unknown support.",
+      "probabilityBoundary": "no probability is assigned by the skeleton",
+      "nonConclusions": [
+        "forecast cone skeleton is bounded by selected finite support and horizon",
+        "forecast cone skeleton does not assign probabilities",
+        "forecast cone skeleton does not prove global risk reduction",
+        "forecast cone skeleton does not prove trajectory-level safety",
+        "forecast cone skeleton is not an empirical prediction theorem"
+      ]
+    }
+  ],
+  "forecastBoundary": {
+    "boundaryId": "boundary:b12.3-forecast-cone-skeleton",
+    "sourceRefIds": [
+      "source:issue-735",
+      "source:operation-support-estimate-fixture",
+      "source:roadmap-b12",
+      "source:sft-consequence-envelope"
+    ],
+    "measurementBoundaryRefs": [
+      "boundary:b12.2-operation-support-estimate",
+      "docs/tool/roadmap.md#b123-forecastcone-skeleton"
+    ],
+    "supportRefIds": [
+      "support:schema-validation-artifact",
+      "support:cli-fixture-validation"
+    ],
+    "horizonRefIds": [
+      "horizon:b12-mvp-skeleton"
+    ],
+    "unsupportedConstructs": [
+      "probability assignment",
+      "global risk reduction proof",
+      "trajectory-level safety proof",
+      "empirical prediction theorem"
+    ],
+    "assumptions": [
+      "path classes are candidates under selected finite support",
+      "unmeasured axes remain explicit unknown remainder"
+    ],
+    "nonConclusions": [
+      "forecast cone skeleton is bounded by selected finite support and horizon",
+      "forecast cone skeleton does not assign probabilities",
+      "forecast cone skeleton does not prove global risk reduction",
+      "forecast cone skeleton does not prove trajectory-level safety",
+      "forecast cone skeleton is not an empirical prediction theorem"
+    ]
+  },
+  "unknownRemainder": [
+    {
+      "remainderId": "unknown:unmeasured-runtime-and-policy-axes",
+      "affectedPathClassIds": [
+        "path:schema-to-envelope",
+        "path:cli-validation-feedback"
+      ],
+      "sourceRefIds": [
+        "source:issue-735",
+        "source:operation-support-estimate-fixture",
+        "source:roadmap-b12",
+        "source:sft-consequence-envelope"
+      ],
+      "unknownAxes": [
+        "runtime propagation",
+        "private PRD constraints",
+        "future reviewer behavior"
+      ],
+      "reason": "selected B12.3 inputs do not measure runtime, private, or future feedback axes",
+      "treatment": "retain as unknown forecast remainder under the selected horizon",
+      "nonConclusions": [
+        "forecast cone skeleton is bounded by selected finite support and horizon",
+        "forecast cone skeleton does not assign probabilities",
+        "forecast cone skeleton does not prove global risk reduction",
+        "forecast cone skeleton does not prove trajectory-level safety",
+        "forecast cone skeleton is not an empirical prediction theorem"
+      ]
+    }
+  ],
+  "nonConclusions": [
+    "forecast cone skeleton is bounded by selected finite support and horizon",
+    "forecast cone skeleton does not assign probabilities",
+    "forecast cone skeleton does not prove global risk reduction",
+    "forecast cone skeleton does not prove trajectory-level safety",
+    "forecast cone skeleton is not an empirical prediction theorem"
+  ]
+}

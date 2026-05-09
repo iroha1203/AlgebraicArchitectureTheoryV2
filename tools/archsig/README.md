@@ -17,8 +17,8 @@ PR comment、dataset generation などの後段 command に渡せる。
 - Sig0 output を validation し、revision snapshot と before / after diff を作る。
 - PR metadata、AIR、theorem precondition check、Feature Extension Report、policy decision、
   PR comment summary を生成する。
-- 実証研究用 dataset、B10 operational feedback artifact、B12 SFT forecasting input
-  descriptor を JSON として出力する。
+- 実証研究用 dataset、B10 operational feedback artifact、B12 SFT forecasting MVP の
+  descriptor / support estimate / cone / envelope / calibration hook を JSON として出力する。
 
 詳細な command と artifact は次に分けている。
 
@@ -94,6 +94,9 @@ scan
 | `pr-comment-summary-v0` | GitHub Checks / PR comment 向け Markdown summary。 |
 | `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal を SFT forecasting MVP の入力境界へ正規化する。 |
 | `operation-support-estimate-v0` | `artifact-descriptor-v0` から候補 operation family、policy constraints、known forbidden support、unknown remainder を保持する。 |
+| `forecast-cone-skeleton-v0` | finite support と bounded horizon に相対化した path class candidates と forecast boundary を保持する。 |
+| `consequence-envelope-report-v0` | signature axis、obstruction candidate、missing boundary、review / CI recommendation を report projection にまとめる。 |
+| `forecast-calibration-hook-v0` | forecast item refs と B10 / B11 の observed artifact refs を対応付ける。 |
 
 [Signature diff report workflow](../../.github/workflows/signature-diff.yml) は、PR / push /
 schedule / manual run で Sig0、validation、snapshot、`signature-diff-report-v0` を作り、

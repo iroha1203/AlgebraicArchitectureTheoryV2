@@ -153,11 +153,19 @@ PRD / Spec / Issue / AI proposal
 measurement boundary を持つ level 3 相当の cone skeleton を作る。
 calibration 済みの weighting や field update は B10 / B11 artifact と接続した後に扱う。
 
-現在は `artifact-descriptor-v0` と `operation-support-estimate-v0` が schema + validator
-として実装済みである。`OperationSupportEstimate` は descriptor refs、candidate
-operation families、policy constraints、known forbidden support、unknown remainder、
-confidence / evidence boundary を保持するが、accepted PR history、actual future support、
-global policy safety、future trajectory safety は主張しない。
+現在は `artifact-descriptor-v0`、`operation-support-estimate-v0`、
+`forecast-cone-skeleton-v0`、`consequence-envelope-report-v0`、
+`forecast-calibration-hook-v0` が schema + validator として実装済みである。
+`OperationSupportEstimate` は descriptor refs、candidate operation families、policy
+constraints、known forbidden support、unknown remainder、confidence / evidence
+boundary を保持する。`ForecastConeSkeleton` は finite support と bounded horizon に相対化した
+path class candidates を保持する。`ConsequenceEnvelope` は affected architecture
+regions、comparable signature axes、expected axis delta ranges、selected obstruction
+witness candidates、missing boundary、theorem boundary、review / CI recommendation を
+report projection として保持する。`ForecastCalibrationHook` は forecast item refs と
+B10 / B11 の observed artifact refs を対応付ける。いずれも accepted PR history、actual
+future support、global policy safety、future trajectory safety、forecast correctness、
+causal proof、Lean theorem claim は主張しない。
 
 ### B12 milestones
 
@@ -165,9 +173,9 @@ global policy safety、future trajectory safety は主張しない。
 | --- | --- |
 | B12.1 ArtifactDescriptor | PRD / Issue / AI proposal の action class、scope、source refs、missing evidence を schema 化する。schema + validator 実装済み。 |
 | B12.2 OperationSupportEstimate | candidate operation family、policy constraints、known forbidden support、unknown remainder を出す。schema + validator 実装済み。 |
-| B12.3 ForecastCone skeleton | finite support と bounded horizon に相対化した path class skeleton を保持する。 |
-| B12.4 ConsequenceEnvelope report | signature axis、obstruction candidate、missing boundary、review / CI recommendation をまとめる。 |
-| B12.5 Calibration hook | observed PR / review / CI / outcome artifact と forecast item を対応付ける hook を置く。 |
+| B12.3 ForecastCone skeleton | finite support と bounded horizon に相対化した path class skeleton を保持する。schema + validator 実装済み。 |
+| B12.4 ConsequenceEnvelope report | signature axis、obstruction candidate、missing boundary、review / CI recommendation をまとめる。schema + validator 実装済み。 |
+| B12.5 Calibration hook | observed PR / review / CI / outcome artifact と forecast item を対応付ける hook を置く。schema + validator 実装済み。 |
 
 ## Standardization targets
 

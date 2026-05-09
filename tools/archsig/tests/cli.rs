@@ -7022,6 +7022,360 @@ fn cli_operation_support_estimate_emits_fixture_and_validates_boundaries() {
 }
 
 #[test]
+fn cli_forecast_cone_skeleton_emits_fixture_and_validates_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("forecast-cone-skeleton");
+    let static_validation = out_dir.join("forecast-cone-static-validation.json");
+    let fixture_artifact = out_dir.join("forecast-cone-fixture.json");
+    let fixture_validation = out_dir.join("forecast-cone-validation.json");
+    let invalid_cone = out_dir.join("forecast-cone-invalid.json");
+    let invalid_validation = out_dir.join("forecast-cone-invalid-validation.json");
+
+    run_sig0(&[
+        "forecast-cone-skeleton",
+        "--out",
+        static_validation
+            .to_str()
+            .expect("static validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-cone-skeleton",
+        "--fixture",
+        "--out",
+        fixture_artifact.to_str().expect("fixture path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-cone-skeleton",
+        "--input",
+        root.join("forecast_cone_skeleton.json")
+            .to_str()
+            .expect("fixture input path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let static_json = read_json(&static_validation);
+    assert_eq!(
+        static_json["schemaVersion"],
+        "forecast-cone-skeleton-validation-report-v0"
+    );
+    assert_eq!(static_json["summary"]["result"], "pass");
+    assert_eq!(static_json["summary"]["pathClassCandidateCount"], 2);
+    assert!(
+        static_json["cone"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| conclusion == "forecast cone skeleton does not assign probabilities")
+    );
+
+    let artifact = read_json(&fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "forecast-cone-skeleton-v0");
+    assert_eq!(
+        artifact["operationSupportRef"]["estimateSchemaVersion"],
+        "operation-support-estimate-v0"
+    );
+    assert!(
+        artifact["forecastBoundary"]["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs is array")
+            .iter()
+            .any(|construct| construct == "probability assignment")
+    );
+
+    let validation = read_json(&fixture_validation);
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "forecast-cone-unknown-remainder-not-measured-zero"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let mut invalid = artifact;
+    invalid["boundedHorizon"]["maxSteps"] = serde_json::json!(0);
+    invalid["pathClassCandidates"][0]["probabilityBoundary"] = serde_json::json!("probability 0.8");
+    invalid["unknownRemainder"][0]["treatment"] = serde_json::json!("treated as zero");
+    fs::write(
+        &invalid_cone,
+        serde_json::to_string_pretty(&invalid).expect("invalid cone serializes"),
+    )
+    .expect("invalid cone is written");
+    let output = run_sig0_output(&[
+        "forecast-cone-skeleton",
+        "--input",
+        invalid_cone.to_str().expect("invalid cone path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "zero horizon, probability claims, and measured-zero unknowns should fail validation"
+    );
+    let invalid_report = read_json(&invalid_validation);
+    assert_eq!(invalid_report["summary"]["result"], "fail");
+    for expected_check in [
+        "forecast-cone-bounded-horizon-present",
+        "forecast-cone-path-classes-bounded",
+        "forecast-cone-unknown-remainder-not-measured-zero",
+    ] {
+        assert!(
+            invalid_report["checks"]
+                .as_array()
+                .expect("checks is array")
+                .iter()
+                .any(|check| check["id"] == expected_check && check["result"] == "fail"),
+            "missing failed check {expected_check}"
+        );
+    }
+}
+
+#[test]
+fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("consequence-envelope");
+    let static_validation = out_dir.join("consequence-envelope-static-validation.json");
+    let fixture_artifact = out_dir.join("consequence-envelope-fixture.json");
+    let fixture_validation = out_dir.join("consequence-envelope-validation.json");
+    let invalid_envelope = out_dir.join("consequence-envelope-invalid.json");
+    let invalid_validation = out_dir.join("consequence-envelope-invalid-validation.json");
+
+    run_sig0(&[
+        "consequence-envelope",
+        "--out",
+        static_validation
+            .to_str()
+            .expect("static validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "consequence-envelope",
+        "--fixture",
+        "--out",
+        fixture_artifact.to_str().expect("fixture path is utf-8"),
+    ]);
+    run_sig0(&[
+        "consequence-envelope",
+        "--input",
+        root.join("consequence_envelope_report.json")
+            .to_str()
+            .expect("fixture input path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let static_json = read_json(&static_validation);
+    assert_eq!(
+        static_json["schemaVersion"],
+        "consequence-envelope-report-validation-report-v0"
+    );
+    assert_eq!(static_json["summary"]["result"], "pass");
+    assert_eq!(static_json["summary"]["affectedRegionCount"], 2);
+    assert!(
+        static_json["envelope"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| conclusion == "consequence envelope does not prove global safety")
+    );
+
+    let artifact = read_json(&fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "consequence-envelope-report-v0");
+    assert!(
+        artifact["summaryProjection"]["reviewerNotes"]
+            .as_array()
+            .expect("reviewerNotes is array")
+            .iter()
+            .any(|note| note == "No probability or causal safety claim is emitted.")
+    );
+
+    let validation = read_json(&fixture_validation);
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "consequence-envelope-unknown-remainder-not-measured-zero"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let mut invalid = artifact;
+    invalid["affectedArchitectureRegions"][0]["sourceRefIds"] =
+        serde_json::json!(["source:missing"]);
+    invalid["summaryProjection"]["affectedRegionCount"] = serde_json::json!(99);
+    invalid["unknownRemainder"][0]["treatment"] = serde_json::json!("safe and absent");
+    fs::write(
+        &invalid_envelope,
+        serde_json::to_string_pretty(&invalid).expect("invalid envelope serializes"),
+    )
+    .expect("invalid envelope is written");
+    let output = run_sig0_output(&[
+        "consequence-envelope",
+        "--input",
+        invalid_envelope
+            .to_str()
+            .expect("invalid envelope path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "dangling source refs, summary mismatch, and measured-zero unknowns should fail validation"
+    );
+    let invalid_report = read_json(&invalid_validation);
+    assert_eq!(invalid_report["summary"]["result"], "fail");
+    for expected_check in [
+        "consequence-envelope-source-refs-retained",
+        "consequence-envelope-boundaries-and-summary-retained",
+        "consequence-envelope-unknown-remainder-not-measured-zero",
+    ] {
+        assert!(
+            invalid_report["checks"]
+                .as_array()
+                .expect("checks is array")
+                .iter()
+                .any(|check| check["id"] == expected_check && check["result"] == "fail"),
+            "missing failed check {expected_check}"
+        );
+    }
+}
+
+#[test]
+fn cli_forecast_calibration_hook_emits_fixture_and_validates_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("forecast-calibration-hook");
+    let static_validation = out_dir.join("forecast-calibration-static-validation.json");
+    let fixture_artifact = out_dir.join("forecast-calibration-fixture.json");
+    let fixture_validation = out_dir.join("forecast-calibration-validation.json");
+    let invalid_hook = out_dir.join("forecast-calibration-invalid.json");
+    let invalid_validation = out_dir.join("forecast-calibration-invalid-validation.json");
+
+    run_sig0(&[
+        "forecast-calibration-hook",
+        "--out",
+        static_validation
+            .to_str()
+            .expect("static validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-calibration-hook",
+        "--fixture",
+        "--out",
+        fixture_artifact.to_str().expect("fixture path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-calibration-hook",
+        "--input",
+        root.join("forecast_calibration_hook.json")
+            .to_str()
+            .expect("fixture input path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let static_json = read_json(&static_validation);
+    assert_eq!(
+        static_json["schemaVersion"],
+        "forecast-calibration-hook-validation-report-v0"
+    );
+    assert_eq!(static_json["summary"]["result"], "pass");
+    assert_eq!(static_json["summary"]["matchCount"], 2);
+    assert!(
+        static_json["hook"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| conclusion == "calibration hook does not prove forecast correctness")
+    );
+
+    let artifact = read_json(&fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "forecast-calibration-hook-v0");
+    assert!(
+        artifact["referenceBoundaries"]["b10Refs"]
+            .as_array()
+            .expect("b10Refs is array")
+            .iter()
+            .any(|reference| reference == "report-outcome-daily-ledger-v0")
+    );
+    assert!(
+        artifact["matches"]
+            .as_array()
+            .expect("matches is array")
+            .iter()
+            .any(|item| item["status"] == "private")
+    );
+
+    let validation = read_json(&fixture_validation);
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "forecast-calibration-hook-statuses-not-measured-zero"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let mut invalid = artifact;
+    invalid["matches"][0]["forecastItemId"] = serde_json::json!("forecast-item:missing");
+    invalid["matches"][1]["status"] = serde_json::json!("measuredZero");
+    invalid["referenceBoundaries"]["measurementBoundary"] =
+        serde_json::json!("unavailable refs are treated as zero");
+    fs::write(
+        &invalid_hook,
+        serde_json::to_string_pretty(&invalid).expect("invalid hook serializes"),
+    )
+    .expect("invalid hook is written");
+    let output = run_sig0_output(&[
+        "forecast-calibration-hook",
+        "--input",
+        invalid_hook.to_str().expect("invalid hook path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "dangling forecast refs, invalid statuses, and measured-zero boundaries should fail validation"
+    );
+    let invalid_report = read_json(&invalid_validation);
+    assert_eq!(invalid_report["summary"]["result"], "fail");
+    for expected_check in [
+        "forecast-calibration-hook-forecast-and-observed-refs-linked",
+        "forecast-calibration-hook-statuses-not-measured-zero",
+        "forecast-calibration-hook-b10-b11-boundaries-retained",
+    ] {
+        assert!(
+            invalid_report["checks"]
+                .as_array()
+                .expect("checks is array")
+                .iter()
+                .any(|check| check["id"] == expected_check && check["result"] == "fail"),
+            "missing failed check {expected_check}"
+        );
+    }
+}
+
+#[test]
 fn cli_baseline_suppression_reports_deltas_without_resolving_suppressed_witnesses() {
     let fixture = fixture_root();
     let air = air_fixture_root();

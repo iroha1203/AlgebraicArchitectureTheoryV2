@@ -86,6 +86,15 @@ pub const ARTIFACT_DESCRIPTOR_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION: &str = "operation-support-estimate-v0";
 pub const OPERATION_SUPPORT_ESTIMATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "operation-support-estimate-validation-report-v0";
+pub const FORECAST_CONE_SKELETON_SCHEMA_VERSION: &str = "forecast-cone-skeleton-v0";
+pub const FORECAST_CONE_SKELETON_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "forecast-cone-skeleton-validation-report-v0";
+pub const CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION: &str = "consequence-envelope-report-v0";
+pub const CONSEQUENCE_ENVELOPE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "consequence-envelope-report-validation-report-v0";
+pub const FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION: &str = "forecast-calibration-hook-v0";
+pub const FORECAST_CALIBRATION_HOOK_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "forecast-calibration-hook-validation-report-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
@@ -3892,6 +3901,386 @@ pub struct OperationSupportEstimateValidationSummary {
     pub policy_constraint_count: usize,
     pub known_forbidden_support_count: usize,
     pub unknown_remainder_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastConeSkeletonV0 {
+    pub schema_version: String,
+    pub cone_id: String,
+    pub operation_support_ref: ForecastOperationSupportRefV0,
+    pub finite_support_refs: Vec<ForecastFiniteSupportRefV0>,
+    pub bounded_horizon: ForecastBoundedHorizonV0,
+    pub path_class_candidates: Vec<ForecastPathClassCandidateV0>,
+    pub forecast_boundary: ForecastBoundaryV0,
+    pub unknown_remainder: Vec<ForecastUnknownRemainderV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastOperationSupportRefV0 {
+    pub estimate_schema_version: String,
+    pub estimate_id: String,
+    pub descriptor_id: String,
+    pub candidate_operation_family_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastFiniteSupportRefV0 {
+    pub support_ref_id: String,
+    pub support_kind: String,
+    pub operation_family_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastBoundedHorizonV0 {
+    pub horizon_id: String,
+    pub horizon_kind: String,
+    pub max_steps: u32,
+    pub time_window: String,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastPathClassCandidateV0 {
+    pub path_class_id: String,
+    pub path_class: String,
+    pub support_ref_ids: Vec<String>,
+    pub operation_family_ids: Vec<String>,
+    pub horizon_ref_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub affected_axes: Vec<String>,
+    pub rationale: String,
+    pub probability_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastBoundaryV0 {
+    pub boundary_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub measurement_boundary_refs: Vec<String>,
+    pub support_ref_ids: Vec<String>,
+    pub horizon_ref_ids: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastUnknownRemainderV0 {
+    pub remainder_id: String,
+    pub affected_path_class_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub unknown_axes: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastConeSkeletonValidationReportV0 {
+    pub schema_version: String,
+    pub input: ForecastConeSkeletonValidationInput,
+    pub cone: ForecastConeSkeletonV0,
+    pub summary: ForecastConeSkeletonValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastConeSkeletonValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub cone_id: String,
+    pub estimate_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastConeSkeletonValidationSummary {
+    pub result: String,
+    pub finite_support_ref_count: usize,
+    pub path_class_candidate_count: usize,
+    pub unknown_remainder_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeReportV0 {
+    pub schema_version: String,
+    pub envelope_id: String,
+    pub forecast_cone_ref: ConsequenceForecastConeRefV0,
+    pub affected_architecture_regions: Vec<AffectedArchitectureRegionV0>,
+    pub comparable_signature_axes: Vec<ComparableSignatureAxisV0>,
+    pub expected_axis_delta_ranges: Vec<ExpectedAxisDeltaRangeV0>,
+    pub obstruction_witness_candidates: Vec<SelectedObstructionWitnessCandidateV0>,
+    pub missing_boundary_items: Vec<ConsequenceMissingBoundaryItemV0>,
+    pub theorem_boundary_items: Vec<ConsequenceTheoremBoundaryItemV0>,
+    pub recommendations: ConsequenceEnvelopeRecommendationsV0,
+    pub summary_projection: ConsequenceEnvelopeSummaryProjectionV0,
+    pub unknown_remainder: Vec<ConsequenceUnknownRemainderV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceForecastConeRefV0 {
+    pub forecast_cone_schema_version: String,
+    pub cone_id: String,
+    pub operation_support_estimate_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub forecast_boundary_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AffectedArchitectureRegionV0 {
+    pub region_id: String,
+    pub region_ref: String,
+    pub effect_kind: String,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComparableSignatureAxisV0 {
+    pub axis_id: String,
+    pub axis_name: String,
+    pub measurement_boundary_refs: Vec<String>,
+    pub comparability: String,
+    pub missing_invariant_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExpectedAxisDeltaRangeV0 {
+    pub delta_id: String,
+    pub axis_id: String,
+    pub range_kind: String,
+    pub lower_bound: Option<String>,
+    pub upper_bound: Option<String>,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SelectedObstructionWitnessCandidateV0 {
+    pub candidate_id: String,
+    pub obstruction_kind: String,
+    pub region_ids: Vec<String>,
+    pub axis_ids: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub selection_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceMissingBoundaryItemV0 {
+    pub item_id: String,
+    pub item_kind: String,
+    pub affected_axis_ids: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceTheoremBoundaryItemV0 {
+    pub item_id: String,
+    pub theorem_or_claim_ref: String,
+    pub boundary: String,
+    pub required_evidence: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeRecommendationsV0 {
+    pub review: Vec<String>,
+    pub ci: Vec<String>,
+    pub issue_decomposition: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeSummaryProjectionV0 {
+    pub summary_id: String,
+    pub headline: String,
+    pub affected_region_count: usize,
+    pub comparable_axis_count: usize,
+    pub missing_boundary_count: usize,
+    pub reviewer_notes: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceUnknownRemainderV0 {
+    pub remainder_id: String,
+    pub affected_region_ids: Vec<String>,
+    pub affected_axis_ids: Vec<String>,
+    pub unknown_axes: Vec<String>,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeValidationReportV0 {
+    pub schema_version: String,
+    pub input: ConsequenceEnvelopeValidationInput,
+    pub envelope: ConsequenceEnvelopeReportV0,
+    pub summary: ConsequenceEnvelopeValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub envelope_id: String,
+    pub cone_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeValidationSummary {
+    pub result: String,
+    pub affected_region_count: usize,
+    pub comparable_axis_count: usize,
+    pub obstruction_candidate_count: usize,
+    pub missing_boundary_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastCalibrationHookV0 {
+    pub schema_version: String,
+    pub hook_id: String,
+    pub envelope_ref: CalibrationEnvelopeRefV0,
+    pub forecast_item_refs: Vec<CalibrationForecastItemRefV0>,
+    pub observed_outcome_refs: Vec<CalibrationObservedOutcomeRefV0>,
+    pub matches: Vec<CalibrationMatchV0>,
+    pub reference_boundaries: CalibrationReferenceBoundariesV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationEnvelopeRefV0 {
+    pub envelope_schema_version: String,
+    pub envelope_id: String,
+    pub cone_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationForecastItemRefV0 {
+    pub forecast_item_id: String,
+    pub item_kind: String,
+    pub envelope_item_ref: String,
+    pub source_ref_ids: Vec<String>,
+    pub comparison_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationObservedOutcomeRefV0 {
+    pub observed_ref_id: String,
+    pub observed_kind: String,
+    pub path_or_url: String,
+    pub status: String,
+    pub b10_refs: Vec<String>,
+    pub b11_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationMatchV0 {
+    pub match_id: String,
+    pub forecast_item_id: String,
+    pub observed_ref_id: Option<String>,
+    pub status: String,
+    pub rationale: String,
+    pub update_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReferenceBoundariesV0 {
+    pub b10_refs: Vec<String>,
+    pub b11_refs: Vec<String>,
+    pub unavailable_refs: Vec<String>,
+    pub private_refs: Vec<String>,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastCalibrationHookValidationReportV0 {
+    pub schema_version: String,
+    pub input: ForecastCalibrationHookValidationInput,
+    pub hook: ForecastCalibrationHookV0,
+    pub summary: ForecastCalibrationHookValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastCalibrationHookValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub hook_id: String,
+    pub envelope_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastCalibrationHookValidationSummary {
+    pub result: String,
+    pub forecast_item_count: usize,
+    pub observed_outcome_count: usize,
+    pub match_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }
