@@ -21,4 +21,7 @@
 現行の要求・設計は、必要に応じて `docs/design/`, `docs/tooling/`, `docs/empirical/`,
 または GitHub Issues へ分解して管理する。
 
-この archive 内の facade、薄い索引、旧 PRD は、旧リンクの歴史的記録であり、現行入口としては使わない。
+`aat_chaos_game_dynamics_memo.md` は、SFT へ整理する前の chaos-game / dynamics 研究メモである。
+現行の力学・場・予測・制御の本文は [ソフトウェアの場の理論](../../sft/software_field_theory.md) に置く。
+
+この archive 内の facade、薄い索引、旧 PRD、旧 memo は、旧リンクの歴史的記録であり、現行入口としては使わない。
