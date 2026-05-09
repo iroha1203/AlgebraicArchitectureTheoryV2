@@ -174,6 +174,84 @@ pub fn static_artifact_descriptor() -> ArtifactDescriptorV0 {
     }
 }
 
+pub fn build_artifact_descriptor_from_markdown(
+    path_or_url: &str,
+    contents: &str,
+    artifact_kind: &str,
+) -> ArtifactDescriptorV0 {
+    let title = extract_markdown_title(contents).unwrap_or_else(|| fallback_title(path_or_url));
+    let slug = slugify(&title);
+    let source_ref_id = format!("source:markdown:{slug}");
+    let source_refs = vec![source_ref(
+        &source_ref_id,
+        "markdown",
+        path_or_url,
+        Some(&title),
+        "primary markdown artifact input",
+        &["title", "headings", "body", "explicit scope markers"],
+    )];
+    let source_ref_ids = vec![source_ref_id.clone()];
+    let selected_region_refs = selected_region_refs(contents, path_or_url);
+    let excluded_region_refs = excluded_region_refs(contents);
+    let target_audience = target_audience(contents);
+    let missing_evidence = missing_evidence_from_markdown(contents);
+    let missing_evidence_ids = missing_evidence
+        .iter()
+        .map(|evidence| evidence.evidence_id.clone())
+        .collect::<Vec<_>>();
+
+    ArtifactDescriptorV0 {
+        schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
+        descriptor_id: format!("descriptor:{slug}"),
+        artifact_kind: artifact_kind.to_string(),
+        artifact_title: title,
+        source_refs,
+        action_class_candidates: infer_action_candidates(contents, &source_ref_id),
+        scope: ArtifactDescriptorScopeV0 {
+            scope_id: format!("scope:{slug}"),
+            selected_region_refs: selected_region_refs.clone(),
+            excluded_region_refs,
+            target_audience,
+            artifact_boundary:
+                "normalizes markdown artifact input before operation support estimation".to_string(),
+            assumptions: vec![
+                "markdown headings and retained body text are bounded tooling evidence".to_string(),
+                "action class candidates are heuristic labels for downstream estimation only"
+                    .to_string(),
+            ],
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+        missing_evidence,
+        measurement_boundary: ArtifactDescriptorMeasurementBoundaryV0 {
+            boundary_id: format!("boundary:{slug}"),
+            measured_layers: vec!["artifact-normalization".to_string()],
+            measured_axes: vec![
+                "sourceRefs".to_string(),
+                "actionClassCandidates".to_string(),
+                "scope".to_string(),
+                "missingEvidence".to_string(),
+                "forecastNonConclusions".to_string(),
+            ],
+            source_ref_ids,
+            selected_region_refs,
+            assumptions: vec![
+                "markdown builder preserves selected source refs and boundary metadata".to_string(),
+                "markdown builder does not run repository or runtime extraction".to_string(),
+            ],
+            unsupported_constructs: vec![
+                "operation support probability".to_string(),
+                "ground truth architecture reconstruction".to_string(),
+                "future outcome causality".to_string(),
+                "implicit requirements not written in the markdown input".to_string(),
+            ],
+            missing_evidence_ids,
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+        forecast_non_conclusions: strings(&REQUIRED_FORECAST_NON_CONCLUSIONS),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
 pub fn validate_artifact_descriptor_report(
     descriptor: &ArtifactDescriptorV0,
     input_path: &str,
@@ -566,6 +644,226 @@ fn validation_result(checks: &[ValidationCheck]) -> String {
     } else {
         "pass".to_string()
     }
+}
+
+fn extract_markdown_title(contents: &str) -> Option<String> {
+    contents.lines().find_map(|line| {
+        let trimmed = line.trim();
+        if trimmed.starts_with("# ") {
+            Some(trimmed.trim_start_matches('#').trim().to_string())
+        } else {
+            None
+        }
+    })
+}
+
+fn fallback_title(path_or_url: &str) -> String {
+    path_or_url
+        .rsplit(['/', '\\'])
+        .next()
+        .filter(|segment| !segment.trim().is_empty())
+        .unwrap_or("markdown artifact")
+        .trim_end_matches(".md")
+        .replace(['_', '-'], " ")
+}
+
+fn infer_action_candidates(
+    contents: &str,
+    source_ref_id: &str,
+) -> Vec<ArtifactActionClassCandidateV0> {
+    let lower = contents.to_ascii_lowercase();
+    let mut candidates = Vec::new();
+    if contains_any(&lower, &["schema", "json", "descriptor"]) {
+        candidates.push(action_candidate(
+            "candidate:schema-definition",
+            "schema-definition",
+            "medium",
+            &[source_ref_id],
+            "Markdown input refers to schema, JSON, or descriptor work.",
+        ));
+    }
+    if contains_any(&lower, &["validate", "validator", "test", "fixture"]) {
+        candidates.push(action_candidate(
+            "candidate:tooling-validation",
+            "tooling-validation",
+            "medium",
+            &[source_ref_id],
+            "Markdown input requests validation, fixtures, or tests.",
+        ));
+    }
+    if contains_any(&lower, &["cli", "command", "entrypoint", "entry point"]) {
+        candidates.push(action_candidate(
+            "candidate:cli-entrypoint",
+            "cli-entrypoint",
+            "medium",
+            &[source_ref_id],
+            "Markdown input names a command or CLI entrypoint.",
+        ));
+    }
+    if contains_any(&lower, &["refactor", "migrate", "migration", "split"]) {
+        candidates.push(action_candidate(
+            "candidate:structural-change",
+            "structural-change",
+            "low",
+            &[source_ref_id],
+            "Markdown input suggests structural or migration work.",
+        ));
+    }
+    if candidates.is_empty() {
+        candidates.push(action_candidate(
+            "candidate:artifact-review",
+            "artifact-review",
+            "low",
+            &[source_ref_id],
+            "Markdown input does not expose a more specific action class.",
+        ));
+    }
+    candidates
+}
+
+fn selected_region_refs(contents: &str, path_or_url: &str) -> Vec<String> {
+    let mut refs = extract_section_values(contents, &["scope", "selected region", "target"]);
+    refs.extend(extract_inline_refs(contents));
+    if refs.is_empty() {
+        refs.push(path_or_url.to_string());
+    }
+    dedupe_strings(refs)
+}
+
+fn excluded_region_refs(contents: &str) -> Vec<String> {
+    let refs = extract_section_values(contents, &["non-goals", "out of scope", "excluded"]);
+    if refs.is_empty() {
+        vec![
+            "operation-support-estimate".to_string(),
+            "forecast-cone-probability".to_string(),
+            "causal-outcome-prediction".to_string(),
+        ]
+    } else {
+        dedupe_strings(refs)
+    }
+}
+
+fn target_audience(contents: &str) -> Vec<String> {
+    let refs = extract_section_values(contents, &["audience", "reviewer", "consumer"]);
+    if refs.is_empty() {
+        vec![
+            "archsig-cli".to_string(),
+            "sft-forecaster-pipeline".to_string(),
+            "review-ci".to_string(),
+        ]
+    } else {
+        dedupe_strings(refs)
+    }
+}
+
+fn missing_evidence_from_markdown(contents: &str) -> Vec<ArtifactDescriptorMissingEvidenceV0> {
+    let lower = contents.to_ascii_lowercase();
+    let mut evidence = vec![
+        missing_evidence(
+            "missing:runtime-evidence",
+            "runtime-evidence",
+            "markdown descriptor builder does not observe runtime traces",
+            "runtime propagation remains a downstream boundary item",
+            "unmeasured",
+        ),
+        missing_evidence(
+            "missing:accepted-pr-history",
+            "accepted-pr-history",
+            "markdown descriptor builder does not inspect accepted PR history",
+            "accepted support cannot be inferred from this descriptor",
+            "missing",
+        ),
+    ];
+    if contains_any(&lower, &["todo", "tbd", "open question", "unknown"]) {
+        evidence.push(missing_evidence(
+            "missing:open-questions",
+            "open-questions",
+            "markdown input contains unresolved questions or placeholders",
+            "downstream forecast must keep unresolved requirement boundaries",
+            "missing",
+        ));
+    }
+    evidence
+}
+
+fn extract_section_values(contents: &str, section_markers: &[&str]) -> Vec<String> {
+    let mut values = Vec::new();
+    let mut in_section = false;
+    for line in contents.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with('#') {
+            let heading = trimmed.trim_start_matches('#').trim().to_ascii_lowercase();
+            in_section = section_markers
+                .iter()
+                .any(|marker| heading.contains(marker));
+            continue;
+        }
+        if !in_section {
+            continue;
+        }
+        if let Some(item) = trimmed
+            .strip_prefix("- [ ] ")
+            .or_else(|| trimmed.strip_prefix("- [x] "))
+            .or_else(|| trimmed.strip_prefix("- "))
+            .or_else(|| trimmed.strip_prefix("* "))
+        {
+            let value = item.trim();
+            if !value.is_empty() {
+                values.push(value.to_string());
+            }
+        }
+    }
+    values
+}
+
+fn extract_inline_refs(contents: &str) -> Vec<String> {
+    let mut refs = Vec::new();
+    let mut parts = contents.split('`');
+    while let Some(_) = parts.next() {
+        let Some(value) = parts.next() else {
+            break;
+        };
+        let value = value.trim();
+        if value.contains('/') || value.ends_with(".md") || value.ends_with(".json") {
+            refs.push(value.to_string());
+        }
+    }
+    refs
+}
+
+fn slugify(value: &str) -> String {
+    let mut slug = String::new();
+    let mut previous_dash = false;
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric() {
+            slug.push(ch.to_ascii_lowercase());
+            previous_dash = false;
+        } else if !previous_dash && !slug.is_empty() {
+            slug.push('-');
+            previous_dash = true;
+        }
+    }
+    while slug.ends_with('-') {
+        slug.pop();
+    }
+    if slug.is_empty() {
+        "markdown-artifact".to_string()
+    } else {
+        slug
+    }
+}
+
+fn contains_any(haystack: &str, needles: &[&str]) -> bool {
+    needles.iter().any(|needle| haystack.contains(needle))
+}
+
+fn dedupe_strings(values: Vec<String>) -> Vec<String> {
+    let mut seen = BTreeSet::new();
+    values
+        .into_iter()
+        .filter(|value| !value.trim().is_empty())
+        .filter(|value| seen.insert(value.clone()))
+        .collect()
 }
 
 fn strings(values: &[&str]) -> Vec<String> {
