@@ -33,8 +33,9 @@ use archsig::{
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence,
     build_air_document, build_artifact_descriptor_from_markdown, build_baseline_suppression_report,
-    build_empirical_dataset, build_feature_extension_dataset_from_files,
-    build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
+    build_consequence_envelope_from_forecast_cone, build_empirical_dataset,
+    build_feature_extension_dataset_from_files, build_feature_extension_report,
+    build_forecast_cone_skeleton_from_operation_support,
     build_operation_support_estimate_from_descriptor, build_outcome_linkage_dataset_from_files,
     build_policy_decision_report, build_pr_history_dataset_from_github_files,
     build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
@@ -753,6 +754,10 @@ enum Command {
         /// Optional ConsequenceEnvelope report JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
+
+        /// ForecastConeSkeleton JSON path to generate consequence-envelope-report-v0 from.
+        #[arg(long = "forecast-cone")]
+        forecast_cone: Option<PathBuf>,
 
         /// Emit the canonical minimal consequence-envelope-report-v0 fixture.
         #[arg(long)]
@@ -1653,11 +1658,19 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }
         Some(Command::ConsequenceEnvelope {
             input,
+            forecast_cone,
             fixture,
             out,
         }) => {
             if fixture {
                 let envelope: ConsequenceEnvelopeReportV0 = static_consequence_envelope_report();
+                write_json(out, &envelope)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            if let Some(forecast_cone_path) = forecast_cone {
+                let cone: ForecastConeSkeletonV0 = read_json(&forecast_cone_path)?;
+                let envelope: ConsequenceEnvelopeReportV0 =
+                    build_consequence_envelope_from_forecast_cone(&cone);
                 write_json(out, &envelope)?;
                 return Ok(ExitCode::SUCCESS);
             }

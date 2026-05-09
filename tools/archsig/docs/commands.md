@@ -304,6 +304,15 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- consequence-envelope \
 cargo run --manifest-path tools/archsig/Cargo.toml -- consequence-envelope \
   --input tools/archsig/tests/fixtures/minimal/consequence_envelope_report.json \
   --out .lake/signature-current/consequence-envelope-validation.json
+```
+
+生成済み `forecast-cone-skeleton-v0` から reviewer / CI / issue decomposition が読める
+`consequence-envelope-report-v0` を作る。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- consequence-envelope \
+  --forecast-cone .lake/signature-current/forecast-cone-skeleton.json \
+  --out .lake/signature-current/consequence-envelope-report.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-calibration-hook \
   --fixture \
