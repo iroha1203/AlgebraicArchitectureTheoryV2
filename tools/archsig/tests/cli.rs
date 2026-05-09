@@ -7415,6 +7415,11 @@ fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
     let static_validation = out_dir.join("consequence-envelope-static-validation.json");
     let fixture_artifact = out_dir.join("consequence-envelope-fixture.json");
     let fixture_validation = out_dir.join("consequence-envelope-validation.json");
+    let generated_descriptor = out_dir.join("artifact-descriptor-generated.json");
+    let generated_estimate = out_dir.join("operation-support-estimate-generated.json");
+    let generated_cone = out_dir.join("forecast-cone-generated.json");
+    let generated_envelope = out_dir.join("consequence-envelope-generated.json");
+    let generated_validation = out_dir.join("consequence-envelope-generated-validation.json");
     let invalid_envelope = out_dir.join("consequence-envelope-invalid.json");
     let invalid_validation = out_dir.join("consequence-envelope-invalid-validation.json");
 
@@ -7441,6 +7446,67 @@ fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
         fixture_validation
             .to_str()
             .expect("fixture validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--from-markdown",
+        root.join("artifact_descriptor_prd.md")
+            .to_str()
+            .expect("markdown fixture path is utf-8"),
+        "--artifact-kind",
+        "prd",
+        "--out",
+        generated_descriptor
+            .to_str()
+            .expect("generated descriptor path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-support-estimate",
+        "--descriptor",
+        generated_descriptor
+            .to_str()
+            .expect("generated descriptor path is utf-8"),
+        "--out",
+        generated_estimate
+            .to_str()
+            .expect("generated estimate path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-cone-skeleton",
+        "--operation-support",
+        generated_estimate
+            .to_str()
+            .expect("generated estimate path is utf-8"),
+        "--horizon-steps",
+        "4",
+        "--horizon-window",
+        "Coupon PRD bounded forecast horizon",
+        "--out",
+        generated_cone
+            .to_str()
+            .expect("generated cone path is utf-8"),
+    ]);
+    run_sig0(&[
+        "consequence-envelope",
+        "--forecast-cone",
+        generated_cone
+            .to_str()
+            .expect("generated cone path is utf-8"),
+        "--out",
+        generated_envelope
+            .to_str()
+            .expect("generated envelope path is utf-8"),
+    ]);
+    run_sig0(&[
+        "consequence-envelope",
+        "--input",
+        generated_envelope
+            .to_str()
+            .expect("generated envelope path is utf-8"),
+        "--out",
+        generated_validation
+            .to_str()
+            .expect("generated validation path is utf-8"),
     ]);
 
     let static_json = read_json(&static_validation);
@@ -7477,6 +7543,65 @@ fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
             .iter()
             .any(|check| {
                 check["id"] == "consequence-envelope-unknown-remainder-not-measured-zero"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let generated = read_json(&generated_envelope);
+    assert_eq!(generated["schemaVersion"], "consequence-envelope-report-v0");
+    assert_eq!(
+        generated["forecastConeRef"]["forecastConeSchemaVersion"],
+        "forecast-cone-skeleton-v0"
+    );
+    assert!(
+        generated["forecastConeRef"]["sourceRefIds"]
+            .as_array()
+            .expect("sourceRefIds is array")
+            .iter()
+            .any(|source_ref| source_ref == "source:markdown:coupon-forecast-descriptor-builder")
+    );
+    assert!(
+        generated["affectedArchitectureRegions"]
+            .as_array()
+            .expect("affectedArchitectureRegions is array")
+            .iter()
+            .any(|region| region["effectKind"] == "forecast-path-class")
+    );
+    assert!(
+        generated["comparableSignatureAxes"]
+            .as_array()
+            .expect("comparableSignatureAxes is array")
+            .iter()
+            .any(|axis| axis["axisName"] == "boundaryRetention")
+    );
+    assert!(
+        generated["recommendations"]["ci"]
+            .as_array()
+            .expect("ci recommendations is array")
+            .iter()
+            .any(|recommendation| {
+                recommendation == "retain forecast cone skeleton validation as an upstream check"
+            })
+    );
+    assert!(
+        generated["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion
+                    == "consequence envelope does not identify a unique causal artifact action"
+            })
+    );
+    let generated_report = read_json(&generated_validation);
+    assert_eq!(generated_report["summary"]["result"], "pass");
+    assert!(
+        generated_report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "consequence-envelope-boundaries-and-summary-retained"
                     && check["result"] == "pass"
             })
     );

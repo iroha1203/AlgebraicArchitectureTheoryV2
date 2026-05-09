@@ -120,6 +120,7 @@ pub use schema::*;
 pub use schema_catalog::static_schema_version_catalog;
 pub use schema_compatibility::build_schema_compatibility_check_report;
 pub use sft_forecasting::{
+    build_consequence_envelope_from_forecast_cone,
     build_forecast_cone_skeleton_from_operation_support, static_consequence_envelope_report,
     static_forecast_calibration_hook, static_forecast_cone_skeleton,
     validate_consequence_envelope_report, validate_forecast_calibration_hook,

@@ -505,6 +505,100 @@ pub fn static_consequence_envelope_report() -> ConsequenceEnvelopeReportV0 {
     }
 }
 
+pub fn build_consequence_envelope_from_forecast_cone(
+    cone: &ForecastConeSkeletonV0,
+) -> ConsequenceEnvelopeReportV0 {
+    let source_ref_ids = forecast_source_refs_from_cone(cone);
+    let forecast_boundary_refs = unique_strings(
+        std::iter::once(cone.forecast_boundary.boundary_id.clone())
+            .chain(cone.forecast_boundary.measurement_boundary_refs.clone())
+            .collect(),
+    );
+    let measurement_boundary_refs = if forecast_boundary_refs.is_empty() {
+        vec![format!(
+            "boundary:{}:consequence-envelope",
+            id_suffix(&cone.cone_id)
+        )]
+    } else {
+        forecast_boundary_refs.clone()
+    };
+
+    let affected_architecture_regions = consequence_regions_from_cone(cone, &source_ref_ids);
+    let region_ids = affected_architecture_regions
+        .iter()
+        .map(|region| region.region_id.clone())
+        .collect::<Vec<_>>();
+    let comparable_signature_axes = consequence_axes_from_cone(cone, &measurement_boundary_refs);
+    let axis_ids = comparable_signature_axes
+        .iter()
+        .map(|axis| axis.axis_id.clone())
+        .collect::<Vec<_>>();
+    let expected_axis_delta_ranges = consequence_delta_ranges(&axis_ids, &source_ref_ids);
+    let missing_boundary_items =
+        consequence_missing_boundaries(cone, &axis_ids, &measurement_boundary_refs);
+    let missing_boundary_count = missing_boundary_items.len();
+    let obstruction_witness_candidates =
+        consequence_obstruction_candidates(cone, &region_ids, &axis_ids, &source_ref_ids);
+    let unknown_remainder = consequence_unknown_remainder(cone, &region_ids, &axis_ids);
+
+    ConsequenceEnvelopeReportV0 {
+        schema_version: CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION.to_string(),
+        envelope_id: format!("envelope:{}", cone.cone_id),
+        forecast_cone_ref: ConsequenceForecastConeRefV0 {
+            forecast_cone_schema_version: FORECAST_CONE_SKELETON_SCHEMA_VERSION.to_string(),
+            cone_id: cone.cone_id.clone(),
+            operation_support_estimate_id: cone.operation_support_ref.estimate_id.clone(),
+            source_ref_ids: source_ref_ids.clone(),
+            forecast_boundary_refs,
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        },
+        affected_architecture_regions,
+        comparable_signature_axes,
+        expected_axis_delta_ranges,
+        obstruction_witness_candidates,
+        missing_boundary_items,
+        theorem_boundary_items: vec![ConsequenceTheoremBoundaryItemV0 {
+            item_id: format!("theorem-boundary:{}:no-lean-promotion", id_suffix(&cone.cone_id)),
+            theorem_or_claim_ref: "AAT theorem boundary".to_string(),
+            boundary: "generated consequence envelope does not upgrade forecast artifacts to Lean theorem claims"
+                .to_string(),
+            required_evidence: vec![
+                "formal theorem statement".to_string(),
+                "Lean proof".to_string(),
+                "separate empirical validation".to_string(),
+            ],
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        }],
+        recommendations: ConsequenceEnvelopeRecommendationsV0 {
+            review: vec![
+                "review retained source refs before treating regions as affected".to_string(),
+                "check missing boundary items before accepting axis deltas".to_string(),
+            ],
+            ci: vec![
+                "run consequence-envelope validator on generated report artifacts".to_string(),
+                "retain forecast cone skeleton validation as an upstream check".to_string(),
+            ],
+            issue_decomposition: consequence_issue_recommendations(cone),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        },
+        summary_projection: ConsequenceEnvelopeSummaryProjectionV0 {
+            summary_id: format!("summary:{}:review-projection", id_suffix(&cone.cone_id)),
+            headline: "Forecast cone projection keeps affected regions, axes, and unknown remainder explicit"
+                .to_string(),
+            affected_region_count: region_ids.len(),
+            comparable_axis_count: axis_ids.len(),
+            missing_boundary_count,
+            reviewer_notes: vec![
+                "No probability or causal safety claim is emitted.".to_string(),
+                "Unknown forecast remainder remains a report item.".to_string(),
+            ],
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        },
+        unknown_remainder,
+        non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+    }
+}
+
 pub fn validate_consequence_envelope_report(
     envelope: &ConsequenceEnvelopeReportV0,
     input_path: &str,
@@ -804,6 +898,291 @@ fn forecast_unsupported_constructs(estimate: &OperationSupportEstimateV0) -> Vec
             .map(|forbidden| forbidden.operation_family.clone()),
     );
     unique_strings(constructs)
+}
+
+fn forecast_source_refs_from_cone(cone: &ForecastConeSkeletonV0) -> Vec<String> {
+    let mut refs = Vec::new();
+    refs.extend(cone.operation_support_ref.source_ref_ids.clone());
+    refs.extend(cone.bounded_horizon.source_ref_ids.clone());
+    refs.extend(cone.forecast_boundary.source_ref_ids.clone());
+    for support in &cone.finite_support_refs {
+        refs.extend(support.source_ref_ids.clone());
+    }
+    for path in &cone.path_class_candidates {
+        refs.extend(path.source_ref_ids.clone());
+    }
+    for remainder in &cone.unknown_remainder {
+        refs.extend(remainder.source_ref_ids.clone());
+    }
+    let refs = unique_strings(refs);
+    if refs.is_empty() {
+        vec![format!("source:{}", id_suffix(&cone.cone_id))]
+    } else {
+        refs
+    }
+}
+
+fn consequence_regions_from_cone(
+    cone: &ForecastConeSkeletonV0,
+    source_ref_ids: &[String],
+) -> Vec<AffectedArchitectureRegionV0> {
+    let regions = cone
+        .path_class_candidates
+        .iter()
+        .map(|path| AffectedArchitectureRegionV0 {
+            region_id: region_id_for_path(&path.path_class_id),
+            region_ref: path.path_class.clone(),
+            effect_kind: "forecast-path-class".to_string(),
+            source_ref_ids: retained_source_refs(&path.source_ref_ids, source_ref_ids),
+            boundary: format!(
+                "region is selected from forecast path class {} under the bounded cone, not inferred as global architecture impact",
+                path.path_class_id
+            ),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    if regions.is_empty() {
+        vec![AffectedArchitectureRegionV0 {
+            region_id: format!("region:{}:forecast-boundary", id_suffix(&cone.cone_id)),
+            region_ref: "forecast-boundary".to_string(),
+            effect_kind: "forecast-boundary-review".to_string(),
+            source_ref_ids: source_ref_ids.to_vec(),
+            boundary:
+                "fallback region records the forecast boundary without inferring global impact"
+                    .to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        }]
+    } else {
+        regions
+    }
+}
+
+fn consequence_axes_from_cone(
+    cone: &ForecastConeSkeletonV0,
+    measurement_boundary_refs: &[String],
+) -> Vec<ComparableSignatureAxisV0> {
+    let mut axis_names = cone
+        .path_class_candidates
+        .iter()
+        .flat_map(|path| path.affected_axes.clone())
+        .collect::<Vec<_>>();
+    if axis_names.is_empty() {
+        axis_names.push("unknownRemainder".to_string());
+    }
+    unique_strings(axis_names)
+        .into_iter()
+        .map(|axis_name| ComparableSignatureAxisV0 {
+            axis_id: axis_id_for_name(&axis_name),
+            axis_name,
+            measurement_boundary_refs: measurement_boundary_refs.to_vec(),
+            comparability:
+                "comparable only across retained forecast source refs and boundary items"
+                    .to_string(),
+            missing_invariant_refs: vec![format!(
+                "missing:{}:invariant",
+                id_suffix(&measurement_boundary_refs.join("-"))
+            )],
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        })
+        .collect()
+}
+
+fn consequence_delta_ranges(
+    axis_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<ExpectedAxisDeltaRangeV0> {
+    axis_ids
+        .iter()
+        .map(|axis_id| ExpectedAxisDeltaRangeV0 {
+            delta_id: format!("delta:{}:forecast-range", id_suffix(axis_id)),
+            axis_id: axis_id.clone(),
+            range_kind: "qualitative-bounded".to_string(),
+            lower_bound: Some("retained".to_string()),
+            upper_bound: Some("bounded-forecast-projection".to_string()),
+            source_ref_ids: source_ref_ids.to_vec(),
+            boundary: "expected range is qualitative and bounded by forecast cone evidence"
+                .to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        })
+        .collect()
+}
+
+fn consequence_missing_boundaries(
+    cone: &ForecastConeSkeletonV0,
+    axis_ids: &[String],
+    measurement_boundary_refs: &[String],
+) -> Vec<ConsequenceMissingBoundaryItemV0> {
+    let mut items = cone
+        .forecast_boundary
+        .unsupported_constructs
+        .iter()
+        .map(|construct| ConsequenceMissingBoundaryItemV0 {
+            item_id: format!("missing:{}:boundary", id_suffix(construct)),
+            item_kind: "unsupported-construct-boundary".to_string(),
+            affected_axis_ids: axis_ids.to_vec(),
+            reason: format!(
+                "{} is outside the selected forecast cone boundary",
+                construct
+            ),
+            treatment: "retain as missing boundary item for reviewer and issue decomposition"
+                .to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    if items.is_empty() {
+        items.push(ConsequenceMissingBoundaryItemV0 {
+            item_id: format!(
+                "missing:{}:measurement-boundary",
+                id_suffix(&measurement_boundary_refs.join("-"))
+            ),
+            item_kind: "measurement-boundary".to_string(),
+            affected_axis_ids: axis_ids.to_vec(),
+            reason: "forecast cone did not provide unsupported constructs".to_string(),
+            treatment: "retain as missing boundary item for reviewer and issue decomposition"
+                .to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        });
+    }
+    items
+}
+
+fn consequence_obstruction_candidates(
+    cone: &ForecastConeSkeletonV0,
+    region_ids: &[String],
+    axis_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<SelectedObstructionWitnessCandidateV0> {
+    let candidates = cone
+        .unknown_remainder
+        .iter()
+        .map(|remainder| SelectedObstructionWitnessCandidateV0 {
+            candidate_id: format!("obstruction:{}", id_suffix(&remainder.remainder_id)),
+            obstruction_kind: "unknown-forecast-boundary".to_string(),
+            region_ids: region_ids_for_paths(&remainder.affected_path_class_ids, region_ids),
+            axis_ids: axis_ids_for_paths(cone, &remainder.affected_path_class_ids, axis_ids),
+            evidence_refs: retained_source_refs(&remainder.source_ref_ids, source_ref_ids),
+            selection_boundary:
+                "selected as a review candidate, not as a proved obstruction witness".to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    if candidates.is_empty() {
+        vec![SelectedObstructionWitnessCandidateV0 {
+            candidate_id: format!("obstruction:{}:forecast-boundary", id_suffix(&cone.cone_id)),
+            obstruction_kind: "forecast-boundary-review".to_string(),
+            region_ids: region_ids.to_vec(),
+            axis_ids: axis_ids.to_vec(),
+            evidence_refs: source_ref_ids.to_vec(),
+            selection_boundary:
+                "selected as a review candidate, not as a proved obstruction witness".to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        }]
+    } else {
+        candidates
+    }
+}
+
+fn consequence_unknown_remainder(
+    cone: &ForecastConeSkeletonV0,
+    region_ids: &[String],
+    axis_ids: &[String],
+) -> Vec<ConsequenceUnknownRemainderV0> {
+    let remainders = cone
+        .unknown_remainder
+        .iter()
+        .map(|remainder| ConsequenceUnknownRemainderV0 {
+            remainder_id: format!("envelope:{}", remainder.remainder_id),
+            affected_region_ids: region_ids_for_paths(
+                &remainder.affected_path_class_ids,
+                region_ids,
+            ),
+            affected_axis_ids: axis_ids_for_paths(
+                cone,
+                &remainder.affected_path_class_ids,
+                axis_ids,
+            ),
+            unknown_axes: remainder.unknown_axes.clone(),
+            treatment:
+                "retain as unresolved consequence envelope remainder under the selected boundary"
+                    .to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    if remainders.is_empty() {
+        vec![ConsequenceUnknownRemainderV0 {
+            remainder_id: format!("unknown:{}:forecast-boundary", id_suffix(&cone.cone_id)),
+            affected_region_ids: region_ids.to_vec(),
+            affected_axis_ids: axis_ids.to_vec(),
+            unknown_axes: vec!["unreported forecast remainder".to_string()],
+            treatment:
+                "retain as unresolved consequence envelope remainder under the selected boundary"
+                    .to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        }]
+    } else {
+        remainders
+    }
+}
+
+fn consequence_issue_recommendations(cone: &ForecastConeSkeletonV0) -> Vec<String> {
+    let mut recommendations = cone
+        .unknown_remainder
+        .iter()
+        .map(|remainder| {
+            format!(
+                "decompose unknown forecast remainder {} into a downstream empirical or review issue",
+                remainder.remainder_id
+            )
+        })
+        .collect::<Vec<_>>();
+    if recommendations.is_empty() {
+        recommendations.push(
+            "decompose forecast boundary review into a downstream empirical or review issue"
+                .to_string(),
+        );
+    }
+    recommendations
+}
+
+fn region_ids_for_paths(path_ids: &[String], all_region_ids: &[String]) -> Vec<String> {
+    let selected = path_ids
+        .iter()
+        .map(|path_id| region_id_for_path(path_id))
+        .filter(|region_id| all_region_ids.iter().any(|known| known == region_id))
+        .collect::<Vec<_>>();
+    if selected.is_empty() {
+        all_region_ids.to_vec()
+    } else {
+        unique_strings(selected)
+    }
+}
+
+fn axis_ids_for_paths(
+    cone: &ForecastConeSkeletonV0,
+    path_ids: &[String],
+    all_axis_ids: &[String],
+) -> Vec<String> {
+    let selected_path_ids = path_ids.iter().map(String::as_str).collect::<BTreeSet<_>>();
+    let selected = cone
+        .path_class_candidates
+        .iter()
+        .filter(|path| selected_path_ids.contains(path.path_class_id.as_str()))
+        .flat_map(|path| path.affected_axes.iter().map(|axis| axis_id_for_name(axis)))
+        .filter(|axis_id| all_axis_ids.iter().any(|known| known == axis_id))
+        .collect::<Vec<_>>();
+    if selected.is_empty() {
+        all_axis_ids.to_vec()
+    } else {
+        unique_strings(selected)
+    }
+}
+
+fn region_id_for_path(path_id: &str) -> String {
+    format!("region:{}", id_suffix(path_id))
+}
+
+fn axis_id_for_name(axis_name: &str) -> String {
+    format!("axis:{}", id_suffix(axis_name))
 }
 
 fn finite_support_ref(
