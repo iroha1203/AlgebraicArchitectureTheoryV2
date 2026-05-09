@@ -3,6 +3,40 @@
 Roadmap は mutable planning である。ここには phase、拡張候補、標準化 target を置く。
 数学本文や stable schema の中に進捗管理を混ぜない。
 
+## Roadmap management
+
+tooling の進捗、実装候補、未実装 gap はこの文書で管理する。
+第一級理論本文は `docs/aat/mathematical_theory.md`,
+`docs/sft/aat_interface.md`, `docs/sft/software_field_theory.md` に置き、
+ここには tool artifact、CLI、CI、schema、fixture、validator、empirical / operational
+workflow の計画だけを書く。
+
+進捗を記録するときは、次を分ける。
+
+| 種別 | 読み |
+| --- | --- |
+| implemented pipeline | 実入力から artifact を生成する CLI / workflow がある。 |
+| schema + validator | artifact schema、fixture、validator はあるが、実入力からの推論は限定的。 |
+| advisory report | reviewer / CI が読む補助情報であり、formal claim ではない。 |
+| empirical / operational | dataset、calibration、feedback 用 artifact。因果 theorem ではない。 |
+| planned gap | 第一級文書が要求するが、まだ実装されていない tooling 能力。 |
+
+## Current status snapshot
+
+2026-05-09 時点の ArchSig は、AAT diagnostic / governance tooling としては
+MVP を越えている。一方で、SFT forecast engine としては schema と validator が先行しており、
+PRD / Issue / AI proposal から `ForecastCone` や `ConsequenceEnvelope` を生成する
+pipeline は未完成である。
+
+| 領域 | 現在地 | 主な gap |
+| --- | --- | --- |
+| Sig0 extraction | Lean / Python import graph、policy、runtime edge evidence を Sig0 にできる。 | call graph、data dependency、framework semantics は adapter boundary。 |
+| AIR / Feature Extension Report | signature、coverage、claim boundary、obstruction witness、theorem precondition を report にできる。 | 任意 invariant 全体の自動判定ではない。 |
+| PR / CI governance | signature diff、policy decision、PR comment、baseline suppression がある。 | organization ごとの policy calibration と運用 feedback は継続課題。 |
+| AI-generated change boundary | AI session metadata、generated patch provenance、human review boundary、formal claim block を扱う。 | proposal support 全体の制御や shortcut distribution の推定は未完成。 |
+| Empirical feedback | PR history、feature dataset、outcome linkage、B10 operational artifacts がある。 | 実 dataset での calibration と hypothesis refresh の運用。 |
+| Architecture dynamics | PR force、trajectory、dynamics metrics、field snapshot、operation proposal log の schema / validator がある。 | 実 artifact から bounded forecast を生成する forecaster。 |
+
 ## Phase B0: AIR and boundary
 
 - AIR v0 を固定する。
@@ -81,6 +115,53 @@ Phase B6 の最小仮説は次である。
   architecture dynamics metrics report を扱う。
 - probabilistic operation distribution は empirical reading とし、finite support / bounded script の
   formal core と分ける。
+- 現状は schema + validator / fixture 中心であり、実入力からの forecast 推論は次 phase に分ける。
+
+## Phase B12: SFT forecasting MVP
+
+SFT 側の次の主対象は、ArchSig-SFT Forecaster である。
+これは AAT theorem を強めるものではなく、選択された boundary の下で
+artifact action、operation support、forecast boundary、missing invariant を report する
+tooling layer として実装する。
+
+最小 pipeline は次である。
+
+```text
+PRD / Spec / Issue / AI proposal
+  -> ArtifactDescriptor
+  -> OperationSupportEstimate
+  -> bounded ForecastCone skeleton
+  -> ConsequenceEnvelope report
+  -> review / CI / issue decomposition recommendation
+```
+
+最小出力は次を含める。
+
+- action class candidates
+- candidate operation families
+- affected architecture regions
+- comparable signature axes
+- expected axis delta ranges
+- selected obstruction witness candidates
+- missing invariant / missing boundary items
+- theorem boundary items
+- forecast non-conclusions
+- unknown / unmodeled remainder
+
+初期実装では、probability や causal forecast は出さない。
+まず finite support、bounded horizon、selected operation family、source refs、
+measurement boundary を持つ level 3 相当の cone skeleton を作る。
+calibration 済みの weighting や field update は B10 / B11 artifact と接続した後に扱う。
+
+### B12 milestones
+
+| Milestone | 目標 |
+| --- | --- |
+| B12.1 ArtifactDescriptor | PRD / Issue / AI proposal の action class、scope、source refs、missing evidence を schema 化する。 |
+| B12.2 OperationSupportEstimate | candidate operation family、policy constraints、known forbidden support、unknown remainder を出す。 |
+| B12.3 ForecastCone skeleton | finite support と bounded horizon に相対化した path class skeleton を保持する。 |
+| B12.4 ConsequenceEnvelope report | signature axis、obstruction candidate、missing boundary、review / CI recommendation をまとめる。 |
+| B12.5 Calibration hook | observed PR / review / CI / outcome artifact と forecast item を対応付ける hook を置く。 |
 
 ## Standardization targets
 
@@ -91,3 +172,5 @@ Phase B6 の最小仮説は次である。
 - schema compatibility policy
 - example fixture set
 - report consumer contract
+- forecaster input / output contract
+- forecast boundary vocabulary
