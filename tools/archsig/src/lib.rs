@@ -94,7 +94,8 @@ pub use obstruction_drift::{
     static_architecture_drift_ledger, static_obstruction_witness_artifact,
 };
 pub use operation_support_estimate::{
-    static_operation_support_estimate, validate_operation_support_estimate,
+    build_operation_support_estimate_from_descriptor, static_operation_support_estimate,
+    validate_operation_support_estimate,
 };
 pub use operational_feedback::{
     ReportOutcomeDailyLedgerInput, build_report_outcome_daily_ledger,

@@ -6968,6 +6968,9 @@ fn cli_operation_support_estimate_emits_fixture_and_validates_boundaries() {
     let static_validation = out_dir.join("operation-support-estimate-static-validation.json");
     let fixture_artifact = out_dir.join("operation-support-estimate-fixture.json");
     let fixture_validation = out_dir.join("operation-support-estimate-validation.json");
+    let generated_descriptor = out_dir.join("artifact-descriptor-generated.json");
+    let generated_estimate = out_dir.join("operation-support-estimate-generated.json");
+    let generated_validation = out_dir.join("operation-support-estimate-generated-validation.json");
     let invalid_estimate = out_dir.join("operation-support-estimate-invalid.json");
     let invalid_validation = out_dir.join("operation-support-estimate-invalid-validation.json");
 
@@ -6994,6 +6997,41 @@ fn cli_operation_support_estimate_emits_fixture_and_validates_boundaries() {
         fixture_validation
             .to_str()
             .expect("fixture validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--from-markdown",
+        root.join("artifact_descriptor_prd.md")
+            .to_str()
+            .expect("markdown fixture path is utf-8"),
+        "--artifact-kind",
+        "prd",
+        "--out",
+        generated_descriptor
+            .to_str()
+            .expect("generated descriptor path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-support-estimate",
+        "--descriptor",
+        generated_descriptor
+            .to_str()
+            .expect("generated descriptor path is utf-8"),
+        "--out",
+        generated_estimate
+            .to_str()
+            .expect("generated estimate path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-support-estimate",
+        "--input",
+        generated_estimate
+            .to_str()
+            .expect("generated estimate path is utf-8"),
+        "--out",
+        generated_validation
+            .to_str()
+            .expect("generated validation path is utf-8"),
     ]);
 
     let static_json = read_json(&static_validation);
@@ -7049,6 +7087,55 @@ fn cli_operation_support_estimate_emits_fixture_and_validates_boundaries() {
             .iter()
             .any(|check| {
                 check["id"] == "operation-support-estimate-unknown-remainder-not-measured-zero"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let generated = read_json(&generated_estimate);
+    assert_eq!(generated["schemaVersion"], "operation-support-estimate-v0");
+    assert_eq!(generated["descriptorRef"]["artifactKind"], "prd");
+    assert!(
+        generated["descriptorRef"]["sourceRefIds"]
+            .as_array()
+            .expect("sourceRefIds is array")
+            .iter()
+            .any(|source_ref| source_ref == "source:markdown:coupon-forecast-descriptor-builder")
+    );
+    assert!(
+        generated["candidateOperationFamilies"]
+            .as_array()
+            .expect("candidateOperationFamilies is array")
+            .iter()
+            .any(|family| family["operationFamily"] == "cli-fixture-validation")
+    );
+    assert!(
+        generated["knownForbiddenSupport"]
+            .as_array()
+            .expect("knownForbiddenSupport is array")
+            .iter()
+            .any(|forbidden| forbidden["operationFamily"] == "causal-probability-assignment")
+    );
+    assert!(
+        generated["unknownRemainder"]
+            .as_array()
+            .expect("unknownRemainder is array")
+            .iter()
+            .any(|remainder| {
+                remainder["treatment"]
+                    .as_str()
+                    .expect("unknown treatment is a string")
+                    .contains("retain as unknown support remainder")
+            })
+    );
+    let generated_report = read_json(&generated_validation);
+    assert_eq!(generated_report["summary"]["result"], "pass");
+    assert!(
+        generated_report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "operation-support-estimate-evidence-boundary-retained"
                     && check["result"] == "pass"
             })
     );

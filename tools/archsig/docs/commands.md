@@ -253,6 +253,14 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- operation-support-estimate
   --out .lake/signature-current/operation-support-estimate-validation.json
 ```
 
+生成済み `artifact-descriptor-v0` から operation support estimate を作る。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- operation-support-estimate \
+  --descriptor .lake/signature-current/artifact-descriptor.json \
+  --out .lake/signature-current/operation-support-estimate.json
+```
+
 `operation-support-estimate-v0` は `artifact-descriptor-v0` の source refs と
 action class candidate refs を保持したまま、candidate operation families、
 policy constraints、known forbidden support、unknown remainder、confidence /
