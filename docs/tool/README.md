@@ -37,7 +37,7 @@ Tooling docs は、変化の速さごとに分ける。
 理論本文は [AAT 数学理論](../aat/mathematical_theory.md)、
 [AAT / SFT Interface](../sft/aat_interface.md)、
 [ソフトウェアの場の理論](../sft/software_field_theory.md) に置く。
-tool 側の source of truth はこの `docs/tooling/` 以下である。
+tool 側の source of truth はこの `docs/tool/` 以下である。
 旧 `docs/aat_v2_tooling_design.md` は archive に退避済みであり、現行入口としては使わない。
 
 ## 基本境界

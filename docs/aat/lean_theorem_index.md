@@ -405,7 +405,7 @@ does not by itself assert any unconditional operation law or global flatness
 preservation.
 Issue [#359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/359)
 records where each Chapter 3 operation lives after the public tag / proof
-obligation schema: [Architecture Calculus catalog placement](../design/architecture_calculus_catalog_placement.md).
+obligation schema: [Architecture Calculus catalog placement](../archive/2026-05-09-first-class-docs/design/architecture_calculus_catalog_placement.md).
 Only `compose`, `replace`, `protect`, and `reverse` currently have concrete
 finite graph kernels. `refine`, `abstract`, `split`, `merge`, `isolate`,
 `migrate`, `contract`, and `synthesize` are routed to contract / observation,
@@ -553,7 +553,7 @@ reuse this section as the bounded law audit surface for compose / replace /
 protect / reverse / repair.
 Issue [#360](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/360)
 continues from the placement decision in
-[Architecture Calculus catalog placement](../design/architecture_calculus_catalog_placement.md)
+[Architecture Calculus catalog placement](../archive/2026-05-09-first-class-docs/design/architecture_calculus_catalog_placement.md)
 by adding concrete graph / repair / synthesis entrypoints for selected bounded
 law packages.
 Issue [#381](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/381)
@@ -2730,4 +2730,4 @@ File: `Formal/Arch/Examples/SolidCounterexample.lean`
 - extractor output が `ComponentUniverse` の完全な witness であるという主張。
 - `rho(A)` と変更波及・障害伝播コストの相関。
 
-これらは [証明義務と実証仮説](proof_obligations.md) または [個別設計メモ](../design/README.md) で扱う。
+これらは [証明義務と実証仮説](proof_obligations.md)、tooling boundary、または empirical protocol 側で扱う。

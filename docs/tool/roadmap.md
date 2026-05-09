@@ -50,8 +50,9 @@ Phase B6 の最小仮説は次である。
 | H4 | split extension と判定された PR は後続変更で再利用・置換・移行しやすい。 |
 | H5 | Feature Extension Report は architecture review の合意形成を速める。 |
 
-これらは empirical hypothesis であり、Lean theorem ではない。詳細な evaluation query は
-`docs/design/b6_empirical_hypothesis_evaluation.md` で管理する。
+これらは empirical hypothesis であり、Lean theorem ではない。現行の case-study output は
+`docs/empirical/` に置き、旧 evaluation query は archive の
+`docs/archive/2026-05-09-first-class-docs/design/b6_empirical_hypothesis_evaluation.md` に残す。
 
 ## Phase B7: PR review integration
 

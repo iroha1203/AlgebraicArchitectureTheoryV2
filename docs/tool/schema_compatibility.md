@@ -71,8 +71,8 @@ architecture-dynamics-metrics-report-v0
 `architecture-field-snapshot-v0` と `operation-proposal-log-v0` は CLI / fixture / validator が
 あるが、static schema catalog の catalog family にはまだ載せない。
 
-詳細な catalog と実装 status は `docs/design/schema_version_catalog.md` と
-`tools/archsig/src/schema_catalog.rs` で管理する。
+旧 catalog メモは `docs/archive/2026-05-09-first-class-docs/design/schema_version_catalog.md` に残す。
+現行の実装 status は `tools/archsig/src/schema_catalog.rs` で管理する。
 
 ## Migration rule
 

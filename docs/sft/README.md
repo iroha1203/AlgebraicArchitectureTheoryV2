@@ -24,7 +24,6 @@ SFT はソフトウェア進化を計算可能にする。
 
 1. [Software Field Theory](software_field_theory.md)
 2. [AAT / SFT Interface](aat_interface.md)
-3. [Architecture Dynamics tooling 設計](../design/architecture_dynamics_tooling_design.md)
 
 ## SFT の中心対象
 
