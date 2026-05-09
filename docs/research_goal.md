@@ -1,121 +1,95 @@
 # 研究の全体目標
 
-この文書は、AAT v2 の研究プログラム全体を読むための入口である。
-数学的な第一級本文は、次の 3 文書に固定する。
+AAT v2 が目指すのは、ソフトウェアアーキテクチャを「良い設計か悪い設計か」という
+印象で語るのではなく、何が保存され、何が破れ、どの未来へ流れやすくなったのかを
+診断できる言葉にすることである。
 
-1. [AAT 数学理論](aat/mathematical_theory.md)
-2. [AAT / SFT Interface](sft/aat_interface.md)
-3. [ソフトウェアの場の理論](sft/software_field_theory.md)
+設計原則は、スローガンではなく操作である。
+ある変更が境界を守るのか、依存を閉じ込めるのか、状態遷移を明確にするのか、
+あるいは別の場所へ複雑さを押し出しているだけなのかを問う。
+AAT はこの問いを、アーキテクチャ不変量、operation、obstruction witness、
+ArchitectureSignature として定式化する。
 
-この 3 文書は、研究上の source of truth として扱う。
-Lean 実装 status、proof obligation、tooling schema、empirical protocol、PRD、旧草案は
-補助文書として分離する。
+SFT は、その局所的な診断を時間の中へ置く。
+要求、仕様、Issue、PR、review、CI、組織判断、AI agent の提案は、
+コードベースを一度だけ変えるのではない。次に選ばれやすい変更、見落とされやすい破れ、
+レビューで減衰される shortcut、蓄積する field memory を作る。
+SFT は、その流れを forecast、trajectory、governance feedback として扱う。
 
-## 一文で言うと
+## 中心ビジョン
 
-AAT v2 の目標は、設計原則を「アーキテクチャ不変量を保存・改善する操作」として扱い、
-品質を単一スコアではなく、不変量の破れを示す多軸シグネチャとして診断する理論と
-ツールチェーンを作ることである。
-
-SFT はその上で、要求、仕様、Issue、PR、review、CI、組織、AI、運用 feedback、
-lifecycle decision が、到達可能な architecture future をどう変えるかを扱う。
-
-```text
-AAT formalizes the local algebra of software architecture.
-AAT / SFT Interface fixes the one-way boundary.
-SFT makes software evolution computable.
-```
-
-## 第一級文書
-
-| 文書 | 役割 |
-| --- | --- |
-| [AAT 数学理論](aat/mathematical_theory.md) | `ArchitectureObject`, operation, invariant, obstruction witness, signature, theorem boundary, repair, path, diagram filling, analytic representation を整理する数学本文。 |
-| [AAT / SFT Interface](sft/aat_interface.md) | SFT が AAT から借りる概念、片方向依存、禁止される読み替えを固定する境界文書。 |
-| [ソフトウェアの場の理論](sft/software_field_theory.md) | PRD / Spec / Issue / PR / Review / CI / organization / AI / lifecycle を field, force, trajectory, control として扱う計算理論。 |
-
-補助入口として、[docs README](README.md)、[AAT directory README](aat/README.md)、
-[SFT directory README](sft/README.md) を置く。ただし、理論本文そのものは上の 3 文書である。
-
-## 層の分担
+この研究の中心命題は次である。
 
 ```text
-AAT gives laws.
-ArchSig measures state.
-SFT predicts trajectories.
-AI proposes operations.
-Review / CI controls transitions.
+Design principles are operations on architecture invariants.
+Architecture quality is observed as a multi-axis signature of invariant breakage.
+Software evolution is a computable field-shaped process.
 ```
 
-| 層 | 扱うもの | 主な文書 |
-| --- | --- | --- |
-| AAT | architecture object、operation、invariant、obstruction witness、signature、theorem boundary、non-conclusions | [AAT 数学理論](aat/mathematical_theory.md) |
-| Interface | AAT theorem を SFT 側でどう読めるか、何を読んではいけないか | [AAT / SFT Interface](sft/aat_interface.md) |
-| SFT | field model、ArtifactMediatedChange、ForecastCone、ConsequenceEnvelope、governance intervention、FieldUpdate | [ソフトウェアの場の理論](sft/software_field_theory.md) |
-| Lean 形式化 | 実装済み API、証明済み定理、defined only な構造、future proof obligation | [証明義務と実証仮説](aat/proof_obligations.md), [Lean 定義・定理索引](aat/lean_theorem_index.md) |
-| Tooling / ArchSig | AIR、extractor、Signature artifact、Feature Extension Report、claim boundary、workflow | [AAT Tooling Documentation](tool/README.md) |
-| Empirical hypothesis | Signature / report と review cost、incident scope、変更波及、AI shortcut との関係 | [証明義務と実証仮説](aat/proof_obligations.md), GitHub Issues |
+目標は、アーキテクチャレビューを「感想」から「診断」へ近づけることである。
+ただし、診断とは単一スコアを出すことではない。
+どの軸で破れているのか、どの前提の下で安全と言えるのか、
+どの観測が欠けているために結論できないのかを分けて表示することである。
 
-## 研究が答えたい問い
+## 見たいもの
 
-- この architecture operation は、選択された invariant を保存しているか。
-- 破れているなら、どの obstruction witness がそれを示しているか。
+この研究では、次のような問いを一つの連続した対象として扱う。
+
+- この変更は、選択された architecture invariant を保存しているか。
+- 保存していないなら、どの obstruction witness がそれを示しているか。
 - その破れはどの ArchitectureSignature axis に現れるか。
-- AAT theorem boundary の下で何を結論でき、何を non-conclusion として残すべきか。
-- AAT の局所主張を、SFT の forecast / governance 側でどう安全に使えるか。
-- この PRD / Spec / Issue はどの operation support と policy を誘導するか。
-- 生成された ConsequenceEnvelope は、どの architecture region と signature axis を含むか。
-- Review / CI / policy は shortcut をどこで拒否・射影・減衰し、field memory をどう更新するか。
-- AI agent の proposal support は、bounded field model と theorem boundary の中に収まっているか。
+- その変更は future architecture を広げるのか、狭めるのか、危険な方向へ偏らせるのか。
+- Review、CI、policy は shortcut をどこで拒否し、どこで減衰し、どこで見逃すのか。
+- AI agent の proposal は、bounded theorem boundary と governance boundary の中に収まるのか。
 
-## Architecture Signature の位置づけ
+ここで重要なのは、証明、測定、推定、実証仮説を混同しないことである。
+Lean theorem は経験的成功を保証しない。
+tool output は Lean theorem ではない。
+empirical correlation は architecture lawfulness ではない。
+この分離を保ったまま、それでも実際の開発判断に届く診断語彙を作る。
 
-`ArchitectureSignature` は、アーキテクチャ品質を単一スコアへ潰すためのものではない。
-分解可能性、依存伝播、境界健全性、抽象化、観測可能性、状態遷移、実行時依存、
-実証的コストなどを分けて読むための多軸診断 artifact である。
+## AAT と SFT
 
-ArchSig は、AAT 的観測量を抽出し、SFT 的予測・制御に渡す計測層である。
+AAT は、ソフトウェアアーキテクチャの局所代数を与える。
+component、relation、operation、invariant、witness、signature を使い、
+ある変更がどの前提の下で lawful か、どの obstruction によって split できないかを扱う。
 
-```text
-codebase / PR
-  -> signature axes
-  -> obstruction witnesses
-  -> theorem boundary status
-  -> ForecastCone / ConsequenceEnvelope boundary
-  -> governance feedback
-```
+SFT は、AAT の局所主張をソフトウェア進化の場へ写す。
+PRD、Spec、Issue、PR、review、CI、organization、AI、lifecycle decision を
+field、force、trajectory、control として読み、到達可能な architecture future を扱う。
 
-## 設計原則の読み方
+ArchSig と tooling は、その間の観測層である。
+実 artifact から signature axis、witness、theorem boundary status、forecast boundary を抽出する。
+ただし、観測できたものだけを根拠にし、観測できていない軸を安全とみなさない。
 
-AAT v2 では、SOLID、Layered / Clean Architecture、Event Sourcing、Saga、
-Circuit Breaker、Replicated Log などを、同じ階層の万能原理として扱わない。
+## 何を作るか
 
-- SOLID: 局所契約層。
-- Layered / Clean Architecture: 大域構造層。
-- Event Sourcing / Saga / CRUD: 状態遷移代数層。
-- Circuit Breaker / Replicated Log: 実行時依存・分散収束層。
+この研究が最終的に作りたいものは、次のようなレビューと設計支援である。
 
-設計原則は、それがどの invariant、operation、observation、theorem boundary、
-governance intervention に対応するかを明示して読む。
+- PR がどの invariant を保存し、どの invariant を破っているかを示す。
+- obstruction witness を、修復候補や設計判断に接続する。
+- ArchitectureSignature を、多軸の診断結果として提示する。
+- Lean theorem boundary、tooling evidence、empirical hypothesis を同じ画面で混同せずに扱う。
+- PRD や Issue が誘導する future architecture の範囲を forecast する。
+- AI-generated shortcut を、policy と theorem boundary の中で拒否・射影・減衰する。
 
-## Lean と実証の分担
+この方向では、SOLID、Layered / Clean Architecture、Event Sourcing、Saga、
+Circuit Breaker、Replicated Log などを万能な設計格言として並べない。
+それぞれを、どの層のどの invariant や operation に関係するのかで読む。
 
-Lean では、定義が明確で全称命題として扱える構造的事実を証明する。
-graph、walk、reachability、projection、observation、lawfulness bridge、
-finite universe 上の executable metric と theorem の接続などである。
+## 詳細文書
 
-一方、実コード extractor の完全性、Signature と変更コストの相関、runtime exposure と
-incident scope の関係、relation complexity と運用リスクの関係、ForecastCone の精度、
-organization field や AI agent policy の効果は、実証研究または tooling boundary の問題として扱う。
-
-どの主張が `proved`、`defined only`、`future proof obligation`、
-`empirical hypothesis` なのかは、[証明義務と実証仮説](aat/proof_obligations.md) を参照する。
-
-## 読む順序
+この文書はビジョンを述べる入口であり、詳細な定義や台帳は持たない。
+第一級本文は次の 3 文書に固定する。
 
 1. [AAT 数学理論](aat/mathematical_theory.md)
 2. [AAT / SFT Interface](sft/aat_interface.md)
 3. [ソフトウェアの場の理論](sft/software_field_theory.md)
-4. [証明義務と実証仮説](aat/proof_obligations.md)
-5. [Lean 定義・定理索引](aat/lean_theorem_index.md)
-6. 必要に応じて [AAT Tooling Documentation](tool/README.md)
+
+Lean status、proof obligation、empirical hypothesis は
+[証明義務と実証仮説](aat/proof_obligations.md) と
+[Lean 定義・定理索引](aat/lean_theorem_index.md) に分離する。
+tooling の詳細は [AAT Tooling Documentation](tool/README.md) に置く。
+
+読む順序は、AAT の局所代数を理解してから、AAT / SFT の境界を確認し、
+最後に SFT の software evolution model へ進むのがよい。
