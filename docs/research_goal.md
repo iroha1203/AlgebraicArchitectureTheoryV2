@@ -3,8 +3,8 @@
 この研究の大きなビジョンは、ソフトウェアアーキテクチャを
 「静的な形」だけでなく、「変化し続ける対象」として扱うことである。
 
-ここでいう AAT は **Algebraic Architecture Theory**、
-SFT は **Software Field Theory** を指す。
+ここでいう AAT は **Algebraic Architecture Theory**（代数的アーキテクチャ論）、
+SFT は **Software Field Theory**（ソフトウェアの場の理論）を指す。
 AAT はアーキテクチャの局所代数を扱い、
 SFT はその上でソフトウェア進化の場を扱う。
 
