@@ -177,6 +177,50 @@ causal proof、Lean theorem claim は主張しない。
 | B12.4 ConsequenceEnvelope report | signature axis、obstruction candidate、missing boundary、review / CI recommendation をまとめる。schema + validator 実装済み。 |
 | B12.5 Calibration hook | observed PR / review / CI / outcome artifact と forecast item を対応付ける hook を置く。schema + validator 実装済み。 |
 
+## Phase B13: SFT forecaster implemented pipeline
+
+B12 では `ArtifactDescriptor` から `ForecastCalibrationHook` までの artifact
+schema、fixture、validator を固定した。B13 ではこれを implemented pipeline に進め、
+PRD / Spec / Issue / AI proposal などの実入力から B12 artifact 群を生成する。
+
+目的は、SFT の forecast を一点予測や causal theorem として扱うことではない。
+実 artifact から、選択された source refs、operation support、finite support、
+bounded horizon、forecast boundary、unknown remainder、non-conclusions を保持した
+tooling estimate を生成し、review / CI / issue decomposition が読める
+`ConsequenceEnvelope` へ接続することである。
+
+最小 pipeline は次である。
+
+```text
+real PRD / Spec / Issue / AI proposal
+  -> ArtifactDescriptor builder
+  -> OperationSupportEstimate generator
+  -> ForecastConeSkeleton generator
+  -> ConsequenceEnvelope generator
+  -> end-to-end sft-forecast command
+```
+
+この phase は B12 の schema + validator を利用する。新しい theorem claim は作らず、
+tooling output は `empirical hypothesis / tooling validation` として扱う。
+特に次を non-conclusions として保持する。
+
+- generated descriptor は ground truth architecture object ではない。
+- operation support estimate は accepted PR history や actual future support ではない。
+- forecast cone skeleton は probability、global risk reduction、trajectory-level safety を主張しない。
+- consequence envelope は causal artifact action の一意同定や Lean theorem proof ではない。
+- end-to-end command の成功は extractor completeness や forecast correctness を意味しない。
+
+### B13 milestones
+
+| Issue | Milestone | 目標 |
+| --- | --- | --- |
+| #741 | B13 parent | ArchSig-SFT Forecaster を実入力 pipeline に接続する親 Issue。 |
+| #746 | B13.1 ArtifactDescriptor builder | Markdown PRD / Spec、GitHub Issue JSON、AI proposal JSON などの実入力から `artifact-descriptor-v0` を生成する。 |
+| #744 | B13.2 OperationSupportEstimate generator | `artifact-descriptor-v0` から `operation-support-estimate-v0` を生成する。 |
+| #743 | B13.3 ForecastConeSkeleton generator | `operation-support-estimate-v0` と bounded horizon config から `forecast-cone-skeleton-v0` を生成する。 |
+| #742 | B13.4 ConsequenceEnvelope generator | `forecast-cone-skeleton-v0` から reviewer / CI / issue decomposition が読める `consequence-envelope-report-v0` を生成する。 |
+| #745 | B13.5 end-to-end sft-forecast | 中間 artifact と final `ConsequenceEnvelope` を生成する `sft-forecast` command と Coupon PRD fixture を追加する。 |
+
 ## Standardization targets
 
 - artifact schema naming
