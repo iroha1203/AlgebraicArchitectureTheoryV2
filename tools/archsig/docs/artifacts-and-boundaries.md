@@ -77,6 +77,13 @@ Lean status: `empirical hypothesis` / tooling output.
 claim を生成しない。missing evidence、unsupported constructs、forecast non-conclusions は
 後段 artifact に引き継ぐ境界として読む。
 
+`sft-forecast` は Markdown PRD / Spec / Issue / AI proposal から
+`artifact-descriptor-v0`、`operation-support-estimate-v0`、
+`forecast-cone-skeleton-v0`、`consequence-envelope-report-v0` と各 validation report を
+同じ出力 directory に生成する end-to-end command である。command の成功は bounded
+tooling pipeline の validation 成功であり、extractor completeness、forecast correctness、
+causal prediction、Lean theorem claim への昇格を意味しない。
+
 ## Measurement Boundary
 
 `archsig` は測定済み 0 と未評価を分ける。

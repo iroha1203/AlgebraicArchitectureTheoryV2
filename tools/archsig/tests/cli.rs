@@ -7650,6 +7650,164 @@ fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
 }
 
 #[test]
+fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("sft-forecast");
+    let descriptor = out_dir.join("artifact-descriptor.json");
+    let descriptor_validation = out_dir.join("artifact-descriptor-validation.json");
+    let estimate = out_dir.join("operation-support-estimate.json");
+    let estimate_validation = out_dir.join("operation-support-estimate-validation.json");
+    let cone = out_dir.join("forecast-cone-skeleton.json");
+    let cone_validation = out_dir.join("forecast-cone-skeleton-validation.json");
+    let envelope = out_dir.join("consequence-envelope-report.json");
+    let envelope_validation = out_dir.join("consequence-envelope-validation.json");
+
+    run_sig0(&[
+        "sft-forecast",
+        "--artifact",
+        root.join("coupon_prd.md")
+            .to_str()
+            .expect("coupon PRD fixture path is utf-8"),
+        "--artifact-kind",
+        "prd",
+        "--horizon-steps",
+        "4",
+        "--horizon-window",
+        "Coupon PRD bounded forecast horizon",
+        "--out-dir",
+        out_dir.to_str().expect("output dir path is utf-8"),
+    ]);
+
+    for path in [
+        &descriptor,
+        &descriptor_validation,
+        &estimate,
+        &estimate_validation,
+        &cone,
+        &cone_validation,
+        &envelope,
+        &envelope_validation,
+    ] {
+        assert!(path.exists(), "expected sft-forecast output {path:?}");
+    }
+
+    let descriptor_json = read_json(&descriptor);
+    assert_eq!(descriptor_json["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(descriptor_json["artifactKind"], "prd");
+    assert_eq!(
+        descriptor_json["artifactTitle"],
+        "Coupon PRD Forecast Pipeline"
+    );
+    assert!(
+        descriptor_json["measurementBoundary"]["sourceRefIds"]
+            .as_array()
+            .expect("descriptor boundary source refs are an array")
+            .iter()
+            .any(|source_ref| source_ref == "source:markdown:coupon-prd-forecast-pipeline")
+    );
+    assert!(
+        descriptor_json["forecastNonConclusions"]
+            .as_array()
+            .expect("forecast non-conclusions are an array")
+            .iter()
+            .any(|conclusion| {
+                conclusion == "descriptor evidence does not establish causal prediction"
+            })
+    );
+    assert_eq!(
+        read_json(&descriptor_validation)["summary"]["result"],
+        "pass"
+    );
+
+    let estimate_json = read_json(&estimate);
+    assert_eq!(
+        estimate_json["schemaVersion"],
+        "operation-support-estimate-v0"
+    );
+    assert!(
+        estimate_json["descriptorRef"]["sourceRefIds"]
+            .as_array()
+            .expect("estimate source refs are an array")
+            .iter()
+            .any(|source_ref| source_ref == "source:markdown:coupon-prd-forecast-pipeline")
+    );
+    assert!(
+        estimate_json["unknownRemainder"]
+            .as_array()
+            .expect("estimate unknown remainder is an array")
+            .iter()
+            .any(|remainder| {
+                remainder["treatment"]
+                    .as_str()
+                    .expect("estimate treatment is a string")
+                    .contains("unknown support remainder")
+            })
+    );
+    assert_eq!(read_json(&estimate_validation)["summary"]["result"], "pass");
+
+    let cone_json = read_json(&cone);
+    assert_eq!(cone_json["schemaVersion"], "forecast-cone-skeleton-v0");
+    assert_eq!(cone_json["boundedHorizon"]["maxSteps"], 4);
+    assert!(
+        cone_json["operationSupportRef"]["sourceRefIds"]
+            .as_array()
+            .expect("cone source refs are an array")
+            .iter()
+            .any(|source_ref| source_ref == "source:markdown:coupon-prd-forecast-pipeline")
+    );
+    assert!(
+        cone_json["forecastBoundary"]["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupported constructs are an array")
+            .iter()
+            .any(|construct| construct == "probability assignment")
+    );
+    assert!(
+        cone_json["nonConclusions"]
+            .as_array()
+            .expect("cone non-conclusions are an array")
+            .iter()
+            .any(|conclusion| conclusion == "forecast cone skeleton does not assign probabilities")
+    );
+    assert_eq!(read_json(&cone_validation)["summary"]["result"], "pass");
+
+    let envelope_json = read_json(&envelope);
+    assert_eq!(
+        envelope_json["schemaVersion"],
+        "consequence-envelope-report-v0"
+    );
+    assert!(
+        envelope_json["forecastConeRef"]["sourceRefIds"]
+            .as_array()
+            .expect("envelope source refs are an array")
+            .iter()
+            .any(|source_ref| source_ref == "source:markdown:coupon-prd-forecast-pipeline")
+    );
+    assert!(
+        envelope_json["missingBoundaryItems"]
+            .as_array()
+            .expect("missing boundary items are an array")
+            .iter()
+            .any(|item| item["itemKind"] == "unsupported-construct-boundary")
+    );
+    assert!(
+        envelope_json["nonConclusions"]
+            .as_array()
+            .expect("envelope non-conclusions are an array")
+            .iter()
+            .any(|conclusion| {
+                conclusion
+                    == "consequence envelope does not identify a unique causal artifact action"
+            })
+    );
+    assert_eq!(read_json(&envelope_validation)["summary"]["result"], "pass");
+
+    let golden_envelope =
+        read_json(&root.join("sft_forecast_coupon_golden/consequence-envelope-report.json"));
+    assert_eq!(envelope_json, golden_envelope);
+}
+
+#[test]
 fn cli_forecast_calibration_hook_emits_fixture_and_validates_boundaries() {
     let root = fixture_root();
     let out_dir = temp_dir("forecast-calibration-hook");
