@@ -34,11 +34,12 @@ use archsig::{
     TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence,
     build_air_document, build_artifact_descriptor_from_markdown, build_baseline_suppression_report,
     build_empirical_dataset, build_feature_extension_dataset_from_files,
-    build_feature_extension_report, build_outcome_linkage_dataset_from_files,
-    build_policy_decision_report, build_pr_history_dataset_from_github_files,
-    build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
-    build_schema_compatibility_check_report, build_signature_diff_report,
-    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
+    build_feature_extension_report, build_operation_support_estimate_from_descriptor,
+    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
+    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
+    build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
+    build_signature_diff_report, build_signature_snapshot_record,
+    build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_architecture_dynamics_metrics_report,
     static_architecture_field_snapshot, static_artifact_descriptor,
@@ -703,6 +704,10 @@ enum Command {
         /// Optional OperationSupportEstimate JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
+
+        /// ArtifactDescriptor JSON path to generate operation-support-estimate-v0 from.
+        #[arg(long)]
+        descriptor: Option<PathBuf>,
 
         /// Emit the canonical minimal operation-support-estimate-v0 fixture.
         #[arg(long)]
@@ -1553,11 +1558,19 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }
         Some(Command::OperationSupportEstimate {
             input,
+            descriptor,
             fixture,
             out,
         }) => {
             if fixture {
                 let estimate: OperationSupportEstimateV0 = static_operation_support_estimate();
+                write_json(out, &estimate)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            if let Some(descriptor_path) = descriptor {
+                let descriptor: ArtifactDescriptorV0 = read_json(&descriptor_path)?;
+                let estimate: OperationSupportEstimateV0 =
+                    build_operation_support_estimate_from_descriptor(&descriptor);
                 write_json(out, &estimate)?;
                 return Ok(ExitCode::SUCCESS);
             }

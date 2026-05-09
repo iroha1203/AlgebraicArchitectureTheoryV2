@@ -1,9 +1,10 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::validation::{count_checks, generic_validation_example, validation_check};
 use crate::{
-    ARTIFACT_DESCRIPTOR_SCHEMA_VERSION, CandidateOperationFamilyV0,
-    KnownForbiddenOperationSupportV0, OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION,
+    ARTIFACT_DESCRIPTOR_SCHEMA_VERSION, ArtifactActionClassCandidateV0, ArtifactDescriptorV0,
+    CandidateOperationFamilyV0, KnownForbiddenOperationSupportV0,
+    OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION,
     OPERATION_SUPPORT_ESTIMATE_VALIDATION_REPORT_SCHEMA_VERSION, OperationSupportDescriptorRefV0,
     OperationSupportEstimateV0, OperationSupportEstimateValidationInput,
     OperationSupportEstimateValidationReportV0, OperationSupportEstimateValidationSummary,
@@ -146,6 +147,73 @@ pub fn static_operation_support_estimate() -> OperationSupportEstimateV0 {
     }
 }
 
+pub fn build_operation_support_estimate_from_descriptor(
+    descriptor: &ArtifactDescriptorV0,
+) -> OperationSupportEstimateV0 {
+    let source_ref_ids = descriptor
+        .source_refs
+        .iter()
+        .map(|source| source.source_ref_id.clone())
+        .collect::<Vec<_>>();
+    let action_class_candidate_ids = descriptor
+        .action_class_candidates
+        .iter()
+        .map(|candidate| candidate.candidate_id.clone())
+        .collect::<Vec<_>>();
+    let candidate_operation_families =
+        candidate_families_from_descriptor(descriptor, &source_ref_ids);
+    let family_ids = candidate_operation_families
+        .iter()
+        .map(|family| family.family_id.clone())
+        .collect::<Vec<_>>();
+    let policy_constraints = policy_constraints_from_descriptor(&family_ids, &source_ref_ids);
+    let unknown_remainder = unknown_remainder_from_descriptor(descriptor, &family_ids);
+
+    OperationSupportEstimateV0 {
+        schema_version: OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION.to_string(),
+        estimate_id: format!("estimate:{}", descriptor.descriptor_id),
+        descriptor_ref: OperationSupportDescriptorRefV0 {
+            descriptor_schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
+            descriptor_id: descriptor.descriptor_id.clone(),
+            artifact_kind: descriptor.artifact_kind.clone(),
+            source_ref_ids: source_ref_ids.clone(),
+            action_class_candidate_ids,
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+        candidate_operation_families,
+        policy_constraints,
+        known_forbidden_support: vec![KnownForbiddenOperationSupportV0 {
+            forbidden_id: "forbidden:causal-probability-assignment".to_string(),
+            operation_family: "causal-probability-assignment".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            constraint_refs: vec!["constraint:no-causal-forecast".to_string()],
+            reason: "descriptor evidence does not establish causal prediction or outcome probability"
+                .to_string(),
+            boundary:
+                "probability assignment and causal prediction remain outside operation support estimate"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        }],
+        evidence_boundary: OperationSupportEvidenceBoundaryV0 {
+            boundary_id: format!("boundary:{}:operation-support-estimate", descriptor.descriptor_id),
+            source_ref_ids,
+            measurement_boundary_refs: vec![
+                descriptor.measurement_boundary.boundary_id.clone(),
+                descriptor.descriptor_id.clone(),
+            ],
+            confidence_boundary:
+                "confidence values are qualitative and relative to retained descriptor source refs"
+                    .to_string(),
+            evidence_kinds: evidence_kinds_from_descriptor(descriptor),
+            unsupported_constructs: unsupported_constructs_from_descriptor(descriptor),
+            assumptions: evidence_assumptions_from_descriptor(descriptor),
+            non_conclusions: strings(&REQUIRED_EVIDENCE_BOUNDARY_NON_CONCLUSIONS),
+        },
+        unknown_remainder,
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
 pub fn validate_operation_support_estimate(
     estimate: &OperationSupportEstimateV0,
     input_path: &str,
@@ -184,6 +252,118 @@ pub fn validate_operation_support_estimate(
     }
 }
 
+fn candidate_families_from_descriptor(
+    descriptor: &ArtifactDescriptorV0,
+    descriptor_source_ref_ids: &[String],
+) -> Vec<CandidateOperationFamilyV0> {
+    let mut grouped = BTreeMap::<String, Vec<&ArtifactActionClassCandidateV0>>::new();
+    for candidate in &descriptor.action_class_candidates {
+        grouped
+            .entry(operation_family_for_action_class(&candidate.action_class).to_string())
+            .or_default()
+            .push(candidate);
+    }
+
+    grouped
+        .into_iter()
+        .map(|(operation_family, candidates)| {
+            let family_id = format!("family:{}", slugify(&operation_family));
+            let action_class_candidate_ids = candidates
+                .iter()
+                .map(|candidate| candidate.candidate_id.clone())
+                .collect::<Vec<_>>();
+            let source_ref_ids =
+                retained_candidate_source_refs(&candidates, descriptor_source_ref_ids);
+            CandidateOperationFamilyV0 {
+                family_id,
+                operation_family,
+                support_kind: "supported-by-selected-descriptor".to_string(),
+                action_class_candidate_ids,
+                source_ref_ids,
+                confidence: merged_confidence(&candidates).to_string(),
+                rationale: format!(
+                    "Derived from descriptor action classes: {}.",
+                    candidates
+                        .iter()
+                        .map(|candidate| candidate.action_class.as_str())
+                        .collect::<BTreeSet<_>>()
+                        .into_iter()
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+                assumptions: vec![
+                    "operation family is inferred only from selected descriptor refs".to_string(),
+                    "support estimate does not assert actual future support".to_string(),
+                ],
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn policy_constraints_from_descriptor(
+    family_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<OperationSupportPolicyConstraintV0> {
+    vec![
+        OperationSupportPolicyConstraintV0 {
+            constraint_id: "constraint:no-theorem-promotion".to_string(),
+            constraint_kind: "claim-boundary".to_string(),
+            applies_to_family_ids: family_ids.to_vec(),
+            source_ref_ids: source_ref_ids.to_vec(),
+            rule: "Do not promote tooling estimates to Lean theorem claims.".to_string(),
+            safety_claim_boundary: "constraint is local to selected descriptor evidence"
+                .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+        OperationSupportPolicyConstraintV0 {
+            constraint_id: "constraint:no-causal-forecast".to_string(),
+            constraint_kind: "forecast-boundary".to_string(),
+            applies_to_family_ids: family_ids.to_vec(),
+            source_ref_ids: source_ref_ids.to_vec(),
+            rule: "Do not treat operation support estimates as causal forecasts.".to_string(),
+            safety_claim_boundary: "constraint is local to selected operation support evidence"
+                .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+    ]
+}
+
+fn unknown_remainder_from_descriptor(
+    descriptor: &ArtifactDescriptorV0,
+    family_ids: &[String],
+) -> Vec<OperationSupportUnknownRemainderV0> {
+    let mut unknown_axes = descriptor
+        .missing_evidence
+        .iter()
+        .map(|evidence| format!("{}: {}", evidence.evidence_kind, evidence.reason))
+        .chain(
+            descriptor
+                .measurement_boundary
+                .unsupported_constructs
+                .iter()
+                .cloned(),
+        )
+        .collect::<Vec<_>>();
+    if unknown_axes.is_empty() {
+        unknown_axes.push("unmodeled implementation and runtime support".to_string());
+    }
+    unknown_axes.sort();
+    unknown_axes.dedup();
+
+    vec![OperationSupportUnknownRemainderV0 {
+        remainder_id: "unknown:descriptor-boundary-remainder".to_string(),
+        affected_family_ids: family_ids.to_vec(),
+        source_ref_ids: descriptor.measurement_boundary.source_ref_ids.clone(),
+        unknown_axes,
+        reason: "selected descriptor evidence does not contain complete operation support, runtime traces, or accepted PR history"
+            .to_string(),
+        treatment: "retain as unknown support remainder under the selected descriptor boundary"
+            .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
 fn candidate_family(
     family_id: &str,
     operation_family: &str,
@@ -207,6 +387,113 @@ fn candidate_family(
         ],
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+fn operation_family_for_action_class(action_class: &str) -> &str {
+    match action_class {
+        "schema-definition" | "tooling-validation" => "schema-and-validator",
+        "cli-entrypoint" => "cli-fixture-validation",
+        "docs-update" | "documentation" => "documentation-boundary-update",
+        "api-definition" | "definition" => "api-definition",
+        "test-fixture" | "fixture" => "fixture-validation",
+        "pipeline" | "workflow" => "pipeline-integration",
+        _ => "artifact-driven-change",
+    }
+}
+
+fn retained_candidate_source_refs(
+    candidates: &[&ArtifactActionClassCandidateV0],
+    descriptor_source_ref_ids: &[String],
+) -> Vec<String> {
+    let descriptor_source_ref_ids = descriptor_source_ref_ids
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let mut source_refs = candidates
+        .iter()
+        .flat_map(|candidate| candidate.source_ref_ids.iter())
+        .filter(|source_ref_id| descriptor_source_ref_ids.contains(source_ref_id.as_str()))
+        .cloned()
+        .collect::<Vec<_>>();
+    source_refs.sort();
+    source_refs.dedup();
+    if source_refs.is_empty() {
+        source_refs.extend(
+            descriptor_source_ref_ids
+                .iter()
+                .map(|source| source.to_string()),
+        );
+    }
+    source_refs
+}
+
+fn merged_confidence(candidates: &[&ArtifactActionClassCandidateV0]) -> &'static str {
+    if candidates
+        .iter()
+        .any(|candidate| candidate.confidence.eq_ignore_ascii_case("high"))
+    {
+        "high"
+    } else if candidates
+        .iter()
+        .any(|candidate| candidate.confidence.eq_ignore_ascii_case("medium"))
+    {
+        "medium"
+    } else {
+        "low"
+    }
+}
+
+fn evidence_kinds_from_descriptor(descriptor: &ArtifactDescriptorV0) -> Vec<String> {
+    let mut kinds = descriptor
+        .source_refs
+        .iter()
+        .map(|source| source.source_kind.clone())
+        .collect::<Vec<_>>();
+    kinds.push("artifact-descriptor".to_string());
+    kinds.sort();
+    kinds.dedup();
+    kinds
+}
+
+fn unsupported_constructs_from_descriptor(descriptor: &ArtifactDescriptorV0) -> Vec<String> {
+    let mut constructs = descriptor
+        .measurement_boundary
+        .unsupported_constructs
+        .clone();
+    constructs.extend([
+        "accepted PR history completeness".to_string(),
+        "actual future operation support".to_string(),
+        "global policy safety proof".to_string(),
+    ]);
+    constructs.sort();
+    constructs.dedup();
+    constructs
+}
+
+fn evidence_assumptions_from_descriptor(descriptor: &ArtifactDescriptorV0) -> Vec<String> {
+    let mut assumptions = descriptor.measurement_boundary.assumptions.clone();
+    assumptions.extend(descriptor.scope.assumptions.clone());
+    assumptions.push("artifact descriptor source refs are retained by id".to_string());
+    assumptions
+        .push("operation families are candidates under selected descriptor inputs".to_string());
+    assumptions.sort();
+    assumptions.dedup();
+    assumptions
+}
+
+fn slugify(value: &str) -> String {
+    let mut slug = String::new();
+    let mut last_dash = false;
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric() {
+            slug.push(ch.to_ascii_lowercase());
+            last_dash = false;
+        } else if !last_dash {
+            slug.push('-');
+            last_dash = true;
+        }
+    }
+    slug.trim_matches('-').to_string()
 }
 
 fn policy_constraint(
