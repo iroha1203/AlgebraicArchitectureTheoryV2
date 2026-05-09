@@ -80,6 +80,9 @@ pub const OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION: &str = "ownership-boundary-
 pub const REPAIR_ADOPTION_RECORD_SCHEMA_VERSION: &str = "repair-adoption-record-v0";
 pub const INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION: &str = "incident-correlation-monitor-v0";
 pub const HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION: &str = "hypothesis-refresh-cycle-v0";
+pub const ARTIFACT_DESCRIPTOR_SCHEMA_VERSION: &str = "artifact-descriptor-v0";
+pub const ARTIFACT_DESCRIPTOR_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "artifact-descriptor-validation-report-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
@@ -3659,6 +3662,114 @@ pub struct OperationProposalLogValidationSummary {
     pub result: String,
     pub proposal_count: usize,
     pub source_ref_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorV0 {
+    pub schema_version: String,
+    pub descriptor_id: String,
+    pub artifact_kind: String,
+    pub artifact_title: String,
+    pub source_refs: Vec<ArtifactDescriptorSourceRefV0>,
+    pub action_class_candidates: Vec<ArtifactActionClassCandidateV0>,
+    pub scope: ArtifactDescriptorScopeV0,
+    pub missing_evidence: Vec<ArtifactDescriptorMissingEvidenceV0>,
+    pub measurement_boundary: ArtifactDescriptorMeasurementBoundaryV0,
+    pub forecast_non_conclusions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorSourceRefV0 {
+    pub source_ref_id: String,
+    pub source_kind: String,
+    pub path_or_url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stable_ref: Option<String>,
+    pub evidence_role: String,
+    pub retained_fields: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactActionClassCandidateV0 {
+    pub candidate_id: String,
+    pub action_class: String,
+    pub confidence: String,
+    pub source_ref_ids: Vec<String>,
+    pub rationale: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorScopeV0 {
+    pub scope_id: String,
+    pub selected_region_refs: Vec<String>,
+    pub excluded_region_refs: Vec<String>,
+    pub target_audience: Vec<String>,
+    pub artifact_boundary: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorMissingEvidenceV0 {
+    pub evidence_id: String,
+    pub evidence_kind: String,
+    pub reason: String,
+    pub effect: String,
+    pub status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorMeasurementBoundaryV0 {
+    pub boundary_id: String,
+    pub measured_layers: Vec<String>,
+    pub measured_axes: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub selected_region_refs: Vec<String>,
+    pub assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub missing_evidence_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArtifactDescriptorValidationInput,
+    pub descriptor: ArtifactDescriptorV0,
+    pub summary: ArtifactDescriptorValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub descriptor_id: String,
+    pub artifact_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorValidationSummary {
+    pub result: String,
+    pub source_ref_count: usize,
+    pub action_class_candidate_count: usize,
+    pub missing_evidence_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

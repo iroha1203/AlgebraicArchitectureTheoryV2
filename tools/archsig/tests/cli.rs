@@ -6765,6 +6765,127 @@ fn cli_report_artifacts_validates_static_manifest_and_input_fixture() {
 }
 
 #[test]
+fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("artifact-descriptor");
+    let static_validation = out_dir.join("artifact-descriptor-static-validation.json");
+    let fixture_artifact = out_dir.join("artifact-descriptor-fixture.json");
+    let fixture_validation = out_dir.join("artifact-descriptor-validation.json");
+    let invalid_descriptor = out_dir.join("artifact-descriptor-invalid.json");
+    let invalid_validation = out_dir.join("artifact-descriptor-invalid-validation.json");
+
+    run_sig0(&[
+        "artifact-descriptor",
+        "--out",
+        static_validation
+            .to_str()
+            .expect("static validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--fixture",
+        "--out",
+        fixture_artifact.to_str().expect("fixture path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--input",
+        root.join("artifact_descriptor.json")
+            .to_str()
+            .expect("fixture input path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let static_json = read_json(&static_validation);
+    assert_eq!(
+        static_json["schemaVersion"],
+        "artifact-descriptor-validation-report-v0"
+    );
+    assert_eq!(static_json["summary"]["result"], "pass");
+    assert_eq!(static_json["summary"]["actionClassCandidateCount"], 3);
+    assert!(
+        static_json["descriptor"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion == "artifact descriptor does not provide a causal forecast"
+            })
+    );
+
+    let artifact = read_json(&fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(artifact["artifactKind"], "issue");
+    assert!(
+        artifact["actionClassCandidates"]
+            .as_array()
+            .expect("actionClassCandidates is array")
+            .iter()
+            .any(|candidate| candidate["actionClass"] == "tooling-validation")
+    );
+    assert!(
+        artifact["forecastNonConclusions"]
+            .as_array()
+            .expect("forecastNonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion == "descriptor boundary does not assign probability to future outcomes"
+            })
+    );
+
+    let validation = read_json(&fixture_validation);
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "artifact-descriptor-scope-and-measurement-boundary"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let mut invalid = artifact;
+    invalid["forecastNonConclusions"] = serde_json::json!([]);
+    fs::write(
+        &invalid_descriptor,
+        serde_json::to_string_pretty(&invalid).expect("invalid descriptor serializes"),
+    )
+    .expect("invalid descriptor is written");
+    let output = run_sig0_output(&[
+        "artifact-descriptor",
+        "--input",
+        invalid_descriptor
+            .to_str()
+            .expect("invalid descriptor path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "missing forecast non-conclusions should fail validation"
+    );
+    let invalid_report = read_json(&invalid_validation);
+    assert_eq!(invalid_report["summary"]["result"], "fail");
+    assert!(
+        invalid_report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "artifact-descriptor-non-conclusions-preserved"
+                    && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_baseline_suppression_reports_deltas_without_resolving_suppressed_witnesses() {
     let fixture = fixture_root();
     let air = air_fixture_root();

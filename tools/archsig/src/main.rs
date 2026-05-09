@@ -7,7 +7,8 @@ use std::process::ExitCode;
 use archsig::{
     AirDocumentInput, AirDocumentV0, AirValidationReport, ArchitectureDynamicsMetricsReportV0,
     ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
-    ArchitectureFieldSnapshotValidationReportV0, CalibrationReviewRecordV0,
+    ArchitectureFieldSnapshotValidationReportV0, ArtifactDescriptorV0,
+    ArtifactDescriptorValidationReportV0, CalibrationReviewRecordV0,
     ComponentUniverseValidationReport, CustomRulePluginRegistryV0,
     CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
     DetectableValuesReportedAxesCatalogV0, DriftLedgerAggregationWindowV0,
@@ -36,17 +37,18 @@ use archsig::{
     build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_architecture_dynamics_metrics_report,
-    static_architecture_field_snapshot, static_calibration_review_record,
-    static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
-    static_dynamics_measurement_contract, static_hypothesis_refresh_cycle,
-    static_incident_correlation_monitor, static_law_policy_template_registry,
-    static_measurement_unit_registry, static_no_solution_certificate,
-    static_operation_proposal_log, static_organization_policy, static_ownership_boundary_monitor,
-    static_pr_force_report, static_repair_adoption_record, static_repair_rule_registry,
-    static_report_artifact_retention_manifest, static_schema_version_catalog,
-    static_signature_trajectory_report, static_synthesis_constraint_artifact,
-    static_team_threshold_policy, validate_air_document_report,
-    validate_architecture_dynamics_metrics_report, validate_architecture_field_snapshot,
+    static_architecture_field_snapshot, static_artifact_descriptor,
+    static_calibration_review_record, static_custom_rule_plugin_registry,
+    static_detectable_values_reported_axes_catalog, static_dynamics_measurement_contract,
+    static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
+    static_law_policy_template_registry, static_measurement_unit_registry,
+    static_no_solution_certificate, static_operation_proposal_log, static_organization_policy,
+    static_ownership_boundary_monitor, static_pr_force_report, static_repair_adoption_record,
+    static_repair_rule_registry, static_report_artifact_retention_manifest,
+    static_schema_version_catalog, static_signature_trajectory_report,
+    static_synthesis_constraint_artifact, static_team_threshold_policy,
+    validate_air_document_report, validate_architecture_dynamics_metrics_report,
+    validate_architecture_field_snapshot, validate_artifact_descriptor_report,
     validate_component_universe_report, validate_custom_rule_plugin_registry_report,
     validate_dynamics_measurement_contract_report, validate_law_policy_template_registry_report,
     validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
@@ -660,6 +662,21 @@ enum Command {
         fixture: bool,
 
         /// Output proposal log or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate an artifact-descriptor-v0 artifact.
+    ArtifactDescriptor {
+        /// Optional ArtifactDescriptor JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical minimal artifact-descriptor-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output descriptor or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1408,6 +1425,35 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-operation-proposal-log".to_string());
             let validation: OperationProposalLogValidationReportV0 =
                 validate_operation_proposal_log(&log, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::ArtifactDescriptor {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let descriptor: ArtifactDescriptorV0 = static_artifact_descriptor();
+                write_json(out, &descriptor)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let descriptor: ArtifactDescriptorV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_artifact_descriptor);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-artifact-descriptor".to_string());
+            let validation: ArtifactDescriptorValidationReportV0 =
+                validate_artifact_descriptor_report(&descriptor, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
             Ok(if failed {
