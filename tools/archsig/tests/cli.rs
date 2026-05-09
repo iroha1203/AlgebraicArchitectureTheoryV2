@@ -6886,6 +6886,142 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
 }
 
 #[test]
+fn cli_operation_support_estimate_emits_fixture_and_validates_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("operation-support-estimate");
+    let static_validation = out_dir.join("operation-support-estimate-static-validation.json");
+    let fixture_artifact = out_dir.join("operation-support-estimate-fixture.json");
+    let fixture_validation = out_dir.join("operation-support-estimate-validation.json");
+    let invalid_estimate = out_dir.join("operation-support-estimate-invalid.json");
+    let invalid_validation = out_dir.join("operation-support-estimate-invalid-validation.json");
+
+    run_sig0(&[
+        "operation-support-estimate",
+        "--out",
+        static_validation
+            .to_str()
+            .expect("static validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-support-estimate",
+        "--fixture",
+        "--out",
+        fixture_artifact.to_str().expect("fixture path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-support-estimate",
+        "--input",
+        root.join("operation_support_estimate.json")
+            .to_str()
+            .expect("fixture input path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let static_json = read_json(&static_validation);
+    assert_eq!(
+        static_json["schemaVersion"],
+        "operation-support-estimate-validation-report-v0"
+    );
+    assert_eq!(static_json["summary"]["result"], "pass");
+    assert_eq!(static_json["summary"]["candidateOperationFamilyCount"], 2);
+    assert!(
+        static_json["estimate"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion == "operation support estimate is not actual future support"
+            })
+    );
+
+    let artifact = read_json(&fixture_artifact);
+    assert_eq!(artifact["schemaVersion"], "operation-support-estimate-v0");
+    assert_eq!(
+        artifact["descriptorRef"]["descriptorSchemaVersion"],
+        "artifact-descriptor-v0"
+    );
+    assert!(
+        artifact["candidateOperationFamilies"]
+            .as_array()
+            .expect("candidateOperationFamilies is array")
+            .iter()
+            .any(|family| family["operationFamily"] == "schema-and-validator")
+    );
+    assert!(
+        artifact["unknownRemainder"]
+            .as_array()
+            .expect("unknownRemainder is array")
+            .iter()
+            .any(|remainder| {
+                remainder["unknownAxes"]
+                    .as_array()
+                    .expect("unknownAxes is array")
+                    .iter()
+                    .any(|axis| axis == "future accepted PR history")
+            })
+    );
+
+    let validation = read_json(&fixture_validation);
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "operation-support-estimate-unknown-remainder-not-measured-zero"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let mut invalid = artifact;
+    invalid["candidateOperationFamilies"][0]["sourceRefIds"] =
+        serde_json::json!(["source:missing"]);
+    invalid["policyConstraints"][0]["safetyClaimBoundary"] =
+        serde_json::json!("global safety is guaranteed");
+    invalid["unknownRemainder"][0]["treatment"] = serde_json::json!("treated as zero");
+    fs::write(
+        &invalid_estimate,
+        serde_json::to_string_pretty(&invalid).expect("invalid estimate serializes"),
+    )
+    .expect("invalid estimate is written");
+    let output = run_sig0_output(&[
+        "operation-support-estimate",
+        "--input",
+        invalid_estimate
+            .to_str()
+            .expect("invalid estimate path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "dangling source refs, global safety claims, and measured-zero unknowns should fail validation"
+    );
+    let invalid_report = read_json(&invalid_validation);
+    assert_eq!(invalid_report["summary"]["result"], "fail");
+    for expected_check in [
+        "operation-support-estimate-candidate-families-bounded",
+        "operation-support-estimate-policy-constraints-bounded",
+        "operation-support-estimate-unknown-remainder-not-measured-zero",
+    ] {
+        assert!(
+            invalid_report["checks"]
+                .as_array()
+                .expect("checks is array")
+                .iter()
+                .any(|check| check["id"] == expected_check && check["result"] == "fail"),
+            "missing failed check {expected_check}"
+        );
+    }
+}
+
+#[test]
 fn cli_baseline_suppression_reports_deltas_without_resolving_suppressed_witnesses() {
     let fixture = fixture_root();
     let air = air_fixture_root();

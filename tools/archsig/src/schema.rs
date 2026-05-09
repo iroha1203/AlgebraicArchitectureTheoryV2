@@ -83,6 +83,9 @@ pub const HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION: &str = "hypothesis-refresh-cy
 pub const ARTIFACT_DESCRIPTOR_SCHEMA_VERSION: &str = "artifact-descriptor-v0";
 pub const ARTIFACT_DESCRIPTOR_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "artifact-descriptor-validation-report-v0";
+pub const OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION: &str = "operation-support-estimate-v0";
+pub const OPERATION_SUPPORT_ESTIMATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "operation-support-estimate-validation-report-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
@@ -3770,6 +3773,125 @@ pub struct ArtifactDescriptorValidationSummary {
     pub source_ref_count: usize,
     pub action_class_candidate_count: usize,
     pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEstimateV0 {
+    pub schema_version: String,
+    pub estimate_id: String,
+    pub descriptor_ref: OperationSupportDescriptorRefV0,
+    pub candidate_operation_families: Vec<CandidateOperationFamilyV0>,
+    pub policy_constraints: Vec<OperationSupportPolicyConstraintV0>,
+    pub known_forbidden_support: Vec<KnownForbiddenOperationSupportV0>,
+    pub unknown_remainder: Vec<OperationSupportUnknownRemainderV0>,
+    pub evidence_boundary: OperationSupportEvidenceBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportDescriptorRefV0 {
+    pub descriptor_schema_version: String,
+    pub descriptor_id: String,
+    pub artifact_kind: String,
+    pub source_ref_ids: Vec<String>,
+    pub action_class_candidate_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CandidateOperationFamilyV0 {
+    pub family_id: String,
+    pub operation_family: String,
+    pub support_kind: String,
+    pub action_class_candidate_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub confidence: String,
+    pub rationale: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportPolicyConstraintV0 {
+    pub constraint_id: String,
+    pub constraint_kind: String,
+    pub applies_to_family_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub rule: String,
+    pub safety_claim_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KnownForbiddenOperationSupportV0 {
+    pub forbidden_id: String,
+    pub operation_family: String,
+    pub source_ref_ids: Vec<String>,
+    pub constraint_refs: Vec<String>,
+    pub reason: String,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportUnknownRemainderV0 {
+    pub remainder_id: String,
+    pub affected_family_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub unknown_axes: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEvidenceBoundaryV0 {
+    pub boundary_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub measurement_boundary_refs: Vec<String>,
+    pub confidence_boundary: String,
+    pub evidence_kinds: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEstimateValidationReportV0 {
+    pub schema_version: String,
+    pub input: OperationSupportEstimateValidationInput,
+    pub estimate: OperationSupportEstimateV0,
+    pub summary: OperationSupportEstimateValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEstimateValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub estimate_id: String,
+    pub descriptor_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEstimateValidationSummary {
+    pub result: String,
+    pub candidate_operation_family_count: usize,
+    pub policy_constraint_count: usize,
+    pub known_forbidden_support_count: usize,
+    pub unknown_remainder_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

@@ -18,7 +18,8 @@ use archsig::{
     LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
     MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OperationProposalLogV0,
-    OperationProposalLogValidationReportV0, OrganizationPolicyV0,
+    OperationProposalLogValidationReportV0, OperationSupportEstimateV0,
+    OperationSupportEstimateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, OwnershipBoundaryMonitorV0, PolicyDecisionReportV0,
     PrForceReportV0, PrForceReportValidationReportV0, RepairAdoptionRecordV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
@@ -42,7 +43,8 @@ use archsig::{
     static_detectable_values_reported_axes_catalog, static_dynamics_measurement_contract,
     static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
     static_law_policy_template_registry, static_measurement_unit_registry,
-    static_no_solution_certificate, static_operation_proposal_log, static_organization_policy,
+    static_no_solution_certificate, static_operation_proposal_log,
+    static_operation_support_estimate, static_organization_policy,
     static_ownership_boundary_monitor, static_pr_force_report, static_repair_adoption_record,
     static_repair_rule_registry, static_report_artifact_retention_manifest,
     static_schema_version_catalog, static_signature_trajectory_report,
@@ -52,7 +54,8 @@ use archsig::{
     validate_component_universe_report, validate_custom_rule_plugin_registry_report,
     validate_dynamics_measurement_contract_report, validate_law_policy_template_registry_report,
     validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
-    validate_operation_proposal_log, validate_organization_policy_report, validate_pr_force_report,
+    validate_operation_proposal_log, validate_operation_support_estimate,
+    validate_organization_policy_report, validate_pr_force_report,
     validate_repair_rule_registry_report, validate_report_artifact_retention_report,
     validate_signature_trajectory_report, validate_synthesis_constraint_artifact_report,
 };
@@ -677,6 +680,21 @@ enum Command {
         fixture: bool,
 
         /// Output descriptor or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate an operation-support-estimate-v0 artifact.
+    OperationSupportEstimate {
+        /// Optional OperationSupportEstimate JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical minimal operation-support-estimate-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output estimate or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1454,6 +1472,35 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-artifact-descriptor".to_string());
             let validation: ArtifactDescriptorValidationReportV0 =
                 validate_artifact_descriptor_report(&descriptor, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::OperationSupportEstimate {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let estimate: OperationSupportEstimateV0 = static_operation_support_estimate();
+                write_json(out, &estimate)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let estimate: OperationSupportEstimateV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_operation_support_estimate);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-operation-support-estimate".to_string());
+            let validation: OperationSupportEstimateValidationReportV0 =
+                validate_operation_support_estimate(&estimate, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
             Ok(if failed {

@@ -228,6 +228,24 @@ action class candidates、scope、missing evidence、measurement boundary、
 forecast non-conclusions に正規化する。operation support、ForecastCone、probability、
 causal forecast はこの command では生成しない。
 
+B12 OperationSupportEstimate の canonical fixture を出力し、既存 estimate を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- operation-support-estimate \
+  --fixture \
+  --out .lake/signature-current/operation-support-estimate.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- operation-support-estimate \
+  --input tools/archsig/tests/fixtures/minimal/operation_support_estimate.json \
+  --out .lake/signature-current/operation-support-estimate-validation.json
+```
+
+`operation-support-estimate-v0` は `artifact-descriptor-v0` の source refs と
+action class candidate refs を保持したまま、candidate operation families、
+policy constraints、known forbidden support、unknown remainder、confidence /
+evidence boundary を分離する。accepted PR history、actual future support、global
+policy safety、future trajectory safety はこの command では主張しない。
+
 B5 repair / synthesis artifact を検査する。
 
 ```bash
