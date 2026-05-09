@@ -61,11 +61,21 @@ Lean status: `empirical hypothesis` / tooling output.
 | --- | --- | --- |
 | ArtifactDescriptor | `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal の source refs、action class candidates、scope、missing evidence、measurement boundary、forecast non-conclusions を保持する。 |
 | ArtifactDescriptor validation report | `artifact-descriptor-validation-report-v0` | descriptor が theorem claim、ground truth architecture object、causal forecast に昇格していないことを検査する。 |
+| OperationSupportEstimate | `operation-support-estimate-v0` | descriptor refs、candidate operation families、policy constraints、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
+| OperationSupportEstimate validation report | `operation-support-estimate-validation-report-v0` | unknown support と measured zero の混同、global policy safety / future trajectory safety への昇格を検査する。 |
+| ForecastConeSkeleton | `forecast-cone-skeleton-v0` | finite support refs、bounded horizon、path class candidates、forecast boundary、unknown remainder を保持する。 |
+| ForecastConeSkeleton validation report | `forecast-cone-skeleton-validation-report-v0` | probability claim、unmeasured axis の safe 扱い、support / horizon refs 欠落を検査する。 |
+| ConsequenceEnvelope | `consequence-envelope-report-v0` | affected regions、signature axes、axis delta ranges、obstruction candidates、missing / theorem boundary items、review / CI recommendation を保持する。 |
+| ConsequenceEnvelope validation report | `consequence-envelope-report-validation-report-v0` | source refs、measurement boundary、forecast non-conclusions、unknown remainder の欠落を検査する。 |
+| ForecastCalibrationHook | `forecast-calibration-hook-v0` | forecast item refs と observed PR / review / CI / outcome refs、B10 / B11 artifact boundary を対応付ける。 |
+| ForecastCalibrationHook validation report | `forecast-calibration-hook-validation-report-v0` | matched / unmatched / unavailable / private / notComparable を measured zero と混同していないことを検査する。 |
 
 `artifact-descriptor-v0` は B12 SFT forecasting MVP の最初の入力正規化 artifact である。
-この段階では operation support estimate、ForecastCone、ConsequenceEnvelope、
-probability、causal prediction は生成しない。missing evidence、unsupported constructs、
-forecast non-conclusions は後段 artifact に引き継ぐ境界として読む。
+後段では `operation-support-estimate-v0`、`forecast-cone-skeleton-v0`、
+`consequence-envelope-report-v0`、`forecast-calibration-hook-v0` が境界を引き継ぐ。
+これらは probability、causal prediction、global safety、forecast correctness、Lean theorem
+claim を生成しない。missing evidence、unsupported constructs、forecast non-conclusions は
+後段 artifact に引き継ぐ境界として読む。
 
 ## Measurement Boundary
 
