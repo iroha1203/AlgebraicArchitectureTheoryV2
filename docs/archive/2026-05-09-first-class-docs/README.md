@@ -17,4 +17,8 @@
 `math_README.md` は、第一級文書への薄い索引だけになっていた `docs/math/README.md` を
 退避したものである。
 
-この archive 内の facade と薄い索引は、旧リンクの歴史的記録であり、現行入口としては使わない。
+`prd_README.md` と PRD 本文は、tooling 構想の履歴として残す。
+現行の要求・設計は、必要に応じて `docs/design/`, `docs/tooling/`, `docs/empirical/`,
+または GitHub Issues へ分解して管理する。
+
+この archive 内の facade、薄い索引、旧 PRD は、旧リンクの歴史的記録であり、現行入口としては使わない。
