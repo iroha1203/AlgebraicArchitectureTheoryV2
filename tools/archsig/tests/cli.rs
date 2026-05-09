@@ -6771,6 +6771,8 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
     let static_validation = out_dir.join("artifact-descriptor-static-validation.json");
     let fixture_artifact = out_dir.join("artifact-descriptor-fixture.json");
     let fixture_validation = out_dir.join("artifact-descriptor-validation.json");
+    let generated_descriptor = out_dir.join("artifact-descriptor-generated.json");
+    let generated_validation = out_dir.join("artifact-descriptor-generated-validation.json");
     let invalid_descriptor = out_dir.join("artifact-descriptor-invalid.json");
     let invalid_validation = out_dir.join("artifact-descriptor-invalid-validation.json");
 
@@ -6797,6 +6799,30 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
         fixture_validation
             .to_str()
             .expect("fixture validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--from-markdown",
+        root.join("artifact_descriptor_prd.md")
+            .to_str()
+            .expect("markdown fixture path is utf-8"),
+        "--artifact-kind",
+        "prd",
+        "--out",
+        generated_descriptor
+            .to_str()
+            .expect("generated descriptor path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--input",
+        generated_descriptor
+            .to_str()
+            .expect("generated descriptor path is utf-8"),
+        "--out",
+        generated_validation
+            .to_str()
+            .expect("generated validation path is utf-8"),
     ]);
 
     let static_json = read_json(&static_validation);
@@ -6846,6 +6872,56 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
             .any(|check| {
                 check["id"] == "artifact-descriptor-scope-and-measurement-boundary"
                     && check["result"] == "pass"
+            })
+    );
+
+    let generated = read_json(&generated_descriptor);
+    assert_eq!(generated["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(generated["artifactKind"], "prd");
+    assert_eq!(
+        generated["artifactTitle"],
+        "Coupon Forecast Descriptor Builder"
+    );
+    assert!(
+        generated["sourceRefs"]
+            .as_array()
+            .expect("sourceRefs is array")
+            .iter()
+            .any(|source| {
+                source["sourceKind"] == "markdown"
+                    && source["retainedFields"]
+                        .as_array()
+                        .expect("retainedFields is array")
+                        .iter()
+                        .any(|field| field == "body")
+            })
+    );
+    assert!(
+        generated["actionClassCandidates"]
+            .as_array()
+            .expect("actionClassCandidates is array")
+            .iter()
+            .any(|candidate| candidate["actionClass"] == "cli-entrypoint")
+    );
+    assert!(
+        generated["missingEvidence"]
+            .as_array()
+            .expect("missingEvidence is array")
+            .iter()
+            .any(|evidence| {
+                evidence["evidenceId"] == "missing:runtime-evidence"
+                    && evidence["status"] == "unmeasured"
+            })
+    );
+    let generated_report = read_json(&generated_validation);
+    assert_eq!(generated_report["summary"]["result"], "pass");
+    assert!(
+        generated_report["descriptor"]["forecastNonConclusions"]
+            .as_array()
+            .expect("forecastNonConclusions is array")
+            .iter()
+            .any(|conclusion| {
+                conclusion == "descriptor evidence does not establish causal prediction"
             })
     );
 

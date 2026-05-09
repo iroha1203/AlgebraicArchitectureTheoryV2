@@ -55,7 +55,10 @@ pub use architecture_field::{
     static_architecture_field_snapshot, static_operation_proposal_log,
     validate_architecture_field_snapshot, validate_operation_proposal_log,
 };
-pub use artifact_descriptor::{static_artifact_descriptor, validate_artifact_descriptor_report};
+pub use artifact_descriptor::{
+    build_artifact_descriptor_from_markdown, static_artifact_descriptor,
+    validate_artifact_descriptor_report,
+};
 pub use artifact_retention::{
     static_report_artifact_retention_manifest, validate_report_artifact_retention_report,
 };

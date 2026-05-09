@@ -228,6 +228,19 @@ action class candidates、scope、missing evidence、measurement boundary、
 forecast non-conclusions に正規化する。operation support、ForecastCone、probability、
 causal forecast はこの command では生成しない。
 
+Markdown PRD / Spec を実入力として descriptor を生成する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- artifact-descriptor \
+  --from-markdown docs/prd/coupon.md \
+  --artifact-kind prd \
+  --out .lake/signature-current/artifact-descriptor.json
+```
+
+`--from-markdown` は Markdown の title、scope 系 heading、inline file refs、
+request body から source refs、scope、action class candidates、missing evidence を
+組み立てる。生成 descriptor は通常の `artifact-descriptor --input` validator に渡せる。
+
 B12 OperationSupportEstimate の canonical fixture を出力し、既存 estimate を検査する。
 
 ```bash

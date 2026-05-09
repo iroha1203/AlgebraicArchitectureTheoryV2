@@ -32,13 +32,13 @@ use archsig::{
     SignatureTrajectoryReportV0, SignatureTrajectoryReportValidationReportV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence,
-    build_air_document, build_baseline_suppression_report, build_empirical_dataset,
-    build_feature_extension_dataset_from_files, build_feature_extension_report,
-    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
-    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
-    build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
-    build_signature_diff_report, build_signature_snapshot_record,
-    build_theorem_precondition_check_report, extract_python_sig0,
+    build_air_document, build_artifact_descriptor_from_markdown, build_baseline_suppression_report,
+    build_empirical_dataset, build_feature_extension_dataset_from_files,
+    build_feature_extension_report, build_outcome_linkage_dataset_from_files,
+    build_policy_decision_report, build_pr_history_dataset_from_github_files,
+    build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
+    build_schema_compatibility_check_report, build_signature_diff_report,
+    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_architecture_dynamics_metrics_report,
     static_architecture_field_snapshot, static_artifact_descriptor,
@@ -680,6 +680,14 @@ enum Command {
         /// Optional ArtifactDescriptor JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
+
+        /// Markdown PRD / Spec / proposal path to normalize into artifact-descriptor-v0.
+        #[arg(long = "from-markdown")]
+        from_markdown: Option<PathBuf>,
+
+        /// Artifact kind for --from-markdown output.
+        #[arg(long = "artifact-kind", default_value = "prd", value_parser = ["prd", "spec", "issue", "ai-proposal"])]
+        artifact_kind: String,
 
         /// Emit the canonical minimal artifact-descriptor-v0 fixture.
         #[arg(long)]
@@ -1504,11 +1512,23 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }
         Some(Command::ArtifactDescriptor {
             input,
+            from_markdown,
+            artifact_kind,
             fixture,
             out,
         }) => {
             if fixture {
                 let descriptor: ArtifactDescriptorV0 = static_artifact_descriptor();
+                write_json(out, &descriptor)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            if let Some(markdown_path) = from_markdown {
+                let contents = std::fs::read_to_string(&markdown_path)?;
+                let descriptor: ArtifactDescriptorV0 = build_artifact_descriptor_from_markdown(
+                    &markdown_path.display().to_string(),
+                    &contents,
+                    &artifact_kind,
+                );
                 write_json(out, &descriptor)?;
                 return Ok(ExitCode::SUCCESS);
             }
