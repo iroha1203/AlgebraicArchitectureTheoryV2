@@ -20,8 +20,8 @@ use crate::{
     ForecastConeSkeletonValidationInput, ForecastConeSkeletonValidationReportV0,
     ForecastConeSkeletonValidationSummary, ForecastFiniteSupportRefV0,
     ForecastOperationSupportRefV0, ForecastPathClassCandidateV0, ForecastUnknownRemainderV0,
-    OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION, SelectedObstructionWitnessCandidateV0,
-    ValidationCheck,
+    OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION, OperationSupportEstimateV0,
+    OperationSupportUnknownRemainderV0, SelectedObstructionWitnessCandidateV0, ValidationCheck,
 };
 
 const FORECAST_NON_CONCLUSIONS: [&str; 5] = [
@@ -228,6 +228,129 @@ pub fn validate_forecast_cone_skeleton(
         cone: cone.clone(),
         summary,
         checks,
+    }
+}
+
+pub fn build_forecast_cone_skeleton_from_operation_support(
+    estimate: &OperationSupportEstimateV0,
+    max_steps: u32,
+    time_window: &str,
+) -> ForecastConeSkeletonV0 {
+    let source_ref_ids = forecast_source_refs_from_estimate(estimate);
+    let family_ids = estimate
+        .candidate_operation_families
+        .iter()
+        .map(|family| family.family_id.clone())
+        .collect::<Vec<_>>();
+    let horizon_id = format!("horizon:{}:bounded", id_suffix(&estimate.estimate_id));
+    let finite_support_refs = estimate
+        .candidate_operation_families
+        .iter()
+        .map(|family| {
+            let family_source_refs = retained_source_refs(&family.source_ref_ids, &source_ref_ids);
+            ForecastFiniteSupportRefV0 {
+                support_ref_id: support_ref_id_for_family(&family.family_id),
+                support_kind: format!("finite-{}", id_suffix(&family.operation_family)),
+                operation_family_ids: vec![family.family_id.clone()],
+                source_ref_ids: family_source_refs,
+                boundary: format!(
+                    "finite support is scoped to operation family {} under selected operation support refs",
+                    family.family_id
+                ),
+                assumptions: vec![
+                    "support is finite under selected operation support estimate refs".to_string(),
+                    "support refs do not imply operation support completeness".to_string(),
+                ],
+                non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+            }
+        })
+        .collect::<Vec<_>>();
+    let support_ref_ids = finite_support_refs
+        .iter()
+        .map(|support| support.support_ref_id.clone())
+        .collect::<Vec<_>>();
+    let path_class_candidates = estimate
+        .candidate_operation_families
+        .iter()
+        .map(|family| {
+            let family_source_refs = retained_source_refs(&family.source_ref_ids, &source_ref_ids);
+            ForecastPathClassCandidateV0 {
+                path_class_id: path_class_id_for_family(&family.family_id),
+                path_class: format!("{}-bounded-path", id_suffix(&family.operation_family)),
+                support_ref_ids: vec![support_ref_id_for_family(&family.family_id)],
+                operation_family_ids: vec![family.family_id.clone()],
+                horizon_ref_id: horizon_id.clone(),
+                source_ref_ids: family_source_refs,
+                affected_axes: affected_axes_for_family(&family.operation_family),
+                rationale: format!(
+                    "Derived from operation support family {} without assigning probability.",
+                    family.family_id
+                ),
+                probability_boundary: "no probability is assigned by the forecast cone skeleton"
+                    .to_string(),
+                non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+            }
+        })
+        .collect::<Vec<_>>();
+    let path_ids = path_class_candidates
+        .iter()
+        .map(|path| path.path_class_id.clone())
+        .collect::<Vec<_>>();
+    let unknown_remainder = forecast_unknown_remainder_from_estimate(
+        &estimate.unknown_remainder,
+        &source_ref_ids,
+        &path_ids,
+    );
+
+    ForecastConeSkeletonV0 {
+        schema_version: FORECAST_CONE_SKELETON_SCHEMA_VERSION.to_string(),
+        cone_id: format!("cone:{}", estimate.estimate_id),
+        operation_support_ref: ForecastOperationSupportRefV0 {
+            estimate_schema_version: OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION.to_string(),
+            estimate_id: estimate.estimate_id.clone(),
+            descriptor_id: estimate.descriptor_ref.descriptor_id.clone(),
+            candidate_operation_family_ids: family_ids,
+            source_ref_ids: source_ref_ids.clone(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        },
+        finite_support_refs,
+        bounded_horizon: ForecastBoundedHorizonV0 {
+            horizon_id: horizon_id.clone(),
+            horizon_kind: "bounded-step".to_string(),
+            max_steps,
+            time_window: time_window.to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            boundary:
+                "horizon bounds path class generation and does not make a calendar prediction"
+                    .to_string(),
+            assumptions: vec![
+                "horizon counts forecast construction steps, not causal event probability"
+                    .to_string(),
+                "downstream consequence envelope and calibration remain separate artifacts"
+                    .to_string(),
+            ],
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        },
+        path_class_candidates,
+        forecast_boundary: ForecastBoundaryV0 {
+            boundary_id: format!("boundary:{}:forecast-cone-skeleton", estimate.estimate_id),
+            source_ref_ids: source_ref_ids.clone(),
+            measurement_boundary_refs: unique_strings(
+                std::iter::once(estimate.evidence_boundary.boundary_id.clone())
+                    .chain(estimate.evidence_boundary.measurement_boundary_refs.clone())
+                    .collect(),
+            ),
+            support_ref_ids,
+            horizon_ref_ids: vec![horizon_id],
+            unsupported_constructs: forecast_unsupported_constructs(estimate),
+            assumptions: vec![
+                "path classes are candidates under selected finite operation support".to_string(),
+                "unmeasured axes remain explicit unknown remainder".to_string(),
+            ],
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        },
+        unknown_remainder,
+        non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
     }
 }
 
@@ -563,6 +686,124 @@ pub fn validate_forecast_calibration_hook(
         summary,
         checks,
     }
+}
+
+fn forecast_source_refs_from_estimate(estimate: &OperationSupportEstimateV0) -> Vec<String> {
+    let mut refs = Vec::new();
+    refs.extend(estimate.descriptor_ref.source_ref_ids.clone());
+    refs.extend(estimate.evidence_boundary.source_ref_ids.clone());
+    for family in &estimate.candidate_operation_families {
+        refs.extend(family.source_ref_ids.clone());
+    }
+    for constraint in &estimate.policy_constraints {
+        refs.extend(constraint.source_ref_ids.clone());
+    }
+    for forbidden in &estimate.known_forbidden_support {
+        refs.extend(forbidden.source_ref_ids.clone());
+    }
+    for remainder in &estimate.unknown_remainder {
+        refs.extend(remainder.source_ref_ids.clone());
+    }
+    unique_strings(refs)
+}
+
+fn retained_source_refs(candidate_refs: &[String], all_source_refs: &[String]) -> Vec<String> {
+    let all = all_source_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let retained = candidate_refs
+        .iter()
+        .filter(|source| all.contains(source.as_str()))
+        .cloned()
+        .collect::<Vec<_>>();
+    if retained.is_empty() {
+        all_source_refs.to_vec()
+    } else {
+        unique_strings(retained)
+    }
+}
+
+fn support_ref_id_for_family(family_id: &str) -> String {
+    format!("support:{}", id_suffix(family_id))
+}
+
+fn path_class_id_for_family(family_id: &str) -> String {
+    format!("path:{}", id_suffix(family_id))
+}
+
+fn affected_axes_for_family(operation_family: &str) -> Vec<String> {
+    let family = operation_family.to_ascii_lowercase();
+    if family.contains("schema") || family.contains("validator") {
+        strings(&["schemaCompleteness", "boundaryRetention"])
+    } else if family.contains("cli") || family.contains("fixture") {
+        strings(&["validatorCoverage", "unknownRemainder"])
+    } else if family.contains("policy") || family.contains("constraint") {
+        strings(&["policyBoundary", "boundaryRetention"])
+    } else {
+        strings(&["boundaryRetention", "unknownRemainder"])
+    }
+}
+
+fn forecast_unknown_remainder_from_estimate(
+    remainders: &[OperationSupportUnknownRemainderV0],
+    source_ref_ids: &[String],
+    path_ids: &[String],
+) -> Vec<ForecastUnknownRemainderV0> {
+    remainders
+        .iter()
+        .map(|remainder| {
+            let affected_path_class_ids =
+                path_ids_for_unknown_remainder(&remainder.affected_family_ids, path_ids);
+            ForecastUnknownRemainderV0 {
+                remainder_id: format!("forecast:{}", remainder.remainder_id),
+                affected_path_class_ids,
+                source_ref_ids: retained_source_refs(&remainder.source_ref_ids, source_ref_ids),
+                unknown_axes: remainder.unknown_axes.clone(),
+                reason: format!(
+                    "{}; propagated from operation support unknown remainder",
+                    remainder.reason
+                ),
+                treatment:
+                    "retain as unknown forecast remainder under the selected bounded horizon"
+                        .to_string(),
+                non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn path_ids_for_unknown_remainder(
+    affected_family_ids: &[String],
+    path_ids: &[String],
+) -> Vec<String> {
+    let affected = affected_family_ids
+        .iter()
+        .map(|family_id| path_class_id_for_family(family_id))
+        .filter(|path_id| path_ids.iter().any(|known| known == path_id))
+        .collect::<Vec<_>>();
+    if affected.is_empty() {
+        path_ids.to_vec()
+    } else {
+        unique_strings(affected)
+    }
+}
+
+fn forecast_unsupported_constructs(estimate: &OperationSupportEstimateV0) -> Vec<String> {
+    let mut constructs = vec![
+        "probability assignment".to_string(),
+        "global risk reduction proof".to_string(),
+        "trajectory-level safety proof".to_string(),
+        "empirical prediction theorem".to_string(),
+    ];
+    constructs.extend(estimate.evidence_boundary.unsupported_constructs.clone());
+    constructs.extend(
+        estimate
+            .known_forbidden_support
+            .iter()
+            .map(|forbidden| forbidden.operation_family.clone()),
+    );
+    unique_strings(constructs)
 }
 
 fn finite_support_ref(
@@ -1307,4 +1548,39 @@ fn treats_unknown_as_zero(value: &str) -> bool {
 
 fn strings(values: &[&str]) -> Vec<String> {
     values.iter().map(|value| (*value).to_string()).collect()
+}
+
+fn unique_strings(values: Vec<String>) -> Vec<String> {
+    let mut seen = BTreeSet::new();
+    let mut unique = Vec::new();
+    for value in values {
+        if seen.insert(value.clone()) {
+            unique.push(value);
+        }
+    }
+    unique
+}
+
+fn id_suffix(value: &str) -> String {
+    let suffix = value
+        .rsplit_once(':')
+        .map(|(_, suffix)| suffix)
+        .unwrap_or(value);
+    let mut slug = String::new();
+    let mut last_was_dash = false;
+    for ch in suffix.chars() {
+        if ch.is_ascii_alphanumeric() {
+            slug.push(ch.to_ascii_lowercase());
+            last_was_dash = false;
+        } else if !last_was_dash {
+            slug.push('-');
+            last_was_dash = true;
+        }
+    }
+    let slug = slug.trim_matches('-').to_string();
+    if slug.is_empty() {
+        "unknown".to_string()
+    } else {
+        slug
+    }
 }

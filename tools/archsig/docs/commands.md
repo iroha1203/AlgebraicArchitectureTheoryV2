@@ -278,7 +278,25 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-cone-skeleton \
 cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-cone-skeleton \
   --input tools/archsig/tests/fixtures/minimal/forecast_cone_skeleton.json \
   --out .lake/signature-current/forecast-cone-skeleton-validation.json
+```
 
+生成済み `operation-support-estimate-v0` から bounded horizon 付きの
+`forecast-cone-skeleton-v0` を作る。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-cone-skeleton \
+  --operation-support .lake/signature-current/operation-support-estimate.json \
+  --horizon-steps 4 \
+  --horizon-window "selected bounded forecast horizon" \
+  --out .lake/signature-current/forecast-cone-skeleton.json
+```
+
+`forecast-cone-skeleton` の generator は operation support refs、finite support refs、
+bounded horizon、path class candidates、forecast boundary、unknown remainder を保持する。
+probability、global risk reduction、trajectory-level safety、empirical prediction theorem は
+non-conclusions として残す。
+
+```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- consequence-envelope \
   --fixture \
   --out .lake/signature-current/consequence-envelope-report.json

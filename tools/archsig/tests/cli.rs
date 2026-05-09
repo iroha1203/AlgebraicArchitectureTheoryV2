@@ -7191,6 +7191,10 @@ fn cli_forecast_cone_skeleton_emits_fixture_and_validates_boundaries() {
     let static_validation = out_dir.join("forecast-cone-static-validation.json");
     let fixture_artifact = out_dir.join("forecast-cone-fixture.json");
     let fixture_validation = out_dir.join("forecast-cone-validation.json");
+    let generated_descriptor = out_dir.join("artifact-descriptor-generated.json");
+    let generated_estimate = out_dir.join("operation-support-estimate-generated.json");
+    let generated_cone = out_dir.join("forecast-cone-generated.json");
+    let generated_validation = out_dir.join("forecast-cone-generated-validation.json");
     let invalid_cone = out_dir.join("forecast-cone-invalid.json");
     let invalid_validation = out_dir.join("forecast-cone-invalid-validation.json");
 
@@ -7217,6 +7221,56 @@ fn cli_forecast_cone_skeleton_emits_fixture_and_validates_boundaries() {
         fixture_validation
             .to_str()
             .expect("fixture validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--from-markdown",
+        root.join("artifact_descriptor_prd.md")
+            .to_str()
+            .expect("markdown fixture path is utf-8"),
+        "--artifact-kind",
+        "prd",
+        "--out",
+        generated_descriptor
+            .to_str()
+            .expect("generated descriptor path is utf-8"),
+    ]);
+    run_sig0(&[
+        "operation-support-estimate",
+        "--descriptor",
+        generated_descriptor
+            .to_str()
+            .expect("generated descriptor path is utf-8"),
+        "--out",
+        generated_estimate
+            .to_str()
+            .expect("generated estimate path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-cone-skeleton",
+        "--operation-support",
+        generated_estimate
+            .to_str()
+            .expect("generated estimate path is utf-8"),
+        "--horizon-steps",
+        "4",
+        "--horizon-window",
+        "Coupon PRD bounded forecast horizon",
+        "--out",
+        generated_cone
+            .to_str()
+            .expect("generated cone path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-cone-skeleton",
+        "--input",
+        generated_cone
+            .to_str()
+            .expect("generated cone path is utf-8"),
+        "--out",
+        generated_validation
+            .to_str()
+            .expect("generated validation path is utf-8"),
     ]);
 
     let static_json = read_json(&static_validation);
@@ -7261,8 +7315,61 @@ fn cli_forecast_cone_skeleton_emits_fixture_and_validates_boundaries() {
             })
     );
 
+    let generated = read_json(&generated_cone);
+    assert_eq!(generated["schemaVersion"], "forecast-cone-skeleton-v0");
+    assert_eq!(
+        generated["operationSupportRef"]["estimateSchemaVersion"],
+        "operation-support-estimate-v0"
+    );
+    assert_eq!(generated["boundedHorizon"]["maxSteps"], 4);
+    assert!(
+        generated["operationSupportRef"]["sourceRefIds"]
+            .as_array()
+            .expect("sourceRefIds is array")
+            .iter()
+            .any(|source_ref| source_ref == "source:markdown:coupon-forecast-descriptor-builder")
+    );
+    assert!(
+        generated["finiteSupportRefs"]
+            .as_array()
+            .expect("finiteSupportRefs is array")
+            .iter()
+            .any(|support| support["operationFamilyIds"].as_array().is_some())
+    );
+    assert!(
+        generated["forecastBoundary"]["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs is array")
+            .iter()
+            .any(|construct| construct == "probability assignment")
+    );
+    assert!(
+        generated["unknownRemainder"]
+            .as_array()
+            .expect("unknownRemainder is array")
+            .iter()
+            .any(|remainder| {
+                remainder["treatment"]
+                    .as_str()
+                    .expect("unknown treatment is a string")
+                    .contains("unknown forecast remainder")
+            })
+    );
+    let generated_report = read_json(&generated_validation);
+    assert_eq!(generated_report["summary"]["result"], "pass");
+    assert!(
+        generated_report["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "forecast-cone-boundary-retained" && check["result"] == "pass"
+            })
+    );
+
     let mut invalid = artifact;
     invalid["boundedHorizon"]["maxSteps"] = serde_json::json!(0);
+    invalid["pathClassCandidates"][0]["supportRefIds"] = serde_json::json!(["support:missing"]);
     invalid["pathClassCandidates"][0]["probabilityBoundary"] = serde_json::json!("probability 0.8");
     invalid["unknownRemainder"][0]["treatment"] = serde_json::json!("treated as zero");
     fs::write(

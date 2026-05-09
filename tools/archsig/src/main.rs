@@ -34,12 +34,12 @@ use archsig::{
     TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence,
     build_air_document, build_artifact_descriptor_from_markdown, build_baseline_suppression_report,
     build_empirical_dataset, build_feature_extension_dataset_from_files,
-    build_feature_extension_report, build_operation_support_estimate_from_descriptor,
-    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
-    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
-    build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
-    build_signature_diff_report, build_signature_snapshot_record,
-    build_theorem_precondition_check_report, extract_python_sig0,
+    build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
+    build_operation_support_estimate_from_descriptor, build_outcome_linkage_dataset_from_files,
+    build_policy_decision_report, build_pr_history_dataset_from_github_files,
+    build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
+    build_schema_compatibility_check_report, build_signature_diff_report,
+    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_architecture_dynamics_metrics_report,
     static_architecture_field_snapshot, static_artifact_descriptor,
@@ -723,6 +723,21 @@ enum Command {
         /// Optional ForecastCone skeleton JSON path to validate.
         #[arg(long)]
         input: Option<PathBuf>,
+
+        /// OperationSupportEstimate JSON path to generate forecast-cone-skeleton-v0 from.
+        #[arg(long = "operation-support")]
+        operation_support: Option<PathBuf>,
+
+        /// Bounded horizon step count for --operation-support generation.
+        #[arg(long = "horizon-steps", default_value_t = 3)]
+        horizon_steps: u32,
+
+        /// Human-readable horizon boundary for --operation-support generation.
+        #[arg(
+            long = "horizon-window",
+            default_value = "selected bounded forecast horizon"
+        )]
+        horizon_window: String,
 
         /// Emit the canonical minimal forecast-cone-skeleton-v0 fixture.
         #[arg(long)]
@@ -1595,11 +1610,25 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }
         Some(Command::ForecastConeSkeleton {
             input,
+            operation_support,
+            horizon_steps,
+            horizon_window,
             fixture,
             out,
         }) => {
             if fixture {
                 let cone: ForecastConeSkeletonV0 = static_forecast_cone_skeleton();
+                write_json(out, &cone)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            if let Some(operation_support_path) = operation_support {
+                let estimate: OperationSupportEstimateV0 = read_json(&operation_support_path)?;
+                let cone: ForecastConeSkeletonV0 =
+                    build_forecast_cone_skeleton_from_operation_support(
+                        &estimate,
+                        horizon_steps,
+                        &horizon_window,
+                    );
                 write_json(out, &cone)?;
                 return Ok(ExitCode::SUCCESS);
             }
