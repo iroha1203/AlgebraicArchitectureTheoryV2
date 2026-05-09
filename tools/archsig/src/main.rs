@@ -768,6 +768,32 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Build the end-to-end SFT forecast pipeline from a PRD / Spec / Issue artifact.
+    SftForecast {
+        /// Markdown PRD / Spec / Issue / AI proposal artifact path.
+        #[arg(long)]
+        artifact: PathBuf,
+
+        /// Artifact kind for the generated artifact-descriptor-v0.
+        #[arg(long = "artifact-kind", default_value = "prd", value_parser = ["prd", "spec", "issue", "ai-proposal"])]
+        artifact_kind: String,
+
+        /// Bounded horizon step count for forecast-cone-skeleton-v0 generation.
+        #[arg(long = "horizon-steps", default_value_t = 3)]
+        horizon_steps: u32,
+
+        /// Human-readable horizon boundary for forecast-cone-skeleton-v0 generation.
+        #[arg(
+            long = "horizon-window",
+            default_value = "selected bounded forecast horizon"
+        )]
+        horizon_window: String,
+
+        /// Output directory for intermediate artifacts, validation reports, and final envelope.
+        #[arg(long = "out-dir")]
+        out_dir: PathBuf,
+    },
+
     /// Emit or validate a forecast-calibration-hook-v0 artifact.
     ForecastCalibrationHook {
         /// Optional ForecastCalibrationHook JSON path to validate.
@@ -1687,6 +1713,78 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 validate_consequence_envelope_report(&envelope, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::SftForecast {
+            artifact,
+            artifact_kind,
+            horizon_steps,
+            horizon_window,
+            out_dir,
+        }) => {
+            std::fs::create_dir_all(&out_dir)?;
+
+            let contents = std::fs::read_to_string(&artifact)?;
+            let artifact_path = artifact.display().to_string();
+            let descriptor: ArtifactDescriptorV0 =
+                build_artifact_descriptor_from_markdown(&artifact_path, &contents, &artifact_kind);
+            let descriptor_path = out_dir.join("artifact-descriptor.json");
+            let descriptor_validation_path = out_dir.join("artifact-descriptor-validation.json");
+            let descriptor_validation: ArtifactDescriptorValidationReportV0 =
+                validate_artifact_descriptor_report(
+                    &descriptor,
+                    &descriptor_path.display().to_string(),
+                );
+
+            let estimate: OperationSupportEstimateV0 =
+                build_operation_support_estimate_from_descriptor(&descriptor);
+            let estimate_path = out_dir.join("operation-support-estimate.json");
+            let estimate_validation_path =
+                out_dir.join("operation-support-estimate-validation.json");
+            let estimate_validation: OperationSupportEstimateValidationReportV0 =
+                validate_operation_support_estimate(
+                    &estimate,
+                    &estimate_path.display().to_string(),
+                );
+
+            let cone: ForecastConeSkeletonV0 = build_forecast_cone_skeleton_from_operation_support(
+                &estimate,
+                horizon_steps,
+                &horizon_window,
+            );
+            let cone_path = out_dir.join("forecast-cone-skeleton.json");
+            let cone_validation_path = out_dir.join("forecast-cone-skeleton-validation.json");
+            let cone_validation: ForecastConeSkeletonValidationReportV0 =
+                validate_forecast_cone_skeleton(&cone, &cone_path.display().to_string());
+
+            let envelope: ConsequenceEnvelopeReportV0 =
+                build_consequence_envelope_from_forecast_cone(&cone);
+            let envelope_path = out_dir.join("consequence-envelope-report.json");
+            let envelope_validation_path = out_dir.join("consequence-envelope-validation.json");
+            let envelope_validation: ConsequenceEnvelopeValidationReportV0 =
+                validate_consequence_envelope_report(
+                    &envelope,
+                    &envelope_path.display().to_string(),
+                );
+
+            let failed = descriptor_validation.summary.result == "fail"
+                || estimate_validation.summary.result == "fail"
+                || cone_validation.summary.result == "fail"
+                || envelope_validation.summary.result == "fail";
+
+            write_json(Some(descriptor_path), &descriptor)?;
+            write_json(Some(descriptor_validation_path), &descriptor_validation)?;
+            write_json(Some(estimate_path), &estimate)?;
+            write_json(Some(estimate_validation_path), &estimate_validation)?;
+            write_json(Some(cone_path), &cone)?;
+            write_json(Some(cone_validation_path), &cone_validation)?;
+            write_json(Some(envelope_path), &envelope)?;
+            write_json(Some(envelope_validation_path), &envelope_validation)?;
+
             Ok(if failed {
                 ExitCode::from(1)
             } else {

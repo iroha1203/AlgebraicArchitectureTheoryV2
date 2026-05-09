@@ -333,6 +333,34 @@ items、review / CI / issue recommendation を保持する。`forecast-calibrati
 boundary を対応付ける。これらは probability、global risk reduction、trajectory-level
 safety、forecast correctness、causal proof、Lean theorem claim を主張しない。
 
+Markdown PRD / Spec / Issue / AI proposal から B13 pipeline を end-to-end で実行し、
+中間 artifact と validation report、final `ConsequenceEnvelope` を出力する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- sft-forecast \
+  --artifact docs/prd/coupon.md \
+  --artifact-kind prd \
+  --horizon-steps 4 \
+  --horizon-window "Coupon PRD bounded forecast horizon" \
+  --out-dir .lake/signature-current/sft-forecast
+```
+
+`sft-forecast` は次のファイルを `--out-dir` に書く。
+
+- `artifact-descriptor.json`
+- `artifact-descriptor-validation.json`
+- `operation-support-estimate.json`
+- `operation-support-estimate-validation.json`
+- `forecast-cone-skeleton.json`
+- `forecast-cone-skeleton-validation.json`
+- `consequence-envelope-report.json`
+- `consequence-envelope-validation.json`
+
+この command の成功は、source refs、measurement boundary、forecast boundary、
+unknown remainder、non-conclusions が B13 pipeline 内で保持されたことを検査する。
+probability、causal prediction、global safety、Lean theorem claim、extractor
+completeness、forecast correctness は結論しない。
+
 B5 repair / synthesis artifact を検査する。
 
 ```bash
