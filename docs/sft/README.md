@@ -24,8 +24,6 @@ SFT はソフトウェア進化を計算可能にする。
 
 1. [Software Field Theory](software_field_theory.md)
 2. [AAT / SFT Interface](aat_interface.md)
-3. [Architecture Signature Dynamics 互換入口](../design/architecture_signature_dynamics.md)
-4. [Architecture Dynamics tooling 設計](../design/architecture_dynamics_tooling_design.md)
 
 ## SFT の中心対象
 
@@ -58,7 +56,7 @@ EndOfLifeDecision
 ## SFT の問い
 
 ```text
-この PRD はどの consequence envelope を作るか。
+この PRD はどの ConsequenceEnvelope を作るか。
 どの architecture region と signature axis が影響を受けるか。
 どの operation family が自然・可能・危険・低コストに見えるか。
 どの missing invariant / boundary が forecast boundary に残るか。
@@ -87,5 +85,5 @@ SFT は AAT の architecture object、operation、invariant、obstruction witnes
 signature、theorem boundary / non-conclusions を観測量・制約・制御入力として使う。
 
 Lean theorem claim として読める範囲は [AAT](../aat/README.md) 側に置く。
-SFT の forecast、consequence envelope、proposal accounting、organization field、AI governance は、
+SFT の forecast、ConsequenceEnvelope、proposal accounting、organization field、AI governance は、
 明示された computable core と claim boundary の下で tooling / empirical / governance model として扱う。

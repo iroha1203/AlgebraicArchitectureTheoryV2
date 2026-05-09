@@ -534,7 +534,7 @@ Canonical fixture / CLI validation:
 
 関連 schema / docs:
 
-- [AAT v2 tooling design](../aat_v2_tooling_design.md#phase-b8-extractor--policy-ecosystem)
+- [Tooling roadmap: Phase B8](../tooling/roadmap.md#phase-b8-extractor--policy-ecosystem)
 - [ArchSig v0 design](archsig_design.md)
 - [Adapter registry v0 schema](adapter_registry_schema.md)
 - [boundary / abstraction policy v0 schema](boundary_abstraction_policy_schema.md#python-module-id-policy)
