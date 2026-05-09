@@ -54,7 +54,7 @@ Review / CI controls transitions.
 | SFT | field model、ArtifactMediatedChange、ForecastCone、ConsequenceEnvelope、governance intervention、FieldUpdate | [ソフトウェアの場の理論](sft/software_field_theory.md) |
 | Lean 形式化 | 実装済み API、証明済み定理、defined only な構造、future proof obligation | [証明義務と実証仮説](aat/proof_obligations.md), [Lean 定義・定理索引](aat/lean_theorem_index.md) |
 | Tooling / ArchSig | AIR、extractor、Signature artifact、Feature Extension Report、claim boundary、workflow | [AAT Tooling Documentation](tool/README.md) |
-| Empirical | Signature / report と review cost、incident scope、変更波及、AI shortcut との関係 | `docs/empirical/` |
+| Empirical hypothesis | Signature / report と review cost、incident scope、変更波及、AI shortcut との関係 | [証明義務と実証仮説](aat/proof_obligations.md), GitHub Issues |
 
 ## 研究が答えたい問い
 
@@ -118,4 +118,4 @@ organization field や AI agent policy の効果は、実証研究または tool
 3. [ソフトウェアの場の理論](sft/software_field_theory.md)
 4. [証明義務と実証仮説](aat/proof_obligations.md)
 5. [Lean 定義・定理索引](aat/lean_theorem_index.md)
-6. 必要に応じて [AAT Tooling Documentation](tool/README.md), `docs/empirical/`
+6. 必要に応じて [AAT Tooling Documentation](tool/README.md)

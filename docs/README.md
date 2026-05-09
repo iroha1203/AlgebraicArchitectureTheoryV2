@@ -18,7 +18,7 @@ Lean 形式化 status、tooling / empirical protocol を分けて管理する。
 5. [証明義務と実証仮説](aat/proof_obligations.md)
 6. [Lean 定義・定理索引](aat/lean_theorem_index.md)
 7. [AAT Tooling Documentation](tool/README.md)
-8. 必要に応じて [AAT directory guide](aat/README.md), [SFT directory guide](sft/README.md), `docs/empirical/`
+8. 必要に応じて [AAT directory guide](aat/README.md), [SFT directory guide](sft/README.md)
 
 ## 全体文書
 
@@ -56,20 +56,14 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 - [Lean 定義・定理索引](aat/lean_theorem_index.md): 実装済み Lean API の入口。
 - [証明義務と実証仮説](aat/proof_obligations.md): theorem boundary、未解決課題、empirical hypothesis の台帳。
 
-## Tooling / Empirical
+## Tooling
 
 - [AAT Tooling Documentation](tool/README.md): AIR、claim boundary、signature artifact、report、extractor、workflow、schema compatibility の tool 側総合入口。
-- `docs/empirical/`: empirical pilot と case-study skeleton。
 
 ## Archive
 
 - [2026-05-09 AAT/SFT reorg archive](archive/2026-05-09-aat-sft-reorg/): AAT/SFT 階層へ再編する前の旧 AAT Part 文書、旧数学設計書、旧 proof obligations、旧 theorem index、旧 Architecture Signature Dynamics 設計。
-- [2026-05-09 first-class docs archive](archive/2026-05-09-first-class-docs/): 後方互換のためだけに残っていた facade 文書、薄い索引、旧 PRD、旧 design note の退避先。
+- [2026-05-09 first-class docs archive](archive/2026-05-09-first-class-docs/): 後方互換のためだけに残っていた facade 文書、薄い索引、旧 PRD、旧 design note、旧 empirical pilot の退避先。
 - [AAT v2 research requirements revised split](archive/aat_v2_research_requirements_revised_split.md): 数学設計書とツール設計書へ分割する前の原本。
 - [Flatness-Obstruction Conjecture](archive/Flatness%E2%80%93Obstruction%20Conjecture.md): AAT 数学理論へ整理する前の数学草案。
 - [証明義務と実証仮説 full ledger](archive/proof_obligations_full_ledger.md): `docs/aat/proof_obligations.md` を索引化する前の詳細 ledger。
-
-## Empirical pilot
-
-- [B6 case study paper skeleton](empirical/b6_case_study_paper_skeleton.md)
-- [lean4-samples empirical pilot](empirical/lean4_samples_pilot/README.md)

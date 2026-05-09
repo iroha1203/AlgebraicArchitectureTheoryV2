@@ -19,7 +19,7 @@
 
 `prd_README.md` と PRD 本文は、tooling 構想の履歴として残す。
 現行の要求・設計は、対象に応じて `docs/aat/`, `docs/sft/`, `docs/tool/`,
-`docs/empirical/`、または GitHub Issues へ分解して管理する。
+または GitHub Issues へ分解して管理する。
 
 `aat_chaos_game_dynamics_memo.md` は、SFT へ整理する前の chaos-game / dynamics 研究メモである。
 現行の力学・場・予測・制御の本文は [ソフトウェアの場の理論](../../sft/software_field_theory.md) に置く。
@@ -31,7 +31,11 @@
 
 `design/` は、旧 `docs/design/` にあった既存 design note 群を退避したものである。
 今後の design 系文書は、対象に応じて `docs/aat/`, `docs/sft/`, `docs/tool/`,
-または `docs/empirical/` に置く。
+または GitHub Issues に置く。
 
-この archive 内の facade、薄い索引、旧 PRD、旧 memo、旧 design note は、
+`empirical/` は、旧 `docs/empirical/` にあった empirical pilot と case-study skeleton を
+退避したものである。現行の empirical hypothesis は
+[証明義務と実証仮説](../../aat/proof_obligations.md) と GitHub Issues で管理する。
+
+この archive 内の facade、薄い索引、旧 PRD、旧 memo、旧 design note、旧 empirical pilot は、
 旧リンクの歴史的記録であり、現行入口としては使わない。
