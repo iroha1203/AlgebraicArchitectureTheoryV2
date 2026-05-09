@@ -1,81 +1,99 @@
 # 研究の全体目標
 
-AAT v2 が目指すのは、ソフトウェアアーキテクチャを「良い設計か悪い設計か」という
-印象で語るのではなく、何が保存され、何が破れ、どの未来へ流れやすくなったのかを
-診断できる言葉にすることである。
+この研究の大きなビジョンは、ソフトウェアアーキテクチャを
+「静的な形」だけでなく、「変化し続ける対象」として扱うことである。
 
-設計原則は、スローガンではなく操作である。
-ある変更が境界を守るのか、依存を閉じ込めるのか、状態遷移を明確にするのか、
-あるいは別の場所へ複雑さを押し出しているだけなのかを問う。
-AAT はこの問いを、アーキテクチャ不変量、operation、obstruction witness、
-ArchitectureSignature として定式化する。
+設計は一度決めて終わるものではない。
+要求、仕様、Issue、PR、review、CI、運用、組織判断、AI agent の提案が、
+コードベースの次の状態を絶えず作っている。
+その流れの中で、何が保存され、何が破れ、どの未来へ進みやすくなったのかを
+記述できる理論を作りたい。
 
-SFT は、その局所的な診断を時間の中へ置く。
-要求、仕様、Issue、PR、review、CI、組織判断、AI agent の提案は、
-コードベースを一度だけ変えるのではない。次に選ばれやすい変更、見落とされやすい破れ、
-レビューで減衰される shortcut、蓄積する field memory を作る。
-SFT は、その流れを forecast、trajectory、governance feedback として扱う。
-
-## 中心ビジョン
-
-この研究の中心命題は次である。
+AAT は、そのための局所的な代数を与える。
+SFT は、その局所的な代数をソフトウェア進化の時間的・組織的な場へ置く。
+tooling は、実際の artifact から観測できる範囲を取り出し、レビューや CI の判断に接続する。
 
 ```text
-Design principles are operations on architecture invariants.
-Architecture quality is observed as a multi-axis signature of invariant breakage.
-Software evolution is a computable field-shaped process.
+AAT asks what a change preserves or breaks.
+SFT asks how changes shape future evolution.
+Tooling asks what can be observed and governed in practice.
 ```
 
-目標は、アーキテクチャレビューを「感想」から「診断」へ近づけることである。
-ただし、診断とは単一スコアを出すことではない。
-どの軸で破れているのか、どの前提の下で安全と言えるのか、
-どの観測が欠けているために結論できないのかを分けて表示することである。
+## AAT
 
-## 見たいもの
+AAT の目標は、アーキテクチャレビューを「感想」から「診断」へ近づけることである。
 
-この研究では、次のような問いを一つの連続した対象として扱う。
+ここでいう診断とは、単一の品質スコアを出すことではない。
+ある変更がどの architecture invariant を保存しているのか、
+どの invariant を破っているのか、
+破れがどの obstruction witness として現れるのか、
+どの ArchitectureSignature axis に観測されるのかを分けて見ることである。
+
+設計原則は、スローガンではなく operation として読む。
+SOLID、Layered / Clean Architecture、Event Sourcing、Saga、Circuit Breaker、
+Replicated Log などを万能な格言として並べるのではなく、
+それぞれがどの invariant、operation、observation、theorem boundary に関係するのかを問う。
+
+AAT が欲しい診断語彙は、たとえば次のような問いに答えるためのものである。
 
 - この変更は、選択された architecture invariant を保存しているか。
 - 保存していないなら、どの obstruction witness がそれを示しているか。
 - その破れはどの ArchitectureSignature axis に現れるか。
-- その変更は future architecture を広げるのか、狭めるのか、危険な方向へ偏らせるのか。
-- Review、CI、policy は shortcut をどこで拒否し、どこで減衰し、どこで見逃すのか。
-- AI agent の proposal は、bounded theorem boundary と governance boundary の中に収まるのか。
+- どの前提の下で lawful と言えるのか。
+- どの観測が欠けているために non-conclusion として残すべきなのか。
 
-ここで重要なのは、証明、測定、推定、実証仮説を混同しないことである。
+この範囲では、Lean theorem、tool output、empirical hypothesis を混同しないことが重要である。
 Lean theorem は経験的成功を保証しない。
 tool output は Lean theorem ではない。
 empirical correlation は architecture lawfulness ではない。
-この分離を保ったまま、それでも実際の開発判断に届く診断語彙を作る。
+AAT は、何を証明でき、何を証明していないかを明確にするための理論でもある。
 
-## AAT と SFT
+## SFT
 
-AAT は、ソフトウェアアーキテクチャの局所代数を与える。
-component、relation、operation、invariant、witness、signature を使い、
-ある変更がどの前提の下で lawful か、どの obstruction によって split できないかを扱う。
+SFT の目標は、ソフトウェア進化を計算可能な対象として扱うことである。
 
-SFT は、AAT の局所主張をソフトウェア進化の場へ写す。
-PRD、Spec、Issue、PR、review、CI、organization、AI、lifecycle decision を
-field、force、trajectory、control として読み、到達可能な architecture future を扱う。
+コードベースは、変更を受け取って終わる静的な構造ではない。
+PRD、Spec、Issue、PR、review、CI、organization、AI、lifecycle decision は、
+次に起こりやすい変更、見落とされやすい破れ、蓄積する制約、減衰される shortcut を作る。
+SFT はこれを、field、force、trajectory、forecast、governance feedback として読む。
 
-ArchSig と tooling は、その間の観測層である。
-実 artifact から signature axis、witness、theorem boundary status、forecast boundary を抽出する。
-ただし、観測できたものだけを根拠にし、観測できていない軸を安全とみなさない。
+AAT が局所的に「この変更は何を保存し、何を破ったか」を問うなら、
+SFT は時間の中で「この変更は future architecture をどう変えたか」を問う。
 
-## 何を作るか
+SFT が見たいのは、たとえば次のような対象である。
 
-この研究が最終的に作りたいものは、次のようなレビューと設計支援である。
+- PRD や Issue が、どの operation support と policy を誘導するか。
+- Review、CI、policy が shortcut をどこで拒否し、どこで減衰し、どこで見逃すか。
+- ある変更が future architecture を広げるのか、狭めるのか、危険な方向へ偏らせるのか。
+- AI agent の proposal が、bounded field model と theorem boundary の中に収まっているか。
+- feedback が field memory をどう更新し、次の変更分布をどう変えるか。
+
+SFT は AAT を置き換えない。
+AAT の theorem を経験的予測へ変換するものでもない。
+むしろ、AAT の局所主張をどこまで forecast や governance の前提として使えるかを、
+片方向の境界を保ったまま扱う。
+
+## Tooling
+
+tooling の目標は、AAT と SFT の語彙を実際の開発 artifact に接続することである。
+
+ArchSig は、コードベース、PR、report、policy から観測できるものを取り出す。
+signature axis、obstruction witness、theorem boundary status、forecast boundary を抽出し、
+レビューや CI が扱える evidence に変換する。
+
+ただし、tooling は理論そのものではない。
+観測できたものだけを根拠にし、観測できていない軸を安全とみなさない。
+measured zero と unmeasured を混同しない。
+tool pass を Lean theorem として読まない。
+
+最終的に作りたいのは、次のような開発支援である。
 
 - PR がどの invariant を保存し、どの invariant を破っているかを示す。
 - obstruction witness を、修復候補や設計判断に接続する。
 - ArchitectureSignature を、多軸の診断結果として提示する。
-- Lean theorem boundary、tooling evidence、empirical hypothesis を同じ画面で混同せずに扱う。
+- Lean theorem boundary、tooling evidence、empirical hypothesis を混同せずに並べる。
 - PRD や Issue が誘導する future architecture の範囲を forecast する。
 - AI-generated shortcut を、policy と theorem boundary の中で拒否・射影・減衰する。
-
-この方向では、SOLID、Layered / Clean Architecture、Event Sourcing、Saga、
-Circuit Breaker、Replicated Log などを万能な設計格言として並べない。
-それぞれを、どの層のどの invariant や operation に関係するのかで読む。
 
 ## 詳細文書
 
@@ -90,6 +108,3 @@ Lean status、proof obligation、empirical hypothesis は
 [証明義務と実証仮説](aat/proof_obligations.md) と
 [Lean 定義・定理索引](aat/lean_theorem_index.md) に分離する。
 tooling の詳細は [AAT Tooling Documentation](tool/README.md) に置く。
-
-読む順序は、AAT の局所代数を理解してから、AAT / SFT の境界を確認し、
-最後に SFT の software evolution model へ進むのがよい。
