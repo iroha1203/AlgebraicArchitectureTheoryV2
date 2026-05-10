@@ -11,10 +11,14 @@ tags: architecture, databases, lean, computerscience
 >
 > Consistency became invariant preservation.
 > Isolation became a deliberately strong commutation law.
-> Durability exposed a missing model boundary.
+> Durability exposed that my model had no persistence boundary.
 >
 > The result was not a proof that databases are correct.
 > It was a reminder that every design claim depends on what the model can actually see.
+
+The suspicious part was not that Lean failed to prove durability.
+
+The suspicious part was that Lean proved it with almost no assumptions.
 
 ACID is familiar enough that it is easy to stop thinking about it.
 
@@ -48,10 +52,6 @@ So I tried to write a small ACID-like model in Lean 4.
 
 The result was not a proof that real databases are correct.
 
-The most interesting moment was not when Lean proved something.
-
-It was when Lean proved something too easily.
-
 That is the part worth sharing.
 
 ## A Minimal Model
@@ -60,9 +60,9 @@ Start with the smallest model that still has something architectural in it.
 
 There is a state space `S`. There are transactions. Each transaction acts on the state. There is also an invariant, a predicate that says which states are valid.
 
-The goal here is not to reconstruct real database ACID as a complete algebraic structure.
+This is not a formalization of real database ACID.
 
-It is a projection: keep the state-transformer shape, and deliberately drop many operational details.
+It is a deliberately lossy projection: keep the state-transformer shape, and drop many operational details.
 
 In simplified Lean-shaped notation, the model looks like this:
 
@@ -86,7 +86,7 @@ transaction = operation on state
 invariant   = property we want valid states to preserve
 ```
 
-This small model already gives a useful reading of ACID.
+This small model already gives a useful reading of some ACID-shaped claims.
 
 ## Histories Are Composition
 
@@ -129,12 +129,12 @@ a transaction log is not just a list;
 it is a way to build larger state transformations from smaller ones.
 ```
 
-## Consistency Is Invariant Preservation
+## Consistency as Invariant Preservation
 
-The easiest ACID property to read in this model is consistency: a transaction should take a valid state to another valid state.
+For this model, the part of ACID consistency we keep is invariant preservation: a transaction should take a valid state to another valid state.
 
 ```lean
-def Consistency (M : Model S) : Prop :=
+def PreservesInvariant (M : Model S) : Prop :=
   forall t : M.Txn, forall s : S,
     M.inv s -> M.inv (M.apply t s)
 ```
@@ -150,8 +150,8 @@ valid state
 Once written this way, a small theorem becomes immediate:
 
 ```lean
-theorem consistency_comp
-    (hC : Consistency M)
+theorem preservesInvariant_comp
+    (hC : PreservesInvariant M)
     (t1 t2 : M.Txn)
     (s : S)
     (hs : M.inv s) :
@@ -163,13 +163,13 @@ If `t1` preserves the invariant and `t2` preserves the invariant, then their com
 The same idea extends from two transactions to any history:
 
 ```lean
-theorem consistency_replay
-    (hC : Consistency M) :
+theorem preservesInvariant_replay
+    (hC : PreservesInvariant M) :
     forall h : List M.Txn, forall s : S,
       M.inv s -> M.inv (M.replay h s)
 ```
 
-This is the cleanest part of the story. Consistency is simply:
+This is the cleanest part of the story. In this projection, consistency becomes:
 
 ```text
 the invariant survives every selected operation.
@@ -181,18 +181,20 @@ That sentence is also the bridge to software architecture, but we will come back
 
 Atomicity is trickier.
 
-The textbook explanation says that a transaction happens all at once or not at all. There should be no externally visible half-transaction.
+In this model, I cannot express all-or-nothing execution.
 
-In a pure state-transition model, one algebraic approximation is closure under composition:
+There is no partial execution, no abort, no crash, and no visibility boundary.
+
+The closest algebraic property I can write is closure under sequencing:
 
 ```lean
-def Atomicity (M : Model S) : Prop :=
+def ClosedUnderSequence (M : Model S) : Prop :=
   forall t1 t2 : M.Txn,
     exists t3 : M.Txn,
       M.apply t3 = fun s => M.apply t2 (M.apply t1 s)
 ```
 
-This says that if two transactions are executed in sequence, the combined effect can be represented as one transaction.
+This says that if two selected operations are executed in sequence, their combined effect can be represented as one selected operation.
 
 ```text
 transaction followed by transaction
@@ -200,13 +202,7 @@ transaction followed by transaction
 one transaction
 ```
 
-That is a useful shadow of atomicity. It captures the idea that a compound effect can be packaged as one selected operation.
-
-But it is not database atomicity itself.
-
-It does not talk about partial execution, aborts, crashes, or recovery.
-
-It only says that the selected operations are closed under sequencing.
+That is not database atomicity. It is only an atomicity-shaped shadow.
 
 So this definition needs a boundary:
 
@@ -221,12 +217,12 @@ This boundary prevents a small theorem from being advertised as a larger theorem
 
 Isolation is also subtle.
 
-A common intuition is that concurrent transactions should behave as if they had run one at a time.
+A common intuition is that concurrent transactions should behave as if they had run one at a time. In database terms, serializability asks whether a concurrent execution is equivalent to some serial order.
 
-One strong algebraic approximation is commutation:
+Commutation asks for something stronger: the two serial orders are indistinguishable at the level of final state.
 
 ```lean
-def Isolation (M : Model S) : Prop :=
+def CommutesOnValidStates (M : Model S) : Prop :=
   forall t1 t2 : M.Txn, forall s : S,
     M.inv s ->
       M.apply t2 (M.apply t1 s)
@@ -234,7 +230,7 @@ def Isolation (M : Model S) : Prop :=
       M.apply t1 (M.apply t2 s)
 ```
 
-This says that on valid states, swapping the order of two transactions does not change the result.
+This says that on valid states, swapping the order of two selected operations does not change the result.
 
 ```text
 t1 then t2
@@ -242,11 +238,7 @@ t1 then t2
 t2 then t1
 ```
 
-If the result is the same either way, then the order is not observable at the level of final state.
-
-This is mathematically clean, but it is stronger than most real isolation stories.
-
-It only says that these selected operations commute on valid states.
+This is mathematically clean, but it is stronger than serializability. It removes order from the observable final state rather than merely finding some serial order.
 
 So this definition also needs a boundary:
 
@@ -259,7 +251,7 @@ The formal model is valuable because it makes the approximation visible. Without
 
 Lean does not let that slide happen quietly.
 
-## Durability Found a Bad Definition
+## Durability Exposed a Missing Boundary
 
 Durability was the most interesting part.
 
@@ -268,7 +260,7 @@ My first attempt was to define durability as monotonicity of history. If one his
 In pseudocode:
 
 ```lean
-def Durability (M : Model S) : Prop :=
+def WrongDurabilityAttempt (M : Model S) : Prop :=
   forall h1 h2 : List M.Txn,
     Prefix h1 h2 ->
       exists k : List M.Txn,
@@ -301,17 +293,21 @@ And `replay_append` already gives:
 replay (h1 ++ k) = replay k . replay h1
 ```
 
-So the durability theorem follows almost for free.
+So the attempted durability theorem follows almost for free.
 
 At first, that feels like success: the theorem was proved, the code type-checked, and the definition seemed to behave.
 
 But that was the warning.
 
-The definition was too weak to capture what durability is supposed to mean.
+This was the bug: I had not defined durability.
+
+I had defined a replay decomposition property of append-only histories.
 
 If a property that should depend on storage, crashes, and recovery can be proved from list concatenation alone, then the property is not talking about storage, crashes, or recovery.
 
-The real concern of durability is not just that a mathematical list has a prefix. It is that committed effects survive crashes, storage failures, recovery, and restart.
+Durability is not just "the log has a prefix." It is a recovery guarantee under an explicit failure model.
+
+Committed effects should survive the crashes and recoveries the system promises to handle.
 
 A pure state-transition model does not contain storage.
 
@@ -363,10 +359,10 @@ What Lean gave me was a way to notice when a claim had silently moved outside it
 ```text
 Within a pure state-transition model:
 
-Consistency can be read as invariant preservation.
-Atomicity can be approximated as closure.
-Isolation can be approximated as commutation.
-Durability cannot be expressed without persistence and recovery.
+Consistency-shaped claims can be read as invariant preservation.
+The atomicity-shaped fragment becomes closure under sequencing.
+The isolation-shaped fragment becomes commutation on valid states.
+Durability cannot be expressed without persistence, recovery, and a fault model.
 ```
 
 For software engineering, this discipline matters more than the notation.
@@ -438,17 +434,15 @@ invariant is expected to survive
 failure should have a concrete witness
 ```
 
-This line of thought eventually became one of the entry points into what I now call Algebraic Architecture Theory (AAT).
+Here, the "state" is not a database state. It is a dependency graph.
 
-AAT is my attempt to read software architecture through a small set of recurring objects:
+The operation is not a transaction. It is a code change that adds or removes edges.
 
-```text
-operations
-invariants
-witnesses
-signatures
-boundaries
-```
+The invariant is not a database constraint. It is an architectural rule about allowed dependencies.
+
+The witness is not a bad row. It is a forbidden edge.
+
+I use the name Algebraic Architecture Theory (AAT) for this broader lens, but the name matters less than the discipline: state the operation, the invariant, the witness, and the boundary.
 
 The important word is not "algebra" for its own sake. The important word is **invariant**.
 
@@ -465,9 +459,7 @@ The same question can be asked for dependency direction, abstraction boundaries,
 
 When an invariant fails, we should not merely say "the design is bad." We should identify the concrete witness: a forbidden dependency edge, a cycle, an abstraction leak, an observation mismatch, or a failed compensation case.
 
-In AAT, I call this kind of multi-axis summary an Architecture Signature.
-
-It is not a single quality score. It is a way to avoid hiding different kinds of failure under one number.
+Different invariants can fail in different ways, and each failure should have a witness.
 
 The lesson from ACID carries over:
 
@@ -506,6 +498,6 @@ name the witness;
 name the boundary.
 ```
 
-If you are interested in the ongoing formalization, the working research repository is here:
+The working Lean repository for this line of thought is here:
 
 https://github.com/iroha1203/AlgebraicArchitectureTheoryV2
