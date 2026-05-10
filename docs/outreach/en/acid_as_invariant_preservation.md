@@ -558,3 +558,7 @@ name the invariant;
 name the witness;
 name the boundary.
 ```
+
+The working research repository for this project is here:
+
+https://github.com/iroha1203/AlgebraicArchitectureTheoryV2
