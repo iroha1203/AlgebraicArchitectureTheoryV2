@@ -14,7 +14,7 @@ tags: architecture, databases, lean, computerscience
 > Durability exposed a missing model boundary.
 >
 > The result was not a proof that databases are correct.
-> It was a reminder that architecture claims only make sense inside explicit boundaries.
+> It was a reminder that every design claim depends on what the model can actually see.
 
 ACID is familiar enough that it is easy to stop thinking about it.
 
@@ -36,25 +36,21 @@ Durability
   Once a transaction commits, its effect survives failures and recovery.
 ```
 
-Most engineers learn the four words early. They are usually explained with examples: bank transfers, integrity constraints, concurrent transactions, crashes, logs, commits, and recovery.
+The goal here is not to reconstruct real database ACID as a complete algebraic structure.
 
-Those examples are useful. But they leave a deeper question open:
+It is a projection: keep the state-transformer shape, and deliberately drop many operational details.
+
+Most engineers learn these words through examples: bank transfers, constraints, concurrent transactions, crashes, logs, commits, and recovery.
+
+But I wanted to ask a slightly different question:
 
 ```text
 What kind of structure is ACID preserving?
 ```
 
-When we relax one of the properties, what exactly is lost? When we keep one property and drop another, what remains true? Are the four properties one package, or are they different axes of structure?
+So I tried to write a small ACID-like model in Lean 4.
 
-I wanted to answer that question in a small formal model. So I tried to write the model in Lean.
-
-The result was not a proof that real database systems are correct. It was something more modest, and more useful:
-
-```text
-Lean forced the boundary of each claim to become explicit.
-```
-
-In one case, it even showed that my definition was too weak because the theorem I wanted became trivial.
+The result was not a proof that real databases are correct.
 
 The most interesting moment was not when Lean proved something.
 
@@ -68,7 +64,7 @@ Start with the smallest model that still has something architectural in it.
 
 There is a state space `S`. There are transactions. Each transaction acts on the state. There is also an invariant, a predicate that says which states are valid.
 
-The snippets below are simplified Lean-shaped pseudocode. They are meant to show the shape of the model, not to be copied as a complete Lean file.
+In simplified Lean-shaped notation, the model looks like this:
 
 ```lean
 abbrev Endo (S : Type u) := S -> S
@@ -204,11 +200,13 @@ one transaction
 
 That is a useful shadow of atomicity. It captures the idea that a compound effect can be packaged as one selected operation.
 
-But it is not the whole database meaning of atomicity.
+But it is not database atomicity itself.
 
-It does not model abort, rollback, partial execution under failure, write-ahead logging, recovery protocols, or the machinery that makes all-or-nothing behavior real.
+It does not talk about partial execution, aborts, crashes, or recovery.
 
-So this definition must carry a theorem boundary:
+It only says that the selected operations are closed under sequencing.
+
+So this definition needs a boundary:
 
 ```text
 This is algebraic atomicity as closure of selected operations.
@@ -244,11 +242,11 @@ t2 then t1
 
 If the result is the same either way, then the order is not observable at the level of final state.
 
-This is mathematically clean, but deliberately strong.
+This is mathematically clean, but it is stronger than most real isolation stories.
 
-Real isolation levels are more nuanced. Read Committed, Repeatable Read, Snapshot Isolation, Serializable, and the phenomena studied in transaction theory are not all captured by this single predicate.
+It only says that these selected operations commute on valid states.
 
-So again, the theorem boundary matters:
+So this definition also needs a boundary:
 
 ```text
 This definition captures a strong commutation-style isolation property.
@@ -350,7 +348,7 @@ It accepted it so easily that the definition became suspicious.
 
 ## What Lean Actually Gave Me
 
-The most valuable result was not:
+The result was not:
 
 ```text
 ACID has been proved correct.
@@ -358,29 +356,15 @@ ACID has been proved correct.
 
 That would be far too strong.
 
-The valuable result was:
+What Lean gave me was a way to notice when a claim had silently moved outside its model.
 
 ```text
-Each claim now has a visible model boundary.
-```
+Within a pure state-transition model:
 
-Within a pure state-transition model, consistency as invariant preservation is clean.
-
-Atomicity as closure is useful, but incomplete.
-
-Isolation as commutation is clear, but strong.
-
-Durability cannot be fully expressed without modeling persistence and recovery.
-
-That is the real payoff of formalization.
-
-It forces the question:
-
-```text
-What exactly did we model?
-What exactly did we prove?
-What did we not model?
-What must remain a non-conclusion?
+Consistency can be read as invariant preservation.
+Atomicity can be approximated as closure.
+Isolation can be approximated as commutation.
+Durability cannot be expressed without persistence and recovery.
 ```
 
 For software engineering, this discipline matters more than the notation.
@@ -404,8 +388,6 @@ For example:
 ```
 
 Each of those moves may be valid under additional assumptions. But the assumptions need to be stated.
-
-Formalization is a way to make those assumptions visible.
 
 ## From ACID to Architecture
 
@@ -452,10 +434,9 @@ That is the same shape as the ACID model:
 operation acts on a structure
 invariant is expected to survive
 failure should have a concrete witness
-claim only holds inside a stated boundary
 ```
 
-This line of thought eventually became one of the entry points into what I now call Algebraic Architecture Theory, or AAT.
+This line of thought eventually became one of the entry points into what I now call Algebraic Architecture Theory (AAT).
 
 AAT is my attempt to read software architecture through a small set of recurring objects:
 
@@ -478,41 +459,9 @@ Under which observation boundary?
 If it fails, what is the witness?
 ```
 
-For example:
+The same question can be asked for dependency direction, abstraction boundaries, substitutability, replay laws, compensation laws, and failure locality.
 
-```text
-Layered Architecture
-  preserves dependency direction and acyclicity.
-
-DIP
-  preserves abstraction boundaries through projection.
-
-LSP
-  preserves selected observations under substitution.
-
-Event Sourcing
-  preserves replay laws.
-
-Saga
-  preserves weak recovery or compensation laws.
-
-Circuit Breaker
-  preserves failure locality under runtime interaction.
-```
-
-When an invariant fails, we should not merely say "the design is bad."
-
-We should ask for a witness:
-
-```text
-a cycle
-a forbidden dependency edge
-an abstraction leak
-an observation mismatch
-a failed compensation case
-a non-commuting semantic diagram
-a runtime exposure path
-```
+When an invariant fails, we should not merely say "the design is bad." We should identify the concrete witness: a forbidden dependency edge, a cycle, an abstraction leak, an observation mismatch, or a failed compensation case.
 
 Those witnesses can then be summarized in an Architecture Signature.
 
@@ -528,10 +477,6 @@ ask which invariants are preserved, which witnesses remain,
 and which axes were not measured.
 ```
 
-In that sense, formalization is not only a tool for proving.
-
-It is a tool for discovering what your words were secretly assuming.
-
 ## Conclusion
 
 ACID was not the destination.
@@ -540,11 +485,13 @@ It was a small, familiar example showing that software design can be read as inv
 
 Lean did not turn a simplified model into a real database.
 
-It did something more useful:
+It did something more useful.
 
-```text
-it made the boundary of the claim impossible to ignore.
-```
+It showed that a definition can be wrong not because Lean rejects it, but because Lean accepts it for the wrong reason.
+
+In that sense, formalization is not only a tool for proving.
+
+It is a tool for discovering what your words were secretly assuming.
 
 That is the habit I want to bring from formal methods into everyday architecture work.
 
