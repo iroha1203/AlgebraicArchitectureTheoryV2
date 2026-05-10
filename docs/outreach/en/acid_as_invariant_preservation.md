@@ -36,10 +36,6 @@ Durability
   Once a transaction commits, its effect survives failures and recovery.
 ```
 
-The goal here is not to reconstruct real database ACID as a complete algebraic structure.
-
-It is a projection: keep the state-transformer shape, and deliberately drop many operational details.
-
 Most engineers learn these words through examples: bank transfers, constraints, concurrent transactions, crashes, logs, commits, and recovery.
 
 But I wanted to ask a slightly different question:
@@ -63,6 +59,10 @@ That is the part worth sharing.
 Start with the smallest model that still has something architectural in it.
 
 There is a state space `S`. There are transactions. Each transaction acts on the state. There is also an invariant, a predicate that says which states are valid.
+
+The goal here is not to reconstruct real database ACID as a complete algebraic structure.
+
+It is a projection: keep the state-transformer shape, and deliberately drop many operational details.
 
 In simplified Lean-shaped notation, the model looks like this:
 
@@ -119,6 +119,8 @@ compose state transformations
 ```
 
 This is already algebraic. The list of transactions has a monoid structure under append. State endomorphisms have a monoid structure under composition. Replay connects the two.
+
+In less mathematical terms, replay is the bridge between a log and the effect that log has on the system.
 
 This is the first useful reframing:
 
@@ -301,9 +303,9 @@ replay (h1 ++ k) = replay k . replay h1
 
 So the durability theorem follows almost for free.
 
-At first, that feels like success. A theorem was proved. The code type-checked. The definition seemed to behave.
+At first, that feels like success: the theorem was proved, the code type-checked, and the definition seemed to behave.
 
-But it is actually a warning.
+But that was the warning.
 
 The definition was too weak to capture what durability is supposed to mean.
 
@@ -463,11 +465,9 @@ The same question can be asked for dependency direction, abstraction boundaries,
 
 When an invariant fails, we should not merely say "the design is bad." We should identify the concrete witness: a forbidden dependency edge, a cycle, an abstraction leak, an observation mismatch, or a failed compensation case.
 
-Those witnesses can then be summarized in an Architecture Signature.
+In AAT, I call this kind of multi-axis summary an Architecture Signature.
 
-The signature is not a single quality score. It is a multi-axis diagnosis.
-
-One change might reduce cycles while increasing runtime exposure. Another might improve abstraction boundaries while leaving compensation laws untested. A single number would hide that structure.
+It is not a single quality score. It is a way to avoid hiding different kinds of failure under one number.
 
 The lesson from ACID carries over:
 
@@ -506,6 +506,6 @@ name the witness;
 name the boundary.
 ```
 
-The working research repository for this project is here:
+If you are interested in the ongoing formalization, the working research repository is here:
 
 https://github.com/iroha1203/AlgebraicArchitectureTheoryV2
