@@ -1,14 +1,26 @@
 # Software Architecture as a Field: ソフトウェアの進化とは何か
 
-## はじめに: 正しい PR が残した謎
+## はじめに: Lehman の問いはまだ終わっていない
 
-金曜日の夕方、`SAVE10` coupon の PR が merge されました。
+ソフトウェアは、作って終わる artifact ではありません。
 
-悪い PR ではありませんでした。むしろ、よくある、普通に正しい PR でした。
+使われ続ける software は、要求、組織、運用、障害、技術基盤、開発者、tooling とともに変化し続けます。M. M. Lehman は 1970 年代から、この software evolution の問題を研究しました。長寿命の E-type software は環境に適応し続けなければならず、変化し続ける限り複雑性を増す傾向がある。
 
-checkout 画面に promo code input を足す。backend で 10% discount を計算する。payment amount を少し変える。テストは通りました。review でも大きな問題は見つかりませんでした。Black Friday campaign は間に合いました。
+この問いは、AI-assisted development の時代にもまだ生きています。
 
-要求は、こういうものでした。
+むしろ、より鋭くなっています。PR は速く作れる。AI agent は既存コードを読み、近くの pattern を真似る。CI は一部の性質を検査する。review は一部の違和感を拾う。incident はあとから新しい evidence を返す。
+
+では、ソフトウェアの進化とは何か。
+
+コード差分の列なのか。review された PR の履歴なのか。それとも、artifact、agent、governance、feedback が、次に到達しやすい architecture future を変えていく field-shaped process なのか。
+
+SFT は、Lehman の software evolution research を置き換えるものではありません。むしろ、その延長線上で、現代の artifact-rich な開発環境における software evolution を計算可能な形へ切り出そうとする試みです。
+
+PRD、Spec、Issue、PR、review、CI、incident、AI proposal は、単なる周辺情報ではありません。それらは field に作用し、operation support と selection policy を変え、reachable architecture futures を変えます。
+
+この記事では、AAT、ArchSig、SFT という三つの道具を使って、software evolution を観測し、記録し、比較し、部分的に計算可能な対象として扱う道筋を考えます。
+
+小さな例として、EC checkout に `SAVE10` coupon を追加する PR を考えます。
 
 ```text
 Black Friday 用に SAVE10 coupon を追加したい。
@@ -18,35 +30,11 @@ Black Friday 用に SAVE10 coupon を追加したい。
 invoice と refund でも同じ割引額になる必要がある。
 ```
 
-一見すると、小さな feature です。しかし、この feature には複数の実装 path がありました。
+この feature は、どの path でも Issue を閉じられます。
 
-一つ目の path では、`PromotionPolicy` を追加し、pricing service が declared interface 経由で discount を計算します。payment は最終的な price quote だけを受け取り、invoice と refund は同じ pricing decision を参照します。
+`PromotionPolicy` を追加して pricing に閉じる path もあります。`PromotionService` が `StripePaymentAdapter` を直接呼ぶ shortcut もあります。UI だけで discount を表示する path もあります。rounding / tax order が場所ごとにずれる path もあります。
 
-二つ目の path では、`PromotionService` が必要な情報を得るために `StripePaymentAdapter` を直接呼びます。今は早いですが、promotion logic が payment provider の内部事情に依存し始めます。
-
-三つ目の path では、UI 側だけで discount を表示します。checkout 画面では安く見えますが、invoice、refund、admin report では別の金額が出るかもしれません。
-
-四つ目の path では、rounding や tax の順序が場所によってずれます。テストは通るかもしれません。けれど、返金時に 1 円、1 セント、あるいは tax calculation がずれるかもしれません。
-
-これらは、どれも同じ Issue を閉じるかもしれません。しかし、変更後に残る architecture は同じではありません。
-
-最初の PR は小さかった。二週間後、refund team が同じ rule を必要とします。実装者は checkout 側の helper を見つけ、それを再利用します。一か月後、invoice team が同じ promotion rule を必要とします。しかし rule は pricing domain ではなく、checkout helper と UI logic に分散しています。
-
-三か月後、refund の金額が invoice と一致しない bug が出ました。さらに、新しい campaign feature を実装した AI agent が、過去の shortcut を見つけ、それをこの repository の自然な流儀として再利用しました。
-
-ここで、私たちはいつもの問いを立てたくなります。
-
-どの PR が悪かったのか。
-
-でも、おそらくその問いが間違っています。
-
-本当に問うべきなのは、もう少し大きなことです。
-
-ソフトウェアの進化とは何か。
-
-正しい PR が積み重なり、テストが通り、review もされている。それでも、なぜシステムは負債を溜め込み、次の正しい変更を難しくしていくのか。
-
-この問いを扱うために、AAT、ArchSig、SFT という三つの道具を使います。どれも、ソフトウェア進化を観測し、記録し、比較し、部分的に計算可能な対象へ近づけるための概念です。
+同じ feature delivery でも、残る architecture と次に自然に見える変更は違います。この差を、この記事では software evolution の問題として扱います。
 
 ## AAT: diff ではなく、保存されたものを見る
 
@@ -173,7 +161,9 @@ ArchSig の魅力は、この慎重さにあります。強く言えることは
 
 ここで出てくるのが SFT、Software Field Theory です。
 
-SFT は、field-shaped software evolution の計算理論です。要求、artifact、実践、ツール、AI agent、review、CI/CD、運用 feedback、lifecycle decision が、コードベースの到達可能な architecture future をどう変えるかを扱います。
+SFT は、field-shaped software evolution の計算理論です。Lehman が問うた「長寿命ソフトウェアはどのように変化し、なぜ複雑性を増していくのか」という問題を、現代の開発 artifact と governance feedback の中で扱い直します。
+
+要求、artifact、実践、ツール、AI agent、review、CI/CD、運用 feedback、lifecycle decision が、コードベースの到達可能な architecture future をどう変えるかを扱います。
 
 ```text
 SFT は、ソフトウェア進化を計算可能な対象にする。
@@ -347,18 +337,18 @@ Lean の役割は、種類の違う claim を混ぜないことです。
 
 ソフトウェアの進化とは何か。
 
-そして、正しい PR が積み重なってきたはずのソフトウェアが、なぜ負債を溜め込むのか。
+Lehman が示したように、長寿命ソフトウェアは変化し続けます。そして変化は、放置すれば複雑性を増す方向へ drift しやすい。
 
 この記事の答えは、まだ仮説を含んでいます。それでも、こう言えます。
 
-ソフトウェア進化とは、コード差分の履歴だけではありません。変更操作が構造を変え、invariant を保存したり破ったりし、観測可能な signature を残し、field memory に沈着し、次の operation support と selection policy を変えていく過程です。
+ソフトウェア進化とは、コード差分の履歴だけではありません。artifact、agent、governance、feedback が operation support と selection policy を作り替え、reachable architecture futures を変えていく field-shaped computation です。
 
-正しい PR の積み重ねが負債を溜め込むのは、PR が単に機能を追加するだけではないからです。PR は、未来の変更にとっての example になります。ある shortcut が一度入ると、それは次の実装者や AI agent にとって「この repository では自然な path」に見えます。境界を守る実装もまた、未来の example になります。
+PR は、その field に作用する artifact の一つです。review も CI も incident も AI proposal も同じです。それぞれが、何が自然な変更に見えるか、何が観測されるか、何が高コストになるかを変えます。
 
-AAT は、変更後に何が保存され、何が破れたかを見る語彙を与えます。ArchSig は、その破れを review comment ではなく diagnostic record として残します。SFT は、その記録が次の変更の選ばれ方をどう変えるかを見る枠組みです。
+AAT は、変更後に何が保存され、何が破れたかを見る局所法則を与えます。ArchSig は、その保存や破れを実 repository から観測可能な signature として残します。SFT は、それらを field-shaped software evolution の中で、ForecastCone、ConsequenceEnvelope、governance feedback として扱います。
 
-だから、技術的負債とは、過去の悪いコードの集合だけではありません。
+だから、技術的負債とは、過去の悪いコードの集合だけではありません。悪い PR の履歴でもありません。
 
-それは、未来の良い変更が選ばれにくくなった field の状態でもあります。
+それは、software field が future operation distribution を悪い方向へ歪めた状態でもあります。
 
 Software Architecture as a Field は、この進化を観測し、記録し、比較し、governance できる対象へ近づけるための研究プログラムです。
