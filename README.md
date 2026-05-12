@@ -1,13 +1,16 @@
-# 代数的アーキテクチャ論 & ソフトウェアの場の理論
+# Algebraic Architecture Theory & Software Field Theory
 
-このリポジトリは、**Algebraic Architecture Theory**（AAT / 代数的アーキテクチャ論）と
-**Software Field Theory**（SFT / ソフトウェアの場の理論）の Lean 形式化、研究ノート、
-tooling 設計を管理するための独立リポジトリです。
+[日本語版はこちら](README.jp.md)
 
-大きな目的は、ソフトウェアアーキテクチャを静的な形だけでなく、
-変更・レビュー・CI・運用・AI agent の proposal によって変化し続ける対象として扱い、
-何が保存され、何が破れ、どの未来へ進みやすくなったのかを診断できる理論と
-ツールチェーンを作ることです。
+This repository contains the Lean formalization, research notes, and tooling
+design for **Algebraic Architecture Theory** (AAT) and **Software Field Theory**
+(SFT).
+
+The long-term goal is to treat software architecture not only as a static
+shape, but as an object that keeps changing through implementation, review, CI,
+operations, and AI-agent proposals. The project aims to build a theory and
+toolchain for diagnosing what is preserved, what breaks, and which futures a
+software system becomes more likely to reach.
 
 ```text
 AAT makes architecture locally algebraic.
@@ -15,70 +18,68 @@ ArchSig makes architecture observable.
 SFT makes software evolution computable.
 ```
 
-日本語では次のように読みます。
+The main entry point for the overall research program is
+[Research Goal](docs/research_goal.md).
+
+## Research Question
+
+This project tries to move architecture review from subjective impression
+toward explicit diagnosis. Its central questions are:
 
 ```text
-AAT はアーキテクチャを局所代数にする。
-ArchSig はアーキテクチャを観測可能にする。
-SFT はソフトウェア進化を計算可能にする。
+Does this change preserve the selected architecture invariant?
+If not, which obstruction witness shows the break?
+Which ArchitectureSignature axis exposes the break?
+Which future architecture does this PRD / Issue / PR make easier to reach?
+Which review / CI / policy / governance narrows dangerous trajectories?
 ```
 
-全体像は [研究の全体目標](docs/research_goal.md) を入口とします。
+To answer these questions, the project keeps the following layers separate:
 
-## 研究の問い
+- structural claims proved in Lean;
+- claims observed or inferred from artifacts by tooling;
+- hypotheses to be tested empirically;
+- non-conclusions outside explicit theorem and forecast boundaries.
 
-この研究は、アーキテクチャレビューを「感想」から「診断」へ近づけることを目指します。
-中心にある問いは次です。
+## Layers
 
-```text
-この変更は、選択された architecture invariant を保存しているか。
-保存していないなら、どの obstruction witness がそれを示しているか。
-その破れはどの ArchitectureSignature axis に現れるか。
-この PRD / Issue / PR は、どの future architecture を開きやすくするか。
-どの review / CI / policy / governance が危険な trajectory を狭めるか。
-```
-
-この問いに答えるため、次を明確に分けます。
-
-- Lean で証明する構造的主張。
-- tooling が artifact から観測・推定する主張。
-- 実証研究で検証する仮説。
-- 明示された theorem boundary / forecast boundary の外に残す non-conclusions。
-
-## 層の分担
-
-| 層 | 役割 | Source of truth |
+| Layer | Role | Source of truth |
 | --- | --- | --- |
-| AAT | architecture object、operation、invariant、obstruction witness、signature、theorem boundary を扱う局所代数。 | [AAT 数学理論](docs/aat/mathematical_theory.md) |
-| AAT / SFT Interface | AAT の局所主張を SFT の projection、observable coordinate、governance 側でどう読むかを定める境界。 | [AAT / SFT Interface](docs/sft/aat_interface.md) |
-| ArchSig / Tooling | 実 artifact から signature、witness、claim boundary、forecast evidence を抽出する観測層。 | [AAT Tooling Documentation](docs/tool/README.md) |
-| SFT | PRD、Spec、Issue、PR、review、CI、organization、AI、feedback が reachable future をどう変えるかを扱う計算理論。 | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) |
-| Lean 形式化 | 前提を明示できる構造的命題、finite universe、lawfulness bridge、bounded theorem package。 | [Lean 定義・定理索引](docs/aat/lean_theorem_index.md) |
-| Proof / empirical ledger | theorem boundary、未解決 proof obligation、empirical hypothesis、Issue との対応。 | [証明義務と実証仮説](docs/aat/proof_obligations.md) |
+| AAT | A local algebra for architecture objects, operations, invariants, obstruction witnesses, signatures, and theorem boundaries. | [AAT mathematical theory](docs/aat/mathematical_theory.md) |
+| AAT / SFT Interface | The boundary explaining how local AAT claims are read through SFT projections, observable coordinates, and governance. | [AAT / SFT Interface](docs/sft/aat_interface.md) |
+| ArchSig / Tooling | The observation layer that extracts signatures, witnesses, claim boundaries, and forecast evidence from real artifacts. | [AAT Tooling Documentation](docs/tool/README.md) |
+| SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
+| Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) |
+| Proof / empirical ledger | Theorem boundaries, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) |
 
-README は詳細な theorem 一覧や進捗台帳を重複して持ちません。
-現在の Lean status、non-conclusion boundary、未解決 proof obligation は
-[証明義務と実証仮説](docs/aat/proof_obligations.md) と
-[Lean 定義・定理索引](docs/aat/lean_theorem_index.md) で管理します。
+The README does not duplicate detailed theorem lists or progress ledgers.
+Current Lean status, non-conclusion boundaries, and open proof obligations are
+tracked in [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md)
+and [Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
 
-## 読む順序
+Most detailed research notes are currently written in Japanese; English
+summaries will be added as the theory and Lean formalization stabilize.
 
-1. [研究の全体目標](docs/research_goal.md)
-2. [AAT 数学理論](docs/aat/mathematical_theory.md)
+## Reading Order
+
+1. [Research Goal](docs/research_goal.md)
+2. [AAT Mathematical Theory](docs/aat/mathematical_theory.md)
 3. [AAT / SFT Interface](docs/sft/aat_interface.md)
-4. [ソフトウェアの場の理論](docs/sft/software_field_theory.md)
-5. [証明義務と実証仮説](docs/aat/proof_obligations.md)
-6. [Lean 定義・定理索引](docs/aat/lean_theorem_index.md)
+4. [Software Field Theory](docs/sft/software_field_theory.md)
+5. [Proof Obligations and Empirical Hypotheses](docs/aat/proof_obligations.md)
+6. [Lean Definitions and Theorem Index](docs/aat/lean_theorem_index.md)
 7. [AAT Tooling Documentation](docs/tool/README.md)
-8. 必要に応じて [docs 読み方](docs/README.md),
+8. As needed:
+   [docs guide](docs/README.md),
    [AAT directory guide](docs/aat/README.md),
    [SFT directory guide](docs/sft/README.md)
 
 ## AAT
 
-AAT は、ソフトウェアアーキテクチャを bounded な `ArchitectureObject` として切り出し、
-その上の操作がどの不変量を保存し、どの obstruction witness を生み、
-どの signature axis に現れるかを扱う理論です。
+AAT treats a bounded piece of software architecture as an `ArchitectureObject`.
+It studies which invariants are preserved by operations on that object, which
+obstruction witnesses are produced when preservation fails, and which signature
+axes expose the break.
 
 ```text
 software architecture
@@ -90,68 +91,72 @@ software architecture
   + theorem boundary / non-conclusions
 ```
 
-AAT は設計原則をスローガンではなく operation として読みます。
-SOLID、Layered / Clean Architecture、Event Sourcing、Saga、Circuit Breaker、
-Replicated Log などを万能な格言として並べるのではなく、
-それぞれがどの invariant、operation、observation、theorem boundary に関係するかを問います。
+AAT reads design principles as operations rather than slogans. SOLID,
+Layered / Clean Architecture, Event Sourcing, Saga, Circuit Breaker, Replicated
+Log, and related patterns are not treated as universal maxims. Instead, the
+theory asks which invariants, operations, observations, and theorem boundaries
+each principle is connected to.
 
 ## SFT
 
-SFT は、ソフトウェア進化を計算可能な対象として扱う理論です。
-コードベースは、変更を受け取って終わる静的な構造ではありません。
-PRD、Spec、Issue、PR、review、CI、organization、AI、lifecycle decision は、
-次に起こりやすい変更、見落とされやすい破れ、蓄積する制約、減衰される shortcut を作ります。
+SFT treats software evolution as a computable object. A codebase is not a static
+structure that merely receives changes. PRDs, specs, issues, PRs, reviews, CI,
+organizations, AI, and lifecycle decisions all shape which future changes
+become likely, which breaks are easy to miss, which constraints accumulate, and
+which shortcuts are dampened.
 
-SFT は AAT の局所代数を、field model の architecture projection、observable coordinate、
-local transition law、governance input として使います。
-ただし、AAT theorem はそのまま empirical forecast にはなりません。
-`ForecastCone`、`ConsequenceEnvelope`、`FieldUpdate`、AI proposal governance は、
-明示された computable core と claim boundary の下で扱います。
+SFT uses the local algebra of AAT through architecture projections, observable
+coordinates, local transition laws, and governance inputs in the field model.
+However, AAT theorems do not automatically become empirical forecasts.
+`ForecastCone`, `ConsequenceEnvelope`, `FieldUpdate`, and AI proposal
+governance are handled under explicit computable cores and claim boundaries.
 
 ## Tooling
 
-tooling の目標は、AAT と SFT の語彙を実際の開発 artifact に接続することです。
-ArchSig は、コードベース、PR、report、policy から観測できるものを取り出し、
-signature axis、obstruction witness、theorem boundary status、forecast boundary を
-レビューや CI が扱える evidence に変換します。
+The tooling goal is to connect the vocabulary of AAT and SFT to real development
+artifacts. ArchSig extracts observable evidence from codebases, PRs, reports,
+and policies, then turns it into signature axes, obstruction witnesses, theorem
+boundary status, and forecast boundaries that review and CI can handle.
 
-ただし、tooling は理論そのものではありません。
-measured zero と unmeasured を混同せず、tool pass を Lean theorem として読みません。
+The tooling is not the theory itself. It does not confuse measured zero with
+unmeasured, and a tool pass is not read as a Lean theorem.
 
-## Lean 形式化
+## Lean Formalization
 
-現在 Lean 側に存在する主要な定義・定理は
-[Lean 定義・定理索引](docs/aat/lean_theorem_index.md) を参照してください。
-定理名、bounded reading、non-conclusion boundary は
-[証明義務と実証仮説](docs/aat/proof_obligations.md) と
-[Lean 定義・定理索引](docs/aat/lean_theorem_index.md) で管理します。
+See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) for the
+main definitions and theorems currently present on the Lean side. Theorem names,
+bounded readings, and non-conclusion boundaries are tracked in
+[Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) and
+[Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
 
-アーキテクチャ零曲率定理の static structural core は Lean で証明済みですが、
-runtime metrics、empirical hypotheses、一般数値 curvature、実コード extractor の完全性は
-この QED には含めません。
+The static structural core of the architecture zero-curvature theorem is proved
+in Lean. Runtime metrics, empirical hypotheses, general numerical curvature, and
+completeness of real-code extractors are not included in that QED.
 
-## リポジトリ構成
+## Repository Layout
 
 - `Formal.lean`
-  - Lean ライブラリの public entry point。
+  - Public entry point of the Lean library.
 - `Formal/Arch`
-  - `Core`, `Law`, `Signature`, `Extension`, `Operation`, `Patterns`, `Repair`, `Evolution`, `Examples`
-    に分けた Lean 形式化。
-  - 主要な定義・定理と module path は [Lean 定義・定理索引](docs/aat/lean_theorem_index.md) を参照。
+  - Lean formalization split into `Core`, `Law`, `Signature`, `Extension`,
+    `Operation`, `Patterns`, `Repair`, `Evolution`, and `Examples`.
+  - See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md)
+    for main definitions, theorem names, and module paths.
 - `docs`
-  - 第一級理論文書、Lean status、proof obligations、tool docs、empirical protocol。
+  - First-class theory documents, Lean status, proof obligations, tool docs,
+    and empirical protocol.
 - `docs/aat`
-  - AAT の数学理論、proof obligations、Lean theorem index。
+  - AAT mathematical theory, proof obligations, and Lean theorem index.
 - `docs/sft`
-  - AAT / SFT interface と SFT 本文。
+  - AAT / SFT interface and the SFT body.
 - `docs/tool`
-  - AIR、extractor、report、claim boundary、workflow、schema compatibility。
+  - AIR, extractor, report, claim boundary, workflow, and schema compatibility.
 - `Main.lean`
-  - 実行ターゲット `aatv2` の最小 entry point。
+  - Minimal entry point for the executable target `aatv2`.
 - `lakefile.toml`
-  - Lake build 設定。
+  - Lake build configuration.
 - `lean-toolchain`
-  - Lean バージョン固定。
+  - Pinned Lean version.
 
 ## Build
 
@@ -161,23 +166,25 @@ lake build Formal
 lake exe aatv2
 ```
 
-`lake exe aatv2` の出力は次の通りです。
+The output of `lake exe aatv2` is:
 
 ```text
 Algebraic Architecture Theory V2
 ```
 
-## 証明と文書の扱い
+## Proof And Documentation Policy
 
-- Lean ソースに `axiom`, `admit`, `sorry`, `unsafe` を導入しない。
-- 未証明の主張は `docs/aat/proof_obligations.md` または GitHub Issues に明示する。
-- Lean で証明済みの主張、定義のみの概念、将来の証明義務、実証仮説を混同しない。
-- AAT theorem、tooling output、SFT forecast、empirical hypothesis を同一視しない。
-- `docs/aat/proof_obligations.md` は GitHub Issues への索引としても使う。
+- Do not introduce `axiom`, `admit`, `sorry`, or `unsafe` into Lean sources.
+- Record unproved claims in `docs/aat/proof_obligations.md` or GitHub Issues.
+- Keep Lean-proved claims, definition-only concepts, future proof obligations,
+  and empirical hypotheses distinct.
+- Do not identify AAT theorems, tooling output, SFT forecasts, and empirical
+  hypotheses with each other.
+- `docs/aat/proof_obligations.md` also serves as an index to GitHub Issues.
 
-## タスク管理
+## Task Management
 
-未解決課題は GitHub Issues で管理します。
-Issue は研究の依存構造に沿って milestone と
-`type:*`, `area:*`, `priority:*`, `status:*` label で整理します。
-README には Issue 一覧を重複して持たせません。
+Open work is tracked in GitHub Issues. Issues are organized according to the
+research dependency structure with milestones and `type:*`, `area:*`,
+`priority:*`, and `status:*` labels. The README does not duplicate the issue
+list.
