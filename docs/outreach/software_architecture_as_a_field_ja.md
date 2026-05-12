@@ -34,13 +34,13 @@
 
 ```text
 AAT
-  変更が保存する構造を見る
+  architecture as algebraic structure
 
 ArchSig
-  実コードや PR から観測する
+  observation from real artifacts
 
 SFT
-  ソフトウェア進化を計算対象にする
+  computation over software evolution
 ```
 
 Attractor Engineering は、この三層に並ぶ第四の層ではなく、SFT の内部で扱います。
