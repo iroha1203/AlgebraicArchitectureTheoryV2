@@ -3,7 +3,7 @@
 ## TL;DR
 
 - コードベースは、次の変更を中立に受け取る箱ではない。既存の境界、shortcut、テスト、レビュー規則が、次の実装案を引き寄せる。
-- たとえば「クーポン機能を追加する」という小さな PRD でも、きれいな `DiscountPolicy` path と、`PaymentAdapter` への shortcut path の両方を開く。
+- production error、遅い endpoint、薄い test、boundary drift は、現場では別々の Issue やレビューコメントとして現れやすい。
 - この研究は、変更が何を保存し、何を破り、どの future を選びやすくしたかを、観測して計算できる対象へ落とす。
 - AAT は保存される構造を扱い、ArchSig はそれを PR やコードから観測し、SFT は Issue、レビュー、CI、AI agent が次の変更の選ばれ方をどう変えるかを扱う。
 - Attractor Engineering は、良い変更が自然に選ばれ、悪い shortcut が見えやすく高コストになる開発場を設計する考え方である。
@@ -14,15 +14,15 @@
 
 レビューや CI は、その流れを止めたり、曲げたり、観測したりします。AI は、その場にある既存の形を読み取り、次の変更案を高速に作ります。この研究で扱いたい中心テーマは、**ソフトウェア進化を計算可能にすること**です。「この設計は良いか」という印象の議論から一歩進め、「この変更は何を保存したのか」「どの破れを作ったのか」「次にどのような変更を引き寄せやすくしたのか」を、観測し、記録し、計算できる対象へ落とす。この記事は、その研究全体の紹介です。
 
-## まず小さな例から
+## まず現場の Issue から
 
-checkout / payment 領域に、「クーポンを適用できるようにする」という PRD が来たとします。一見すると単純な feature request です。しかし、この PRD は複数の実装 path を開きます。
+一定規模のコードベースでは、問題はきれいな設計課題として現れません。たとえば、ある日 Sentry に `PaymentService` 周辺の production error が増え、Datadog では checkout endpoint の p95 latency が悪化し、レビューでは「また `common` helper に決済ロジックが足されている」と指摘されている。さらに、その周辺の test は薄く、過去にも似た修正が何度か入っている。
 
-良い path では、`DiscountPolicy` を Checkout 側に追加し、Payment boundary を保ちます。別の path では、`PaymentAdapter` に直接 discount logic を足してしまうかもしれません。さらに別の path では、UI-only discount flag を足して、backend の authorization とずれるかもしれません。rounding order が曖昧なら、semantic obstruction が起きるかもしれません。refund / cancellation semantics が曖昧なら、state transition obstruction が起きるかもしれません。
+現場の Issue は、「checkout の失敗率を下げる」「決済周辺のエラーハンドリングを直す」「遅い endpoint を改善する」「テストを追加する」のように、別々に切られます。レビューコメントも、性能の話、責務の話、境界の話、テスト不足の話として分かれます。けれど、開発者の感覚としては、同じ場所に何かが溜まっているように見える。
 
-この記事で扱う三つの層は、この例を別々の角度から読みます。AAT は、この feature extension がどの invariant を保存するかを見る。ArchSig は、依存、境界、抽象化、semantic mismatch、未測定軸を観測する。SFT は、PRD が開く candidate path と ForecastCone を見る。Attractor Engineering は、lawful な `DiscountPolicy` path が選ばれやすい場を作る。
+問題は、これらを一つの品質スコアに潰しても役に立たないことです。runtime error なのか、境界の破れなのか、抽象化の漏れなのか、テスト不足なのか、過去の shortcut が沈着しているのか。それぞれ別の症状なのに、実際のコードベースでは重なって現れます。
 
-たとえば、Issue template に rounding order を入れる。Payment boundary の rule を CI で見る。refund / cancellation semantics を acceptance criteria に入れる。これらは単なるドキュメント整備ではなく、次に選ばれやすい変更を変える操作です。
+この記事で扱いたいのは、この「同じ場所に複数の痛みが集まっている」という感覚です。アーキテクチャを静的な図として見るだけではなく、次の変更をどこへ向かわせるかまで含めて見る。そのための見方として、AAT、ArchSig、SFT という三つの層を導入します。
 
 ## 研究全体の地図
 
