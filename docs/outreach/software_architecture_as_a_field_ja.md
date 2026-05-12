@@ -418,6 +418,14 @@ AI Proposal Governance :=
 
 AI を止めることが目的ではありません。AI が出す operation support を、bounded field model の中で扱えるようにし、review / CI feedback により制御するための枠組みが必要です。
 
+### Gotanda Style: 場のアトラクターを運用する例
+
+Gotanda Style は、この Attractor Engineering を実際の開発運用へ落とした例です。中心にあるのは、agent 同士を会話させるのではなく、共有された環境に痕跡を残して協調するという考え方です。Sentry worker、Datadog worker、Quality worker などが、それぞれ runtime error、slow request、test gap、layering violation のような signal を観測し、pheromone field に構造化された signal を置きます。
+
+重要なのは、観測 agent が直接 GitHub Issue を量産しないことです。Integrator が pheromone field を読み、同じ file、endpoint、module boundary に集まった signal を統合します。強い positive signal は「ここを見るべき」という attraction になります。accepted exception や一時的に追わない判断は negative pheromone として残り、同じ候補が何度も issue 化されるのを防ぎます。さらに、positive と negative が同時に強い場所は、単なるゼロではなく conflict として扱い、人間の review に回せます。
+
+SFT の言葉で読むと、Gotanda Style は multi-agent system によって operation support と selection policy を継続的に更新する仕組みです。production alert、performance regression、test gap、architecture drift が field memory に保存され、Issue 化される候補を変え、Code worker が扱ってよい安全な作業だけを PR にします。これは、AI により変更速度が上がる開発現場で、悪い attractor への drift を観測し、良い修復 path が選ばれやすい場を作る実践例です。
+
 ### クーポン PRD の例
 
 ここで、簡単な running example を置きます。対象は checkout / payment 領域です。入力 artifact は、「クーポンを適用できるようにする」という PRD です。この PRD は、一見すると単純な feature request です。しかし SFT では、複数の path を開く field action として読みます。良い path は、DiscountPolicy を Checkout 側に追加し、Payment boundary を保つ形かもしれません。
