@@ -1,5 +1,13 @@
 # Software Architecture as a Field: ソフトウェア進化を計算可能にする
 
+## 記事の位置づけ
+
+- これは実装 Tips ではなく研究エッセイ。
+- 個別の PR の良し悪しを扱う記事ではない。
+- Lehman が提起した software evolution の問いを、現代の開発環境でどう計算可能な対象として扱えるかを考える。
+- `Software Architecture as a Field` は研究シリーズ / framing として維持する。
+- `ソフトウェア進化を計算可能にする` が今回の記事の thesis。
+
 ## 変わり続けるソフトウェアは、なぜ重くなるのか
 
 - 現場の痛みから始める。
