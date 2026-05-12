@@ -402,9 +402,7 @@ AttractorEngineering(F, R)
 
 実務的には、次の四つを設計します。support shaping。policy shaping。observation shaping。feedback shaping。良い operation が見つけやすく、模倣しやすく、低摩擦で実装できる。悪い shortcut は unsupported になり、high-cost になり、observable になり、review-mediated になる。この状態を作ることが、Attractor Engineering の目標です。
 
-### AI 駆動開発と場の設計
-
-AI 駆動開発では、Attractor Engineering の重要性がさらに増します。AI agent は、既存コード、命名、型、テスト、README、設計ドキュメント、過去の実装例を文脈として変更案を生成します。つまり、コードベース全体が AI への入力文脈になります。
+AI 駆動開発では、この重要性がさらに増します。AI agent は、既存コード、命名、型、テスト、README、設計ドキュメント、過去の実装例を文脈として変更案を生成します。つまり、コードベース全体が AI への入力文脈になります。
 
 良い境界があると、AI はその境界に沿いやすくなります。良い example があると、それを模倣しやすくなります。逆に、悪い shortcut が沈着していると、AI はそれを自然な選択肢として扱いやすくなります。ここで問題になるのは、AI model の性能だけではありません。AI が参加する field の形です。
 
