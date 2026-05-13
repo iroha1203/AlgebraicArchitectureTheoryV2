@@ -1,6 +1,4 @@
-# Software Architecture as a Field
-
-_subtitle: LehmanからAAT/SFTへ — ソフトウェア進化に何を問えるのか_
+# Software Architecture as a Field: Asking Better Questions About Software Evolution
 
 AI coding agent によって、コードを書く速度は上がっている。これは大きな変化である。
 
