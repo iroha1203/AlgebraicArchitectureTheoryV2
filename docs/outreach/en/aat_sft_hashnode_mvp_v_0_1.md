@@ -23,7 +23,7 @@ I will start by drawing a rough map of how AAT/SFT tries to look at software tha
 ## Software Keeps Changing
 
 Software is not something that is completed and then slowly decays.
-It connects to the real world through use, and as that real world changes, the software continually starts to drift.
+It connects to the real world through use, and as that real world changes, the software continually drifts out of alignment.
 
 Users, business processes, organizations, operations, regulations, libraries, and infrastructure all keep changing. Today, AI coding agents are also changing the development flow itself.
 
@@ -67,7 +67,7 @@ In AAT/SFT, we break the question down a little further.
 - What do we want to preserve?
 - Which invariant failed?
 - How is that failure observed?
-- What kinds of changes does this change make natural next?
+- What kinds of changes does this change make more natural next?
 
 This is not about turning design review into a checklist.
 It is about taking the judgments we already make implicitly in practice and reframing them as theoretical objects, so we can reason about changing software.
@@ -116,7 +116,7 @@ In short, the AAT way of reading looks like this:
 - Within what boundary can we make that claim?
 
 AAT does not reduce "architectural quality" to a single number.
-It decomposes design judgment into object, preserved quantity, violation, observation axis, and boundary.
+It decomposes design judgment into object, preserved property, violation, observation axis, and boundary.
 
 ## What Does It Mean to See Architecture Algebraically?
 
@@ -253,7 +253,7 @@ Its value is that it lets us move a design judgment between semantics, witnesses
 
 ## SFT (Software Field Theory): Making Software Evolution Computable
 
-If AAT asks, "What did this change preserve, and what did it fail to preserve?", SFT goes one step further and asks, "What kinds of changes does this change make natural next?"
+If AAT asks, "What did this change preserve, and what did it fail to preserve?", SFT goes one step further and asks, "What kinds of changes does this change make more natural next?"
 On top of the local algebra built by AAT, SFT builds a framework for reasoning about software evolution.
 
 AAT looks at the local structure of one change.
@@ -265,7 +265,7 @@ It asks how the change guides the next changes, which paths it makes cheaper, wh
 In SFT, this whole context is called a `field`.
 
 A `field` is not only the codebase.
-It includes requirements, design documents, PRDs, issues, review rules, CI, type checkers, runtime feedback, AI agent policies, and everything else that exerts force on the codebase.
+It includes requirements, design documents, PRDs, issues, review rules, CI, type checkers, runtime feedback, AI agent policies, and everything else that acts on the codebase.
 It determines which changes look natural, which changes become difficult, what becomes observable, and which feedback remains for the next judgment.
 
 ```text
@@ -431,7 +431,7 @@ One especially important idea in SFT is attractor engineering.
 
 Here, an attractor is a direction of change that becomes repeatedly likely within a field.
 Good design decisions, good abstractions, good tests, good review rules, and good PRDs make it easier for the next good change to follow.
-Conversely, easy shortcuts, ambiguous responsibilities, violated boundaries, and invisible runtime coupling make the next easy shortcut more likely.
+Conversely, easy shortcuts, ambiguous responsibilities, broken boundaries, and invisible runtime coupling make the next easy shortcut more likely.
 
 A codebase has a bias in how it is likely to be changed next.
 SFT treats that bias as a property of the field.
@@ -484,7 +484,7 @@ Instead of trying to answer that question as-is, we decompose it:
 - What do we want to preserve?
 - Which invariant failed?
 - What are we failing to observe?
-- What kinds of changes does this change make natural next?
+- What kinds of changes does this change make more natural next?
 
 This is not meant to make practical design judgment lighter.
 It is meant to make implicit judgment more tractable.
