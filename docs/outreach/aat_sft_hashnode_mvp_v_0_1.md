@@ -629,3 +629,9 @@ SFT は未来を一点予測する理論ではない。
 Gotanda Style は、SFT の実践例として自然に接続できる。
 ただし、本記事では AAT/SFT の導入を主題にするため、詳しくは扱わない。
 AI agent workflow における field memory、signal、observation boundary、governance intervention の実例として、別記事で扱うのがよい。
+
+より詳しく読みたい場合は、次の first-class documents を参照してほしい。
+
+- [Algebraic Architecture Theory 代数的アーキテクチャ論](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md)
+- [Software Field Theory](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md)
+- [AAT / SFT Interface](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/aat_interface.md)
