@@ -293,6 +293,36 @@ field は状態であり、force は artifact-mediated change であり、future
 同じ module graph を持つ codebase でも、field が違えば、次に自然に選ばれる変更は変わる。
 過去の incident、古い workaround、暗黙の ownership boundary、AI agent が真似しやすい local pattern は、未来の operation support と selection policy を変える。
 
+## SFT における「計算」とは何か
+
+ここでいう「計算可能」とは、ソフトウェアの未来を一点予測できるという意味ではない。
+明示された field model、operation support、observation boundary、horizon のもとで、到達可能な future の範囲を bounded な問題として扱える、という意味である。
+
+たとえば、ある artifact が field に入ったとき、SFT は次のような問いを計算問題として見る。
+
+```text
+入力:
+  current field
+  + artifact
+  + operation support
+  + observation axes
+  + horizon
+
+出力:
+  reachable path classes
+  + affected architecture regions
+  + changed signature axes
+  + obstruction witness candidates
+  + missing invariants / boundaries
+  + review / CI recommendations
+```
+
+理論側では、この到達可能な path の集合を `ForecastCone` と呼ぶ。
+実務側では、それを読める report としてまとめたものを `ConsequenceEnvelope` と呼ぶ。
+
+重要なのは、SFT が「この PRD から必ずこの PR が生まれる」と言いたいわけではないことだ。
+SFT が見たいのは、この field ではどの path が近くなり、どの path が遠くなり、どの obstruction が見えるようになるのかである。
+
 ## PRD は未来の PR を形作る
 
 PRD から PR への流れを考えると、SFT の直感は掴みやすい。
@@ -310,27 +340,21 @@ PRD
   -> possible signature changes
 ```
 
-SFT では、この PRD が codebase にどんな力を加えるのかを見る。
-ただし、その力は一つの決定済みの未来を作るものではない。
-むしろ、天気予報の予報円のように、到達しうる未来の範囲を作る。
+SFT では、この PRD が codebase にどんな力を加え、どのような `ForecastCone` を作るのかを見る。
+ただし、その cone は一つの決定済みの未来を表すものではない。
+むしろ、天気予報の予報円のように、到達しうる未来の範囲を表す。
 
 ```text
 この PRD からは、どんな PR が生まれやすいか。
 その PR は、どの architecture region に作用しそうか。
 どの invariant を守り、どの obstruction を生みうるか。
-どの future path が近くなり、どの path が遠くなるか。
+`ForecastCone` の中で、どの future path が近くなり、どの path が遠くなるか。
 ```
 
-SFT が扱いたいのは、一点の未来ではない。
+このため、SFT の問いは次の形になる。
 
 ```text
-この変更を入れたら、未来はこうなる。
-```
-
-ではなく、
-
-```text
-この field では、どの architecture future が到達可能になるのか。
+この field では、どの `ForecastCone` が生まれるのか。
 どの path が自然になり、どの path が遠ざかるのか。
 何が観測可能で、何が観測できないまま残るのか。
 ```
@@ -481,7 +505,7 @@ architecture object
 
 AAT は、設計判断を invariant と obstruction の言葉で読む。
 ArchSig は、codebase、PR、issue、review、incident trace から、それらを観測可能にする。
-SFT は、その観測を使って、どの future が開き、どの path が自然になるのかを扱う。
+SFT は、その観測を使って、どの `ForecastCone` が開き、どの path が自然になるのかを扱う。
 
 ```text
 AAT
