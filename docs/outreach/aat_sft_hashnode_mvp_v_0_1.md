@@ -543,23 +543,14 @@ AAT/SFT は、変わり続けるソフトウェアに対して、問いを定義
 
 ---
 
-## Notes
+## Further Reading
 
-本稿では、可読性を優先して多くの概念を省略している。AAT には `ArchitectureOperation`、`InvariantFamily`、`ObstructionWitness`、`ArchitectureSignature`、`theorem boundary` などのより細かい定義がある。
-SFT には `ForecastCone`、`ConsequenceEnvelope`、`ArtifactAction`、`GovernanceIntervention`、`FieldUpdate` などの概念がある。
-
-ただし、初回記事でそれらをすべて列挙すると、読者は理論の地図を得る前に語彙に埋もれてしまう。
-そのため本文では、AAT を「局所構造を読む理論」、SFT を「ソフトウェア進化を計算可能な対象にする理論」として導入した。
-
-SFT は未来を一点予測する理論ではない。
-選択された modeling boundary の中で、到達可能な未来や観測可能な変化を扱う理論である。
-
-Gotanda Style は、SFT の実践例として自然に接続できる。
-ただし、本記事では AAT/SFT の導入を主題にするため、詳しくは扱わない。
-AI agent workflow における field memory、signal、observation boundary、governance intervention の実例として、別記事で扱うのがよい。
-
-さらに詳しく読みたい場合は、次の first-class documents を参照してほしい。
+AAT/SFT の数学的な定義や theorem boundary、SFT との接続を詳しく知りたい場合は、次の first-class documents を参照してほしい。
 
 - [Algebraic Architecture Theory 代数的アーキテクチャ論](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md)
 - [Software Field Theory](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md)
 - [AAT / SFT Interface](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/aat_interface.md)
+
+アトラクターエンジニアリングの実践例として、また codebase を自動でメンテナンスする multi-agent system の例として、Gotanda Style についての解説記事も参照してほしい。
+
+- [AI Agents Don't Need Meetings: Gotanda Style for Stigmergic Software Maintenance](https://iroha1203.hashnode.dev/ai-agents-don-t-need-meetings-gotanda-style-for-stigmergic-software-maintenance)
