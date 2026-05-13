@@ -299,6 +299,8 @@ PRD から PR への流れを考えると、SFT の直感は掴みやすい。
 
 PRD は、単なる要求文書ではない。未来の PR の形をある程度決める artifact である。
 同じ「機能を追加する」という要求でも、PRD が境界、責務、観測すべき性質を明示しているかどうかで、生まれやすい PR は変わる。
+そして PRD は、多くの場合、PdM や designer、domain expert のような、直接コードを書かない人によって作られる。
+つまり、エンジニア以外の人も、artifact を通じて codebase に force を加えている。
 
 ```text
 PRD
@@ -425,6 +427,7 @@ SFT はその偏りを field の性質として見る。
 
 AI coding agent の時代には、この考え方がさらに重要になる。
 AI agent は、既存の codebase や周辺 artifact から、もっとも自然に見える path を選びやすい。
+この意味で、codebase は単なる実装ではなく、AI agent にとっての prompt でもある。
 field が望ましくなければ、AI agent は悪い local pattern を高速に増幅する。
 逆に field がよく設計されていれば、AI agent は良い構造を高速に増幅しうる。
 
