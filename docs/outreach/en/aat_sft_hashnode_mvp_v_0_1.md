@@ -28,18 +28,19 @@ It connects to the real world through use, and as that real world changes, the s
 Users, business processes, organizations, operations, regulations, libraries, and infrastructure all keep changing. Today, AI coding agents are also changing the development flow itself.
 
 This view is not new.
-Lehman's laws of software evolution formalized the view that software connected to real-world problems, often called E-type software, must continually adapt as long as it is used.
+Lehman's laws of software evolution formalized the view that software connected to real-world problems, often called E-type software, requires continual adaptation as long as it is used.
 They also observed that evolving software tends to become more complex unless explicit work is done to control that complexity.
 And the process of evolution should not be seen as a mere sequence of changes, but as a multi-layered, multi-loop, multi-actor feedback system.
 
 The important point here is not to jump immediately to a prescription.
-It is not simply, "so we should refactor."
-It is not simply, "so we should strengthen design review."
-It is not simply, "so we should control AI more strictly."
+The answer is not simply "so we should refactor," or "so we should strengthen design review," or "so we should control AI more strictly."
 
 The question after Lehman is a little deeper:
 
-> If software keeps changing, what can we ask about that change?
+```text
+If software keeps changing,
+what can we ask about that change?
+```
 
 AAT/SFT starts from this question.
 
@@ -69,7 +70,7 @@ In AAT/SFT, we break the question down a little further.
 - What kinds of changes does this change make natural next?
 
 This is not about turning design review into a checklist.
-It is about rebuilding the judgments we already make implicitly in practice as theoretical objects for reasoning about changing software.
+It is about taking the judgments we already make implicitly in practice and reframing them as theoretical objects, so we can reason about changing software.
 
 ## AAT (Algebraic Architecture Theory): Reading Changes Locally
 
@@ -85,12 +86,13 @@ What matters is making explicit what we chose as the object.
 Next, for that object, we ask which property we want to preserve.
 This is called an `Invariant`.
 
-- Do we want to preserve dependency direction?
-- Do we want to preserve a boundary?
-- Do we want to preserve an abstraction?
-- Do we want to preserve substitutability?
-- Do we want to preserve runtime protection?
-- Do we want to preserve consistency of state transitions?
+What do we want to preserve?
+Dependency direction?
+A boundary?
+An abstraction?
+Substitutability?
+Runtime protection?
+Consistency of state transitions?
 
 The phrase "good design" mixes together many such invariants.
 AAT separates them so that we can inspect them one by one.
@@ -136,7 +138,7 @@ object
 ```
 
 AAT is not merely evaluation.
-There is an object, there are operations, there is structure that is preserved, there are preservation failures, and there are sequences of operations.
+There is an object, there are operations, there is structure that is preserved, there are obstructions where preservation fails, and there are sequences of operations.
 To study that structure, AAT treats architecture algebraically.
 
 For example, one change may preserve dependency direction.
@@ -152,12 +154,12 @@ This is the kind of structure AAT wants to study.
 
 From this point of view, familiar design principles in software engineering look a little different.
 
-For example, SOLID is not a universal design principle in AAT.
+For example, SOLID is not an all-purpose design principle in AAT.
 It is better read mainly as a family of principles for preserving local contracts.
 
 - SRP tries to preserve responsibility boundaries.
 - OCP asks for extension without breaking existing contracts.
-- LSP asks that observations through an abstraction remain consistent.
+- LSP asks that an abstraction be observable in the same way regardless of which concrete implementation is substituted.
 - ISP tries to separate unnecessary dependencies from interfaces.
 - DIP tries to map dependencies on concrete details into dependencies on abstractions.
 
@@ -216,7 +218,7 @@ Up to this point, this is almost definitional.
 The important part comes next.
 
 AAT is not trying to restate "good design is design without violations."
-The word law here should be read as a more explicit rule describing a property we want to preserve.
+Here, a *law* should be read as an explicit rule describing a property we want to preserve.
 The goal is to connect lawfulness with respect to selected laws to finitely observable obstruction witnesses and to the required axes of an `ArchitectureSignature` being zero.
 
 ```text
@@ -255,7 +257,7 @@ If AAT asks, "What did this change preserve, and what did it fail to preserve?",
 On top of the local algebra built by AAT, SFT builds a framework for reasoning about software evolution.
 
 AAT looks at the local structure of one change.
-It asks which object the change operates on, what it preserved, where preservation failures remain, what can be said on which observation axes, and where those claims stop.
+It asks which object the change operates on, what it preserved, where obstructions remain, what can be said on which observation axes, and where those claims stop.
 
 SFT looks at the field in which that change is placed.
 It asks how the change guides the next changes, which paths it makes cheaper, which paths it makes harder to see, which feedback remains as memory, and which futures become reachable.
@@ -263,7 +265,7 @@ It asks how the change guides the next changes, which paths it makes cheaper, wh
 In SFT, this whole context is called a `field`.
 
 A `field` is not only the codebase.
-It includes requirements, design documents, PRDs, issues, review rules, CI, type checkers, runtime feedback, AI agent policies, and other things that act on the codebase.
+It includes requirements, design documents, PRDs, issues, review rules, CI, type checkers, runtime feedback, AI agent policies, and everything else that exerts force on the codebase.
 It determines which changes look natural, which changes become difficult, what becomes observable, and which feedback remains for the next judgment.
 
 ```text
@@ -300,7 +302,7 @@ Force is artifact-mediated change.
 Future is the range of paths reachable from that field.
 
 Even if two codebases have the same module graph, their next natural changes can differ if their fields differ.
-Past incidents, old workarounds, implicit ownership boundaries, and local patterns that an AI agent can easily imitate all change future operation support and selection policy.
+Past incidents, old workarounds, implicit ownership boundaries, and local patterns that an AI agent can easily mimic all change future operation support and selection policy.
 
 ## What Does "Computation" Mean in SFT?
 
@@ -365,7 +367,7 @@ For this reason, SFT asks questions in the following form:
 - Which paths become natural, and which paths move farther away?
 - What is observable, and what remains unobserved?
 
-In this sense, SFT is a theory that tries to make software evolution a computable object.
+In this sense, SFT is a theory that tries to treat software evolution as a computable object.
 
 ## Conway's Law: Systems Reflect Organizational Communication Structures
 
@@ -428,7 +430,7 @@ For now, I only want to emphasize that AAT/SFT is meant to connect to observatio
 One especially important idea in SFT is attractor engineering.
 
 Here, an attractor is a direction of change that becomes repeatedly likely within a field.
-Good design decisions, good abstractions, good tests, good review rules, and good PRDs make the next good change easier to attract.
+Good design decisions, good abstractions, good tests, good review rules, and good PRDs make it easier for the next good change to follow.
 Conversely, easy shortcuts, ambiguous responsibilities, violated boundaries, and invisible runtime coupling make the next easy shortcut more likely.
 
 A codebase has a bias in how it is likely to be changed next.
@@ -472,7 +474,9 @@ AAT/SFT is trying to do three main things.
 
 The first is to change the question.
 
-> Is this design good?
+```text
+Is this design good?
+```
 
 Instead of trying to answer that question as-is, we decompose it:
 
