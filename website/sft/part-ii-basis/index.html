@@ -67,6 +67,7 @@
                 <li><a href="#aat-dependency">AAT dependency</a></li>
                 <li><a href="#archsig-bridge">ArchSig bridge</a></li>
                 <li><a href="#claim-levels">Claim levels</a></li>
+                <li><a href="#basis-boundary">Boundary</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -122,6 +123,16 @@
                 <pre><code>AAT does not depend on SFT.
 SFT depends on AAT.</code></pre>
               </figure>
+              <figure class="code-panel">
+                <figcaption>Minimal interface map</figcaption>
+                <pre><code>architecture projection   -> ArchitectureObject
+local transition law     -> ArchitectureOperation
+protected constraint     -> InvariantFamily
+defect / repair target   -> ObstructionWitness
+observable coordinate    -> ArchitectureSignature
+admissibility boundary   -> theorem boundary / non-conclusions
+local path skeleton      -> ArchitecturePath</code></pre>
+              </figure>
             </section>
 
             <section id="archsig-bridge" class="article-section">
@@ -144,6 +155,21 @@ SFT depends on AAT.</code></pre>
                 and axis-wise comparison is available. Unmeasured does not mean
                 zero, and tool output is not a theorem.
               </p>
+              <figure class="code-panel">
+                <figcaption>ArchSigSFTReport</figcaption>
+                <pre><code>ArchSigSFTReport
+  = action_class_candidates
+  + target_architecture_regions
+  + candidate_operation_families
+  + comparable_signature_axes
+  + expected_axis_delta_ranges
+  + selected_obstruction_witness_families
+  + missing_invariants
+  + theorem_boundary_items
+  + forecast_boundary
+  + unknown_unmodeled_remainder
+  + claim_level</code></pre>
+              </figure>
             </section>
 
             <section id="claim-levels" class="article-section">
@@ -172,6 +198,12 @@ SFT depends on AAT.</code></pre>
                   <span>Transition-kernel models, calibrated forecasts, or deployed closed-loop governance systems.</span>
                 </li>
               </ul>
+              <p>
+                The levels keep three claims apart: a formal AAT theorem, a
+                set-valued SFT schema over an explicit support relation, and an
+                empirical forecast validated against traces or deployed
+                outcomes.
+              </p>
               <div class="claim-strip">
                 <p>
                   A good specification may narrow a cone under support
@@ -179,6 +211,31 @@ SFT depends on AAT.</code></pre>
                   not an empirical prediction theorem.
                 </p>
               </div>
+            </section>
+
+            <section id="basis-boundary" class="article-section">
+              <h2>Basis boundary and non-conclusions</h2>
+              <p>
+                Part II is the bridge layer, so its main job is preventing
+                category errors. ArchSig evidence may inform a field estimate,
+                but it is not a Lean proof. AAT theorem status may supply a
+                local premise, but it is not automatically software evolution
+                forecast status.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Formal claim</strong>
+                  <span>Lives in AAT or in a set-valued SFT schema with stated support and step semantics.</span>
+                </li>
+                <li>
+                  <strong>Tooling estimate</strong>
+                  <span>Records measured axes, missing axes, evidence boundaries, and non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>Empirical forecast</strong>
+                  <span>Requires trace or dataset calibration; it is not obtained by renaming a theorem.</span>
+                </li>
+              </ul>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

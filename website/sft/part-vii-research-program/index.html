@@ -68,6 +68,7 @@
                 <li><a href="#non-claims">Non-claims</a></li>
                 <li><a href="#open-problems">Open problems</a></li>
                 <li><a href="#workbench">Workbench direction</a></li>
+                <li><a href="#research-boundary">Boundary</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -130,6 +131,18 @@
                   <strong>No ground truth extractor claim</strong>
                   <span>ArchSig extraction is not a complete `ComponentUniverse` or ground truth architecture object.</span>
                 </li>
+                <li>
+                  <strong>No causal uniqueness from observed deltas</strong>
+                  <span>An observed signature delta does not uniquely identify the artifact action that caused it.</span>
+                </li>
+                <li>
+                  <strong>No policy-to-lawfulness implication</strong>
+                  <span>AI policy compliance or review acceptance does not imply architecture lawfulness.</span>
+                </li>
+                <li>
+                  <strong>No human or market prediction</strong>
+                  <span>SFT does not predict human intention, organizational success, or market success.</span>
+                </li>
               </ul>
             </section>
 
@@ -153,6 +166,20 @@
   + lifecycle and AI proposal governance
   -> deployed SFT workbench</code></pre>
               </figure>
+              <ul class="term-list">
+                <li>
+                  <strong>Formal open problems</strong>
+                  <span>Lean formalization of `ForecastCone`, support simulation, and the relation from envelopes to one or more cones.</span>
+                </li>
+                <li>
+                  <strong>Empirical open problems</strong>
+                  <span>Trace-grounded reconstruction, simulator calibration, review mediation, AI shortcut detection, and field memory studies.</span>
+                </li>
+                <li>
+                  <strong>Tooling open problems</strong>
+                  <span>Theorem-boundary integration, lifecycle decision models, and a deployed closed-loop workbench.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="workbench" class="article-section">
@@ -166,6 +193,20 @@
                 CI interventions, AI proposal constraints, and calibration
                 plans.
               </p>
+              <figure class="code-panel">
+                <figcaption>Workbench contract</figcaption>
+                <pre><code>input:
+  PRD, design memo, issue plan, codebase,
+  architecture signature, review / CI history,
+  incident history, AI agent policy
+
+output:
+  ConsequenceEnvelope, affected axes,
+  witness families, missing boundaries,
+  risky default paths, issue decomposition,
+  governance interventions, AI constraints,
+  feedback / calibration plan</code></pre>
+              </figure>
               <div class="claim-strip">
                 <p>
                   SFT does not replace developers. It makes software evolution
@@ -173,6 +214,24 @@
                   governed, and revised.
                 </p>
               </div>
+            </section>
+
+            <section id="research-boundary" class="article-section">
+              <h2>Research boundary</h2>
+              <p>
+                The research program is deliberately split across formal,
+                tooling, and empirical tracks. Lean work can prove bounded
+                schemas; ArchSig and the workbench can produce evidence and
+                reports; calibration studies can test forecast quality. None
+                of these statuses should be collapsed into the others.
+              </p>
+              <p>
+                This page therefore treats SFT as a large computational
+                theory with visible non-conclusions. The scope is broad, but
+                every claim must still state whether it is defined only,
+                theorem-shaped, tool-supported, empirically calibrated, or
+                operationally deployed.
+              </p>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

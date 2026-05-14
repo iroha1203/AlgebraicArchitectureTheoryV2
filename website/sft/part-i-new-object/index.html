@@ -68,6 +68,7 @@
                 <li><a href="#field-memory">Field memory</a></li>
                 <li><a href="#development-field">Development field</a></li>
                 <li><a href="#architecture-futures">Architecture futures</a></li>
+                <li><a href="#part-boundary">Boundary</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -113,6 +114,21 @@
                 supplies observation, and SFT asks how future operation space
                 changes under artifacts and feedback.
               </p>
+              <figure class="code-panel">
+                <figcaption>Computable in SFT</figcaption>
+                <pre><code>computable :=
+  representable under an explicit modeling boundary
+  + bounded by a selected horizon, universe, and observation axes
+  + reducible to reachability, support inference,
+    cone generation, safety preservation,
+    proposal accounting, feedback update, or calibration</code></pre>
+              </figure>
+              <p>
+                This is a bounded-computation claim. SFT does not say the real
+                project history is fully decidable; it says selected questions
+                can be made finite, auditable, and explicitly relative to the
+                evidence and horizon that were chosen.
+              </p>
             </section>
 
             <section id="field-memory" class="article-section">
@@ -153,6 +169,16 @@
                 partial `SoftwareFieldEstimate` that records selected evidence,
                 unavailable evidence, and the unknown remainder.
               </p>
+              <figure class="code-panel">
+                <figcaption>Boundary-aware estimate</figcaption>
+                <pre><code>model_B : DevelopmentField -> Partial SoftwareFieldEstimate
+
+SoftwareFieldEstimate
+  = modeling boundary
+  + extracted SoftwareField
+  + evidence status
+  + unknown / unmodeled remainder</code></pre>
+              </figure>
               <div class="claim-strip">
                 <p>
                   The wide development field is the scope. The computable core
@@ -183,6 +209,30 @@
                 several paths visible: lawful policy insertion, payment adapter
                 shortcut, UI-only drift, and rounding semantics obstruction.
               </p>
+            </section>
+
+            <section id="part-boundary" class="article-section">
+              <h2>Claim boundary and non-conclusions</h2>
+              <p>
+                Part I introduces the object and its modeling discipline. It
+                does not prove that all relevant development context can be
+                extracted from a repository, that a field estimate is complete,
+                or that a reachable future is an empirical prediction.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Definition level</strong>
+                  <span>`DevelopmentField`, `SoftwareFieldEstimate`, `ArchitectureFuture`, and `SignatureTrajectory` are vocabulary for bounded modeling.</span>
+                </li>
+                <li>
+                  <strong>Computational reading</strong>
+                  <span>Inputs are selected artifacts, code regions, observations, governance records, unavailable evidence, and a horizon.</span>
+                </li>
+                <li>
+                  <strong>Running example</strong>
+                  <span>The coupon PRD is used as an artifact action whose possible paths are constrained only after the boundary is stated.</span>
+                </li>
+              </ul>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

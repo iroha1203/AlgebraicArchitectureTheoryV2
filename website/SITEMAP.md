@@ -540,7 +540,7 @@ AAT / SFT / ArchSig / Outreach / Profile は期待される成熟度が違うた
 | `/aat/status/` | implemented | proved / defined only / future proof obligation を読むための status appendix。 | route and status overview implemented。 | AAT chapter 増補後、本文からの参照と theorem index への導線を点検する。 |
 | `/interface/` | implemented | AAT theorem claim と SFT empirical / computational claim の translation boundary。 | route and boundary overview implemented。 | AAT / SFT 本文増補後、禁止される読み替えと依存方向の記述を再点検する。 |
 | `/sft/` landing | implemented | SFT の読む順序、computable object と claim boundary の入口。 | route and overview implemented。 | 子 Part の増補に合わせて computational reading と source docs への導線を維持する。 |
-| `/sft/part-*/` pages | implemented | canonical SFT monograph に忠実な research exposition。 | route implemented, overview-level content。 | #773 で定義、formal / computational reading、examples、claim boundary、non-conclusions、running example を Part ごとに増補する。 |
+| `/sft/part-*/` pages | implemented | canonical SFT monograph に忠実な research exposition。 | monograph-level exposition implemented with definitions, computational readings, examples, claim boundaries, non-conclusions, and running example connections。 | W3 で AAT theorem status と SFT empirical / forecast status の境界導線を継続点検する。 |
 | `/archsig/` and `/archsig/*/` | implemented | standalone manual / reference。tool output と formal claim を区別し、CLI、artifact、schema、workflow を読める。 | Core / Review / SFT / Operational surface と remaining gaps を整理済み。 | W3 で cross-link と boundary wording を継続点検する。 |
 | `/outreach/` | implemented | canonical technical pages へ戻す outreach index。 | route implemented。 | article が増えた時点でリンクと canonical return path を更新する。 |
 | `/profile/` | implemented | author profile and contact surface。 | route implemented。 | 研究成果・公開活動の変化に応じて更新する。 |
@@ -553,9 +553,9 @@ W2 first-class theory / manual surface:
     - route implementation for AAT, SFT, Interface, ArchSig, Outreach, Profile
     - content maturity tracking in this document
     - #774 ArchSig / tool docs: product surface and remaining gaps
+    - #773 SFT Part pages: monograph-level canonical exposition
   remaining:
     - #772 AAT chapter pages: paper-level canonical exposition
-    - #773 SFT Part pages: monograph-level canonical exposition
 
 W3 cross-link and boundary hardening:
   remaining:
