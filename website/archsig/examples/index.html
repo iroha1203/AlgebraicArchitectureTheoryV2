@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="ArchSig examples for good extension, hidden interaction witness, semantic witness, Feature Extension Report reading, and dynamics reading."
+    >
+    <title>ArchSig Examples</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">ArchSig</a>
+            <span>Examples</span>
+          </nav>
+          <p class="eyebrow">ArchSig Reference</p>
+          <h1>Examples show how to read reports without overclaiming.</h1>
+          <p class="lede">
+            The example set uses a coupon feature extension to show split extension, hidden interaction witness, semantic witness, Feature Extension Report reading, and architecture dynamics interpretation.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#good-extension">Good extension</a></li>
+                <li><a href="#hidden-interaction">Hidden interaction</a></li>
+                <li><a href="#semantic-witness">Semantic witness</a></li>
+                <li><a href="#report-reading">Report reading</a></li>
+                <li><a href="#dynamics">Dynamics reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical sources</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/examples.md">
+                    Tooling examples
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/repair_suggestion.md">
+                    Repair suggestion
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <ul>
+                <li><code>archsig</code> is not a Lean prover.</li>
+                <li>Tool output is not a Lean theorem.</li>
+                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
+                <li>Measured zero is different from unmeasured.</li>
+                <li>Policy pass does not imply architecture lawfulness.</li>
+                <li>Report warning does not imply incident causality.</li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="good-extension" class="article-section">
+              <h2>Good extension</h2>
+              <p>
+                A split coupon extension interacts through declared interfaces
+                rather than reaching into adapter internals. AIR can separate
+                embedding, feature view, interaction, static split, and
+                coverage claims.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Good extension shape</figcaption>
+                <pre><code>before:
+  OrderService -&gt; PaymentPort
+  PaymentAdapter implements PaymentPort
+
+feature:
+  Coupon calculation
+
+after:
+  OrderService -&gt; CouponPort
+  CouponService -&gt; CouponPort
+  CouponService -&gt; PaymentPort</code></pre>
+              </figure>
+            </section>
+
+            <section id="hidden-interaction" class="article-section">
+              <h2>Hidden interaction</h2>
+              <p>
+                A hidden interaction witness appears when the coupon feature
+                reaches through a boundary, such as direct access to an
+                internal payment cache. This is a static split failure
+                candidate, not runtime or semantic completeness.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Witness fragment</figcaption>
+                <pre><code>witnessId: coupon-hidden-payment-cache
+layer: static
+kind: hidden_interaction
+extensionClassification: non_split
+measurementBoundary: measuredNonzero</code></pre>
+              </figure>
+            </section>
+
+            <section id="semantic-witness" class="article-section">
+              <h2>Semantic witness</h2>
+              <p>
+                If rounding order changes the observable result, a selected
+                semantic diagram can become non-fillable. The witness is tied
+                to the selected diagram and measurement boundary.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Semantic non-fillability</figcaption>
+                <pre><code>apply coupon then round
+  is not equal to
+round then apply coupon</code></pre>
+              </figure>
+            </section>
+
+            <section id="report-reading" class="article-section">
+              <h2>Report reading</h2>
+              <p>
+                A Feature Extension Report can summarize split status,
+                introduced obstruction witnesses, repair suggestions, and
+                non-conclusions. The non-conclusions are part of the report,
+                not boilerplate.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>splitStatus</strong>
+                  <span>Whether the feature extension is split under the selected observation boundary.</span>
+                </li>
+                <li>
+                  <strong>introducedObstructionWitnesses</strong>
+                  <span>Measured witness candidates that explain why the extension may fail a law.</span>
+                </li>
+                <li>
+                  <strong>repairSuggestions</strong>
+                  <span>Advisory candidates such as introducing a port or moving access behind a contract.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="dynamics" class="article-section">
+              <h2>Dynamics reading</h2>
+              <p>
+                A good coupon example can act as a seed attractor, while a bad
+                shortcut can become a shortcut basin. This is an empirical /
+                tooling reading of future change pressure, not a causal
+                theorem.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Dynamics examples guide review and hypothesis formation.
+                  They do not prove global flatness preservation or future
+                  defect causality.
+                </p>
+              </div>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../operational-feedback/">
+                <span>Previous</span>
+                <strong>Operational Feedback</strong>
+              </a>
+              <a href="../roadmap/">
+                <span>Next</span>
+                <strong>Roadmap</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

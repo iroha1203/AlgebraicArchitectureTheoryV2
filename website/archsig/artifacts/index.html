@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="ArchSig artifact reference for Sig0, validation, reports, policy, datasets, operational feedback, and SFT forecasting artifacts."
+    >
+    <title>ArchSig Artifact Reference</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">ArchSig</a>
+            <span>Artifacts</span>
+          </nav>
+          <p class="eyebrow">ArchSig Reference</p>
+          <h1>Artifacts carry evidence, status, and non-conclusions together.</h1>
+          <p class="lede">
+            ArchSig artifacts are JSON records for a bounded observation universe. Their role is to preserve source refs, measurement status, coverage gaps, theorem boundaries, and report projections across commands.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#primary">Primary artifacts</a></li>
+                <li><a href="#policy-registry">Policy and registry</a></li>
+                <li><a href="#datasets">Datasets and feedback</a></li>
+                <li><a href="#forecasting">SFT forecasting</a></li>
+                <li><a href="#diagnostics">Diagnostic reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical sources</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/docs/artifacts-and-boundaries.md">
+                    Artifacts And Boundaries
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/signature_artifacts.md">
+                    Signature artifacts
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/reports.md">
+                    Reports
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/air.md">
+                    AIR
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <ul>
+                <li><code>archsig</code> is not a Lean prover.</li>
+                <li>Tool output is not a Lean theorem.</li>
+                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
+                <li>Measured zero is different from unmeasured.</li>
+                <li>Policy pass does not imply architecture lawfulness.</li>
+                <li>Report warning does not imply incident causality.</li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="primary" class="article-section">
+              <h2>Primary artifacts</h2>
+              <p>
+                The main review flow starts with Sig0 and ends with a PR
+                comment summary. Each step keeps claim level and measurement
+                status visible.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Sig0 output</strong>
+                  <span><code>archsig-sig0-v0</code>: component list, dependency edges, signature axes, and metric status for one revision.</span>
+                </li>
+                <li>
+                  <strong>Validation report</strong>
+                  <span><code>component-universe-validation-report-v0</code>: duplicate, closure, external target, and policy status checks.</span>
+                </li>
+                <li>
+                  <strong>Snapshot and diff</strong>
+                  <span><code>signature-snapshot-store-v0</code> and <code>signature-diff-report-v0</code>: revision persistence and before / after changes.</span>
+                </li>
+                <li>
+                  <strong>AIR and review reports</strong>
+                  <span><code>aat-air-v0</code>, theorem precondition check, Feature Extension Report, policy decision, and PR comment summary.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="policy-registry" class="article-section">
+              <h2>Policy and registry</h2>
+              <p>
+                Policy, registry, and schema artifacts let teams add local
+                thresholds and adapters without claiming that a policy pass is
+                architecture lawfulness.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Organization policy</strong>
+                  <span>Warn / fail / advisory rules plus formal claim promotion boundaries.</span>
+                </li>
+                <li>
+                  <strong>Law policy templates and custom rules</strong>
+                  <span>Reusable policy shape with theorem refs, boundary refs, and non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>Schema compatibility report</strong>
+                  <span>Field mappings, deprecated fields, required assumptions, and preserved non-conclusions.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="datasets" class="article-section">
+              <h2>Datasets and feedback</h2>
+              <p>
+                Dataset artifacts are empirical records. They connect PR
+                metadata, reports, and outcome observations without turning
+                correlation into causality.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Empirical datasets</strong>
+                  <span>PR metadata, before / after signatures, feature reports, theorem checks, and outcome linkage.</span>
+                </li>
+                <li>
+                  <strong>Operational feedback</strong>
+                  <span>Daily ledger, calibration review, team threshold, ownership boundary, repair adoption, incident correlation, and hypothesis refresh artifacts.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="forecasting" class="article-section">
+              <h2>SFT forecasting</h2>
+              <p>
+                Forecasting artifacts bound the input, operation support,
+                finite support, horizon, unknown remainder, and review
+                recommendations for a proposed change.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>ArtifactDescriptor</strong>
+                  <span>Source refs, action class candidates, scope, missing evidence, measurement boundary, and forecast non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>OperationSupportEstimate</strong>
+                  <span>Candidate operation families, policy constraints, known forbidden support, unknown remainder, and confidence boundary.</span>
+                </li>
+                <li>
+                  <strong>ForecastConeSkeleton and ConsequenceEnvelope</strong>
+                  <span>Bounded path candidates, affected regions, comparable axes, obstruction candidates, missing boundary, and review / CI recommendations.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="diagnostics" class="article-section">
+              <h2>Diagnostic reading</h2>
+              <p>
+                Single-revision diagnostics cover static cycles, SCC size,
+                max depth, fanout, reachable cone, boundary violations,
+                abstraction violations, runtime exposure, and relation
+                complexity. Diff diagnostics cover worsened axes, improved
+                axes, unmeasured axes, evidence diff, and PR attribution
+                candidates.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Diff attribution is a review cue. It is not causal proof
+                  that a PR caused an incident, rollback, or MTTR change.
+                </p>
+              </div>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../commands/">
+                <span>Previous</span>
+                <strong>Commands</strong>
+              </a>
+              <a href="../boundaries/">
+                <span>Next</span>
+                <strong>Boundaries</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

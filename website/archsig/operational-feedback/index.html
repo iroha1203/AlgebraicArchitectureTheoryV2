@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="ArchSig operational feedback manual for B10 artifacts, commands, reading rules, and non-conclusions."
+    >
+    <title>ArchSig Operational Feedback</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">ArchSig</a>
+            <span>Operational Feedback</span>
+          </nav>
+          <p class="eyebrow">ArchSig Manual</p>
+          <h1>Operational feedback is empirical evidence with guardrails.</h1>
+          <p class="lede">
+            B10 artifacts let teams review outcomes, calibration, thresholds, ownership erosion, repair adoption, incident correlation, and hypothesis refresh without converting operational records into causal or formal claims.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#commands">Commands</a></li>
+                <li><a href="#artifacts">Artifacts</a></li>
+                <li><a href="#reading-rules">Reading rules</a></li>
+                <li><a href="#non-conclusions">Non-conclusions</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical sources</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/docs/operational-feedback.md">
+                    Operational Feedback
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/reports.md">
+                    Reports
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <ul>
+                <li><code>archsig</code> is not a Lean prover.</li>
+                <li>Tool output is not a Lean theorem.</li>
+                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
+                <li>Measured zero is different from unmeasured.</li>
+                <li>Policy pass does not imply architecture lawfulness.</li>
+                <li>Report warning does not imply incident causality.</li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="commands" class="article-section">
+              <h2>Commands</h2>
+              <p>
+                The daily ledger joins outcome linkage and drift ledger inputs
+                inside a specified aggregation window. Other B10 commands emit
+                canonical operational artifacts for calibration and review.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>report-outcome-daily-ledger</strong>
+                  <span>Aggregates outcome linkage and architecture drift ledger records for a bounded window.</span>
+                </li>
+                <li>
+                  <strong>calibration-review-record and team-threshold-policy</strong>
+                  <span>Track false positive / false negative review and team-specific CI policy tuning.</span>
+                </li>
+                <li>
+                  <strong>ownership-boundary-monitor, repair-adoption-record, incident-correlation-monitor, hypothesis-refresh-cycle</strong>
+                  <span>Track operational boundary signals, repair decisions, correlations, and empirical hypothesis updates.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="artifacts" class="article-section">
+              <h2>Artifacts</h2>
+              <p>
+                Operational artifacts are empirical and process records. They
+                preserve unavailable, private, missing, and unmeasured data
+                states instead of rounding them to measured zero.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Report outcome daily ledger</strong>
+                  <span>Daily aggregation over outcome linkage and drift evidence.</span>
+                </li>
+                <li>
+                  <strong>Calibration and threshold artifacts</strong>
+                  <span>Review evidence for tuning report sensitivity and CI modes.</span>
+                </li>
+                <li>
+                  <strong>Ownership, repair, incident, and hypothesis artifacts</strong>
+                  <span>Operational records that support review, not formal theorem promotion.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="reading-rules" class="article-section">
+              <h2>Reading rules</h2>
+              <p>
+                Reviewer decisions, team thresholds, ownership signals, repair
+                adoption, incident correlation, and retained hypotheses are
+                calibration inputs. They are not proof that a report, policy,
+                or repair is correct.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Unavailable, private, missing, and unmeasured outcome data
+                  must stay separate from measured-zero evidence.
+                </p>
+              </div>
+            </section>
+
+            <section id="non-conclusions" class="article-section">
+              <h2>Non-conclusions</h2>
+              <p>
+                B10 artifacts do not conclude incident causality, formal claim
+                promotion, theorem precondition discharge, extractor
+                completeness, architecture lawfulness, or semantic
+                preservation.
+              </p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../schemas/">
+                <span>Previous</span>
+                <strong>Schemas</strong>
+              </a>
+              <a href="../examples/">
+                <span>Next</span>
+                <strong>Examples</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

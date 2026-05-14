@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Minimal ArchSig command path for fixture scan, validation, repository scan, and Python scan."
+    >
+    <title>ArchSig Getting Started</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">ArchSig</a>
+            <span>Getting Started</span>
+          </nav>
+          <p class="eyebrow">ArchSig Manual</p>
+          <h1>Run the smallest useful ArchSig path first.</h1>
+          <p class="lede">
+            The first useful ArchSig session scans a fixture, validates the Sig0 output, scans the repository, and checks whether unmeasured axes are being preserved instead of silently treated as zero.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#fixture-scan">Fixture scan</a></li>
+                <li><a href="#validate">Validate Sig0</a></li>
+                <li><a href="#repository-scan">Repository scan</a></li>
+                <li><a href="#python-scan">Python scan</a></li>
+                <li><a href="#first-reading">First reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical sources</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/README.md">
+                    ArchSig README
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <ul>
+                <li><code>archsig</code> is not a Lean prover.</li>
+                <li>Tool output is not a Lean theorem.</li>
+                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
+                <li>Measured zero is different from unmeasured.</li>
+                <li>Policy pass does not imply architecture lawfulness.</li>
+                <li>Report warning does not imply incident causality.</li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="fixture-scan" class="article-section">
+              <h2>Fixture scan</h2>
+              <p>
+                Begin with the minimal fixture so the output shape is known
+                before running against an active repository.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Fixture scan</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- \
+  --root tools/archsig/tests/fixtures/minimal \
+  --policy tools/archsig/tests/fixtures/minimal/policy_measured_zero.json \
+  --runtime-edges tools/archsig/tests/fixtures/minimal/runtime_edges.json \
+  --out .lake/sig0-fixture.json</code></pre>
+              </figure>
+            </section>
+
+            <section id="validate" class="article-section">
+              <h2>Validate Sig0</h2>
+              <p>
+                Validation checks the component list, dependency edge closure,
+                external targets, and policy metric status in an existing Sig0
+                JSON file. It does not rescan source files.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Validation report</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- validate \
+  --input .lake/sig0-fixture.json \
+  --out .lake/sig0-fixture-validation.json \
+  --universe-mode local-only</code></pre>
+              </figure>
+            </section>
+
+            <section id="repository-scan" class="article-section">
+              <h2>Repository scan</h2>
+              <p>
+                A repository scan writes Sig0 for the current checkout. Keep
+                policy and runtime evidence explicit when those axes matter;
+                omitted inputs can leave placeholder values with unmeasured
+                status.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Current repository</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- \
+  --root . \
+  --out .lake/sig0.json</code></pre>
+              </figure>
+            </section>
+
+            <section id="python-scan" class="article-section">
+              <h2>Python scan</h2>
+              <p>
+                Python mode extracts <code>import</code> and
+                <code>from ... import ...</code> edges with the standard AST
+                parser. Dynamic import, plugin loading, and framework
+                conventions remain boundary items.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Python repository</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- \
+  --language python \
+  --root path/to/repository \
+  --source-root src \
+  --package-root src \
+  --out .lake/python-sig0.json</code></pre>
+              </figure>
+            </section>
+
+            <section id="first-reading" class="article-section">
+              <h2>First reading</h2>
+              <p>
+                Do not read the numeric signature alone. Read
+                <code>metricStatus</code>, <code>unmeasuredAxes</code>,
+                validation status, and non-conclusions before deciding whether
+                an axis is a measured zero, measured nonzero, unmeasured, or
+                out of scope.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  A placeholder value of zero is not evidence that the risk is
+                  zero unless the corresponding metric status says it was
+                  measured.
+                </p>
+              </div>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../">
+                <span>Previous</span>
+                <strong>ArchSig Manual</strong>
+              </a>
+              <a href="../commands/">
+                <span>Next</span>
+                <strong>Commands</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
