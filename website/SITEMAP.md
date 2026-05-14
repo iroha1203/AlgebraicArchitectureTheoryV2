@@ -474,6 +474,10 @@ ArchSig reference pages must keep these warnings visible:
 
 ## Current Implementation Status
 
+`implemented` は route existence の状態だけを表す。
+本文が canonical source に忠実か、論文調の exposition として十分か、Lean status /
+claim boundary への導線を持つか、ArchSig manual として成熟しているかは別に管理する。
+
 ```text
 implemented:
   /
@@ -508,6 +512,62 @@ implemented:
   /archsig/roadmap/
   /outreach/
   /profile/
+```
+
+## Content Maturity Status
+
+Content maturity は route implementation とは独立に管理する。
+AAT / SFT / ArchSig / Outreach / Profile は期待される成熟度が違うため、
+同じ `implemented` route でも要求される本文量、source fidelity、claim boundary の厚さは異なる。
+
+### Maturity Dimensions
+
+| Dimension | Meaning | Target reading |
+| --- | --- | --- |
+| Route existence | directory route と `index.html` が存在するか。 | `implemented` は navigation と publishing surface の存在だけを意味する。 |
+| Canonical-source fidelity | `docs/` または tool docs の source of truth に忠実か。 | AAT は `docs/aat/mathematical_theory.md`、SFT は `docs/sft/software_field_theory.md`、ArchSig は `docs/tool/` と `tools/archsig/docs/` を source とする。 |
+| Paper-level exposition | 定義、前提、例、non-conclusions、theorem / claim boundary を本文で展開しているか。 | AAT / SFT の章・Part pages では必須。Outreach / Profile では必須ではない。 |
+| Lean / claim boundary links | Lean theorem status、proof obligations、empirical hypothesis、tool output を混同しない導線があるか。 | AAT は Lean status への接続、SFT は empirical / forecast status の境界、ArchSig は tool output と theorem claim の境界を明示する。 |
+| Tool / manual maturity | ArchSig CLI、schema、artifact、workflow を利用者が実行・解釈できる manual として読めるか。 | ArchSig section だけの maturity dimension。AAT / SFT では `not applicable` とする。 |
+
+### Section Expectations
+
+| Section | Route status | Expected maturity | Current maturity | Remaining work |
+| --- | --- | --- | --- | --- |
+| `/aat/` landing | implemented | AAT の読む順序、source docs、Lean status への入口を明示する overview。 | route and overview implemented。 | 子 chapter の増補に合わせて reading path と status links を維持する。 |
+| `/aat/*/` chapter pages | implemented | canonical AAT theory に忠実な first-class formal theory article。 | route implemented, overview-level content。 | #772 で定義、解釈、例、boundary、Lean status 接続を chapter cluster ごとに増補する。 |
+| `/aat/status/` | implemented | proved / defined only / future proof obligation を読むための status appendix。 | route and status overview implemented。 | AAT chapter 増補後、本文からの参照と theorem index への導線を点検する。 |
+| `/interface/` | implemented | AAT theorem claim と SFT empirical / computational claim の translation boundary。 | route and boundary overview implemented。 | AAT / SFT 本文増補後、禁止される読み替えと依存方向の記述を再点検する。 |
+| `/sft/` landing | implemented | SFT の読む順序、computable object と claim boundary の入口。 | route and overview implemented。 | 子 Part の増補に合わせて computational reading と source docs への導線を維持する。 |
+| `/sft/part-*/` pages | implemented | canonical SFT monograph に忠実な research exposition。 | route implemented, overview-level content。 | #773 で定義、formal / computational reading、examples、claim boundary、non-conclusions、running example を Part ごとに増補する。 |
+| `/archsig/` and `/archsig/*/` | implemented | standalone manual / reference。tool output と formal claim を区別し、CLI、artifact、schema、workflow を読める。 | route implemented, manual skeleton implemented。 | #774 で Core / Review / SFT / Operational surface と remaining gaps を整理し、manual maturity を上げる。 |
+| `/outreach/` | implemented | canonical technical pages へ戻す outreach index。 | route implemented。 | article が増えた時点でリンクと canonical return path を更新する。 |
+| `/profile/` | implemented | author profile and contact surface。 | route implemented。 | 研究成果・公開活動の変化に応じて更新する。 |
+
+### Phase Tracking
+
+```text
+W2 first-class theory / manual surface:
+  done:
+    - route implementation for AAT, SFT, Interface, ArchSig, Outreach, Profile
+    - content maturity tracking in this document
+  remaining:
+    - #772 AAT chapter pages: paper-level canonical exposition
+    - #773 SFT Part pages: monograph-level canonical exposition
+    - #774 ArchSig / tool docs: product surface and remaining gaps
+
+W3 cross-link and boundary hardening:
+  remaining:
+    - verify AAT pages link to Lean status without treating all mathematical text as proved
+    - verify SFT pages keep forecast / empirical claims separate from AAT theorem status
+    - verify ArchSig pages keep tool evidence separate from formal theorem claims
+    - add or update source links after W2 content expansion changes route-level references
+
+W4 publication polish:
+  remaining:
+    - review long-form reading flow after W2 / W3 changes
+    - add SEO sitemap only after the public domain or GitHub Pages base URL is fixed
+    - update outreach return paths when external articles are published
 ```
 
 ## Later SEO Sitemap
