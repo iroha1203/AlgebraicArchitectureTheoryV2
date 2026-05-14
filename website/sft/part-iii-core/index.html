@@ -70,6 +70,7 @@
                 <li><a href="#support-policy">Support and policy</a></li>
                 <li><a href="#forecast-envelope">Forecast and envelope</a></li>
                 <li><a href="#feedback">Feedback update</a></li>
+                <li><a href="#core-boundary">Boundary</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -104,6 +105,20 @@
                 <figcaption>Field projection</figcaption>
                 <pre><code>arch : SoftwareField -> ArchitectureObject</code></pre>
               </figure>
+              <figure class="code-panel">
+                <figcaption>Computable core</figcaption>
+                <pre><code>ComputableCore
+  = SoftwareField
+  + arch projection
+  + ArtifactMediatedChange
+  + OperationSupport
+  + OperationPolicy
+  + StepRelation
+  + ObservationRecord
+  + GovernanceIntervention
+  + ForecastCone
+  + FieldUpdate</code></pre>
+              </figure>
               <ul class="term-list">
                 <li>
                   <strong>Contextual state</strong>
@@ -134,6 +149,20 @@
                 raw action definition. This prevents an artifact from already
                 containing the forecast that it is supposed to generate.
               </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Raw action</strong>
+                  <span>Source artifact, target components, interpretation boundary, candidate updates, action boundary, and observable boundary.</span>
+                </li>
+                <li>
+                  <strong>Force descriptor</strong>
+                  <span>Action class, target regions, candidate support families, affected policy or governance components, and uncertainty boundary.</span>
+                </li>
+                <li>
+                  <strong>Observed effect</strong>
+                  <span>Transition, before / after signatures, comparable deltas, unexpected witnesses, and review / CI / runtime outcome.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="support-policy" class="article-section">
@@ -179,6 +208,15 @@
   + forecast boundary
   + unknown / unmodeled remainder</code></pre>
               </figure>
+              <figure class="code-panel">
+                <figcaption>Action-indexed cone family</figcaption>
+                <pre><code>u in alpha_a(F)
+F_u := applyUpdate(F, u)
+U_u := U(F_u)
+
+ForecastConeFamilyAfterAction(F, a, h)
+  = { ForecastCone(F_u, U_u, h) | u in alpha_a(F) }</code></pre>
+              </figure>
             </section>
 
             <section id="feedback" class="article-section">
@@ -194,6 +232,24 @@
                 CI outcome, runtime feedback, missing evidence, and
                 non-conclusions.
               </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Restrictive intervention</strong>
+                  <span>Removes unsafe support from later accepted operations.</span>
+                </li>
+                <li>
+                  <strong>Redirective intervention</strong>
+                  <span>Raises shortcut cost and lowers lawful path cost inside the selected field model.</span>
+                </li>
+                <li>
+                  <strong>Instrumenting intervention</strong>
+                  <span>Adds observation axes, tests, runtime checks, or evidence records.</span>
+                </li>
+                <li>
+                  <strong>Learning intervention</strong>
+                  <span>Preserves observed outcomes and forecast error in posterior field memory.</span>
+                </li>
+              </ul>
               <div class="claim-strip">
                 <p>
                   Field update preserves forecast error and boundary evidence.
@@ -201,6 +257,23 @@
                   more accurate.
                 </p>
               </div>
+            </section>
+
+            <section id="core-boundary" class="article-section">
+              <h2>Core boundary and non-conclusions</h2>
+              <p>
+                Part III defines the theorem-bearing fragment, not the whole
+                social reality of a development organization. `ForecastCone`
+                is a reachable path set under selected support and horizon;
+                `ConsequenceEnvelope` is the reader-facing report that explains
+                the cone family, unknown remainder, and forecast boundary.
+              </p>
+              <p>
+                The core does not assert that artifacts have unique effects,
+                that policy is probabilistic unless a distribution is supplied,
+                or that a field update automatically improves later forecast
+                quality.
+              </p>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

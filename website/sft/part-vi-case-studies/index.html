@@ -70,6 +70,7 @@
                 <li><a href="#incident-response">Incident response</a></li>
                 <li><a href="#ai-shortcut">AI shortcut</a></li>
                 <li><a href="#end-of-life">End-of-life</a></li>
+                <li><a href="#case-boundary">Boundary</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -114,6 +115,25 @@
                 semantics, support and policy can be shaped toward the lawful
                 path.
               </p>
+              <figure class="code-panel">
+                <figcaption>Coupon PRD descriptor</figcaption>
+                <pre><code>RawArtifactAction
+  source artifact = PRD
+  target field components = requirements, constraints, operation support
+  target architecture regions = Checkout / Payment
+  action boundary = coupon feature addition only
+  non-conclusions = pricing strategy, marketing success, fraud model</code></pre>
+              </figure>
+              <ul class="term-list">
+                <li>
+                  <strong>Missing invariants</strong>
+                  <span>Rounding order, discount composition law, payment authorization boundary, and refund / cancellation semantics.</span>
+                </li>
+                <li>
+                  <strong>Claim boundary</strong>
+                  <span>Specification tightening narrows selected witness families; it does not prove global risk reduction.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="migration" class="article-section">
@@ -138,6 +158,16 @@
                   <span>A supported path back from selected migration states.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>MigrationEnvelope</figcaption>
+                <pre><code>bridge path
+  + dual-run path
+  + replacement path
+  + rollback path
+  + old-new projection mismatch
+  + partial migration risk
+  + consumer compatibility boundary</code></pre>
+              </figure>
             </section>
 
             <section id="incident-response" class="article-section">
@@ -155,6 +185,15 @@
                   boundary visible.
                 </p>
               </div>
+              <figure class="code-panel">
+                <figcaption>IncidentFeedback</figcaption>
+                <pre><code>incident observation
+  + root-cause witness classification
+  + missing invariant discovery
+  + review / CI governance update
+  + runtime observation update
+  + forecast boundary revision</code></pre>
+              </figure>
             </section>
 
             <section id="ai-shortcut" class="article-section">
@@ -189,6 +228,41 @@
                 describes how repair, migration, contraction, or deletion
                 changes architecture futures and field capacity.
               </p>
+              <figure class="code-panel">
+                <figcaption>EndOfLifeDecision</figcaption>
+                <pre><code>current architecture signature
+  + repair cost
+  + migration support
+  + runtime risk
+  + ownership / staffing boundary
+  + ConsequenceEnvelope
+  + non-conclusions</code></pre>
+              </figure>
+            </section>
+
+            <section id="case-boundary" class="article-section">
+              <h2>Case-study boundary and non-conclusions</h2>
+              <p>
+                These cases show how the same formal vocabulary is used across
+                feature work, migration, incidents, AI proposals, and lifecycle
+                decisions. They are examples of bounded diagnosis, not claims
+                that the artifact caused every observed outcome or that the
+                repository has been completely reconstructed.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Coupon PRD</strong>
+                  <span>Demonstrates artifact action, missing invariants, and `ConsequenceEnvelope` path classes.</span>
+                </li>
+                <li>
+                  <strong>Migration and incident response</strong>
+                  <span>Demonstrate field transformation and runtime feedback as updates to support, observation, and governance.</span>
+                </li>
+                <li>
+                  <strong>AI shortcut and end-of-life</strong>
+                  <span>Demonstrate proposal governance and lifecycle reconfiguration without claiming general AI safety or market prediction.</span>
+                </li>
+              </ul>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

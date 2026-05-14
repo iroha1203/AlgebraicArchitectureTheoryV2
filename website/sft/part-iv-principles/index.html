@@ -69,6 +69,7 @@
                 <li><a href="#proposal-accounting">Proposal accounting</a></li>
                 <li><a href="#feedback-update">Feedback update</a></li>
                 <li><a href="#stable-regions">Stable regions</a></li>
+                <li><a href="#principle-boundary">Boundary</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -113,6 +114,11 @@
                 is simulated by a U1-step while the relation between fields is
                 maintained.
               </p>
+              <p>
+                The claim level is L2 for set-valued support semantics and
+                step simulation, L3 only after transition-kernel semantics are
+                supplied, and L4 only after dataset calibration.
+              </p>
             </section>
 
             <section id="support-safety" class="article-section">
@@ -133,6 +139,13 @@
                   <span>Unmodeled operations, missing axes, and different horizons remain outside the claim.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Support safety schema</figcaption>
+                <pre><code>StateInSafeRegion(O, R, F)
+  + accepted steps are selected from U
+  + SupportOperationsPreserveSafeRegion(U, O, R)
+  -> accepted trajectory remains in R</code></pre>
+              </figure>
             </section>
 
             <section id="proposal-accounting" class="article-section">
@@ -148,6 +161,18 @@
                 Review, CI, type checking, and architecture rules produce
                 records that feed field update and governance design.
               </p>
+              <figure class="code-panel">
+                <figcaption>ProposalAccounting</figcaption>
+                <pre><code>ProposalAccounting(raw_proposal_universe)
+  classifies proposal pressure as:
+    accepted
+    rejected
+    delayed
+    unresolved
+    coordination_record
+    runtime_pressure_estimate
+    unaccounted_remainder</code></pre>
+              </figure>
             </section>
 
             <section id="feedback-update" class="article-section">
@@ -158,6 +183,15 @@
                 the posterior field by making forecast error and missing
                 evidence explicit.
               </p>
+              <figure class="code-panel">
+                <figcaption>Boundary-aware update</figcaption>
+                <pre><code>forecast
+  + observed transition
+  + forecast error
+  -> posterior field that records
+     missing evidence, unexpected witnesses,
+     policy drift, and non-conclusions</code></pre>
+              </figure>
               <div class="claim-strip">
                 <p>
                   This is update soundness as record preservation. It is not a
@@ -181,6 +215,39 @@ MustReach_h(F, U, A)
 StableRegion(U, A)
 ReachablePreimage_h(U, A)</code></pre>
               </figure>
+              <p>
+                Attractor language is allowed only after the semantics needed
+                for stability, recurrence, policy preference, or probability
+                have been made explicit. Otherwise the safe vocabulary is
+                `DefaultPath`, `RecurrentPattern`, `StableRegion`, and
+                `ReachablePreimage`.
+              </p>
+            </section>
+
+            <section id="principle-boundary" class="article-section">
+              <h2>Principle boundary and non-conclusions</h2>
+              <p>
+                Part IV contains theorem-shaped schemas, not unrestricted
+                guarantees about software projects. Cone narrowing is relative
+                to selected support, witness family, and horizon; support
+                safety is relative to accepted trajectories and measured safe
+                regions; proposal accounting depends on explicit coverage and
+                overlap policy.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Not global risk reduction</strong>
+                  <span>Complexity may move to another witness family or unmeasured axis.</span>
+                </li>
+                <li>
+                  <strong>Not automatic accuracy improvement</strong>
+                  <span>Feedback update preserves records; calibration is a separate empirical claim.</span>
+                </li>
+                <li>
+                  <strong>Not physical attractor dynamics</strong>
+                  <span>Attractor and basin require additional semantics before stronger claims are made.</span>
+                </li>
+              </ul>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

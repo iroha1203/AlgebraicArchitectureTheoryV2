@@ -70,6 +70,7 @@
                 <li><a href="#ai-governance">AI governance</a></li>
                 <li><a href="#review-systems">Review systems</a></li>
                 <li><a href="#lifecycle">Lifecycle and benchmarks</a></li>
+                <li><a href="#systems-boundary">Boundary</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -122,6 +123,19 @@
                   <span>Diagnose repair, migration, contraction, or end-of-life choices from signatures, costs, risk, and capacity.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Problem contract pattern</figcaption>
+                <pre><code>Problem
+  input: selected field estimate, artifact, boundary, support, horizon
+  output: bounded estimate, report, intervention, or posterior update
+  soundness boundary: what the estimate records and what it does not claim
+  claim level: conceptual, trace-grounded, formal schema, calibrated, deployed</code></pre>
+              </figure>
+              <p>
+                This contract is what makes the computing-system layer
+                falsifiable. A result that cannot name its boundary is only an
+                explanatory heuristic, not a mature SFT computation.
+              </p>
             </section>
 
             <section id="simulator" class="article-section">
@@ -147,6 +161,20 @@
                 decomposition recommendations. Empirical prediction claims
                 depend on later weighting and calibration.
               </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Level 3 minimum</strong>
+                  <span>A bounded `ForecastCone` or reachable path class is generated from explicit support and horizon.</span>
+                </li>
+                <li>
+                  <strong>Level 4 practical report</strong>
+                  <span>`ConsequenceEnvelope` adds signature axes, witness candidates, missing boundaries, and recommendations.</span>
+                </li>
+                <li>
+                  <strong>Level 6 scientific loop</strong>
+                  <span>Observed issue, PR, review, CI, or incident outcomes are compared against the report and used for field update.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="ai-governance" class="article-section">
@@ -164,6 +192,13 @@
                   shortcut witness reports, and posterior field update.
                 </p>
               </div>
+              <figure class="code-panel">
+                <figcaption>AI proposal governance output</figcaption>
+                <pre><code>bounded proposal support
+  + shortcut witness report
+  + review / CI intervention
+  + posterior field update</code></pre>
+              </figure>
             </section>
 
             <section id="review-systems" class="article-section">
@@ -203,6 +238,41 @@
                 incident feedback, AI shortcut, and lifecycle decision
                 benchmarks give the workbench something falsifiable to test.
               </p>
+              <figure class="code-panel">
+                <figcaption>Lifecycle trajectory</figcaption>
+                <pre><code>birth
+  + growth
+  + stabilization
+  + drift
+  + repair / migration
+  + contraction
+  + end-of-life</code></pre>
+              </figure>
+            </section>
+
+            <section id="systems-boundary" class="article-section">
+              <h2>Systems boundary and non-conclusions</h2>
+              <p>
+                Part V describes computing systems that can be built from SFT,
+                but their outputs remain bounded estimates. A simulator is not
+                a PRD-to-PR predictor, an AI governance report is not general
+                AI safety, and benchmark calibration is required before
+                empirical forecast claims are promoted.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Input discipline</strong>
+                  <span>Reports must state the selected artifact, field estimate, observation boundary, support extractor, and horizon.</span>
+                </li>
+                <li>
+                  <strong>Output discipline</strong>
+                  <span>Outputs are envelopes, affected axes, witness candidates, missing boundaries, recommendations, and update records.</span>
+                </li>
+                <li>
+                  <strong>Claim discipline</strong>
+                  <span>Heuristic path classes, formal reachability, calibrated weights, and deployed governance outcomes remain separate statuses.</span>
+                </li>
+              </ul>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
