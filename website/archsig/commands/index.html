@@ -63,6 +63,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#scan-validate">Scan and validate</a></li>
+                <li><a href="#surface-map">Surface map</a></li>
                 <li><a href="#review-reports">Review reports</a></li>
                 <li><a href="#policy-schema">Policy and schema</a></li>
                 <li><a href="#dataset-feedback">Dataset and feedback</a></li>
@@ -117,6 +118,33 @@
                 <li>
                   <strong>snapshot and signature-diff</strong>
                   <span>Persist revision signatures and compare before / after snapshots with metric delta status.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="surface-map" class="article-section">
+              <h2>Surface map</h2>
+              <p>
+                Command groups correspond to product surfaces. This split
+                keeps the shortest Core path separate from review automation,
+                bounded SFT projection, and operational feedback.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Core</strong>
+                  <span><code>scan</code>, <code>validate</code>, <code>snapshot</code>, and <code>signature-diff</code>.</span>
+                </li>
+                <li>
+                  <strong>Review</strong>
+                  <span><code>air</code>, <code>validate-air</code>, <code>theorem-check</code>, <code>feature-report</code>, <code>policy-decision</code>, <code>pr-comment</code>, and <code>baseline-suppression</code>.</span>
+                </li>
+                <li>
+                  <strong>SFT</strong>
+                  <span><code>artifact-descriptor</code>, <code>operation-support-estimate</code>, <code>forecast-cone-skeleton</code>, <code>consequence-envelope</code>, <code>forecast-calibration-hook</code>, and <code>sft-forecast</code>.</span>
+                </li>
+                <li>
+                  <strong>Operational</strong>
+                  <span><code>dataset</code>, PR history / feature / outcome dataset commands, daily ledger, calibration, threshold, ownership, repair adoption, incident correlation, and hypothesis refresh commands.</span>
                 </li>
               </ul>
             </section>

@@ -22,6 +22,17 @@ tool 側の文書群である。
 11. [Examples](examples.md)
 12. [Roadmap](roadmap.md)
 
+## Product surface
+
+Tooling docs は、利用者が実行できる surface と、研究・校正・adapter gap を分けて読む。
+
+| Surface | 主な文書 | 現在の product surface | Remaining gaps |
+| --- | --- | --- | --- |
+| ArchSig Core | `signature_artifacts.md`, `extraction.md`, `tools/archsig/README.md` | Lean / Python import graph scan、Sig0 validation、snapshot、signature diff。 | call graph、data dependency、dynamic import、plugin loading、framework semantics adapter。extractor completeness は主張しない。 |
+| ArchSig Review | `air.md`, `reports.md`, `claim_boundary.md`, `theorem_preconditions.md` | AIR、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression。 | organization policy calibration、review workflow tuning、任意 invariant の自動判定。tool output は Lean theorem ではない。 |
+| ArchSig SFT | `roadmap.md`, `workflows.md`, `tools/archsig/docs/artifacts-and-boundaries.md` | Markdown PRD / Spec / Issue / AI proposal から bounded forecast artifact と `ConsequenceEnvelope` を生成する pipeline。 | GitHub Issue JSON adapter、AI proposal JSON adapter、real dataset calibration、framework semantics adapter。`ForecastCone` は point prediction ではない。 |
+| ArchSig Operational | `reports.md`, `workflows.md`, `tools/archsig/docs/operational-feedback.md` | PR history / feature / outcome dataset、B10 daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh artifacts。 | 実 dataset での calibration、private / missing data boundary、incident / rollback / MTTR との組織別運用接続。correlation は因果 theorem ではない。 |
+
 ## 文書の層
 
 Tooling docs は、変化の速さごとに分ける。

@@ -32,6 +32,8 @@ When expanding AAT and SFT pages:
   boundaries, and links to Lean status where appropriate.
 - Do not compress formal distinctions into slogans or general software advice.
 - Keep ArchSig and tooling evidence separate from AAT / SFT theorem claims.
+- For ArchSig pages, separate the Core, Review, SFT, and Operational product
+  surfaces from remaining research, calibration, and adapter gaps.
 
 ## Intended Site Structure
 

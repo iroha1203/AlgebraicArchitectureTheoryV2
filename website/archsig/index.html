@@ -62,6 +62,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#reading-order">Reading order</a></li>
+                <li><a href="#product-surfaces">Product surfaces</a></li>
                 <li><a href="#tool-scope">Tool scope</a></li>
                 <li><a href="#reference-map">Reference map</a></li>
                 <li><a href="#claim-discipline">Claim discipline</a></li>
@@ -145,6 +146,34 @@
                 <li>
                   <a href="roadmap/">Roadmap</a>
                   <span>B0-B13 phases, current implementation snapshot, and standardization targets.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="product-surfaces" class="article-section">
+              <h2>Product surfaces</h2>
+              <p>
+                ArchSig is easier to use when the implemented product surface
+                is separated from research, calibration, and adapter gaps. The
+                same CLI family exposes four surfaces with different evidence
+                and claim boundaries.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>ArchSig Core</strong>
+                  <span>Lean and Python import graph scan, Sig0 validation, snapshots, and signature diffs. Remaining gaps include call graph, data dependency, dynamic import, plugin loading, and framework semantics adapters.</span>
+                </li>
+                <li>
+                  <strong>ArchSig Review</strong>
+                  <span>AIR, theorem precondition checks, Feature Extension Report, policy decision, PR comment summary, and baseline suppression. Policy calibration and arbitrary invariant judgment remain review-layer work, not Lean theorem output.</span>
+                </li>
+                <li>
+                  <strong>ArchSig SFT</strong>
+                  <span>Markdown PRD / Spec / Issue / AI proposal input can produce bounded forecast artifacts and a <code>ConsequenceEnvelope</code>. GitHub Issue JSON, AI proposal JSON, real dataset calibration, and framework semantics adapters remain gaps.</span>
+                </li>
+                <li>
+                  <strong>ArchSig Operational</strong>
+                  <span>PR history datasets, outcome linkage, daily ledgers, calibration records, threshold policies, ownership monitors, repair adoption, incident correlation, and hypothesis refresh artifacts support operational learning without causal theorem status.</span>
                 </li>
               </ul>
             </section>

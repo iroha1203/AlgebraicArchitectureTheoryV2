@@ -3,6 +3,17 @@
 この文書は `archsig` の主要 command と最小例をまとめる。研究上の解釈や非主張境界は
 [Artifacts And Boundaries](artifacts-and-boundaries.md) を参照する。
 
+## Surface map
+
+Command は次の product surface に分けて読む。
+
+| Surface | Commands | 読み方 |
+| --- | --- | --- |
+| ArchSig Core | default scan、`validate`、`snapshot`、`signature-diff` | repository observation と revision diff。未評価軸は `metricStatus` と `metricDeltaStatus` で読む。 |
+| ArchSig Review | `air`、`validate-air`、`theorem-check`、`feature-report`、`policy-decision`、`pr-comment`、`baseline-suppression` | PR / CI review 補助。tool output を formal theorem claim に昇格しない。 |
+| ArchSig SFT | `artifact-descriptor`、`operation-support-estimate`、`forecast-cone-skeleton`、`consequence-envelope`、`forecast-calibration-hook`、`sft-forecast` | bounded forecast artifact と report projection。point prediction、causal proof、global safety は non-conclusions。 |
+| ArchSig Operational | `dataset`、`pr-history-dataset`、`feature-extension-dataset`、`outcome-linkage-dataset`、B10 feedback commands | calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh 用 artifact。correlation は因果 theorem ではない。 |
+
 ## Scan
 
 Lean repository を scan する。

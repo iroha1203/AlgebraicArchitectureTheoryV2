@@ -67,6 +67,7 @@
                 <li><a href="#repository-scan">Repository scan</a></li>
                 <li><a href="#python-scan">Python scan</a></li>
                 <li><a href="#first-reading">First reading</a></li>
+                <li><a href="#after-first-run">After the first run</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -176,6 +177,31 @@
                   measured.
                 </p>
               </div>
+            </section>
+
+            <section id="after-first-run" class="article-section">
+              <h2>After the first run</h2>
+              <p>
+                Getting started deliberately stops at the Core surface. Move
+                to Review only after Sig0 and validation output are readable;
+                move to SFT forecasting only when the input artifact and
+                bounded horizon are explicit; move to Operational feedback
+                only when outcome records and privacy boundaries are available.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Review surface</strong>
+                  <span>Use AIR, theorem precondition checks, Feature Extension Report, policy decision, and PR comment output for PR review cues.</span>
+                </li>
+                <li>
+                  <strong>SFT surface</strong>
+                  <span>Use <code>sft-forecast</code> for bounded report projection, not point prediction or causal proof.</span>
+                </li>
+                <li>
+                  <strong>Operational surface</strong>
+                  <span>Use datasets and B10 artifacts for calibration and feedback, not theorem promotion.</span>
+                </li>
+              </ul>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a href="../">
