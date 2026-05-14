@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="AAT laws and witnesses: invariant families, LawUniverse, obstruction witnesses, and zero-curvature reading."
+    >
+    <title>AAT Laws and Witnesses</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../">AAT</a>
+          <a href="../../#research">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Laws and Witnesses</span>
+          </nav>
+          <p class="eyebrow">AAT Part II</p>
+          <h1>Laws and Witnesses</h1>
+          <p class="lede">
+            This cluster explains how design principles become invariant
+            families and how architecture breakage is represented by selected
+            obstruction witnesses rather than by a vague failure label.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#invariant-families">Invariant families</a></li>
+                <li><a href="#obstruction-witnesses">Obstruction witnesses</a></li>
+                <li><a href="#zero-curvature">Zero-curvature reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#3-invariant-%E3%81%A8-law-universe">
+                    Chapters 3-4 in the AAT text
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                Zero curvature names required obstruction-free status inside a
+                selected law universe. It is not an unconditional claim about
+                runtime behavior, semantic flatness, empirical risk, or
+                differential-geometric curvature.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="invariant-families" class="article-section">
+              <h2>Invariant families</h2>
+              <p>
+                An `Invariant` is a property an architecture object or operation
+                is expected to preserve. Design principles induce families of
+                operations that preserve, reflect, improve, localize, translate,
+                or transfer invariants; the principle itself is not treated as
+                one universal mathematical operation.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Local contract layer</strong>
+                  <span>SRP, OCP, LSP, ISP, and DIP organize contracts, abstraction, substitutability, and interface separation.</span>
+                </li>
+                <li>
+                  <strong>Global structure layer</strong>
+                  <span>Layered and Clean Architecture handle ranking, dependency direction, acyclicity, decomposition, and boundary preservation.</span>
+                </li>
+                <li>
+                  <strong>State and runtime layers</strong>
+                  <span>Event Sourcing, Saga, Circuit Breaker, and Replicated Log carry replay, compensation, protection, ordering, and convergence laws.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="obstruction-witnesses" class="article-section">
+              <h2>Obstruction witnesses</h2>
+              <p>
+                An `ObstructionWitness` structurally explains why a desired law
+                does not hold. A forbidden static edge, hidden interaction,
+                boundary policy violation, projection failure, LSP mismatch,
+                non-commuting semantic diagram, runtime exposure, lifting
+                failure, or residual coverage gap can all be witnesses when
+                they live in the selected universe.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Finite witness kernel</figcaption>
+                <pre><code>violatingWitnesses bad xs
+  = xs filtered by bad
+
+violationCount bad xs = 0
+  &lt;-&gt; every measured witness is not bad</code></pre>
+              </figure>
+            </section>
+
+            <section id="zero-curvature" class="article-section">
+              <h2>Zero-curvature reading</h2>
+              <p>
+                The central theorem package connects semantic lawfulness,
+                selected required witness absence, and selected required
+                signature axes being zero. The connection is nontrivial: it
+                requires witness completeness, axis exactness, coverage
+                completeness, and observation exactness.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Required obstruction vanishing</figcaption>
+                <pre><code>finite law universe
+  + theorem boundary B
+  + complete witness coverage
+  + required axis exactness
+  -&gt;
+  ArchitectureLawfulWithin X B
+    &lt;-&gt; no selected required obstruction witness
+    &lt;-&gt; required signature axes are zero</code></pre>
+              </figure>
+              <div class="claim-strip">
+                <p>
+                  SOLID is not treated as a universal architecture principle.
+                  It is one local-contract family among distinct global,
+                  state-transition, runtime, and distributed invariant families.
+                </p>
+              </div>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../foundations/">
+                <span>Previous</span>
+                <strong>Foundations</strong>
+              </a>
+              <a href="../signature-and-boundary/">
+                <span>Next</span>
+                <strong>Signature and Boundary</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

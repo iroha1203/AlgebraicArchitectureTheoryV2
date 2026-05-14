@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="AAT repair and dynamics: repair steps, synthesis, complexity transfer, paths, homotopy, and diagram filling."
+    >
+    <title>AAT Repair and Dynamics</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../">AAT</a>
+          <a href="../../#research">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Repair and Dynamics</span>
+          </nav>
+          <p class="eyebrow">AAT Part VI</p>
+          <h1>Repair and Dynamics</h1>
+          <p class="lede">
+            Repair, synthesis, operation paths, homotopy, and diagram filling
+            describe how architecture objects move. Each movement is read
+            through selected measures and explicit side-effect boundaries.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#repair">Repair and synthesis</a></li>
+                <li><a href="#complexity-transfer">Complexity transfer</a></li>
+                <li><a href="#paths-and-filling">Paths and filling</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#11-repair-synthesis-complexity-transfer">
+                    Chapters 11-12 in the AAT text
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                Repair is not total improvement. A selected obstruction can
+                decrease while another axis gains risk or remains unmeasured.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="repair" class="article-section">
+              <h2>Repair and synthesis</h2>
+              <p>
+                A `RepairStep` is an operation intended to reduce a selected
+                obstruction measure. A repair theorem must state which witness
+                universe decreases, which invariant is preserved, which axes
+                are not claimed to improve, and where side effects may appear.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Repair step</figcaption>
+                <pre><code>RepairStep
+  = source
+  + target
+  + selected obstruction measure
+  + decrease theorem boundary
+  + side-effect boundary</code></pre>
+              </figure>
+              <p>
+                Synthesis constructs an architecture object or operation
+                sequence satisfying constraints. A no-solution result needs a
+                finite complete search universe, explicit constraint language,
+                decision procedure, and coverage boundary; solver failure alone
+                is not a mathematical certificate.
+              </p>
+            </section>
+
+            <section id="complexity-transfer" class="article-section">
+              <h2>Complexity transfer</h2>
+              <p>
+                `ComplexityTransfer` captures the case where complexity or an
+                obstruction appears to disappear only because it moved to
+                another axis. AAT requires selected evidence, selected target,
+                residual gap, and non-conclusion boundary before calling an
+                obstruction eliminated.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  A repair package may prove that one selected measure
+                  decreases. It does not prove that all signature axes are
+                  non-increasing unless that theorem boundary says so.
+                </p>
+              </div>
+            </section>
+
+            <section id="paths-and-filling" class="article-section">
+              <h2>Paths and filling</h2>
+              <p>
+                `ArchitecturePath` is an operation sequence. Two paths can
+                reach the same feature outcome while preserving different
+                invariants, introducing different witnesses, or tracing
+                different signature trajectories.
+              </p>
+              <p>
+                `PathHomotopy` compares paths under selected generators and an
+                observation model. Semantic diagram filling supplies evidence
+                that different implementation paths give the same observation;
+                a failed equality can become a `NonFillabilityWitness`.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Non-fillability witness</figcaption>
+                <pre><code>Obs(lhs) != Obs(rhs)
+  -&gt; NonFillabilityWitness D</code></pre>
+              </figure>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../calculus-and-extensions/">
+                <span>Previous</span>
+                <strong>Calculus and Extensions</strong>
+              </a>
+              <a href="../representations-and-effects/">
+                <span>Next</span>
+                <strong>Representations and Effects</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -61,8 +61,9 @@ This directory currently uses a no-build static stack:
 The committed `website/.nojekyll` file keeps GitHub Pages from treating
 underscore-prefixed paths or future generated assets as Jekyll input.
 
-Until the site generator copies or renders repository documents into public
-routes, the top page links to the canonical documents on GitHub.
+AAT chapter-cluster pages are implemented as static directory routes under
+`aat/`. Remaining major sections still point readers back to canonical
+repository documents until their public routes are added.
 
 ## Local Preview
 

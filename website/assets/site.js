@@ -1,11 +1,14 @@
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
-const sections = navLinks
+const hashNavLinks = navLinks.filter((link) =>
+  link.getAttribute("href")?.startsWith("#")
+);
+const sections = hashNavLinks
   .map((link) => document.querySelector(link.getAttribute("href")))
   .filter(Boolean);
 
 if ("IntersectionObserver" in window && sections.length > 0) {
   const activeById = new Map(
-    navLinks.map((link) => [link.getAttribute("href").slice(1), link])
+    hashNavLinks.map((link) => [link.getAttribute("href").slice(1), link])
   );
 
   const observer = new IntersectionObserver(
@@ -16,7 +19,7 @@ if ("IntersectionObserver" in window && sections.length > 0) {
 
       if (!visible) return;
 
-      navLinks.forEach((link) => link.classList.remove("is-active"));
+      hashNavLinks.forEach((link) => link.classList.remove("is-active"));
       activeById.get(visible.target.id)?.classList.add("is-active");
     },
     { rootMargin: "-20% 0px -65% 0px", threshold: [0.1, 0.35, 0.6] }
@@ -24,6 +27,19 @@ if ("IntersectionObserver" in window && sections.length > 0) {
 
   sections.forEach((section) => observer.observe(section));
 }
+
+const currentPath = window.location.pathname.replace(/index\.html$/, "");
+
+navLinks
+  .filter((link) => !link.getAttribute("href")?.startsWith("#"))
+  .forEach((link) => {
+    const target = new URL(link.getAttribute("href"), window.location.href);
+    const targetPath = target.pathname.replace(/index\.html$/, "");
+
+    if (targetPath === currentPath) {
+      link.classList.add("is-active");
+    }
+  });
 
 document.querySelector("[data-current-year]").textContent =
   new Date().getFullYear();
