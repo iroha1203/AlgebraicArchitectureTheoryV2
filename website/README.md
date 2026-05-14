@@ -64,8 +64,18 @@ underscore-prefixed paths or future generated assets as Jekyll input.
 AAT chapter-cluster pages are implemented as static directory routes under
 `aat/`. SFT Part pages are implemented as static directory routes under
 `sft/`. ArchSig manual and reference pages are implemented as static directory
-routes under `archsig/`. Remaining major sections still point readers back to
-canonical repository documents until their public routes are added.
+routes under `archsig/`. Profile and outreach pages are implemented as
+top-level static directory routes. Remaining major sections still point
+readers back to canonical repository documents until their public routes are
+added.
+
+## SEO Sitemap Policy
+
+Do not commit a production `sitemap.xml` until the public domain or GitHub
+Pages base URL is fixed. Once the domain is chosen, generate or manually add
+`website/sitemap.xml` from the routes in `website/SITEMAP.md`, using the final
+public root as the URL base. Until then, avoid placeholder hosts in metadata,
+links, and sitemap entries.
 
 ## Local Preview
 

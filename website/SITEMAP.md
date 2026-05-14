@@ -498,14 +498,15 @@ implemented:
   /archsig/operational-feedback/
   /archsig/examples/
   /archsig/roadmap/
+  /outreach/
+  /profile/
 
 planned:
-  /profile/
   /interface/
-  /outreach/
 ```
 
 ## Later SEO Sitemap
 
 公開ドメインが決まった後で、別途 `sitemap.xml` を作る。
 その時点では、この設計図の route を URL 化し、GitHub Pages の公開 root から参照できるようにする。
+ドメイン未確定の段階では placeholder host を含む `sitemap.xml` を公開しない。
