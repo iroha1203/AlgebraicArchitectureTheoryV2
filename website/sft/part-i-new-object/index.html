@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="SFT Part I: software evolution as a computable object, codebase as field memory, development fields, and architecture futures."
+    >
+    <title>SFT Part I: The New Object</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a class="is-active" href="../">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">SFT</a>
+            <span>Part I</span>
+          </nav>
+          <p class="eyebrow">SFT Part I</p>
+          <h1>The New Object</h1>
+          <p class="lede">
+            Part I introduces software evolution itself as the object of SFT:
+            a bounded, field-shaped computation over codebase memory,
+            development context, reachable futures, and signature trajectories.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#computable-object">Computable object</a></li>
+                <li><a href="#field-memory">Field memory</a></li>
+                <li><a href="#development-field">Development field</a></li>
+                <li><a href="#architecture-futures">Architecture futures</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
+                    Part I source
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                A reachable future is relative to an explicit model, horizon,
+                operation support, policy, and observation boundary. It is not
+                a prophecy about what the project will do.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="computable-object" class="article-section">
+              <h2>Software evolution as a computable object</h2>
+              <p>
+                SFT moves from observing past code states to asking which
+                architecture futures are reachable under a selected field
+                model. Computable means bounded by explicit modeling choices,
+                not completely decidable in reality.
+              </p>
+              <figure class="code-panel">
+                <figcaption>SFT central proposition</figcaption>
+                <pre><code>software evolution
+  = artifact-shaped operation space
+  + governance-shaped selection policy
+  + observable signature trajectory
+  + feedback-updated field memory</code></pre>
+              </figure>
+              <p>
+                The theory is organized into theory, measurement, computation,
+                and governance layers. AAT supplies local algebra, ArchSig
+                supplies observation, and SFT asks how future operation space
+                changes under artifacts and feedback.
+              </p>
+            </section>
+
+            <section id="field-memory" class="article-section">
+              <h2>Codebase as field memory</h2>
+              <p>
+                A codebase records more than implementation state. It also
+                carries requirements, design decisions, review patterns,
+                incidents, workarounds, migrations, ownership boundaries,
+                tooling practice, and latent default paths.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Static shape is not enough</strong>
+                  <span>The same module graph can support different future operations when field memory differs.</span>
+                </li>
+                <li>
+                  <strong>Local patterns matter</strong>
+                  <span>Old shortcuts and AI-readable local conventions can make unsafe paths look natural or low cost.</span>
+                </li>
+                <li>
+                  <strong>History constrains future work</strong>
+                  <span>Past incidents, review rules, and migrations change the support and policy visible to new proposals.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="development-field" class="article-section">
+              <h2>Development field</h2>
+              <p>
+                `DevelopmentField` names the broad field around a codebase:
+                requirements, planning artifacts, design practices, developers,
+                AI agents, review systems, CI, runtime observations, incidents,
+                and lifecycle pressure.
+              </p>
+              <p>
+                SFT does not claim to fully model human intention or
+                organization culture. It takes a modeling boundary and builds a
+                partial `SoftwareFieldEstimate` that records selected evidence,
+                unavailable evidence, and the unknown remainder.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  The wide development field is the scope. The computable core
+                  is the bounded slice where selected questions can be stated
+                  as finite or explicitly constrained problems.
+                </p>
+              </div>
+            </section>
+
+            <section id="architecture-futures" class="article-section">
+              <h2>Architecture futures and signature trajectories</h2>
+              <p>
+                SFT tracks trajectories, not only endpoints. A safe final state
+                does not imply a safe path, and a net signature delta of zero
+                can hide unsafe intermediate excursions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>ArchitectureFuture</figcaption>
+                <pre><code>ArchitectureFuture
+  = field path
+  + architecture projection path
+  + observed signature trajectory
+  + obstruction witness candidates
+  + forecast boundary</code></pre>
+              </figure>
+              <p>
+                The coupon PRD running example shows how one artifact can make
+                several paths visible: lawful policy insertion, payment adapter
+                shortcut, UI-only drift, and rounding semantics obstruction.
+              </p>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../">
+                <span>Previous</span>
+                <strong>SFT Landing</strong>
+              </a>
+              <a href="../part-ii-basis/">
+                <span>Next</span>
+                <strong>Part II. Basis</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -480,10 +480,6 @@ implemented:
   /aat/representations-and-effects/
   /aat/examples-and-boundaries/
   /aat/status/
-
-planned:
-  /profile/
-  /interface/
   /sft/
   /sft/part-i-new-object/
   /sft/part-ii-basis/
@@ -492,6 +488,10 @@ planned:
   /sft/part-v-computing-systems/
   /sft/part-vi-case-studies/
   /sft/part-vii-research-program/
+
+planned:
+  /profile/
+  /interface/
   /archsig/
   /archsig/getting-started/
   /archsig/commands/

@@ -62,7 +62,8 @@ The committed `website/.nojekyll` file keeps GitHub Pages from treating
 underscore-prefixed paths or future generated assets as Jekyll input.
 
 AAT chapter-cluster pages are implemented as static directory routes under
-`aat/`. Remaining major sections still point readers back to canonical
+`aat/`. SFT Part pages are implemented as static directory routes under
+`sft/`. Remaining major sections still point readers back to canonical
 repository documents until their public routes are added.
 
 ## Local Preview

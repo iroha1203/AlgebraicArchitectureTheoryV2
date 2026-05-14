@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="SFT Part V: computational problems, PRD-to-ConsequenceEnvelope simulator, AI governance, review systems, lifecycle, and benchmarks."
+    >
+    <title>SFT Part V: Computing Systems Built from SFT</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a class="is-active" href="../">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">SFT</a>
+            <span>Part V</span>
+          </nav>
+          <p class="eyebrow">SFT Part V</p>
+          <h1>Computing Systems Built from SFT</h1>
+          <p class="lede">
+            Part V turns SFT into families of computing problems and tool
+            systems: field reconstruction, operation support inference,
+            ConsequenceEnvelope generation, AI proposal governance, lifecycle
+            decision, and calibration benchmarks.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#computational-problems">Computational problems</a></li>
+                <li><a href="#simulator">PRD simulator</a></li>
+                <li><a href="#ai-governance">AI governance</a></li>
+                <li><a href="#review-systems">Review systems</a></li>
+                <li><a href="#lifecycle">Lifecycle and benchmarks</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
+                    Part V source
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                SFT tools return bounded reports and estimates. They do not
+                become ground truth, Lean proofs, or general AI safety
+                guarantees.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="computational-problems" class="article-section">
+              <h2>SFT computational problems</h2>
+              <p>
+                SFT defines problem families instead of remaining a metaphor.
+                Each problem should name inputs, outputs, soundness boundary,
+                and claim level.
+              </p>
+              <ul class="chapter-list">
+                <li>
+                  <a href="#computational-problems">Field reconstruction</a>
+                  <span>Build a bounded `SoftwareFieldEstimate` from artifacts, codebase, review, CI, and incident traces.</span>
+                </li>
+                <li>
+                  <a href="#computational-problems">Operation support inference</a>
+                  <span>Estimate which operation families are natural, possible, risky, or low cost in the current field.</span>
+                </li>
+                <li>
+                  <a href="#simulator">ConsequenceEnvelope generation</a>
+                  <span>Translate PRDs, specs, issues, or AI proposals into reachable path classes and boundary reports.</span>
+                </li>
+                <li>
+                  <a href="#ai-governance">AI proposal governance</a>
+                  <span>Keep generated proposal support inside a bounded field model and record shortcut witnesses.</span>
+                </li>
+                <li>
+                  <a href="#lifecycle">Lifecycle decision</a>
+                  <span>Diagnose repair, migration, contraction, or end-of-life choices from signatures, costs, risk, and capacity.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="simulator" class="article-section">
+              <h2>PRD-to-ConsequenceEnvelope simulator</h2>
+              <p>
+                The simulator is a way of making SFT computational. It is not a
+                PRD-to-PR predictor; it generates bounded consequence envelopes
+                rather than a single future.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Simulator path</figcaption>
+                <pre><code>PRD / Spec / Issue / AI Proposal
+  -> ArtifactDescriptor
+  -> OperationSupport
+  -> ForecastCone / ConsequenceEnvelope
+  -> Signature Axis and Witness Candidate report
+  -> Review / CI / Issue Decomposition recommendation
+  -> Calibration by observed outcome</code></pre>
+              </figure>
+              <p>
+                Practical value starts when the tool reports affected axes,
+                witness candidates, missing boundaries, and review or issue
+                decomposition recommendations. Empirical prediction claims
+                depend on later weighting and calibration.
+              </p>
+            </section>
+
+            <section id="ai-governance" class="article-section">
+              <h2>AI-agent governance</h2>
+              <p>
+                SFT reads an AI coding agent as a field participant: artifact
+                interpreter, proposal generator, local pattern amplifier,
+                shortcut generator, review load shifter, and hidden assumption
+                reproducer.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  SFT does not prove general AI safety. It bounds proposal
+                  support with prompt, policy, theorem boundary, review, CI,
+                  shortcut witness reports, and posterior field update.
+                </p>
+              </div>
+            </section>
+
+            <section id="review-systems" class="article-section">
+              <h2>Review, CI, and type systems</h2>
+              <p>
+                Review, CI, type systems, architecture rules, ownership
+                boundaries, and runtime guards are governance interventions.
+                They shape future operation support and selection policy, not
+                just pass or fail a change.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Restrictive</strong>
+                  <span>Remove unsafe support from the accepted operation set.</span>
+                </li>
+                <li>
+                  <strong>Redirective</strong>
+                  <span>Raise shortcut cost and lower lawful path cost.</span>
+                </li>
+                <li>
+                  <strong>Instrumenting</strong>
+                  <span>Add observation axes, tests, runtime checks, or evidence records.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="lifecycle" class="article-section">
+              <h2>Lifecycle and benchmarks</h2>
+              <p>
+                SFT includes birth, growth, stabilization, drift, repair,
+                migration, contraction, and end-of-life. End-of-life can be a
+                field reconfiguration decision rather than failure.
+              </p>
+              <p>
+                Benchmarking is required before calibrated empirical status:
+                PRD-to-issue, issue-to-PR signature, review mediation,
+                incident feedback, AI shortcut, and lifecycle decision
+                benchmarks give the workbench something falsifiable to test.
+              </p>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../part-iv-principles/">
+                <span>Previous</span>
+                <strong>Part IV. Principles</strong>
+              </a>
+              <a href="../part-vi-case-studies/">
+                <span>Next</span>
+                <strong>Part VI. Case Studies</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

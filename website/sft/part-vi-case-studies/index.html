@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="SFT Part VI: Coupon PRD, migration, incident response, AI-generated shortcut, and end-of-life decision case studies."
+    >
+    <title>SFT Part VI: Case Studies</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a class="is-active" href="../">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">SFT</a>
+            <span>Part VI</span>
+          </nav>
+          <p class="eyebrow">SFT Part VI</p>
+          <h1>Case Studies</h1>
+          <p class="lede">
+            Part VI uses concrete cases to show how SFT reads artifacts,
+            migrations, incidents, AI-generated shortcuts, and end-of-life
+            decisions as changes to operation support, policy, observations,
+            and field memory.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#coupon-prd">Coupon PRD</a></li>
+                <li><a href="#migration">Migration</a></li>
+                <li><a href="#incident-response">Incident response</a></li>
+                <li><a href="#ai-shortcut">AI shortcut</a></li>
+                <li><a href="#end-of-life">End-of-life</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
+                    Part VI source
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                Case studies illustrate bounded diagnosis. They do not claim
+                market prediction, exhaustive causality, or complete extraction
+                from real repositories.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="coupon-prd" class="article-section">
+              <h2>Coupon PRD</h2>
+              <p>
+                The coupon PRD is the running example. It targets checkout and
+                payment as a feature addition artifact action, but an
+                underspecified PRD can expose several operation families.
+              </p>
+              <figure class="code-panel">
+                <figcaption>ConsequenceEnvelope path classes</figcaption>
+                <pre><code>lawful policy insertion path
+  + hidden PaymentAdapter dependency path
+  + rounding semantic obstruction path
+  + UI-only discount drift path
+  + unknown / unmodeled remainder</code></pre>
+              </figure>
+              <p>
+                When the specification states rounding order, discount
+                composition, payment authorization boundaries, and refund
+                semantics, support and policy can be shaped toward the lawful
+                path.
+              </p>
+            </section>
+
+            <section id="migration" class="article-section">
+              <h2>Migration</h2>
+              <p>
+                Migration is a field transformation with old-new projection
+                mismatch and partial migration risk. SFT reads migration as
+                reconfiguration of field memory and operation support, not just
+                replacement work.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Bridge path</strong>
+                  <span>A temporary relation between old and new projections.</span>
+                </li>
+                <li>
+                  <strong>Dual-run path</strong>
+                  <span>A field state where two implementations coexist under a comparison boundary.</span>
+                </li>
+                <li>
+                  <strong>Rollback path</strong>
+                  <span>A supported path back from selected migration states.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="incident-response" class="article-section">
+              <h2>Incident response</h2>
+              <p>
+                Incident response forces a field update through runtime
+                observation. The incident can classify root-cause witnesses,
+                reveal missing invariants, update review or CI governance, and
+                revise the forecast boundary.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  A local post-incident fix does not prove future trajectory
+                  safety. SFT keeps the missing invariant and observation
+                  boundary visible.
+                </p>
+              </div>
+            </section>
+
+            <section id="ai-shortcut" class="article-section">
+              <h2>AI-generated shortcut</h2>
+              <p>
+                AI-generated proposals can amplify local patterns and make
+                shortcut paths look cheap. SFT evaluates them against both AAT
+                theorem boundaries and SFT consequence envelopes.
+              </p>
+              <figure class="code-panel">
+                <figcaption>AIShortcutCase</figcaption>
+                <pre><code>prompt boundary
+  + generated operation support
+  + selected shortcut path
+  + missed theorem boundary
+  + review / CI mediation
+  + observed obstruction witness
+  + posterior field update</code></pre>
+              </figure>
+            </section>
+
+            <section id="end-of-life" class="article-section">
+              <h2>End-of-life decision</h2>
+              <p>
+                End-of-life is a lifecycle governance choice. SFT compares
+                architecture signature, repair cost, migration support,
+                runtime risk, ownership boundary, staffing boundary, and the
+                consequence envelope.
+              </p>
+              <p>
+                It does not predict human intention or market success. It
+                describes how repair, migration, contraction, or deletion
+                changes architecture futures and field capacity.
+              </p>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../part-v-computing-systems/">
+                <span>Previous</span>
+                <strong>Part V. Computing Systems</strong>
+              </a>
+              <a href="../part-vii-research-program/">
+                <span>Next</span>
+                <strong>Part VII. Research Program</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
