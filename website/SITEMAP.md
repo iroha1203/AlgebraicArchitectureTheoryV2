@@ -488,10 +488,6 @@ implemented:
   /sft/part-v-computing-systems/
   /sft/part-vi-case-studies/
   /sft/part-vii-research-program/
-
-planned:
-  /profile/
-  /interface/
   /archsig/
   /archsig/getting-started/
   /archsig/commands/
@@ -502,6 +498,10 @@ planned:
   /archsig/operational-feedback/
   /archsig/examples/
   /archsig/roadmap/
+
+planned:
+  /profile/
+  /interface/
   /outreach/
 ```
 

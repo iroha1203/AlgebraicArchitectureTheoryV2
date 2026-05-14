@@ -63,8 +63,9 @@ underscore-prefixed paths or future generated assets as Jekyll input.
 
 AAT chapter-cluster pages are implemented as static directory routes under
 `aat/`. SFT Part pages are implemented as static directory routes under
-`sft/`. Remaining major sections still point readers back to canonical
-repository documents until their public routes are added.
+`sft/`. ArchSig manual and reference pages are implemented as static directory
+routes under `archsig/`. Remaining major sections still point readers back to
+canonical repository documents until their public routes are added.
 
 ## Local Preview
 

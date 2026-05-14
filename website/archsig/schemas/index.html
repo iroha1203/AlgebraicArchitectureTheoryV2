@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="ArchSig schema versioning, compatibility outcomes, schema catalog, and migration rules."
+    >
+    <title>ArchSig Schemas</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">ArchSig</a>
+            <span>Schemas</span>
+          </nav>
+          <p class="eyebrow">ArchSig Reference</p>
+          <h1>Schema compatibility is claim-boundary compatibility.</h1>
+          <p class="lede">
+            Schema evolution is not only field-shape migration. It must preserve assumptions, coverage, exactness metadata, and non-conclusions so reports keep the same claim boundary after migration.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#version-policy">Version policy</a></li>
+                <li><a href="#outcomes">Compatibility outcomes</a></li>
+                <li><a href="#catalog">Catalog</a></li>
+                <li><a href="#migration">Migration rules</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical sources</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/schema_compatibility.md">
+                    Schema compatibility
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/air.md">
+                    AIR
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/signature_artifacts.md">
+                    Signature artifacts
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <ul>
+                <li><code>archsig</code> is not a Lean prover.</li>
+                <li>Tool output is not a Lean theorem.</li>
+                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
+                <li>Measured zero is different from unmeasured.</li>
+                <li>Policy pass does not imply architecture lawfulness.</li>
+                <li>Report warning does not imply incident causality.</li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="version-policy" class="article-section">
+              <h2>Version policy</h2>
+              <p>
+                A schema compatibility policy names the artifact, version,
+                field mappings, deprecated fields, required assumptions,
+                coverage / exactness boundaries, and non-conclusions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Compatibility policy shape</figcaption>
+                <pre><code>schema-compatibility-policy-v0 :=
+  artifactId
+  + schemaVersion
+  + fieldMappings
+  + deprecatedFields
+  + requiredAssumptions
+  + coverageExactnessBoundaries
+  + nonConclusions</code></pre>
+              </figure>
+            </section>
+
+            <section id="outcomes" class="article-section">
+              <h2>Compatibility outcomes</h2>
+              <p>
+                <code>notComparable</code> is a valid boundary outcome, not a
+                generic failure. If schema, unit, projection, or coverage does
+                not align, the tool should avoid inventing a delta.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>compatible</strong>
+                  <span>The artifact can be read under the mapped schema while preserving boundaries.</span>
+                </li>
+                <li>
+                  <strong>requiresMigration</strong>
+                  <span>A migration path is needed before comparison or reporting is meaningful.</span>
+                </li>
+                <li>
+                  <strong>notComparable</strong>
+                  <span>The artifacts are not comparable under the available projection or coverage.</span>
+                </li>
+                <li>
+                  <strong>blockedFormalClaimPromotion</strong>
+                  <span>The migration would strengthen a weak boundary into a formal claim without required preconditions.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="catalog" class="article-section">
+              <h2>Catalog</h2>
+              <p>
+                The catalog includes Sig0, AIR, Feature Extension Report,
+                obstruction witnesses, drift ledgers, reported axes, B10
+                operational feedback artifacts, and Architecture Dynamics
+                reports such as PR force, signature trajectory, and dynamics
+                metrics.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Core artifacts</strong>
+                  <span><code>archsig-sig0-v0</code>, <code>aat-air-v0</code>, <code>feature-extension-report-v0</code>, and <code>obstruction-witness-v0</code>.</span>
+                </li>
+                <li>
+                  <strong>Operational artifacts</strong>
+                  <span>Daily ledger, calibration review, team threshold, ownership monitor, repair adoption, incident correlation, and hypothesis refresh.</span>
+                </li>
+                <li>
+                  <strong>Dynamics artifacts</strong>
+                  <span><code>pr-force-report-v0</code>, <code>signature-trajectory-report-v0</code>, and <code>architecture-dynamics-metrics-report-v0</code>.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="migration" class="article-section">
+              <h2>Migration rules</h2>
+              <p>
+                A migration is not safe if it removes an older non-conclusion,
+                silently discharges a new required assumption, or loses
+                coverage and exactness metadata.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  A weak boundary must not become a strong claim during schema
+                  migration. The migration must preserve or strengthen
+                  non-conclusions, not erase them.
+                </p>
+              </div>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../workflows/">
+                <span>Previous</span>
+                <strong>Workflows</strong>
+              </a>
+              <a href="../operational-feedback/">
+                <span>Next</span>
+                <strong>Operational Feedback</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
