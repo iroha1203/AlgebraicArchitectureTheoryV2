@@ -67,6 +67,8 @@
               <ol>
                 <li><a href="#central-proposition">Central proposition</a></li>
                 <li><a href="#architecture-object">Architecture object</a></li>
+                <li><a href="#definition-spine">Definition spine</a></li>
+                <li><a href="#foundational-claims">Foundational claims</a></li>
                 <li><a href="#universe-boundary">Universe boundary</a></li>
                 <li><a href="#formal-reading">Formal reading</a></li>
                 <li><a href="#example-boundary">Example boundary</a></li>
@@ -77,11 +79,22 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#1-%E4%B8%AD%E5%BF%83%E5%91%BD%E9%A1%8C">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/mathematical_theory.md#1-%E4%B8%AD%E5%BF%83%E5%91%BD%E9%A1%8C">
                     Chapters 1-2 in the AAT text
                   </a>
                 </li>
               </ul>
+            </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; see Status for proved / defined-only boundaries.</dd>
+              </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
@@ -141,6 +154,114 @@
                   <span>Observation model, semantic diagram universe, and selected measurement universe.</span>
                 </li>
               </ul>
+            </section>
+
+            <section id="definition-spine" class="article-section">
+              <h2>Definition spine</h2>
+              <p>
+                The foundational record is deliberately small. AAT does not
+                begin with every fact about a repository; it begins with the
+                selected carrier, the policies used to read that carrier, and
+                the observation context that states what evidence is in scope.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Architecture object schema</figcaption>
+                <pre><code>ArchitectureCarrier
+  = components
+  + static dependency relation
+  + runtime dependency relation
+
+ArchitecturePolicy
+  = boundary policy
+  + abstraction policy
+
+ArchitectureObservationContext
+  = observation model
+  + semantic diagram universe
+  + selected measurement universe
+
+ArchitectureObject
+  = ArchitectureCarrier
+  + ArchitecturePolicy
+  + ArchitectureObservationContext</code></pre>
+              </figure>
+              <p>
+                This schema is the first theorem-boundary guard. A claim about
+                the object is never stronger than the carrier, policy, and
+                observation context that presented it.
+              </p>
+            </section>
+
+            <section id="foundational-claims" class="article-section">
+              <h2>Foundational claims</h2>
+              <p>
+                The first layer of the theory establishes a disciplined
+                replacement for the phrase "the architecture." The object of
+                reasoning is not an entire repository, but a selected
+                presentation with explicit evidence and scope.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Definition</strong>
+                  <span>An `ArchitectureObject` is a carrier plus policy plus observation context.</span>
+                </li>
+                <li>
+                  <strong>Interpretation</strong>
+                  <span>An `ArchitectureCore` presents the object through evidence, but presentation is not assumed complete or injective.</span>
+                </li>
+                <li>
+                  <strong>Boundary</strong>
+                  <span>A `ComponentUniverse` is a selected measurement universe; outside it, zero and absence are not inferred.</span>
+                </li>
+                <li>
+                  <strong>Non-conclusion</strong>
+                  <span>No theorem here states that a real-code extractor has found every relevant component, relation, runtime effect, or semantic diagram.</span>
+                </li>
+              </ul>
+              <figure class="code-panel">
+                <figcaption>Foundational proposition schema</figcaption>
+                <pre><code>selected carrier
+  + selected policy
+  + selected observation context
+  + coverage / exactness boundary
+  -&gt; bounded ArchitectureObject claim</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Current Lean status</th>
+                      <th>Boundary</th>
+                      <th>Non-conclusion</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Static graph, reachability, layering, and decomposability vocabulary</td>
+                      <td>`defined only` / `proved` for the static structural bridge theorems</td>
+                      <td>Selected graph and explicit structural assumptions.</td>
+                      <td>Does not certify complete extraction from a real repository.</td>
+                      <td>Lean theorem index, static core entries.</td>
+                    </tr>
+                    <tr>
+                      <td>`ComponentCategory` as thin reachability category</td>
+                      <td>`defined only` / `proved` for selected bridge facts</td>
+                      <td>Reachability existence is retained; path count and walk length are intentionally forgotten.</td>
+                      <td>Quantitative path metrics require `Walk`, `Path`, matrix, or finite metric representations.</td>
+                      <td>AAT mathematical theory, Chapter 2.</td>
+                    </tr>
+                    <tr>
+                      <td>`ComponentUniverse` as measurement scope</td>
+                      <td>`defined only` / `proved` for finite-universe bridge packages</td>
+                      <td>Selected components, selected relations, coverage boundary, and exactness boundary.</td>
+                      <td>Universe outside is not read as zero or absent.</td>
+                      <td>Lean theorem index and proof obligations.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="universe-boundary" class="article-section">

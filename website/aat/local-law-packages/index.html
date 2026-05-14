@@ -66,9 +66,11 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#projection-observation">Projection and observation</a></li>
+                <li><a href="#projection-theorem">Projection theorem schema</a></li>
                 <li><a href="#lsp-dip">LSP and DIP</a></li>
                 <li><a href="#three-layer-flatness">Three-layer flatness</a></li>
                 <li><a href="#assumption-strength">Assumption strength</a></li>
+                <li><a href="#non-implication-map">Non-implication map</a></li>
                 <li><a href="#contract-example">Contract example</a></li>
                 <li><a href="#lean-status">Lean status</a></li>
               </ol>
@@ -77,11 +79,22 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#7-projection-observation-lsp-dip">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/mathematical_theory.md#7-projection-observation-lsp-dip">
                     Chapters 7-8 in the AAT text
                   </a>
                 </li>
               </ul>
+            </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+              </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
@@ -112,6 +125,69 @@ F(x) = F(y) -&gt; Obs(x) ~= Obs(y)
 
 ker(F) &lt;= ker(Obs)</code></pre>
               </figure>
+            </section>
+
+            <section id="projection-theorem" class="article-section">
+              <h2>Projection theorem schema</h2>
+              <p>
+                Projection claims become architecture claims only after the
+                strength of the projection is stated. Soundness, completeness,
+                exactness, and representative stability support different
+                conclusions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Projection bridge</figcaption>
+                <pre><code>ProjectionSound F
+  -&gt; concrete dependency evidence is represented abstractly
+
+ProjectionComplete F
+  -&gt; abstract dependency evidence has concrete representatives
+
+ProjectionExact F + RepresentativeStable F
+  -&gt; quotient-style or replacement-style readings may be stated</code></pre>
+              </figure>
+              <p>
+                For LSP-style claims, the same discipline appears as selected
+                client contexts and selected observations. Equal abstractions
+                must preserve observations only for the contexts and
+                equivalence relation named in the theorem boundary.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Current Lean status</th>
+                      <th>Boundary</th>
+                      <th>Non-conclusion</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Projection / DIP soundness bridge</td>
+                      <td>`proved` for soundness bridges</td>
+                      <td>Concrete dependency evidence and selected abstract graph.</td>
+                      <td>Soundness alone does not imply completeness, exactness, or global layering.</td>
+                      <td>Lean theorem index, projection / DIP entries.</td>
+                    </tr>
+                    <tr>
+                      <td>Observation / LSP violation-count bridge</td>
+                      <td>`proved` for finite selected observations</td>
+                      <td>Selected client-context universe and observation equivalence.</td>
+                      <td>Does not prove substitutability for all possible clients or effects.</td>
+                      <td>Lean theorem index, observation / LSP entries.</td>
+                    </tr>
+                    <tr>
+                      <td>Three-layer flatness connection</td>
+                      <td>`future proof obligation` unless a theorem boundary connects layers</td>
+                      <td>Static, runtime, and semantic evidence packages must be named separately.</td>
+                      <td>Static flatness does not imply runtime or semantic flatness.</td>
+                      <td>AAT mathematical theory, Chapters 7-8.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="lsp-dip" class="article-section">
@@ -185,6 +261,35 @@ ProjectionComplete
   does not imply
 ProjectionExact + RepresentativeStable</code></pre>
               </figure>
+            </section>
+
+            <section id="non-implication-map" class="article-section">
+              <h2>Non-implication map</h2>
+              <p>
+                Local law packages are useful because they make a precise claim
+                small enough to prove. They are dangerous only when their
+                conclusion is promoted into a different invariant family without
+                a bridge theorem.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Separate invariant families</figcaption>
+                <pre><code>LSP-compatible selected contexts
+  does not imply
+global decomposability
+
+DIP-compatible dependency direction
+  does not imply
+abstract layer acyclicity
+
+StaticFlatWithin X U
+  does not imply
+RuntimeFlatWithin X or SemanticFlatWithin X</code></pre>
+              </figure>
+              <p>
+                AAT keeps these failures as theory content. The point is not to
+                weaken design principles, but to place each principle in the
+                invariant family where it can be stated and checked correctly.
+              </p>
             </section>
 
             <section id="contract-example" class="article-section">

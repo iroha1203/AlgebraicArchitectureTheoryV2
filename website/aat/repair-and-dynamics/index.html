@@ -66,6 +66,8 @@
               <ol>
                 <li><a href="#repair">Repair and synthesis</a></li>
                 <li><a href="#complexity-transfer">Complexity transfer</a></li>
+                <li><a href="#repair-theorem">Repair theorem schema</a></li>
+                <li><a href="#signature-trajectory">Signature trajectory</a></li>
                 <li><a href="#paths-and-filling">Paths and filling</a></li>
                 <li><a href="#no-solution">No-solution boundary</a></li>
                 <li><a href="#path-example">Path example</a></li>
@@ -76,11 +78,22 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#11-repair-synthesis-complexity-transfer">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/mathematical_theory.md#11-repair-synthesis-complexity-transfer">
                     Chapters 11-12 in the AAT text
                   </a>
                 </li>
               </ul>
+            </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+              </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
@@ -134,6 +147,92 @@
                   non-increasing unless that theorem boundary says so.
                 </p>
               </div>
+            </section>
+
+            <section id="repair-theorem" class="article-section">
+              <h2>Repair theorem schema</h2>
+              <p>
+                A repair theorem is intentionally narrow. It states that a
+                selected measure decreases or a selected witness disappears,
+                while preserving named invariants and recording all axes whose
+                behavior is not concluded.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Selected repair theorem</figcaption>
+                <pre><code>RepairStep X Y
+  + selected witness universe W
+  + obstruction measure m
+  + invariant family I
+  + side-effect boundary E
+  -&gt;
+  m(Y) &lt; m(X)
+  + I is preserved within B
+  + non-conclusions for untracked axes</code></pre>
+              </figure>
+              <p>
+                Synthesis has a stronger burden. A generated candidate needs
+                satisfaction evidence, while a no-solution claim needs a finite
+                complete candidate universe and a checked decision procedure.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Current Lean status</th>
+                      <th>Boundary</th>
+                      <th>Non-conclusion</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Repair step decreases selected measure</td>
+                      <td>`defined only` / `proved` for bounded packages</td>
+                      <td>Selected witness universe, obstruction measure, preserved invariant, and side-effect boundary.</td>
+                      <td>Does not prove all signature axes are non-increasing.</td>
+                      <td>Lean theorem index, repair entries.</td>
+                    </tr>
+                    <tr>
+                      <td>Repair synthesis / no-solution soundness</td>
+                      <td>`defined only` / `proved` for bounded schema accessors</td>
+                      <td>Finite complete candidate universe, explicit constraints, decision procedure, and coverage boundary.</td>
+                      <td>Solver failure alone is not a mathematical no-solution certificate.</td>
+                      <td>Lean theorem index and proof-obligation ledger.</td>
+                    </tr>
+                    <tr>
+                      <td>Path homotopy and diagram filling</td>
+                      <td>`defined only` / `proved` for selected observation-invariance bridges</td>
+                      <td>Selected generators, selected observations, and diagram universe.</td>
+                      <td>Does not prove global semantic completeness or preservation of every observation axis.</td>
+                      <td>Lean theorem index, Chapter 8-9 entrypoints.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="signature-trajectory" class="article-section">
+              <h2>Signature trajectory</h2>
+              <p>
+                A repair is best read as a movement through signature space.
+                The theorem may prove a decrease on one selected coordinate,
+                while the trajectory records unchanged, transferred,
+                introduced, or unmeasured coordinates elsewhere.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Repair trajectory</figcaption>
+                <pre><code>ArchitecturePath X0 Xn
+  + selected repair steps
+  + signature coordinates at each step
+  + transferred or residual witnesses
+  + non-conclusions
+  -&gt; bounded repair reading</code></pre>
+              </figure>
+              <p>
+                This trajectory view is what prevents a local repair theorem
+                from becoming a total quality claim.
+              </p>
             </section>
 
             <section id="paths-and-filling" class="article-section">
