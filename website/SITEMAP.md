@@ -171,8 +171,8 @@ SEO 用の `sitemap.xml` ではない。
 ```text
 Home
 AAT
-SFT
 Interface
+SFT
 ArchSig
 Outreach
 Profile
@@ -480,6 +480,7 @@ implemented:
   /aat/representations-and-effects/
   /aat/examples-and-boundaries/
   /aat/status/
+  /interface/
   /sft/
   /sft/part-i-new-object/
   /sft/part-ii-basis/
@@ -500,9 +501,6 @@ implemented:
   /archsig/roadmap/
   /outreach/
   /profile/
-
-planned:
-  /interface/
 ```
 
 ## Later SEO Sitemap

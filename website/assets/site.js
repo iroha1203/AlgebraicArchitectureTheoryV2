@@ -1,4 +1,18 @@
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
+
+if (window.location.protocol === "file:") {
+  document.querySelectorAll('a[href$="/"]').forEach((link) => {
+    const href = link.getAttribute("href");
+
+    if (!href || href.startsWith("http")) return;
+
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.location.href = new URL(`${href}index.html`, window.location.href);
+    });
+  });
+}
+
 const hashNavLinks = navLinks.filter((link) =>
   link.getAttribute("href")?.startsWith("#")
 );
