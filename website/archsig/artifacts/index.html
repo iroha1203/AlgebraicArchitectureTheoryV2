@@ -63,6 +63,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#primary">Primary artifacts</a></li>
+                <li><a href="#surface-artifacts">Surface artifacts</a></li>
                 <li><a href="#policy-registry">Policy and registry</a></li>
                 <li><a href="#datasets">Datasets and feedback</a></li>
                 <li><a href="#forecasting">SFT forecasting</a></li>
@@ -131,6 +132,35 @@
                 <li>
                   <strong>AIR and review reports</strong>
                   <span><code>aat-air-v0</code>, theorem precondition check, Feature Extension Report, policy decision, and PR comment summary.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="surface-artifacts" class="article-section">
+              <h2>Surface artifacts</h2>
+              <p>
+                The artifact catalog should be read by surface. Core artifacts
+                describe a bounded repository observation; Review artifacts
+                project that observation into PR review; SFT artifacts project
+                a proposed change into a bounded forecast report; Operational
+                artifacts store calibration and feedback evidence.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Core artifacts</strong>
+                  <span>Sig0, validation reports, snapshots, diff reports, metric status, and unmeasured axis records.</span>
+                </li>
+                <li>
+                  <strong>Review artifacts</strong>
+                  <span>AIR, AIR validation, theorem precondition check, Feature Extension Report, policy decision, PR comment summary, and baseline suppression.</span>
+                </li>
+                <li>
+                  <strong>SFT artifacts</strong>
+                  <span>ArtifactDescriptor, OperationSupportEstimate, ForecastConeSkeleton, ConsequenceEnvelope, ForecastCalibrationHook, and their validation reports.</span>
+                </li>
+                <li>
+                  <strong>Operational artifacts</strong>
+                  <span>PR history datasets, feature datasets, outcome linkage, daily ledger, calibration, threshold, ownership, repair adoption, incident correlation, and hypothesis refresh records.</span>
                 </li>
               </ul>
             </section>

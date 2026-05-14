@@ -4,6 +4,18 @@
 
 Lean status: `empirical hypothesis` / tooling output.
 
+## Product surface grouping
+
+Artifact は次の surface ごとに読む。surface が違っても、測定境界、claim boundary、
+non-conclusions を落とさない。
+
+| Surface | Artifact families | Boundary |
+| --- | --- | --- |
+| ArchSig Core | Sig0、validation report、snapshot、signature diff。 | repository observation であり、完全な architecture model 抽出ではない。 |
+| ArchSig Review | AIR、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression。 | review cue / CI cue であり、Lean theorem proof ではない。 |
+| ArchSig SFT | ArtifactDescriptor、OperationSupportEstimate、ForecastConeSkeleton、ConsequenceEnvelope、ForecastCalibrationHook と validation report。 | bounded forecast report projection であり、point prediction、causal proof、forecast correctness ではない。 |
+| ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh。 | empirical / operational feedback であり、correlation を causal theorem にしない。 |
+
 ## Primary Artifacts
 
 | 出力 | schemaVersion | 用途 |

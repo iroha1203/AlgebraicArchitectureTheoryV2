@@ -63,6 +63,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#current">Current snapshot</a></li>
+                <li><a href="#remaining-gaps">Remaining gaps</a></li>
                 <li><a href="#phases">B0-B13 phases</a></li>
                 <li><a href="#forecasting">SFT forecasting</a></li>
                 <li><a href="#targets">Standardization targets</a></li>
@@ -113,6 +114,35 @@
                 <li>
                   <strong>Empirical / operational</strong>
                   <span>Dataset, calibration, feedback, and outcome records that do not imply causal theorem status.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="remaining-gaps" class="article-section">
+              <h2>Remaining gaps</h2>
+              <p>
+                The roadmap separates product surface from planned gaps. The
+                current implementation is useful for bounded observation,
+                review, SFT projection, and feedback artifacts, but several
+                adapters and calibration paths remain outside the product
+                surface.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Extractor and framework adapters</strong>
+                  <span>Call graph, data dependency, dynamic import, plugin loading, and framework convention handling remain adapter work.</span>
+                </li>
+                <li>
+                  <strong>SFT input adapters</strong>
+                  <span>Markdown PRD / Spec input is implemented; GitHub Issue JSON and AI proposal JSON adapters remain future work.</span>
+                </li>
+                <li>
+                  <strong>Calibration</strong>
+                  <span>Real dataset calibration, organization policy tuning, and operational threshold management require local feedback data.</span>
+                </li>
+                <li>
+                  <strong>Formal boundary</strong>
+                  <span>Tool output, forecast output, and empirical correlation do not become Lean theorem claims without explicit formal bridges.</span>
                 </li>
               </ul>
             </section>
