@@ -14,6 +14,25 @@ The public site uses English as the source of truth. Japanese explanations
 should be handled as outreach articles on Qiita, Zenn, Hashnode, or similar
 media, with links back to the canonical English pages.
 
+## Content Policy
+
+AAT and SFT pages are first-class theory pages, not promotional summaries.
+They should stay faithful to the repository's canonical theory documents and
+use a precise, paper-like expository style. Public article platforms such as
+Zenn, Hashnode, and Qiita are outreach surfaces for motivation and intuition;
+they are not where the full theory, theorem boundaries, or claim discipline are
+maintained.
+
+When expanding AAT and SFT pages:
+
+- Treat `docs/aat/mathematical_theory.md` and
+  `docs/sft/software_field_theory.md` as the source texts.
+- Preserve definitions, assumptions, non-conclusions, and claim levels.
+- Prefer theorem-style structure: definitions, interpretation, examples,
+  boundaries, and links to Lean status where appropriate.
+- Do not compress formal distinctions into slogans or general software advice.
+- Keep ArchSig and tooling evidence separate from AAT / SFT theorem claims.
+
 ## Intended Site Structure
 
 ```text
@@ -62,12 +81,11 @@ The committed `website/.nojekyll` file keeps GitHub Pages from treating
 underscore-prefixed paths or future generated assets as Jekyll input.
 
 AAT chapter-cluster pages are implemented as static directory routes under
-`aat/`. SFT Part pages are implemented as static directory routes under
-`sft/`. ArchSig manual and reference pages are implemented as static directory
-routes under `archsig/`. Profile and outreach pages are implemented as
-top-level static directory routes. Remaining major sections still point
-readers back to canonical repository documents until their public routes are
-added.
+`aat/`. The AAT / SFT interface is implemented as `interface/`. SFT Part pages
+are implemented as static directory routes under `sft/`. ArchSig manual and
+reference pages are implemented as static directory routes under `archsig/`.
+Profile and outreach pages are implemented as top-level static directory
+routes.
 
 ## SEO Sitemap Policy
 
@@ -110,6 +128,12 @@ This is a text-first research site. Typography is the main interface:
 - Navigation and compact labels use `Inter` with Japanese sans fallbacks.
 - Code and Lean-like fragments use `IBM Plex Mono`.
 - Math is rendered with MathJax CommonHTML.
+
+AAT and SFT prose should read like long-form research exposition. The target is
+a technically careful reader who needs the actual theory, not a short popular
+explanation. Outreach pages can be lighter; canonical AAT / SFT pages should be
+substantive enough to stand on their own while still linking back to the source
+documents.
 
 Avoid adding a heavy frontend framework unless the site starts needing behavior
 that plain HTML, CSS, and a small script cannot handle cleanly.

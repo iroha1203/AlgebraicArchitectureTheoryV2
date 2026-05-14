@@ -11,8 +11,12 @@ SEO 用の `sitemap.xml` ではない。
 - 日本語は Qiita、Zenn、Hashnode などの outreach article として扱い、site mirror は作らない。
 - `docs/` は source of truth、`website/` は public reading surface として扱う。
 - 数学本文、Lean status、proof obligation、tooling claim、empirical hypothesis を混同しない。
-- AAT は formal theory article を章クラスタ単位で分割して見せる。
-- SFT は theory site / research monograph として Part 単位で見せる。
+- AAT は first-class formal theory article として、`docs/aat/mathematical_theory.md`
+  に忠実な論文調の本文を章クラスタ単位で見せる。
+- SFT は first-class research monograph として、`docs/sft/software_field_theory.md`
+  に忠実な論文調の本文を Part 単位で見せる。
+- AAT / SFT page は marketing summary や一般向け article ではなく、定義、前提、
+  theorem boundary、non-conclusions、例、Lean status への接続を持つ技術本文として書く。
 - ArchSig は standalone manual / reference section として扱う。
 - Hashnode / Zenn / Qiita は outreach 導線であり、canonical claim の置き場にしない。
 
@@ -161,6 +165,9 @@ SEO 用の `sitemap.xml` ではない。
 - Do not add a language switch unless a real Japanese site strategy exists.
 - Japanese explanations should live as outreach articles on Qiita, Zenn, Hashnode, or similar media.
 - Outreach articles should point back to the canonical English page for formal claims.
+- Outreach articles may simplify motivation, but AAT / SFT website pages should
+  keep paper-level precision and should not omit assumptions or theorem
+  boundaries for readability.
 - AAT / SFT terminology should not be translated aggressively. Keep core terms such as `ArchitectureObject`, `Invariant`, `ObstructionWitness`, `ArchitectureSignature`, `ForecastCone`, and `ConsequenceEnvelope` in English when that avoids ambiguity.
 - Japanese articles may explain motivation and intuition, but theorem status, claim boundaries, and canonical definitions remain on the English site and repository docs.
 
@@ -171,8 +178,8 @@ SEO 用の `sitemap.xml` ではない。
 ```text
 Home
 AAT
-SFT
 Interface
+SFT
 ArchSig
 Outreach
 Profile
@@ -480,6 +487,7 @@ implemented:
   /aat/representations-and-effects/
   /aat/examples-and-boundaries/
   /aat/status/
+  /interface/
   /sft/
   /sft/part-i-new-object/
   /sft/part-ii-basis/
@@ -500,9 +508,6 @@ implemented:
   /archsig/roadmap/
   /outreach/
   /profile/
-
-planned:
-  /interface/
 ```
 
 ## Later SEO Sitemap

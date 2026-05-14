@@ -17,18 +17,6 @@
       rel="stylesheet"
     >
     <link rel="stylesheet" href="assets/site.css">
-    <script>
-      window.MathJax = {
-        tex: {
-          inlineMath: [["\\(", "\\)"]],
-          displayMath: [["\\[", "\\]"]]
-        },
-        chtml: {
-          matchFontHeight: false
-        }
-      };
-    </script>
-    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
     <script defer src="assets/site.js"></script>
   </head>
   <body>
@@ -43,8 +31,8 @@
         <nav class="site-nav" aria-label="Primary navigation">
           <a href="#top">Home</a>
           <a href="aat/">AAT</a>
+          <a href="interface/">Interface</a>
           <a href="sft/">SFT</a>
-          <a href="#documents">Interface</a>
           <a href="archsig/">ArchSig</a>
           <a href="outreach/">Outreach</a>
           <a href="profile/">Profile</a>
@@ -73,6 +61,10 @@
                 <span>Local algebra of software architecture.</span>
               </li>
               <li>
+                <strong>Interface</strong>
+                <span>One-way bridge from AAT local algebra to SFT field models.</span>
+              </li>
+              <li>
                 <strong>SFT</strong>
                 <span>Computable theory of field-shaped software evolution.</span>
               </li>
@@ -89,7 +81,7 @@
         <div class="site-shell section-grid">
           <div class="section-heading">
             <p class="eyebrow">Research</p>
-            <h2>Three layers, one claim discipline.</h2>
+            <h2>Four entry points, one claim discipline.</h2>
           </div>
           <div class="research-list" aria-label="Research areas">
             <article class="research-item">
@@ -106,6 +98,19 @@
             </article>
             <article class="research-item">
               <p class="item-index">02</p>
+              <h3>AAT / SFT Interface</h3>
+              <p>
+                The interface fixes the direction of dependency: AAT provides
+                local algebra, while SFT uses that algebra as architecture
+                projections, observables, local law premises, and claim
+                boundaries.
+              </p>
+              <a href="interface/">
+                Read the interface
+              </a>
+            </article>
+            <article class="research-item">
+              <p class="item-index">03</p>
               <h3>Software Field Theory</h3>
               <p>
                 SFT treats software evolution as bounded computation over field
@@ -117,7 +122,7 @@
               </a>
             </article>
             <article class="research-item">
-              <p class="item-index">03</p>
+              <p class="item-index">04</p>
               <h3>ArchSig</h3>
               <p>
                 ArchSig connects repository artifacts to measurable signature
@@ -132,13 +137,54 @@
         </div>
       </section>
 
-      <section id="documents" class="section-band section-band-muted">
+      <section id="reading-paths" class="section-band section-band-muted">
         <div class="site-shell section-grid">
           <div class="section-heading">
-            <p class="eyebrow">Canonical documents</p>
-            <h2>Primary sources live with the repository.</h2>
+            <p class="eyebrow">Reading paths</p>
+            <h2>The nav follows the intended sequence.</h2>
             <p>
-              The public website is a reading surface. The repository documents
+              The top-level pages are not independent slogans. They form the
+              public reading route from formal architecture theory, through the
+              AAT-to-SFT interface, into field-shaped software evolution and
+              bounded observation artifacts.
+            </p>
+          </div>
+          <div class="document-table" role="list">
+            <a role="listitem" href="aat/">
+              <span>For theory readers</span>
+              <strong>Start with AAT, then read the chapter clusters and Lean status.</strong>
+            </a>
+            <a role="listitem" href="interface/">
+              <span>For boundary readers</span>
+              <strong>Use the interface before translating AAT claims into SFT terms.</strong>
+            </a>
+            <a role="listitem" href="sft/">
+              <span>For SFT readers</span>
+              <strong>Read SFT after the dependency and claim boundary are explicit.</strong>
+            </a>
+            <a role="listitem" href="archsig/">
+              <span>For tooling readers</span>
+              <strong>Use ArchSig as measurement and reporting, not theorem promotion.</strong>
+            </a>
+            <a role="listitem" href="outreach/">
+              <span>For public articles</span>
+              <strong>Route outreach essays back to the canonical English pages.</strong>
+            </a>
+            <a role="listitem" href="profile/">
+              <span>For maintainer context</span>
+              <strong>Use the profile for author identity, contact routes, and publication boundary.</strong>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="sources" class="section-band">
+        <div class="site-shell section-grid">
+          <div class="section-heading">
+            <p class="eyebrow">Canonical sources</p>
+            <h2>Primary claims still live with the repository.</h2>
+            <p>
+              The public website is a reading surface. Repository documents
               remain the source of truth for definitions, proof status, tooling
               boundaries, and empirical hypotheses.
             </p>
@@ -150,15 +196,15 @@
             </a>
             <a role="listitem" href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md">
               <span>AAT Mathematical Theory</span>
-              <strong>Objects, invariants, witnesses, signatures</strong>
-            </a>
-            <a role="listitem" href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
-              <span>SFT Monograph</span>
-              <strong>Computable software evolution and governance</strong>
+              <strong>Objects, operations, invariants, witnesses, and signatures</strong>
             </a>
             <a role="listitem" href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/aat_interface.md">
               <span>AAT / SFT Interface</span>
-              <strong>One-way dependency and claim translation</strong>
+              <strong>One-way dependency, translation rules, and forbidden readings</strong>
+            </a>
+            <a role="listitem" href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
+              <span>SFT Monograph</span>
+              <strong>Computable software evolution, forecast boundaries, and governance</strong>
             </a>
             <a role="listitem" href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md">
               <span>Lean Theorem Index</span>
@@ -168,47 +214,6 @@
               <span>Proof Obligations</span>
               <strong>Future proof work and empirical hypotheses</strong>
             </a>
-          </div>
-        </div>
-      </section>
-
-      <section id="samples" class="section-band">
-        <div class="site-shell notation-grid">
-          <div class="section-heading">
-            <p class="eyebrow">Notation</p>
-            <h2>Math and code should read like first-class content.</h2>
-            <p>
-              The site uses a serif text face for long reading, a restrained
-              sans face for navigation, MathJax for equations, and a dedicated
-              monospace face for Lean-like fragments and reports.
-            </p>
-          </div>
-
-          <div class="sample-stack">
-            <figure class="math-panel">
-              <figcaption>Selected lawfulness bridge</figcaption>
-              <div class="math-block">
-                \[
-                  \operatorname{ArchitectureLawful}(X)
-                  \Longleftrightarrow
-                  \operatorname{RequiredSignatureAxesZero}
-                    (\operatorname{signatureOf}(X))
-                \]
-              </div>
-            </figure>
-
-            <figure class="code-panel">
-              <figcaption>Boundary-aware reading</figcaption>
-              <button class="copy-code" type="button" data-copy-code aria-label="Copy code block">
-                Copy
-              </button>
-              <pre><code>ArchitectureObject
-  + ArchitectureOperation
-  + InvariantFamily
-  + ObstructionWitness
-  + ArchitectureSignature
-  + theorem boundary / non-conclusions</code></pre>
-            </figure>
           </div>
         </div>
       </section>
