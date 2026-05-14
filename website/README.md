@@ -38,7 +38,17 @@ media, with links back to the canonical English pages.
 
 ## Publishing Target
 
-Initial target: GitHub Pages with a custom domain.
+Initial target: GitHub Pages, deployed from the `website/` directory by the
+`Website Pages` GitHub Actions workflow.
+
+Repository settings should use GitHub Actions as the Pages source. The workflow
+uploads `website/` as the Pages artifact and deploys it to the `github-pages`
+environment on pushes to `main` that change `website/**` or the workflow file.
+It can also be run manually with `workflow_dispatch`.
+
+A custom domain can be added later by committing `website/CNAME` after the DNS
+target is chosen. Until then, do not hard-code the final public host in site
+links or metadata.
 
 This directory currently uses a no-build static stack:
 
@@ -48,8 +58,36 @@ This directory currently uses a no-build static stack:
 - MathJax from a CDN for TeX rendering
 - Google Fonts for the primary Latin serif, sans, and monospace faces
 
+The committed `website/.nojekyll` file keeps GitHub Pages from treating
+underscore-prefixed paths or future generated assets as Jekyll input.
+
 Until the site generator copies or renders repository documents into public
 routes, the top page links to the canonical documents on GitHub.
+
+## Local Preview
+
+From the repository root:
+
+```bash
+python3 -m http.server 8000 --directory website
+```
+
+Then open `http://localhost:8000/`.
+
+Directly opening `website/index.html` also works for the current top page, but
+the local server is closer to the GitHub Pages serving model and should be used
+when directory routes are added.
+
+## Path Rules
+
+- Use relative asset paths such as `assets/site.css` and `assets/site.js`.
+- Avoid root-absolute paths such as `/assets/site.css`; project Pages sites may
+  be served below a repository path.
+- Use directory routes with local `index.html` files for public pages.
+- Link repository source documents with absolute GitHub URLs until those
+  documents are rendered into `website/`.
+- Keep canonical public pages in English. Japanese explanations belong in
+  outreach articles that link back to the canonical site.
 
 ## Design Notes
 
