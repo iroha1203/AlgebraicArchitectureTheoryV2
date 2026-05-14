@@ -470,9 +470,6 @@ ArchSig reference pages must keep these warnings visible:
 ```text
 implemented:
   /
-
-planned:
-  /profile/
   /aat/
   /aat/foundations/
   /aat/laws-and-witnesses/
@@ -483,6 +480,9 @@ planned:
   /aat/representations-and-effects/
   /aat/examples-and-boundaries/
   /aat/status/
+
+planned:
+  /profile/
   /interface/
   /sft/
   /sft/part-i-new-object/

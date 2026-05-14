@@ -463,6 +463,231 @@ p {
   font-weight: 750;
 }
 
+.article-hero {
+  padding: clamp(54px, 7vw, 92px) 0 clamp(40px, 6vw, 72px);
+}
+
+.article-hero .lede {
+  max-width: 840px;
+}
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.breadcrumb a {
+  color: var(--accent-strong);
+  text-decoration: none;
+}
+
+.breadcrumb a::after {
+  content: "/";
+  margin-left: 8px;
+  color: var(--rule-strong);
+}
+
+.article-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.36fr) minmax(0, 1fr);
+  gap: clamp(32px, 6vw, 70px);
+  align-items: start;
+}
+
+.article-sidebar {
+  position: sticky;
+  top: 92px;
+  display: grid;
+  gap: 22px;
+}
+
+.toc-panel,
+.source-panel,
+.boundary-note {
+  border-top: 3px solid var(--ink);
+  padding-top: 16px;
+}
+
+.toc-panel h2,
+.source-panel h2,
+.boundary-note h2 {
+  margin-bottom: 10px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.toc-panel ol,
+.toc-panel ul,
+.source-panel ul,
+.boundary-note ul,
+.chapter-list,
+.term-list,
+.status-list {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc-panel a,
+.source-panel a {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.source-panel p,
+.boundary-note p,
+.boundary-note li {
+  color: var(--ink-muted);
+  font-size: 0.96rem;
+  line-height: 1.52;
+}
+
+.article-main {
+  display: grid;
+  gap: 42px;
+}
+
+.article-section {
+  border-top: 1px solid var(--rule-strong);
+  padding-top: 28px;
+}
+
+.article-section h2 {
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+}
+
+.article-section h3 {
+  margin-top: 26px;
+  font-size: clamp(1.16rem, 2vw, 1.42rem);
+}
+
+.article-section p,
+.article-section li {
+  color: var(--ink-muted);
+}
+
+.article-section p {
+  margin-top: 16px;
+}
+
+.article-section ul,
+.article-section ol {
+  margin: 16px 0 0;
+  padding-left: 1.2em;
+}
+
+.chapter-list,
+.term-list,
+.status-list {
+  gap: 0;
+  border-top: 1px solid var(--rule-strong);
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.chapter-list li,
+.term-list li,
+.status-list li {
+  border-bottom: 1px solid var(--rule);
+  padding: 18px 0;
+}
+
+.chapter-list a,
+.term-list strong,
+.status-list strong {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.chapter-list a:hover {
+  color: var(--accent-warm);
+}
+
+.chapter-list span,
+.term-list span,
+.status-list span {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-muted);
+  font-size: 0.98rem;
+  line-height: 1.48;
+}
+
+.claim-strip {
+  border-left: 4px solid var(--accent-warm);
+  background: var(--surface);
+  padding: 18px 20px;
+}
+
+.claim-strip p {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  font-weight: 650;
+  line-height: 1.52;
+}
+
+.page-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  border-top: 1px solid var(--rule-strong);
+  padding-top: 24px;
+}
+
+.page-nav a {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--ink);
+  display: grid;
+  gap: 4px;
+  min-height: 104px;
+  padding: 16px;
+  text-decoration: none;
+}
+
+.page-nav a:last-child {
+  text-align: right;
+}
+
+.page-nav span {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.page-nav strong {
+  align-self: end;
+  font-family: var(--font-serif);
+  font-size: clamp(1.12rem, 2vw, 1.34rem);
+  font-weight: 650;
+  line-height: 1.16;
+}
+
+.page-nav a:hover strong {
+  color: var(--accent-warm);
+}
+
 .site-footer {
   background: var(--ink);
   color: #d9e3df;
@@ -517,6 +742,14 @@ p {
     position: static;
   }
 
+  .article-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .article-sidebar {
+    position: static;
+  }
+
   h1 {
     font-size: clamp(2.62rem, 12vw, 4.2rem);
   }
@@ -557,6 +790,14 @@ p {
   .document-table a {
     grid-template-columns: 1fr;
     gap: 4px;
+  }
+
+  .page-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .page-nav a:last-child {
+    text-align: left;
   }
 
   .math-block {

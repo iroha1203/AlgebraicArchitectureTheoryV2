@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="AAT calculus and extensions: ArchitectureOperation, operation laws, FeatureExtension, and extension obstruction."
+    >
+    <title>AAT Calculus and Extensions</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../">AAT</a>
+          <a href="../../#research">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Calculus and Extensions</span>
+          </nav>
+          <p class="eyebrow">AAT Part V</p>
+          <h1>Calculus and Extensions</h1>
+          <p class="lede">
+            Architecture operations are boundary-indexed partial morphisms.
+            Feature extension is one important operation family, and its
+            obstruction formula records where an extension fails without
+            pretending that the categories are mutually exclusive.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#architecture-operation">Architecture operation</a></li>
+                <li><a href="#operation-laws">Operation laws</a></li>
+                <li><a href="#feature-extension">Feature extension</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#9-architecture-calculus">
+                    Chapters 9-10 in the AAT text
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                An operation tag alone carries no theorem. Each operation must
+                state preconditions, preserved invariants, witness mapping,
+                conclusions, and non-conclusions.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="architecture-operation" class="article-section">
+              <h2>Architecture operation</h2>
+              <p>
+                `ArchitectureOperation` maps one architecture object to another
+                under a theorem boundary. The operation includes support,
+                precondition, transition relation, invariant preservation
+                claim, witness mapping, theorem boundary, and non-conclusions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Operation carrier</figcaption>
+                <pre><code>ArchitectureOperation X Y
+  = support
+  + precondition
+  + transition relation
+  + invariant preservation claim
+  + witness mapping
+  + theorem boundary
+  + non-conclusions</code></pre>
+              </figure>
+            </section>
+
+            <section id="operation-laws" class="article-section">
+              <h2>Operation laws</h2>
+              <p>
+                Under fixed observation and theorem-boundary compatibility,
+                operations can be read as a partial category with identity,
+                composition, and associativity under observation. Stronger laws
+                such as replacement equivalence, protection idempotence, repair
+                monotonicity, and synthesis soundness depend on their own
+                assumptions.
+              </p>
+              <p>
+                Operation families and invariant families also form a weak
+                Galois-style correspondence: requiring stronger invariants
+                reduces allowed operations, while allowing more operations
+                reduces the invariant family that can be guaranteed.
+              </p>
+            </section>
+
+            <section id="feature-extension" class="article-section">
+              <h2>Feature extension</h2>
+              <p>
+                `FeatureExtension` moves from an existing architecture into a
+                larger one while keeping a feature view. Static split,
+                interface declarations, lifting, runtime preservation, and
+                semantic preservation are not bundled into the base extension;
+                they are separate evidence packages.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Extension obstruction formula</figcaption>
+                <pre><code>ExtensionObstruction
+  = inherited core obstruction
+  + feature-local obstruction
+  + interaction obstruction
+  + lifting failure
+  + filling failure
+  + complexity transfer
+  + residual coverage gap</code></pre>
+              </figure>
+              <div class="claim-strip">
+                <p>
+                  The formula is explanatory, not a disjoint decomposition. One
+                  measured witness can belong to multiple obstruction classes.
+                </p>
+              </div>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../local-law-packages/">
+                <span>Previous</span>
+                <strong>Local Law Packages</strong>
+              </a>
+              <a href="../repair-and-dynamics/">
+                <span>Next</span>
+                <strong>Repair and Dynamics</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

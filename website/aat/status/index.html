@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="How to read AAT Lean status, proof obligations, theorem index entries, and empirical hypotheses."
+    >
+    <title>AAT Lean Status</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../">AAT</a>
+          <a href="../../#research">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Status</span>
+          </nav>
+          <p class="eyebrow">Appendix</p>
+          <h1>AAT Lean Status</h1>
+          <p class="lede">
+            This page is deliberately separate from the mathematical article.
+            It explains how to read proved Lean declarations, defined-only API,
+            future proof obligations, tooling claims, and empirical hypotheses
+            without merging them into one status.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#source-map">Source map</a></li>
+                <li><a href="#status-vocabulary">Status vocabulary</a></li>
+                <li><a href="#qed-boundary">Current QED boundary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Status sources</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md">
+                    Lean theorem index
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/proof_obligations.md">
+                    Proof obligations
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                Mathematical theorem candidates are not automatically current
+                Lean theorems. The theorem index and proof-obligation document
+                provide the status boundary.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="source-map" class="article-section">
+              <h2>Source map</h2>
+              <p>
+                The AAT mathematical text stays focused on definitions,
+                theorem candidates, non-goals, and design boundaries. Lean
+                status and issue progress are managed elsewhere so a public
+                exposition cannot accidentally promote a future theorem into a
+                proved claim.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Mathematical definitions</strong>
+                  <span>`docs/aat/mathematical_theory.md` is the first-class theory text.</span>
+                </li>
+                <li>
+                  <strong>Implemented Lean API</strong>
+                  <span>`docs/aat/lean_theorem_index.md` lists declarations, file paths, meanings, and status.</span>
+                </li>
+                <li>
+                  <strong>Future work and empirical hypotheses</strong>
+                  <span>`docs/aat/proof_obligations.md` tracks proof obligations and empirical boundaries.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="status-vocabulary" class="article-section">
+              <h2>Status vocabulary</h2>
+              <p>
+                AAT uses a small status vocabulary to avoid mixing proof,
+                schema, tooling, and empirical claims.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>proved</strong>
+                  <span>A Lean declaration has been proved, including main theorems, accessors, bridge theorems, bounded completeness results, or examples.</span>
+                </li>
+                <li>
+                  <strong>defined only</strong>
+                  <span>A Lean schema, structure, predicate, or executable metric exists, but the corresponding correctness theorem is not complete.</span>
+                </li>
+                <li>
+                  <strong>future proof obligation</strong>
+                  <span>A mathematical claim intended for Lean proof later.</span>
+                </li>
+                <li>
+                  <strong>empirical hypothesis</strong>
+                  <span>A claim to test against repositories, operations, datasets, or case studies; it is not a Lean proof blocker.</span>
+                </li>
+              </ul>
+              <div class="claim-strip">
+                <p>
+                  Tool output, extractor output, generated patches, author
+                  provenance, and unmeasured axes do not become `proved` merely
+                  by appearing in a report.
+                </p>
+              </div>
+            </section>
+
+            <section id="qed-boundary" class="article-section">
+              <h2>Current QED boundary</h2>
+              <p>
+                The current Lean-proved core is the static structural theorem
+                package. It connects lawfulness with required signature axes
+                zero under explicit law-family, witness-coverage, axis
+                exactness, universe, coverage, and observation assumptions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Static structural core</figcaption>
+                <pre><code>ArchitectureLawful X
+  &lt;-&gt; RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)
+
+ArchitectureLawful X
+  &lt;-&gt; ArchitectureZeroCurvatureTheoremPackage X</code></pre>
+              </figure>
+              <p>
+                This boundary excludes runtime metric completeness, general
+                numerical curvature as a signature axis, empirical cost
+                correlation, and any claim that a real-code extractor produces
+                a complete `ComponentUniverse`.
+              </p>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../examples-and-boundaries/">
+                <span>Previous</span>
+                <strong>Examples and Boundaries</strong>
+              </a>
+              <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/aat_interface.md">
+                <span>Next</span>
+                <strong>AAT / SFT Interface source</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

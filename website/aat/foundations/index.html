@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="AAT foundations: central proposition, ArchitectureObject, ArchitectureCore, and ComponentUniverse."
+    >
+    <title>AAT Foundations</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../">AAT</a>
+          <a href="../../#research">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Foundations</span>
+          </nav>
+          <p class="eyebrow">AAT Part I</p>
+          <h1>Foundations</h1>
+          <p class="lede">
+            The opening cluster fixes the object of the theory. AAT reasons
+            about bounded architecture objects, not whole real codebases, and
+            every zero or lawfulness claim is relative to a selected universe,
+            observation model, and evidence boundary.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#central-proposition">Central proposition</a></li>
+                <li><a href="#architecture-object">Architecture object</a></li>
+                <li><a href="#universe-boundary">Universe boundary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#1-%E4%B8%AD%E5%BF%83%E5%91%BD%E9%A1%8C">
+                    Chapters 1-2 in the AAT text
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                AAT does not claim complete extraction from real codebases.
+                `ComponentUniverse` is proof-carrying measurement scope, not a
+                promise that all components and relations have been observed.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="central-proposition" class="article-section">
+              <h2>Central proposition</h2>
+              <p>
+                AAT formalizes software architecture as a local algebra of
+                objects, operations, invariant families, obstruction witnesses,
+                signatures, and theorem boundaries. The review question is not
+                "is this design good?" but "which invariant is being required,
+                under which observation boundary, and which witness or theorem
+                package supports the claim?"
+              </p>
+              <figure class="code-panel">
+                <figcaption>AAT decomposition</figcaption>
+                <pre><code>software architecture
+  = ArchitectureObject
+  + ArchitectureOperation
+  + InvariantFamily
+  + ObstructionWitness
+  + ArchitectureSignature
+  + theorem boundary / non-conclusions</code></pre>
+              </figure>
+            </section>
+
+            <section id="architecture-object" class="article-section">
+              <h2>Architecture object</h2>
+              <p>
+                An `ArchitectureObject` is a bounded mathematical object cut
+                out from code, specifications, review evidence, or operational
+                observations. `ArchitectureCore` is a structured,
+                evidence-aware presentation of that object. It can include
+                static and runtime graphs, boundary policy, abstraction policy,
+                semantic diagrams, decidability assumptions, and a selected
+                measurement universe.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>ArchitectureCarrier</strong>
+                  <span>Components plus static and runtime dependency relations.</span>
+                </li>
+                <li>
+                  <strong>ArchitecturePolicy</strong>
+                  <span>Boundary and abstraction policies used to read lawfulness.</span>
+                </li>
+                <li>
+                  <strong>ArchitectureObservationContext</strong>
+                  <span>Observation model, semantic diagram universe, and selected measurement universe.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="universe-boundary" class="article-section">
+              <h2>Universe boundary</h2>
+              <p>
+                `ComponentUniverse` records selected components, selected
+                relations, coverage boundary, and exactness boundary. Outside
+                that universe, AAT does not infer zero, absence, flatness,
+                split, or lawfulness.
+              </p>
+              <p>
+                `ComponentCategory` is thin: it remembers whether a reachability
+                morphism exists and intentionally forgets path count and walk
+                length. Quantitative data belongs to `Walk`, `Path`, adjacency
+                matrix, finite metrics, or future free-category constructions.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Current `Decomposable` means `StrictLayered`. Acyclicity,
+                  finite propagation, nilpotence, and spectral conditions are
+                  connected by separate theorems or representations, not mixed
+                  into the definition.
+                </p>
+              </div>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../">
+                <span>Previous</span>
+                <strong>AAT landing</strong>
+              </a>
+              <a href="../laws-and-witnesses/">
+                <span>Next</span>
+                <strong>Laws and Witnesses</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

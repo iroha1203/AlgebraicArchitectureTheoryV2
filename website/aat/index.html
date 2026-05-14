@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Algebraic Architecture Theory reading path, chapter clusters, and claim boundaries."
+    >
+    <title>Algebraic Architecture Theory</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../assets/site.css">
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [["\\(", "\\)"]],
+          displayMath: [["\\[", "\\]"]]
+        },
+        chtml: {
+          matchFontHeight: false
+        }
+      };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script defer src="../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../">Home</a>
+          <a class="is-active" href="./">AAT</a>
+          <a href="../#research">SFT</a>
+          <a href="../#documents">Interface</a>
+          <a href="../#research">ArchSig</a>
+          <a href="../#outreach">Outreach</a>
+          <a href="../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../">Home</a>
+            <span>AAT</span>
+          </nav>
+          <p class="eyebrow">Algebraic Architecture Theory</p>
+          <h1>A local algebra for software architecture.</h1>
+          <p class="lede">
+            AAT treats architecture as a bounded object of reasoning: operations
+            preserve or break invariant families, obstruction witnesses explain
+            the breakage, and Architecture Signature records the result as a
+            multi-axis diagnostic rather than a single quality score.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="AAT page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reading-order">Reading order</a></li>
+                <li><a href="#claim-discipline">Claim discipline</a></li>
+                <li><a href="#canonical-sources">Canonical sources</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical sources</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md">
+                    AAT mathematical theory
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/README.md">
+                    AAT repository entry
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="reading-order" class="article-section">
+              <h2>Reading order</h2>
+              <p>
+                The repository keeps AAT as one first-class mathematical text.
+                The website splits that text into chapter clusters so readers
+                can keep their current position and move through the theory in
+                a stable order.
+              </p>
+              <ul class="chapter-list">
+                <li>
+                  <a href="foundations/">Foundations</a>
+                  <span>Central proposition, ArchitectureObject, ArchitectureCore, ComponentUniverse.</span>
+                </li>
+                <li>
+                  <a href="laws-and-witnesses/">Laws and Witnesses</a>
+                  <span>Invariant families, LawUniverse, ObstructionWitness, zero-curvature reading.</span>
+                </li>
+                <li>
+                  <a href="signature-and-boundary/">Signature and Theorem Boundary</a>
+                  <span>ArchitectureSignature, MeasurementStatus, theorem boundary, non-conclusions.</span>
+                </li>
+                <li>
+                  <a href="local-law-packages/">Local Law Packages</a>
+                  <span>Projection, observation, LSP, DIP, and three-layer flatness.</span>
+                </li>
+                <li>
+                  <a href="calculus-and-extensions/">Calculus and Extensions</a>
+                  <span>ArchitectureOperation, operation laws, FeatureExtension, extension obstruction.</span>
+                </li>
+                <li>
+                  <a href="repair-and-dynamics/">Repair and Dynamics</a>
+                  <span>Repair, synthesis, complexity transfer, paths, homotopy, diagram filling.</span>
+                </li>
+                <li>
+                  <a href="representations-and-effects/">Representations and Effects</a>
+                  <span>Graph, matrix, analytic representation, state-transition algebra, effect boundary.</span>
+                </li>
+                <li>
+                  <a href="examples-and-boundaries/">Examples and Boundaries</a>
+                  <span>Coupon extension, semantic counterexample, repair transfer, SOLID boundaries.</span>
+                </li>
+                <li>
+                  <a href="status/">Status</a>
+                  <span>How to read Lean status, proof obligations, and implemented theorem packages.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="claim-discipline" class="article-section">
+              <h2>Claim discipline</h2>
+              <p>
+                AAT does not identify architecture quality with a slogan, a
+                framework name, or a scalar score. It asks which invariant is
+                required, which universe is being observed, which witness shows
+                a failure, and which theorem boundary permits the conclusion.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Central decomposition</figcaption>
+                <pre><code>software architecture
+  = ArchitectureObject
+  + ArchitectureOperation
+  + InvariantFamily
+  + ObstructionWitness
+  + ArchitectureSignature
+  + theorem boundary / non-conclusions</code></pre>
+              </figure>
+              <div class="claim-strip">
+                <p>
+                  This website is a public reading surface. Formal status,
+                  issue tracking, and tooling evidence stay separate from the
+                  mathematical text and are linked where they are needed.
+                </p>
+              </div>
+            </section>
+
+            <section id="canonical-sources" class="article-section">
+              <h2>Canonical sources</h2>
+              <p>
+                The mathematical source of truth is the repository document.
+                Lean theorem status is intentionally separated into the theorem
+                index and proof-obligation ledger so public prose does not turn
+                a theorem candidate into a proved Lean claim.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Mathematical text</strong>
+                  <span>`docs/aat/mathematical_theory.md` defines the AAT theory surface.</span>
+                </li>
+                <li>
+                  <strong>Lean status</strong>
+                  <span>`docs/aat/lean_theorem_index.md` lists implemented definitions and theorems.</span>
+                </li>
+                <li>
+                  <strong>Proof obligations</strong>
+                  <span>`docs/aat/proof_obligations.md` separates proved, defined only, future proof obligation, and empirical hypothesis.</span>
+                </li>
+              </ul>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../">
+                <span>Previous</span>
+                <strong>Home</strong>
+              </a>
+              <a href="foundations/">
+                <span>Next</span>
+                <strong>Foundations</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

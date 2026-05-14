@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="AAT examples and boundaries: coupon extension, semantic obstruction, repair transfer, SOLID counterexamples, and non-claims."
+    >
+    <title>AAT Examples and Boundaries</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../">AAT</a>
+          <a href="../../#research">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Examples and Boundaries</span>
+          </nav>
+          <p class="eyebrow">AAT Part VIII</p>
+          <h1>Examples and Boundaries</h1>
+          <p class="lede">
+            Examples and counterexamples fix the limits of the theory. They
+            show why local contracts, static split, selected repair, and
+            measured zero must not be promoted into stronger claims without the
+            missing evidence.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#canonical-examples">Canonical examples</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+                <li><a href="#aat-boundary">AAT boundary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#15-canonical-examples-and-counterexamples">
+                    Chapters 15-16 in the AAT text
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                Counterexamples are part of the theory surface. They keep AAT
+                from claiming runtime, semantic, empirical, or global results
+                from a theorem package that only proves a selected static claim.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="canonical-examples" class="article-section">
+              <h2>Canonical examples</h2>
+              <p>
+                The coupon feature extension is the running minimal example. A
+                good extension routes coupon calculation through the declared
+                interface and keeps interaction with the payment core inside an
+                explicit boundary. A bad extension bypasses that boundary by
+                reaching into payment adapters, hidden caches, or implicit
+                rounding order.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Static witness</strong>
+                  <span>A hidden direct dependency from the coupon service into payment internals.</span>
+                </li>
+                <li>
+                  <strong>Semantic witness</strong>
+                  <span>An observation difference caused by rounding or discount application order.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples</h2>
+              <p>
+                Static repair can satisfy selected static split while a
+                semantic diagram still fails to commute. A repair can reduce a
+                selected static obstruction while transferring risk to runtime
+                or semantic axes. SOLID-style local contracts can hold without
+                implying global decomposability or acyclicity.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Non-implications</figcaption>
+                <pre><code>StaticFlatWithin X U
+  does not imply
+SemanticFlatWithin X
+
+selected obstruction decreases
+  does not imply
+all axes are non-increasing</code></pre>
+              </figure>
+            </section>
+
+            <section id="aat-boundary" class="article-section">
+              <h2>AAT boundary</h2>
+              <p>
+                AAT is a local algebra for software architecture. It does not
+                claim complete extraction from real codebases, automatic
+                runtime or semantic flatness from static split, a single
+                architecture quality score, safety of unmeasured axes, full
+                formalization of every natural-language design principle, or
+                that empirical cost correlation is a Lean theorem.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Architecture Signature remains a multi-axis diagnostic.
+                  Empirical cost and product outcome readings belong to
+                  separate empirical protocols, not to the required zero-axis
+                  theorem package.
+                </p>
+              </div>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../representations-and-effects/">
+                <span>Previous</span>
+                <strong>Representations and Effects</strong>
+              </a>
+              <a href="../status/">
+                <span>Next</span>
+                <strong>AAT Status</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="AAT Architecture Signature, theorem boundaries, measurement status, and non-conclusions."
+    >
+    <title>AAT Signature and Boundary</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a class="is-active" href="../">AAT</a>
+          <a href="../../#research">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">AAT</a>
+            <span>Signature and Boundary</span>
+          </nav>
+          <p class="eyebrow">AAT Part III</p>
+          <h1>Signature and Theorem Boundary</h1>
+          <p class="lede">
+            Architecture Signature is a multi-axis diagnostic of selected
+            obstruction families. Theorem boundaries state what a package can
+            conclude and, just as importantly, what it does not conclude.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#signature">Architecture Signature</a></li>
+                <li><a href="#measurement-status">Measurement status</a></li>
+                <li><a href="#theorem-boundary">Theorem boundary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#5-architecture-signature">
+                    Chapters 5-6 in the AAT text
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                A missing axis is not a zero axis. Signature comparison is valid
+                only where the same axes are measured on both sides and an
+                axis-specific order is defined.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="signature" class="article-section">
+              <h2>Architecture Signature</h2>
+              <p>
+                `ArchitectureSignature` records coordinates of selected
+                obstruction families. Static, boundary, abstraction, projection
+                or LSP, runtime, semantic, operation, extension, and analytic
+                axes may all appear, but they do not collapse into one score.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Signature reading</figcaption>
+                <pre><code>ArchitectureSignature(X)
+  = coordinates of selected obstruction families of X</code></pre>
+              </figure>
+            </section>
+
+            <section id="measurement-status" class="article-section">
+              <h2>Measurement status</h2>
+              <p>
+                Every axis carries a status. `measured_zero`,
+                `measured_nonzero(value)`, `unmeasured`, `out_of_scope`,
+                `private_unavailable`, and `not_applicable` are different claim
+                states. `unmeasured` is not simply a worse numeric value than
+                `measured_zero`; it is a boundary on what can be compared.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Structural coordinates</strong>
+                  <span>Static, boundary, abstraction, projection, and operation-level obstruction readings.</span>
+                </li>
+                <li>
+                  <strong>Semantic and runtime coordinates</strong>
+                  <span>Observation and runtime exposure readings that require their own evidence.</span>
+                </li>
+                <li>
+                  <strong>Empirical readings</strong>
+                  <span>Cost and product outcomes are not required zero axes inside AAT.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="theorem-boundary" class="article-section">
+              <h2>Theorem boundary</h2>
+              <p>
+                A theorem boundary packages selected universe, required laws,
+                invariant family, witness universe, coverage assumptions,
+                exactness assumptions, operation preconditions, conclusion, and
+                non-conclusions. It prevents a bounded formal result from being
+                read as a global architecture claim.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Boundary record</figcaption>
+                <pre><code>TheoremBoundary
+  = selected universe
+  + required laws
+  + invariant family
+  + witness universe
+  + coverage assumptions
+  + exactness assumptions
+  + operation preconditions
+  + conclusion
+  + non-conclusions</code></pre>
+              </figure>
+              <div class="claim-strip">
+                <p>
+                  Static split does not imply runtime or semantic flatness, and
+                  absence of a selected witness does not imply global absence.
+                </p>
+              </div>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../laws-and-witnesses/">
+                <span>Previous</span>
+                <strong>Laws and Witnesses</strong>
+              </a>
+              <a href="../local-law-packages/">
+                <span>Next</span>
+                <strong>Local Law Packages</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
