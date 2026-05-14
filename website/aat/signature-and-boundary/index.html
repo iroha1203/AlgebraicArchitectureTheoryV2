@@ -67,6 +67,9 @@
                 <li><a href="#signature">Architecture Signature</a></li>
                 <li><a href="#measurement-status">Measurement status</a></li>
                 <li><a href="#theorem-boundary">Theorem boundary</a></li>
+                <li><a href="#claim-levels">Claim levels</a></li>
+                <li><a href="#comparison-rules">Comparison rules</a></li>
+                <li><a href="#non-conclusions">Non-conclusions</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -156,6 +159,71 @@
                 <p>
                   Static split does not imply runtime or semantic flatness, and
                   absence of a selected witness does not imply global absence.
+                </p>
+              </div>
+            </section>
+
+            <section id="claim-levels" class="article-section">
+              <h2>Claim levels</h2>
+              <p>
+                A signature coordinate is not only a number. It also carries a
+                claim level and a measurement boundary. A formal coordinate is
+                backed by a theorem boundary; a tooling coordinate is produced
+                by an extractor or validator; an empirical coordinate belongs
+                to a dataset or calibration protocol; a hypothesis is a future
+                research claim.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>formal</strong>
+                  <span>A Lean-backed or theorem-boundary-backed statement under explicit assumptions.</span>
+                </li>
+                <li>
+                  <strong>tooling</strong>
+                  <span>An artifact produced by a scanner, validator, report, or workflow with its own evidence boundary.</span>
+                </li>
+                <li>
+                  <strong>empirical / hypothesis</strong>
+                  <span>A repository, operation, or outcome claim that is not promoted to theorem status.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="comparison-rules" class="article-section">
+              <h2>Comparison rules</h2>
+              <p>
+                Signature comparison is axis-local. Two reports are comparable
+                only where the same axis is present on both sides, measured
+                under compatible assumptions, and equipped with a meaningful
+                order. Missing evidence, private evidence, or a changed
+                measurement universe breaks that comparison rather than
+                contributing a numeric zero.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Comparable-axis guard</figcaption>
+                <pre><code>ComparableAxes(S1, S2)
+  + MeasuredOnBoth(axis)
+  + AxisOrder(axis)
+  + compatible boundary
+  -&gt; compare selected measured axes</code></pre>
+              </figure>
+            </section>
+
+            <section id="non-conclusions" class="article-section">
+              <h2>Non-conclusions</h2>
+              <p>
+                `ArchitectureSignature` does not rank architectures by one
+                scalar quality value. It does not make unmeasured axes safe,
+                turn private evidence into measured zero, infer runtime or
+                semantic flatness from a static split, or claim empirical cost
+                reduction from a formal zero-axis theorem.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  The public site treats Signature as a multi-axis diagnostic.
+                  Any product, cost, or workflow reading must preserve the
+                  theorem boundary and the artifact boundary that produced the
+                  coordinate.
                 </p>
               </div>
             </section>

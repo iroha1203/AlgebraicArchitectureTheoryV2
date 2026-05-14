@@ -68,6 +68,9 @@
                 <li><a href="#central-proposition">Central proposition</a></li>
                 <li><a href="#architecture-object">Architecture object</a></li>
                 <li><a href="#universe-boundary">Universe boundary</a></li>
+                <li><a href="#formal-reading">Formal reading</a></li>
+                <li><a href="#example-boundary">Example boundary</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -160,6 +163,79 @@
                   finite propagation, nilpotence, and spectral conditions are
                   connected by separate theorems or representations, not mixed
                   into the definition.
+                </p>
+              </div>
+            </section>
+
+            <section id="formal-reading" class="article-section">
+              <h2>Formal reading</h2>
+              <p>
+                The foundational move is to replace an unbounded repository
+                question with a typed object plus explicit evidence scope. A
+                static dependency graph, a runtime graph, an abstraction policy,
+                and a semantic observation model may all present the same
+                bounded `ArchitectureObject`, but none of those presentations
+                is automatically complete.
+              </p>
+              <p>
+                This is why `ArchitectureCore` is read as an evidence-aware
+                carrier rather than as the architecture itself. The map from a
+                core presentation to the object it presents is not assumed to be
+                injective or complete: two presentations can be equivalent under
+                the selected observation, and either presentation can omit
+                relations outside its coverage boundary.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Relativized object claim</figcaption>
+                <pre><code>ArchitectureObject claim
+  = selected carrier
+  + selected policy
+  + selected observation context
+  + coverage and exactness boundary</code></pre>
+              </figure>
+            </section>
+
+            <section id="example-boundary" class="article-section">
+              <h2>Example boundary</h2>
+              <p>
+                A repository slice containing a coupon service, a payment
+                interface, and a payment adapter can be a valid component
+                universe for a static split theorem. That same slice is not, by
+                itself, evidence about runtime retries, cache invalidation,
+                rounding order, or operational incidents. Those require their
+                own observation contexts.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Measured zero</strong>
+                  <span>No selected violating relation was found inside the chosen universe and exactness boundary.</span>
+                </li>
+                <li>
+                  <strong>Unmeasured outside</strong>
+                  <span>No claim is made about components, relations, effects, or observations outside that boundary.</span>
+                </li>
+                <li>
+                  <strong>Presentation equivalence</strong>
+                  <span>Different carriers can present the same object only relative to the selected observation model.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                The Lean side already fixes the static graph, reachability,
+                layering, decomposability, thin-category, finite-universe, and
+                bridge vocabulary used by this page. The important boundary is
+                that these declarations do not certify complete extraction from
+                a real repository.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Read the current QED core through the AAT Status page:
+                  static structural bridge theorems are proved under explicit
+                  assumptions, while real-code extraction completeness remains
+                  outside the theorem claim.
                 </p>
               </div>
             </section>

@@ -67,6 +67,9 @@
                 <li><a href="#repair">Repair and synthesis</a></li>
                 <li><a href="#complexity-transfer">Complexity transfer</a></li>
                 <li><a href="#paths-and-filling">Paths and filling</a></li>
+                <li><a href="#no-solution">No-solution boundary</a></li>
+                <li><a href="#path-example">Path example</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -152,6 +155,77 @@
                 <pre><code>Obs(lhs) != Obs(rhs)
   -&gt; NonFillabilityWitness D</code></pre>
               </figure>
+            </section>
+
+            <section id="no-solution" class="article-section">
+              <h2>No-solution boundary</h2>
+              <p>
+                Synthesis can produce a candidate object, a repair sequence, or
+                a no-solution certificate. The last case is the strongest and
+                therefore needs the clearest boundary: a finite complete search
+                universe, an explicit constraint language, a decision
+                procedure, refuted candidate cases, and coverage assumptions.
+              </p>
+              <p>
+                Solver failure alone is not a mathematical certificate. It may
+                be a tooling result, a timeout, or an unsupported-construct
+                boundary. AAT keeps those cases separate from a proved
+                no-solution theorem.
+              </p>
+              <figure class="code-panel">
+                <figcaption>No-solution certificate</figcaption>
+                <pre><code>finite complete candidate universe
+  + explicit constraints
+  + decision procedure
+  + refuted candidates
+  + coverage boundary
+  -&gt; no selected solution</code></pre>
+              </figure>
+            </section>
+
+            <section id="path-example" class="article-section">
+              <h2>Path example</h2>
+              <p>
+                Two coupon implementations can reach the same visible checkout
+                result while following different paths: one introduces a
+                declared discount interface first, then adds the feature; the
+                other adds a direct adapter call and later repairs the static
+                graph. The final feature may look equivalent while the witness
+                history and signature trajectory differ.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Path invariant</strong>
+                  <span>A property preserved at every step of the selected operation sequence.</span>
+                </li>
+                <li>
+                  <strong>Homotopy generator</strong>
+                  <span>A permitted rewrite between operation fragments under a selected observation model.</span>
+                </li>
+                <li>
+                  <strong>Non-fillability witness</strong>
+                  <span>Evidence that two paths fail to agree on the selected observation.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                Repair steps, repair synthesis, architecture paths, homotopy
+                skeletons, diagram fillers, non-fillability witnesses, and
+                selected observation-invariance bridges are tracked in the Lean
+                theorem index. The public reading is bounded: global semantic
+                completeness and all-axis improvement are not current
+                conclusions.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  A repair theorem may prove a selected measure decreases. It
+                  does not prove total architecture improvement unless the
+                  theorem boundary explicitly covers every relevant axis.
+                </p>
+              </div>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

@@ -68,6 +68,9 @@
                 <li><a href="#projection-observation">Projection and observation</a></li>
                 <li><a href="#lsp-dip">LSP and DIP</a></li>
                 <li><a href="#three-layer-flatness">Three-layer flatness</a></li>
+                <li><a href="#assumption-strength">Assumption strength</a></li>
+                <li><a href="#contract-example">Contract example</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -155,6 +158,80 @@ ker(F) &lt;= ker(Obs)</code></pre>
   + no unmeasured required axis
   + coverage / exactness boundary</code></pre>
               </figure>
+            </section>
+
+            <section id="assumption-strength" class="article-section">
+              <h2>Assumption strength</h2>
+              <p>
+                Projection claims come in different strengths. `ProjectionSound`
+                says concrete dependency evidence is represented abstractly.
+                `ProjectionComplete` says abstract dependencies have concrete
+                representatives. `ProjectionExact` and
+                `RepresentativeStable` add stronger assumptions needed for
+                quotient-style or replacement-style readings.
+              </p>
+              <p>
+                The page therefore separates local abstraction soundness from
+                global layering. A DIP-style statement may be true because
+                concrete calls depend on declared interfaces, while the
+                interface layer itself still contains a cycle or a semantic
+                mismatch outside the local contract.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Strength ladder</figcaption>
+                <pre><code>ProjectionSound
+  does not imply
+ProjectionComplete
+  does not imply
+ProjectionExact + RepresentativeStable</code></pre>
+              </figure>
+            </section>
+
+            <section id="contract-example" class="article-section">
+              <h2>Contract example</h2>
+              <p>
+                In a coupon extension, replacing a discount implementation by
+                another implementation can be LSP-sound for selected checkout
+                clients if the observed totals, rounding trace, and error
+                behavior remain equivalent. That does not prove that the
+                coupon service respects a global dependency ranking, nor that
+                background jobs, caches, or payment callbacks preserve the same
+                observations.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Client context universe</strong>
+                  <span>The selected callers and call shapes for which substitutability is checked.</span>
+                </li>
+                <li>
+                  <strong>Observation equivalence</strong>
+                  <span>The chosen equality or tolerance on visible behavior.</span>
+                </li>
+                <li>
+                  <strong>Missing layer claim</strong>
+                  <span>Runtime and semantic flatness require separate evidence packages.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                Projection / DIP bridges and finite observation / LSP
+                violation-count bridges are tracked as Lean APIs and theorem
+                packages. Three-layer flatness is a boundary discipline: static
+                flatness, runtime flatness, and semantic flatness remain
+                separate claims unless a theorem boundary explicitly connects
+                them.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Soundness-only projection is enough for some local readings,
+                  but exactness, completeness, and representative stability are
+                  separate assumptions and should not be inferred from the
+                  word "projection" alone.
+                </p>
+              </div>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

@@ -68,6 +68,9 @@
                 <li><a href="#graph-matrix">Graph and matrix</a></li>
                 <li><a href="#analytic-representation">Analytic representation</a></li>
                 <li><a href="#state-effects">State transitions and effects</a></li>
+                <li><a href="#valuation-boundary">Valuation boundary</a></li>
+                <li><a href="#effect-examples">Effect examples</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -153,6 +156,77 @@
 compensate ; action ~= id
 decode ; encode ~= id</code></pre>
               </figure>
+            </section>
+
+            <section id="valuation-boundary" class="article-section">
+              <h2>Valuation boundary</h2>
+              <p>
+                `ObstructionValuation` maps selected witnesses to numeric or
+                ordered values. Aggregates can be useful for dashboards, but an
+                aggregate zero reflects witness-level zero only when the value
+                domain and aggregation are zero-reflecting under the selected
+                assumptions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Zero reflection guard</figcaption>
+                <pre><code>witnesses -&gt; values -&gt; aggregate
+
+aggregate = 0
+  + zero-reflecting valuation
+  + complete selected witness coverage
+  -&gt; selected witnesses are zero</code></pre>
+              </figure>
+              <p>
+                This is the same boundary discipline as matrix and analytic
+                representations: preserving zero is weaker than reflecting
+                zero, and reflecting an obstruction requires coverage and
+                semantic contract assumptions.
+              </p>
+            </section>
+
+            <section id="effect-examples" class="article-section">
+              <h2>Effect examples</h2>
+              <p>
+                A dependency graph may show that checkout depends only on a
+                payment interface, while the effect layer reveals a hidden
+                authority boundary: a retry command is not idempotent, a
+                compensation does not undo the action, a snapshot omits a
+                required event, or a migration fails to commute with the old
+                projection.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Replay law</strong>
+                  <span>Projection after appending events agrees with replaying the prior projection through those events.</span>
+                </li>
+                <li>
+                  <strong>Compensation law</strong>
+                  <span>A compensation sequence is observationally equivalent to the relevant identity behavior.</span>
+                </li>
+                <li>
+                  <strong>Migration naturality</strong>
+                  <span>Old and new projections commute with the migration relation under stated assumptions.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                Matrix bridges, finite-universe bridges, analytic
+                representation strength APIs, and state-transition / effect
+                boundary laws are indexed separately. Cost interpretation,
+                runtime completeness, and empirical outcome claims remain
+                outside the structural theorem package.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Acyclicity, closed-walk absence, and adjacency nilpotence are
+                  connected for finite unweighted structure. They are not the
+                  definition of `Decomposable`, and they do not by themselves
+                  settle finite propagation or runtime semantics.
+                </p>
+              </div>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

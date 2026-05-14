@@ -68,6 +68,9 @@
                 <li><a href="#canonical-examples">Canonical examples</a></li>
                 <li><a href="#counterexamples">Counterexamples</a></li>
                 <li><a href="#aat-boundary">AAT boundary</a></li>
+                <li><a href="#coupon-reading">Coupon reading</a></li>
+                <li><a href="#solid-boundary">SOLID boundary</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -150,6 +153,73 @@ all axes are non-increasing</code></pre>
                   Empirical cost and product outcome readings belong to
                   separate empirical protocols, not to the required zero-axis
                   theorem package.
+                </p>
+              </div>
+            </section>
+
+            <section id="coupon-reading" class="article-section">
+              <h2>Coupon reading</h2>
+              <p>
+                The coupon example is intentionally small enough to expose the
+                theorem boundary. A static report can measure whether coupon
+                code bypasses a declared payment interface. A semantic report
+                can measure whether discount and rounding observations commute.
+                A runtime report can measure retry, cache, or callback
+                exposure. These are connected readings, not one measurement.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Layered example reading</figcaption>
+                <pre><code>static direct adapter call
+  -&gt; static obstruction witness
+
+different rounding trace
+  -&gt; semantic obstruction witness
+
+retry leaks across boundary
+  -&gt; runtime obstruction witness</code></pre>
+              </figure>
+            </section>
+
+            <section id="solid-boundary" class="article-section">
+              <h2>SOLID boundary</h2>
+              <p>
+                SOLID-style contracts are useful local law packages, but they
+                are not a complete architecture theory. A component can satisfy
+                selected substitution tests and interface separation checks
+                while the abstract dependency layer is cyclic. Conversely, a
+                layered graph can be acyclic while selected LSP observations
+                still fail.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Local success</strong>
+                  <span>A selected client context or interface contract satisfies its observation law.</span>
+                </li>
+                <li>
+                  <strong>Global failure</strong>
+                  <span>Layering, decomposition, acyclicity, or boundary preservation fails outside the local contract.</span>
+                </li>
+                <li>
+                  <strong>Cross-layer caution</strong>
+                  <span>One law family cannot be promoted into another without a theorem boundary.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                The theorem index records proved SOLID-style counterexamples,
+                static / semantic counterexamples, flatness packages, and
+                coupon-oriented bridge APIs. Their purpose on this page is to
+                fix non-implications, not to claim that every real repository
+                example has been extracted completely.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Counterexamples are positive theory content. They identify
+                  which slogan-like implications are invalid and keep public
+                  explanations aligned with the bounded Lean status.
                 </p>
               </div>
             </section>

@@ -67,6 +67,9 @@
                 <li><a href="#invariant-families">Invariant families</a></li>
                 <li><a href="#obstruction-witnesses">Obstruction witnesses</a></li>
                 <li><a href="#zero-curvature">Zero-curvature reading</a></li>
+                <li><a href="#law-universe">Law universe</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -161,6 +164,75 @@ violationCount bad xs = 0
                   SOLID is not treated as a universal architecture principle.
                   It is one local-contract family among distinct global,
                   state-transition, runtime, and distributed invariant families.
+                </p>
+              </div>
+            </section>
+
+            <section id="law-universe" class="article-section">
+              <h2>Law universe</h2>
+              <p>
+                A `LawUniverse` collects required laws, optional laws, derived
+                laws, witness families, and the observation boundary used to
+                read them. AAT does not identify lawfulness with witness
+                absence at the definition level; the equivalence is a theorem
+                package that needs completeness and exactness assumptions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lawful-within reading</figcaption>
+                <pre><code>ArchitectureLawfulWithin X B
+  := SemanticLawful X B.lawUniverse
+     under B.coverage / B.exactness / B.observation</code></pre>
+              </figure>
+              <p>
+                This distinction prevents a finite report from silently turning
+                into a global claim. The report may certify the absence of
+                selected required witnesses; the theorem boundary states when
+                that absence is enough to read semantic lawfulness inside the
+                chosen universe.
+              </p>
+            </section>
+
+            <section id="examples" class="article-section">
+              <h2>Examples</h2>
+              <p>
+                A local LSP contract can be lawful for selected client
+                contexts while the overall dependency graph remains cyclic. A
+                layered ranking can be lawful for static dependencies while a
+                runtime callback still crosses a protected boundary. A Saga law
+                can hold for a compensation relation without proving anything
+                about distributed convergence.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Local contract witness</strong>
+                  <span>An observation mismatch for a selected client context.</span>
+                </li>
+                <li>
+                  <strong>Global structure witness</strong>
+                  <span>A forbidden dependency direction, cycle, or boundary crossing in the selected static universe.</span>
+                </li>
+                <li>
+                  <strong>Runtime witness</strong>
+                  <span>A propagation, exposure, retry, or protection failure in a separate runtime observation layer.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                The generic witness-count kernel and required law / axis
+                exactness bridge are part of the current proved static core.
+                The broader design-principle classification remains a boundary
+                discipline: SOLID, Layered, Clean Architecture, Event Sourcing,
+                Saga, Circuit Breaker, and Replicated Log are organized as
+                different invariant families, not one Lean theorem scheme.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  A zero witness count means zero selected bad witnesses in the
+                  measured finite universe. It does not erase unmeasured axes,
+                  optional laws, runtime evidence gaps, or empirical risk.
                 </p>
               </div>
             </section>
