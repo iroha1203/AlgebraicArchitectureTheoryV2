@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="SFT Part III: SoftwareField, artifact-mediated change, operation support, policy, ForecastCone, and FieldUpdate."
+    >
+    <title>SFT Part III: SFT Core</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a class="is-active" href="../">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">SFT</a>
+            <span>Part III</span>
+          </nav>
+          <p class="eyebrow">SFT Part III</p>
+          <h1>The SFT Core</h1>
+          <p class="lede">
+            Part III defines the theorem-bearing fragment: `SoftwareField`,
+            artifact-mediated change, operation support, policy, governance
+            interventions, `ForecastCone`, `ConsequenceEnvelope`, and
+            closed-loop field update.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#software-field">SoftwareField</a></li>
+                <li><a href="#artifact-action">Artifact action</a></li>
+                <li><a href="#support-policy">Support and policy</a></li>
+                <li><a href="#forecast-envelope">Forecast and envelope</a></li>
+                <li><a href="#feedback">Feedback update</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
+                    Part III source
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                `ForecastCone` is a set of reachable field paths under a
+                selected support relation and horizon. `ConsequenceEnvelope` is
+                the report form for readers and tools.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="software-field" class="article-section">
+              <h2>SoftwareField and architecture projection</h2>
+              <p>
+                `SoftwareField` is a computable slice of a development field.
+                It is not itself an AAT `ArchitectureObject`; the AAT object is
+                obtained through architecture projection.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Field projection</figcaption>
+                <pre><code>arch : SoftwareField -> ArchitectureObject</code></pre>
+              </figure>
+              <ul class="term-list">
+                <li>
+                  <strong>Contextual state</strong>
+                  <span>History, constraints, observations, governance, and exogenous artifact inputs belong to the field.</span>
+                </li>
+                <li>
+                  <strong>Architecture projection</strong>
+                  <span>AAT reasoning applies to the projected architecture object, not to every field component at once.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="artifact-action" class="article-section">
+              <h2>Artifact-mediated change</h2>
+              <p>
+                The formal term is `ArtifactAction` or
+                `ArtifactMediatedChange`. Force remains an informal field-level
+                reading. PRDs, specs, issues, and AI proposals can produce
+                multiple candidate updates rather than a single next field.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Set-valued action</figcaption>
+                <pre><code>ArtifactAction a
+  := alpha_a : FieldSpace -> Set FieldSpaceUpdateHypothesis</code></pre>
+              </figure>
+              <p>
+                Forecasted effects are outputs of forecasting, not part of the
+                raw action definition. This prevents an artifact from already
+                containing the forecast that it is supposed to generate.
+              </p>
+            </section>
+
+            <section id="support-policy" class="article-section">
+              <h2>Operation support and policy</h2>
+              <p>
+                SFT asks which operations are lawful, but also which operations
+                appear natural, possible, low cost, or likely to be selected in
+                a field.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>OperationSupport</strong>
+                  <span>The admissible operation set after constraints and governance interventions.</span>
+                </li>
+                <li>
+                  <strong>OperationPolicy</strong>
+                  <span>A preorder, cost, selection relation, or explicitly probabilistic distribution on supported operations.</span>
+                </li>
+                <li>
+                  <strong>Attractor engineering</strong>
+                  <span>Support and policy shaping, not a hidden physical force or automatic stability theorem.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="forecast-envelope" class="article-section">
+              <h2>ForecastCone and ConsequenceEnvelope</h2>
+              <p>
+                `ForecastCone` is the formal set of reachable field paths from
+                a starting field, support relation, and horizon. For
+                set-valued artifact actions, SFT forms a family of cones and
+                summarizes them for practice as a `ConsequenceEnvelope`.
+              </p>
+              <figure class="code-panel">
+                <figcaption>ConsequenceEnvelope</figcaption>
+                <pre><code>ConsequenceEnvelope
+  = selected ForecastCones
+  + reachable path classes
+  + affected architecture regions
+  + comparable signature axes
+  + obstruction witness candidates
+  + missing invariants / boundaries
+  + forecast boundary
+  + unknown / unmodeled remainder</code></pre>
+              </figure>
+            </section>
+
+            <section id="feedback" class="article-section">
+              <h2>Observation, governance, and FieldUpdate</h2>
+              <p>
+                Review, CI, type checking, architecture rules, AI policy, and
+                runtime guards are governance interventions because they can
+                change support, policy, observation, and feedback update.
+              </p>
+              <p>
+                `FieldUpdate` records the difference between forecast and
+                observation: signature delta, unexpected witnesses, review or
+                CI outcome, runtime feedback, missing evidence, and
+                non-conclusions.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Field update preserves forecast error and boundary evidence.
+                  It does not automatically prove that future forecasts become
+                  more accurate.
+                </p>
+              </div>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../part-ii-basis/">
+                <span>Previous</span>
+                <strong>Part II. Basis</strong>
+              </a>
+              <a href="../part-iv-principles/">
+                <span>Next</span>
+                <strong>Part IV. Principles</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>

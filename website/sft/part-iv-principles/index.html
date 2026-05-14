@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="SFT Part IV: ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions."
+    >
+    <title>SFT Part IV: Principles and Theorems</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a class="is-active" href="../">SFT</a>
+          <a href="../../#documents">Interface</a>
+          <a href="../../#research">ArchSig</a>
+          <a href="../../#outreach">Outreach</a>
+          <a href="../../#profile">Profile</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">SFT</a>
+            <span>Part IV</span>
+          </nav>
+          <p class="eyebrow">SFT Part IV</p>
+          <h1>Principles and Theorems</h1>
+          <p class="lede">
+            Part IV records the theorem-shaped claims SFT can make only under
+            explicit support semantics, step simulation, safe regions,
+            coverage policy, and observation boundaries.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#cone-narrowing">Cone narrowing</a></li>
+                <li><a href="#support-safety">Support safety</a></li>
+                <li><a href="#proposal-accounting">Proposal accounting</a></li>
+                <li><a href="#feedback-update">Feedback update</a></li>
+                <li><a href="#stable-regions">Stable regions</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel">
+              <h2>Canonical source</h2>
+              <ul>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
+                    Part IV source
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                Cone narrowing is relative to selected support, witness
+                families, and horizon. It does not imply global risk reduction
+                or safety for unmeasured axes.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="cone-narrowing" class="article-section">
+              <h2>ForecastCone narrowing</h2>
+              <p>
+                If a specification adds sound constraints, preserves the
+                intended feature direction, and excludes a selected witness
+                family, then the relevant cone narrows under the selected
+                support semantics.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Set-valued schema</figcaption>
+                <pre><code>PointwiseSupportInclusion(U2, U1)
+  + StepSimulation(U2, U1, relation)
+  + F2 relation F1
+  -> ForecastCone(F2, U2, h)
+     projects into ForecastCone(F1, U1, h)</code></pre>
+              </figure>
+              <p>
+                The proof idea is induction on horizon. Each accepted U2-step
+                is simulated by a U1-step while the relation between fields is
+                maintained.
+              </p>
+            </section>
+
+            <section id="support-safety" class="article-section">
+              <h2>Support safety</h2>
+              <p>
+                Safe regions live on state or signature observations, not on
+                operation names alone. Support safety says that selected
+                accepted operations preserve a selected safe region under a
+                selected observation model.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Relative guarantee</strong>
+                  <span>The claim applies to accepted trajectories and selected safe regions.</span>
+                </li>
+                <li>
+                  <strong>No global future safety</strong>
+                  <span>Unmodeled operations, missing axes, and different horizons remain outside the claim.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="proposal-accounting" class="article-section">
+              <h2>Proposal accounting and review mediation</h2>
+              <p>
+                Dissipation is not a formal conservation law. The formal
+                vocabulary is `ProposalAccounting` and `ReviewMediation`:
+                classifying proposal pressure as accepted, rejected, delayed,
+                unresolved, coordination record, runtime pressure estimate, or
+                unaccounted remainder.
+              </p>
+              <p>
+                Review, CI, type checking, and architecture rules produce
+                records that feed field update and governance design.
+              </p>
+            </section>
+
+            <section id="feedback-update" class="article-section">
+              <h2>Feedback boundary update</h2>
+              <p>
+                Observed transitions, signature deltas, obstruction witnesses,
+                review outcome, CI outcome, and runtime feedback can update
+                the posterior field by making forecast error and missing
+                evidence explicit.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  This is update soundness as record preservation. It is not a
+                  theorem that every update narrows the next forecast.
+                </p>
+              </div>
+            </section>
+
+            <section id="stable-regions" class="article-section">
+              <h2>Stable regions and recurrent paths</h2>
+              <p>
+                Attractor and basin language requires extra semantics. The
+                set-valued core separates may reachability, must reachability,
+                stable region, and reachable preimage before adding
+                probability or recurrence claims.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Minimal vocabulary</figcaption>
+                <pre><code>MayReach_h(F, U, A)
+MustReach_h(F, U, A)
+StableRegion(U, A)
+ReachablePreimage_h(U, A)</code></pre>
+              </figure>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../part-iii-core/">
+                <span>Previous</span>
+                <strong>Part III. SFT Core</strong>
+              </a>
+              <a href="../part-v-computing-systems/">
+                <span>Next</span>
+                <strong>Part V. Computing Systems</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
