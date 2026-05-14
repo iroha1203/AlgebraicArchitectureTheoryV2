@@ -23,6 +23,12 @@ Zenn, Hashnode, and Qiita are outreach surfaces for motivation and intuition;
 they are not where the full theory, theorem boundaries, or claim discipline are
 maintained.
 
+The AAT section should be treated as a web-native preprint / monograph surface:
+the place where the theory can be published carefully before a slower
+arXiv-style paper is prepared. Its purpose is to give readers a complete,
+accurate, and stable account of the theory, including definitions, assumptions,
+theorem patterns, examples, counterexamples, Lean status, and non-conclusions.
+
 When expanding AAT and SFT pages:
 
 - Treat `docs/aat/mathematical_theory.md` and
@@ -30,6 +36,12 @@ When expanding AAT and SFT pages:
 - Preserve definitions, assumptions, non-conclusions, and claim levels.
 - Prefer theorem-style structure: definitions, interpretation, examples,
   boundaries, and links to Lean status where appropriate.
+- Keep AAT pages strong enough to stand alone as web theory sections, not only
+  as summaries of the repository documents.
+- Record an AAT release snapshot on public theory pages: last updated date,
+  source commit, and Lean status snapshot. Links from theory pages to canonical
+  docs should use commit-pinned GitHub URLs for public releases, not
+  `blob/main`, so the website and cited source text do not drift silently.
 - Do not compress formal distinctions into slogans or general software advice.
 - Keep ArchSig and tooling evidence separate from AAT / SFT theorem claims.
 - For ArchSig pages, separate the Core, Review, SFT, and Operational product

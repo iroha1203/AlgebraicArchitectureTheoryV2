@@ -66,6 +66,8 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#canonical-examples">Canonical examples</a></li>
+                <li><a href="#example-template">Example template</a></li>
+                <li><a href="#coupon-case-study">Coupon case study</a></li>
                 <li><a href="#counterexamples">Counterexamples</a></li>
                 <li><a href="#aat-boundary">AAT boundary</a></li>
                 <li><a href="#coupon-reading">Coupon reading</a></li>
@@ -77,11 +79,22 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#15-canonical-examples-and-counterexamples">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/mathematical_theory.md#15-canonical-examples-and-counterexamples">
                     Chapters 15-16 in the AAT text
                   </a>
                 </li>
               </ul>
+            </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+              </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
@@ -114,6 +127,135 @@
                   <span>An observation difference caused by rounding or discount application order.</span>
                 </li>
               </ul>
+            </section>
+
+            <section id="example-template" class="article-section">
+              <h2>Example template</h2>
+              <p>
+                Each canonical example should expose the same proof-relevant
+                structure. The example is not merely a story about a system; it
+                is a bounded object, a selected operation, a witness universe,
+                a signature reading, and a list of conclusions that do not
+                follow.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Paper-style example record</figcaption>
+                <pre><code>Example
+  = selected architecture object
+  + selected operation or extension
+  + invariant family under test
+  + witness universe
+  + measured signature axes
+  + theorem boundary
+  + counterexample or non-conclusion</code></pre>
+              </figure>
+              <p>
+                This template is why the coupon example can carry static,
+                semantic, and runtime readings without collapsing them into a
+                single quality judgment.
+              </p>
+            </section>
+
+            <section id="coupon-case-study" class="article-section">
+              <h2>Coupon case study</h2>
+              <p>
+                The coupon example is the smallest useful running case because
+                it exposes the separation between static structure, semantic
+                behavior, runtime behavior, and measurement boundary.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Selected component graph</figcaption>
+                <pre><code>CheckoutService
+  -&gt; CouponService
+  -&gt; PaymentPort
+  -&gt; PaymentAdapter
+
+bad static edge:
+  CouponService -&gt; PaymentAdapter
+
+semantic diagram:
+  apply coupon ; round
+    ?= round ; apply coupon
+
+runtime exposure:
+  retry / cache / callback crosses selected boundary</code></pre>
+              </figure>
+              <ul class="status-list">
+                <li>
+                  <strong>Object</strong>
+                  <span>A selected checkout universe containing coupon code, a declared payment interface, payment core components, and selected relations among them.</span>
+                </li>
+                <li>
+                  <strong>Good extension</strong>
+                  <span>Coupon computation is added through the declared interface, with a feature view and selected section laws recording how the feature is observed.</span>
+                </li>
+                <li>
+                  <strong>Static obstruction</strong>
+                  <span>A direct dependency from coupon code into payment adapters, caches, or private payment internals violates the selected static split or boundary policy.</span>
+                </li>
+                <li>
+                  <strong>Semantic obstruction</strong>
+                  <span>Two implementation paths produce different totals, rounding traces, error observations, or discount ordering observations under the selected client context.</span>
+                </li>
+                <li>
+                  <strong>Runtime obstruction</strong>
+                  <span>A retry, callback, cache invalidation, or protection failure crosses a runtime boundary not represented by the static dependency graph.</span>
+                </li>
+                <li>
+                  <strong>Non-conclusion</strong>
+                  <span>A static split report does not prove semantic commutativity, runtime protection, product outcome improvement, or complete extraction of the real repository.</span>
+                </li>
+              </ul>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Example field</th>
+                      <th>Coupon instantiation</th>
+                      <th>Claim level</th>
+                      <th>Boundary / non-conclusion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>`ComponentUniverse`</td>
+                      <td>`CheckoutService`, `CouponService`, `PaymentPort`, selected payment core / adapter components, and selected static / runtime relations.</td>
+                      <td>Tooling / formal when backed by proof-carrying finite universe data.</td>
+                      <td>Does not claim complete repository extraction.</td>
+                    </tr>
+                    <tr>
+                      <td>Selected good static edges</td>
+                      <td>`CheckoutService -> CouponService`, `CouponService -> PaymentPort`, `PaymentPort -> PaymentAdapter` under declared interface policy.</td>
+                      <td>Formal or tooling depending on evidence source.</td>
+                      <td>Only selected static relations are covered.</td>
+                    </tr>
+                    <tr>
+                      <td>Bad static witness set</td>
+                      <td>Direct `CouponService -> PaymentAdapter` or `CouponService -> PaymentCache` edge bypassing the declared boundary.</td>
+                      <td>`proved` only after finite witness list and bad predicate are connected by the theorem package.</td>
+                      <td>Absence in one report is not global absence.</td>
+                    </tr>
+                    <tr>
+                      <td>Semantic observation mismatch</td>
+                      <td>Different total, rounding trace, error result, or discount ordering under selected checkout contexts.</td>
+                      <td>Defined / proved only for selected observation bridges; otherwise tooling or empirical evidence.</td>
+                      <td>Static split does not imply semantic commutativity.</td>
+                    </tr>
+                    <tr>
+                      <td>Runtime exposure witness</td>
+                      <td>Retry, callback, cache invalidation, or protection failure crossing a runtime boundary.</td>
+                      <td>Defined / proved for selected runtime bridge packages; empirical for real incidents.</td>
+                      <td>Runtime flatness is separate from static flatness.</td>
+                    </tr>
+                    <tr>
+                      <td>Signature coordinates</td>
+                      <td>Static obstruction count, semantic witness status, runtime exposure status, residual coverage gap.</td>
+                      <td>Multi-axis diagnostic.</td>
+                      <td>Coordinates do not collapse into one quality score.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="counterexamples" class="article-section">
@@ -221,6 +363,42 @@ retry leaks across boundary
                   which slogan-like implications are invalid and keep public
                   explanations aligned with the bounded Lean status.
                 </p>
+              </div>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Current Lean status</th>
+                      <th>Boundary</th>
+                      <th>Non-conclusion</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>SOLID-style local contracts do not imply decomposability</td>
+                      <td>`proved` for representative finite counterexamples</td>
+                      <td>Selected abstract / concrete graph examples and local compatibility predicates.</td>
+                      <td>Does not classify every natural-language SOLID usage.</td>
+                      <td>Lean theorem index, SOLID counterexamples.</td>
+                    </tr>
+                    <tr>
+                      <td>Static flatness does not imply semantic flatness</td>
+                      <td>`defined only` / `proved` for selected bridge and counterexample packages</td>
+                      <td>Selected static graph and selected semantic diagram universe.</td>
+                      <td>Does not prove all semantic failures are static failures.</td>
+                      <td>Lean theorem index and proof obligations.</td>
+                    </tr>
+                    <tr>
+                      <td>Coupon worked example</td>
+                      <td>Mixed: theorem-backed finite packages plus tooling / example-level readings</td>
+                      <td>Selected component universe, selected witnesses, selected observation contexts.</td>
+                      <td>Not complete extraction from every real coupon repository.</td>
+                      <td>AAT mathematical theory and ArchSig example docs.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
 

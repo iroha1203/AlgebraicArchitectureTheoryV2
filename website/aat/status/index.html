@@ -66,7 +66,9 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#source-map">Source map</a></li>
+                <li><a href="#formal-claim-map">Formal claim map</a></li>
                 <li><a href="#status-vocabulary">Status vocabulary</a></li>
+                <li><a href="#promotion-rule">Promotion rule</a></li>
                 <li><a href="#qed-boundary">Current QED boundary</a></li>
               </ol>
             </nav>
@@ -74,16 +76,27 @@
               <h2>Status sources</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/lean_theorem_index.md">
                     Lean theorem index
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/proof_obligations.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/proof_obligations.md">
                     Proof obligations
                   </a>
                 </li>
               </ul>
+            </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; existing linter warnings are tracked outside this page.</dd>
+              </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
@@ -121,6 +134,61 @@
               </ul>
             </section>
 
+            <section id="formal-claim-map" class="article-section">
+              <h2>Formal claim map</h2>
+              <p>
+                The website states AAT as a theory, but only some parts are
+                current Lean-proved claims. The status boundary is part of the
+                exposition, not an implementation appendix.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Current proved core</strong>
+                  <span>Static structural theorem packages, finite witness-count bridges, selected required-axis exactness bridges, projection / LSP bridges, graph / matrix finite-universe bridges, and representative counterexamples tracked in the theorem index.</span>
+                </li>
+                <li>
+                  <strong>Defined-only surfaces</strong>
+                  <span>Operation schemas, extension schemas, analytic representation records, valuation records, repair and synthesis records, and tooling-facing metadata where the carrier exists but full correctness or completeness theorem packages are not universal.</span>
+                </li>
+                <li>
+                  <strong>Future proof obligations</strong>
+                  <span>Broader semantic completeness, global filling completeness, universe-wide obstruction coverage, and stronger operation laws that require additional theorem work.</span>
+                </li>
+                <li>
+                  <strong>Empirical hypotheses</strong>
+                  <span>Real-code extraction completeness, cost correlation, operational outcome improvement, and repository-wide calibration claims.</span>
+                </li>
+              </ul>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Status phrase</th>
+                      <th>Meaning in this website</th>
+                      <th>Reader rule</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>`proved theorem`</td>
+                      <td>A Lean theorem, lemma, or example theorem establishes the claim under its stated assumptions.</td>
+                      <td>Read only within the universe, coverage, exactness, and observation assumptions of that theorem.</td>
+                    </tr>
+                    <tr>
+                      <td>`schema accessor theorem`</td>
+                      <td>Lean proves that a record or package exposes the intended field, boundary, or non-conclusion data.</td>
+                      <td>Do not promote this to the full correctness theorem for every instance of the schema.</td>
+                    </tr>
+                    <tr>
+                      <td>`defined-only carrier`</td>
+                      <td>A structure, predicate, executable metric, or representation exists as a formal carrier.</td>
+                      <td>It supports precise statement of future theorems, but does not by itself prove the intended semantic claim.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
             <section id="status-vocabulary" class="article-section">
               <h2>Status vocabulary</h2>
               <p>
@@ -154,6 +222,28 @@
               </div>
             </section>
 
+            <section id="promotion-rule" class="article-section">
+              <h2>Promotion rule</h2>
+              <p>
+                AAT promotes a claim only when the artifact that states it also
+                carries the boundary needed to read it. A theorem candidate in
+                the mathematical text, a Lean definition, a tool report, and a
+                proved theorem are different objects.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Claim promotion path</figcaption>
+                <pre><code>mathematical candidate
+  -&gt; defined Lean schema
+  -&gt; proved theorem under boundary B
+  -&gt; public claim with non-conclusions recorded</code></pre>
+              </figure>
+              <p>
+                Tooling evidence can support a claim, but it does not replace
+                the theorem boundary. Empirical validation can motivate or
+                calibrate a hypothesis, but it is not promoted to `proved`.
+              </p>
+            </section>
+
             <section id="qed-boundary" class="article-section">
               <h2>Current QED boundary</h2>
               <p>
@@ -164,7 +254,9 @@
               </p>
               <figure class="code-panel">
                 <figcaption>Static structural core</figcaption>
-                <pre><code>ArchitectureLawful X
+                <pre><code>under explicit boundary B:
+
+ArchitectureLawful X
   &lt;-&gt; RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)
 
 ArchitectureLawful X

@@ -66,6 +66,8 @@
               <ol>
                 <li><a href="#signature">Architecture Signature</a></li>
                 <li><a href="#measurement-status">Measurement status</a></li>
+                <li><a href="#signature-record">Signature record</a></li>
+                <li><a href="#measurement-semantics">Measurement semantics</a></li>
                 <li><a href="#theorem-boundary">Theorem boundary</a></li>
                 <li><a href="#claim-levels">Claim levels</a></li>
                 <li><a href="#comparison-rules">Comparison rules</a></li>
@@ -76,11 +78,22 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#5-architecture-signature">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/mathematical_theory.md#5-architecture-signature">
                     Chapters 5-6 in the AAT text
                   </a>
                 </li>
               </ul>
+            </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+              </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
@@ -131,6 +144,101 @@
                   <span>Cost and product outcomes are not required zero axes inside AAT.</span>
                 </li>
               </ul>
+            </section>
+
+            <section id="signature-record" class="article-section">
+              <h2>Signature record</h2>
+              <p>
+                A signature coordinate is a typed claim, not just a number in a
+                dashboard. The coordinate records the axis, the measured or
+                unmeasured status, the claim level, the universe in which it was
+                produced, the evidence that supports it, and the claims that are
+                explicitly not being made.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Coordinate shape</figcaption>
+                <pre><code>SignatureCoordinate
+  = axis
+  + measurement status
+  + value when measured
+  + claim level
+  + universe / coverage boundary
+  + evidence references
+  + non-conclusions</code></pre>
+              </figure>
+              <p>
+                This is why two reports cannot be compared merely because they
+                both contain a value. The coordinate must be read together with
+                its boundary and its axis-specific order.
+              </p>
+            </section>
+
+            <section id="measurement-semantics" class="article-section">
+              <h2>Measurement semantics</h2>
+              <p>
+                A signature is useful only if its coordinates preserve the
+                difference between value and status. The value says what was
+                measured on an axis; the status says whether that measurement
+                can be read as evidence for a claim.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>`measured_zero`</strong>
+                  <span>The selected witness universe has a zero value for that axis under the recorded boundary.</span>
+                </li>
+                <li>
+                  <strong>`measured_nonzero(value)`</strong>
+                  <span>A selected obstruction or risk coordinate was measured and remains nonzero.</span>
+                </li>
+                <li>
+                  <strong>`unmeasured`</strong>
+                  <span>The axis has not been observed; this is not the same claim as zero.</span>
+                </li>
+                <li>
+                  <strong>`out_of_scope` / `not_applicable`</strong>
+                  <span>The axis is outside the selected universe or does not apply to the object being read.</span>
+                </li>
+              </ul>
+              <p>
+                This semantics lets AAT compare architectures without turning
+                unknowns into zeros or forcing all axes into one total order.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Current Lean status</th>
+                      <th>Boundary</th>
+                      <th>Non-conclusion</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Architecture Signature as multi-axis diagnostic</td>
+                      <td>`defined only` / `proved` for required-axis bridge packages</td>
+                      <td>Selected axes, measurement status, and explicit theorem boundary.</td>
+                      <td>Does not rank architectures by one scalar quality value.</td>
+                      <td>Lean theorem index, signature entries.</td>
+                    </tr>
+                    <tr>
+                      <td>Measured zero versus unmeasured status</td>
+                      <td>`proved` for current required-axis availability / zero bridges</td>
+                      <td>Axis availability and exactness assumptions must be recorded.</td>
+                      <td>`none`, missing, private, or out-of-scope evidence is not zero.</td>
+                      <td>AAT Status and theorem index.</td>
+                    </tr>
+                    <tr>
+                      <td>Empirical cost or product outcome reading</td>
+                      <td>`empirical hypothesis`</td>
+                      <td>Requires separate dataset, calibration protocol, and artifact boundary.</td>
+                      <td>Not a Lean theorem and not a required zero-axis claim.</td>
+                      <td>Proof-obligation ledger.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="theorem-boundary" class="article-section">

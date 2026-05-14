@@ -60,7 +60,7 @@
             <span>AAT</span>
           </nav>
           <p class="eyebrow">Algebraic Architecture Theory</p>
-          <h1>A local algebra for software architecture.</h1>
+          <h1>Algebraic Architecture Theory.</h1>
           <p class="lede">
             AAT treats architecture as a bounded object of reasoning: operations
             preserve or break invariant families, obstruction witnesses explain
@@ -76,6 +76,9 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#abstract">Abstract</a></li>
+                <li><a href="#main-contributions">Main contributions</a></li>
+                <li><a href="#publication-purpose">Publication purpose</a></li>
                 <li><a href="#reading-order">Reading order</a></li>
                 <li><a href="#claim-discipline">Claim discipline</a></li>
                 <li><a href="#canonical-sources">Canonical sources</a></li>
@@ -85,20 +88,100 @@
               <h2>Canonical sources</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/mathematical_theory.md">
                     AAT mathematical theory
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/README.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/README.md">
                     AAT repository entry
                   </a>
                 </li>
               </ul>
             </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; see Status for proved / defined-only boundaries.</dd>
+              </dl>
+            </div>
           </aside>
 
           <div class="article-main">
+            <section id="abstract" class="article-section">
+              <h2>Abstract</h2>
+              <p>
+                Algebraic Architecture Theory formalizes software architecture
+                as a bounded mathematical object equipped with operations,
+                invariant families, obstruction witnesses, signature axes, and
+                theorem boundaries. Its basic claim is that architectural
+                quality should be read through preserved invariants and
+                explicit witnesses of failure, not through slogans, framework
+                names, or a single scalar score.
+              </p>
+              <p>
+                The theory is local by design. Every claim is relative to a
+                selected universe, observation context, coverage boundary, and
+                exactness assumption. This makes AAT useful for precise design
+                review: it can say what is preserved, what is broken, what was
+                measured, what was not measured, and which theorem package
+                licenses the conclusion.
+              </p>
+            </section>
+
+            <section id="main-contributions" class="article-section">
+              <h2>Main contributions</h2>
+              <ul class="status-list">
+                <li>
+                  <strong>Architecture as bounded algebra</strong>
+                  <span>AAT treats architecture objects and operations as typed, evidence-bounded mathematical data rather than as informal descriptions of whole codebases.</span>
+                </li>
+                <li>
+                  <strong>Obstruction-first quality</strong>
+                  <span>Quality failure is represented by selected obstruction witnesses: forbidden edges, boundary violations, projection failures, semantic non-commutativity, runtime exposure, lifting failure, and residual coverage gaps.</span>
+                </li>
+                <li>
+                  <strong>Multi-axis signature</strong>
+                  <span>Architecture Signature records measured coordinates and measurement status per axis, keeping unmeasured, out-of-scope, private, and zero evidence distinct.</span>
+                </li>
+                <li>
+                  <strong>Theorem-boundary discipline</strong>
+                  <span>Every theorem candidate records assumptions, coverage, exactness, conclusion, and non-conclusions so static, runtime, semantic, tooling, and empirical readings are not collapsed.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="publication-purpose" class="article-section">
+              <h2>Publication purpose</h2>
+              <p>
+                This website is the canonical public reading surface for AAT:
+                a web-native theory text that sits between outreach posts and
+                a future conventional paper. Blog platforms are useful for
+                motivation, but AAT needs a stable place for definitions,
+                assumptions, theorem boundaries, examples, counterexamples,
+                Lean status, and non-conclusions to remain together.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Not a blog summary</strong>
+                  <span>The pages preserve formal distinctions instead of compressing them into general software advice.</span>
+                </li>
+                <li>
+                  <strong>Not a product landing page</strong>
+                  <span>The primary object is the theory: its vocabulary, theorem shape, examples, and boundaries.</span>
+                </li>
+                <li>
+                  <strong>Preprint-style surface</strong>
+                  <span>The site makes AAT readable before a slower arXiv-style paper is prepared, while keeping claim discipline explicit.</span>
+                </li>
+              </ul>
+            </section>
+
             <section id="reading-order" class="article-section">
               <h2>Reading order</h2>
               <p>

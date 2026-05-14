@@ -69,6 +69,8 @@
                 <li><a href="#operation-laws">Operation laws</a></li>
                 <li><a href="#feature-extension">Feature extension</a></li>
                 <li><a href="#operation-families">Operation families</a></li>
+                <li><a href="#proof-obligations">Proof obligations</a></li>
+                <li><a href="#extension-theorem">Extension theorem schema</a></li>
                 <li><a href="#extension-evidence">Extension evidence</a></li>
                 <li><a href="#lean-status">Lean status</a></li>
               </ol>
@@ -77,11 +79,22 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#9-architecture-calculus">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/mathematical_theory.md#9-architecture-calculus">
                     Chapters 9-10 in the AAT text
                   </a>
                 </li>
               </ul>
+            </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+              </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
@@ -188,6 +201,95 @@
   + theorem boundary
   -&gt; bounded conclusion</code></pre>
               </figure>
+            </section>
+
+            <section id="proof-obligations" class="article-section">
+              <h2>Proof obligations</h2>
+              <p>
+                To turn an architecture operation into a theorem package, the
+                operation must expose the data that a proof can actually use.
+                This is the calculus-level version of claim discipline.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Well-formed support</strong>
+                  <span>The source, target, and affected sub-universe are explicit enough to state the transition.</span>
+                </li>
+                <li>
+                  <strong>Precondition and transition</strong>
+                  <span>The operation says when it is allowed and what relation connects source and target.</span>
+                </li>
+                <li>
+                  <strong>Invariant and witness mapping</strong>
+                  <span>The proof states which invariant is preserved and how selected witnesses are removed, preserved, introduced, or transferred.</span>
+                </li>
+                <li>
+                  <strong>Conclusion boundary</strong>
+                  <span>The theorem records which axes are not claimed to improve and which evidence remains outside the operation.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="extension-theorem" class="article-section">
+              <h2>Extension theorem schema</h2>
+              <p>
+                Feature extension is the running operation family because it
+                forces all boundaries to appear at once: inherited core
+                structure, feature-local behavior, interaction with the core,
+                lifting through declared interfaces, semantic filling, and
+                residual coverage.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Extension reading</figcaption>
+                <pre><code>FeatureExtension X X'
+  + StaticSplitFeatureExtension evidence
+  + selected feature-view section laws
+  + SplitExtensionLiftingData
+  + runtime / semantic preservation evidence
+  + theorem boundary B
+  -&gt; bounded extension claim within B</code></pre>
+              </figure>
+              <p>
+                The structural extension formula classifies where a witness
+                comes from. It does not say the classes are disjoint and does
+                not provide global witness completeness by itself.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Current Lean status</th>
+                      <th>Boundary</th>
+                      <th>Non-conclusion</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>`ArchitectureOperation` / proof-obligation schema</td>
+                      <td>`defined only` / `proved` for schema accessor theorems</td>
+                      <td>Operation support, precondition, transition relation, invariant family, witness mapping, and boundary record.</td>
+                      <td>A named operation tag is not by itself a theorem.</td>
+                      <td>Lean theorem index, architecture operation entries.</td>
+                    </tr>
+                    <tr>
+                      <td>Bounded operation laws</td>
+                      <td>`defined only` / `proved` for bounded accessor packages</td>
+                      <td>Fixed observation and theorem-boundary compatibility.</td>
+                      <td>Does not provide unrestricted replacement, migration, protection, or synthesis laws.</td>
+                      <td>Lean theorem index, architecture calculus laws.</td>
+                    </tr>
+                    <tr>
+                      <td>Structural extension formula</td>
+                      <td>`defined only` / `proved` for structural entrypoints</td>
+                      <td>Selected split-extension, lifting, filling, complexity-transfer, and residual-coverage evidence.</td>
+                      <td>Not a disjoint decomposition, global witness-completeness theorem, or proof that every feature extension is safe.</td>
+                      <td>Lean theorem index, Chapter 10 entrypoint.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="extension-evidence" class="article-section">

@@ -66,7 +66,9 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#graph-matrix">Graph and matrix</a></li>
+                <li><a href="#graph-theorem">Graph theorem schema</a></li>
                 <li><a href="#analytic-representation">Analytic representation</a></li>
+                <li><a href="#representation-pattern">Representation pattern</a></li>
                 <li><a href="#state-effects">State transitions and effects</a></li>
                 <li><a href="#valuation-boundary">Valuation boundary</a></li>
                 <li><a href="#effect-examples">Effect examples</a></li>
@@ -77,11 +79,22 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md#13-graph-matrix-analytic-representation">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/e4a27d95a6564a2a62305cd0c10dd12f5b131e88/docs/aat/mathematical_theory.md#13-graph-matrix-analytic-representation">
                     Chapters 13-14 in the AAT text
                   </a>
                 </li>
               </ul>
+            </div>
+            <div class="version-panel">
+              <h2>AAT release snapshot</h2>
+              <dl>
+                <dt>Updated</dt>
+                <dd>2026-05-15</dd>
+                <dt>Docs source commit</dt>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/e4a27d95a6564a2a62305cd0c10dd12f5b131e88">e4a27d9</a></dd>
+                <dt>Lean status</dt>
+                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+              </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
@@ -111,6 +124,80 @@
               </figure>
             </section>
 
+            <section id="graph-theorem" class="article-section">
+              <h2>Graph theorem schema</h2>
+              <p>
+                The graph and matrix bridge is a representation theorem for a
+                finite unweighted static universe. It connects several views of
+                the same structural condition without redefining
+                `Decomposable` and without importing runtime propagation into
+                the static theorem.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Finite static bridge</figcaption>
+                <pre><code>finite measured static universe
+  + coverage assumptions
+  -&gt;
+  Acyclic
+    &lt;-&gt; no nonempty closed walk
+    &lt;-&gt; adjacency nilpotence</code></pre>
+              </figure>
+              <p>
+                Cost, latency, propagation, and operational risk require
+                separate observation models or analytic representations. They
+                are not consequences of this static bridge alone.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Boundary diagram</figcaption>
+                <pre><code>Decomposable = StrictLayered
+  separate from
+acyclicity
+  &lt;-&gt; closed-walk absence
+  &lt;-&gt; adjacency nilpotence
+  -&gt; spectral radius zero under finite matrix assumptions
+
+runtime propagation
+  requires runtime graph / propagation model
+  and is not built into Decomposable</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Current Lean status</th>
+                      <th>Boundary</th>
+                      <th>Non-conclusion</th>
+                      <th>Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Finite graph / matrix bridge</td>
+                      <td>`proved`</td>
+                      <td>Finite unweighted static universe with coverage assumptions.</td>
+                      <td>Not the definition of `Decomposable` and not a runtime theorem.</td>
+                      <td>Lean theorem index, matrix bridge entries.</td>
+                    </tr>
+                    <tr>
+                      <td>Spectral bridge</td>
+                      <td>`proved` for finite complex adjacency matrices</td>
+                      <td>mathlib-backed finite matrix representation.</td>
+                      <td>Does not turn cost, risk, or latency into theorem-level signature axes.</td>
+                      <td>Lean theorem index, spectral radius entries.</td>
+                    </tr>
+                    <tr>
+                      <td>Runtime propagation bridge</td>
+                      <td>`defined only` / `proved` for selected 0/1 runtime graph zero bridges</td>
+                      <td>Separate runtime universe and propagation model.</td>
+                      <td>Does not follow from static acyclicity alone.</td>
+                      <td>Lean theorem index and proof obligations.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
             <section id="analytic-representation" class="article-section">
               <h2>Analytic representation</h2>
               <p>
@@ -136,14 +223,43 @@
               </ul>
             </section>
 
+            <section id="representation-pattern" class="article-section">
+              <h2>Representation pattern</h2>
+              <p>
+                A representation theorem has two directions that must not be
+                conflated. Preserving sends a structural zero or witness into
+                the representation. Reflecting reads a represented zero or
+                obstruction back into the structural world, and therefore needs
+                stronger assumptions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Preserve versus reflect</figcaption>
+                <pre><code>structural zero
+  -[preserving]-&gt;
+analytic zero
+
+analytic zero
+  + coverage
+  + witness completeness
+  + semantic contract coverage
+  -[reflecting]-&gt;
+structural zero</code></pre>
+              </figure>
+              <p>
+                This pattern also explains why dashboards and numerical
+                summaries are useful but insufficient: an aggregate can guide
+                attention without by itself proving structural flatness.
+              </p>
+            </section>
+
             <section id="state-effects" class="article-section">
               <h2>State transitions and effects</h2>
               <p>
                 The state-transition layer treats commands, events, retries,
-                compensations, snapshots, and migrations as generators, with
-                laws expressed as relations. Event Sourcing, Saga, retry safety,
-                snapshot consistency, and migration naturality are projections
-                of this algebra.
+                compensations, snapshots, CRUD overwrites, and migrations as
+                generators, with laws expressed as relations. Event Sourcing,
+                Saga, CRUD, retry safety, snapshot consistency, and migration
+                naturality are projections of this algebra.
               </p>
               <p>
                 The effect boundary captures obstruction that a dependency
@@ -156,6 +272,20 @@
 compensate ; action ~= id
 decode ; encode ~= id</code></pre>
               </figure>
+              <ul class="term-list">
+                <li>
+                  <strong>Circuit Breaker</strong>
+                  <span>Runtime protection law: selected failures should not propagate beyond the protected boundary while the breaker is open.</span>
+                </li>
+                <li>
+                  <strong>Replicated Log</strong>
+                  <span>Distributed ordering law: replicas converge only under the selected quorum, ordering, and failure-model assumptions.</span>
+                </li>
+                <li>
+                  <strong>CRUD</strong>
+                  <span>Overwrite law: update and delete behavior must be read against the selected state and observation relation, not against event replay by default.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="valuation-boundary" class="article-section">

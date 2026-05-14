@@ -13,6 +13,12 @@ SEO 用の `sitemap.xml` ではない。
 - 数学本文、Lean status、proof obligation、tooling claim、empirical hypothesis を混同しない。
 - AAT は first-class formal theory article として、`docs/aat/mathematical_theory.md`
   に忠実な論文調の本文を章クラスタ単位で見せる。
+- AAT website は web-native preprint / monograph として扱う。Hashnode、Zenn、
+  Qiita のような outreach surface では維持しにくい定義、前提、theorem boundary、
+  反例、Lean status、non-conclusions を一箇所で読めるようにする。
+- AAT の公開 theory pages は release snapshot を表示し、参照元 docs への GitHub
+  links は公開時点の commit に固定する。`blob/main` は作業中の便宜には使えても、
+  paper-grade public reference の citation としては使わない。
 - SFT は first-class research monograph として、`docs/sft/software_field_theory.md`
   に忠実な論文調の本文を Part 単位で見せる。
 - AAT / SFT page は marketing summary や一般向け article ではなく、定義、前提、

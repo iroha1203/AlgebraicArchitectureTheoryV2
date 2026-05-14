@@ -509,6 +509,7 @@ p {
 
 .toc-panel,
 .source-panel,
+.version-panel,
 .boundary-note {
   border-top: 3px solid var(--ink);
   padding-top: 16px;
@@ -516,6 +517,7 @@ p {
 
 .toc-panel h2,
 .source-panel h2,
+.version-panel h2,
 .boundary-note h2 {
   margin-bottom: 10px;
   font-family: var(--font-sans);
@@ -548,11 +550,33 @@ p {
 }
 
 .source-panel p,
+.version-panel p,
 .boundary-note p,
 .boundary-note li {
   color: var(--ink-muted);
   font-size: 0.96rem;
   line-height: 1.52;
+}
+
+.version-panel dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.version-panel dt {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.version-panel dd {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.94rem;
+  line-height: 1.42;
 }
 
 .article-main {
@@ -643,6 +667,38 @@ p {
   font-size: 0.98rem;
   font-weight: 650;
   line-height: 1.52;
+}
+
+.article-table {
+  margin-top: 18px;
+  overflow-x: auto;
+}
+
+.article-table table {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid var(--rule-strong);
+  font-size: 0.98rem;
+}
+
+.article-table th,
+.article-table td {
+  border-bottom: 1px solid var(--rule);
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.article-table th {
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.article-table td {
+  color: var(--ink-muted);
 }
 
 .page-nav {
