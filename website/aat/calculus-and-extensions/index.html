@@ -68,6 +68,9 @@
                 <li><a href="#architecture-operation">Architecture operation</a></li>
                 <li><a href="#operation-laws">Operation laws</a></li>
                 <li><a href="#feature-extension">Feature extension</a></li>
+                <li><a href="#operation-families">Operation families</a></li>
+                <li><a href="#extension-evidence">Extension evidence</a></li>
+                <li><a href="#lean-status">Lean status</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -154,6 +157,79 @@
                 <p>
                   The formula is explanatory, not a disjoint decomposition. One
                   measured witness can belong to multiple obstruction classes.
+                </p>
+              </div>
+            </section>
+
+            <section id="operation-families" class="article-section">
+              <h2>Operation families</h2>
+              <p>
+                The calculus treats common refactoring and architecture moves
+                as operation families sharing the same boundary-indexed shape.
+                `compose`, `replace`, `refine`, `abstract`, `split`, `merge`,
+                `isolate`, `protect`, `migrate`, `reverse`, `contract`,
+                `repair`, and `synthesize` can each be useful, but the family
+                name is not itself a proof.
+              </p>
+              <p>
+                Each operation needs its own support, precondition, transition
+                relation, invariant preservation claim, witness mapping, and
+                non-conclusions. A replacement theorem, a migration theorem,
+                and a protection theorem may share notation while requiring
+                different observation and exactness assumptions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Boundary-indexed operation</figcaption>
+                <pre><code>operation tag
+  + selected support
+  + precondition
+  + invariant family
+  + witness mapping
+  + theorem boundary
+  -&gt; bounded conclusion</code></pre>
+              </figure>
+            </section>
+
+            <section id="extension-evidence" class="article-section">
+              <h2>Extension evidence</h2>
+              <p>
+                A base `FeatureExtension` only says that an existing core has
+                been embedded into a larger object with a feature view. Stronger
+                readings require additional evidence packages: static split,
+                declared interface use, selected feature-view section laws,
+                lifting data, runtime preservation, and semantic preservation.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>StaticSplitFeatureExtension</strong>
+                  <span>Evidence about static relations and boundary policy for the extension.</span>
+                </li>
+                <li>
+                  <strong>FeatureViewSectionPackage</strong>
+                  <span>Evidence that the feature view reads the selected feature correctly under the observation model.</span>
+                </li>
+                <li>
+                  <strong>SplitExtensionLiftingData</strong>
+                  <span>Evidence that selected feature steps lift through the declared interface.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="lean-status" class="article-section">
+              <h2>Lean status</h2>
+              <p>
+                The Lean API contains defined operation schemas, accessor
+                theorems, bounded calculus laws, feature-extension structures,
+                split-extension lifting APIs, and structural extension formula
+                entrypoints. Some components are proved theorem packages and
+                some remain defined-only APIs or docs-facing metadata.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  The structural extension formula explains obstruction
+                  sources; it is not a disjoint decomposition, not a global
+                  witness-completeness theorem, and not evidence that every
+                  feature extension is safe.
                 </p>
               </div>
             </section>
