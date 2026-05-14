@@ -32,9 +32,6 @@ media, with links back to the canonical English pages.
 /interface/
   AAT -> SFT dependency and claim-boundary guide
 
-/tooling/
-  Tooling bridge and claim-boundary overview
-
 /outreach/
   Hashnode, Zenn, Qiita, and other public article links
 ```
