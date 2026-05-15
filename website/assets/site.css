@@ -654,103 +654,6 @@ p {
   line-height: 1.48;
 }
 
-.theorem-stack {
-  display: grid;
-  gap: 18px;
-  margin-top: 20px;
-}
-
-.theorem-card {
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  background: var(--surface);
-  padding: 22px;
-}
-
-.theorem-card-header {
-  display: grid;
-  gap: 6px;
-}
-
-.theorem-card-header h3 {
-  margin-top: 0;
-}
-
-.theorem-kicker {
-  margin: 0;
-  color: var(--accent-warm);
-  font-family: var(--font-sans);
-  font-size: 0.76rem;
-  font-weight: 850;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.theorem-card p {
-  color: var(--ink-muted);
-}
-
-.theorem-card h4 {
-  margin: 0 0 6px;
-  color: var(--ink);
-  font-family: var(--font-sans);
-  font-size: 0.84rem;
-  font-weight: 850;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.proof-idea {
-  border-left: 3px solid var(--accent-blue);
-  margin-top: 18px;
-  padding-left: 16px;
-}
-
-.counterexample-note {
-  border-left: 3px solid var(--accent-warm);
-  margin-top: 18px;
-  padding-left: 16px;
-}
-
-.proof-idea p,
-.counterexample-note p {
-  margin: 0;
-}
-
-.counterexample-note h4 {
-  color: var(--accent-warm);
-}
-
-.claim-meta {
-  display: grid;
-  gap: 12px;
-  margin: 20px 0 0;
-}
-
-.claim-meta div {
-  display: grid;
-  grid-template-columns: minmax(130px, 0.28fr) minmax(0, 1fr);
-  gap: 12px;
-  border-top: 1px solid var(--rule);
-  padding-top: 12px;
-}
-
-.claim-meta dt {
-  color: var(--accent-blue);
-  font-family: var(--font-sans);
-  font-size: 0.74rem;
-  font-weight: 850;
-  text-transform: uppercase;
-}
-
-.claim-meta dd {
-  margin: 0;
-  color: var(--ink-muted);
-  font-size: 0.96rem;
-  line-height: 1.48;
-}
-
-.claim-meta code,
 .article-section code,
 .article-table code {
   font-family: var(--font-mono);
@@ -957,11 +860,6 @@ p {
 
   .page-nav a:last-child {
     text-align: left;
-  }
-
-  .claim-meta div {
-    grid-template-columns: 1fr;
-    gap: 4px;
   }
 
   .math-block {
