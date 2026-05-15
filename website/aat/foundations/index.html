@@ -247,12 +247,22 @@ ArchitectureObject
                 operational observations, but it is not the unbounded real
                 codebase itself.
               </p>
+              <p class="statement-status" aria-label="Lean status for Definition 1.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Tracked through <code>ArchitectureCore</code> presentation declarations; no standalone complete-codebase object is claimed.</span>
+              </p>
               <p id="proposition-1-2" class="statement">
                 <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
                 Object claims are relativized
                 claims. A sentence about an architecture object is licensed
                 only inside the carrier, policy, and observation context that
                 present it.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 1.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-future">theorem candidate</span>
+                <span>Website reading of the canonical boundary; Lean anchors remain the selected-presentation definitions below.</span>
               </p>
               <p id="proof-1-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-1-2">Proof idea.</a>
@@ -331,6 +341,11 @@ ArchitectureObject
                 declared coverage boundary. Presentation equivalence is
                 therefore relative to the selected observation model.
               </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 2.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span><code>ArchitectureCore</code> is defined-only; selected accessors are proved, but extraction completeness is not promoted.</span>
+              </p>
               <p id="proof-2-1" class="statement-proof">
                 <a class="statement-anchor" href="#proof-2-1">Proof idea.</a>
                 A core presentation contains the evidence selected for the
@@ -354,6 +369,11 @@ ArchitectureObject
                 ambient repository would distinguish the two repositories, but
                 the selected core presentation does not. Therefore the core
                 presentation does not imply complete extraction.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Counterexample 2.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-future">theorem candidate</span>
+                <span>Counterexample text preserves the non-implication boundary; no Lean theorem is added in this chapter.</span>
               </p>
               <p id="non-conclusion-2-3" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-2-3">Non-conclusion 2.3.</a>
@@ -410,12 +430,22 @@ ArchitectureObject
                 supplies the bounded component list and the proof obligations
                 needed to read graph-level evidence as in-scope evidence.
               </p>
+              <p class="statement-status" aria-label="Lean status for Definition 3.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>ComponentUniverse</code>, the finite measurement universe with proof-carrying fields.</span>
+              </p>
               <p id="proposition-3-2" class="statement">
                 <a class="statement-anchor" href="#proposition-3-2">Proposition 3.2.</a>
                 Finite bridges are
                 coverage-relative. Executable or graph-level facts become
                 proposition-level facts only under their supplied universe and
                 closure assumptions.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 3.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>ComponentUniverse.edgeClosed_of_covers</code>, <code>FiniteArchGraph.edgeClosed_components</code>, and bounded reachability facts.</span>
               </p>
               <p id="proof-3-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-3-2">Proof idea.</a>
@@ -437,6 +467,11 @@ ArchitectureObject
                 carries the only violating edge. Without edge closure, an
                 in-scope source can point to an out-of-scope target, so a zero
                 result on the list is not a graph-level zero claim.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Counterexample 3.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-future">theorem candidate</span>
+                <span>Boundary example for missing coverage or closure; the proved bridge theorems require those premises explicitly.</span>
               </p>
               <p id="remark-3-4" class="statement">
                 <a class="statement-anchor" href="#remark-3-4">Remark 3.4.</a>
