@@ -68,6 +68,7 @@
                 <li><a href="#source-map">Source map</a></li>
                 <li><a href="#audit-snapshot">Audit snapshot</a></li>
                 <li><a href="#formal-claim-map">Formal claim map</a></li>
+                <li><a href="#formal-anchor-package">Formal anchor package</a></li>
                 <li><a href="#reader-anchors">Reader anchors</a></li>
                 <li><a href="#status-vocabulary">Status vocabulary</a></li>
                 <li><a href="#promotion-rule">Promotion rule</a></li>
@@ -78,13 +79,18 @@
               <h2>Status sources</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6f9ab7e0f8d0417729e0dc95202870e47ee8fc9a/docs/aat/lean_theorem_index.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/ea0ade69aea34484453501b459bca6c99c14ae89/docs/aat/lean_theorem_index.md">
                     Lean theorem index
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6f9ab7e0f8d0417729e0dc95202870e47ee8fc9a/docs/aat/proof_obligations.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/ea0ade69aea34484453501b459bca6c99c14ae89/docs/aat/proof_obligations.md">
                     Proof obligations
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">
+                    Formal anchor theorem package
                   </a>
                 </li>
               </ul>
@@ -97,7 +103,7 @@
                 <dt>Lean toolchain</dt>
                 <dd><code>leanprover/lean4:v4.28.0</code></dd>
                 <dt>Source snapshot</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/6f9ab7e0f8d0417729e0dc95202870e47ee8fc9a">6f9ab7e0f8d0</a> plus the published page revision.</dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/ea0ade69aea34484453501b459bca6c99c14ae89">ea0ade69aea3</a> plus the published page revision.</dd>
                 <dt>Build evidence</dt>
                 <dd><code>lake build</code> is the whole-repository check used for Lean PRs and release snapshots.</dd>
                 <dt>Audit scans</dt>
@@ -204,9 +210,10 @@
             <section id="formal-claim-map" class="article-section">
               <h2>Formal claim map</h2>
               <p>
-                The website states AAT as a theory, but only some parts are
-                current Lean-proved claims. The status boundary is part of the
-                exposition, not an implementation appendix.
+                The website states AAT as a systematic theory exposition, but
+                only some parts are current Lean-proved claims. Lean does not
+                replace the whole exposition; it supplies inspectable anchors
+                that keep public claims tied to explicit theorem boundaries.
               </p>
               <ul class="status-list">
                 <li>
@@ -256,6 +263,39 @@
               </div>
             </section>
 
+            <section id="formal-anchor-package" class="article-section">
+              <h2>Formal anchor package</h2>
+              <p>
+                The finite static structural core is the current paper-facing
+                formal anchor theorem package. It is a checked anchor for
+                claim discipline inside AAT, not a claim that the whole theory
+                has been reduced to a single static structural theorem.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Boundary</strong>
+                  <span>The package is relative to an <code>ArchitectureLawModel</code> with finite universe coverage, selected required law family, selected required witnesses, required signature axes, and coverage / exactness assumptions.</span>
+                </li>
+                <li>
+                  <strong>Core equivalence</strong>
+                  <span><code>architectureLawful_iff_requiredSignatureAxesZero</code> and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code> connect selected required lawfulness with required signature axes being zero and with the bundled theorem package.</span>
+                </li>
+                <li>
+                  <strong>Theorem index entry</strong>
+                  <span><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">Finite Static Structural Core Formal Anchor</a> is the public map from this website text to the Lean declarations, derived diagnostics, and non-conclusions.</span>
+                </li>
+              </ul>
+              <div class="claim-strip">
+                <p>
+                  In this package, zero-curvature is terminology for required
+                  obstruction valuation zero inside the selected law universe.
+                  It is not a numerical curvature axis, a differential
+                  geometric curvature theorem, or a runtime completeness
+                  statement.
+                </p>
+              </div>
+            </section>
+
             <section id="reader-anchors" class="article-section">
               <h2>Reader anchors</h2>
               <p>
@@ -266,7 +306,7 @@
               <ul class="status-list">
                 <li>
                   <strong>Static structural core</strong>
-                  <span><code>ArchitectureZeroCurvatureTheoremPackage</code> and <code>ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code> state the current static core under explicit boundary assumptions.</span>
+                  <span><code>ArchitectureZeroCurvatureTheoremPackage</code> and <code>ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code> state the current static core under explicit boundary assumptions; the theorem index records the <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">formal anchor boundary</a>.</span>
                 </li>
                 <li>
                   <strong>Required-axis exactness bridges</strong>
@@ -342,7 +382,13 @@
               <h2>Current QED boundary</h2>
               <p>
                 The current Lean-proved core is the static structural theorem
-                package. It connects lawfulness with required signature axes
+                package. It functions as a formal anchor for AAT's claim
+                discipline, while the website remains the broader systematic
+                exposition of operations, invariants, witnesses, signatures,
+                theorem boundaries, examples, and non-conclusions.
+              </p>
+              <p>
+                The package connects lawfulness with required signature axes
                 zero under explicit law-family, witness-coverage, axis
                 exactness, universe, coverage, and observation assumptions.
               </p>
