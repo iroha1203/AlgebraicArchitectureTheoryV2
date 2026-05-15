@@ -199,8 +199,8 @@ ArchitectureObject
             <section id="core-proposition" class="article-section">
               <h2>Core proposition</h2>
               <p>
-                <code>ArchitectureCore</code> is the Lean-side presentation
-                of the bounded object. It bundles static and runtime evidence,
+                <code>ArchitectureCore</code> is the proof-carrying
+                presentation of the bounded object. It bundles static and runtime evidence,
                 boundary and abstraction policy, selected semantic diagrams,
                 decidability assumptions, and a finite
                 <code>ComponentUniverse</code>.
@@ -222,17 +222,17 @@ ArchitectureObject
                 therefore relative to the selected observation model.
               </p>
               <p>
-                <strong>Proof.</strong> In the Lean formalization this is
-                reflected by projection from the supplied
-                <code>ArchitectureCore</code>. The theorem
-                <code>ArchitectureCore.component_mem_staticUniverse</code>
-                recovers component membership from the core's
-                <code>ComponentUniverse.covers</code> evidence, and
-                <code>ArchitectureCore.staticCoverageComplete</code> recovers
-                static coverage from the same bounded universe. These
-                projections prove coverage facts about the supplied core; they
-                do not quantify over all repository components or all runtime
-                observations.
+                <strong>Proof.</strong> A core presentation contains exactly
+                the evidence selected for the chapter: a carrier, policies,
+                observation data, and a bounded measurement universe. A claim
+                derivable from that presentation can only use those selected
+                fields. Completeness of a real repository would require an
+                additional statement saying that every relevant component,
+                dependency, runtime interaction, and semantic observation
+                factors through the presentation. Such a statement is not part
+                of the definition. Therefore a core presentation supports
+                bounded claims inside its declared universe, but it does not
+                imply complete extraction.
               </p>
               <p>
                 This distinction is essential. Reading
@@ -265,17 +265,17 @@ ArchitectureObject
                 closure assumptions.
               </p>
               <p>
-                <strong>Proof.</strong> The finite universe supplies the
-                measured component list and the coverage proof. For full
-                universes, <code>ComponentUniverse.edgeClosed_of_covers</code>
-                derives edge closure from coverage. Bundling the graph as a
-                <code>FiniteArchGraph</code> exposes
-                <code>FiniteArchGraph.covers_components</code> and
-                <code>FiniteArchGraph.edgeClosed_components</code>. A
-                reachability claim is then made finite by
-                <code>ComponentUniverse.reachable_exists_bounded_path</code>,
-                which replaces an unbounded reachability assertion with a
-                bounded simple-path witness inside the supplied universe.
+                <strong>Proof.</strong> A finite universe supplies a measured
+                list of components together with the assertion that the
+                relevant graph evidence is covered by that list. Closure says
+                that an in-scope edge does not leave the measured list. Under
+                these two assumptions, a finite computation over the measured
+                list can be read as a statement about the selected graph,
+                because every component and every selected edge needed by the
+                claim has already been accounted for. Reachability is likewise
+                bounded: once the universe is finite, a reachability assertion
+                can be witnessed by a finite path inside the supplied universe,
+                rather than by an unbounded search over an unspecified system.
               </p>
               <p>
                 Without coverage, a bounded search can miss a component that
@@ -379,6 +379,7 @@ not selected:
                   <thead>
                     <tr>
                       <th>Claim group</th>
+                      <th>Formal anchor</th>
                       <th>Current Lean status</th>
                       <th>Boundary</th>
                       <th>Primary index</th>
@@ -387,6 +388,11 @@ not selected:
                   <tbody>
                     <tr>
                       <td>Architecture core presentation</td>
+                      <td>
+                        <code>ArchitectureCore</code>,
+                        <code>ArchitectureCore.component_mem_staticUniverse</code>,
+                        <code>ArchitectureCore.staticCoverageComplete</code>
+                      </td>
                       <td><code>defined only</code> for <code>ArchitectureCore</code>; selected accessors <code>proved</code></td>
                       <td>Supplied finite universe and selected predicates; no global extraction completeness.</td>
                       <td>
@@ -397,6 +403,13 @@ not selected:
                     </tr>
                     <tr>
                       <td>Finite universe bridge package</td>
+                      <td>
+                        <code>ComponentUniverse</code>,
+                        <code>ComponentUniverse.edgeClosed_of_covers</code>,
+                        <code>FiniteArchGraph.covers_components</code>,
+                        <code>FiniteArchGraph.edgeClosed_components</code>,
+                        <code>ComponentUniverse.reachable_exists_bounded_path</code>
+                      </td>
                       <td><code>defined only</code> / <code>proved</code> by declaration</td>
                       <td>Finite component list, coverage, edge closure, and explicit graph assumptions.</td>
                       <td>
@@ -407,6 +420,11 @@ not selected:
                     </tr>
                     <tr>
                       <td>Thin category and decomposability vocabulary</td>
+                      <td>
+                        <code>ComponentCategory</code>,
+                        <code>Decomposable</code>,
+                        <code>StrictLayered</code>
+                      </td>
                       <td><code>defined only</code> / selected bridge facts <code>proved</code></td>
                       <td>Reachability existence and strict layering; path count, walk length, nilpotence, and spectral facts are separate.</td>
                       <td>
