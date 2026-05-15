@@ -679,6 +679,110 @@ p {
   line-height: 1.52;
 }
 
+.theorem-card-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.theorem-card {
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--accent-blue);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 18px;
+}
+
+.lean-status-card {
+  border-left-color: var(--accent);
+}
+
+.theorem-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.theorem-card-label {
+  display: block;
+  color: var(--accent-warm);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.theorem-card h3 {
+  margin-top: 4px;
+  font-size: 1.24rem;
+  line-height: 1.18;
+}
+
+.status-badge {
+  flex: 0 0 auto;
+  border: 1px solid var(--rule-strong);
+  border-radius: 999px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1;
+  padding: 7px 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.status-badge-proved {
+  border-color: rgba(11, 111, 104, 0.38);
+  background: rgba(11, 111, 104, 0.1);
+  color: var(--accent-strong);
+}
+
+.status-badge-defined {
+  border-color: rgba(49, 95, 131, 0.38);
+  background: rgba(49, 95, 131, 0.1);
+  color: var(--accent-blue);
+}
+
+.status-badge-future {
+  border-color: rgba(139, 49, 68, 0.36);
+  background: rgba(139, 49, 68, 0.09);
+  color: var(--accent-warm);
+}
+
+.theorem-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+}
+
+.theorem-card-grid > div {
+  min-width: 0;
+}
+
+.theorem-card dt {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.theorem-card dd {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.96rem;
+  line-height: 1.46;
+}
+
+.theorem-card code {
+  overflow-wrap: anywhere;
+}
+
 .article-table {
   margin-top: 18px;
   overflow-x: auto;
@@ -816,6 +920,10 @@ p {
     position: static;
   }
 
+  .theorem-card-grid {
+    grid-template-columns: 1fr;
+  }
+
   h1 {
     font-size: clamp(2.62rem, 12vw, 4.2rem);
   }
@@ -864,6 +972,18 @@ p {
 
   .page-nav a:last-child {
     text-align: left;
+  }
+
+  .theorem-card {
+    padding: 16px 14px;
+  }
+
+  .theorem-card-header {
+    display: grid;
+  }
+
+  .status-badge {
+    justify-self: start;
   }
 
   .math-block {

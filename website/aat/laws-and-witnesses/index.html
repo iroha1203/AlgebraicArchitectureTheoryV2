@@ -305,6 +305,62 @@ CompleteWitnessCoverage + RequiredAxisExact
                   </tbody>
                 </table>
               </div>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lemma tracking</span>
+                      <h3>Measured zero is only measured witness absence</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchor</dt>
+                      <dd><code>lawViolationCount_eq_zero_iff_lawful</code> and the generic witness-count kernel.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>A selected finite witness list, a bad-witness predicate, and the local law-family bridge.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The zero count speaks about the measured finite list.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>It does not prove global witness absence or semantic lawfulness outside the measured list.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Bridge tracking</span>
+                      <h3>Coverage and axis exactness promote witness absence to required-axis zero</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchor</dt>
+                      <dd><code>noRequiredObstruction_of_requiredWitnessCoverage_and_noMeasuredObstruction</code> and <code>requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_requiredAxisExact</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Required witness coverage plus exact correspondence between required witnesses and required signature axes.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Unavailable axes and optional diagnostics are not treated as available zero required axes.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No runtime, semantic, empirical, or extractor-completeness claim is added by the bridge.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="main-theorem" class="article-section">
@@ -361,6 +417,35 @@ Then, within B:
                   It is one local-contract family among distinct global,
                   state-transition, runtime, and distributed invariant families.
                 </p>
+              </div>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Theorem schema tracking</span>
+                      <h3>Required obstruction vanishing is a bounded theorem schema</h3>
+                    </div>
+                    <span class="status-badge status-badge-future">schema</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchor</dt>
+                      <dd>Static instances are tracked under signature-integrated lawfulness and the finite static structural core formal anchor.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd><code>WitnessComplete</code>, <code>AxisExact</code>, <code>CoverageComplete</code>, and <code>ObservationExact</code> for the selected law universe.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The equivalence is read inside the theorem boundary that supplies those assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>Witness absence is not global semantic lawfulness without the required coverage and exactness package.</dd>
+                    </div>
+                  </dl>
+                </article>
               </div>
             </section>
 

@@ -588,6 +588,11 @@ website で追加してよい内容は、正典本文に基づく説明、proof 
 `docs/aat/proof_obligations.md`、または `docs/aat/lean_theorem_index.md` の
 対応箇所を更新する。
 
+本文中の theorem-grade claim は、必要に応じて `theorem-card` / `lean-status-card` パターンで
+命題名、Lean anchor、status、仮定、境界、non-conclusion を近接表示する。
+章末 table は索引補助として残してよいが、`proved`、`defined only`、
+`future proof obligation`、`empirical hypothesis` の格上げや混同を避ける。
+
 ### セクションごとの期待値
 
 | Section | Route status | Expected maturity | Current maturity | Remaining work |
