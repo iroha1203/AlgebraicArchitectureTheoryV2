@@ -66,13 +66,11 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#central-proposition">Central proposition</a></li>
-                <li><a href="#architecture-object">Architecture object</a></li>
-                <li><a href="#definition-spine">Definition spine</a></li>
-                <li><a href="#foundational-claims">Foundational claims</a></li>
-                <li><a href="#universe-boundary">Universe boundary</a></li>
-                <li><a href="#formal-reading">Formal reading</a></li>
-                <li><a href="#example-boundary">Example boundary</a></li>
-                <li><a href="#lean-status">Lean status</a></li>
+                <li><a href="#object-definition">Object definition</a></li>
+                <li><a href="#core-proposition">Core proposition</a></li>
+                <li><a href="#universe-proposition">Universe proposition</a></li>
+                <li><a href="#example-counterexample">Example and counterexample</a></li>
+                <li><a href="#status-index">Status index</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -93,15 +91,16 @@
                 <dt>Docs source commit</dt>
                 <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/89b4502b6fc01937bfafa409155a7b4a194a80fe">89b4502</a></dd>
                 <dt>Lean status</dt>
-                <dd>`lake build` passed for this snapshot; see Status for proved / defined-only boundaries.</dd>
+                <dd><code>lake build</code> passed for this snapshot; see Status for proved / defined-only boundaries.</dd>
               </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
               <p>
                 AAT does not claim complete extraction from real codebases.
-                `ComponentUniverse` is proof-carrying measurement scope, not a
-                promise that all components and relations have been observed.
+                <code>ComponentUniverse</code> is proof-carrying measurement
+                scope, not a promise that all components and relations have
+                been observed.
               </p>
             </div>
           </aside>
@@ -129,35 +128,8 @@
               </figure>
             </section>
 
-            <section id="architecture-object" class="article-section">
-              <h2>Architecture object</h2>
-              <p>
-                An `ArchitectureObject` is a bounded mathematical object cut
-                out from code, specifications, review evidence, or operational
-                observations. `ArchitectureCore` is a structured,
-                evidence-aware presentation of that object. It can include
-                static and runtime graphs, boundary policy, abstraction policy,
-                semantic diagrams, decidability assumptions, and a selected
-                measurement universe.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>ArchitectureCarrier</strong>
-                  <span>Components plus static and runtime dependency relations.</span>
-                </li>
-                <li>
-                  <strong>ArchitecturePolicy</strong>
-                  <span>Boundary and abstraction policies used to read lawfulness.</span>
-                </li>
-                <li>
-                  <strong>ArchitectureObservationContext</strong>
-                  <span>Observation model, semantic diagram universe, and selected measurement universe.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="definition-spine" class="article-section">
-              <h2>Definition spine</h2>
+            <section id="object-definition" class="article-section">
+              <h2>Object definition</h2>
               <p>
                 The foundational record is deliberately small. AAT does not
                 begin with every fact about a repository; it begins with the
@@ -190,134 +162,305 @@ ArchitectureObject
                 the object is never stronger than the carrier, policy, and
                 observation context that presented it.
               </p>
+              <div class="theorem-stack">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <p class="theorem-kicker">Definition</p>
+                    <h3>Bounded ArchitectureObject</h3>
+                  </div>
+                  <p>
+                    An <code>ArchitectureObject</code> is the mathematical
+                    object selected by a carrier, a policy, and an observation
+                    context. It is cut from code, specifications, review
+                    evidence, or operational observations, but it is not the
+                    unbounded real codebase itself.
+                  </p>
+                  <dl class="claim-meta">
+                    <div>
+                      <dt>Docs source</dt>
+                      <dd>
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#2-architecture-object">
+                          mathematical theory, Chapter 2
+                        </a>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean correspondence</dt>
+                      <dd>
+                        <code>ArchitectureCore</code> is the proof-carrying
+                        presentation used by the current Lean surface.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd><code>defined only</code> for the core record.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        Relative to selected components, relations, policy,
+                        observation model, and measurement universe.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>
+                        No extractor completeness, repository-wide semantics,
+                        or global architecture quality claim follows.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <p class="theorem-kicker">Proposition</p>
+                    <h3>Object claims are relativized claims</h3>
+                  </div>
+                  <p>
+                    A sentence about an architecture object is licensed only
+                    inside the carrier, policy, and observation context that
+                    present it. This is a reading rule from the canonical
+                    theory text, not a new website theorem.
+                  </p>
+                  <div class="proof-idea">
+                    <h4>Proof idea</h4>
+                    <p>
+                      Every later lawfulness, zero, split, flatness, or
+                      witness claim names the selected universe and its
+                      exactness boundary. Dropping that boundary would change
+                      the object being discussed.
+                    </p>
+                  </div>
+                  <dl class="claim-meta">
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>
+                        A selected <code>ArchitectureCarrier</code>,
+                        <code>ArchitecturePolicy</code>, and
+                        <code>ArchitectureObservationContext</code>.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean status</dt>
+                      <dd>
+                        Enforced by explicit inputs in Lean definitions and
+                        theorem assumptions; no stronger theorem is claimed.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>
+                        The same repository may have another presentation
+                        with a different observation boundary.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
-            <section id="foundational-claims" class="article-section">
-              <h2>Foundational claims</h2>
+            <section id="core-proposition" class="article-section">
+              <h2>Core proposition</h2>
               <p>
-                The first layer of the theory establishes a disciplined
-                replacement for the phrase "the architecture." The object of
-                reasoning is not an entire repository, but a selected
-                presentation with explicit evidence and scope.
+                <code>ArchitectureCore</code> is the Lean-side presentation
+                of the bounded object. It bundles static and runtime evidence,
+                boundary and abstraction policy, selected semantic diagrams,
+                decidability assumptions, and a finite
+                <code>ComponentUniverse</code>.
               </p>
+              <figure class="code-panel">
+                <figcaption>Core presentation schema</figcaption>
+                <pre><code>ArchitectureCore
+  = ArchitectureFlatnessModel
+  + static ComponentUniverse
+  + decidable static / runtime / policy predicates
+  + runtime dependency role
+  + measured semantic diagram universe</code></pre>
+              </figure>
+              <div class="theorem-stack">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <p class="theorem-kicker">Proposition</p>
+                    <h3>Core presentations do not imply complete extraction</h3>
+                  </div>
+                  <p>
+                    A core presentation can expose the evidence needed by a
+                    theorem package while still omitting relations outside its
+                    declared coverage boundary. Presentation equivalence is
+                    therefore relative to the selected observation model.
+                  </p>
+                  <div class="proof-idea">
+                    <h4>Proof idea</h4>
+                    <p>
+                      The Lean record carries a static universe and selected
+                      predicates as fields. Accessor theorems can recover
+                      membership and static coverage facts from that record,
+                      but the record has no field stating global telemetry or
+                      extractor completeness.
+                    </p>
+                  </div>
+                  <dl class="claim-meta">
+                    <div>
+                      <dt>Lean names</dt>
+                      <dd>
+                        <code>ArchitectureCore</code>,
+                        <code>ArchitectureCore.component_mem_staticUniverse</code>,
+                        <code>ArchitectureCore.staticCoverageComplete</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd>
+                        <code>defined only</code> for the core record;
+                        <code>proved</code> for the listed accessor theorems.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Index</dt>
+                      <dd>
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">
+                          Architecture Core / Certified Architecture
+                        </a>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        Static coverage is read from the supplied finite
+                        universe; runtime and semantic completeness are not
+                        promoted.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>
+                        A core is not proof that every component, runtime edge,
+                        operational effect, or semantic diagram was observed.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+
+            <section id="universe-proposition" class="article-section">
+              <h2>Universe proposition</h2>
+              <p>
+                <code>ComponentUniverse</code> is the measurement scope used
+                by finite bridge theorems. It records selected components,
+                selected relations, coverage boundary, and exactness boundary.
+                Outside that universe, AAT does not infer zero, absence,
+                flatness, split, or lawfulness.
+              </p>
+              <div class="theorem-stack">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <p class="theorem-kicker">Definition</p>
+                    <h3>Finite measurement universe</h3>
+                  </div>
+                  <p>
+                    A finite universe supplies the bounded component list and
+                    the proof obligations needed to read graph-level evidence
+                    as in-scope evidence.
+                  </p>
+                  <dl class="claim-meta">
+                    <div>
+                      <dt>Lean names</dt>
+                      <dd>
+                        <code>ComponentUniverse</code>,
+                        <code>ComponentUniverse.full</code>,
+                        <code>FiniteArchGraph</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd><code>defined only</code> for the universe records.</dd>
+                    </div>
+                    <div>
+                      <dt>Index</dt>
+                      <dd>
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">
+                          Finite Universe / Bridge Theorems
+                        </a>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>
+                        Missing or unmeasured components are not silently
+                        converted into measured zero evidence.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <p class="theorem-kicker">Proposition</p>
+                    <h3>Finite bridges are coverage-relative</h3>
+                  </div>
+                  <p>
+                    The proved finite-universe bridge theorems connect
+                    executable or graph-level facts to proposition-level facts
+                    only under their supplied universe and closure assumptions.
+                  </p>
+                  <div class="proof-idea">
+                    <h4>Proof idea</h4>
+                    <p>
+                      The universe carries component coverage and edge closure.
+                      Bridge theorems consume those proofs to move from a
+                      bounded list or boolean computation to a graph statement.
+                    </p>
+                  </div>
+                  <dl class="claim-meta">
+                    <div>
+                      <dt>Lean names</dt>
+                      <dd>
+                        <code>ComponentUniverse.edgeClosed_of_covers</code>,
+                        <code>FiniteArchGraph.covers_components</code>,
+                        <code>ComponentUniverse.reachable_exists_bounded_path</code>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd><code>proved</code> under explicit finite assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        Static graph and finite universe only; runtime,
+                        semantic, and empirical axes require separate evidence.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>
+                        The theorem does not claim complete extraction from a
+                        real repository or global architecture lawfulness.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
               <ul class="status-list">
                 <li>
-                  <strong>Definition</strong>
-                  <span>An `ArchitectureObject` is a carrier plus policy plus observation context.</span>
+                  <strong>Thin category boundary</strong>
+                  <span><code>ComponentCategory</code> remembers whether reachability exists and intentionally forgets path count and walk length.</span>
                 </li>
                 <li>
-                  <strong>Interpretation</strong>
-                  <span>An `ArchitectureCore` presents the object through evidence, but presentation is not assumed complete or injective.</span>
+                  <strong>Quantitative boundary</strong>
+                  <span>Path counts, walk length, adjacency powers, finite metrics, and future free-category constructions live outside the thin-category claim.</span>
                 </li>
                 <li>
-                  <strong>Boundary</strong>
-                  <span>A `ComponentUniverse` is a selected measurement universe; outside it, zero and absence are not inferred.</span>
-                </li>
-                <li>
-                  <strong>Non-conclusion</strong>
-                  <span>No theorem here states that a real-code extractor has found every relevant component, relation, runtime effect, or semantic diagram.</span>
+                  <strong>Decomposability boundary</strong>
+                  <span>Current <code>Decomposable</code> means <code>StrictLayered</code>; acyclicity, finite propagation, nilpotence, and spectral conditions remain separate theorems or representations.</span>
                 </li>
               </ul>
-              <figure class="code-panel">
-                <figcaption>Foundational proposition schema</figcaption>
-                <pre><code>selected carrier
-  + selected policy
-  + selected observation context
-  + coverage / exactness boundary
-  -&gt; bounded ArchitectureObject claim</code></pre>
-              </figure>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Claim</th>
-                      <th>Current Lean status</th>
-                      <th>Boundary</th>
-                      <th>Non-conclusion</th>
-                      <th>Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Static graph, reachability, layering, and decomposability vocabulary</td>
-                      <td>`defined only` / `proved` for the static structural bridge theorems</td>
-                      <td>Selected graph and explicit structural assumptions.</td>
-                      <td>Does not certify complete extraction from a real repository.</td>
-                      <td>Lean theorem index, static core entries.</td>
-                    </tr>
-                    <tr>
-                      <td>`ComponentCategory` as thin reachability category</td>
-                      <td>`defined only` / `proved` for selected bridge facts</td>
-                      <td>Reachability existence is retained; path count and walk length are intentionally forgotten.</td>
-                      <td>Quantitative path metrics require `Walk`, `Path`, matrix, or finite metric representations.</td>
-                      <td>AAT mathematical theory, Chapter 2.</td>
-                    </tr>
-                    <tr>
-                      <td>`ComponentUniverse` as measurement scope</td>
-                      <td>`defined only` / `proved` for finite-universe bridge packages</td>
-                      <td>Selected components, selected relations, coverage boundary, and exactness boundary.</td>
-                      <td>Universe outside is not read as zero or absent.</td>
-                      <td>Lean theorem index and proof obligations.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
             </section>
 
-            <section id="universe-boundary" class="article-section">
-              <h2>Universe boundary</h2>
-              <p>
-                `ComponentUniverse` records selected components, selected
-                relations, coverage boundary, and exactness boundary. Outside
-                that universe, AAT does not infer zero, absence, flatness,
-                split, or lawfulness.
-              </p>
-              <p>
-                `ComponentCategory` is thin: it remembers whether a reachability
-                morphism exists and intentionally forgets path count and walk
-                length. Quantitative data belongs to `Walk`, `Path`, adjacency
-                matrix, finite metrics, or future free-category constructions.
-              </p>
-              <div class="claim-strip">
-                <p>
-                  Current `Decomposable` means `StrictLayered`. Acyclicity,
-                  finite propagation, nilpotence, and spectral conditions are
-                  connected by separate theorems or representations, not mixed
-                  into the definition.
-                </p>
-              </div>
-            </section>
-
-            <section id="formal-reading" class="article-section">
-              <h2>Formal reading</h2>
-              <p>
-                The foundational move is to replace an unbounded repository
-                question with a typed object plus explicit evidence scope. A
-                static dependency graph, a runtime graph, an abstraction policy,
-                and a semantic observation model may all present the same
-                bounded `ArchitectureObject`, but none of those presentations
-                is automatically complete.
-              </p>
-              <p>
-                This is why `ArchitectureCore` is read as an evidence-aware
-                carrier rather than as the architecture itself. The map from a
-                core presentation to the object it presents is not assumed to be
-                injective or complete: two presentations can be equivalent under
-                the selected observation, and either presentation can omit
-                relations outside its coverage boundary.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Relativized object claim</figcaption>
-                <pre><code>ArchitectureObject claim
-  = selected carrier
-  + selected policy
-  + selected observation context
-  + coverage and exactness boundary</code></pre>
-              </figure>
-            </section>
-
-            <section id="example-boundary" class="article-section">
-              <h2>Example boundary</h2>
+            <section id="example-counterexample" class="article-section">
+              <h2>Example and counterexample</h2>
               <p>
                 A repository slice containing a coupon service, a payment
                 interface, and a payment adapter can be a valid component
@@ -340,32 +483,130 @@ ArchitectureObject
                   <span>Different carriers can present the same object only relative to the selected observation model.</span>
                 </li>
               </ul>
-              <div class="claim-strip">
-                <p>
-                  For a compact worked example, read the
-                  <a href="../examples-and-boundaries/#coupon-case-study">coupon case study</a>
-                  after this page. It shows the same finite universe discipline
-                  with `measured_zero`, `measured_nonzero`, `unmeasured`, and
-                  `out_of_scope` kept separate.
-                </p>
+              <div class="theorem-stack">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <p class="theorem-kicker">Example</p>
+                    <h3>Static split universe</h3>
+                  </div>
+                  <p>
+                    If the selected universe contains the coupon service,
+                    payment interface, and payment adapter, a static split
+                    theorem can read only the selected static edges and their
+                    closure evidence.
+                  </p>
+                  <dl class="claim-meta">
+                    <div>
+                      <dt>Reading path</dt>
+                      <dd>
+                        Continue with the
+                        <a href="../examples-and-boundaries/#coupon-case-study">
+                          coupon case study
+                        </a>
+                        for measured-zero, measured-nonzero, unmeasured, and
+                        out-of-scope coordinates.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lean status</dt>
+                      <dd>
+                        Example-level readings are tied to the specific finite
+                        theorem packages cited there.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <p class="theorem-kicker">Counterexample / non-conclusion</p>
+                    <h3>Static evidence does not certify runtime behavior</h3>
+                  </div>
+                  <p>
+                    The same repository slice is not evidence about runtime
+                    retries, cache invalidation, rounding order, operational
+                    incidents, or semantic workflow completeness unless those
+                    observations are separately selected.
+                  </p>
+                  <dl class="claim-meta">
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>
+                        Static dependency evidence remains static dependency
+                        evidence.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>
+                        No runtime flatness, semantic flatness, or empirical
+                        cost claim follows from this foundational page.
+                      </dd>
+                    </div>
+                  </dl>
+                </article>
               </div>
             </section>
 
-            <section id="lean-status" class="article-section">
-              <h2>Lean status</h2>
+            <section id="status-index" class="article-section">
+              <h2>Status index</h2>
               <p>
-                The Lean side already fixes the static graph, reachability,
-                layering, decomposability, thin-category, finite-universe, and
-                bridge vocabulary used by this page. The important boundary is
-                that these declarations do not certify complete extraction from
-                a real repository.
+                The table is now an index helper. The theorem-grade claims
+                above carry their own source, Lean correspondence, status,
+                assumptions, boundary, and non-conclusion near the text that
+                uses them.
               </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim group</th>
+                      <th>Current Lean status</th>
+                      <th>Boundary</th>
+                      <th>Primary index</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Architecture core presentation</td>
+                      <td><code>defined only</code> for <code>ArchitectureCore</code>; selected accessors <code>proved</code></td>
+                      <td>Supplied finite universe and selected predicates; no global extraction completeness.</td>
+                      <td>
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">
+                          Architecture Core / Certified Architecture
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Finite universe bridge package</td>
+                      <td><code>defined only</code> / <code>proved</code> by declaration</td>
+                      <td>Finite component list, coverage, edge closure, and explicit graph assumptions.</td>
+                      <td>
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">
+                          Finite Universe / Bridge Theorems
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Thin category and decomposability vocabulary</td>
+                      <td><code>defined only</code> / selected bridge facts <code>proved</code></td>
+                      <td>Reachability existence and strict layering; path count, walk length, nilpotence, and spectral facts are separate.</td>
+                      <td>
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#2-architecture-object">
+                          mathematical theory, Chapter 2
+                        </a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <div class="claim-strip">
                 <p>
-                  Read the current QED core through the AAT Status page:
-                  static structural bridge theorems are proved under explicit
-                  assumptions, while real-code extraction completeness remains
-                  outside the theorem claim.
+                  Read the current QED core through the
+                  <a href="../status/">AAT Status page</a>: static structural
+                  bridge theorems are proved under explicit assumptions, while
+                  real-code extraction completeness remains outside the theorem
+                  claim.
                 </p>
               </div>
             </section>
