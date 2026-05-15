@@ -68,6 +68,8 @@
                 <li><a href="#canonical-examples">Canonical examples</a></li>
                 <li><a href="#example-template">Example template</a></li>
                 <li><a href="#coupon-case-study">Coupon case study</a></li>
+                <li><a href="#coupon-signature">Coupon signature</a></li>
+                <li><a href="#coupon-claim-boundary">Coupon claim boundary</a></li>
                 <li><a href="#counterexamples">Counterexamples</a></li>
                 <li><a href="#aat-boundary">AAT boundary</a></li>
                 <li><a href="#coupon-reading">Coupon reading</a></li>
@@ -159,26 +161,27 @@
             <section id="coupon-case-study" class="article-section">
               <h2>Coupon case study</h2>
               <p>
-                The coupon example is the smallest useful running case because
-                it exposes the separation between static structure, semantic
-                behavior, runtime behavior, and measurement boundary.
+                The coupon example is the five-minute worked example for AAT.
+                It is small enough to display the whole claim discipline, but
+                rich enough to separate static structure, semantic behavior,
+                runtime behavior, and measurement boundary.
               </p>
               <figure class="code-panel">
-                <figcaption>Selected component graph</figcaption>
-                <pre><code>CheckoutService
-  -&gt; CouponService
-  -&gt; PaymentPort
-  -&gt; PaymentAdapter
+                <figcaption>Finite coupon universe</figcaption>
+                <pre><code>components:
+  CheckoutService
+  CouponService
+  PaymentPort
+  PaymentAdapter
+  PaymentAdapter.internalCache
 
-bad static edge:
-  CouponService -&gt; PaymentAdapter
+selected good static edges:
+  CheckoutService -&gt; CouponService
+  CouponService -&gt; PaymentPort
+  PaymentPort -&gt; PaymentAdapter
 
-semantic diagram:
-  apply coupon ; round
-    ?= round ; apply coupon
-
-runtime exposure:
-  retry / cache / callback crosses selected boundary</code></pre>
+selected bad static edge:
+  CouponService -&gt; PaymentAdapter.internalCache</code></pre>
               </figure>
               <ul class="status-list">
                 <li>
@@ -206,6 +209,27 @@ runtime exposure:
                   <span>A static split report does not prove semantic commutativity, runtime protection, product outcome improvement, or complete extraction of the real repository.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Witness list</figcaption>
+                <pre><code>static_hidden_interaction:
+  witness: CouponService -&gt; PaymentAdapter.internalCache
+  status: measured_nonzero(1)
+
+static_hidden_interaction after repair:
+  witness: none in selected static universe
+  status: measured_zero
+
+semantic_curvature:
+  witness: apply coupon ; round != round ; apply coupon
+  status: measured_nonzero(delta) when selected diagram is measured
+
+runtime_exposure:
+  witness: retry / cache / callback crosses selected runtime boundary
+  status: unmeasured in the static-only report
+
+global repository completeness:
+  status: out_of_scope</code></pre>
+              </figure>
               <div class="article-table">
                 <table>
                   <thead>
@@ -252,6 +276,108 @@ runtime exposure:
                       <td>Static obstruction count, semantic witness status, runtime exposure status, residual coverage gap.</td>
                       <td>Multi-axis diagnostic.</td>
                       <td>Coordinates do not collapse into one quality score.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="coupon-signature" class="article-section">
+              <h2>Coupon signature</h2>
+              <p>
+                The worked example is read as a multi-axis diagnostic. The
+                static axis can be measured zero or measured nonzero inside the
+                finite witness universe, while semantic and runtime axes must
+                carry their own measurement status.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Axis</th>
+                      <th>Bad extension</th>
+                      <th>Repaired extension</th>
+                      <th>How to read it</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>`static_hidden_interaction`</td>
+                      <td>`measured_nonzero(1)` for the selected direct cache edge.</td>
+                      <td>`measured_zero` for the selected static witness universe.</td>
+                      <td>Lean-backed when the finite witness list and theorem package are the cited source.</td>
+                    </tr>
+                    <tr>
+                      <td>`semantic_curvature`</td>
+                      <td>`unmeasured` unless a selected coupon / discount diagram is supplied.</td>
+                      <td>`measured_nonzero(delta)` when the selected rounding-order diagram is measured.</td>
+                      <td>Static repair does not make this axis zero.</td>
+                    </tr>
+                    <tr>
+                      <td>`runtime_exposure`</td>
+                      <td>`unmeasured` in a static-only report.</td>
+                      <td>`unmeasured` unless runtime retries, callbacks, cache behavior, or protection evidence is supplied.</td>
+                      <td>Runtime flatness is a different observation context.</td>
+                    </tr>
+                    <tr>
+                      <td>Repository completeness</td>
+                      <td>`out_of_scope`</td>
+                      <td>`out_of_scope`</td>
+                      <td>The example does not claim a complete real-code extractor.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="coupon-claim-boundary" class="article-section">
+              <h2>Coupon claim boundary</h2>
+              <p>
+                The same story contains formal claims, tooling claims,
+                empirical readings, and narrative explanation. AAT keeps them
+                separate instead of promoting every useful observation into a
+                Lean theorem.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Lean / evidence reference</th>
+                      <th>Claim level</th>
+                      <th>Non-conclusion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Bad coupon extension has the selected static hidden dependency witness.</td>
+                      <td>`CouponStaticDependencyExample.hiddenDependencyWitnessExists` and `bad_not_selectedStaticSplitFeatureExtension`.</td>
+                      <td>`proved` for the selected finite static skeleton.</td>
+                      <td>No runtime, semantic, or extractor completeness claim follows.</td>
+                    </tr>
+                    <tr>
+                      <td>Repaired coupon extension restores selected static split.</td>
+                      <td>`CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension` and `CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge`.</td>
+                      <td>`proved` / report-facing bridge for selected static axis.</td>
+                      <td>Static repair does not imply semantic flatness.</td>
+                    </tr>
+                    <tr>
+                      <td>Coupon / discount ordering can have measured semantic residual.</td>
+                      <td>`CouponDiscountExample.roundingOrderValuation_positive` and `StaticSemanticCounterexample.canonical_not_semanticFlatWithin`.</td>
+                      <td>`proved` for selected diagram and counterexample packages.</td>
+                      <td>Does not measure every semantic behavior of the product.</td>
+                    </tr>
+                    <tr>
+                      <td>Runtime retries, callbacks, or caches may expose a boundary crossing.</td>
+                      <td>Runtime report, telemetry, or incident evidence.</td>
+                      <td>Tooling / empirical unless a specific runtime theorem package is supplied.</td>
+                      <td>Static theorem references do not discharge runtime exposure.</td>
+                    </tr>
+                    <tr>
+                      <td>Coupon example is easy for readers to understand.</td>
+                      <td>Expository choice on this website.</td>
+                      <td>Narrative explanation.</td>
+                      <td>Not a theorem and not empirical validation.</td>
                     </tr>
                   </tbody>
                 </table>
