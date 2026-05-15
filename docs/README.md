@@ -2,6 +2,9 @@
 
 このディレクトリは、AAT の数学理論、AAT / SFT の境界、SFT の場の理論、
 Lean 形式化 status、tooling / empirical protocol を分けて管理する。
+公開 website の本文、読者導線、landing page 向け説明は、この研究 docs の責務ではない。
+website 側の説明は、ここに置いた研究上の境界を参照してよいが、docs を website copy の
+source of truth として扱わない。
 
 第一級本文は次の 3 文書である。
 

@@ -122,9 +122,6 @@ tool pass を Lean theorem として読まない。
 ## 詳細文書
 
 この文書はビジョンを述べる入口であり、詳細な定義や台帳は持たない。
-公開 website の本文、読者導線、landing page 向け説明は、この研究 docs の責務ではない。
-website 側の説明は、ここに置いた研究上の境界を参照してよいが、docs を website copy の
-source of truth として扱わない。
 第一級本文は次の 3 文書に固定する。
 
 1. [AAT 数学理論](aat/mathematical_theory.md)
