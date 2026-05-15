@@ -61,6 +61,9 @@
 - `docs` の研究主張を変更する場合は、対応する Lean status を明確にする。
 - Lean status は、proved, defined only, future proof obligation, empirical hypothesis を区別する。
 - Lean で証明済みの主張と、実証研究で検証する主張を混同しない。
+- `docs` は研究上の定義、理論本文、Lean status、proof obligation、tooling specification、empirical protocol を管理する source として扱う。
+- 公開 website の本文、読者導線、landing page 向け説明は `docs` の責務にしない。website 側の説明は docs の研究上の境界を参照してよいが、docs を website copy の source of truth として扱わない。
+- `公開 API` や `public API` のように Lean / tooling API の公開性を指す語は、website 向け記述とは区別して扱う。
 - `docs/aat_v2_mathematical_design.md` は数学面の第一級設計書として扱い、Lean status、Issue 番号、実装済み API の進捗管理を本文に混ぜない。
 - Lean status や Issue との対応は `docs/proof_obligations.md` と `docs/lean_theorem_index.md` で管理する。
 - 数学設計書には、数学的な定義・定理候補・非目標・設計上の境界を記述し、実装済み / 証明済み / 未着手といった作業状態は別文書へ分離する。
