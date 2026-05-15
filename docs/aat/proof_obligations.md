@@ -105,13 +105,24 @@ theorem package は次の粒度で読む。
 
 ## 現在の QED 境界
 
-現時点で Lean proved と呼ぶ中核は、AAT v2 の **static structural core** である。
-抽象 `LawFamily`、complete witness coverage、required axis exactness を前提に、
-lawfulness と required axes zero を接続する bridge が証明済みである。
+現時点で Lean proved と呼ぶ中核は、AAT v2 の **finite static structural core** である。
+これは AAT 全体を単一の主定理へ縮約するものではなく、体系的解説の中で
+claim discipline を支える検査可能な formal anchor theorem package として読む。
 
-Signature 側では、selected required axes を concrete count で埋める constructor と、
-projection / LSP / closed-walk / boundary policy / abstraction policy の direct
-axis exactness bridge が証明済みである。中心的な読みは次である。
+投稿版での formal anchor は、`Formal/Arch/Signature/SignatureLawfulness.lean` の
+`ArchitectureSignature.ArchitectureLawModel` に相対化された次の theorem package である。
+
+| 要素 | Lean 側の代表 API | 投稿版での読み |
+| --- | --- | --- |
+| finite static universe | `ArchitectureLawModel`, `ArchGraph`, `InterfaceProjection`, `AbstractGraph`, `Observation`, `ComponentUniverse` | static dependency graph、抽象 graph、observation、finite measurement universe、boundary / abstraction policy、same-abstraction LSP pair coverage を明示した bounded universe。 |
+| law family | `ArchitectureLawful` | `WalkAcyclic`, `ProjectionSound`, `LSPCompatible`, boundary policy soundness, abstraction policy soundness の 5 条件。 |
+| witness family | `ArchitectureRequiredLawWitness`, `architectureMeasuredWitnesses`, `architectureBad` | cycle, projection, LSP, boundary policy, abstraction policy の selected required obstruction witness family。 |
+| signature axes | `selectedRequiredLawAxes`, `RequiredSignatureAxesZero`, `ArchitectureLawModel.signatureOf` | `.hasCycle`, `.projectionSoundnessViolation`, `.lspViolationCount`, `.boundaryViolationCount`, `.abstractionViolationCount` が available and zero であること。 |
+| coverage / exactness assumptions | `ComponentUniverse`, `lspPairClosed`, `architectureLawFamily_completeCoverage`, `architecture_requiredAxisExact` | finite universe coverage、edge closure、same-abstraction pair coverage、required witness coverage、axis exactness を明示前提として使う。 |
+| anchor theorem | `architectureLawful_iff_requiredSignatureAxesZero`, `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` | selected required lawfulness と selected required signature axes zero が同値であり、matrix diagnostics を含む package とも同値である。 |
+| derived diagnostics | `MatrixDiagnosticCorollaries`, `matrixDiagnosticCorollaries_of_requiredSignatureAxesZero` | adjacency nilpotence、`nilpotencyIndexOfFinite = some k`、`spectralRadiusOfAdjacency = 0` は selected static lawfulness から従う diagnostic corollary。required zero axis には混ぜない。 |
+
+中心的な読みは次である。
 
 ```text
 ArchitectureLawful X
@@ -121,12 +132,20 @@ ArchitectureLawful X
   <-> ArchitectureZeroCurvatureTheoremPackage X
 ```
 
-この QED に含めないもの:
+ここでいう `zero-curvature` は、微分幾何学的 curvature を無条件に主張する語ではなく、
+selected law universe に対する required obstruction valuation が zero であることを指す
+terminology である。数値的 diagram curvature は
+`Formal/Arch/Signature/Curvature.lean` の別 theorem package として扱い、この static
+anchor theorem へ自動的には混ぜない。
+
+この formal anchor theorem package に含めないもの:
 
 - runtime metrics と runtime edge metadata の完全性。
 - general numerical curvature の Signature axis 化。
 - relation complexity や empirical cost との相関。
 - 実コード extractor が完全な `ComponentUniverse` を生成するという主張。
+- global semantic flatness、全 feature extension の preservation、全 observation axis の保存。
+- AAT の中心価値が static structural theorem だけで尽くされるという主張。
 
 詳細な theorem 名は
 [Lean 定義・定理索引](lean_theorem_index.md) を参照する。
@@ -135,6 +154,7 @@ ArchitectureLawful X
 
 | 領域 | 現在の status | 詳細 |
 | --- | --- | --- |
+| finite static structural core formal anchor | `proved core` / paper exposition | Issue [#787](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/787), [Lean theorem index](lean_theorem_index.md#finite-static-structural-core-formal-anchor), `Formal/Arch/Signature/SignatureLawfulness.lean`. 投稿版では `ArchitectureLawModel` 上の `architectureLawful_iff_requiredSignatureAxesZero` と `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` を検査可能な formal anchor として提示する。AAT 全体の中心価値は operation / invariant / obstruction / signature / theorem boundary の体系にあり、static structural core はその中の proved anchor であって体系全体の代替ではない。 |
 | Generic witness-count kernel / zero-count bridge | `proved` | [Lean theorem index](lean_theorem_index.md#flatness) |
 | Required law / axis exactness bridge | `proved` | [Lean theorem index](lean_theorem_index.md#signature-integrated-lawfulness) |
 | `Formal/Arch` module organization | module organization / API integration tracking | [Lean theorem index](lean_theorem_index.md), parent Issue [#423](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/423), facade / import policy Issue [#424](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/424), leaf move Issue [#425](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/425), core move Issue [#426](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/426), docs sync Issue [#427](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/427), facade removal Issue [#444](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/444). 実体 module は `Core`, `Law`, `Signature`, `Extension`, `Operation`, `Patterns`, `Repair`, `Evolution`, `Examples` の canonical subdirectory に置き、`Formal.lean` は canonical path を import する。`Formal/Arch` 直下の旧 import-only facade は削除済みであり、旧 `Formal.Arch.<Module>` import path は互換 API として維持しない。これは import path / docs path の整理であり、新しい数学的 theorem claim ではない。 |

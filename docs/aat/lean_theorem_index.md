@@ -2300,6 +2300,41 @@ File: `Formal/Arch/Law/Lawfulness.lean`
 | `requiredAxisExact_of_axisExactFamily` | `theorem` | axis ごとの exactness を既存の whole-family exactness predicate にパッケージする。 | `proved` |
 | `lawful_iff_requiredAxesAvailableAndZero_of_completeCoverage_and_requiredAxisExact` | `theorem` | 完全被覆と required axis exactness の下で、lawfulness と required axis zero を接続する零曲率定理の structural core。 | `proved` |
 
+## Finite Static Structural Core Formal Anchor
+
+Files: `Formal/Arch/Signature/SignatureLawfulness.lean`,
+`Formal/Arch/Signature/Signature.lean`, `Formal/Arch/Core/Finite.lean`
+
+Issue [#787](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/787)
+の投稿版向け formal anchor は、AAT 全体を static structural theorem へ縮約するものではない。
+`ArchitectureLawModel` 上で finite static universe、required law family、required witness family、
+selected Signature axes、coverage / exactness assumptions、non-conclusions を明示し、
+査読者が Lean source で検査できる proved theorem package として提示する。
+
+この anchor の theorem boundary は次である。
+
+| 境界 | Lean 名 | 読み |
+| --- | --- | --- |
+| universe | `ArchitectureSignature.ArchitectureLawModel` | `ArchGraph`, `InterfaceProjection`, `AbstractGraph`, `Observation`, finite `ComponentUniverse`, boundary / abstraction policy, `lspPairClosed` を束ねる。 |
+| law family | `ArchitectureSignature.ArchitectureLawful` | `WalkAcyclic`, `ProjectionSound`, `LSPCompatible`, boundary policy soundness, abstraction policy soundness。 |
+| witness family | `ArchitectureSignature.ArchitectureRequiredLawWitness`, `ArchitectureSignature.architectureMeasuredWitnesses`, `ArchitectureSignature.architectureBad` | cycle, projection, LSP, boundary policy, abstraction policy の selected required obstruction witness family。 |
+| signature axes | `selectedRequiredLawAxes`, `ArchitectureSignature.RequiredSignatureAxesZero`, `ArchitectureSignature.ArchitectureLawModel.signatureOf` | `.hasCycle`, `.projectionSoundnessViolation`, `.lspViolationCount`, `.boundaryViolationCount`, `.abstractionViolationCount` の available zero。 |
+| coverage | `ComponentUniverse`, `ArchitectureLawModel.lspPairClosed`, `ArchitectureSignature.architectureLawFamily_completeCoverage` | finite universe coverage、edge closure、same-abstraction pair coverage、required witness coverage。 |
+| exactness | `ArchitectureSignature.hasCycle_axisExact`, `ArchitectureSignature.projectionSoundnessViolation_axisExact`, `ArchitectureSignature.lspViolationCount_axisExact`, `ArchitectureSignature.boundaryViolation_axisExact`, `ArchitectureSignature.abstractionViolation_axisExact`, `ArchitectureSignature.architecture_requiredAxisExact` | 各 selected axis の available zero と対応 obstruction witness 不在を接続する。 |
+| anchor theorem | `ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero` | selected required `ArchitectureLawful X` と `RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)` を同値にする。 |
+| package theorem | `ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage` | selected required lawfulness と `ArchitectureZeroCurvatureTheoremPackage X` を同値にする。 |
+| derived diagnostics | `ArchitectureSignature.MatrixDiagnosticCorollaries`, `ArchitectureSignature.matrixDiagnosticCorollaries_of_requiredSignatureAxesZero` | adjacency nilpotence、populated `nilpotencyIndexOfFinite`、zero structural spectral radius は derived diagnostic corollary として読む。 |
+
+`zero-curvature` はここでは differential-geometric curvature ではなく、selected law universe に
+対する required obstruction valuation が zero であるという terminology である。
+`Formal/Arch/Signature/Curvature.lean` の numerical curvature theorem package は別の
+bounded diagram bridge であり、この formal anchor の required Signature axes には含めない。
+
+Non-conclusions: この anchor は runtime / semantic completeness、global semantic flatness、
+relation complexity や empirical cost correlation、extractor completeness、実コードからの
+完全な `ComponentUniverse` 生成、全 operation の preservation、全 observation axis の保存を
+主張しない。
+
 ## Signature-Integrated Lawfulness
 
 File: `Formal/Arch/Signature/SignatureLawfulness.lean`
