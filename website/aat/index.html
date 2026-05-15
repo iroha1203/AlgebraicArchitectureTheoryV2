@@ -79,6 +79,7 @@
                 <li><a href="#abstract">Abstract</a></li>
                 <li><a href="#main-contributions">Main contributions</a></li>
                 <li><a href="#publication-purpose">Publication purpose</a></li>
+                <li><a href="#formal-anchor">Formal anchor</a></li>
                 <li><a href="#reading-order">Reading order</a></li>
                 <li><a href="#claim-discipline">Claim discipline</a></li>
                 <li><a href="#canonical-sources">Canonical sources</a></li>
@@ -160,11 +161,12 @@
               <h2>Publication purpose</h2>
               <p>
                 This website is the canonical public reading surface for AAT:
-                a web-native theory text that sits between outreach posts and
-                a future conventional paper. Blog platforms are useful for
-                motivation, but AAT needs a stable place for definitions,
-                assumptions, theorem boundaries, examples, counterexamples,
-                Lean status, and non-conclusions to remain together.
+                a web-native systematic exposition that sits between outreach
+                posts and a future conventional paper. Blog platforms are
+                useful for motivation, but AAT needs a stable place for
+                definitions, assumptions, theorem boundaries, examples,
+                counterexamples, Lean status, and non-conclusions to remain
+                together.
               </p>
               <ul class="status-list">
                 <li>
@@ -178,6 +180,40 @@
                 <li>
                   <strong>Preprint-style surface</strong>
                   <span>The site makes AAT readable before a slower arXiv-style paper is prepared, while keeping claim discipline explicit.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="formal-anchor" class="article-section">
+              <h2>Formal anchor</h2>
+              <p>
+                Lean formalization is not a replacement for the whole AAT
+                exposition. Its role is to provide inspectable anchor theorem
+                packages inside the broader theory, so claims can be read with
+                explicit universe, coverage, exactness, and non-conclusion
+                boundaries.
+              </p>
+              <p>
+                The current paper-facing anchor is the finite static
+                structural core. It is a proved Lean package for selected
+                static lawfulness, required obstruction witnesses, and required
+                signature axes under stated assumptions, not the only main
+                theorem of AAT and not a substitute for the operation,
+                invariant, witness, signature, calculus, repair, and empirical
+                parts of the theory.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Inspectable package</strong>
+                  <span><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">Finite Static Structural Core Formal Anchor</a> lists the boundary, Lean declarations, derived diagnostics, and non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>Zero-curvature terminology</strong>
+                  <span>Within this anchor, zero-curvature means the required obstruction valuation is zero for the selected law universe. It is not a numerical or differential-geometric curvature claim.</span>
+                </li>
+                <li>
+                  <strong>Reader rule</strong>
+                  <span>Use the Status page and theorem index whenever a public sentence depends on Lean, CI, audit scans, or theorem-boundary evidence.</span>
                 </li>
               </ul>
             </section>
