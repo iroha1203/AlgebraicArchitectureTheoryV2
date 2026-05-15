@@ -494,21 +494,30 @@ ArchitectureObject
               <h2>Example and counterexample</h2>
               <p>
                 A repository slice containing a coupon service, a payment
-                interface, and a payment adapter can be a valid component
-                universe for a static split theorem. That same slice is not, by
-                itself, evidence about runtime retries, cache invalidation,
-                rounding order, or operational incidents. Those require their
-                own observation contexts.
+                interface, a payment adapter, and selected adapter internals
+                can be a valid component universe for a static split theorem.
+                That same slice is not, by itself, evidence about runtime
+                retries, cache invalidation, rounding order, or operational
+                incidents. Those require their own observation contexts.
               </p>
               <figure class="code-panel">
                 <figcaption>Minimal bounded universe</figcaption>
-                <pre><code>components = {CouponService, PaymentPort, PaymentAdapter}
-static edges observed:
-  CouponService -&gt; PaymentPort
-  PaymentAdapter -&gt; PaymentPort
+                <pre><code>components:
+  CouponService
+  PaymentPort
+  PaymentAdapter.publicApi
+  PaymentAdapter.internalCache
 
-selected claim:
-  no observed static edge CouponService -&gt; PaymentAdapter
+selected good static edges:
+  CouponService -&gt; PaymentPort
+  PaymentPort -&gt; PaymentAdapter.publicApi
+
+counterexample static edge:
+  CouponService -&gt; PaymentAdapter.internalCache
+
+bounded good claim:
+  if the counterexample edge is absent from selected evidence,
+  the coupon service has no selected edge to adapter internals
 
 not selected:
   retry behavior, cache invalidation, rounding order,
@@ -536,7 +545,7 @@ not selected:
                   </div>
                   <p>
                     If the selected universe contains the coupon service,
-                    payment interface, and payment adapter, a static split
+                    payment interface, and public adapter API, a static split
                     theorem can read only the selected static edges and their
                     closure evidence.
                   </p>
@@ -544,8 +553,9 @@ not selected:
                     <h4>What is concluded</h4>
                     <p>
                       Inside this finite universe, the selected static relation
-                      can support a bounded statement such as "the service does
-                      not directly depend on the adapter" when the theorem
+                      can support a bounded statement such as "the coupon
+                      service uses the declared payment port and has no
+                      selected edge to adapter internals" when the theorem
                       package supplies the required coverage and closure
                       assumptions.
                     </p>
@@ -588,10 +598,12 @@ not selected:
                     <p>
                       A runtime trace could still show
                       <code>CouponService</code> calling
-                      <code>PaymentAdapter</code> through a retry helper. That
-                      would not contradict the static split reading; it would
-                      be a different observation context and a different
-                      theorem boundary.
+                      <code>PaymentAdapter.publicApi</code> through a retry
+                      helper, or a static scan could reveal the bad edge
+                      <code>CouponService</code> to
+                      <code>PaymentAdapter.internalCache</code>. Neither case
+                      is erased by the good-universe reading; each requires its
+                      own observation context and theorem boundary.
                     </p>
                   </div>
                   <dl class="claim-meta">
