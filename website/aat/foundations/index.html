@@ -232,6 +232,16 @@ ArchitectureObject
                       the object being discussed.
                     </p>
                   </div>
+                  <div class="counterexample-note">
+                    <h4>Why the assumptions matter</h4>
+                    <p>
+                      If the observation context is erased, a static import
+                      graph and a runtime call graph can be read as the same
+                      object even when they support different claims. The
+                      theorem boundary then has no way to say whether "no edge"
+                      means measured absence or simply unobserved evidence.
+                    </p>
+                  </div>
                   <dl class="claim-meta">
                     <div>
                       <dt>Assumptions</dt>
@@ -298,6 +308,17 @@ ArchitectureObject
                       membership and static coverage facts from that record,
                       but the record has no field stating global telemetry or
                       extractor completeness.
+                    </p>
+                  </div>
+                  <div class="counterexample-note">
+                    <h4>Why the assumptions matter</h4>
+                    <p>
+                      Reading <code>ArchitectureCore</code> as complete
+                      extraction would promote every omitted runtime edge into
+                      evidence of absence. That is stronger than the Lean
+                      record: the record proves facts about the supplied
+                      universe, not about every edge a production system could
+                      emit.
                     </p>
                   </div>
                   <dl class="claim-meta">
@@ -413,6 +434,16 @@ ArchitectureObject
                       bounded list or boolean computation to a graph statement.
                     </p>
                   </div>
+                  <div class="counterexample-note">
+                    <h4>Why the assumptions matter</h4>
+                    <p>
+                      Without coverage, a bounded search can miss a component
+                      that carries the only violating edge. Without edge
+                      closure, an in-scope source can point to an out-of-scope
+                      target, so a zero result on the list is not a graph-level
+                      zero claim.
+                    </p>
+                  </div>
                   <dl class="claim-meta">
                     <div>
                       <dt>Lean names</dt>
@@ -469,6 +500,20 @@ ArchitectureObject
                 rounding order, or operational incidents. Those require their
                 own observation contexts.
               </p>
+              <figure class="code-panel">
+                <figcaption>Minimal bounded universe</figcaption>
+                <pre><code>components = {CouponService, PaymentPort, PaymentAdapter}
+static edges observed:
+  CouponService -&gt; PaymentPort
+  PaymentAdapter -&gt; PaymentPort
+
+selected claim:
+  no observed static edge CouponService -&gt; PaymentAdapter
+
+not selected:
+  retry behavior, cache invalidation, rounding order,
+  incident telemetry, semantic workflow completeness</code></pre>
+              </figure>
               <ul class="term-list">
                 <li>
                   <strong>Measured zero</strong>
@@ -495,6 +540,16 @@ ArchitectureObject
                     theorem can read only the selected static edges and their
                     closure evidence.
                   </p>
+                  <div class="proof-idea">
+                    <h4>What is concluded</h4>
+                    <p>
+                      Inside this finite universe, the selected static relation
+                      can support a bounded statement such as "the service does
+                      not directly depend on the adapter" when the theorem
+                      package supplies the required coverage and closure
+                      assumptions.
+                    </p>
+                  </div>
                   <dl class="claim-meta">
                     <div>
                       <dt>Reading path</dt>
@@ -528,6 +583,17 @@ ArchitectureObject
                     incidents, or semantic workflow completeness unless those
                     observations are separately selected.
                   </p>
+                  <div class="counterexample-note">
+                    <h4>What is not concluded</h4>
+                    <p>
+                      A runtime trace could still show
+                      <code>CouponService</code> calling
+                      <code>PaymentAdapter</code> through a retry helper. That
+                      would not contradict the static split reading; it would
+                      be a different observation context and a different
+                      theorem boundary.
+                    </p>
+                  </div>
                   <dl class="claim-meta">
                     <div>
                       <dt>Boundary</dt>

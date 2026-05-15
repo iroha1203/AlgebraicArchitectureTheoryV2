@@ -706,8 +706,19 @@ p {
   padding-left: 16px;
 }
 
-.proof-idea p {
+.counterexample-note {
+  border-left: 3px solid var(--accent-warm);
+  margin-top: 18px;
+  padding-left: 16px;
+}
+
+.proof-idea p,
+.counterexample-note p {
   margin: 0;
+}
+
+.counterexample-note h4 {
+  color: var(--accent-warm);
 }
 
 .claim-meta {
