@@ -102,6 +102,9 @@ theorem package は次の粒度で読む。
 この文書と [Lean 定義・定理索引](lean_theorem_index.md) が Lean source を正しく
 反映しているという前提つきである。Lean source の build、placeholder scan、
 `axiom` / `admit` / `sorry` / `unsafe` scan は PR 前チェックで別途確認する。
+投稿版では [投稿版 theorem / audit table](lean_theorem_index.md#投稿版-theorem--audit-table)
+を最小監査面として使い、representative declaration、file path、status、前提、
+non-conclusions、Lean version、commit hash、build / scan 結果を同じ場所で確認する。
 
 ## 現在の QED 境界
 
@@ -155,6 +158,7 @@ anchor theorem へ自動的には混ぜない。
 | 領域 | 現在の status | 詳細 |
 | --- | --- | --- |
 | finite static structural core formal anchor | `proved core` / paper exposition | Issue [#787](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/787), [Lean theorem index](lean_theorem_index.md#finite-static-structural-core-formal-anchor), `Formal/Arch/Signature/SignatureLawfulness.lean`. 投稿版では `ArchitectureLawModel` 上の `architectureLawful_iff_requiredSignatureAxesZero` と `architectureLawful_iff_architectureZeroCurvatureTheoremPackage` を検査可能な formal anchor として提示する。AAT 全体の中心価値は operation / invariant / obstruction / signature / theorem boundary の体系にあり、static structural core はその中の proved anchor であって体系全体の代替ではない。 |
+| theorem table / formal audit table | docs index / formal audit tracking | Issue [#785](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/785), [投稿版 theorem / audit table](lean_theorem_index.md#投稿版-theorem--audit-table). Definition、accessor theorem、soundness theorem、bounded completeness theorem、example / counterexample theorem、future proof obligation、empirical hypothesis を分け、主要 theorem の Lean 名、file path、status、前提、non-conclusions と、Lean version、commit hash、build / scan / CI の監査証跡を投稿版向けに集約する。 |
 | Generic witness-count kernel / zero-count bridge | `proved` | [Lean theorem index](lean_theorem_index.md#flatness) |
 | Required law / axis exactness bridge | `proved` | [Lean theorem index](lean_theorem_index.md#signature-integrated-lawfulness) |
 | `Formal/Arch` module organization | module organization / API integration tracking | [Lean theorem index](lean_theorem_index.md), parent Issue [#423](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/423), facade / import policy Issue [#424](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/424), leaf move Issue [#425](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/425), core move Issue [#426](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/426), docs sync Issue [#427](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/427), facade removal Issue [#444](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/444). 実体 module は `Core`, `Law`, `Signature`, `Extension`, `Operation`, `Patterns`, `Repair`, `Evolution`, `Examples` の canonical subdirectory に置き、`Formal.lean` は canonical path を import する。`Formal/Arch` 直下の旧 import-only facade は削除済みであり、旧 `Formal.Arch.<Module>` import path は互換 API として維持しない。これは import path / docs path の整理であり、新しい数学的 theorem claim ではない。 |

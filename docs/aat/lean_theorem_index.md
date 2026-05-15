@@ -27,6 +27,49 @@ example theorem、bounded completeness theorem が含まれる。研究上の主
 この区別により、数学設計書を純粋な設計書として保ちつつ、Lean source 側の作業状態を
 この索引と `proof_obligations.md` に分離する。
 
+## 投稿版 theorem / audit table
+
+この節は、投稿版で Lean source を直接読まない査読者向けの最小監査面である。
+詳細な API 一覧は後続の各節を source of truth とし、ここでは representative declaration、
+file path、前提、non-conclusions を分類して示す。
+
+### Representative theorem table
+
+| 区分 | Lean 名 | File path | Status | 前提 / bounded reading | Non-conclusions |
+| --- | --- | --- | --- | --- | --- |
+| Definition | `ArchitectureSignature.ArchitectureLawModel` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `defined only` | static graph、projection、abstract graph、observation、finite `ComponentUniverse`、boundary / abstraction policy、same-abstraction LSP pair coverage を束ねる theorem universe。 | 実コード extractor が完全な universe を作ること、runtime / semantic dependency の完全捕捉。 |
+| Definition | `ArchitectureSignature.ArchitectureLawful` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `defined only` | `WalkAcyclic`, `ProjectionSound`, `LSPCompatible`, boundary policy soundness, abstraction policy soundness の selected static law family。 | AAT 全体、全 operation preservation、global semantic flatness を単一条件へ縮約しない。 |
+| Definition | `ArchitectureSignature.RequiredSignatureAxesZero` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `defined only` | selected required Signature axes が available-and-zero であること。`none` / unmeasured は zero certificate と読まない。 | optional / empirical / runtime axes の zero、未測定軸の安全性。 |
+| Accessor theorem | `ArchitectureSignature.architectureLawCandidateRole_requiredLaw_iff` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `proved` | current required-law candidates が closed-walk acyclicity、projection soundness、LSP compatibility、boundary / abstraction policy soundness の 5 条件に限られることを展開する。 | LocalReplacement、state-effect law、matrix diagnostics、runtime / empirical axes を required zero-axis に昇格しない。 |
+| Accessor theorem | `ArchitectureSignature.architectureLawCandidateRole_nonrequired_examples` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `proved` | derived corollary、diagnostic axis、empirical axis の代表候補が required law ではないことを分類する。 | 分類された候補の empirical 妥当性や runtime completeness は示さない。 |
+| Soundness theorem | `ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `proved` | `ArchitectureLawModel`、decidable edge / policy / equality、finite coverage、axis exactness に相対化して、selected `ArchitectureLawful X` と selected required Signature axes zero を同値にする。 | numerical curvature 全般、semantic flatness、extractor completeness、empirical cost correlation。 |
+| Soundness theorem | `ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `proved` | selected lawfulness と static structural zero-curvature theorem package を同値にする package theorem。 | `zero-curvature` を微分幾何学的 curvature や全 architecture quality score として読まない。 |
+| Soundness theorem | `ArchitectureSignature.matrixDiagnosticCorollaries_of_requiredSignatureAxesZero` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `proved` | selected required axes zero から adjacency nilpotence、populated nilpotency index、zero structural spectral radius の diagnostic corollaries を得る。 | nilpotency / spectral values を required zero-axis に混ぜない。runtime propagation や empirical risk へ自動接続しない。 |
+| Bounded completeness theorem | `ArchitectureSignature.architecture_requiredAxisExact` | `Formal/Arch/Signature/SignatureLawfulness.lean` | `proved` | selected required axes の available-and-zero と required obstruction 不在を、finite universe / edge closure / LSP pair coverage に相対化して接続する。 | universe-wide obstruction coverage、unsupported / unmeasured runtime or semantic layer の completeness。 |
+| Bounded completeness theorem | `projectionSound_of_projectionSoundnessViolation_eq_zero` | `Formal/Arch/Law/Projection.lean` | `proved` | 測定 universe が concrete edge を閉じていれば、finite projection violation count 0 から `ProjectionSound` を得る。 | 測定 universe 外の edge、abstract completeness、extractor completeness。 |
+| Bounded completeness theorem | `lspCompatible_of_lspViolationCount_eq_zero` | `Formal/Arch/Law/LSP.lean` | `proved` | same-abstraction pair coverage の下で、finite LSP violation count 0 から `LSPCompatible` を得る。 | 全 behavioral semantics、未観測 implementation pair、observation model の完全性。 |
+| Example / counterexample theorem | `FourLayerExample.decomposable` | `Formal/Arch/Core/Decomposable.lean` | `proved` | 4層 static graph が現在の `Decomposable := StrictLayered` を満たす positive example。 | semantic contract、runtime protocol、一般の decomposability。 |
+| Example / counterexample theorem | `StaticSemanticCounterexample.staticFlat_not_architectureFlat` | `Formal/Arch/Examples/StaticSemanticCounterexample.lean` | `proved` | selected example で static flatness だけから semantic obstruction absence や full architecture flatness を結論できない境界を示す。 | empirical frequency、実コード extractor completeness、全 semantic obstruction の分類。 |
+| Future obligation | relation complexity / empirical change cost bridge | `docs/aat/proof_obligations.md`, future Lean modules | `future proof obligation` / `empirical hypothesis` | relation complexity、incident / rollback / MTTR、change cost は tooling / empirical layer で扱い、Lean theorem claim へは precondition discharge なしに昇格しない。 | Lean proved theorem としての empirical causality、cost improvement、forecast correctness。 |
+| Empirical hypothesis | real-code extractor completeness | `docs/tool/`, `docs/aat/proof_obligations.md` | `empirical hypothesis` | extractor output は coverage / unsupported constructs / measurement boundary を持つ tooling evidence として読む。 | 完全な `ComponentUniverse` 生成、unmeasured の measured-zero 化、architecture lawfulness の自動証明。 |
+
+### Formal audit table
+
+Issue [#785](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/785)
+の投稿版監査では、Lean theorem table とあわせて次の証跡を確認する。
+この表の `Result` は #785 PR 作成前に実行したローカル監査結果であり、CI の
+`lake build` は PR 上の GitHub Checks を最終確認点とする。
+
+| Audit item | Command / source | Result |
+| --- | --- | --- |
+| Lean version | `lean-toolchain` | `leanprover/lean4:v4.28.0` |
+| Audited Lean source base commit | `git rev-parse --short=12 HEAD` before #785 docs-only edits | `4502c0b38494` |
+| Build | `lake build` | passed on 2026-05-15; existing linter warnings in `Formal/Arch/Extension/FeatureExtensionExamples.lean` lines 201 and 207. |
+| Whitespace | `git diff --check` | passed on 2026-05-15. |
+| Hidden / bidirectional Unicode | `LC_ALL=C rg -n '[\x{200B}\x{200C}\x{200D}\x{200E}\x{200F}\x{202A}\x{202B}\x{202C}\x{202D}\x{202E}\x{2066}\x{2067}\x{2068}\x{2069}\x{FEFF}]' Formal docs README.md AGENTS.md .codex` | no matches on 2026-05-15. |
+| Placeholder / unsafe keyword scan | Lean keyword scan over `Formal` for declarations / tactics named `axiom`, `admit`, `sorry`, `unsafe`. | no matches on 2026-05-15. |
+| CI log | GitHub Actions `lake build` check on the PR | PR 作成後に確認する。 |
+
 ## Graph / Walk
 
 File: `Formal/Arch/Core/Graph.lean`

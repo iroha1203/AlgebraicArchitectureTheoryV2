@@ -128,6 +128,11 @@ main definitions and theorems currently present on the Lean side. Theorem names,
 bounded readings, and non-conclusion boundaries are tracked in
 [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) and
 [Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
+For paper review, the index also contains a
+[theorem / audit table](docs/aat/lean_theorem_index.md#投稿版-theorem--audit-table)
+that separates definitions, accessor theorems, soundness theorems, bounded
+completeness theorems, examples / counterexamples, future proof obligations,
+empirical hypotheses, and formal audit evidence.
 
 The static structural core of the architecture zero-curvature theorem is proved
 in Lean. Runtime metrics, empirical hypotheses, general numerical curvature, and
