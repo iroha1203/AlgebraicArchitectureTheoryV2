@@ -685,6 +685,39 @@ p {
   margin-top: 22px;
 }
 
+.statement,
+.statement-proof,
+.statement-note {
+  scroll-margin-top: 108px;
+}
+
+.statement-anchor {
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.statement-anchor:hover {
+  color: var(--accent-blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.statement-proof .statement-anchor {
+  color: var(--accent-blue);
+}
+
+.statement-note {
+  border-left: 4px solid var(--rule-strong);
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  line-height: 1.52;
+  padding-left: 16px;
+}
+
 .theorem-card {
   border: 1px solid var(--rule);
   border-left: 5px solid var(--accent-blue);
