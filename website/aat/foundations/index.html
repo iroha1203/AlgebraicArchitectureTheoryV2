@@ -232,6 +232,20 @@ ArchitectureObject
                       the object being discussed.
                     </p>
                   </div>
+                  <div class="proof-idea">
+                    <h4>Proof</h4>
+                    <p>
+                      Unfold the object schema from the canonical text:
+                      <code>ArchitectureObject</code> is presented as
+                      <code>ArchitectureCarrier</code> plus
+                      <code>ArchitecturePolicy</code> plus
+                      <code>ArchitectureObservationContext</code>. Any later
+                      theorem consumes one of these selected presentations as
+                      an input. Therefore its conclusion is indexed by that
+                      carrier, policy, and observation context; changing any
+                      one of them changes the proposition being proved.
+                    </p>
+                  </div>
                   <div class="counterexample-note">
                     <h4>Why the assumptions matter</h4>
                     <p>
@@ -308,6 +322,20 @@ ArchitectureObject
                       membership and static coverage facts from that record,
                       but the record has no field stating global telemetry or
                       extractor completeness.
+                    </p>
+                  </div>
+                  <div class="proof-idea">
+                    <h4>Proof</h4>
+                    <p>
+                      In Lean, the proof is by projection from the supplied
+                      <code>ArchitectureCore</code>. The theorem
+                      <code>ArchitectureCore.component_mem_staticUniverse</code>
+                      recovers component membership from the core's
+                      <code>ComponentUniverse.covers</code> evidence, and
+                      <code>ArchitectureCore.staticCoverageComplete</code>
+                      recovers static coverage from the same bounded universe.
+                      No field or theorem in this block quantifies over all
+                      repository components or all runtime observations.
                     </p>
                   </div>
                   <div class="counterexample-note">
@@ -432,6 +460,22 @@ ArchitectureObject
                       The universe carries component coverage and edge closure.
                       Bridge theorems consume those proofs to move from a
                       bounded list or boolean computation to a graph statement.
+                    </p>
+                  </div>
+                  <div class="proof-idea">
+                    <h4>Proof</h4>
+                    <p>
+                      The finite universe supplies the measured component list
+                      and the coverage proof. For full universes,
+                      <code>ComponentUniverse.edgeClosed_of_covers</code>
+                      derives edge closure from coverage. Bundling the graph as
+                      a <code>FiniteArchGraph</code> exposes
+                      <code>FiniteArchGraph.covers_components</code> and
+                      <code>FiniteArchGraph.edgeClosed_components</code>.
+                      Reachability claims then use
+                      <code>ComponentUniverse.reachable_exists_bounded_path</code>
+                      to replace an unbounded reachability assertion with a
+                      bounded simple-path witness inside the supplied universe.
                     </p>
                   </div>
                   <div class="counterexample-note">
