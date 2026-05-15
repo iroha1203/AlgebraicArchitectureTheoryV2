@@ -881,6 +881,17 @@ p {
   overflow-x: auto;
 }
 
+.article-table caption {
+  caption-side: top;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.96rem;
+  font-weight: 800;
+  line-height: 1.35;
+  padding: 0 0 10px;
+  text-align: left;
+}
+
 .article-table table {
   width: 100%;
   border-collapse: collapse;
@@ -904,8 +915,41 @@ p {
   text-transform: uppercase;
 }
 
+.article-table tbody th {
+  color: var(--ink);
+  font-size: 0.98rem;
+  line-height: 1.42;
+  text-transform: none;
+}
+
 .article-table td {
   color: var(--ink-muted);
+}
+
+.article-table code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.formal-anchors-table table {
+  min-width: 760px;
+}
+
+.table-row-note {
+  display: block;
+  margin-top: 6px;
+  color: var(--ink-muted);
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.42;
+}
+
+.table-row-note a {
+  color: var(--accent-blue);
+  font-weight: 750;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
 
 .page-nav {

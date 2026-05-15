@@ -595,22 +595,34 @@ not selected:
                 The chapter text above is the mathematical reading. This table
                 is the audit trail: it records which Lean declarations anchor
                 the claims, what status they have, and which boundary remains
-                outside the theorem.
+                outside the theorem. Each row points back to the statement
+                anchors it audits, so the table remains an index rather than a
+                substitute for the chapter text.
               </p>
-              <div class="article-table">
+              <div class="article-table formal-anchors-table">
                 <table>
+                  <caption>Foundations formal-anchor audit trail</caption>
                   <thead>
                     <tr>
-                      <th>Claim group</th>
-                      <th>Formal anchor</th>
-                      <th>Current Lean status</th>
-                      <th>Boundary</th>
-                      <th>Primary index</th>
+                      <th scope="col">Claim group</th>
+                      <th scope="col">Formal anchor</th>
+                      <th scope="col">Current Lean status</th>
+                      <th scope="col">Boundary</th>
+                      <th scope="col">Primary index</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>Architecture core presentation</td>
+                      <th scope="row">
+                        Architecture core presentation
+                        <span class="table-row-note">
+                          Audits
+                          <a href="#definition-1-1">Definition 1.1</a>,
+                          <a href="#proposition-2-1">Proposition 2.1</a>,
+                          <a href="#counterexample-2-2">Counterexample 2.2</a>,
+                          and <a href="#non-conclusion-2-3">Non-conclusion 2.3</a>.
+                        </span>
+                      </th>
                       <td>
                         <code>ArchitectureCore</code>,
                         <code>ArchitectureCore.component_mem_staticUniverse</code>,
@@ -625,7 +637,15 @@ not selected:
                       </td>
                     </tr>
                     <tr>
-                      <td>Finite universe bridge package</td>
+                      <th scope="row">
+                        Finite universe bridge package
+                        <span class="table-row-note">
+                          Audits
+                          <a href="#definition-3-1">Definition 3.1</a>,
+                          <a href="#proposition-3-2">Proposition 3.2</a>,
+                          and <a href="#counterexample-3-3">Counterexample 3.3</a>.
+                        </span>
+                      </th>
                       <td>
                         <code>ComponentUniverse</code>,
                         <code>ComponentUniverse.edgeClosed_of_covers</code>,
@@ -642,7 +662,13 @@ not selected:
                       </td>
                     </tr>
                     <tr>
-                      <td>Thin category and decomposability vocabulary</td>
+                      <th scope="row">
+                        Thin category and decomposability vocabulary
+                        <span class="table-row-note">
+                          Audits <a href="#remark-3-4">Remark 3.4</a> and
+                          the boundary vocabulary used by the bridge claims.
+                        </span>
+                      </th>
                       <td>
                         <code>ComponentCategory</code>,
                         <code>Decomposable</code>,
