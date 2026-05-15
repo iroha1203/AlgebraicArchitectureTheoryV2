@@ -723,6 +723,34 @@ p {
   scroll-margin-top: 108px;
 }
 
+.statement-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 10px;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  line-height: 1.44;
+}
+
+.statement-status-label {
+  color: var(--accent-blue);
+  font-size: 0.68rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.statement-status .status-badge {
+  font-size: 0.66rem;
+  padding: 5px 8px;
+}
+
+.statement-status code {
+  overflow-wrap: anywhere;
+}
+
 .statement-anchor {
   color: var(--ink);
   font-family: var(--font-sans);
