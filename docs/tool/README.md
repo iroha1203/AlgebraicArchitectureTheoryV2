@@ -22,11 +22,13 @@ tool 側の文書群である。
 11. [Examples](examples.md)
 12. [Roadmap](roadmap.md)
 
-## Product surface
+## Tooling capability surface
 
-Tooling docs は、利用者が実行できる surface と、研究・校正・adapter gap を分けて読む。
+Tooling docs は、実行できる command / artifact / workflow と、研究・校正・adapter gap を
+分けて読む。ここでいう surface は website 向けの製品説明ではなく、tooling の現在の
+観測能力と non-conclusion boundary を管理するための区分である。
 
-| Surface | 主な文書 | 現在の product surface | Remaining gaps |
+| Surface | 主な文書 | 現在の tooling capability | Remaining gaps |
 | --- | --- | --- | --- |
 | ArchSig Core | `signature_artifacts.md`, `extraction.md`, `tools/archsig/README.md` | Lean / Python import graph scan、Sig0 validation、snapshot、signature diff。 | call graph、data dependency、dynamic import、plugin loading、framework semantics adapter。extractor completeness は主張しない。 |
 | ArchSig Review | `air.md`, `reports.md`, `claim_boundary.md`, `theorem_preconditions.md` | AIR、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression。 | organization policy calibration、review workflow tuning、任意 invariant の自動判定。tool output は Lean theorem ではない。 |

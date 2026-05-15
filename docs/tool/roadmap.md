@@ -37,11 +37,12 @@ Markdown PRD / Spec / Issue / AI proposal から `ForecastConeSkeleton` と
 | Empirical feedback | PR history、feature dataset、outcome linkage、B10 operational artifacts がある。 | 実 dataset での calibration と hypothesis refresh の運用。 |
 | Architecture dynamics | PR force、trajectory、dynamics metrics、field snapshot、operation proposal log の schema / validator と bounded SFT forecast pipeline がある。 | GitHub Issue JSON / AI proposal JSON adapter と実 dataset での calibration。 |
 
-## Product surface and remaining gaps
+## Tooling capability surface and remaining gaps
 
-利用者向けには、ArchSig の現状を次の 4 surface に分ける。
+ArchSig の現状を、実行可能な command / artifact / workflow と remaining gaps に分ける。
+これは website 向けの公開導線ではなく、tooling roadmap 上の capability boundary である。
 
-| Surface | Product surface | Remaining gaps |
+| Surface | Current tooling capability | Remaining gaps |
 | --- | --- | --- |
 | ArchSig Core | `scan`、`validate`、`snapshot`、`signature-diff` による Sig0 と revision diff。Lean / Python import graph、policy JSON、runtime edge evidence を明示入力として扱う。 | call graph、data dependency、dynamic import、plugin loading、framework convention は adapter boundary。完全な architecture model 抽出は主張しない。 |
 | ArchSig Review | AIR、validate-air、theorem-check、Feature Extension Report、policy decision、PR comment、baseline suppression。review / CI の補助 report として読む。 | organization policy calibration、review practice tuning、任意 invariant の完全判定は未完成。formal claim promotion は Lean theorem refs と precondition が揃う場合だけ。 |
