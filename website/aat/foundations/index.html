@@ -80,6 +80,7 @@
                 <li><a href="#definition-1-1">Definition 1.1</a></li>
                 <li><a href="#proposition-1-2">Proposition 1.2</a></li>
                 <li><a href="#proposition-2-1">Proposition 2.1</a></li>
+                <li><a href="#counterexample-2-2">Counterexample 2.2</a></li>
                 <li><a href="#definition-3-1">Definition 3.1</a></li>
                 <li><a href="#proposition-3-2">Proposition 3.2</a></li>
                 <li><a href="#counterexample-3-3">Counterexample 3.3</a></li>
@@ -332,20 +333,30 @@ ArchitectureObject
               </p>
               <p id="proof-2-1" class="statement-proof">
                 <a class="statement-anchor" href="#proof-2-1">Proof idea.</a>
-                A core presentation contains exactly
-                the evidence selected for the chapter: a carrier, policies,
-                observation data, and a bounded measurement universe. A claim
-                derivable from that presentation can only use those selected
-                fields. Completeness of a real repository would require an
-                additional statement saying that every relevant component,
-                dependency, runtime interaction, and semantic observation
-                factors through the presentation. Such a statement is not part
-                of the definition. Therefore a core presentation supports
-                bounded claims inside its declared universe, but it does not
-                imply complete extraction.
+                A core presentation contains the evidence selected for the
+                chapter: a carrier, policies, observation data, and a bounded
+                measurement universe. Any claim derived from that presentation
+                can use only those selected fields. Complete extraction of an
+                ambient repository would require a separate premise saying that
+                every relevant component, dependency, runtime interaction, and
+                semantic observation factors through the core. That premise is
+                not present in <code>ArchitectureCore</code>.
               </p>
-              <p id="non-conclusion-2-2" class="statement">
-                <a class="statement-anchor" href="#non-conclusion-2-2">Non-conclusion 2.2.</a>
+              <p id="counterexample-2-2" class="statement">
+                <a class="statement-anchor" href="#counterexample-2-2">Counterexample 2.2.</a>
+                Let two ambient repositories have the same selected static
+                evidence, the same selected finite component universe, and the
+                same selected observation context. Now add to the second
+                repository a runtime edge whose source or target lies outside
+                that selected universe. The fields of the selected
+                <code>ArchitectureCore</code> are unchanged, because the added
+                edge is out of scope for the core. A complete extraction of the
+                ambient repository would distinguish the two repositories, but
+                the selected core presentation does not. Therefore the core
+                presentation does not imply complete extraction.
+              </p>
+              <p id="non-conclusion-2-3" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-2-3">Non-conclusion 2.3.</a>
                 This distinction is essential. Reading
                 <code>ArchitectureCore</code> as complete extraction would
                 promote every omitted runtime edge into evidence of absence.
@@ -377,7 +388,7 @@ ArchitectureObject
                     </div>
                     <div>
                       <dt>Non-conclusion</dt>
-                      <dd>Omitted runtime interactions and semantic observations remain outside the theorem boundary.</dd>
+                      <dd>Omitted runtime interactions and semantic observations remain outside the theorem boundary; an out-of-scope edge is not evidence of absence.</dd>
                     </div>
                   </dl>
                 </article>
