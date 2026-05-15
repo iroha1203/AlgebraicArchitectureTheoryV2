@@ -33,7 +33,7 @@ source of truth として扱わない。
 - [Lean 定義・定理索引](aat/lean_theorem_index.md): 現在 Lean に存在する主要な定義・定理の索引。
 - [AAT directory guide](aat/README.md): AAT 配下の補助文書の読み方。
 - [SFT directory guide](sft/README.md): SFT 配下の補助文書の読み方。
-- [Website operations](website/README.md): 公開されない website 運用メモと route 設計。
+- [Website operations](website/README.md): 公開されない website 運用メモ、route 索引、設計文書。
 
 ## 層の分担
 
@@ -66,7 +66,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## Website
 
-- [Website operations](website/README.md): `website/` 公開ディレクトリには置かない運用メモ、route 設計、sitemap 方針。
+- [Website operations](website/README.md): `website/` 公開ディレクトリには置かない運用メモ、route 索引、設計文書、sitemap 方針。
 
 ## Archive
 

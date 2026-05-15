@@ -1,150 +1,62 @@
-# Website
+# Website 運用メモ
 
-This directory stores non-public planning and operating notes for the public
-AAT / SFT research website. The site source itself lives in `../../website/`.
+このディレクトリは、公開 website のための非公開の運用メモを置く場所である。
+公開される静的サイト本体は `../../website/` に置く。
 
-The public website source is separate from the research docs:
+`docs/website/` は GitHub Pages の artifact に含めない。公開ページ、asset、
+`sitemap.xml`、`robots.txt`、`CNAME` は `website/` 側で管理する。
 
-- `docs/` remains the repository's first-class research and implementation documentation.
-- `website/` provides the public reading surface for GitHub Pages.
+## 文書の分担
 
-See [SITEMAP.md](SITEMAP.md) for the planned route structure, reading paths, and
-pagination rules.
+- [SITEMAP.md](SITEMAP.md): 公開 route、production `sitemap.xml`、`robots.txt` の対応を管理する。
+- [DESIGN.md](DESIGN.md): website の設計方針、読者導線、ページネーション、本文成熟度、source mapping を管理する。
 
-The public site uses English as the source of truth. Japanese explanations
-should be handled as outreach articles on Qiita, Zenn, Hashnode, or similar
-media, with links back to the canonical English pages.
+## 公開サイトの位置づけ
 
-## Content Policy
+- `docs/` は研究本文、Lean status、proof obligation、tooling specification の source of truth として扱う。
+- `website/` は GitHub Pages 向けの public reading surface として扱う。
+- 公開サイトの canonical language は英語とする。
+- 日本語の説明は Qiita、Zenn、Hashnode などの outreach article として扱い、必要に応じて canonical English pages へ戻す。
+- AAT / SFT の公開ページは宣伝文ではなく、web-native preprint / monograph として、定義、前提、定理境界、例、反例、Lean status、non-conclusion を保つ。
+- ArchSig ページでは Core、Review、SFT、Operational の product surface と、research gap / calibration gap / adapter boundary を分けて書く。
 
-AAT and SFT pages are first-class theory pages, not promotional summaries.
-They should stay faithful to the repository's canonical theory documents and
-use a precise, paper-like expository style. Public article platforms such as
-Zenn, Hashnode, and Qiita are outreach surfaces for motivation and intuition;
-they are not where the full theory, theorem boundaries, or claim discipline are
-maintained.
+## 公開設定
 
-The AAT section should be treated as a web-native preprint / monograph surface:
-the place where the theory can be published carefully before a slower
-arXiv-style paper is prepared. Its purpose is to give readers a complete,
-accurate, and stable account of the theory, including definitions, assumptions,
-theorem patterns, examples, counterexamples, Lean status, and non-conclusions.
+- 公開ドメインは `iroha1203.dev`。
+- custom domain は `website/CNAME` に記録する。
+- production sitemap は `website/sitemap.xml` に置き、`https://iroha1203.dev/` を URL base とする。
+- `website/robots.txt` は production sitemap を指す。
+- GitHub Pages は `.github/workflows/pages.yml` で `website/` を artifact として deploy する。
 
-When expanding AAT and SFT pages:
+## ローカル preview
 
-- Treat `docs/aat/mathematical_theory.md` and
-  `docs/sft/software_field_theory.md` as the source texts.
-- Preserve definitions, assumptions, non-conclusions, and claim levels.
-- Prefer theorem-style structure: definitions, interpretation, examples,
-  boundaries, and links to Lean status where appropriate.
-- Keep AAT pages strong enough to stand alone as web theory sections, not only
-  as summaries of the repository documents.
-- Record an AAT release snapshot on public theory pages: last updated date,
-  source commit, and Lean status snapshot. Links from theory pages to canonical
-  docs should use commit-pinned GitHub URLs for public releases, not
-  `blob/main`, so the website and cited source text do not drift silently.
-- Do not compress formal distinctions into slogans or general software advice.
-- Keep ArchSig and tooling evidence separate from AAT / SFT theorem claims.
-- For ArchSig pages, separate the Core, Review, SFT, and Operational product
-  surfaces from remaining research, calibration, and adapter gaps.
-
-## Intended Site Structure
-
-```text
-/
-  Author profile and research overview
-
-/aat/
-  Algebraic Architecture Theory landing and chapter-cluster pages
-
-/sft/
-  Software Field Theory article / theory site
-
-/archsig/
-  ArchSig manual and reference
-
-/interface/
-  AAT -> SFT dependency and claim-boundary guide
-
-/outreach/
-  Hashnode, Zenn, Qiita, and other public article links
-```
-
-## Publishing Target
-
-Target: GitHub Pages, deployed from the `website/` directory by the
-`Website Pages` GitHub Actions workflow.
-
-Repository settings should use GitHub Actions as the Pages source. The workflow
-uploads `website/` as the Pages artifact and deploys it to the `github-pages`
-environment on pushes to `main` that change `website/**` or the workflow file.
-It can also be run manually with `workflow_dispatch`.
-
-The custom domain is `iroha1203.dev`, recorded in `website/CNAME`.
-
-The site source currently uses a no-build static stack:
-
-- `index.html`
-- `assets/site.css`
-- `assets/site.js`
-- MathJax from a CDN for TeX rendering
-- Google Fonts for the primary Latin serif, sans, and monospace faces
-
-The committed `website/.nojekyll` file keeps GitHub Pages from treating
-underscore-prefixed paths or future generated assets as Jekyll input.
-
-AAT chapter-cluster pages are implemented as static directory routes under
-`aat/`. The AAT / SFT interface is implemented as `interface/`. SFT Part pages
-are implemented as static directory routes under `sft/`. ArchSig manual and
-reference pages are implemented as static directory routes under `archsig/`.
-Profile and outreach pages are implemented as top-level static directory
-routes.
-
-## SEO Sitemap Policy
-
-The production `website/sitemap.xml` uses `https://iroha1203.dev/` as the URL
-base and should list the canonical public routes. Keep `website/robots.txt`
-pointing to that sitemap.
-
-## Local Preview
-
-From the repository root:
+repository root から次を実行する。
 
 ```bash
 python3 -m http.server 8000 --directory website
 ```
 
-Then open `http://localhost:8000/`.
+その後、`http://localhost:8000/` を開く。
 
-Directly opening `website/index.html` also works for the current top page, but
-the local server is closer to the GitHub Pages serving model and should be used
-when directory routes are added.
+directory route や `sitemap.xml` / `robots.txt` を確認する場合は、直接 HTML を開くより
+local server で確認する。
 
-## Path Rules
+## path rules
 
-- Use relative asset paths such as `assets/site.css` and `assets/site.js`.
-- Avoid root-absolute paths such as `/assets/site.css`; project Pages sites may
-  be served below a repository path.
-- Use directory routes with local `index.html` files for public pages.
-- Link repository source documents with absolute GitHub URLs until those
-  documents are rendered into `website/`.
-- Keep canonical public pages in English. Japanese explanations belong in
-  outreach articles that link back to the canonical site.
+- asset path は `assets/site.css` のような相対 path を使う。
+- `/assets/site.css` のような root-absolute path は避ける。
+- public page は directory route とし、各 route に `index.html` を置く。
+- repository source document へリンクする場合は、公開 release では commit-pinned GitHub URL を使う。
+- `docs/website/` の内部設計メモへ公開ページから誘導しない。
 
-## Design Notes
+## stack
 
-This is a text-first research site. Typography is the main interface:
+現在の website は no-build static stack として扱う。
 
-- Long-form prose uses `Source Serif 4` with Japanese serif fallbacks.
-- Navigation and compact labels use `Inter` with Japanese sans fallbacks.
-- Code and Lean-like fragments use `IBM Plex Mono`.
-- Math is rendered with MathJax CommonHTML.
+- HTML
+- CSS
+- 小さな JavaScript
+- MathJax CDN
+- Google Fonts
 
-AAT and SFT prose should read like long-form research exposition. The target is
-a technically careful reader who needs the actual theory, not a short popular
-explanation. Outreach pages can be lighter; canonical AAT / SFT pages should be
-substantive enough to stand on their own while still linking back to the source
-documents.
-
-Avoid adding a heavy frontend framework unless the site starts needing behavior
-that plain HTML, CSS, and a small script cannot handle cleanly.
+重い frontend framework は、静的 HTML / CSS / 小さな JavaScript では足りない明確な理由がある場合だけ導入する。
