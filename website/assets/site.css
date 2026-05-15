@@ -505,6 +505,7 @@ p {
   top: 92px;
   display: grid;
   gap: 22px;
+  min-width: 0;
 }
 
 .toc-panel,
@@ -581,12 +582,15 @@ p {
 
 .article-main {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 42px;
+  min-width: 0;
 }
 
 .article-section {
   border-top: 1px solid var(--rule-strong);
   padding-top: 28px;
+  min-width: 0;
 }
 
 .article-section h2 {
