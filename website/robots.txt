@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://iroha1203.dev/sitemap.xml

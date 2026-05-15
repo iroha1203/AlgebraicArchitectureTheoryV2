@@ -1,8 +1,9 @@
 # Website
 
-This directory is the source area for the public AAT / SFT research website.
+This directory stores non-public planning and operating notes for the public
+AAT / SFT research website. The site source itself lives in `../../website/`.
 
-The website is separate from `docs/`:
+The public website source is separate from the research docs:
 
 - `docs/` remains the repository's first-class research and implementation documentation.
 - `website/` provides the public reading surface for GitHub Pages.
@@ -71,7 +72,7 @@ When expanding AAT and SFT pages:
 
 ## Publishing Target
 
-Initial target: GitHub Pages, deployed from the `website/` directory by the
+Target: GitHub Pages, deployed from the `website/` directory by the
 `Website Pages` GitHub Actions workflow.
 
 Repository settings should use GitHub Actions as the Pages source. The workflow
@@ -79,11 +80,9 @@ uploads `website/` as the Pages artifact and deploys it to the `github-pages`
 environment on pushes to `main` that change `website/**` or the workflow file.
 It can also be run manually with `workflow_dispatch`.
 
-A custom domain can be added later by committing `website/CNAME` after the DNS
-target is chosen. Until then, do not hard-code the final public host in site
-links or metadata.
+The custom domain is `iroha1203.dev`, recorded in `website/CNAME`.
 
-This directory currently uses a no-build static stack:
+The site source currently uses a no-build static stack:
 
 - `index.html`
 - `assets/site.css`
@@ -103,11 +102,9 @@ routes.
 
 ## SEO Sitemap Policy
 
-Do not commit a production `sitemap.xml` until the public domain or GitHub
-Pages base URL is fixed. Once the domain is chosen, generate or manually add
-`website/sitemap.xml` from the routes in `website/SITEMAP.md`, using the final
-public root as the URL base. Until then, avoid placeholder hosts in metadata,
-links, and sitemap entries.
+The production `website/sitemap.xml` uses `https://iroha1203.dev/` as the URL
+base and should list the canonical public routes. Keep `website/robots.txt`
+pointing to that sitemap.
 
 ## Local Preview
 

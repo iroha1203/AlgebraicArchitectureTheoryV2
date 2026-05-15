@@ -573,12 +573,15 @@ W3 cross-link and boundary hardening:
 W4 publication polish:
   remaining:
     - review long-form reading flow after W2 / W3 changes
-    - add SEO sitemap only after the public domain or GitHub Pages base URL is fixed
+    - keep `website/sitemap.xml` aligned with implemented routes under `https://iroha1203.dev/`
     - update outreach return paths when external articles are published
 ```
 
-## Later SEO Sitemap
+## SEO sitemap
 
-公開ドメインが決まった後で、別途 `sitemap.xml` を作る。
-その時点では、この設計図の route を URL 化し、GitHub Pages の公開 root から参照できるようにする。
-ドメイン未確定の段階では placeholder host を含む `sitemap.xml` を公開しない。
+公開ドメインは `iroha1203.dev`。
+
+`website/sitemap.xml` は `https://iroha1203.dev/` を URL base として、実装済みの
+canonical public routes を列挙する。
+
+`website/robots.txt` は production sitemap を指す。
