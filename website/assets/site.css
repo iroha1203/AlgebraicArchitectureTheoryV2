@@ -258,6 +258,98 @@ p {
   line-height: 1.45;
 }
 
+.author-card {
+  display: grid;
+  gap: 18px;
+}
+
+.author-card h2 {
+  margin-bottom: 0;
+}
+
+.author-photo {
+  display: block;
+  width: 100%;
+  max-height: 210px;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.author-details {
+  display: grid;
+  gap: 18px;
+}
+
+.author-name {
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(1.38rem, 2.6vw, 1.82rem);
+  font-weight: 650;
+  line-height: 1.1;
+}
+
+.author-handle {
+  margin-top: -12px;
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.author-meta {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.author-meta div {
+  border-top: 1px solid var(--rule);
+  padding-top: 12px;
+}
+
+.author-meta dt {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.author-meta dd {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 1rem;
+  line-height: 1.42;
+}
+
+.author-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.author-links a {
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 10px 12px;
+  text-decoration: none;
+}
+
+.author-links a:hover {
+  border-color: rgba(139, 49, 68, 0.55);
+  color: var(--accent-warm);
+}
+
 .section-grid,
 .notation-grid,
 .profile-grid {
