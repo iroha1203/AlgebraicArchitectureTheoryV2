@@ -65,22 +65,45 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#reader-model">Reader model</a></li>
                 <li><a href="#graph-matrix">Graph and matrix</a></li>
-                <li><a href="#graph-theorem">Graph theorem schema</a></li>
                 <li><a href="#analytic-representation">Analytic representation</a></li>
                 <li><a href="#representation-pattern">Representation pattern</a></li>
-                <li><a href="#state-effects">State transitions and effects</a></li>
                 <li><a href="#valuation-boundary">Valuation boundary</a></li>
+                <li><a href="#state-effects">State transitions and effects</a></li>
                 <li><a href="#effect-examples">Effect examples</a></li>
-                <li><a href="#lean-status">Lean status</a></li>
+                <li><a href="#status-index">Formal anchors</a></li>
               </ol>
             </nav>
+            <div class="source-panel">
+              <h2>Citable statements</h2>
+              <ul>
+                <li><a href="#definition-13-1">Definition 13.1</a></li>
+                <li><a href="#proposition-13-2">Proposition 13.2</a></li>
+                <li><a href="#non-conclusion-13-3">Non-conclusion 13.3</a></li>
+                <li><a href="#definition-13-4">Definition 13.4</a></li>
+                <li><a href="#proposition-13-5">Proposition 13.5</a></li>
+                <li><a href="#proposition-13-6">Proposition 13.6</a></li>
+                <li><a href="#definition-14-1">Definition 14.1</a></li>
+                <li><a href="#proposition-14-2">Proposition 14.2</a></li>
+              </ul>
+            </div>
             <div class="source-panel">
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#13-graph-matrix-analytic-representation">
-                    Chapters 13-14 in the AAT text
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/mathematical_theory.md#L613-L655">
+                    Chapter 13 in the AAT text
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/mathematical_theory.md#L658-L681">
+                    Chapter 14 in the AAT text
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/proof_obligations.md#lean-proof-obligation-index">
+                    Proof-obligation ledger
                   </a>
                 </li>
               </ul>
@@ -89,26 +112,86 @@
               <h2>AAT release snapshot</h2>
               <dl>
                 <dt>Updated</dt>
-                <dd>2026-05-15</dd>
+                <dd>2026-05-16</dd>
                 <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/89b4502b6fc01937bfafa409155a7b4a194a80fe">89b4502</a></dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/d1431f766df424332617ed84cb88dd17a11e9c0c">d1431f7</a></dd>
                 <dt>Lean status</dt>
-                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+                <dd><code>lake build</code> passed for this snapshot; this page adds no Lean theorem.</dd>
               </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
               <p>
-                Analytic values alone do not prove structural flatness. The
-                reflecting direction needs coverage, witness completeness, and
-                semantic contract coverage assumptions.
+                A represented zero is not automatically a structural zero.
+                Reflection needs coverage, witness completeness, semantic
+                contract coverage, and the selected measurement boundary.
               </p>
             </div>
           </aside>
 
           <div class="article-main">
+            <section id="reader-model" class="article-section">
+              <h2>Reader model</h2>
+              <div class="reader-model">
+                <div>
+                  <h3>AAT does not say</h3>
+                  <p>
+                    "The metric is zero, therefore the architecture is flat."
+                    A matrix, spectral value, dashboard axis, or event log is
+                    a representation of selected evidence, not the whole
+                    structure by itself.
+                  </p>
+                </div>
+                <div>
+                  <h3>AAT says</h3>
+                  <p>
+                    This representation preserves or reflects this selected
+                    zero or obstruction under these coverage, completeness,
+                    and semantic-contract assumptions; everything else stays
+                    outside the theorem boundary.
+                  </p>
+                </div>
+              </div>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>representation</dt>
+                  <dd>A map from selected structural evidence into another domain such as a graph, matrix, signature axis, or state-transition law family.</dd>
+                </div>
+                <div>
+                  <dt>preserving direction</dt>
+                  <dd>A structural zero or obstruction is sent into a represented zero or obstruction.</dd>
+                </div>
+                <div>
+                  <dt>reflecting direction</dt>
+                  <dd>A represented zero or obstruction is read back as structural only with explicit assumptions.</dd>
+                </div>
+                <div>
+                  <dt>measured zero</dt>
+                  <dd>The selected axis was measured and its in-scope value is zero.</dd>
+                </div>
+                <div>
+                  <dt>unmeasured axis</dt>
+                  <dd>The axis is not available in the selected evidence; it is not a zero.</dd>
+                </div>
+                <div>
+                  <dt>state-transition algebra</dt>
+                  <dd>The command, event, replay, compensation, projection, and migration laws read as selected finite law cases.</dd>
+                </div>
+                <div>
+                  <dt>effect boundary</dt>
+                  <dd>The selected law surface for effects that a static dependency graph may not see.</dd>
+                </div>
+              </dl>
+            </section>
+
             <section id="graph-matrix" class="article-section">
               <h2>Graph and matrix</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> The matrix bridge is a finite
+                structural representation theorem. It is not the definition of
+                <code>Decomposable</code>, and it is not a theorem about
+                runtime propagation, latency, or cost.
+              </p>
               <p>
                 On a finite unweighted universe, acyclicity, absence of closed
                 walks, and nilpotence of the adjacency matrix can express the
@@ -117,51 +200,64 @@
                 propagation model.
               </p>
               <figure class="code-panel">
-                <figcaption>Finite unweighted bridge</figcaption>
+                <figcaption>Finite structural bridge</figcaption>
                 <pre><code>acyclic
   &lt;-&gt; no closed walk
   &lt;-&gt; nilpotent adjacency matrix</code></pre>
               </figure>
-            </section>
-
-            <section id="graph-theorem" class="article-section">
-              <h2>Graph theorem schema</h2>
-              <p>
-                The graph and matrix bridge is a representation theorem for a
-                finite unweighted static universe. It connects several views of
-                the same structural condition without redefining
-                `Decomposable` and without importing runtime propagation into
-                the static theorem.
-              </p>
               <figure class="code-panel">
-                <figcaption>Finite static bridge</figcaption>
-                <pre><code>finite measured static universe
+                <figcaption>Claim boundary</figcaption>
+                <pre><code>finite selected static universe
   + coverage assumptions
   -&gt;
   Acyclic
     &lt;-&gt; no nonempty closed walk
-    &lt;-&gt; adjacency nilpotence</code></pre>
-              </figure>
-              <p>
-                Cost, latency, propagation, and operational risk require
-                separate observation models or analytic representations. They
-                are not consequences of this static bridge alone.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Boundary diagram</figcaption>
-                <pre><code>Decomposable = StrictLayered
-  separate from
-acyclicity
-  &lt;-&gt; closed-walk absence
-  &lt;-&gt; adjacency nilpotence
-  -&gt; spectral radius zero under finite matrix assumptions
+    &lt;-&gt; adjacency nilpotence
 
 runtime propagation
   requires runtime graph / propagation model
   and is not built into Decomposable</code></pre>
               </figure>
+              <p id="definition-13-1" class="statement">
+                <a class="statement-anchor" href="#definition-13-1">Definition 13.1.</a>
+                The graph / matrix bridge is the selected finite structural
+                reading that compares an unweighted dependency graph, its
+                finite walk evidence, and its adjacency matrix. Its input is a
+                proof-carrying finite component universe, not an ambient
+                repository.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 13.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only / proved bridges</span>
+                <span>Anchored by <code>ComponentUniverse</code>, <code>adjacencyMatrix</code>, <code>indexedAdjacencyMatrix</code>, and finite matrix bridge theorems.</span>
+              </p>
+              <p id="proposition-13-2" class="statement">
+                <a class="statement-anchor" href="#proposition-13-2">Proposition 13.2.</a>
+                For a finite selected unweighted structural universe, the
+                graph and matrix readings are theorem-connected: acyclicity,
+                absence of nonempty closed walks, and adjacency nilpotence are
+                the same structural zero package, with the spectral-radius
+                reading living on the corresponding finite complex matrix.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 13.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See the Matrix Bridge index entries for adjacency powers, nilpotence, closed-walk obstruction, and spectral-radius zero / positivity.</span>
+              </p>
+              <p id="proof-13-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-13-2">Proof idea.</a>
+                Powers of the finite adjacency matrix enumerate selected
+                finite walks. If the graph is acyclic, sufficiently long
+                selected walks cannot exist, so a positive matrix power is
+                zero. Conversely, a nonempty closed walk can be repeated past
+                any nilpotence cutoff and refutes matrix nilpotence. The
+                spectral statement is then read through the finite complex
+                adjacency matrix; it does not attach cost or runtime meaning
+                to the radius.
+              </p>
               <div class="article-table">
                 <table>
+                  <caption>Representation strength and boundary</caption>
                   <thead>
                     <tr>
                       <th>Claim</th>
@@ -174,21 +270,21 @@ runtime propagation
                   <tbody>
                     <tr>
                       <td>Finite graph / matrix bridge</td>
-                      <td>`proved`</td>
+                      <td><code>proved</code></td>
                       <td>Finite unweighted static universe with coverage assumptions.</td>
-                      <td>Not the definition of `Decomposable` and not a runtime theorem.</td>
+                      <td>Not the definition of <code>Decomposable</code> and not a runtime theorem.</td>
                       <td>Lean theorem index, matrix bridge entries.</td>
                     </tr>
                     <tr>
                       <td>Spectral bridge</td>
-                      <td>`proved` for finite complex adjacency matrices</td>
+                      <td><code>proved</code> for finite complex adjacency matrices</td>
                       <td>mathlib-backed finite matrix representation.</td>
                       <td>Does not turn cost, risk, or latency into theorem-level signature axes.</td>
                       <td>Lean theorem index, spectral radius entries.</td>
                     </tr>
                     <tr>
                       <td>Runtime propagation bridge</td>
-                      <td>`defined only` / `proved` for selected 0/1 runtime graph zero bridges</td>
+                      <td><code>defined only</code> / <code>proved</code> for selected 0/1 runtime graph zero bridges</td>
                       <td>Separate runtime universe and propagation model.</td>
                       <td>Does not follow from static acyclicity alone.</td>
                       <td>Lean theorem index and proof obligations.</td>
@@ -196,16 +292,66 @@ runtime propagation
                   </tbody>
                 </table>
               </div>
+              <p id="non-conclusion-13-3" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-13-3">Non-conclusion 13.3.</a>
+                <code>Decomposable</code> remains <code>StrictLayered</code>.
+                Acyclicity, finite propagation, nilpotence, and spectral
+                conditions stay outside that definition and enter only through
+                separate bridge theorems or future proof obligations.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Bridge tracking</span>
+                      <h3>Finite matrix diagnostics are derived structural readings</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchor</dt>
+                      <dd><code>indexedAdjacencyMatrix</code>, <code>spectralAdjacencyMatrix</code>, <code>spectralRadiusOfAdjacency_eq_zero_of_acyclic</code>, and <code>spectralRadiusOfAdjacency_pos_of_hasClosedWalk</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Finite selected component universe, unweighted static relation, decidable edge relation, coverage / closure premises.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Diagnostics are read as finite structural bridges, not as the core definition of decomposability.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No runtime propagation theorem, cost estimate, latency claim, or empirical risk claim follows from the matrix alone.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="analytic-representation" class="article-section">
               <h2>Analytic representation</h2>
               <p>
-                `AnalyticRepresentation` maps a structural architecture object
-                into an analytic domain. The representation can be
-                zero-preserving, zero-reflecting, obstruction-preserving, or
-                obstruction-reflecting. These are different strengths, and the
-                reflecting directions are the ones that need stronger evidence.
+                <code>AnalyticRepresentation</code> maps a structural
+                architecture object into an analytic domain. The representation
+                can be zero-preserving, zero-reflecting,
+                obstruction-preserving, or obstruction-reflecting. These are
+                different strengths, and the reflecting directions are the ones
+                that need stronger evidence.
+              </p>
+              <p id="definition-13-4" class="statement">
+                <a class="statement-anchor" href="#definition-13-4">Definition 13.4.</a>
+                An <code>AnalyticRepresentation</code> consists of a
+                representation map together with separate predicates for
+                preserving and reflecting selected zeros and obstructions. The
+                reflecting predicates carry coverage, witness completeness,
+                semantic contract coverage, and non-conclusion fields.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 13.4">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                <span>Anchored by <code>AnalyticRepresentation</code>, <code>ZeroPreserving</code>, <code>ZeroReflecting</code>, <code>ObstructionPreserving</code>, <code>ObstructionReflecting</code>, and <code>RecordsNonConclusions</code>.</span>
               </p>
               <ul class="term-list">
                 <li>
@@ -217,10 +363,29 @@ runtime propagation
                   <span>Analytic zero plus assumptions implies structural zero.</span>
                 </li>
                 <li>
+                  <strong>ObstructionPreserving</strong>
+                  <span>Structural obstruction implies analytic obstruction.</span>
+                </li>
+                <li>
                   <strong>ObstructionReflecting</strong>
                   <span>An analytic obstruction can be read back as structural only with explicit assumptions.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Representation map</figcaption>
+                <pre><code>rho : Architecture -&gt; AnalyticDomain
+
+structural zero
+  -[zero preserving]-&gt;
+analytic zero
+
+analytic zero
+  + coverage
+  + witness completeness
+  + semantic contract coverage
+  -[zero reflecting]-&gt;
+structural zero</code></pre>
+              </figure>
             </section>
 
             <section id="representation-pattern" class="article-section">
@@ -250,52 +415,67 @@ structural zero</code></pre>
                 summaries are useful but insufficient: an aggregate can guide
                 attention without by itself proving structural flatness.
               </p>
-            </section>
-
-            <section id="state-effects" class="article-section">
-              <h2>State transitions and effects</h2>
-              <p>
-                The state-transition layer treats commands, events, retries,
-                compensations, snapshots, CRUD overwrites, and migrations as
-                generators, with laws expressed as relations. Event Sourcing,
-                Saga, CRUD, retry safety, snapshot consistency, and migration
-                naturality are projections of this algebra.
+              <p id="proposition-13-5" class="statement">
+                <a class="statement-anchor" href="#proposition-13-5">Proposition 13.5.</a>
+                Preserving and reflecting are independent theorem boundaries.
+                A preserving representation can transport a structural zero
+                into an analytic zero; a reflecting claim additionally needs
+                the recorded assumptions that authorize reading the analytic
+                result back as a selected structural claim.
               </p>
-              <p>
-                The effect boundary captures obstruction that a dependency
-                graph alone may miss: cross-boundary effects, implicit
-                authority, missing handlers, and non-commuting effect pairs.
+              <p class="statement-status" aria-label="Lean status for Proposition 13.5">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved accessor anchors</span>
+                <span>See <code>AnalyticRepresentation.analyticZero_of_structuralZero</code>, <code>structuralZero_of_analyticZero</code>, <code>analyticObstruction_of_structuralObstruction</code>, and <code>structuralObstruction_of_analyticObstruction</code>.</span>
               </p>
-              <figure class="code-panel">
-                <figcaption>Example relations</figcaption>
-                <pre><code>f ; f = f
-compensate ; action ~= id
-decode ; encode ~= id</code></pre>
-              </figure>
-              <ul class="term-list">
-                <li>
-                  <strong>Circuit Breaker</strong>
-                  <span>Runtime protection law: selected failures should not propagate beyond the protected boundary while the breaker is open.</span>
-                </li>
-                <li>
-                  <strong>Replicated Log</strong>
-                  <span>Distributed ordering law: replicas converge only under the selected quorum, ordering, and failure-model assumptions.</span>
-                </li>
-                <li>
-                  <strong>CRUD</strong>
-                  <span>Overwrite law: update and delete behavior must be read against the selected state and observation relation, not against event replay by default.</span>
-                </li>
-              </ul>
+              <p id="proof-13-5" class="statement-proof">
+                <a class="statement-anchor" href="#proof-13-5">Proof idea.</a>
+                The Lean API does not identify the four predicates. The
+                preserving theorems apply only when the corresponding
+                preserving field is supplied. The reflecting theorems require
+                the reflecting field and its assumptions. Therefore a report
+                that has only a represented value has not discharged the
+                structural theorem package.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Representation tracking</span>
+                      <h3>Analytic values do not collapse evidence boundaries</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved accessors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchor</dt>
+                      <dd><code>architectureSignatureAnalyticRepresentation</code> and its preserving / reflecting theorem entries.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Selected required axes, available zero evidence, coverage, witness completeness, semantic contract coverage.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Reflecting directions are theorem-package claims, not dashboard conventions.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No extractor completeness, runtime flatness, semantic flatness, or global witness completeness is inferred.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="valuation-boundary" class="article-section">
               <h2>Valuation boundary</h2>
               <p>
-                `ObstructionValuation` maps selected witnesses to numeric or
-                ordered values. Aggregates can be useful for dashboards, but an
-                aggregate zero reflects witness-level zero only when the value
-                domain and aggregation are zero-reflecting under the selected
-                assumptions.
+                <code>ObstructionValuation</code> maps selected witnesses to
+                numeric or ordered values. Aggregates can be useful for
+                dashboards, but an aggregate zero reflects witness-level zero
+                only when the value domain and aggregation are zero-reflecting
+                under the selected assumptions.
               </p>
               <figure class="code-panel">
                 <figcaption>Zero reflection guard</figcaption>
@@ -312,6 +492,93 @@ aggregate = 0
                 zero, and reflecting an obstruction requires coverage and
                 semantic contract assumptions.
               </p>
+              <p id="proposition-13-6" class="statement">
+                <a class="statement-anchor" href="#proposition-13-6">Proposition 13.6.</a>
+                A zero valuation discharges only selected witness absence when
+                its zero-reflecting premise is available. An optional missing
+                value, an unavailable axis, or an unmeasured report field is
+                not a theorem-level zero.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 13.6">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved accessor anchors</span>
+                <span>Anchored by <code>ObstructionValuation.no_obstruction_of_value_zero</code>, <code>noSelectedObstruction_of_zeroReflectingSum</code>, <code>AnalyticAxisBoundary.some_zero_ne_unmeasured</code>, and <code>not_canDischargeZeroReflectingClaim_of_unmeasured</code>.</span>
+              </p>
+              <figure class="code-panel">
+                <figcaption>Measured zero versus unmeasured</figcaption>
+                <pre><code>some 0
+  = available measured zero
+
+none
+  = unmeasured / unavailable
+  != available measured zero</code></pre>
+              </figure>
+            </section>
+
+            <section id="state-effects" class="article-section">
+              <h2>State transitions and effects</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> Event Sourcing, Saga, CRUD,
+                Circuit Breaker, and Replicated Log are not one quality score.
+                They are different operation and law packages with different
+                selected assumptions and non-conclusions.
+              </p>
+              <p>
+                The state-transition layer treats commands, events, retries,
+                compensations, snapshots, CRUD overwrites, and migrations as
+                generators, with laws expressed as relations. Event Sourcing,
+                Saga, CRUD, retry safety, snapshot consistency, and migration
+                naturality are projections of this algebra.
+              </p>
+              <p>
+                The effect boundary captures obstruction that a dependency
+                graph alone may miss: cross-boundary effects, implicit
+                authority, missing handlers, and non-commuting effect pairs.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Example relations</figcaption>
+                <pre><code>f ; f = f
+compensate ; action ~= id
+project(xs ++ ys) = replay(project(xs), ys)
+decode ; encode ~= id
+migrate ; project_old = project_new ; migrateEvents</code></pre>
+              </figure>
+              <p id="definition-14-1" class="statement">
+                <a class="statement-anchor" href="#definition-14-1">Definition 14.1.</a>
+                A state-transition or effect-boundary law package is a
+                selected finite family of replay, roundtrip, compensation,
+                projection, migration, or effect relations read against a
+                carrier and observation semantics. Lawfulness is a selected
+                package claim, not a statement about all implementation
+                behavior.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 14.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only / proved law bridges</span>
+                <span>Anchored by <code>StateTransitionCarrier</code>, <code>StateTransitionLawFamilyLawful</code>, <code>EffectBoundaryLawFamilyLawful</code>, and their obstruction-absence bridge theorems.</span>
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Event Sourcing</strong>
+                  <span>Replay and projection laws are selected finite law cases, not proof of complete real-code event logs.</span>
+                </li>
+                <li>
+                  <strong>Saga</strong>
+                  <span>Compensation and weak recovery are selected law packages, not a general inverse for every failure mode.</span>
+                </li>
+                <li>
+                  <strong>CRUD</strong>
+                  <span>Overwrite behavior is read against the selected state and observation relation; it is not a universal theorem that CRUD is simple or bad.</span>
+                </li>
+                <li>
+                  <strong>Circuit Breaker</strong>
+                  <span>Runtime protection is relative to selected localization and failure-model assumptions.</span>
+                </li>
+                <li>
+                  <strong>Replicated Log</strong>
+                  <span>Convergence is conditional on selected quorum, ordering, failure model, and entries.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="effect-examples" class="article-section">
@@ -337,25 +604,166 @@ aggregate = 0
                   <strong>Migration naturality</strong>
                   <span>Old and new projections commute with the migration relation under stated assumptions.</span>
                 </li>
+                <li>
+                  <strong>Effect obstruction</strong>
+                  <span>Missing handlers, implicit authority, or non-commuting effect pairs can be selected obstruction witnesses.</span>
+                </li>
               </ul>
+              <p id="proposition-14-2" class="statement">
+                <a class="statement-anchor" href="#proposition-14-2">Proposition 14.2.</a>
+                State-transition and effect-boundary lawfulness can be
+                connected to selected obstruction absence, but only for the
+                law family and observation semantics supplied to the package.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 14.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved bridges</span>
+                <span>See <code>stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction</code> and <code>effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction</code>.</span>
+              </p>
+              <p id="proof-14-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-14-2">Proof idea.</a>
+                The law family packages expose the selected laws and their
+                obstruction predicates in the same bounded universe. The bridge
+                theorem states that selected family lawfulness is equivalent
+                to absence of the selected family obstruction. It does not add
+                missing runtime traces, hidden effects, or real-code extractor
+                completeness.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Effect boundary tracking</span>
+                      <h3>Graph-level zero and effect-level zero are distinct</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved bridges</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchor</dt>
+                      <dd><code>StateTransitionExpr</code>, <code>EffectBoundaryExpr</code>, <code>NoStateTransitionLawFamilyObstruction</code>, and <code>NoEffectBoundaryLawFamilyObstruction</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Selected carrier, selected finite law cases, observation semantics, and package-level lawfulness predicates.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Effect laws are read inside the selected state-transition / effect-boundary universe.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No event-log completeness, projection completeness, operational cost improvement, or global runtime flatness follows.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
-            <section id="lean-status" class="article-section">
-              <h2>Lean status</h2>
+            <section id="status-index" class="article-section">
+              <h2>Formal anchors</h2>
               <p>
-                Matrix bridges, finite-universe bridges, analytic
-                representation strength APIs, and state-transition / effect
-                boundary laws are indexed separately. Cost interpretation,
-                runtime completeness, and empirical outcome claims remain
-                outside the structural theorem package.
+                The page is an audit trail over existing Lean entries. It adds
+                no theorem, and every theorem-grade statement above points to
+                a docs source, Lean anchor, status, assumptions, and
+                non-conclusion boundary.
               </p>
-              <div class="claim-strip">
-                <p>
-                  Acyclicity, closed-walk absence, and adjacency nilpotence are
-                  connected for finite unweighted structure. They are not the
-                  definition of `Decomposable`, and they do not by themselves
-                  settle finite propagation or runtime semantics.
-                </p>
+              <div class="formal-anchor-cards" aria-label="Representations and effects formal-anchor audit trail">
+                <article class="formal-anchor-card">
+                  <div class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Matrix</span>
+                      <h3>Finite structural matrix bridge</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </div>
+                  <p class="formal-anchor-audits">
+                    Source: AAT Chapter 13, proof-obligation Matrix row, and
+                    the Matrix Bridge theorem index.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#matrix-bridge">Matrix Bridge</a>.</dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd><code>proved</code> for finite structural bridge and spectral-radius diagnostics.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Finite selected universe, unweighted graph relation, matrix representation, and coverage / closure premises.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusions</dt>
+                      <dd>No runtime propagation, cost interpretation, latency interpretation, or redefinition of <code>Decomposable</code>.</dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <div class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Analytic</span>
+                      <h3>Representation strength and valuation boundary</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved accessors</span>
+                  </div>
+                  <p class="formal-anchor-audits">
+                    Source: AAT Chapter 13, proof-obligation Analytic
+                    Representation rows, and the Chapter 11 analytic entrypoint.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#analytic-representation">Analytic Representation</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#chapter-11-analytic-representation-entrypoint">Chapter 11 Analytic Representation Entrypoint</a>.</dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd><code>defined only</code> for schemas; <code>proved</code> for preserving / reflecting accessor theorems and unmeasured-axis guards.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Representation map, selected witness universe, coverage, witness completeness, semantic contract coverage, and non-conclusion fields.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusions</dt>
+                      <dd>No analytic-value-only flatness, global witness completeness, runtime completeness, semantic universe completeness, or extractor completeness.</dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <div class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">State / Effect</span>
+                      <h3>Selected lawfulness and obstruction absence</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved bridges</span>
+                  </div>
+                  <p class="formal-anchor-audits">
+                    Source: AAT Chapter 14, design-pattern proof obligations,
+                    and the State Transition / Effect Boundary Laws index.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Lean index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#state-transition--effect-boundary-laws">State Transition / Effect Boundary Laws</a>.</dd>
+                    </div>
+                    <div>
+                      <dt>Status</dt>
+                      <dd><code>defined only</code> for law family schemas; <code>proved</code> for selected lawfulness / obstruction-absence bridges.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Selected carrier, selected finite law cases, replay / roundtrip / compensation semantics, and effect-boundary observation semantics.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusions</dt>
+                      <dd>No event-log completeness, all failure-mode coverage, runtime telemetry completeness, CRUD general theorem, or operational cost improvement.</dd>
+                    </div>
+                  </dl>
+                </article>
               </div>
             </section>
 
