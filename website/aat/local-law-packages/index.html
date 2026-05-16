@@ -651,55 +651,254 @@ ProjectionExact + RepresentativeStable</code></pre>
                 proof-obligation and theorem-index entries as a web-native
                 chapter with citable statements and nearby non-conclusions.
               </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Claim</th>
-                      <th>Lean anchor and status</th>
-                      <th>Assumptions</th>
-                      <th>Boundary</th>
-                      <th>Non-conclusion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Projection / DIP bridge</td>
-                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#projection--dip"><code>ProjectionSound</code>, <code>ProjectionExact</code>, <code>StrongDIPCompatible</code>; <code>proved</code> bridge theorems</a></td>
-                      <td>Concrete graph, projection, abstract graph, exactness or soundness, and representative stability where needed.</td>
-                      <td>Selected dependency abstraction.</td>
-                      <td>No global layering or runtime completeness.</td>
-                    </tr>
-                    <tr>
-                      <td>Observation / LSP bridge</td>
-                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#observation--lsp"><code>LSPCompatible</code>, <code>lspCompatible_iff_noLSPObstruction</code>; <code>proved</code> finite bridges</a></td>
-                      <td>Selected observation, equivalence, finite same-abstraction pair coverage, and decidable observations.</td>
-                      <td>Selected client-context universe.</td>
-                      <td>No all-client or all-effect substitutability.</td>
-                    </tr>
-                    <tr>
-                      <td>Local contract design pattern</td>
-                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#L871"><code>LocalContractInvariant</code>, <code>localContractDesignPattern</code>; <code>defined only</code> / <code>proved</code></a></td>
-                      <td>Proof-carrying local replacement contract and selected invariant family.</td>
-                      <td>Local contract layer.</td>
-                      <td>No unconditional <code>Decomposable</code> or <code>StrictLayered</code>.</td>
-                    </tr>
-                    <tr>
-                      <td>Three-layer flatness</td>
-                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#flatness"><code>ArchitectureFlatWithin</code>, <code>LawfulExtensionPreservesFlatness</code>; <code>defined only</code> / <code>proved</code></a></td>
-                      <td>Static, runtime, and semantic evidence plus coverage and exactness boundaries.</td>
-                      <td>Bounded flatness within selected universes.</td>
-                      <td>No automatic global <code>ArchitectureFlat</code>, extractor completeness, or telemetry completeness.</td>
-                    </tr>
-                    <tr>
-                      <td>SOLID-style counterexamples</td>
-                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#solid-counterexamples"><code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code>; <code>proved</code></a></td>
-                      <td>Strong projection and selected observation package over a cyclic abstract graph.</td>
-                      <td>Counterexample to promoting local contracts into global decomposability.</td>
-                      <td>SOLID is not a universal global structure theorem.</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="formal-anchor-cards" aria-label="Local law formal-anchor audit trail">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Projection and DIP bridge</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#definition-7-3">Definition 7.3</a> and
+                    <a href="#proposition-7-4">Proposition 7.4</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ProjectionSound</code>, <code>ProjectionComplete</code>, <code>ProjectionExact</code>, <code>DIPCompatible</code>, and <code>StrongDIPCompatible</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Projection vocabulary is <code>defined only</code>; soundness, exactness, and selected DIP bridge facts are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Concrete graph, selected projection, abstract graph, and explicit soundness or exactness assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#projection--dip">Projection / DIP</a></dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>Projection or DIP compatibility alone does not prove global layering, runtime completeness, or semantic completeness.</dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>InterfaceProjection</code></li>
+                      <li><code>AbstractGraph</code></li>
+                      <li><code>ProjectionSound</code></li>
+                      <li><code>ProjectionComplete</code></li>
+                      <li><code>ProjectionExact</code></li>
+                      <li><code>projectionExact_iff_sound_and_complete</code></li>
+                      <li><code>DIPCompatible</code></li>
+                      <li><code>StrongDIPCompatible</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Observation and LSP bridge</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#definition-7-5">Definition 7.5</a>,
+                    <a href="#proposition-7-6">Proposition 7.6</a>, and
+                    <a href="#proposition-7-7">Proposition 7.7</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>Observation</code>, <code>ObservationFactorsThrough</code>, <code>LSPCompatible</code>, and <code>lspCompatible_iff_noLSPObstruction</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Observation vocabulary is <code>defined only</code>; selected factorization and finite violation-count bridges are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Selected observation, equivalence relation, finite same-abstraction pair coverage, and decidable observations.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#observation--lsp">Observation / LSP</a></dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No all-client substitutability, all-effect substitutability, or complete behavioral semantics follows.</dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>Observation</code></li>
+                      <li><code>ObservationFactorsThrough</code></li>
+                      <li><code>LSPCompatible</code></li>
+                      <li><code>LSPObstruction</code></li>
+                      <li><code>noLSPObstruction_of_lspCompatible</code></li>
+                      <li><code>lspCompatible_of_noLSPObstruction</code></li>
+                      <li><code>lspCompatible_iff_noLSPObstruction</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Local contract design pattern</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#local-contract-packages">Local contract packages</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>LocalContractInvariant</code>, <code>LocalReplacementOperation</code>, <code>localContractDesignPattern</code>, and <code>localContractDesignPattern_records_nonConclusion</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>State, operation, invariant, and pattern schemas are <code>defined only</code>; selected preservation and non-conclusion accessors are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Proof-carrying local replacement contracts over selected projection, observation, and DIP/LSP invariant families.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#L871">Local contract design pattern</a></dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>Local contracts do not imply unconditional <code>Decomposable</code>, <code>StrictLayered</code>, or global architecture flatness.</dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>LocalContractState</code></li>
+                      <li><code>LocalReplacementOperation</code></li>
+                      <li><code>LocalContractInvariant</code></li>
+                      <li><code>localReplacementOperation_preserves_projectionSound</code></li>
+                      <li><code>localReplacementOperation_preserves_lspCompatible</code></li>
+                      <li><code>localReplacementOperation_preserves_dipCompatible</code></li>
+                      <li><code>localContractLayer_nonConclusion</code></li>
+                      <li><code>localContractDesignPattern</code></li>
+                      <li><code>localContractDesignPattern_closure_law</code></li>
+                      <li><code>localContractDesignPattern_records_nonConclusion</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Three-layer flatness</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#definition-8-1">Definition 8.1</a>,
+                    <a href="#proposition-8-2">Proposition 8.2</a>, and
+                    <a href="#non-conclusion-8-3">Non-conclusion 8.3</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ArchitectureFlatWithin</code>, <code>SplitFeatureExtensionWithin</code>, <code>LawfulExtensionPreservesFlatness</code>, and <code>LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Flatness schemas are <code>defined only</code>; bounded preservation and runtime / semantic discharge bridges are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Static, runtime, and semantic evidence with explicit coverage, exactness, and no-unmeasured-required-axis assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#flatness">Flatness</a></dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No automatic global <code>ArchitectureFlat</code>, extractor completeness, runtime telemetry completeness, or semantic universe completeness follows.</dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ArchitectureFlatnessModel</code></li>
+                      <li><code>StaticFlatWithin</code></li>
+                      <li><code>RuntimeFlatWithin</code></li>
+                      <li><code>SemanticFlatWithin</code></li>
+                      <li><code>ArchitectureFlatWithin</code></li>
+                      <li><code>NoUnmeasuredRequiredAxis</code></li>
+                      <li><code>SplitFeatureExtensionWithin</code></li>
+                      <li><code>splitFeatureExtensionWithin_recordsNonConclusions</code></li>
+                      <li><code>LawfulExtensionPreservesFlatness</code></li>
+                      <li><code>LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>SOLID-style counterexamples</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#counterexample-8-5">Counterexample 8.5</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>StrongAbstractCycleComponent.strongDIPCompatible</code>, <code>StrongAbstractCycleComponent.lspCompatible</code>, and <code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Current strong abstract-cycle counterexample package is <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Strong projection and selected observation package over a cyclic abstract graph.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b84cff4556746c2911de32d2bbf81814906564fc/docs/aat/lean_theorem_index.md#solid-counterexamples">SOLID Counterexamples</a></dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>SOLID-style local contracts are not a universal global structure theorem and do not imply decomposability.</dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>StrongAbstractCycleComponent.observation_factors</code></li>
+                      <li><code>StrongAbstractCycleComponent.lspCompatible</code></li>
+                      <li><code>StrongAbstractCycleComponent.projectionSound</code></li>
+                      <li><code>StrongAbstractCycleComponent.projectionExact</code></li>
+                      <li><code>StrongAbstractCycleComponent.dipCompatible</code></li>
+                      <li><code>StrongAbstractCycleComponent.strongDIPCompatible</code></li>
+                      <li><code>StrongAbstractCycleComponent.not_decomposable</code></li>
+                      <li><code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code></li>
+                    </ul>
+                  </details>
+                </article>
               </div>
             </section>
 
