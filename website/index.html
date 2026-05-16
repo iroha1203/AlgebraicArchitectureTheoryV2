@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="assets/site.css">
     <script defer src="assets/site.js"></script>
   </head>
-  <body>
+  <body class="home-page">
     <a class="skip-link" href="#main">Skip to content</a>
 
     <header class="site-header" data-site-header>
@@ -35,7 +35,6 @@
           <a href="sft/">SFT</a>
           <a href="archsig/">ArchSig</a>
           <a href="outreach/">Outreach</a>
-          <a href="profile/">Profile</a>
         </nav>
       </div>
     </header>
@@ -55,30 +54,8 @@
           </div>
           <aside class="hero-aside author-card" aria-labelledby="author-title">
             <h2 id="author-title">Author</h2>
-            <img
-              class="author-photo"
-              src="assets/hiroyuki-nakahata.jpeg"
-              alt="Hiroyuki Nakahata"
-              width="1434"
-              height="925"
-            >
             <div class="author-details">
               <p class="author-name">Hiroyuki Nakahata</p>
-              <p class="author-handle">@iroha1203</p>
-              <dl class="author-meta">
-                <div>
-                  <dt>Location</dt>
-                  <dd>Tokyo, Japan</dd>
-                </div>
-                <div>
-                  <dt>Role</dt>
-                  <dd>Software Engineer</dd>
-                </div>
-              </dl>
-              <div class="author-links" aria-label="Author links">
-                <a href="https://github.com/iroha1203">GitHub</a>
-                <a href="https://blog.iroha1203.dev/">Blog</a>
-              </div>
             </div>
           </aside>
         </div>
@@ -87,7 +64,7 @@
       <section id="aat" class="section-band section-band-muted research-deep-dive">
         <div class="site-shell section-grid">
           <div class="section-heading">
-            <p class="eyebrow">Architecture as bounded algebra</p>
+            <p class="eyebrow">AAT</p>
             <h2>Algebraic Architecture Theory</h2>
             <p>
               Algebraic Architecture Theory reads a selected architecture
@@ -120,7 +97,7 @@
       <section id="interface" class="section-band research-deep-dive">
         <div class="site-shell section-grid">
           <div class="section-heading">
-            <p class="eyebrow">A one-way bridge from AAT to SFT</p>
+            <p class="eyebrow">Interface</p>
             <h2>AAT / SFT Interface</h2>
             <p>
               The interface fixes dependency direction: AAT provides local
@@ -133,7 +110,7 @@
               The interface is a guardrail: use AAT inside SFT, but do not
               promote local facts into global forecasts.
             </p>
-            <a class="research-primary-link" href="interface/">Read the interface</a>
+            <a class="research-primary-link" href="interface/">Read interface overview</a>
             <nav class="chapter-link-list" aria-label="Interface sections">
               <a href="interface/#dependency-direction">Dependency Direction</a>
               <a href="interface/#translation-rules">Translation Rules</a>
@@ -148,7 +125,7 @@
       <section id="sft" class="section-band section-band-muted research-deep-dive">
         <div class="site-shell section-grid">
           <div class="section-heading">
-            <p class="eyebrow">Software evolution as bounded computation</p>
+            <p class="eyebrow">SFT</p>
             <h2>Software Field Theory</h2>
             <p>
               Software Field Theory models selected slices of software
@@ -178,7 +155,7 @@
       <section id="archsig" class="section-band research-deep-dive">
         <div class="site-shell section-grid">
           <div class="section-heading">
-            <p class="eyebrow">Observation tooling with explicit boundaries</p>
+            <p class="eyebrow">Architecture Signature</p>
             <h2>ArchSig</h2>
             <p>
               ArchSig maps repository artifacts into measurable signature axes,
@@ -224,7 +201,7 @@
               href="https://blog.iroha1203.dev/software-architecture-as-a-field"
             >
               <img
-                src="assets/software-architecture-as-a-field.png"
+                src="assets/software-architecture-as-a-field.jpg"
                 alt=""
                 width="1672"
                 height="941"
@@ -242,8 +219,52 @@
               </span>
             </a>
             <a href="outreach/">
-              More articles
+              Read more articles
             </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="profile" class="section-band profile-band home-profile">
+        <div class="site-shell section-grid">
+          <div class="section-heading">
+            <p class="eyebrow">Profile</p>
+            <h2>Originator of the research program.</h2>
+            <p>
+              AAT, SFT, and ArchSig are developed as a research program across
+              theory notes, Lean source, tooling, and public essays.
+            </p>
+          </div>
+          <div class="home-profile-card">
+            <img
+              class="home-profile-photo"
+              src="assets/hiroyuki-nakahata.jpeg"
+              alt="Hiroyuki Nakahata"
+              width="1434"
+              height="925"
+            >
+            <div class="home-profile-copy">
+              <p class="home-profile-name">Hiroyuki Nakahata</p>
+              <p class="home-profile-handle">@iroha1203</p>
+              <p>
+                Software engineer in Tokyo, working on Algebraic Architecture
+                Theory, Software Field Theory, and ArchSig.
+              </p>
+              <dl class="home-profile-meta">
+                <div>
+                  <dt>Location</dt>
+                  <dd>Tokyo, Japan</dd>
+                </div>
+                <div>
+                  <dt>Role</dt>
+                  <dd>Software Engineer</dd>
+                </div>
+              </dl>
+              <div class="author-links" aria-label="Author links">
+                <a href="https://github.com/iroha1203">GitHub</a>
+                <a href="https://blog.iroha1203.dev/">Blog</a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
