@@ -62,10 +62,12 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#reader-model">Reader model</a></li>
                 <li><a href="#computable-object">Computable object</a></li>
                 <li><a href="#field-memory">Field memory</a></li>
                 <li><a href="#development-field">Development field</a></li>
                 <li><a href="#architecture-futures">Architecture futures</a></li>
+                <li><a href="#formal-anchors">Formal anchors</a></li>
                 <li><a href="#part-boundary">Boundary</a></li>
               </ol>
             </nav>
@@ -110,6 +112,48 @@
           </aside>
 
           <div class="article-main">
+            <section id="reader-model" class="article-section">
+              <h2>Reader model</h2>
+              <div class="reader-model">
+                <div>
+                  <h3>SFT does not say</h3>
+                  <p>
+                    Software evolution is completely decidable, reducible to a
+                    repository snapshot, or governed by a single deterministic
+                    future path.
+                  </p>
+                  <p>
+                    Human intention, organization culture, and informal
+                    practice are not fully reconstructed from code or issue
+                    traces.
+                  </p>
+                </div>
+                <div>
+                  <h3>SFT says</h3>
+                  <p>
+                    Selected questions about software evolution can be bounded
+                    by a model, horizon, observation boundary, support relation,
+                    and policy.
+                  </p>
+                  <p>
+                    The codebase acts as field memory: it stores prior actions
+                    and makes some future operations natural, costly, blocked,
+                    or easy to overlook.
+                  </p>
+                </div>
+              </div>
+              <p id="non-conclusion-i-0" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-i-0">Non-conclusion I.0.</a>
+                Part I does not claim complete prediction of a project, complete
+                extraction of social context, or a theorem that all future
+                development paths are known.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Non-conclusion I.0">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-future">boundary statement</span>
+              </p>
+            </section>
+
             <section id="computable-object" class="article-section">
               <h2>Software evolution as a computable object</h2>
               <p>
@@ -117,6 +161,17 @@
                 architecture futures are reachable under a selected field
                 model. Computable means bounded by explicit modeling choices,
                 not completely decidable in reality.
+              </p>
+              <p id="statement-i-1" class="statement">
+                <a class="statement-anchor" href="#statement-i-1">Statement I.1.</a>
+                The primary object of SFT is reachable architectural futures of
+                a codebase, relative to a chosen field model, operation support,
+                policy, observation boundary, governance intervention, and
+                horizon.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Statement I.1">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-future">conceptual definition</span>
               </p>
               <figure class="code-panel">
                 <figcaption>SFT central proposition</figcaption>
@@ -147,6 +202,20 @@
                 can be made finite, auditable, and explicitly relative to the
                 evidence and horizon that were chosen.
               </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Bounded, not total</strong>
+                  <span>The model answers a selected question under named evidence and horizon; it does not decide the whole project history.</span>
+                </li>
+                <li>
+                  <strong>Auditable, not hidden</strong>
+                  <span>The boundary names unavailable evidence, unmeasured axes, and non-conclusions before a forecast or report is read.</span>
+                </li>
+                <li>
+                  <strong>Computational, not purely metaphorical</strong>
+                  <span>The terms become useful when they reduce to reachability, support, policy, trajectory, feedback, or calibration problems.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="field-memory" class="article-section">
@@ -156,6 +225,17 @@
                 carries requirements, design decisions, review patterns,
                 incidents, workarounds, migrations, ownership boundaries,
                 tooling practice, and latent default paths.
+              </p>
+              <p id="statement-i-2" class="statement">
+                <a class="statement-anchor" href="#statement-i-2">Statement I.2.</a>
+                A codebase is field memory when prior requirements, repairs,
+                review outcomes, migrations, conventions, ownership boundaries,
+                and tool habits alter the operation support visible to later
+                proposals.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Statement I.2">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-future">conceptual definition</span>
               </p>
               <ul class="term-list">
                 <li>
@@ -171,6 +251,15 @@
                   <span>Past incidents, review rules, and migrations change the support and policy visible to new proposals.</span>
                 </li>
               </ul>
+              <div class="claim-strip">
+                <p>
+                  Concrete reading: two checkout systems can share the same
+                  module graph while exposing different next moves. One history
+                  may make a lawful `DiscountPolicy` insertion natural; another
+                  may make a payment-adapter shortcut look cheaper because old
+                  workarounds and review gaps are already embedded nearby.
+                </p>
+              </div>
             </section>
 
             <section id="development-field" class="article-section">
@@ -181,11 +270,33 @@
                 AI agents, review systems, CI, runtime observations, incidents,
                 and lifecycle pressure.
               </p>
+              <p id="definition-i-3" class="statement">
+                <a class="statement-anchor" href="#definition-i-3">Definition I.3.</a>
+                `DevelopmentField` is the broad field around a codebase,
+                including code, artifacts, practices, agents, governance,
+                observations, incidents, migration pressure, and lifecycle
+                pressure.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Definition I.3">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-future">definition vocabulary</span>
+              </p>
               <p>
                 SFT does not claim to fully model human intention or
                 organization culture. It takes a modeling boundary and builds a
                 partial `SoftwareFieldEstimate` that records selected evidence,
                 unavailable evidence, and the unknown remainder.
+              </p>
+              <p id="definition-i-4" class="statement">
+                <a class="statement-anchor" href="#definition-i-4">Definition I.4.</a>
+                `SoftwareFieldEstimate` is a partial estimate produced under a
+                modeling boundary. It contains selected evidence, the extracted
+                field slice, evidence status, and the unknown or unmodeled
+                remainder.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Definition I.4">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-future">definition vocabulary</span>
               </p>
               <figure class="code-panel">
                 <figcaption>Boundary-aware estimate</figcaption>
@@ -213,6 +324,16 @@ SoftwareFieldEstimate
                 does not imply a safe path, and a net signature delta of zero
                 can hide unsafe intermediate excursions.
               </p>
+              <p id="definition-i-5" class="statement">
+                <a class="statement-anchor" href="#definition-i-5">Definition I.5.</a>
+                `ArchitectureFuture` is a reachable field path with an
+                architecture projection path, observed signature trajectory,
+                obstruction witness candidates, and forecast boundary.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Definition I.5">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-future">definition vocabulary</span>
+              </p>
               <figure class="code-panel">
                 <figcaption>ArchitectureFuture</figcaption>
                 <pre><code>ArchitectureFuture
@@ -222,11 +343,82 @@ SoftwareFieldEstimate
   + obstruction witness candidates
   + forecast boundary</code></pre>
               </figure>
+              <p id="definition-i-6" class="statement">
+                <a class="statement-anchor" href="#definition-i-6">Definition I.6.</a>
+                `SignatureTrajectory` is a sequence of observed signature
+                records along a path. It keeps intermediate excursions visible
+                instead of replacing the path with an endpoint delta.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Definition I.6">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-future">definition vocabulary</span>
+              </p>
+              <figure class="code-panel">
+                <figcaption>SignatureTrajectory</figcaption>
+                <pre><code>SignatureTrajectory :=
+  observed signature record_0
+  -> observed signature record_1
+  -> ...
+  -> observed signature record_n</code></pre>
+              </figure>
               <p>
                 The coupon PRD running example shows how one artifact can make
                 several paths visible: lawful policy insertion, payment adapter
                 shortcut, UI-only drift, and rounding semantics obstruction.
               </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Lawful policy insertion</strong>
+                  <span>The PRD is routed through an explicit discount policy and preserves checkout boundaries under the selected model.</span>
+                </li>
+                <li>
+                  <strong>Payment adapter shortcut</strong>
+                  <span>The same PRD may make a lower-cost but unsafe path visible when old adapter workarounds already exist.</span>
+                </li>
+                <li>
+                  <strong>UI-only drift</strong>
+                  <span>A front-end-only interpretation can produce a pleasant endpoint story while hiding payment and rounding obligations.</span>
+                </li>
+                <li>
+                  <strong>Rounding obstruction</strong>
+                  <span>Ambiguous currency semantics can become an obstruction witness candidate before implementation starts.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="formal-anchors" class="article-section">
+              <h2>Formal and computational anchors</h2>
+              <p>
+                Part I is vocabulary and modeling discipline. The terms below
+                are anchors for later formal core, tooling reports, and
+                governance examples, not standalone Lean theorem claims.
+              </p>
+              <dl class="formal-anchor-grid">
+                <div>
+                  <dt><code>DevelopmentField</code></dt>
+                  <dd>Broad scope containing codebase, artifacts, practice, agents, governance, observations, and lifecycle pressure.</dd>
+                </div>
+                <div>
+                  <dt><code>SoftwareFieldEstimate</code></dt>
+                  <dd>Partial boundary-aware estimate of the computable slice used by a forecast or report.</dd>
+                </div>
+                <div>
+                  <dt><code>ArchitectureFuture</code></dt>
+                  <dd>Reachable path object under explicit support, policy, horizon, and observation axes.</dd>
+                </div>
+                <div>
+                  <dt><code>SignatureTrajectory</code></dt>
+                  <dd>Observed signature sequence that preserves path information and intermediate risk.</dd>
+                </div>
+              </dl>
+              <div class="claim-strip">
+                <p>
+                  Division of work: AAT supplies local algebra and theorem
+                  boundaries; ArchSig supplies measured signatures and evidence
+                  boundaries; SFT organizes bounded field models, reachable
+                  futures, and governance questions over those observations.
+                </p>
+              </div>
             </section>
 
             <section id="part-boundary" class="article-section">
