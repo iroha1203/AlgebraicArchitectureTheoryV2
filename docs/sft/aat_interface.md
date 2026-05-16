@@ -180,6 +180,29 @@ trajectory、feedback update を推定する。
 signature delta は、両側で測定済みで、axis ごとの比較順序が定義されている場合に限って
 比較される。
 
+`ForecastCone` formal core との接続は、次の境界で読む。
+
+```text
+SFT formal core:
+  SoftwareField
+  + OperationSupport
+  + bounded Horizon
+  + StepRelation
+  + ReachableFieldPath
+  + ForecastCone
+
+ArchSig-SFT tooling:
+  finite support refs
+  + bounded horizon config
+  + path class candidates
+  + forecast boundary
+  + unknown remainder
+```
+
+tooling skeleton は formal core の入力候補や review surface を有限に記録するが、
+`ReachableFieldPath` の完全性、`StepRelation` の妥当性、cone projection theorem、
+または calibrated forecast correctness を証明しない。
+
 同じ tool family であっても、claim level は分ける。
 
 ```text
