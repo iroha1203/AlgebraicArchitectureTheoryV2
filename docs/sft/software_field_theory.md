@@ -536,10 +536,12 @@ feedback shaping:
 
 `ForecastCone` は formal object である。
 horizon `h` と operation support `U` に相対化された reachable field path set として読む。
+この core は集合値の到達可能性だけを扱い、確率、calibration、または実コード上の
+抽出完全性を前提にしない。
 
 ```text
 FieldPath :=
-  path in FieldSpace
+  finite sequence in FieldSpace
 
 ReachableFieldPath(F, U, h, p)
   = p starts at F
@@ -554,6 +556,35 @@ StepRelation(F, op, F')
 ForecastCone(F, U, h) :=
   { p : FieldPath | ReachableFieldPath(F, U, h, p) }
 ```
+
+Lean formalization へ移す場合の最小語彙は、次の順で分離する。
+
+```text
+SoftwareField:
+  field state carrier
+
+OperationSupport:
+  Field -> Set Operation
+
+Horizon:
+  Nat
+
+StepRelation:
+  Field -> Operation -> Field -> Prop
+
+ReachableFieldPath:
+  start field
+  + bounded path
+  + every adjacent pair is witnessed by supported step
+
+ForecastCone:
+  bounded reachable path set
+```
+
+この分離により、support の制約、step relation の simulation、horizon の単調性を
+それぞれ別 theorem schema として扱える。
+最初の formal target は、`ForecastCone` 自体の豊かな semantics ではなく、
+support inclusion と step simulation から cone projection が従うという片方向 theorem である。
 
 artifact action 付きの cone は、formal core の `ForecastCone(F, U, h)` から派生させる。
 set-valued action の場合は、candidate update ごとに cone を生成し、その族を envelope へまとめる。
@@ -586,6 +617,10 @@ ConsequenceEnvelope :=
 ```
 
 理論家には `ForecastCone`、実務家には `ConsequenceEnvelope`、tooling には simulator output を返す。
+ArchSig の `forecast-cone-skeleton-v0` は、この formal core の有限 support refs、
+bounded horizon、path class candidates、forecast boundary、unknown remainder を保持する
+review artifact である。これは `ForecastCone(F, U, h)` の Lean theorem witness ではなく、
+probability、causal correctness、global safety、または calibration 済み予測を結論しない。
 
 ### 13. Observation Boundaries and Governance Interventions（観測境界と governance intervention）
 
