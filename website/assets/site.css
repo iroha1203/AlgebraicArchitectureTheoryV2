@@ -428,8 +428,7 @@ p {
 }
 
 .section-grid,
-.notation-grid,
-.profile-grid {
+.notation-grid {
   display: grid;
   grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
   gap: clamp(34px, 7vw, 86px);
@@ -958,22 +957,6 @@ p {
   color: var(--ink-muted);
   font-size: 1rem;
   line-height: 1.42;
-}
-
-.profile-copy {
-  max-width: 680px;
-}
-
-.profile-copy p {
-  color: var(--ink-muted);
-  font-size: clamp(1.05rem, 2vw, 1.25rem);
-}
-
-.profile-copy a {
-  display: inline-block;
-  margin-top: 20px;
-  font-family: var(--font-sans);
-  font-weight: 750;
 }
 
 .article-hero {
@@ -1765,8 +1748,7 @@ p {
 
   .hero-grid,
   .section-grid,
-  .notation-grid,
-  .profile-grid {
+  .notation-grid {
     grid-template-columns: 1fr;
   }
 
