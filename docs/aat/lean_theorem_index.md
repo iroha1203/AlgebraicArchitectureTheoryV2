@@ -2210,6 +2210,9 @@ Issue [#287](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/2
 の対象範囲は、数学設計書 9 の `ArchitectureCore` / `CertifiedArchitecture`
 を既存の bounded flatness、finite `ComponentUniverse`、`ProofObligation`
 API に接続する proof-carrying schema として固定することである。
+Issue [#838](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/838)
+では、`ArchitectureCore` が Foundations で引用する selected-presentation claim
+boundary を theorem package として束ねる。
 実コード extractor の完全性、runtime telemetry の完全性、global semantic universe
 completeness は主張しない。
 
@@ -2218,16 +2221,23 @@ completeness は主張しない。
 | `RuntimeDependencyRole` | `inductive` | runtime dependency を raw / protected / forbidden / unprotected の selected role metadata として区別する。telemetry completeness は主張しない。 | `defined only` |
 | `ArchitectureCore` | `structure` | `ArchitectureFlatnessModel`、static `ComponentUniverse`、component equality / static edge / runtime edge / boundary policy / abstraction policy の decidability、runtime role、semantic required diagram decidability を束ねる最小 core。 | `defined only` |
 | `ArchitectureCore.selectedPresentation` | `def` | core 自身の component carrier 上の selected presentation。ambient repository extraction とは別前提。 | `defined only` |
+| `ArchitectureCore.selectedPresentationJudgement_iff` | `theorem` | core の selected presentation 上の `AATJudgement` が、その presentation での claim evaluation と一致する。 | `proved` |
 | `ArchitectureCore.toFlatnessModel` | `def` | proof-carrying wrapper から既存の flatness model を取り出す。 | `defined only` |
 | `ArchitectureCore.staticLawModel` | `def` | core の finite component universe から既存の `ArchitectureLawModel` を構成する。 | `defined only` |
 | `ArchitectureCore.measuredSemanticUniverse` | `def` | core が保持する measured semantic diagram universe を取り出す。 | `defined only` |
 | `ArchitectureCore.runtimeDependencyRole` | `def` | component pair に対する selected runtime dependency role を取り出す。 | `defined only` |
 | `ArchitectureCore.staticRestriction_eq_staticEdge` | `theorem` | core の selected presentation を通した static restriction が core の selected static edge と一致する。 | `proved` |
 | `ArchitectureCore.runtimeRestriction_eq_runtimeEdge` | `theorem` | core の selected presentation を通した runtime restriction が core の selected runtime edge と一致する。 | `proved` |
+| `ArchitectureCore.staticGraphRestriction_eq_staticGraph` | `theorem` | core の selected presentation を通した static graph restriction が core の selected static graph と一致する。 | `proved` |
+| `ArchitectureCore.runtimeGraphRestriction_eq_runtimeGraph` | `theorem` | core の selected presentation を通した runtime graph restriction が core の selected runtime graph と一致する。 | `proved` |
 | `ArchitectureCore.staticCompleteForSelectedPresentation` | `theorem` | core 自身の selected static relation は selected presentation に complete。ambient extractor completeness は結論しない。 | `proved` |
 | `ArchitectureCore.runtimeCompleteForSelectedPresentation` | `theorem` | core 自身の selected runtime relation は selected presentation に complete。runtime telemetry completeness は結論しない。 | `proved` |
+| `ArchitectureCore.staticCompleteGraphForSelectedPresentation` | `theorem` | #837 の `CompleteForGraph` bridge を使い、core 自身の selected static graph が selected presentation に complete であることを graph-level に読む。 | `proved` |
+| `ArchitectureCore.runtimeCompleteGraphForSelectedPresentation` | `theorem` | #837 の `CompleteForGraph` bridge を使い、core 自身の selected runtime graph が selected presentation に complete であることを graph-level に読む。 | `proved` |
 | `ArchitectureCore.component_mem_staticUniverse` | `theorem` | core の `ComponentUniverse.covers` から component membership を取り出す。 | `proved` |
 | `ArchitectureCore.staticCoverageComplete` | `theorem` | core の static dependency evidence が `ComponentUniverse` で cover されることを取り出す。 | `proved` |
+| `ArchitectureCore.SelectedClaimBoundary` | `structure` | Foundations 向け claim boundary package。`judgementBridge`、static / runtime restriction、graph restriction、relation / graph completeness、static coverage を selected presentation 相対で束ねる。 | `defined only` |
+| `ArchitectureCore.selectedClaimBoundary` | `theorem` | 任意の `ArchitectureCore` から `SelectedClaimBoundary` を構成する。ambient repository completeness、runtime telemetry completeness、global semantic universe completeness は結論しない。 | `proved` |
 | `ArchitectureLawRole` | `inductive` | law universe の required / optional / derived role tag。 | `defined only` |
 | `ArchitectureLawUniverse` | `structure` | finite law list と role assignment を束ねる。 | `defined only` |
 | `ArchitectureLawUniverse.Required` | `def` | law が finite universe に含まれ、required role を持つこと。 | `defined only` |

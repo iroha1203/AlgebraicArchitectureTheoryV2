@@ -59,6 +59,19 @@ def selectedPresentation
     SelectedPresentation C C :=
   X.flatness.selectedPresentation
 
+/--
+Judgement bridge for claims read at the core's selected presentation.
+
+This is the `ArchitectureCore`-level spelling of the Foundations judgement
+form: a claim is licensed exactly at the selected presentation where it is
+evaluated.
+-/
+theorem selectedPresentationJudgement_iff
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs)
+    (claim : PresentationClaim C C) :
+    AATJudgement X.selectedPresentation claim ↔ claim X.selectedPresentation :=
+  aatJudgement_iff X.selectedPresentation claim
+
 /-- Forget the proof-carrying wrapper and recover the flatness model. -/
 def toFlatnessModel
     (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
@@ -97,6 +110,18 @@ theorem runtimeRestriction_eq_runtimeEdge
       X.flatness.runtime.edge :=
   ArchitectureFlatnessModel.runtimeRestriction_eq_runtimeEdge X.flatness
 
+/-- Static graph evidence restricts to itself through the core's presentation. -/
+theorem staticGraphRestriction_eq_staticGraph
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    GraphRestriction X.selectedPresentation X.flatness.static = X.flatness.static :=
+  graphRestriction_identity X.flatness.static
+
+/-- Runtime graph evidence restricts to itself through the core's presentation. -/
+theorem runtimeGraphRestriction_eq_runtimeGraph
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    GraphRestriction X.selectedPresentation X.flatness.runtime = X.flatness.runtime :=
+  graphRestriction_identity X.flatness.runtime
+
 /--
 The core is complete for its own selected static relation.  This does not lift
 to complete extraction from an ambient repository.
@@ -115,6 +140,26 @@ theorem runtimeCompleteForSelectedPresentation
     CompleteForRelation X.selectedPresentation X.flatness.runtime.edge :=
   ArchitectureFlatnessModel.runtimeCompleteForSelectedPresentation X.flatness
 
+/--
+The core is complete for its own selected static graph.  This is the graph-level
+form of `staticCompleteForSelectedPresentation`.
+-/
+theorem staticCompleteGraphForSelectedPresentation
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    CompleteForGraph X.selectedPresentation X.flatness.static :=
+  completeForGraph_of_completeForRelation
+    (staticCompleteForSelectedPresentation X)
+
+/--
+The core is complete for its own selected runtime graph.  This is the graph-level
+form of `runtimeCompleteForSelectedPresentation`.
+-/
+theorem runtimeCompleteGraphForSelectedPresentation
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    CompleteForGraph X.selectedPresentation X.flatness.runtime :=
+  completeForGraph_of_completeForRelation
+    (runtimeCompleteForSelectedPresentation X)
+
 /-- Every component is covered by the proof-carrying static universe. -/
 theorem component_mem_staticUniverse
     (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) (c : C) :
@@ -126,6 +171,59 @@ theorem staticCoverageComplete
     (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
     StaticCoverageComplete X.flatness X.staticUniverse :=
   staticCoverageComplete_of_componentUniverse X.flatness X.staticUniverse
+
+/--
+Foundations-facing claim boundary supplied by an `ArchitectureCore`.
+
+Every field is relative to `X.selectedPresentation`.  The package bundles the
+selected judgement bridge, selected static / runtime restriction facts,
+selected graph / relation completeness, and finite static universe coverage.
+It does not state ambient repository completeness, runtime telemetry
+completeness, or global semantic universe completeness.
+-/
+structure SelectedClaimBoundary
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) : Prop where
+  judgementBridge :
+    ∀ claim : PresentationClaim C C,
+      AATJudgement X.selectedPresentation claim ↔ claim X.selectedPresentation
+  staticRestriction :
+    EdgeRestriction X.selectedPresentation X.flatness.static.edge =
+      X.flatness.static.edge
+  runtimeRestriction :
+    EdgeRestriction X.selectedPresentation X.flatness.runtime.edge =
+      X.flatness.runtime.edge
+  staticGraphRestriction :
+    GraphRestriction X.selectedPresentation X.flatness.static = X.flatness.static
+  runtimeGraphRestriction :
+    GraphRestriction X.selectedPresentation X.flatness.runtime = X.flatness.runtime
+  staticComplete :
+    CompleteForRelation X.selectedPresentation X.flatness.static.edge
+  runtimeComplete :
+    CompleteForRelation X.selectedPresentation X.flatness.runtime.edge
+  staticGraphComplete :
+    CompleteForGraph X.selectedPresentation X.flatness.static
+  runtimeGraphComplete :
+    CompleteForGraph X.selectedPresentation X.flatness.runtime
+  staticCoverage :
+    StaticCoverageComplete X.flatness X.staticUniverse
+
+/--
+The core exposes its selected-presentation claim boundary as a single theorem
+package.
+-/
+theorem selectedClaimBoundary
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    SelectedClaimBoundary X where
+  judgementBridge := selectedPresentationJudgement_iff X
+  staticRestriction := staticRestriction_eq_staticEdge X
+  runtimeRestriction := runtimeRestriction_eq_runtimeEdge X
+  staticGraphRestriction := staticGraphRestriction_eq_staticGraph X
+  runtimeGraphRestriction := runtimeGraphRestriction_eq_runtimeGraph X
+  staticComplete := staticCompleteForSelectedPresentation X
+  runtimeComplete := runtimeCompleteForSelectedPresentation X
+  staticGraphComplete := staticCompleteGraphForSelectedPresentation X
+  runtimeGraphComplete := runtimeCompleteGraphForSelectedPresentation X
+  staticCoverage := staticCoverageComplete X
 
 end ArchitectureCore
 
