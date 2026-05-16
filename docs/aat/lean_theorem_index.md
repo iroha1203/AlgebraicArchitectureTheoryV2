@@ -69,16 +69,33 @@ ambient repository 全体の component / edge / telemetry / semantic observation
 | `PresentationClaim` | `abbrev` | selected presentation に index された claim。 | `defined only` |
 | `AATJudgement` | `def` | `P` の下で claim を読む Foundations judgement form。 | `defined only` |
 | `aatJudgement_iff` | `theorem` | `AATJudgement P claim` は `claim P` の評価である。 | `proved` |
+| `aatJudgement_intro` | `theorem` | `claim P` から `AATJudgement P claim` を導入する。 | `proved` |
+| `aatJudgement_elim` | `theorem` | `AATJudgement P claim` から `claim P` を取り出す。 | `proved` |
+| `aatJudgement_congr` | `theorem` | selected presentation 上で同値な claim は judgement として同値。 | `proved` |
 | `EdgeRestriction` | `def` | ambient edge relation を selected presentation 上へ制限する。 | `defined only` |
 | `GraphRestriction` | `def` | ambient `ArchGraph` を selected presentation 上の `ArchGraph` へ制限する。 | `defined only` |
 | `SameEdgeRestriction` | `def` | 二つの ambient relation が selected presentation からは同じに見えること。 | `defined only` |
+| `sameEdgeRestriction_refl` | `theorem` | selected edge restriction の反射性。 | `proved` |
+| `sameEdgeRestriction_symm` | `theorem` | selected edge restriction の対称性。 | `proved` |
+| `sameEdgeRestriction_trans` | `theorem` | selected edge restriction の推移性。 | `proved` |
+| `sameEdgeRestriction_of_edgeRestriction_eq` | `theorem` | selected edge restriction の関数等式から `SameEdgeRestriction` を得る。 | `proved` |
+| `edgeRestriction_eq_of_sameEdgeRestriction` | `theorem` | `SameEdgeRestriction` から selected edge restriction の関数等式を得る。 | `proved` |
+| `sameEdgeRestriction_iff_edgeRestriction_eq` | `theorem` | `SameEdgeRestriction` と selected edge restriction equality の同値。 | `proved` |
 | `CompleteForRelation` | `def` | ambient relation のすべての edge endpoint が selected presentation に表現されること。 | `defined only` |
 | `CompleteForGraph` | `def` | `CompleteForRelation` の graph-level spelling。 | `defined only` |
+| `completeForGraph_iff_completeForRelation` | `theorem` | graph-level completeness と relation-level completeness の定義的同値。 | `proved` |
+| `completeForGraph_of_completeForRelation` | `theorem` | relation-level completeness から graph-level completeness を得る。 | `proved` |
+| `completeForRelation_of_completeForGraph` | `theorem` | graph-level completeness から relation-level completeness を得る。 | `proved` |
 | `completeForRelation_left_covered` | `theorem` | complete relation から edge の左 endpoint coverage を取り出す。 | `proved` |
 | `completeForRelation_right_covered` | `theorem` | complete relation から edge の右 endpoint coverage を取り出す。 | `proved` |
 | `completeForRelation_of_covers_all` | `theorem` | 全 ambient component coverage があれば任意 relation に対する complete representation を得る。 | `proved` |
 | `completeForRelation_identity` | `theorem` | identity presentation は自身の universe 上の任意 relation に complete。 | `proved` |
 | `edgeRestriction_identity` | `theorem` | identity presentation を通した edge restriction は元の relation と一致する。 | `proved` |
+| `graphRestriction_identity` | `theorem` | identity presentation を通した graph restriction は元の graph と一致する。 | `proved` |
+| `completeForGraph_identity` | `theorem` | identity presentation は自身の universe 上の任意 graph に complete。 | `proved` |
+| `sameEdgeRestriction_of_graphRestriction_eq` | `theorem` | restricted graph equality から selected edge restriction equivalence を得る。 | `proved` |
+| `graphRestriction_eq_of_sameEdgeRestriction` | `theorem` | selected edge restriction equivalence から restricted graph equality を得る。 | `proved` |
+| `sameEdgeRestriction_iff_graphRestriction_eq` | `theorem` | graph-level で `SameEdgeRestriction` と restricted graph equality が同値。 | `proved` |
 | `CompleteExtractionCounterexample.same_selectedRestriction` | `theorem` | empty ambient relation と out-of-scope edge を追加した relation は selected restriction が一致する。 | `proved` |
 | `CompleteExtractionCounterexample.complete_base` | `theorem` | empty ambient relation は selected presentation に complete。 | `proved` |
 | `CompleteExtractionCounterexample.not_complete_withOutOfScopeEdge` | `theorem` | out-of-scope source を持つ ambient edge は selected presentation に complete ではない。 | `proved` |
