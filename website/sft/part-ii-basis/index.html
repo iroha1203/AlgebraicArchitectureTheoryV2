@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="SFT Part II: AAT dependency, ArchSig observation, and claim boundaries for Software Field Theory."
+      content="SFT Part II: AAT / SFT interface, AAT dependency, ArchSig observation, and claim boundaries for Software Field Theory."
     >
     <title>SFT Part II: Algebraic and Observational Basis</title>
     <link rel="alternate" hreflang="en" href="./">
@@ -31,7 +31,6 @@
         <nav class="site-nav" aria-label="Primary navigation">
           <a href="../../">Home</a>
           <a href="../../aat/">AAT</a>
-          <a href="../../interface/">Interface</a>
           <a class="is-active" href="../">SFT</a>
           <a href="../../archsig/">ArchSig</a>
           <a href="../../outreach/">Outreach</a>
@@ -63,10 +62,13 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#aat-dependency">AAT dependency</a></li>
+                <li><a href="#dependency-direction">Dependency direction</a></li>
+                <li><a href="#translation-rules">Translation rules</a></li>
+                <li><a href="#forbidden-readings">Forbidden readings</a></li>
                 <li><a href="#archsig-bridge">ArchSig bridge</a></li>
                 <li><a href="#claim-levels">Claim levels</a></li>
                 <li><a href="#basis-boundary">Boundary</a></li>
+                <li><a href="#canonical-sources">Canonical sources</a></li>
               </ol>
             </nav>
             <div class="source-panel">
@@ -95,8 +97,8 @@
           </aside>
 
           <div class="article-main">
-            <section id="aat-dependency" class="article-section">
-              <h2>AAT dependency</h2>
+            <section id="dependency-direction" class="article-section">
+              <h2>Dependency direction</h2>
               <p>
                 SFT sits on AAT, but AAT does not depend on SFT. AAT turns
                 software architecture into local algebra. SFT uses that algebra
@@ -132,6 +134,77 @@ observable coordinate    -> ArchitectureSignature
 admissibility boundary   -> theorem boundary / non-conclusions
 local path skeleton      -> ArchitecturePath</code></pre>
               </figure>
+            </section>
+
+            <section id="translation-rules" class="article-section">
+              <h2>Translation rules</h2>
+              <p>
+                Interface terms are mappings, not redefinitions. SFT may use
+                AAT vocabulary as local premises and observation axes, but SFT
+                trajectory, forecast, policy, and feedback concepts remain SFT
+                concepts.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong><code>ArchitectureObject</code></strong>
+                  <span>Read in SFT as the architecture projection of a field state.</span>
+                </li>
+                <li>
+                  <strong><code>ArchitectureOperation</code></strong>
+                  <span>Read as a local law premise for an accepted or proposed transition.</span>
+                </li>
+                <li>
+                  <strong><code>InvariantFamily</code></strong>
+                  <span>Read as a constraint family the field attempts to preserve.</span>
+                </li>
+                <li>
+                  <strong><code>ObstructionWitness</code></strong>
+                  <span>Read as a selected unsafe, costly, or blocked trajectory coordinate.</span>
+                </li>
+                <li>
+                  <strong><code>ArchitectureSignature</code></strong>
+                  <span>Read as a partial coordinate system for observing trajectories.</span>
+                </li>
+                <li>
+                  <strong>Theorem boundary / non-conclusions</strong>
+                  <span>Read as the claim boundary that SFT forecasts and governance reports must not cross.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="forbidden-readings" class="article-section">
+              <h2>Forbidden readings</h2>
+              <p>
+                The interface exists to prevent accidental claim promotion.
+                Local architecture facts do not become global software-history
+                facts merely because they are useful premises in an SFT model.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>AAT lawfulness</strong>
+                  <span>Do not read it as future trajectory safety.</span>
+                </li>
+                <li>
+                  <strong>AAT measured zero</strong>
+                  <span>Do not read it as safety for unmeasured axes.</span>
+                </li>
+                <li>
+                  <strong>AAT operation preservation</strong>
+                  <span>Do not read it as global policy safety.</span>
+                </li>
+                <li>
+                  <strong>SFT <code>ForecastCone</code> narrowing</strong>
+                  <span>Do not read it as global risk reduction.</span>
+                </li>
+                <li>
+                  <strong>ArchSig extraction</strong>
+                  <span>Do not read it as a ground-truth architecture object.</span>
+                </li>
+                <li>
+                  <strong>SFT forecast</strong>
+                  <span>Do not read it as a Lean theorem.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="archsig-bridge" class="article-section">
@@ -233,6 +306,36 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 <li>
                   <strong>Empirical forecast</strong>
                   <span>Requires trace or dataset calibration; it is not obtained by renaming a theorem.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="canonical-sources" class="article-section">
+              <h2>Canonical sources</h2>
+              <p>
+                This page is the website-level home for the AAT / SFT
+                interface. The repository document remains the authoritative
+                statement of mapping tables, claim levels, and non-confusion
+                rules.
+              </p>
+              <ul class="chapter-list">
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/aat_interface.md">
+                    AAT / SFT interface source
+                  </a>
+                  <span>Full dependency, translation, non-confusion, and ArchSig bridge rules.</span>
+                </li>
+                <li>
+                  <a href="../../aat/status/">
+                    AAT Lean Status
+                  </a>
+                  <span>How to read proved declarations, defined-only surfaces, and proof obligations.</span>
+                </li>
+                <li>
+                  <a href="../">
+                    Software Field Theory
+                  </a>
+                  <span>Computable software evolution after the interface boundary is explicit.</span>
                 </li>
               </ul>
             </section>
