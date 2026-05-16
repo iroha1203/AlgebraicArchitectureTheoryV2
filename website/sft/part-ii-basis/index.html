@@ -62,7 +62,10 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#reader-model">Reader model</a></li>
                 <li><a href="#dependency-direction">Dependency direction</a></li>
+                <li><a href="#borrowed-from-aat">Borrowed from AAT</a></li>
+                <li><a href="#sft-side-concepts">SFT-side concepts</a></li>
                 <li><a href="#translation-rules">Translation rules</a></li>
                 <li><a href="#forbidden-readings">Forbidden readings</a></li>
                 <li><a href="#archsig-bridge">ArchSig bridge</a></li>
@@ -82,6 +85,16 @@
                 <li>
                   <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d7f18097bca0f71edb08b8ab0a33b009e68cd33d/docs/sft/aat_interface.md">
                     AAT / SFT interface
+                  </a>
+                </li>
+                <li>
+                  <a href="../../aat/">
+                    AAT website
+                  </a>
+                </li>
+                <li>
+                  <a href="../../archsig/">
+                    ArchSig website
                   </a>
                 </li>
                 <li>
@@ -117,6 +130,44 @@
           </aside>
 
           <div class="article-main">
+            <section id="reader-model" class="article-section">
+              <h2>Reader model</h2>
+              <p>
+                Part II is the interface chapter. It gives a website-local way
+                to check what SFT is allowed to inherit from AAT, what SFT adds
+                on its own side, and which readings are explicitly blocked.
+              </p>
+              <div class="article-table">
+                <table>
+                  <caption>SFT says / SFT does not say</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">SFT says</th>
+                      <th scope="col">SFT does not say</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>AAT supplies local algebra, theorem boundaries, and selected non-conclusions.</td>
+                      <td>AAT theorem status automatically becomes empirical forecast status.</td>
+                    </tr>
+                    <tr>
+                      <td>AAT claims may be used as local premises inside bounded SFT reachability or safety schemas.</td>
+                      <td>AAT lawfulness alone proves future trajectory safety for a software field.</td>
+                    </tr>
+                    <tr>
+                      <td>ArchSig supplies measured axes, missing axes, evidence boundaries, and tooling estimates.</td>
+                      <td>ArchSig output is a ground-truth architecture object or a Lean theorem.</td>
+                    </tr>
+                    <tr>
+                      <td>SFT introduces field state, trajectories, forecast boundaries, and feedback governance.</td>
+                      <td>SFT redefines AAT concepts or makes AAT depend on software-field dynamics.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
             <section id="dependency-direction" class="article-section">
               <h2>Dependency direction</h2>
               <p>
@@ -128,11 +179,11 @@
               <ul class="status-list">
                 <li>
                   <strong>Architecture projection</strong>
-                  <span>SFT reads `ArchitectureObject` as the architecture object projected from a `SoftwareField`.</span>
+                  <span>SFT reads <code>ArchitectureObject</code> as the architecture object projected from a <code>SoftwareField</code>.</span>
                 </li>
                 <li>
                   <strong>Local transition premise</strong>
-                  <span>`ArchitectureOperation` becomes a local premise for accepted or proposed field transitions.</span>
+                  <span><code>ArchitectureOperation</code> becomes a local premise for accepted or proposed field transitions.</span>
                 </li>
                 <li>
                   <strong>Forecast boundary</strong>
@@ -144,6 +195,73 @@
                 <pre><code>AAT does not depend on SFT.
 SFT depends on AAT.</code></pre>
               </figure>
+              <div class="claim-strip">
+                <p>
+                  The dependency arrow is one-way: <a href="../../aat/">AAT</a>
+                  remains an independent local algebra of architecture, while
+                  <a href="../">SFT</a> uses selected AAT objects as premises,
+                  coordinates, and boundaries for bounded software-evolution
+                  models.
+                </p>
+              </div>
+            </section>
+
+            <section id="borrowed-from-aat" class="article-section">
+              <h2>Borrowed from AAT</h2>
+              <p>
+                SFT borrows AAT terms by role. The table is not an empirical
+                promotion rule; it records which AAT surface may appear inside
+                an SFT model and what job it performs there.
+              </p>
+              <div class="article-table">
+                <table>
+                  <caption>AAT terms used by SFT</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">SFT-side role</th>
+                      <th scope="col">AAT surface</th>
+                      <th scope="col">Use inside SFT</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Architecture projection</th>
+                      <td><code>ArchitectureObject</code></td>
+                      <td>The projected architecture object obtained from a selected <code>SoftwareField</code> slice.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Local transition law</th>
+                      <td><code>ArchitectureOperation</code></td>
+                      <td>A local admissibility premise for accepted or proposed field transitions.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Protected constraint</th>
+                      <td><code>InvariantFamily</code></td>
+                      <td>The selected constraint family a transition is expected to preserve.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Defect / repair target</th>
+                      <td><code>ObstructionWitness</code></td>
+                      <td>A selected unsafe, costly, or blocked trajectory coordinate, not a complete latent-cause inventory.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Partial observation coordinate</th>
+                      <td><code>ArchitectureSignature</code></td>
+                      <td>An axis-wise coordinate system for observing selected architecture states and deltas.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Admissibility boundary</th>
+                      <td>Theorem boundary / non-conclusions</td>
+                      <td>Conditions that SFT forecasts and governance reports must preserve as claim boundaries.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Local path skeleton</th>
+                      <td><code>ArchitecturePath</code></td>
+                      <td>A local skeleton for transition reasoning, not a complete history of software evolution.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <figure class="code-panel">
                 <figcaption>Minimal interface map</figcaption>
                 <pre><code>architecture projection   -> ArchitectureObject
@@ -156,6 +274,54 @@ local path skeleton      -> ArchitecturePath</code></pre>
               </figure>
             </section>
 
+            <section id="sft-side-concepts" class="article-section">
+              <h2>SFT-side concepts</h2>
+              <p>
+                These concepts are introduced on the SFT side of the interface.
+                They may use AAT projections and ArchSig observations, but they
+                are not AAT definitions.
+              </p>
+              <div class="article-table">
+                <table>
+                  <caption>Concepts introduced by SFT</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">SFT concept</th>
+                      <th scope="col">Role</th>
+                      <th scope="col">Boundary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">field state / <code>SoftwareField</code></th>
+                      <td>The selected computable state of a development field.</td>
+                      <td>It is not itself an AAT <code>ArchitectureObject</code>; AAT sees the architecture projection.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">trajectory</th>
+                      <td>A modeled sequence or set of possible field transitions.</td>
+                      <td>It is not proven safe by local AAT lawfulness alone.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ForecastCone</code></th>
+                      <td>A bounded set of possible future states under stated support.</td>
+                      <td>Cone narrowing is not global risk reduction without calibration and stated axes.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ConsequenceEnvelope</code></th>
+                      <td>A boundary-aware report of expected effects, missing axes, and non-conclusions.</td>
+                      <td>It is a forecast artifact, not a theorem unless separately formalized as a schema.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">field update / feedback governance</th>
+                      <td>Rules for updating estimates and review policy from observations.</td>
+                      <td>Operational usefulness does not promote correlation to a formal or causal claim.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
             <section id="translation-rules" class="article-section">
               <h2>Translation rules</h2>
               <p>
@@ -164,6 +330,50 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 trajectory, forecast, policy, and feedback concepts remain SFT
                 concepts.
               </p>
+              <div class="article-table">
+                <table>
+                  <caption>One-way translation rules</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">AAT side</th>
+                      <th scope="col">Allowed SFT reading</th>
+                      <th scope="col">Claim boundary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row"><code>ArchitectureObject</code></th>
+                      <td>Architecture projection of a field state.</td>
+                      <td>Does not describe the whole development field.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ArchitectureOperation</code></th>
+                      <td>Local law premise for an accepted or proposed transition.</td>
+                      <td>Does not establish global policy safety.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>InvariantFamily</code></th>
+                      <td>Constraint family the field attempts to preserve.</td>
+                      <td>Applies only to selected invariants and stated assumptions.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ObstructionWitness</code></th>
+                      <td>Selected repair target or forecast boundary axis.</td>
+                      <td>Absence of the selected witness is not absence of latent action.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ArchitectureSignature</code></th>
+                      <td>Partial coordinate system for trajectory observation.</td>
+                      <td>Measured zero is not safety for unmeasured axes.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Theorem boundary / non-conclusions</th>
+                      <td>Forecast and governance claim boundary.</td>
+                      <td>Cannot be dropped when translating into tooling or review reports.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <ul class="term-list">
                 <li>
                   <strong><code>ArchitectureObject</code></strong>
@@ -199,6 +409,50 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 Local architecture facts do not become global software-history
                 facts merely because they are useful premises in an SFT model.
               </p>
+              <div class="article-table">
+                <table>
+                  <caption>Claim-preserving readings and blocked promotions</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">AAT / tooling fact</th>
+                      <th scope="col">Allowed SFT reading</th>
+                      <th scope="col">Forbidden reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">selected witness absence</th>
+                      <td>A selected local defect is not observed under the current measurement universe.</td>
+                      <td>Future trajectory safety, or absence of all latent action.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">signature axis zero / measured zero</th>
+                      <td>A selected measured coordinate is zero.</td>
+                      <td>Unmeasured axes are also safe or zero.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">operation preserves invariant</th>
+                      <td>One accepted transition is locally admissible under stated assumptions.</td>
+                      <td>The policy, organization, or future trajectory is globally safe.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">theorem boundary</th>
+                      <td>A premise boundary for SFT reachability or safety schema.</td>
+                      <td>An empirical prediction theorem.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">observed signature delta</th>
+                      <td>A comparable axis-wise trajectory observation.</td>
+                      <td>A unique causal identification of the artifact action.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">ArchSig extraction</th>
+                      <td>A tooling estimate with measured axes and non-conclusions.</td>
+                      <td>A ground-truth architecture object or a Lean proof.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <ul class="term-list">
                 <li>
                   <strong>AAT lawfulness</strong>
@@ -235,6 +489,35 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 unmeasured axes, out-of-scope axes, evidence boundaries, and
                 measurement non-conclusions.
               </p>
+              <div class="article-table">
+                <table>
+                  <caption>ArchSig bridge anchors</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Layer</th>
+                      <th scope="col">Anchor</th>
+                      <th scope="col">Non-conclusion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Formal anchor</th>
+                      <td>AAT observables, theorem boundary status, selected invariant and witness families.</td>
+                      <td>Tool output does not strengthen an AAT theorem.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Computational anchor</th>
+                      <td>Measured signature axes, comparable deltas, missing invariants, expected axis delta ranges.</td>
+                      <td>Unmeasured does not mean zero, and comparable does not mean causal.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">SFT estimate anchor</th>
+                      <td>Action class candidates, target regions, forecast boundary, unknown unmodeled remainder.</td>
+                      <td>A forecast artifact is not a Lean theorem and not a point prediction.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <figure class="code-panel">
                 <figcaption>Observation bridge</figcaption>
                 <pre><code>real artifacts
@@ -296,6 +579,35 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 empirical forecast validated against traces or deployed
                 outcomes.
               </p>
+              <div class="article-table">
+                <table>
+                  <caption>Claim level transfer</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">AAT-side claim level</th>
+                      <th scope="col">SFT-side reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">AAT theorem level</th>
+                      <td>Local premise for an SFT theorem schema, such as reachability or safety under stated support.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AAT tooling claim</th>
+                      <td>SFT field estimate with evidence boundary and non-conclusions preserved.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AAT empirical hypothesis</th>
+                      <td>SFT calibrated forecast candidate, not a proved theorem.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AAT non-conclusions</th>
+                      <td>SFT forecast boundary items that must stay visible in reports and governance decisions.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <div class="claim-strip">
                 <p>
                   A good specification may narrow a cone under support
@@ -352,6 +664,12 @@ local path skeleton      -> ArchitecturePath</code></pre>
                     AAT Lean Status
                   </a>
                   <span>How to read proved declarations, defined-only surfaces, and proof obligations.</span>
+                </li>
+                <li>
+                  <a href="../../archsig/">
+                    ArchSig website
+                  </a>
+                  <span>Tooling layer overview for measured axes, review artifacts, SFT forecasts, and operational feedback.</span>
                 </li>
                 <li>
                   <a href="../">
