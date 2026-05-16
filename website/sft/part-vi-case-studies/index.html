@@ -68,6 +68,7 @@
                 <li><a href="#incident-response">Incident response</a></li>
                 <li><a href="#ai-shortcut">AI shortcut</a></li>
                 <li><a href="#end-of-life">End-of-life</a></li>
+                <li><a href="#case-matrix">Case matrix</a></li>
                 <li><a href="#case-boundary">Boundary</a></li>
               </ol>
             </nav>
@@ -152,6 +153,65 @@
                   <span>Specification tightening narrows selected witness families; it does not prove global risk reduction.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Coupon PRD worked example flow</figcaption>
+                <pre><code>RawArtifactAction
+  -> ArtifactDescriptor
+  -> ForceDescriptor candidates
+  -> OperationSupportEstimate
+  -> ForecastConeSkeleton path classes
+  -> ConsequenceEnvelope
+  -> review / CI / issue decomposition recommendation
+  -> observed outcome
+  -> FieldUpdate</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <caption>Coupon PRD from artifact action to field update</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Step</th>
+                      <th scope="col">Reading</th>
+                      <th scope="col">Boundary preserved</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row"><code>RawArtifactAction</code></th>
+                      <td>Coupon feature addition targets Checkout / Payment requirements and operation support.</td>
+                      <td>No pricing strategy, marketing success, or fraud model conclusion.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ForceDescriptor</code></th>
+                      <td>Candidate forces include DiscountPolicy insertion, PaymentAdapter patching, repository dependency, and UI-only flag paths.</td>
+                      <td>These are candidates under selected text, not an exhaustive repository extraction.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>OperationSupportEstimate</code></th>
+                      <td>Lawful policy insertion can become cheaper when rounding, composition, authorization, and refund semantics are explicit.</td>
+                      <td>Support estimates do not imply accepted PR history or future implementation choices.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ConsequenceEnvelope</code></th>
+                      <td>Path classes expose hidden dependency, rounding obstruction, UI drift, and unknown remainder risks.</td>
+                      <td>The envelope is not a causal proof or a single forecast.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>FieldUpdate</code></th>
+                      <td>Observed PR, review, CI, or incident outcome can revise missing invariant and support records.</td>
+                      <td>Update quality depends on observed evidence and calibration, not on the case narrative alone.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="claim-strip">
+                <p>
+                  A useful Coupon PRD report should recommend specification
+                  tightening, review owners, CI checks, or issue decomposition
+                  without presenting the recommendation as a Lean theorem,
+                  causal forecast, or complete extractor result.
+                </p>
+              </div>
             </section>
 
             <section id="migration" class="article-section">
@@ -256,6 +316,66 @@
   + ConsequenceEnvelope
   + non-conclusions</code></pre>
               </figure>
+            </section>
+
+            <section id="case-matrix" class="article-section">
+              <h2>Case-study matrix</h2>
+              <p>
+                The cases use the same SFT vocabulary but exercise different
+                boundaries. The matrix is a reading guide for what each case is
+                allowed to support and what it leaves open.
+              </p>
+              <div class="article-table">
+                <table>
+                  <caption>Comparative case boundaries</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Case</th>
+                      <th scope="col">Primary input</th>
+                      <th scope="col">Envelope focus</th>
+                      <th scope="col">Review / governance output</th>
+                      <th scope="col">Non-conclusion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Coupon PRD</th>
+                      <td>Feature PRD and selected checkout/payment boundary.</td>
+                      <td>Policy insertion, hidden dependencies, rounding obstruction, UI drift.</td>
+                      <td>Spec tightening, review ownership, CI assertions, issue split.</td>
+                      <td>No market, fraud, or global risk claim.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Migration</th>
+                      <td>Old/new component boundary and compatibility constraints.</td>
+                      <td>Bridge, dual-run, replacement, rollback, projection mismatch.</td>
+                      <td>Migration plan boundaries, comparison checks, rollback support.</td>
+                      <td>No guarantee that migration is economically optimal.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Incident response</th>
+                      <td>Runtime observation and post-incident evidence.</td>
+                      <td>Root-cause witness, missing invariant, governance update, forecast revision.</td>
+                      <td>New observation axes, tests, review rules, incident feedback records.</td>
+                      <td>No future trajectory safety proof.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AI shortcut</th>
+                      <td>Prompt boundary, generated proposal, theorem and review boundary.</td>
+                      <td>Shortcut path, missed theorem boundary, obstruction witness.</td>
+                      <td>Proposal restriction, review / CI mediation, posterior update.</td>
+                      <td>No general AI safety or model quality theorem.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">End-of-life</th>
+                      <td>Architecture signature, repair cost, migration support, ownership capacity.</td>
+                      <td>Repair, migration, contraction, deletion futures.</td>
+                      <td>Decision boundary and evidence record for lifecycle governance.</td>
+                      <td>No human intention or market success prediction.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="case-boundary" class="article-section">

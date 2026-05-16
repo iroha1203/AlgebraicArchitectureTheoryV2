@@ -64,6 +64,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#computational-problems">Computational problems</a></li>
+                <li><a href="#archsig-sft-pipeline">ArchSig-SFT pipeline</a></li>
                 <li><a href="#simulator">PRD simulator</a></li>
                 <li><a href="#ai-governance">AI governance</a></li>
                 <li><a href="#review-systems">Review systems</a></li>
@@ -156,6 +157,72 @@
               </p>
             </section>
 
+            <section id="archsig-sft-pipeline" class="article-section">
+              <h2>ArchSig-SFT pipeline</h2>
+              <p>
+                The current ArchSig-SFT tooling turns Markdown PRD, Spec,
+                Issue, or AI proposal text into a bounded chain of forecast
+                artifacts. This is a tooling estimate: it preserves source
+                refs, selected support, finite horizon, unknown remainder, and
+                non-conclusions rather than claiming a future outcome.
+              </p>
+              <figure class="code-panel">
+                <figcaption>B13 implemented pipeline</figcaption>
+                <pre><code>real PRD / Spec / Issue / AI proposal
+  -> ArtifactDescriptor builder
+  -> OperationSupportEstimate generator
+  -> ForecastConeSkeleton generator
+  -> ConsequenceEnvelope generator
+  -> end-to-end sft-forecast command</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <caption>Input, output, and boundary by stage</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Stage</th>
+                      <th scope="col">Input</th>
+                      <th scope="col">Output</th>
+                      <th scope="col">Soundness boundary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row"><code>ArtifactDescriptor</code></th>
+                      <td>Selected artifact text and source refs.</td>
+                      <td>Action class, scope, target regions, missing evidence.</td>
+                      <td>Not a ground-truth architecture object.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>OperationSupportEstimate</code></th>
+                      <td>Descriptor refs and policy hints.</td>
+                      <td>Candidate operation families, known forbidden support, unknown remainder.</td>
+                      <td>Not accepted PR history or actual future support.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ForecastConeSkeleton</code></th>
+                      <td>Operation support and bounded horizon config.</td>
+                      <td>Finite-support path class candidates.</td>
+                      <td>No probability, global risk reduction, or trajectory-level safety claim.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ConsequenceEnvelope</code></th>
+                      <td>Forecast skeleton and reporting boundary.</td>
+                      <td>Affected axes, obstruction candidates, missing boundaries, review / CI recommendation.</td>
+                      <td>Not a causal proof, Lean theorem, or forecast correctness certificate.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>
+                The public ArchSig pages describe the same surface from the
+                tooling side: see the <a href="../../archsig/workflows/">workflow
+                overview</a>, <a href="../../archsig/artifacts/">artifact
+                catalog</a>, and <a href="../../archsig/roadmap/">B12/B13
+                roadmap</a>.
+              </p>
+            </section>
+
             <section id="simulator" class="article-section">
               <h2>PRD-to-ConsequenceEnvelope simulator</h2>
               <p>
@@ -179,6 +246,15 @@
                 decomposition recommendations. Empirical prediction claims
                 depend on later weighting and calibration.
               </p>
+              <div class="claim-strip">
+                <p>
+                  Current B12/B13 artifacts support bounded descriptor,
+                  support, cone, envelope, and calibration-hook records. They
+                  do not support probability weighting, causal forecast,
+                  extractor completeness, or framework-specific semantic
+                  completeness without additional adapters and datasets.
+                </p>
+              </div>
               <ul class="status-list">
                 <li>
                   <strong>Level 3 minimum</strong>
@@ -193,6 +269,35 @@
                   <span>Observed issue, PR, review, CI, or incident outcomes are compared against the report and used for field update.</span>
                 </li>
               </ul>
+              <div class="article-table">
+                <table>
+                  <caption>Current capability and remaining gaps</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Surface</th>
+                      <th scope="col">Current capability</th>
+                      <th scope="col">Remaining gap</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Markdown PRD / Spec</th>
+                      <td>Can be converted through the B13 pipeline into forecast artifacts and a report.</td>
+                      <td>Real dataset calibration and held-out outcome validation remain future work.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">GitHub Issue / AI proposal</th>
+                      <td>Representable as artifact text under the same boundary vocabulary.</td>
+                      <td>Native GitHub Issue JSON and AI proposal JSON adapters remain planned gaps.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Review / CI recommendation</th>
+                      <td>Report can name missing boundaries, theorem boundaries, and decomposition targets.</td>
+                      <td>Recommendation quality is not a theorem and needs empirical feedback loops.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="ai-governance" class="article-section">
