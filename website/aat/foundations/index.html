@@ -144,15 +144,6 @@
                   </p>
                 </div>
               </div>
-              <div class="claim-strip micro-example">
-                <p>
-                  <strong>Micro-example.</strong> A coupon-service slice may
-                  measure static edges to a payment port and selected adapter
-                  internals. That same slice says nothing about retry behavior,
-                  incident telemetry, or semantic workflow completeness unless
-                  those observations are selected too.
-                </p>
-              </div>
               <dl class="term-list definition-list">
                 <div>
                   <dt>universe</dt>
@@ -568,35 +559,38 @@ P |-AAT phi
               </p>
               <p id="example-4-1" class="statement">
                 <a class="statement-anchor" href="#example-4-1">Example 4.1.</a>
-                A repository slice containing a coupon service, a payment
-                interface, a payment adapter, and selected adapter internals
-                can be a valid component universe for a static split theorem.
-                That same slice is not, by itself, evidence about runtime
-                retries, cache invalidation, rounding order, or operational
-                incidents. Those require their own observation contexts.
+                Let a selected presentation <code>P</code> choose one
+                component <code>A</code> from an ambient system that also
+                contains an unselected component <code>C</code>. Two ambient
+                relations may look identical through <code>P</code> even when
+                one of them contains an edge whose source is <code>C</code>.
+                The selected restriction is the object being judged.
               </p>
               <figure class="code-panel">
                 <figcaption>Minimal bounded universe</figcaption>
-                <pre><code>components:
-  CouponService
-  PaymentPort
-  PaymentAdapter.publicApi
-  PaymentAdapter.internalCache
+                <pre><code>ambient components:
+  A
+  C
 
-selected good static edges:
-  CouponService -&gt; PaymentPort
-  PaymentPort -&gt; PaymentAdapter.publicApi
+selected presentation P:
+  selected component A
+  embedding A |-&gt; A
 
-counterexample static edge:
-  CouponService -&gt; PaymentAdapter.internalCache
+ambient alternatives:
+  R0 = empty relation
+  R1 = { C -&gt; A }
 
-bounded good claim:
-  if the counterexample edge is absent from selected evidence,
-  the coupon service has no selected edge to adapter internals
+same selected reading:
+  EdgeRestriction P R0 = EdgeRestriction P R1
+
+bounded claim:
+  P licenses only the selected-restriction statement
 
 not selected:
-  retry behavior, cache invalidation, rounding order,
-  incident telemetry, semantic workflow completeness</code></pre>
+  C as a selected endpoint
+  the ambient edge C -&gt; A
+  runtime telemetry
+  semantic workflow observations</code></pre>
               </figure>
               <ul class="term-list">
                 <li>
@@ -614,26 +608,22 @@ not selected:
               </ul>
               <p id="bounded-reading-4-2" class="statement">
                 <a class="statement-anchor" href="#bounded-reading-4-2">Bounded reading 4.2.</a>
-                In the good static presentation, the coupon service reaches the
-                payment implementation only through the declared payment port.
-                If the theorem package supplies the required coverage and
-                closure assumptions, this supports the bounded statement that
-                the selected evidence contains no coupon-to-internal-cache
-                edge.
+                In this presentation, <code>R0</code> and <code>R1</code>
+                have the same selected restriction. A theorem or report may
+                therefore license a statement about the selected edge relation
+                under <code>P</code>. It does not automatically license a
+                statement about every edge in the ambient system.
               </p>
               <p id="non-conclusion-4-3" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-4-3">Non-conclusion 4.3.</a>
                 The conclusion is deliberately narrow. A runtime trace could
-                still show <code>CouponService</code> calling
-                <code>PaymentAdapter.publicApi</code> through a retry helper,
-                or a later static scan could reveal the bad edge
-                <code>CouponService</code> to
-                <code>PaymentAdapter.internalCache</code>. Neither case is
-                erased by the good-universe reading; each requires its own
-                observation context and theorem boundary. The fuller worked
-                version appears in the
-                <a href="../examples-and-boundaries/#coupon-case-study">
-                  coupon case study</a>.
+                still reveal the ambient edge <code>C -&gt; A</code>, or a later
+                selected presentation could include <code>C</code> and change
+                the judgement being evaluated. Neither case is erased by the
+                bounded reading; each requires its own observation context and
+                theorem boundary. Worked domain examples belong on the
+                <a href="../examples-and-boundaries/">examples and boundaries
+                  page</a>.
               </p>
             </section>
 
