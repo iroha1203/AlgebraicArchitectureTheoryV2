@@ -62,11 +62,13 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#reading-model">Reading model</a></li>
                 <li><a href="#cone-narrowing">Cone narrowing</a></li>
                 <li><a href="#support-safety">Support safety</a></li>
                 <li><a href="#proposal-accounting">Proposal accounting</a></li>
                 <li><a href="#feedback-update">Feedback update</a></li>
                 <li><a href="#stable-regions">Stable regions</a></li>
+                <li><a href="#principle-anchors">Anchors</a></li>
                 <li><a href="#principle-boundary">Boundary</a></li>
               </ol>
             </nav>
@@ -74,7 +76,7 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/cc3b18de69d5dce422f4d68b82092f2f359c9732/docs/sft/software_field_theory.md#part-iv-principles-and-theorems%E5%8E%9F%E7%90%86%E3%81%A8%E5%AE%9A%E7%90%86">
                     Part IV source
                   </a>
                 </li>
@@ -91,6 +93,41 @@
           </aside>
 
           <div class="article-main">
+            <section id="reading-model" class="article-section">
+              <h2>Reading model</h2>
+              <div class="reader-model">
+                <div>
+                  <h3>SFT does not say</h3>
+                  <p>
+                    A theorem-shaped schema is not a global safety theorem, a
+                    Lean theorem, or an empirical accuracy claim. Cone
+                    narrowing can move risk to another witness family or an
+                    unmeasured axis.
+                  </p>
+                </div>
+                <div>
+                  <h3>SFT says</h3>
+                  <p>
+                    Under explicit support semantics, simulations, safe
+                    regions, coverage policies, observation boundaries, and
+                    horizons, selected reachable path sets and records satisfy
+                    relative schemas.
+                  </p>
+                </div>
+              </div>
+              <p id="schema-iv-0" class="statement">
+                <a class="statement-anchor" href="#schema-iv-0">Schema IV.0.</a>
+                Every Part IV claim must carry its preconditions, conclusion,
+                claim level, and non-conclusions. Without those fields it is
+                only an intuition, not an SFT schema.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Schema IV.0">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-future">boundary schema</span>
+                <span>Website exposition of SFT claim discipline; no Lean theorem is added here.</span>
+              </p>
+            </section>
+
             <section id="cone-narrowing" class="article-section">
               <h2>ForecastCone narrowing</h2>
               <p>
@@ -98,6 +135,19 @@
                 intended feature direction, and excludes a selected witness
                 family, then the relevant cone narrows under the selected
                 support semantics.
+              </p>
+              <p id="schema-iv-1" class="statement">
+                <a class="statement-anchor" href="#schema-iv-1">Schema IV.1.</a>
+                If <code>PointwiseSupportInclusion(U2, U1)</code>,
+                <code>StepSimulation(U2, U1, relation)</code>, and the initial
+                relation between <code>F2</code> and <code>F1</code> hold, then
+                <code>ForecastCone(F2, U2, h)</code> projects into
+                <code>ForecastCone(F1, U1, h)</code> for the selected horizon.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Schema IV.1">
+                <span class="statement-status-label">Claim level</span>
+                <span class="status-badge status-badge-defined">L2 schema</span>
+                <span>L3 requires transition-kernel semantics; L4 requires dataset calibration.</span>
               </p>
               <figure class="code-panel">
                 <figcaption>Set-valued schema</figcaption>
@@ -111,6 +161,14 @@
                 The proof idea is induction on horizon. Each accepted U2-step
                 is simulated by a U1-step while the relation between fields is
                 maintained.
+              </p>
+              <p id="proof-iv-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-iv-1">Proof idea.</a>
+                At horizon zero the related fields satisfy the assumed
+                relation. At horizon successor, simulate the first
+                <code>U2</code> step by a <code>U1</code> step, preserve the
+                relation for the next field, and apply the induction
+                hypothesis to the remaining horizon.
               </p>
               <p>
                 The claim level is L2 for set-valued support semantics and
@@ -126,6 +184,19 @@
                 operation names alone. Support safety says that selected
                 accepted operations preserve a selected safe region under a
                 selected observation model.
+              </p>
+              <p id="schema-iv-2" class="statement">
+                <a class="statement-anchor" href="#schema-iv-2">Schema IV.2.</a>
+                If the current field is in safe region <code>R</code> under
+                observation <code>O</code>, accepted steps are selected from
+                support <code>U</code>, and those support operations preserve
+                <code>R</code>, then the accepted trajectory remains in
+                <code>R</code>.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Schema IV.2">
+                <span class="statement-status-label">Claim level</span>
+                <span class="status-badge status-badge-defined">L2 schema</span>
+                <span>The claim is relative to selected safe regions and accepted trajectories.</span>
               </p>
               <ul class="status-list">
                 <li>
@@ -159,6 +230,18 @@
                 Review, CI, type checking, and architecture rules produce
                 records that feed field update and governance design.
               </p>
+              <p id="schema-iv-3" class="statement">
+                <a class="statement-anchor" href="#schema-iv-3">Schema IV.3.</a>
+                <code>ProposalAccounting</code> classifies proposal pressure as
+                accepted, rejected, delayed, unresolved, coordination record,
+                runtime pressure estimate, or unaccounted remainder under an
+                explicit coverage and overlap policy.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Schema IV.3">
+                <span class="statement-status-label">Claim level</span>
+                <span class="status-badge status-badge-future">L1-L2 schema</span>
+                <span>L1 for trace records; L2 only when coverage and overlap policy are explicit.</span>
+              </p>
               <figure class="code-panel">
                 <figcaption>ProposalAccounting</figcaption>
                 <pre><code>ProposalAccounting(raw_proposal_universe)
@@ -180,6 +263,17 @@
                 review outcome, CI outcome, and runtime feedback can update
                 the posterior field by making forecast error and missing
                 evidence explicit.
+              </p>
+              <p id="schema-iv-4" class="statement">
+                <a class="statement-anchor" href="#schema-iv-4">Schema IV.4.</a>
+                Feedback boundary update preserves observed transition,
+                forecast error, missing evidence, unexpected witnesses, policy
+                drift, and non-conclusions in the posterior field record.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Schema IV.4">
+                <span class="statement-status-label">Claim level</span>
+                <span class="status-badge status-badge-defined">L2 record schema</span>
+                <span>Forecast-quality improvement is L4 only after dataset calibration.</span>
               </p>
               <figure class="code-panel">
                 <figcaption>Boundary-aware update</figcaption>
@@ -206,6 +300,19 @@
                 stable region, and reachable preimage before adding
                 probability or recurrence claims.
               </p>
+              <p id="schema-iv-5" class="statement">
+                <a class="statement-anchor" href="#schema-iv-5">Schema IV.5.</a>
+                In the set-valued core, <code>MayReach</code>,
+                <code>MustReach</code>, <code>StableRegion</code>, and
+                <code>ReachablePreimage</code> are separate predicates. Strong
+                attractor or basin claims require added recurrence, policy, or
+                probability semantics.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Schema IV.5">
+                <span class="statement-status-label">Claim level</span>
+                <span class="status-badge status-badge-defined">L2 schema</span>
+                <span>L3 requires transition kernels; L4 requires trace calibration.</span>
+              </p>
               <figure class="code-panel">
                 <figcaption>Minimal vocabulary</figcaption>
                 <pre><code>MayReach_h(F, U, A)
@@ -220,6 +327,55 @@ ReachablePreimage_h(U, A)</code></pre>
                 `DefaultPath`, `RecurrentPattern`, `StableRegion`, and
                 `ReachablePreimage`.
               </p>
+            </section>
+
+            <section id="principle-anchors" class="article-section">
+              <h2>Formal and computational anchors</h2>
+              <p>
+                Part IV is organized as theorem-shaped schemas. The anchors
+                below state what each schema needs before it can be read as a
+                formal, probabilistic, or empirical claim.
+              </p>
+              <div class="formal-anchor-cards" aria-label="SFT Part IV schema anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Reachability</span>
+                      <h3>Cone narrowing and support safety</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">L2 schemas</span>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>PointwiseSupportInclusion</code>, <code>StepSimulation</code>, <code>SupportOperationsPreserveSafeRegion</code></dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No global risk reduction, no safety for unmeasured axes, and no guarantee beyond the selected horizon.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Feedback</span>
+                      <h3>Accounting, update, and stable regions</h3>
+                    </div>
+                    <span class="status-badge status-badge-future">L1-L4 boundary</span>
+                  </header>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ProposalAccounting</code>, <code>FieldUpdate</code>, <code>StableRegion</code>, <code>ReachablePreimage</code></dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>Trace records, set-valued schemas, transition kernels, and calibrated forecasts remain distinct claim levels.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="principle-boundary" class="article-section">
