@@ -6773,6 +6773,10 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
     let fixture_validation = out_dir.join("artifact-descriptor-validation.json");
     let generated_descriptor = out_dir.join("artifact-descriptor-generated.json");
     let generated_validation = out_dir.join("artifact-descriptor-generated-validation.json");
+    let github_issue_descriptor = out_dir.join("artifact-descriptor-github-issue.json");
+    let github_issue_validation = out_dir.join("artifact-descriptor-github-issue-validation.json");
+    let ai_proposal_descriptor = out_dir.join("artifact-descriptor-ai-proposal.json");
+    let ai_proposal_validation = out_dir.join("artifact-descriptor-ai-proposal-validation.json");
     let invalid_descriptor = out_dir.join("artifact-descriptor-invalid.json");
     let invalid_validation = out_dir.join("artifact-descriptor-invalid-validation.json");
 
@@ -6823,6 +6827,50 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
         generated_validation
             .to_str()
             .expect("generated validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--from-github-issue-json",
+        root.join("github_issue_sft_adapter.json")
+            .to_str()
+            .expect("GitHub Issue JSON fixture path is utf-8"),
+        "--out",
+        github_issue_descriptor
+            .to_str()
+            .expect("GitHub Issue descriptor path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--input",
+        github_issue_descriptor
+            .to_str()
+            .expect("GitHub Issue descriptor path is utf-8"),
+        "--out",
+        github_issue_validation
+            .to_str()
+            .expect("GitHub Issue validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--from-ai-proposal-json",
+        root.join("ai_proposal_sft_adapter.json")
+            .to_str()
+            .expect("AI proposal JSON fixture path is utf-8"),
+        "--out",
+        ai_proposal_descriptor
+            .to_str()
+            .expect("AI proposal descriptor path is utf-8"),
+    ]);
+    run_sig0(&[
+        "artifact-descriptor",
+        "--input",
+        ai_proposal_descriptor
+            .to_str()
+            .expect("AI proposal descriptor path is utf-8"),
+        "--out",
+        ai_proposal_validation
+            .to_str()
+            .expect("AI proposal validation path is utf-8"),
     ]);
 
     let static_json = read_json(&static_validation);
@@ -6924,6 +6972,40 @@ fn cli_artifact_descriptor_emits_fixture_and_validates_boundaries() {
                 conclusion == "descriptor evidence does not establish causal prediction"
             })
     );
+
+    let github_issue = read_json(&github_issue_descriptor);
+    assert_eq!(github_issue["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(github_issue["artifactKind"], "issue");
+    assert_eq!(
+        github_issue["sourceRefs"][0]["sourceKind"],
+        "github-issue-json"
+    );
+    assert!(
+        github_issue["missingEvidence"]
+            .as_array()
+            .expect("missingEvidence is array")
+            .iter()
+            .any(|evidence| evidence["evidenceId"] == "missing:github-api-context")
+    );
+    let github_issue_report = read_json(&github_issue_validation);
+    assert_eq!(github_issue_report["summary"]["result"], "pass");
+
+    let ai_proposal = read_json(&ai_proposal_descriptor);
+    assert_eq!(ai_proposal["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(ai_proposal["artifactKind"], "ai-proposal");
+    assert_eq!(
+        ai_proposal["sourceRefs"][0]["sourceKind"],
+        "ai-proposal-json"
+    );
+    assert!(
+        ai_proposal["missingEvidence"]
+            .as_array()
+            .expect("missingEvidence is array")
+            .iter()
+            .any(|evidence| evidence["evidenceId"] == "missing:human-review")
+    );
+    let ai_proposal_report = read_json(&ai_proposal_validation);
+    assert_eq!(ai_proposal_report["summary"]["result"], "pass");
 
     let mut invalid = artifact;
     invalid["forecastNonConclusions"] = serde_json::json!([]);
@@ -7805,6 +7887,50 @@ fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
     let golden_envelope =
         read_json(&root.join("sft_forecast_coupon_golden/consequence-envelope-report.json"));
     assert_eq!(envelope_json, golden_envelope);
+}
+
+#[test]
+fn cli_sft_forecast_accepts_json_adapters_and_retains_source_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("sft-forecast-github-issue-json");
+    let descriptor = out_dir.join("artifact-descriptor.json");
+    let envelope = out_dir.join("consequence-envelope-report.json");
+
+    run_sig0(&[
+        "sft-forecast",
+        "--artifact",
+        root.join("github_issue_sft_adapter.json")
+            .to_str()
+            .expect("GitHub Issue JSON fixture path is utf-8"),
+        "--artifact-format",
+        "github-issue-json",
+        "--horizon-steps",
+        "2",
+        "--horizon-window",
+        "GitHub Issue JSON bounded forecast horizon",
+        "--out-dir",
+        out_dir.to_str().expect("output dir path is utf-8"),
+    ]);
+
+    assert!(descriptor.exists(), "expected descriptor output");
+    assert!(envelope.exists(), "expected consequence envelope output");
+
+    let descriptor_json = read_json(&descriptor);
+    assert_eq!(descriptor_json["schemaVersion"], "artifact-descriptor-v0");
+    assert_eq!(descriptor_json["artifactKind"], "issue");
+    assert_eq!(
+        descriptor_json["sourceRefs"][0]["sourceKind"],
+        "github-issue-json"
+    );
+    assert!(
+        descriptor_json["measurementBoundary"]["unsupportedConstructs"]
+            .as_array()
+            .expect("unsupportedConstructs is array")
+            .iter()
+            .any(|construct| {
+                construct == "implicit requirements not present in the supplied JSON artifact"
+            })
+    );
 }
 
 #[test]
