@@ -915,6 +915,117 @@ p {
   overflow-wrap: anywhere;
 }
 
+.formal-anchor-cards {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.formal-anchor-card {
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--accent-blue);
+  border-radius: 6px;
+  background: var(--surface);
+  padding: 18px;
+}
+
+.formal-anchor-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.formal-anchor-card-label {
+  display: block;
+  color: var(--accent-warm);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.formal-anchor-card h3 {
+  margin-top: 4px;
+  font-size: 1.22rem;
+  line-height: 1.18;
+}
+
+.formal-anchor-audits {
+  margin: 0 0 14px;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  line-height: 1.48;
+}
+
+.formal-anchor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+  margin: 0;
+}
+
+.formal-anchor-grid > div {
+  min-width: 0;
+}
+
+.formal-anchor-card dt {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.formal-anchor-card dd {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.96rem;
+  line-height: 1.46;
+}
+
+.formal-anchor-card code {
+  overflow-wrap: anywhere;
+}
+
+.formal-anchor-details {
+  border-top: 1px solid var(--rule);
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.formal-anchor-details summary {
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+.formal-anchor-details summary:hover {
+  color: var(--accent-blue);
+}
+
+.formal-anchor-code-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+.formal-anchor-code-list li {
+  min-width: 0;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  line-height: 1.36;
+}
+
 .article-table {
   margin-top: 18px;
   overflow-x: auto;
@@ -969,26 +1080,6 @@ p {
   overflow-wrap: anywhere;
   white-space: normal;
   word-break: break-word;
-}
-
-.formal-anchors-table table {
-  min-width: 760px;
-}
-
-.table-row-note {
-  display: block;
-  margin-top: 6px;
-  color: var(--ink-muted);
-  font-size: 0.86rem;
-  font-weight: 500;
-  line-height: 1.42;
-}
-
-.table-row-note a {
-  color: var(--accent-blue);
-  font-weight: 750;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
 }
 
 .page-nav {
@@ -1100,52 +1191,13 @@ p {
     grid-template-columns: 1fr;
   }
 
-  .reader-model {
+  .formal-anchor-grid,
+  .formal-anchor-code-list {
     grid-template-columns: 1fr;
   }
 
-  .formal-anchors-table {
-    overflow-x: visible;
-  }
-
-  .formal-anchors-table table {
-    min-width: 0;
-    border-top: 0;
-  }
-
-  .formal-anchors-table thead {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
-  .formal-anchors-table tbody tr {
-    display: block;
-    border-top: 1px solid var(--rule-strong);
-    padding: 14px 0;
-  }
-
-  .formal-anchors-table th[scope="row"],
-  .formal-anchors-table td {
-    display: block;
-    border-bottom: 0;
-    padding: 6px 0;
-  }
-
-  .formal-anchors-table td::before {
-    content: attr(data-label);
-    display: block;
-    color: var(--accent-blue);
-    font-family: var(--font-sans);
-    font-size: 0.7rem;
-    font-weight: 850;
-    line-height: 1.2;
-    margin-bottom: 3px;
-    text-transform: uppercase;
+  .reader-model {
+    grid-template-columns: 1fr;
   }
 
   h1 {
@@ -1203,6 +1255,14 @@ p {
   }
 
   .theorem-card-header {
+    display: grid;
+  }
+
+  .formal-anchor-card {
+    padding: 16px 14px;
+  }
+
+  .formal-anchor-card-header {
     display: grid;
   }
 

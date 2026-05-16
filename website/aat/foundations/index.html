@@ -639,137 +639,195 @@ not selected:
             <section id="status-index" class="article-section">
               <h2>Formal anchors</h2>
               <p>
-                The chapter text above is the mathematical reading. This table
-                is the audit trail: it records which Lean declarations anchor
-                the claims, what status they have, and which boundary remains
-                outside the theorem. Each row points back to the statement
-                anchors it audits, so the table remains an index rather than a
-                substitute for the chapter text.
+                The chapter text above is the mathematical reading. These
+                cards are the audit trail: each one records the representative
+                Lean declarations, current status, and boundary for one claim
+                group. Full declaration lists stay folded by default, so this
+                section remains an index rather than a substitute for the
+                theorem index.
               </p>
-              <div class="article-table formal-anchors-table">
-                <table>
-                  <caption>Foundations formal-anchor audit trail</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Claim group</th>
-                      <th scope="col">Formal anchor</th>
-                      <th scope="col">Current Lean status</th>
-                      <th scope="col">Boundary</th>
-                      <th scope="col">Primary index</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th scope="row">
-                        Selected presentation boundary
-                        <span class="table-row-note">
-                          Audits
-                          <a href="#proposition-1-2">Proposition 1.2</a>,
-                          <a href="#definition-2-0">Definition 2.0</a>,
-                          <a href="#proposition-2-1">Proposition 2.1</a>,
-                          and <a href="#counterexample-2-2">Counterexample 2.2</a>.
-                        </span>
-                      </th>
-                      <td data-label="Formal anchor">
-                        <code>SelectedPresentation</code>,
-                        <code>AATJudgement</code>,
-                        <code>aatJudgement_iff</code>,
-                        <code>CompleteForRelation</code>,
-                        <code>CompleteForGraph</code>,
-                        <code>completeForGraph_iff_completeForRelation</code>,
-                        <code>SameEdgeRestriction</code>,
-                        <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>
-                      </td>
-                      <td data-label="Current Lean status"><code>defined only</code> for vocabulary; judgement, graph bridge, and counterexample anchors <code>proved</code></td>
-                      <td data-label="Boundary">Selected presentation equality is not ambient repository completeness; real-code extraction, telemetry completeness, and semantic universe completeness remain separate premises.</td>
-                      <td data-label="Primary index">
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">
-                          Selected Presentation / Complete Extraction Boundary
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">
-                        Architecture core presentation
-                        <span class="table-row-note">
-                          Audits
-                          <a href="#definition-1-1">Definition 1.1</a>,
-                          <a href="#proposition-2-1">Proposition 2.1</a>,
-                          <a href="#counterexample-2-2">Counterexample 2.2</a>,
-                          and <a href="#non-conclusion-2-3">Non-conclusion 2.3</a>.
-                        </span>
-                      </th>
-                      <td data-label="Formal anchor">
-                        <code>ArchitectureCore</code>,
-                        <code>ArchitectureCore.selectedPresentation</code>,
-                        <code>ArchitectureCore.selectedPresentationJudgement_iff</code>,
-                        <code>ArchitectureCore.staticGraphRestriction_eq_staticGraph</code>,
-                        <code>ArchitectureCore.runtimeGraphRestriction_eq_runtimeGraph</code>,
-                        <code>ArchitectureCore.staticCompleteForSelectedPresentation</code>,
-                        <code>ArchitectureCore.runtimeCompleteForSelectedPresentation</code>,
-                        <code>ArchitectureCore.staticCompleteGraphForSelectedPresentation</code>,
-                        <code>ArchitectureCore.runtimeCompleteGraphForSelectedPresentation</code>,
-                        <code>ArchitectureCore.component_mem_staticUniverse</code>,
-                        <code>ArchitectureCore.staticCoverageComplete</code>,
-                        <code>ArchitectureCore.SelectedClaimBoundary</code>,
-                        <code>ArchitectureCore.selectedClaimBoundary</code>
-                      </td>
-                      <td data-label="Current Lean status"><code>defined only</code> for <code>ArchitectureCore</code> and <code>SelectedClaimBoundary</code>; selected-presentation bridge and package theorem <code>proved</code></td>
-                      <td data-label="Boundary">Supplied finite universe and selected predicates; no global extraction completeness, runtime telemetry completeness, or global semantic universe completeness.</td>
-                      <td data-label="Primary index">
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">
-                          Architecture Core / Certified Architecture
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">
-                        Finite universe bridge package
-                        <span class="table-row-note">
-                          Audits
-                          <a href="#definition-3-1">Definition 3.1</a>,
-                          <a href="#proposition-3-2">Proposition 3.2</a>,
-                          and <a href="#counterexample-3-3">Counterexample 3.3</a>.
-                        </span>
-                      </th>
-                      <td data-label="Formal anchor">
-                        <code>ComponentUniverse</code>,
-                        <code>ComponentUniverse.edgeClosed_of_covers</code>,
-                        <code>FiniteArchGraph.covers_components</code>,
-                        <code>FiniteArchGraph.edgeClosed_components</code>,
-                        <code>ComponentUniverse.reachable_exists_bounded_path</code>
-                      </td>
-                      <td data-label="Current Lean status"><code>defined only</code> / <code>proved</code> by declaration</td>
-                      <td data-label="Boundary">Finite component list, coverage, edge closure, and explicit graph assumptions.</td>
-                      <td data-label="Primary index">
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">
-                          Finite Universe / Bridge Theorems
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th scope="row">
-                        Thin category and decomposability vocabulary
-                        <span class="table-row-note">
-                          Audits <a href="#remark-3-4">Remark 3.4</a> and
-                          the boundary vocabulary used by the bridge claims.
-                        </span>
-                      </th>
-                      <td data-label="Formal anchor">
-                        <code>ComponentCategory</code>,
-                        <code>Decomposable</code>,
-                        <code>StrictLayered</code>
-                      </td>
-                      <td data-label="Current Lean status"><code>defined only</code> / selected bridge facts <code>proved</code></td>
-                      <td data-label="Boundary">Reachability existence and strict layering; path count, walk length, nilpotence, and spectral facts are separate.</td>
-                      <td data-label="Primary index">
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/mathematical_theory.md#2-architecture-object">
-                          mathematical theory, Chapter 2
-                        </a>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="formal-anchor-cards" aria-label="Foundations formal-anchor audit trail">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Selected presentation boundary</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#proposition-1-2">Proposition 1.2</a>,
+                    <a href="#definition-2-0">Definition 2.0</a>,
+                    <a href="#proposition-2-1">Proposition 2.1</a>, and
+                    <a href="#counterexample-2-2">Counterexample 2.2</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>AATJudgement</code>, <code>CompleteForRelation</code>, <code>CompleteForGraph</code>, and <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> for vocabulary; judgement, graph bridge, and counterexample anchors <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Selected presentation equality is not ambient repository completeness; real-code extraction, telemetry completeness, and semantic universe completeness remain separate premises.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">Selected Presentation / Complete Extraction Boundary</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>SelectedPresentation</code></li>
+                      <li><code>AATJudgement</code></li>
+                      <li><code>aatJudgement_iff</code></li>
+                      <li><code>CompleteForRelation</code></li>
+                      <li><code>CompleteForGraph</code></li>
+                      <li><code>completeForGraph_iff_completeForRelation</code></li>
+                      <li><code>SameEdgeRestriction</code></li>
+                      <li><code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Architecture core presentation</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#definition-1-1">Definition 1.1</a>,
+                    <a href="#proposition-2-1">Proposition 2.1</a>,
+                    <a href="#counterexample-2-2">Counterexample 2.2</a>, and
+                    <a href="#non-conclusion-2-3">Non-conclusion 2.3</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ArchitectureCore.selectedPresentationJudgement_iff</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, and <code>ArchitectureCore.selectedClaimBoundary</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> for <code>ArchitectureCore</code> and <code>SelectedClaimBoundary</code>; selected-presentation bridge and package theorem <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Supplied finite universe and selected predicates; no global extraction completeness, runtime telemetry completeness, or global semantic universe completeness.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">Architecture Core / Certified Architecture</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ArchitectureCore</code></li>
+                      <li><code>ArchitectureCore.selectedPresentation</code></li>
+                      <li><code>ArchitectureCore.selectedPresentationJudgement_iff</code></li>
+                      <li><code>ArchitectureCore.staticGraphRestriction_eq_staticGraph</code></li>
+                      <li><code>ArchitectureCore.runtimeGraphRestriction_eq_runtimeGraph</code></li>
+                      <li><code>ArchitectureCore.staticCompleteForSelectedPresentation</code></li>
+                      <li><code>ArchitectureCore.runtimeCompleteForSelectedPresentation</code></li>
+                      <li><code>ArchitectureCore.staticCompleteGraphForSelectedPresentation</code></li>
+                      <li><code>ArchitectureCore.runtimeCompleteGraphForSelectedPresentation</code></li>
+                      <li><code>ArchitectureCore.component_mem_staticUniverse</code></li>
+                      <li><code>ArchitectureCore.staticCoverageComplete</code></li>
+                      <li><code>ArchitectureCore.SelectedClaimBoundary</code></li>
+                      <li><code>ArchitectureCore.selectedClaimBoundary</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Finite universe bridge package</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#definition-3-1">Definition 3.1</a>,
+                    <a href="#proposition-3-2">Proposition 3.2</a>, and
+                    <a href="#counterexample-3-3">Counterexample 3.3</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ComponentUniverse.edgeClosed_of_covers</code>, <code>FiniteArchGraph.edgeClosed_components</code>, and <code>ComponentUniverse.reachable_exists_bounded_path</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> / <code>proved</code> by declaration.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Finite component list, coverage, edge closure, and explicit graph assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">Finite Universe / Bridge Theorems</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ComponentUniverse</code></li>
+                      <li><code>ComponentUniverse.edgeClosed_of_covers</code></li>
+                      <li><code>FiniteArchGraph.covers_components</code></li>
+                      <li><code>FiniteArchGraph.edgeClosed_components</code></li>
+                      <li><code>ComponentUniverse.reachable_exists_bounded_path</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Thin category and decomposability vocabulary</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#remark-3-4">Remark 3.4</a> and the
+                    boundary vocabulary used by the bridge claims.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ComponentCategory</code>, <code>Decomposable</code>, and <code>StrictLayered</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> / selected bridge facts <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Reachability existence and strict layering; path count, walk length, nilpotence, and spectral facts are separate.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/mathematical_theory.md#2-architecture-object">mathematical theory, Chapter 2</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ComponentCategory</code></li>
+                      <li><code>Decomposable</code></li>
+                      <li><code>StrictLayered</code></li>
+                    </ul>
+                  </details>
+                </article>
               </div>
               <div class="claim-strip">
                 <p>
