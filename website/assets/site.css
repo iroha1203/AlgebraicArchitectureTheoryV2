@@ -447,16 +447,6 @@ p {
   top: 92px;
 }
 
-.home-page main {
-  counter-reset: home-section;
-}
-
-.home-page .research-deep-dive,
-.home-page #outreach,
-.home-page #profile {
-  counter-increment: home-section;
-}
-
 .home-page .section-band {
   position: relative;
   isolation: isolate;
@@ -478,17 +468,6 @@ p {
 .home-page .section-grid {
   grid-template-columns: minmax(230px, 0.76fr) minmax(0, 1.24fr);
   gap: clamp(42px, 8vw, 96px);
-}
-
-.home-page .section-heading::before {
-  content: counter(home-section, decimal-leading-zero);
-  display: block;
-  margin-bottom: 20px;
-  color: var(--accent-blue);
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 500;
-  line-height: 1;
 }
 
 .section-heading p:not(.eyebrow) {
