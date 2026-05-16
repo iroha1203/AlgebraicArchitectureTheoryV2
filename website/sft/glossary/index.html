@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Software Field Theory glossary: formal readings, avoided readings, and chapter references for SFT terms."
+    >
+    <title>SFT Glossary and Terminology Boundary</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a class="is-active" href="../">SFT</a>
+          <a href="../../archsig/">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">SFT</a>
+            <span>Glossary</span>
+          </nav>
+          <p class="eyebrow">SFT Appendix</p>
+          <h1>Glossary and Terminology Boundary</h1>
+          <p class="lede">
+            SFT uses field, force, attractor, basin, cone, envelope, support,
+            policy, and calibration as bounded modeling terms. This glossary
+            fixes the computational reading and the readings that are excluded.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#reader-model">Reader model</a></li>
+                <li><a href="#term-boundary">Term boundary</a></li>
+                <li><a href="#core-distinctions">Core distinctions</a></li>
+                <li><a href="#division-of-work">AAT / ArchSig / SFT</a></li>
+                <li><a href="#source-references">Source references</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT chapters</h2>
+              <ul>
+                <li><a href="../">SFT overview</a></li>
+                <li><a href="../part-i-new-object/">Part I. The New Object</a></li>
+                <li><a href="../part-ii-basis/">Part II. AAT / SFT Interface</a></li>
+                <li><a href="../part-iii-core/">Part III. SFT Core</a></li>
+                <li><a href="../part-iv-principles/">Part IV. Principles</a></li>
+                <li><a href="../part-v-computing-systems/">Part V. Computing Systems</a></li>
+                <li><a href="../part-vi-case-studies/">Part VI. Case Studies</a></li>
+                <li><a href="../part-vii-research-program/">Part VII. Research Program</a></li>
+                <li><a href="./" aria-current="page">Glossary and terminology boundary</a></li>
+                <li><a href="../status/">Status and Claim Boundary</a></li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                A term becomes computational only after its model, support,
+                policy, horizon, observation axes, and missing-evidence
+                boundary are named.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="reader-model" class="article-section">
+              <h2>Reader model</h2>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>SFT does not say</th>
+                      <th>SFT says</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Software evolution is governed by physical laws.</td>
+                      <td>Software evolution can be modeled as bounded computation over selected artifacts, practices, policies, observations, and feedback.</td>
+                    </tr>
+                    <tr>
+                      <td>A forecast is a single predicted future.</td>
+                      <td>A forecast is set-valued or report-valued under an explicit horizon, support relation, policy, and observation boundary.</td>
+                    </tr>
+                    <tr>
+                      <td>Tool output is an architecture theorem.</td>
+                      <td>Tool output is an observation, estimate, report, or review artifact with non-conclusions attached.</td>
+                    </tr>
+                    <tr>
+                      <td>Organization culture and human intention are fully modeled.</td>
+                      <td>The model records selected evidence and preserves unknown or unmodeled remainder.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="term-boundary" class="article-section">
+              <h2>Term boundary</h2>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Term</th>
+                      <th>Formal or computational reading</th>
+                      <th>Avoided reading</th>
+                      <th>Related parts</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th><code>field</code></th>
+                      <td>A selected development context or <code>SoftwareField</code> slice containing codebase memory, artifacts, support, policy, observations, and feedback.</td>
+                      <td>A physical field or complete model of the organization.</td>
+                      <td><a href="../part-i-new-object/">Part I</a>, <a href="../part-iii-core/">Part III</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>force</code></th>
+                      <td>An informal name for artifact-mediated pressure that changes candidate field updates, operation support, policy, or observation components.</td>
+                      <td>A physical vector quantity or deterministic cause.</td>
+                      <td><a href="../part-iii-core/#artifact-action">Part III</a>, <a href="../part-vi-case-studies/">Part VI</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>dissipation</code></th>
+                      <td>Loss, leakage, or untracked remainder across a bounded model, such as missing evidence, review rework, or unobserved risk.</td>
+                      <td>Thermodynamic dissipation or automatic degradation law.</td>
+                      <td><a href="../status/#forecast-boundary">Status</a>, <a href="../part-vii-research-program/">Part VII</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>attractor</code></th>
+                      <td>A stable or preferred region only when stability, recurrence, policy, or probability semantics are supplied.</td>
+                      <td>A guaranteed destination or informal label for any good design.</td>
+                      <td><a href="../part-iv-principles/">Part IV</a>, <a href="../status/">Status</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>basin</code></th>
+                      <td>A reachable preimage or region of support that tends toward a selected stable region under named semantics.</td>
+                      <td>A vague danger zone without a transition, support, or policy definition.</td>
+                      <td><a href="../part-iv-principles/">Part IV</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>ForecastCone</code></th>
+                      <td>A set of reachable field paths relative to a field model, operation support, policy, horizon, and observation boundary.</td>
+                      <td>A point prediction, empirical forecast, or global risk proof without calibration.</td>
+                      <td><a href="../part-iii-core/">Part III</a>, <a href="../status/#forecast-boundary">Status</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>ConsequenceEnvelope</code></th>
+                      <td>A report form that summarizes selected cones, path classes, affected axes, witnesses, missing evidence, and non-conclusions.</td>
+                      <td>A Lean proof, causal proof, or complete impact analysis.</td>
+                      <td><a href="../part-v-computing-systems/">Part V</a>, <a href="../part-vi-case-studies/">Part VI</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>support</code></th>
+                      <td>The operation family considered possible, natural, low-cost, accepted, or generated under an explicit field model.</td>
+                      <td>Universal permission or proof that unsupported paths cannot occur in reality.</td>
+                      <td><a href="../part-iii-core/">Part III</a>, <a href="../part-iv-principles/">Part IV</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>policy</code></th>
+                      <td>A selection, preorder, cost, review, CI, AI, or governance rule over supported operations.</td>
+                      <td>A guarantee that all future choices are safe or compliant.</td>
+                      <td><a href="../part-iii-core/">Part III</a>, <a href="../part-v-computing-systems/">Part V</a></td>
+                    </tr>
+                    <tr>
+                      <th><code>calibration</code></th>
+                      <td>Comparison of forecast reports or model outputs against trace, PR, review, CI, incident, or dataset evidence.</td>
+                      <td>Proof of causality, universal validity, or Lean theorem status.</td>
+                      <td><a href="../part-v-computing-systems/">Part V</a>, <a href="../part-vii-research-program/">Part VII</a></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="core-distinctions" class="article-section">
+              <h2>Core distinctions</h2>
+              <ul class="status-list">
+                <li>
+                  <strong><code>ForecastCone</code> vs. <code>ConsequenceEnvelope</code></strong>
+                  <span>The cone is the set-valued reachable-path object. The envelope is the boundary-aware report that packages one or more cones for review and governance.</span>
+                </li>
+                <li>
+                  <strong><code>Attractor</code> vs. <code>stable region</code></strong>
+                  <span>A stable region is a selected safe or preferred region. Calling it an attractor requires additional stability, recurrence, policy, or probability semantics.</span>
+                </li>
+                <li>
+                  <strong><code>support</code> vs. <code>policy</code></strong>
+                  <span>Support names the operations under consideration. Policy ranks, accepts, rejects, delays, or governs those operations.</span>
+                </li>
+                <li>
+                  <strong><code>measured zero</code> vs. absence</strong>
+                  <span>A zero on a selected axis is not safety on unmeasured axes and not absence of latent action.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="division-of-work" class="article-section">
+              <h2>AAT / ArchSig / SFT</h2>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Layer</th>
+                      <th>Role</th>
+                      <th>Boundary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>AAT</th>
+                      <td>Local algebra of architecture objects, operations, invariants, signatures, paths, and theorem boundaries.</td>
+                      <td>AAT does not depend on SFT, and an AAT theorem is not an empirical prediction.</td>
+                    </tr>
+                    <tr>
+                      <th>ArchSig</th>
+                      <td>Tooling layer that maps real artifacts into observations, reports, signature axes, witnesses, and field estimates.</td>
+                      <td>ArchSig is not AAT or SFT; extractor output is not a ground-truth architecture object.</td>
+                    </tr>
+                    <tr>
+                      <th>SFT</th>
+                      <td>Computational theory of field-shaped software evolution, forecast cones, consequence envelopes, policy, feedback, and calibration.</td>
+                      <td>SFT preserves model boundary, missing evidence, unknown remainder, and claim level.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="source-references" class="article-section">
+              <h2>Source references</h2>
+              <ul class="term-list">
+                <li>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/aeb84341e0cca42b98dde5795740209e230d2fc9/docs/sft/software_field_theory.md">SFT monograph source</a></strong>
+                  <span>Defines the field vocabulary, computable core, ForecastCone, ConsequenceEnvelope, support, policy, calibration, and non-conclusions.</span>
+                </li>
+                <li>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/aeb84341e0cca42b98dde5795740209e230d2fc9/docs/sft/aat_interface.md">AAT / SFT interface source</a></strong>
+                  <span>Defines one-way dependency, translation rules, forbidden readings, and the ArchSig bridge.</span>
+                </li>
+                <li>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/aeb84341e0cca42b98dde5795740209e230d2fc9/docs/tool/README.md">Tooling source</a></strong>
+                  <span>Separates ArchSig Core, Review, SFT, and Operational surfaces from proof and causal claims.</span>
+                </li>
+              </ul>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a href="../part-vii-research-program/">
+                <span>Previous</span>
+                <strong>Part VII. Research Program</strong>
+              </a>
+              <a href="../status/">
+                <span>Next</span>
+                <strong>Status and Claim Boundary</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
