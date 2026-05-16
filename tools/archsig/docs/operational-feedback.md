@@ -58,6 +58,10 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- hypothesis-refresh-cycle \
 
 B10 artifact は operational outcome、calibration、threshold、ownership、repair adoption、
 incident correlation、hypothesis refresh を empirical artifact として保存する。
+Trace-grounded `SoftwareFieldEstimate` reconstruction は
+`docs/tool/software_field_reconstruction_protocol.md` を参照する。B10 artifact は、その protocol
+で使う PR / review / CI / incident / ownership trace の一部であり、observed、derived、
+unavailable、private、unknown、notComparable の境界を保つ必要がある。
 SFT `ConsequenceEnvelope` の calibration / benchmark protocol は
 `docs/tool/sft_calibration_benchmark.md` を参照する。B10 artifact は、その protocol で使う
 observed PR / review / CI / outcome refs と false positive / false negative review を保持する

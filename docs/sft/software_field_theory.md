@@ -183,6 +183,10 @@ SoftwareFieldEstimate :=
   + unknown / unmodeled remainder
 ```
 
+tooling 側では、この境界を
+[`docs/tool/software_field_reconstruction_protocol.md`](../tool/software_field_reconstruction_protocol.md)
+で管理する。そこでは PRD / Issue / PR / review / CI / incident / ownership trace を
+observed、derived、unavailable、private、unknown、notComparable に分ける。
 これにより、SFT は開発場全体の完全モデル化を避けつつ、明示境界内の計算可能な断面を扱う。
 
 ### 4. Architecture Futures and Signature Trajectories（アーキテクチャ未来と署名軌道）
@@ -967,6 +971,7 @@ SFT は概念だけでなく、計算問題の族を定義する。
 Soundness boundary / 健全性境界:
   F_hat は、B の下で選択された evidence、利用できない evidence、
   unknown / unmodeled remainder を記録する。
+  complete reconstruction ではなく、trace source と evidence category を保持する。
 
 Claim Level:
   trace に基づく reconstruction として L1。

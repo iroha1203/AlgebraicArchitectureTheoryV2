@@ -143,6 +143,11 @@ hypothesis-refresh-cycle-v0
 ```
 
 これらは empirical / operational artifact であり、causal theorem を直接主張しない。
+Trace-grounded `SoftwareFieldEstimate` reconstruction では
+`docs/tool/software_field_reconstruction_protocol.md` に従い、PRD / Issue / PR / review / CI /
+incident / ownership trace を observed、derived、unavailable、private、unknown、notComparable に
+分類する。unavailable / private / unknown remainder は measured zero ではなく、
+complete `SoftwareField` reconstruction も主張しない。
 SFT forecast の calibration / benchmark では、`docs/tool/sft_calibration_benchmark.md` に従い、
 forecast item refs と observed PR / review / CI / outcome refs を held-out trace として照合する。
 false positive / false negative review は review mediation と AI shortcut detection を分けて記録し、
