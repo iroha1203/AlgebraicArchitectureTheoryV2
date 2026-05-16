@@ -52,6 +52,28 @@ theorem aatJudgement_iff {Ambient : Type u} {Selected : Type v}
     AATJudgement P claim ↔ claim P :=
   Iff.rfl
 
+/-- Introduce a judgement from the selected presentation-indexed claim. -/
+theorem aatJudgement_intro {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {claim : PresentationClaim Ambient Selected}
+    (h : claim P) : AATJudgement P claim :=
+  h
+
+/-- Eliminate a judgement back to the claim evaluated at its presentation. -/
+theorem aatJudgement_elim {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {claim : PresentationClaim Ambient Selected}
+    (h : AATJudgement P claim) : claim P :=
+  h
+
+/-- Judgements respect pointwise equivalence at the selected presentation. -/
+theorem aatJudgement_congr {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {left right : PresentationClaim Ambient Selected}
+    (h : left P ↔ right P) :
+    AATJudgement P left ↔ AATJudgement P right :=
+  h
+
 /-- Restrict an ambient edge relation to the selected presentation. -/
 def EdgeRestriction {Ambient : Type u} {Selected : Type v}
     (P : SelectedPresentation Ambient Selected)
@@ -71,6 +93,62 @@ def SameEdgeRestriction {Ambient : Type u} {Selected : Type v}
   forall src dst : Selected,
     EdgeRestriction P left src dst ↔ EdgeRestriction P right src dst
 
+/-- Selected edge restriction is reflexive. -/
+theorem sameEdgeRestriction_refl {Ambient : Type u} {Selected : Type v}
+    (P : SelectedPresentation Ambient Selected)
+    (edge : Ambient -> Ambient -> Prop) :
+    SameEdgeRestriction P edge edge := by
+  intro _src _dst
+  rfl
+
+/-- Selected edge restriction is symmetric. -/
+theorem sameEdgeRestriction_symm {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {left right : Ambient -> Ambient -> Prop}
+    (h : SameEdgeRestriction P left right) :
+    SameEdgeRestriction P right left := by
+  intro src dst
+  exact (h src dst).symm
+
+/-- Selected edge restriction is transitive. -/
+theorem sameEdgeRestriction_trans {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {left middle right : Ambient -> Ambient -> Prop}
+    (h₁ : SameEdgeRestriction P left middle)
+    (h₂ : SameEdgeRestriction P middle right) :
+    SameEdgeRestriction P left right := by
+  intro src dst
+  exact Iff.trans (h₁ src dst) (h₂ src dst)
+
+/-- Equal selected edge restrictions give the relational same-restriction predicate. -/
+theorem sameEdgeRestriction_of_edgeRestriction_eq {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {left right : Ambient -> Ambient -> Prop}
+    (h : EdgeRestriction P left = EdgeRestriction P right) :
+    SameEdgeRestriction P left right := by
+  intro src dst
+  rw [h]
+
+/-- The same-restriction predicate gives equality of selected edge restrictions. -/
+theorem edgeRestriction_eq_of_sameEdgeRestriction {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {left right : Ambient -> Ambient -> Prop}
+    (h : SameEdgeRestriction P left right) :
+    EdgeRestriction P left = EdgeRestriction P right := by
+  funext src dst
+  exact propext (h src dst)
+
+/--
+The relational same-restriction predicate is equivalent to equality of the
+selected edge restrictions.
+-/
+theorem sameEdgeRestriction_iff_edgeRestriction_eq {Ambient : Type u} {Selected : Type v}
+    (P : SelectedPresentation Ambient Selected)
+    (left right : Ambient -> Ambient -> Prop) :
+    SameEdgeRestriction P left right ↔
+      EdgeRestriction P left = EdgeRestriction P right :=
+  ⟨edgeRestriction_eq_of_sameEdgeRestriction, sameEdgeRestriction_of_edgeRestriction_eq⟩
+
 /--
 An ambient relation is completely represented by a selected presentation when
 every ambient edge has selected endpoints mapping to it.
@@ -89,6 +167,26 @@ def CompleteForRelation {Ambient : Type u} {Selected : Type v}
 def CompleteForGraph {Ambient : Type u} {Selected : Type v}
     (P : SelectedPresentation Ambient Selected) (G : ArchGraph Ambient) : Prop :=
   CompleteForRelation P G.edge
+
+/-- Graph-level completeness unfolds to relation-level completeness. -/
+theorem completeForGraph_iff_completeForRelation {Ambient : Type u} {Selected : Type v}
+    (P : SelectedPresentation Ambient Selected) (G : ArchGraph Ambient) :
+    CompleteForGraph P G ↔ CompleteForRelation P G.edge :=
+  Iff.rfl
+
+/-- Build graph-level completeness from relation-level completeness. -/
+theorem completeForGraph_of_completeForRelation {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected} {G : ArchGraph Ambient}
+    (h : CompleteForRelation P G.edge) :
+    CompleteForGraph P G :=
+  h
+
+/-- Recover relation-level completeness from graph-level completeness. -/
+theorem completeForRelation_of_completeForGraph {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected} {G : ArchGraph Ambient}
+    (h : CompleteForGraph P G) :
+    CompleteForRelation P G.edge :=
+  h
 
 /-- The left endpoint of a completely represented edge is covered by the presentation. -/
 theorem completeForRelation_left_covered {Ambient : Type u} {Selected : Type v}
@@ -134,6 +232,46 @@ theorem edgeRestriction_identity {C : Type u}
     EdgeRestriction (SelectedPresentation.identity C) edge = edge := by
   funext src dst
   simp [EdgeRestriction, SelectedPresentation.identity]
+
+/-- Restricting a graph through the identity presentation leaves it unchanged. -/
+theorem graphRestriction_identity {C : Type u} (G : ArchGraph C) :
+    GraphRestriction (SelectedPresentation.identity C) G = G := by
+  cases G
+  simp [GraphRestriction, edgeRestriction_identity]
+
+/-- The identity presentation is complete for every graph on its own universe. -/
+theorem completeForGraph_identity {C : Type u} (G : ArchGraph C) :
+    CompleteForGraph (SelectedPresentation.identity C) G :=
+  completeForRelation_identity G.edge
+
+/-- Equal graph restrictions imply the selected edge restrictions are the same. -/
+theorem sameEdgeRestriction_of_graphRestriction_eq {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {left right : ArchGraph Ambient}
+    (h : GraphRestriction P left = GraphRestriction P right) :
+    SameEdgeRestriction P left.edge right.edge :=
+  sameEdgeRestriction_of_edgeRestriction_eq (congrArg ArchGraph.edge h)
+
+/-- The same-restriction predicate gives equality of restricted graphs. -/
+theorem graphRestriction_eq_of_sameEdgeRestriction {Ambient : Type u} {Selected : Type v}
+    {P : SelectedPresentation Ambient Selected}
+    {left right : ArchGraph Ambient}
+    (h : SameEdgeRestriction P left.edge right.edge) :
+    GraphRestriction P left = GraphRestriction P right := by
+  cases left
+  cases right
+  simp [GraphRestriction, edgeRestriction_eq_of_sameEdgeRestriction h]
+
+/--
+For graphs, same selected edge restriction is equivalent to equality of the
+restricted graphs.
+-/
+theorem sameEdgeRestriction_iff_graphRestriction_eq {Ambient : Type u} {Selected : Type v}
+    (P : SelectedPresentation Ambient Selected)
+    (left right : ArchGraph Ambient) :
+    SameEdgeRestriction P left.edge right.edge ↔
+      GraphRestriction P left = GraphRestriction P right :=
+  ⟨graphRestriction_eq_of_sameEdgeRestriction, sameEdgeRestriction_of_graphRestriction_eq⟩
 
 namespace CompleteExtractionCounterexample
 
