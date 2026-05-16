@@ -46,7 +46,7 @@ ArchSig の現状を、実行可能な command / artifact / workflow と remaini
 | --- | --- | --- |
 | ArchSig Core | `scan`、`validate`、`snapshot`、`signature-diff` による Sig0 と revision diff。Lean / Python import graph、policy JSON、runtime edge evidence を明示入力として扱う。 | call graph、data dependency、dynamic import、plugin loading、framework convention は adapter boundary。完全な architecture model 抽出は主張しない。 |
 | ArchSig Review | AIR、validate-air、theorem-check、Feature Extension Report、policy decision、PR comment、baseline suppression。review / CI の補助 report として読む。 | organization policy calibration、review practice tuning、任意 invariant の完全判定は未完成。formal claim promotion は Lean theorem refs と precondition が揃う場合だけ。 |
-| ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、validation report を生成する B13 pipeline。`docs/tool/software_field_reconstruction_protocol.md` は trace-grounded `SoftwareFieldEstimate` の evidence boundary を定義し、`docs/tool/sft_calibration_benchmark.md` は forecast item と observed refs の照合 protocol を定義する。 | real dataset calibration、framework semantics adapter。forecast は probability、causal proof、global safety を結論しない。 |
+| ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、validation report を生成する B13 pipeline。`docs/tool/software_field_reconstruction_protocol.md` は trace-grounded `SoftwareFieldEstimate` の evidence boundary を定義し、`docs/tool/sft_calibration_benchmark.md` は forecast item と observed refs の照合 protocol を定義し、`docs/tool/ai_proposal_governance.md` は AI proposal governance の allowed support / shortcut witness / review feedback boundary を定義する。 | real dataset calibration、framework semantics adapter。forecast、AI policy compliance、review pass は probability、causal proof、architecture lawfulness、global safety を結論しない。 |
 | ArchSig Operational | PR history dataset、Feature Extension dataset、outcome linkage、B10 daily ledger、calibration review、team threshold、ownership boundary、repair adoption、incident correlation、hypothesis refresh artifacts。`SoftwareFieldEstimate` 用 trace inventory は unavailable / private / unknown remainder を保持する。 | 実運用 dataset の継続収集、confounder 管理、incident / rollback / MTTR との組織別接続。 |
 
 ## Phase B0: AIR and boundary
@@ -188,6 +188,28 @@ AI shortcut detection を別 benchmark として扱う。matched / unmatched / u
 private / notComparable を区別し、false positive / false negative review は empirical policy
 input として保存する。real dataset がない段階では forecast quality、probability weighting、
 causal proof、global risk reduction を結論しない。
+
+## Phase B14: AI proposal governance
+
+AI-mediated software evolution は、B13 の AI proposal adapter 出力と B10 / B11 の
+review / CI / operational feedback を接続して扱う。最小設計は
+`docs/tool/ai_proposal_governance.md` で管理する。
+
+```text
+prompt / policy boundary
+  + AI proposal JSON / patch refs
+  + AAT theorem boundary
+  + SFT forecast artifacts
+  -> allowed / forbidden / unknown operation support
+  -> shortcut witness report
+  -> review / CI mediation record
+  -> posterior field update note
+  -> calibration / benchmark linkage
+```
+
+この phase の出力は reviewer-facing governance artifact であり、AI agent の一般的安全性、
+prompt / policy compliance からの architecture lawfulness、review pass / CI pass からの
+semantic preservation、または autonomous coding policy の本番 correctness を主張しない。
 
 ### B12 milestones
 
