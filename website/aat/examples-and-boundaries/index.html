@@ -65,6 +65,7 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#reader-model">Reader model</a></li>
                 <li><a href="#canonical-examples">Canonical examples</a></li>
                 <li><a href="#example-template">Example template</a></li>
                 <li><a href="#coupon-case-study">Coupon case study</a></li>
@@ -74,14 +75,27 @@
                 <li><a href="#aat-boundary">AAT boundary</a></li>
                 <li><a href="#coupon-reading">Coupon reading</a></li>
                 <li><a href="#solid-boundary">SOLID boundary</a></li>
+                <li><a href="#formal-anchors">Formal anchors</a></li>
                 <li><a href="#lean-status">Lean status</a></li>
               </ol>
             </nav>
             <div class="source-panel">
+              <h2>Citable statements</h2>
+              <ul>
+                <li><a href="#definition-15-0">Definition 15.0</a></li>
+                <li><a href="#example-15-1">Example 15.1</a></li>
+                <li><a href="#signature-reading-15-2">Signature reading 15.2</a></li>
+                <li><a href="#counterexample-15-3">Counterexample 15.3</a></li>
+                <li><a href="#counterexample-15-4">Counterexample 15.4</a></li>
+                <li><a href="#counterexample-15-5">Counterexample 15.5</a></li>
+                <li><a href="#non-conclusion-16-1">Non-conclusion 16.1</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#15-canonical-examples-and-counterexamples">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/mathematical_theory.md#15-canonical-examples-and-counterexamples">
                     Chapters 15-16 in the AAT text
                   </a>
                 </li>
@@ -91,11 +105,11 @@
               <h2>AAT release snapshot</h2>
               <dl>
                 <dt>Updated</dt>
-                <dd>2026-05-15</dd>
+                <dd>2026-05-16</dd>
                 <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/89b4502b6fc01937bfafa409155a7b4a194a80fe">89b4502</a></dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/920c07d50500b06f98ef4bc6ab32f82760903323">920c07d</a></dd>
                 <dt>Lean status</dt>
-                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+                <dd><code>lake build</code> passed for this snapshot; see local status notes and Status page.</dd>
               </dl>
             </div>
             <div class="boundary-note">
@@ -109,8 +123,43 @@
           </aside>
 
           <div class="article-main">
+            <section id="reader-model" class="article-section">
+              <h2>Reader model</h2>
+              <div class="reader-model">
+                <div>
+                  <h3>AAT does not say</h3>
+                  <p>
+                    "The coupon feature is correct," "the repository is clean,"
+                    or "a repair improved every architecture axis." AAT does
+                    not turn one example, theorem, or report into a universal
+                    product-quality claim.
+                  </p>
+                </div>
+                <div>
+                  <h3>AAT says</h3>
+                  <p>
+                    In this selected universe, with these selected witnesses
+                    and observation contexts, this static, semantic, runtime,
+                    or local-contract claim is proved, measured, unmeasured, or
+                    explicitly outside the theorem boundary.
+                  </p>
+                </div>
+              </div>
+              <p class="statement-note">
+                This page is an audit chapter for examples and
+                counterexamples. It keeps the coupon story, semantic
+                obstruction, repair transfer, and SOLID counterexamples close
+                to their source links, Lean names, and non-conclusions.
+              </p>
+            </section>
+
             <section id="canonical-examples" class="article-section">
               <h2>Canonical examples</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> A canonical example is useful
+                only when it says which object, witness universe, measured
+                axes, theorem boundary, and non-conclusions are being selected.
+              </p>
               <p>
                 The coupon feature extension is the running minimal example. A
                 good extension routes coupon calculation through the declared
@@ -118,6 +167,19 @@
                 explicit boundary. A bad extension bypasses that boundary by
                 reaching into payment adapters, hidden caches, or implicit
                 rounding order.
+              </p>
+              <p id="definition-15-0" class="statement">
+                <a class="statement-anchor" href="#definition-15-0">Definition 15.0.</a>
+                A canonical AAT example is a bounded presentation consisting of
+                a selected architecture object, a selected operation or
+                extension, an invariant family under test, a witness universe,
+                measured signature axes, a theorem boundary, and recorded
+                counterexamples or non-conclusions.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 15.0">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined / indexed</span>
+                <span>Anchored by the Chapter 15 text, <code>FeatureExtension</code>, <code>StaticSplitFeatureExtension</code>, <code>ObstructionValuation</code>, and the formal-anchor cards below.</span>
               </p>
               <ul class="term-list">
                 <li>
@@ -165,6 +227,32 @@
                 It is small enough to display the whole claim discipline, but
                 rich enough to separate static structure, semantic behavior,
                 runtime behavior, and measurement boundary.
+              </p>
+              <p id="example-15-1" class="statement">
+                <a class="statement-anchor" href="#example-15-1">Example 15.1.</a>
+                The bad coupon extension contains the selected hidden static
+                dependency witness
+                <code>CouponService -&gt; PaymentAdapter.internalCache</code>.
+                The repaired extension routes the selected static interaction
+                through the declared payment port and restores the selected
+                static split for that finite skeleton.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Example 15.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved</span>
+                <span>Anchored by <code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code>, <code>bad_not_selectedStaticSplitFeatureExtension</code>, and <code>repaired_selectedStaticSplitFeatureExtension</code>.</span>
+              </p>
+              <p id="proof-15-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-15-1">Proof idea.</a>
+                The finite coupon skeleton names the core components, the
+                coupon feature component, the declared payment port, and the
+                hidden cache endpoint. Lean exhibits the hidden edge as a
+                selected witness for the bad extension and proves that this
+                witness refutes the selected static split predicate. The
+                repaired extension removes that selected direct edge and
+                supplies the static split package again. The proof does not
+                mention runtime traces, semantic commutation, or repository
+                extraction completeness.
               </p>
               <figure class="code-panel">
                 <figcaption>Finite coupon universe</figcaption>
@@ -280,6 +368,35 @@ global repository completeness:
                   </tbody>
                 </table>
               </div>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Example tracking</span>
+                      <h3>Coupon hidden dependency is a selected static witness</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchor</dt>
+                      <dd><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code>, <code>bad_not_selectedStaticSplitFeatureExtension</code>, and <code>repaired_selectedStaticSplitFeatureExtension</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Finite coupon skeleton, selected static edge relation, declared payment-port policy, and selected static split predicate.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The theorem covers selected static hidden interaction evidence in the finite example.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No semantic flatness, runtime flatness, telemetry completeness, or complete repository extraction follows.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="coupon-signature" class="article-section">
@@ -289,6 +406,20 @@ global repository completeness:
                 static axis can be measured zero or measured nonzero inside the
                 finite witness universe, while semantic and runtime axes must
                 carry their own measurement status.
+              </p>
+              <p id="signature-reading-15-2" class="statement">
+                <a class="statement-anchor" href="#signature-reading-15-2">Signature reading 15.2.</a>
+                The coupon snapshot separates
+                <code>some 0</code>, <code>some n</code>, and unmeasured
+                <code>none</code> axes. A repaired selected static axis can be
+                available-and-zero while a semantic rounding-order axis is
+                unmeasured or measured nonzero, and while runtime exposure
+                remains outside the static-only report.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Signature reading 15.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">defined / proved</span>
+                <span>Anchored by <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge</code>, <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim</code>, <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive</code>, and <code>ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code>.</span>
               </p>
               <div class="article-table">
                 <table>
@@ -357,7 +488,7 @@ global repository completeness:
                     </tr>
                     <tr>
                       <td>Repaired coupon extension restores selected static split.</td>
-                      <td>`CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension` and `CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge`.</td>
+                      <td>`CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension` and `Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge`.</td>
                       <td>`proved` / report-facing bridge for selected static axis.</td>
                       <td>Static repair does not imply semantic flatness.</td>
                     </tr>
@@ -403,6 +534,70 @@ selected obstruction decreases
   does not imply
 all axes are non-increasing</code></pre>
               </figure>
+              <p id="counterexample-15-3" class="statement">
+                <a class="statement-anchor" href="#counterexample-15-3">Counterexample 15.3.</a>
+                There is a selected repaired static skeleton that satisfies
+                bounded static flatness while the selected coupon / discount
+                semantic diagram still does not commute. Static flatness
+                therefore does not imply semantic flatness or global
+                architecture flatness.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Counterexample 15.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved</span>
+                <span>Anchored by <code>StaticSemanticCounterexample.canonical_staticFlatWithin</code>, <code>canonical_not_semanticFlatWithin</code>, <code>canonical_not_architectureFlat</code>, <code>staticFlat_with_semanticObstruction</code>, and <code>staticFlat_not_architectureFlat</code>.</span>
+              </p>
+              <p id="proof-15-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-15-3">Proof idea.</a>
+                Lean reuses the repaired coupon static skeleton for the static
+                side and supplies a selected semantic diagram whose two paths
+                differ under the chosen observation. The static package and the
+                semantic obstruction coexist, so the implication from selected
+                static flatness to semantic flatness is refuted under the
+                selected diagram universe.
+              </p>
+              <p id="counterexample-15-4" class="statement">
+                <a class="statement-anchor" href="#counterexample-15-4">Counterexample 15.4.</a>
+                A repair step can decrease the selected static obstruction
+                measure while increasing a runtime or transferred-complexity
+                axis. Repair monotonicity is therefore a theorem about the
+                selected measure, not a theorem that every architecture axis is
+                non-increasing.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Counterexample 15.4">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved</span>
+                <span>Anchored by <code>RepairTransferCounterexample.selectedRepairStep_decreases</code>, <code>runtimeAxisMeasure_increases</code>, <code>selectedRepairStep_not_all_axes_nonincreasing</code>, and <code>staticSplitRepair_transfers_runtime</code>.</span>
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Counterexample tracking</span>
+                      <h3>Static, semantic, and repair axes do not collapse</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchors</dt>
+                      <dd><code>StaticSemanticCounterexample.staticFlat_with_semanticObstruction</code> and <code>RepairTransferCounterexample.staticSplitRepair_transfers_runtime</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Selected repaired static skeleton, selected semantic diagram, selected repair step, and selected obstruction measures.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Each counterexample is finite and selected; it refutes a slogan-like implication, not every useful repair theorem.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No empirical cost claim, global flatness preservation theorem, or all-axis improvement theorem is introduced.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="aat-boundary" class="article-section">
@@ -414,6 +609,19 @@ all axes are non-increasing</code></pre>
                 architecture quality score, safety of unmeasured axes, full
                 formalization of every natural-language design principle, or
                 that empirical cost correlation is a Lean theorem.
+              </p>
+              <p id="non-conclusion-16-1" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-16-1">Non-conclusion 16.1.</a>
+                The examples on this page do not prove complete real-code
+                extraction, runtime telemetry completeness, semantic universe
+                completeness, empirical superiority of a design method, or a
+                scalar architecture quality score. They prove or illustrate
+                selected boundaries under selected evidence.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Non-conclusion 16.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">recorded boundary</span>
+                <span>Anchored by proof-obligation non-conclusions for coupon static evidence, coupon analytic snapshots, static / semantic counterexamples, repair transfer, and SOLID counterexamples.</span>
               </p>
               <div class="claim-strip">
                 <p>
@@ -458,6 +666,19 @@ retry leaks across boundary
                 layered graph can be acyclic while selected LSP observations
                 still fail.
               </p>
+              <p id="counterexample-15-5" class="statement">
+                <a class="statement-anchor" href="#counterexample-15-5">Counterexample 15.5.</a>
+                There are representative finite components whose selected DIP
+                or strong DIP compatibility and LSP-style observations hold,
+                while the abstract dependency graph is not
+                <code>Decomposable</code>. Local SOLID-style compatibility is
+                therefore not a theorem of global strict layering.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Counterexample 15.5">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved</span>
+                <span>Anchored by <code>StrongAbstractCycleComponent.dipCompatible_and_not_decomposable</code>, <code>strongDIPCompatible_and_not_decomposable</code>, <code>abstractGraph_not_decomposable</code>, and <code>projectionExact</code>.</span>
+              </p>
               <ul class="term-list">
                 <li>
                   <strong>Local success</strong>
@@ -472,6 +693,234 @@ retry leaks across boundary
                   <span>One law family cannot be promoted into another without a theorem boundary.</span>
                 </li>
               </ul>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Counterexample tracking</span>
+                      <h3>SOLID-style local contracts do not imply decomposability</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchors</dt>
+                      <dd><code>StrongAbstractCycleComponent.dipCompatible_and_not_decomposable</code>, <code>strongDIPCompatible_and_not_decomposable</code>, and <code>not_decomposable</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Representative finite abstract / concrete graph examples and selected local compatibility predicates.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The counterexample separates local contract-layer evidence from global layering and decomposability.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No unique formalization of every natural-language SOLID slogan or interface-quality judgment follows.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+
+            <section id="formal-anchors" class="article-section">
+              <h2>Formal anchors</h2>
+              <p>
+                These cards are the audit trail for the chapter. They connect
+                the citable statements above to representative Lean names,
+                proof-obligation rows, and source boundaries without turning
+                the website prose into a new theorem source.
+              </p>
+              <div class="formal-anchor-cards" aria-label="Examples and boundaries formal-anchor audit trail">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Coupon static</span>
+                      <h3>Selected hidden dependency and repaired static split</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#example-15-1">Example 15.1</a> and the
+                    static part of <a href="#signature-reading-15-2">Signature
+                      reading 15.2</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code>, <code>bad_not_selectedStaticSplitFeatureExtension</code>, and <code>repaired_selectedStaticSplitFeatureExtension</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Finite component skeletons and extensions are <code>defined only</code>; witness existence, bad split failure, and repaired split recovery are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Selected static skeleton and declared payment-port policy; no runtime, semantic, telemetry, or complete-extractor claim.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#feature-extension">Feature Extension theorem index</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>CouponStaticDependencyExample.CoreComponent</code></li>
+                      <li><code>CouponStaticDependencyExample.FeatureComponent</code></li>
+                      <li><code>CouponStaticDependencyExample.ExtendedComponent</code></li>
+                      <li><code>CouponStaticDependencyExample.goodExtension</code></li>
+                      <li><code>CouponStaticDependencyExample.badExtension</code></li>
+                      <li><code>CouponStaticDependencyExample.repairedExtension</code></li>
+                      <li><code>CouponStaticDependencyExample.hiddenDependencyWitness</code></li>
+                      <li><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code></li>
+                      <li><code>CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension</code></li>
+                      <li><code>CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Semantic / analytic</span>
+                      <h3>Static zero and semantic residual stay separate</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#signature-reading-15-2">Signature reading
+                      15.2</a> and <a href="#counterexample-15-3">Counterexample
+                      15.3</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge</code>, <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim</code>, <code>CouponDiscountExample.roundingOrderValuation_positive</code>, and <code>StaticSemanticCounterexample.canonical_not_semanticFlatWithin</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Analytic snapshot vocabulary is <code>defined only</code>; selected bridge and counterexample facts are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Semantic claims require a selected diagram and observation; unmeasured optional axes are not available-and-zero certificates.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#chapter-11-coupon-analytic-snapshot-api">Coupon analytic snapshot API</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#static--semantic-counterexample">Static / Semantic Counterexample</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.bad_staticHiddenInteraction_bridge</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.runtimeExposure_not_zeroReflectingClaim</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive</code></li>
+                      <li><code>CouponDiscountExample.roundingOrderValuation_positive</code></li>
+                      <li><code>StaticSemanticCounterexample.canonical_staticFlatWithin</code></li>
+                      <li><code>StaticSemanticCounterexample.canonical_not_semanticFlatWithin</code></li>
+                      <li><code>StaticSemanticCounterexample.staticFlat_with_semanticObstruction</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Repair transfer</span>
+                      <h3>Selected repair decrease is not all-axis monotonicity</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#counterexample-15-4">Counterexample
+                      15.4</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>RepairTransferCounterexample.selectedRepairStep_decreases</code>, <code>runtimeAxisMeasure_increases</code>, <code>selectedRepairStep_not_all_axes_nonincreasing</code>, and <code>staticSplitRepair_transfers_runtime</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Counterexample package and selected repair-step facts are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The repair theorem is relative to a selected obstruction universe and selected measure.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#repair-transfer-counterexample">Repair Transfer Counterexample</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>RepairTransferCounterexample.selectedRepairStep_decreases</code></li>
+                      <li><code>RepairTransferCounterexample.selectedRepairStep_decreases_of_admissible</code></li>
+                      <li><code>RepairTransferCounterexample.runtimeAxisMeasure_increases</code></li>
+                      <li><code>RepairTransferCounterexample.runtimeAxisViolationCount_before</code></li>
+                      <li><code>RepairTransferCounterexample.runtimeAxisViolationCount_after</code></li>
+                      <li><code>RepairTransferCounterexample.selectedRepairStep_not_all_axes_nonincreasing</code></li>
+                      <li><code>RepairTransferCounterexample.staticSplitRepair_transfers_runtime</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">SOLID boundary</span>
+                      <h3>Local contract compatibility does not imply global decomposability</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#counterexample-15-5">Counterexample
+                      15.5</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>StrongAbstractCycleComponent.dipCompatible_and_not_decomposable</code>, <code>strongDIPCompatible_and_not_decomposable</code>, <code>projectionExact</code>, and <code>abstractGraph_not_decomposable</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Representative finite SOLID-style counterexamples are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Local contract-layer success is distinct from global strict layering, acyclicity, and decomposability.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/920c07d50500b06f98ef4bc6ab32f82760903323/docs/aat/lean_theorem_index.md#solid-counterexamples">SOLID Counterexamples</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>TwoCycleComponent.not_decomposable</code></li>
+                      <li><code>PaymentComponent.not_decomposable</code></li>
+                      <li><code>AbstractCycleComponent.not_decomposable</code></li>
+                      <li><code>StrongAbstractCycleComponent.observation_factors</code></li>
+                      <li><code>StrongAbstractCycleComponent.lspCompatible</code></li>
+                      <li><code>StrongAbstractCycleComponent.abstractGraph_not_decomposable</code></li>
+                      <li><code>StrongAbstractCycleComponent.projectionSound</code></li>
+                      <li><code>StrongAbstractCycleComponent.projectionComplete</code></li>
+                      <li><code>StrongAbstractCycleComponent.projectionExact</code></li>
+                      <li><code>StrongAbstractCycleComponent.dipCompatible_and_not_decomposable</code></li>
+                      <li><code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
             </section>
 
             <section id="lean-status" class="article-section">
