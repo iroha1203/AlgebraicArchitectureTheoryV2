@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT foundations: central proposition, ArchitectureObject, ArchitectureCore, and ComponentUniverse."
+      content="AAT foundations: selected presentation, judgement form, ArchitectureObject, ArchitectureCore, and ComponentUniverse."
     >
     <title>AAT Foundations</title>
     <link rel="alternate" hreflang="en" href="./">
@@ -79,18 +79,22 @@
               <ul>
                 <li><a href="#definition-1-1">Definition 1.1</a></li>
                 <li><a href="#proposition-1-2">Proposition 1.2</a></li>
+                <li><a href="#definition-2-0">Definition 2.0</a></li>
                 <li><a href="#proposition-2-1">Proposition 2.1</a></li>
                 <li><a href="#counterexample-2-2">Counterexample 2.2</a></li>
+                <li><a href="#non-conclusion-2-3">Non-conclusion 2.3</a></li>
                 <li><a href="#definition-3-1">Definition 3.1</a></li>
                 <li><a href="#proposition-3-2">Proposition 3.2</a></li>
                 <li><a href="#counterexample-3-3">Counterexample 3.3</a></li>
+                <li><a href="#example-4-1">Example 4.1</a></li>
+                <li><a href="#bounded-reading-4-2">Bounded reading 4.2</a></li>
               </ul>
             </div>
             <div class="source-panel">
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#1-%E4%B8%AD%E5%BF%83%E5%91%BD%E9%A1%8C">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/mathematical_theory.md#1-%E4%B8%AD%E5%BF%83%E5%91%BD%E9%A1%8C">
                     Chapters 1-2 in the AAT text
                   </a>
                 </li>
@@ -100,9 +104,9 @@
               <h2>AAT release snapshot</h2>
               <dl>
                 <dt>Updated</dt>
-                <dd>2026-05-15</dd>
+                <dd>2026-05-16</dd>
                 <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/89b4502b6fc01937bfafa409155a7b4a194a80fe">89b4502</a></dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/72fd871738787fd8f6804ae8f173fa1d0100d540">72fd871</a></dd>
                 <dt>Lean status</dt>
                 <dd><code>lake build</code> passed for this snapshot; see Status for proved / defined-only boundaries.</dd>
               </dl>
@@ -140,40 +144,49 @@
                   </p>
                 </div>
               </div>
-              <ul class="term-list">
-                <li>
-                  <strong>universe</strong>
-                  <span>The selected components, relations, diagrams, or measurements that a claim is allowed to quantify over.</span>
-                </li>
-                <li>
-                  <strong>coverage</strong>
-                  <span>The premise that the selected evidence contains the components or relations needed by the claim.</span>
-                </li>
-                <li>
-                  <strong>exactness</strong>
-                  <span>The premise that a measured value can be read as the intended in-scope relation, witness, or axis.</span>
-                </li>
-                <li>
-                  <strong>observation</strong>
-                  <span>The static, runtime, semantic, review, or operational model through which evidence is being read.</span>
-                </li>
-                <li>
-                  <strong>evidence boundary</strong>
-                  <span>The line between measured evidence and facts that remain outside the theorem package or report.</span>
-                </li>
-                <li>
-                  <strong>measured zero</strong>
-                  <span>The selected evidence was measured and no in-scope violating relation or witness was found.</span>
-                </li>
-                <li>
-                  <strong>unmeasured outside</strong>
-                  <span>The relation, effect, component, or observation was not selected, so absence is not asserted.</span>
-                </li>
-                <li>
-                  <strong>non-conclusion</strong>
-                  <span>A statement that does not follow, even when the bounded claim has been proved or measured.</span>
-                </li>
-              </ul>
+              <div class="claim-strip micro-example">
+                <p>
+                  <strong>Micro-example.</strong> A coupon-service slice may
+                  measure static edges to a payment port and selected adapter
+                  internals. That same slice says nothing about retry behavior,
+                  incident telemetry, or semantic workflow completeness unless
+                  those observations are selected too.
+                </p>
+              </div>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>universe</dt>
+                  <dd>The selected components, relations, diagrams, or measurements that a claim is allowed to quantify over.</dd>
+                </div>
+                <div>
+                  <dt>coverage</dt>
+                  <dd>The premise that the selected evidence contains the components or relations needed by the claim.</dd>
+                </div>
+                <div>
+                  <dt>exactness</dt>
+                  <dd>The premise that a measured value can be read as the intended in-scope relation, witness, or axis.</dd>
+                </div>
+                <div>
+                  <dt>observation</dt>
+                  <dd>The static, runtime, semantic, review, or operational model through which evidence is being read.</dd>
+                </div>
+                <div>
+                  <dt>evidence boundary</dt>
+                  <dd>The line between measured evidence and facts that remain outside the theorem package or report.</dd>
+                </div>
+                <div>
+                  <dt>measured zero</dt>
+                  <dd>The selected evidence was measured and no in-scope violating relation or witness was found.</dd>
+                </div>
+                <div>
+                  <dt>unmeasured outside</dt>
+                  <dd>The relation, effect, component, or observation was not selected, so absence is not asserted.</dd>
+                </div>
+                <div>
+                  <dt>non-conclusion</dt>
+                  <dd>A statement that does not follow, even when the bounded claim has been proved or measured.</dd>
+                </div>
+              </dl>
             </section>
 
             <section id="central-decomposition" class="article-section">
@@ -206,6 +219,11 @@
 
             <section id="object-definition" class="article-section">
               <h2>Object definition</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> An architecture object is the
+                selected presentation being reasoned about, not the whole
+                repository in disguise.
+              </p>
               <p>
                 The foundational record is deliberately small. AAT does not
                 begin with every fact about a repository; it begins with the
@@ -238,6 +256,15 @@ ArchitectureObject
                 the object is never stronger than the carrier, policy, and
                 observation context that presented it.
               </p>
+              <figure class="code-panel">
+                <figcaption>Judgement form</figcaption>
+                <pre><code>selected presentation P
+claim phi : PresentationClaim
+
+P |-AAT phi
+  means AATJudgement P phi
+  and Lean proves: AATJudgement P phi &lt;-&gt; phi P</code></pre>
+              </figure>
               <p id="definition-1-1" class="statement">
                 <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
                 A bounded
@@ -250,7 +277,7 @@ ArchitectureObject
               <p class="statement-status" aria-label="Lean status for Definition 1.1">
                 <span class="statement-status-label">Lean status</span>
                 <span class="status-badge status-badge-defined">defined only</span>
-                <span>Tracked through <code>ArchitectureCore</code> presentation declarations; no standalone complete-codebase object is claimed.</span>
+                <span>Anchored by <code>ArchitectureObject</code>, <code>ArchitectureFlatnessModel.selectedPresentation</code>, and <code>ArchitectureCore.selectedPresentation</code>; no standalone complete-codebase object is claimed.</span>
               </p>
               <p id="proposition-1-2" class="statement">
                 <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
@@ -261,20 +288,16 @@ ArchitectureObject
               </p>
               <p class="statement-status" aria-label="Lean status for Proposition 1.2">
                 <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-future">theorem candidate</span>
-                <span>Website reading of the canonical boundary; Lean anchors remain the selected-presentation definitions below.</span>
+                <span class="status-badge status-badge-proved">proved anchor</span>
+                <span>Anchored by <code>AATJudgement</code> and <code>aatJudgement_iff</code>: the judgement is evaluation at the supplied <code>SelectedPresentation</code>.</span>
               </p>
               <p id="proof-1-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-1-2">Proof idea.</a>
-                Unfold the object schema:
-                <code>ArchitectureObject</code> is presented as
-                <code>ArchitectureCarrier</code> plus
-                <code>ArchitecturePolicy</code> plus
-                <code>ArchitectureObservationContext</code>. Later theorems
-                consume such a selected presentation as input. Their
-                conclusions are therefore indexed by the selected carrier,
-                policy, and observation context; changing any one of these
-                changes the proposition being proved.
+                The Lean judgement is presentation-indexed by construction:
+                <code>AATJudgement P phi</code> unfolds to <code>phi P</code>.
+                The object schema supplies the selected carrier, policies, and
+                observation context that determine <code>P</code>. Changing
+                those selected inputs changes the proposition being evaluated.
               </p>
               <div class="theorem-card-list">
                 <article class="theorem-card lean-status-card">
@@ -283,12 +306,12 @@ ArchitectureObject
                       <span class="theorem-card-label">Proposition tracking</span>
                       <h3>Object claims are relativized to a selected presentation</h3>
                     </div>
-                    <span class="status-badge status-badge-defined">defined only</span>
+                    <span class="status-badge status-badge-proved">proved anchor</span>
                   </div>
                   <dl class="theorem-card-grid">
                     <div>
                       <dt>Lean anchor</dt>
-                      <dd><code>ArchitectureCore</code> and selected accessor declarations in the Architecture Core index.</dd>
+                      <dd><code>SelectedPresentation</code>, <code>PresentationClaim</code>, <code>AATJudgement</code>, <code>aatJudgement_iff</code>, and <code>ArchitectureObject</code>.</dd>
                     </div>
                     <div>
                       <dt>Assumptions</dt>
@@ -317,6 +340,11 @@ ArchitectureObject
 
             <section id="core-proposition" class="article-section">
               <h2>Core proposition</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> A core is a certified slice of
+                evidence; it is not a promise that nothing else exists in the
+                real system.
+              </p>
               <p>
                 <code>ArchitectureCore</code> is the proof-carrying
                 presentation of the bounded object. It bundles static and runtime evidence,
@@ -333,6 +361,19 @@ ArchitectureObject
   + runtime dependency role
   + measured semantic diagram universe</code></pre>
               </figure>
+              <p id="definition-2-0" class="statement">
+                <a class="statement-anchor" href="#definition-2-0">Definition 2.0.</a>
+                A selected presentation is complete for an ambient relation
+                when every ambient edge in that relation has selected
+                endpoints mapping to it. In Lean this boundary is named
+                <code>CompleteForRelation</code>; it is an explicit premise,
+                not a field automatically supplied by <code>ArchitectureCore</code>.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 2.0">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>CompleteForRelation</code> and <code>CompleteForGraph</code>.</span>
+              </p>
               <p id="proposition-2-1" class="statement">
                 <a class="statement-anchor" href="#proposition-2-1">Proposition 2.1.</a>
                 Core presentations do not imply
@@ -343,37 +384,34 @@ ArchitectureObject
               </p>
               <p class="statement-status" aria-label="Lean status for Proposition 2.1">
                 <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span><code>ArchitectureCore</code> is defined-only; selected accessors are proved, but extraction completeness is not promoted.</span>
+                <span class="status-badge status-badge-proved">proved counterexample</span>
+                <span>Lean proves a selected-presentation counterexample: <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>.</span>
               </p>
               <p id="proof-2-1" class="statement-proof">
                 <a class="statement-anchor" href="#proof-2-1">Proof idea.</a>
-                A core presentation contains the evidence selected for the
-                chapter: a carrier, policies, observation data, and a bounded
-                measurement universe. Any claim derived from that presentation
-                can use only those selected fields. Complete extraction of an
-                ambient repository would require a separate premise saying that
-                every relevant component, dependency, runtime interaction, and
-                semantic observation factors through the core. That premise is
-                not present in <code>ArchitectureCore</code>.
+                A selected presentation restricts ambient edges through
+                <code>EdgeRestriction</code>. Complete extraction would require
+                the extra premise <code>CompleteForRelation</code>, saying that
+                every ambient edge has selected endpoints. Lean constructs two
+                ambient relations with the same selected restriction while one
+                has an out-of-scope edge and therefore fails
+                <code>CompleteForRelation</code>. Thus selected presentation
+                equality does not force ambient completeness equality.
               </p>
               <p id="counterexample-2-2" class="statement">
                 <a class="statement-anchor" href="#counterexample-2-2">Counterexample 2.2.</a>
-                Let two ambient repositories have the same selected static
-                evidence, the same selected finite component universe, and the
-                same selected observation context. Now add to the second
-                repository a runtime edge whose source or target lies outside
-                that selected universe. The fields of the selected
-                <code>ArchitectureCore</code> are unchanged, because the added
-                edge is out of scope for the core. A complete extraction of the
-                ambient repository would distinguish the two repositories, but
-                the selected core presentation does not. Therefore the core
-                presentation does not imply complete extraction.
+                Lean uses one selected component and an ambient universe with
+                that component plus one out-of-scope component. The empty
+                ambient relation and the relation with one edge from the
+                out-of-scope component have the same selected restriction. The
+                empty relation is complete for the selected presentation; the
+                relation with the out-of-scope edge is not. Therefore selected
+                presentation equality does not imply complete extraction.
               </p>
               <p class="statement-status" aria-label="Lean status for Counterexample 2.2">
                 <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-future">theorem candidate</span>
-                <span>Counterexample text preserves the non-implication boundary; no Lean theorem is added in this chapter.</span>
+                <span class="status-badge status-badge-proved">proved</span>
+                <span>See <code>CompleteExtractionCounterexample.same_selectedRestriction</code>, <code>complete_base</code>, <code>not_complete_withOutOfScopeEdge</code>, and <code>selectedRestriction_same_but_completeExtraction_differs</code>.</span>
               </p>
               <p id="non-conclusion-2-3" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-2-3">Non-conclusion 2.3.</a>
@@ -391,12 +429,12 @@ ArchitectureObject
                       <span class="theorem-card-label">Proposition tracking</span>
                       <h3>Core presentations support bounded claims, not complete extraction</h3>
                     </div>
-                    <span class="status-badge status-badge-defined">defined only</span>
+                    <span class="status-badge status-badge-proved">proved counterexample</span>
                   </div>
                   <dl class="theorem-card-grid">
                     <div>
                       <dt>Lean anchor</dt>
-                      <dd><code>ArchitectureCore.staticCoverageComplete</code> and core accessor facts.</dd>
+                      <dd><code>CompleteForRelation</code>, <code>SameEdgeRestriction</code>, <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>, and <code>ArchitectureCore.selectedPresentation</code>.</dd>
                     </div>
                     <div>
                       <dt>Assumptions</dt>
@@ -404,7 +442,7 @@ ArchitectureObject
                     </div>
                     <div>
                       <dt>Boundary</dt>
-                      <dd>Coverage is the supplied finite coverage boundary; it is not global repository coverage.</dd>
+                      <dd><code>ArchitectureCore</code> has proved selected-presentation accessors; ambient complete extraction remains a separate <code>CompleteForRelation</code> premise.</dd>
                     </div>
                     <div>
                       <dt>Non-conclusion</dt>
@@ -417,6 +455,11 @@ ArchitectureObject
 
             <section id="universe-proposition" class="article-section">
               <h2>Universe proposition</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> Finite computations become
+                architecture claims only when the selected universe carries the
+                needed coverage and closure proofs.
+              </p>
               <p>
                 <code>ComponentUniverse</code> is the measurement scope used
                 by finite bridge theorems. It records selected components,
@@ -518,6 +561,11 @@ ArchitectureObject
 
             <section id="example-counterexample" class="article-section">
               <h2>Example and counterexample</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> A good bounded static reading
+                is useful precisely because it says what was measured and what
+                remains outside.
+              </p>
               <p id="example-4-1" class="statement">
                 <a class="statement-anchor" href="#example-4-1">Example 4.1.</a>
                 A repository slice containing a coupon service, a payment
@@ -614,6 +662,33 @@ not selected:
                   <tbody>
                     <tr>
                       <th scope="row">
+                        Selected presentation boundary
+                        <span class="table-row-note">
+                          Audits
+                          <a href="#proposition-1-2">Proposition 1.2</a>,
+                          <a href="#definition-2-0">Definition 2.0</a>,
+                          <a href="#proposition-2-1">Proposition 2.1</a>,
+                          and <a href="#counterexample-2-2">Counterexample 2.2</a>.
+                        </span>
+                      </th>
+                      <td data-label="Formal anchor">
+                        <code>SelectedPresentation</code>,
+                        <code>AATJudgement</code>,
+                        <code>aatJudgement_iff</code>,
+                        <code>CompleteForRelation</code>,
+                        <code>SameEdgeRestriction</code>,
+                        <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>
+                      </td>
+                      <td data-label="Current Lean status"><code>defined only</code> for vocabulary; selected judgement and counterexample anchors <code>proved</code></td>
+                      <td data-label="Boundary">Selected presentation equality is not ambient repository completeness; real-code extraction, telemetry completeness, and semantic universe completeness remain separate premises.</td>
+                      <td data-label="Primary index">
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">
+                          Selected Presentation / Complete Extraction Boundary
+                        </a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">
                         Architecture core presentation
                         <span class="table-row-note">
                           Audits
@@ -623,15 +698,18 @@ not selected:
                           and <a href="#non-conclusion-2-3">Non-conclusion 2.3</a>.
                         </span>
                       </th>
-                      <td>
+                      <td data-label="Formal anchor">
                         <code>ArchitectureCore</code>,
+                        <code>ArchitectureCore.selectedPresentation</code>,
+                        <code>ArchitectureCore.staticCompleteForSelectedPresentation</code>,
+                        <code>ArchitectureCore.runtimeCompleteForSelectedPresentation</code>,
                         <code>ArchitectureCore.component_mem_staticUniverse</code>,
                         <code>ArchitectureCore.staticCoverageComplete</code>
                       </td>
-                      <td><code>defined only</code> for <code>ArchitectureCore</code>; selected accessors <code>proved</code></td>
-                      <td>Supplied finite universe and selected predicates; no global extraction completeness.</td>
-                      <td>
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">
+                      <td data-label="Current Lean status"><code>defined only</code> for <code>ArchitectureCore</code>; selected-presentation accessors <code>proved</code></td>
+                      <td data-label="Boundary">Supplied finite universe and selected predicates; no global extraction completeness.</td>
+                      <td data-label="Primary index">
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">
                           Architecture Core / Certified Architecture
                         </a>
                       </td>
@@ -646,17 +724,17 @@ not selected:
                           and <a href="#counterexample-3-3">Counterexample 3.3</a>.
                         </span>
                       </th>
-                      <td>
+                      <td data-label="Formal anchor">
                         <code>ComponentUniverse</code>,
                         <code>ComponentUniverse.edgeClosed_of_covers</code>,
                         <code>FiniteArchGraph.covers_components</code>,
                         <code>FiniteArchGraph.edgeClosed_components</code>,
                         <code>ComponentUniverse.reachable_exists_bounded_path</code>
                       </td>
-                      <td><code>defined only</code> / <code>proved</code> by declaration</td>
-                      <td>Finite component list, coverage, edge closure, and explicit graph assumptions.</td>
-                      <td>
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">
+                      <td data-label="Current Lean status"><code>defined only</code> / <code>proved</code> by declaration</td>
+                      <td data-label="Boundary">Finite component list, coverage, edge closure, and explicit graph assumptions.</td>
+                      <td data-label="Primary index">
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">
                           Finite Universe / Bridge Theorems
                         </a>
                       </td>
@@ -669,15 +747,15 @@ not selected:
                           the boundary vocabulary used by the bridge claims.
                         </span>
                       </th>
-                      <td>
+                      <td data-label="Formal anchor">
                         <code>ComponentCategory</code>,
                         <code>Decomposable</code>,
                         <code>StrictLayered</code>
                       </td>
-                      <td><code>defined only</code> / selected bridge facts <code>proved</code></td>
-                      <td>Reachability existence and strict layering; path count, walk length, nilpotence, and spectral facts are separate.</td>
-                      <td>
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#2-architecture-object">
+                      <td data-label="Current Lean status"><code>defined only</code> / selected bridge facts <code>proved</code></td>
+                      <td data-label="Boundary">Reachability existence and strict layering; path count, walk length, nilpotence, and spectral facts are separate.</td>
+                      <td data-label="Primary index">
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/mathematical_theory.md#2-architecture-object">
                           mathematical theory, Chapter 2
                         </a>
                       </td>
@@ -688,10 +766,11 @@ not selected:
               <div class="claim-strip">
                 <p>
                   Read the current QED core through the
-                  <a href="../status/">AAT Status page</a>: static structural
-                  bridge theorems are proved under explicit assumptions, while
-                  real-code extraction completeness remains outside the theorem
-                  claim.
+                  <a href="../status/">AAT Status page</a>: selected
+                  presentation boundaries and static structural bridge
+                  theorems are proved under explicit assumptions, while
+                  real-code extraction completeness remains outside the
+                  theorem claim.
                 </p>
               </div>
             </section>
