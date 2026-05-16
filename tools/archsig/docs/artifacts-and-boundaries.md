@@ -96,6 +96,14 @@ claim を生成しない。missing evidence、unsupported constructs、forecast 
 tooling pipeline の validation 成功であり、extractor completeness、forecast correctness、
 causal prediction、Lean theorem claim への昇格を意味しない。
 
+`consequence-envelope-report-v0` は `forecast-cone-skeleton-v0` からの
+loss-aware report projection として読む。一つ以上の bounded cone skeleton から、
+path class candidates、affected regions、comparable signature axes、axis delta ranges、
+obstruction candidates、missing / theorem boundary items、review / CI recommendation を
+まとめる。projection 後も `unknownRemainder`、measurement boundary、forecast
+non-conclusions を保持する必要がある。envelope report は projection 元の cone family を
+一意復元しないし、probability、causal proof、calibrated forecast correctness を主張しない。
+
 ## Measurement Boundary
 
 `archsig` は測定済み 0 と未評価を分ける。

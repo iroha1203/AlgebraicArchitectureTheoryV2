@@ -87,3 +87,17 @@ runtime completeness
 causal incident reduction
 formal theorem discharge
 ```
+
+## SFT forecast report artifacts
+
+`forecast-cone-skeleton-v0` は finite support refs、bounded horizon、path class
+candidates、forecast boundary、unknown remainder を保持する tooling artifact である。
+
+`consequence-envelope-report-v0` は、一つ以上の bounded cone skeleton から
+reviewer-facing report を作る projection artifact である。affected architecture regions、
+comparable signature axes、axis delta ranges、obstruction candidates、missing / theorem
+boundary、review / CI recommendation をまとめるが、projection 後も unknown remainder と
+forecast non-conclusions を保持する。
+
+この envelope は cone family の一意復元、point prediction、probability、causal proof、
+forecast correctness、Lean theorem witness を主張しない。
