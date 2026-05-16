@@ -50,6 +50,47 @@ File: `Formal/Arch/Core/Graph.lean`
 | `Path` | `abbrev` | 現時点では `SimpleWalk` の別名。bounded reachability で使う path representative。 | `defined only` |
 | `SimpleWalk.vertices_length` | `theorem` | simple walk の頂点列と長さの基本関係。 | `proved` |
 
+## Selected Presentation / Complete Extraction Boundary
+
+File: `Formal/Arch/Core/Presentation.lean`
+
+この節は Foundations の `selected universe` / `presentation-indexed claim` /
+`complete extraction` 境界を Lean 側に置く。`SelectedPresentation` は
+ambient system から選ばれた bounded component type への読み方を固定するが、
+ambient repository 全体の component / edge / telemetry / semantic observation が
+すべて選択されたとは主張しない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `SelectedPresentation` | `structure` | selected component type を ambient universe 内で読むための embedding を持つ presentation。 | `defined only` |
+| `SelectedPresentation.identity` | `def` | selected universe と ambient universe が同じ場合の identity presentation。 | `defined only` |
+| `SelectedPresentation.Covers` | `def` | ambient component が selected presentation の image に入ること。 | `defined only` |
+| `SelectedPresentation.covers_identity` | `theorem` | identity presentation は自身の universe 全体を cover する。 | `proved` |
+| `PresentationClaim` | `abbrev` | selected presentation に index された claim。 | `defined only` |
+| `AATJudgement` | `def` | `P` の下で claim を読む Foundations judgement form。 | `defined only` |
+| `aatJudgement_iff` | `theorem` | `AATJudgement P claim` は `claim P` の評価である。 | `proved` |
+| `EdgeRestriction` | `def` | ambient edge relation を selected presentation 上へ制限する。 | `defined only` |
+| `GraphRestriction` | `def` | ambient `ArchGraph` を selected presentation 上の `ArchGraph` へ制限する。 | `defined only` |
+| `SameEdgeRestriction` | `def` | 二つの ambient relation が selected presentation からは同じに見えること。 | `defined only` |
+| `CompleteForRelation` | `def` | ambient relation のすべての edge endpoint が selected presentation に表現されること。 | `defined only` |
+| `CompleteForGraph` | `def` | `CompleteForRelation` の graph-level spelling。 | `defined only` |
+| `completeForRelation_left_covered` | `theorem` | complete relation から edge の左 endpoint coverage を取り出す。 | `proved` |
+| `completeForRelation_right_covered` | `theorem` | complete relation から edge の右 endpoint coverage を取り出す。 | `proved` |
+| `completeForRelation_of_covers_all` | `theorem` | 全 ambient component coverage があれば任意 relation に対する complete representation を得る。 | `proved` |
+| `completeForRelation_identity` | `theorem` | identity presentation は自身の universe 上の任意 relation に complete。 | `proved` |
+| `edgeRestriction_identity` | `theorem` | identity presentation を通した edge restriction は元の relation と一致する。 | `proved` |
+| `CompleteExtractionCounterexample.same_selectedRestriction` | `theorem` | empty ambient relation と out-of-scope edge を追加した relation は selected restriction が一致する。 | `proved` |
+| `CompleteExtractionCounterexample.complete_base` | `theorem` | empty ambient relation は selected presentation に complete。 | `proved` |
+| `CompleteExtractionCounterexample.not_complete_withOutOfScopeEdge` | `theorem` | out-of-scope source を持つ ambient edge は selected presentation に complete ではない。 | `proved` |
+| `CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs` | `theorem` | 同じ selected restriction でも complete extraction status は一致しない concrete counterexample package。 | `proved` |
+| `CompleteExtractionCounterexample.exists_sameSelectedRestriction_completeExtraction_differs` | `theorem` | 上記 counterexample の existential form。 | `proved` |
+
+Non-conclusions: `CompleteForRelation` は明示前提であり、
+`ComponentUniverse` や `ArchitectureCore` から任意の ambient repository に対して
+自動的に導かれない。counterexample は selected presentation-level reading と
+ambient completeness を分離するための formal anchor であり、実コード extractor
+completeness、runtime telemetry completeness、semantic universe completeness は結論しない。
+
 ## Reachability
 
 File: `Formal/Arch/Core/Reachability.lean`
@@ -2077,6 +2118,12 @@ File: `Formal/Arch/Extension/Flatness.lean`
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
 | `ArchitectureFlatnessModel` | `structure` | static / runtime / semantic の三層 flatness を一つの architecture model として束ねる。runtime policy と semantic required / measured diagram universe を明示し、未測定軸を zero と見なさない境界を置く。 | `defined only` |
+| `ArchitectureObject` | `abbrev` | Foundations-level bounded architecture object。現在は `ArchitectureFlatnessModel` として、selected carrier / policy / observation / measured semantic universe に相対化して読む。 | `defined only` |
+| `ArchitectureFlatnessModel.selectedPresentation` | `def` | bounded model 自身の component carrier 上の selected presentation。ambient repository completeness は主張しない。 | `defined only` |
+| `ArchitectureFlatnessModel.staticRestriction_eq_staticEdge` | `theorem` | bounded selected presentation を通した static restriction が selected static edge と一致する。 | `proved` |
+| `ArchitectureFlatnessModel.runtimeRestriction_eq_runtimeEdge` | `theorem` | bounded selected presentation を通した runtime restriction が selected runtime edge と一致する。 | `proved` |
+| `ArchitectureFlatnessModel.staticCompleteForSelectedPresentation` | `theorem` | model 自身の selected static relation は identity presentation に complete。ambient extractor completeness ではない。 | `proved` |
+| `ArchitectureFlatnessModel.runtimeCompleteForSelectedPresentation` | `theorem` | model 自身の selected runtime relation は identity presentation に complete。runtime telemetry completeness ではない。 | `proved` |
 | `ArchitectureFlatnessModel.staticLawModel` | `def` | flatness model の static layer を既存の `ArchitectureLawModel` に写す。 | `defined only` |
 | `StaticCoverageComplete` | `def` | supplied `ComponentUniverse` が static dependency evidence を cover すること。 | `defined only` |
 | `staticCoverageComplete_of_componentUniverse` | `theorem` | `ComponentUniverse.edgeClosed` から static coverage complete を得る。 | `proved` |
@@ -2153,10 +2200,15 @@ completeness は主張しない。
 | --- | --- | --- | --- |
 | `RuntimeDependencyRole` | `inductive` | runtime dependency を raw / protected / forbidden / unprotected の selected role metadata として区別する。telemetry completeness は主張しない。 | `defined only` |
 | `ArchitectureCore` | `structure` | `ArchitectureFlatnessModel`、static `ComponentUniverse`、component equality / static edge / runtime edge / boundary policy / abstraction policy の decidability、runtime role、semantic required diagram decidability を束ねる最小 core。 | `defined only` |
+| `ArchitectureCore.selectedPresentation` | `def` | core 自身の component carrier 上の selected presentation。ambient repository extraction とは別前提。 | `defined only` |
 | `ArchitectureCore.toFlatnessModel` | `def` | proof-carrying wrapper から既存の flatness model を取り出す。 | `defined only` |
 | `ArchitectureCore.staticLawModel` | `def` | core の finite component universe から既存の `ArchitectureLawModel` を構成する。 | `defined only` |
 | `ArchitectureCore.measuredSemanticUniverse` | `def` | core が保持する measured semantic diagram universe を取り出す。 | `defined only` |
 | `ArchitectureCore.runtimeDependencyRole` | `def` | component pair に対する selected runtime dependency role を取り出す。 | `defined only` |
+| `ArchitectureCore.staticRestriction_eq_staticEdge` | `theorem` | core の selected presentation を通した static restriction が core の selected static edge と一致する。 | `proved` |
+| `ArchitectureCore.runtimeRestriction_eq_runtimeEdge` | `theorem` | core の selected presentation を通した runtime restriction が core の selected runtime edge と一致する。 | `proved` |
+| `ArchitectureCore.staticCompleteForSelectedPresentation` | `theorem` | core 自身の selected static relation は selected presentation に complete。ambient extractor completeness は結論しない。 | `proved` |
+| `ArchitectureCore.runtimeCompleteForSelectedPresentation` | `theorem` | core 自身の selected runtime relation は selected presentation に complete。runtime telemetry completeness は結論しない。 | `proved` |
 | `ArchitectureCore.component_mem_staticUniverse` | `theorem` | core の `ComponentUniverse.covers` から component membership を取り出す。 | `proved` |
 | `ArchitectureCore.staticCoverageComplete` | `theorem` | core の static dependency evidence が `ComponentUniverse` で cover されることを取り出す。 | `proved` |
 | `ArchitectureLawRole` | `inductive` | law universe の required / optional / derived role tag。 | `defined only` |

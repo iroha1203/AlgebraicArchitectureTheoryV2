@@ -48,6 +48,17 @@ namespace ArchitectureCore
 variable {C : Type u} {A : Type v} {StaticObs : Type w}
   {SemanticExpr : Type q} {SemanticObs : Type r}
 
+/--
+The bounded selected presentation carried by an `ArchitectureCore`.
+
+This presentation is over the core's own component carrier.  Ambient repository
+extraction remains a separate premise.
+-/
+def selectedPresentation
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    SelectedPresentation C C :=
+  X.flatness.selectedPresentation
+
 /-- Forget the proof-carrying wrapper and recover the flatness model. -/
 def toFlatnessModel
     (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
@@ -71,6 +82,38 @@ def runtimeDependencyRole
     (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) (c d : C) :
     RuntimeDependencyRole :=
   X.runtimeRole c d
+
+/-- Static evidence restricts to itself through the core's selected presentation. -/
+theorem staticRestriction_eq_staticEdge
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    EdgeRestriction X.selectedPresentation X.flatness.static.edge =
+      X.flatness.static.edge :=
+  ArchitectureFlatnessModel.staticRestriction_eq_staticEdge X.flatness
+
+/-- Runtime evidence restricts to itself through the core's selected presentation. -/
+theorem runtimeRestriction_eq_runtimeEdge
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    EdgeRestriction X.selectedPresentation X.flatness.runtime.edge =
+      X.flatness.runtime.edge :=
+  ArchitectureFlatnessModel.runtimeRestriction_eq_runtimeEdge X.flatness
+
+/--
+The core is complete for its own selected static relation.  This does not lift
+to complete extraction from an ambient repository.
+-/
+theorem staticCompleteForSelectedPresentation
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    CompleteForRelation X.selectedPresentation X.flatness.static.edge :=
+  ArchitectureFlatnessModel.staticCompleteForSelectedPresentation X.flatness
+
+/--
+The core is complete for its own selected runtime relation.  This does not
+assert runtime telemetry completeness for an ambient system.
+-/
+theorem runtimeCompleteForSelectedPresentation
+    (X : ArchitectureCore C A StaticObs SemanticExpr SemanticObs) :
+    CompleteForRelation X.selectedPresentation X.flatness.runtime.edge :=
+  ArchitectureFlatnessModel.runtimeCompleteForSelectedPresentation X.flatness
 
 /-- Every component is covered by the proof-carrying static universe. -/
 theorem component_mem_staticUniverse

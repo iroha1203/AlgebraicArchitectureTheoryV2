@@ -34,6 +34,7 @@ import Formal.Arch.Examples.SolidCounterexample
 import Formal.Arch.Patterns.LocalContractDesignPattern
 import Formal.Arch.Signature.Signature
 import Formal.Arch.Core.Finite
+import Formal.Arch.Core.Presentation
 import Formal.Arch.Operation.OperationKernel
 import Formal.Arch.Core.Matrix
 import Formal.Arch.Signature.DependencyObstruction

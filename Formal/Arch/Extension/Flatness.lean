@@ -1,4 +1,5 @@
 import Formal.Arch.Extension.FeatureExtension
+import Formal.Arch.Core.Presentation
 import Formal.Arch.Signature.SignatureLawfulness
 import Formal.Arch.Law.StateEffect
 
@@ -28,10 +29,66 @@ structure ArchitectureFlatnessModel (C : Type u) (A : Type v)
   requiredSemantic : RequiredDiagram SemanticExpr -> Prop
   measuredSemantic : List (RequiredDiagram SemanticExpr)
 
+/--
+Foundations-level bounded architecture object.
+
+At the current formalization layer this is the three-axis flatness model: a
+selected carrier with static and runtime relations, boundary / abstraction /
+runtime policies, observation data, and a measured semantic diagram universe.
+It is not an unbounded real-codebase object.
+-/
+abbrev ArchitectureObject (C : Type u) (A : Type v)
+    (StaticObs : Type w) (SemanticExpr : Type q)
+    (SemanticObs : Type r) :=
+  ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs
+
 namespace ArchitectureFlatnessModel
 
 variable {C : Type u} {A : Type v} {StaticObs : Type w}
   {SemanticExpr : Type q} {SemanticObs : Type r}
+
+/--
+The selected presentation of a flatness model over its own component carrier.
+
+This is an identity presentation for the bounded model.  It does not assert
+completeness for any larger ambient repository.
+-/
+def selectedPresentation
+    (_X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) :
+    SelectedPresentation C C :=
+  SelectedPresentation.identity C
+
+/-- Static evidence restricts to itself through the bounded selected presentation. -/
+theorem staticRestriction_eq_staticEdge
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) :
+    EdgeRestriction X.selectedPresentation X.static.edge = X.static.edge :=
+  edgeRestriction_identity X.static.edge
+
+/-- Runtime evidence restricts to itself through the bounded selected presentation. -/
+theorem runtimeRestriction_eq_runtimeEdge
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) :
+    EdgeRestriction X.selectedPresentation X.runtime.edge = X.runtime.edge :=
+  edgeRestriction_identity X.runtime.edge
+
+/--
+The bounded selected presentation is complete for the model's own static
+relation.  This is selected-carrier completeness, not ambient extractor
+completeness.
+-/
+theorem staticCompleteForSelectedPresentation
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) :
+    CompleteForRelation X.selectedPresentation X.static.edge :=
+  completeForRelation_identity X.static.edge
+
+/--
+The bounded selected presentation is complete for the model's own runtime
+relation.  This is selected-carrier completeness, not runtime telemetry
+completeness for a larger ambient system.
+-/
+theorem runtimeCompleteForSelectedPresentation
+    (X : ArchitectureFlatnessModel C A StaticObs SemanticExpr SemanticObs) :
+    CompleteForRelation X.selectedPresentation X.runtime.edge :=
+  completeForRelation_identity X.runtime.edge
 
 /-- The static-law view of a flatness model relative to a finite universe. -/
 def staticLawModel
