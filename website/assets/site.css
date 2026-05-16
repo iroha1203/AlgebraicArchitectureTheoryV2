@@ -1682,6 +1682,16 @@ p {
   text-align: right;
 }
 
+.page-nav .page-nav-next {
+  grid-column: 2;
+  text-align: right;
+}
+
+.page-nav .page-nav-previous {
+  grid-column: 1;
+  text-align: left;
+}
+
 .page-nav span {
   color: var(--accent-blue);
   font-family: var(--font-sans);
@@ -1931,6 +1941,12 @@ p {
   }
 
   .page-nav a:last-child {
+    text-align: left;
+  }
+
+  .page-nav .page-nav-next,
+  .page-nav .page-nav-previous {
+    grid-column: 1;
     text-align: left;
   }
 
