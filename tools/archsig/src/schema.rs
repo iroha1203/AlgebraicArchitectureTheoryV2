@@ -95,6 +95,9 @@ pub const CONSEQUENCE_ENVELOPE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION: &str = "forecast-calibration-hook-v0";
 pub const FORECAST_CALIBRATION_HOOK_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "forecast-calibration-hook-validation-report-v0";
+pub const AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION: &str = "ai-proposal-governance-v0";
+pub const AI_PROPOSAL_GOVERNANCE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "ai-proposal-governance-validation-report-v0";
 pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
 pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
 pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
@@ -4281,6 +4284,132 @@ pub struct ForecastCalibrationHookValidationSummary {
     pub forecast_item_count: usize,
     pub observed_outcome_count: usize,
     pub match_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceV0 {
+    pub schema_version: String,
+    pub governance_id: String,
+    pub proposal_ref: AiProposalGovernanceProposalRefV0,
+    pub prompt_policy_boundary: AiProposalPromptPolicyBoundaryV0,
+    pub support_assessments: Vec<AiProposalSupportAssessmentV0>,
+    pub shortcut_witnesses: Vec<AiProposalShortcutWitnessV0>,
+    pub review_ci_mediation: AiProposalReviewCiMediationV0,
+    pub posterior_field_update: AiProposalPosteriorFieldUpdateV0,
+    pub evidence_boundary: AiProposalGovernanceEvidenceBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceProposalRefV0 {
+    pub proposal_source_ref_id: String,
+    pub descriptor_id: String,
+    pub descriptor_schema_version: String,
+    pub operation_support_estimate_id: Option<String>,
+    pub consequence_envelope_id: Option<String>,
+    pub source_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalPromptPolicyBoundaryV0 {
+    pub boundary_id: String,
+    pub prompt_ref: String,
+    pub policy_ref: String,
+    pub source_ref_ids: Vec<String>,
+    pub retained_fields: Vec<String>,
+    pub unavailable_fields: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalSupportAssessmentV0 {
+    pub assessment_id: String,
+    pub support_category: String,
+    pub applies_to_ref: String,
+    pub source_ref_ids: Vec<String>,
+    pub rationale: String,
+    pub required_follow_up: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalShortcutWitnessV0 {
+    pub witness_id: String,
+    pub shortcut_kind: String,
+    pub affected_ref: String,
+    pub source_ref_ids: Vec<String>,
+    pub evidence_boundary: String,
+    pub mediation_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalReviewCiMediationV0 {
+    pub mediation_id: String,
+    pub review_refs: Vec<String>,
+    pub ci_refs: Vec<String>,
+    pub decision_boundary: String,
+    pub required_human_checks: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalPosteriorFieldUpdateV0 {
+    pub update_id: String,
+    pub update_kind: String,
+    pub calibration_refs: Vec<String>,
+    pub retained_unknown_axes: Vec<String>,
+    pub field_update_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceEvidenceBoundaryV0 {
+    pub boundary_id: String,
+    pub artifact_refs: Vec<String>,
+    pub missing_evidence_refs: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceValidationReportV0 {
+    pub schema_version: String,
+    pub input: AiProposalGovernanceValidationInput,
+    pub governance: AiProposalGovernanceV0,
+    pub summary: AiProposalGovernanceValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub governance_id: String,
+    pub descriptor_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceValidationSummary {
+    pub result: String,
+    pub support_assessment_count: usize,
+    pub shortcut_witness_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

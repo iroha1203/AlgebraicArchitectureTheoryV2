@@ -1,6 +1,7 @@
 use crate::{
-    AIR_SCHEMA_VERSION, ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
-    ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION, CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
+    AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION, AIR_SCHEMA_VERSION,
+    ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION, ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION,
+    CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
     INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
@@ -387,6 +388,31 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     vec![
                         "Trajectory report remains finite observed trajectory tooling evidence, not a global attractor or basin theorem.",
                         "Endpoint safe-region membership does not imply path safety.",
+                    ],
+                ),
+            ),
+            artifact(
+                "ai-proposal-governance",
+                "AI Proposal Governance",
+                AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION,
+                "review-governance-output",
+                "B14",
+                "implemented",
+                vec![
+                    "docs/tool/ai_proposal_governance.md",
+                    "tools/archsig/docs/artifacts-and-boundaries.md#sft-forecasting-input-artifacts",
+                ],
+                vec!["#900"],
+                compatibility_boundary(
+                    "Map proposal refs, prompt / policy boundary, support taxonomy, shortcut witnesses, review / CI mediation, posterior field update, evidence boundary, and non-conclusions separately.",
+                    vec![],
+                    vec![
+                        "New support categories must remain within allowed, conditionallyAllowed, forbidden, unknown, or outOfScope unless a schema migration records the boundary.",
+                        "New mediation fields must preserve that policy compliance, review pass, and CI pass are not architecture lawfulness.",
+                    ],
+                    vec![
+                        "AI proposal governance is reviewer-facing process evidence, not an AI safety theorem.",
+                        "Posterior field update refs are calibration hooks, not causal proofs.",
                     ],
                 ),
             ),

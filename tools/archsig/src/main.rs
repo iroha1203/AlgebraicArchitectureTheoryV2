@@ -5,7 +5,8 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use archsig::{
-    AirDocumentInput, AirDocumentV0, AirValidationReport, ArchitectureDynamicsMetricsReportV0,
+    AiProposalGovernanceV0, AiProposalGovernanceValidationReportV0, AirDocumentInput,
+    AirDocumentV0, AirValidationReport, ArchitectureDynamicsMetricsReportV0,
     ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
     ArchitectureFieldSnapshotValidationReportV0, ArtifactDescriptorV0,
     ArtifactDescriptorValidationReportV0, CalibrationReviewRecordV0,
@@ -32,7 +33,8 @@ use archsig::{
     SignatureTrajectoryReportV0, SignatureTrajectoryReportValidationReportV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence,
-    build_air_document, build_artifact_descriptor_from_ai_proposal_json,
+    build_ai_proposal_governance_from_descriptor, build_air_document,
+    build_artifact_descriptor_from_ai_proposal_json,
     build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
     build_baseline_suppression_report, build_consequence_envelope_from_forecast_cone,
     build_empirical_dataset, build_feature_extension_dataset_from_files,
@@ -43,30 +45,31 @@ use archsig::{
     build_schema_compatibility_check_report, build_signature_diff_report,
     build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    render_pr_comment_markdown, static_architecture_dynamics_metrics_report,
-    static_architecture_field_snapshot, static_artifact_descriptor,
-    static_calibration_review_record, static_consequence_envelope_report,
-    static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
-    static_dynamics_measurement_contract, static_forecast_calibration_hook,
-    static_forecast_cone_skeleton, static_hypothesis_refresh_cycle,
-    static_incident_correlation_monitor, static_law_policy_template_registry,
-    static_measurement_unit_registry, static_no_solution_certificate,
-    static_operation_proposal_log, static_operation_support_estimate, static_organization_policy,
+    render_pr_comment_markdown, static_ai_proposal_governance,
+    static_architecture_dynamics_metrics_report, static_architecture_field_snapshot,
+    static_artifact_descriptor, static_calibration_review_record,
+    static_consequence_envelope_report, static_custom_rule_plugin_registry,
+    static_detectable_values_reported_axes_catalog, static_dynamics_measurement_contract,
+    static_forecast_calibration_hook, static_forecast_cone_skeleton,
+    static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
+    static_law_policy_template_registry, static_measurement_unit_registry,
+    static_no_solution_certificate, static_operation_proposal_log,
+    static_operation_support_estimate, static_organization_policy,
     static_ownership_boundary_monitor, static_pr_force_report, static_repair_adoption_record,
     static_repair_rule_registry, static_report_artifact_retention_manifest,
     static_schema_version_catalog, static_signature_trajectory_report,
     static_synthesis_constraint_artifact, static_team_threshold_policy,
-    validate_air_document_report, validate_architecture_dynamics_metrics_report,
-    validate_architecture_field_snapshot, validate_artifact_descriptor_report,
-    validate_component_universe_report, validate_consequence_envelope_report,
-    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
-    validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
-    validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
-    validate_no_solution_certificate_report, validate_operation_proposal_log,
-    validate_operation_support_estimate, validate_organization_policy_report,
-    validate_pr_force_report, validate_repair_rule_registry_report,
-    validate_report_artifact_retention_report, validate_signature_trajectory_report,
-    validate_synthesis_constraint_artifact_report,
+    validate_ai_proposal_governance, validate_air_document_report,
+    validate_architecture_dynamics_metrics_report, validate_architecture_field_snapshot,
+    validate_artifact_descriptor_report, validate_component_universe_report,
+    validate_consequence_envelope_report, validate_custom_rule_plugin_registry_report,
+    validate_dynamics_measurement_contract_report, validate_forecast_calibration_hook,
+    validate_forecast_cone_skeleton, validate_law_policy_template_registry_report,
+    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
+    validate_operation_proposal_log, validate_operation_support_estimate,
+    validate_organization_policy_report, validate_pr_force_report,
+    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
+    validate_signature_trajectory_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -818,6 +821,33 @@ enum Command {
         fixture: bool,
 
         /// Output hook or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit, validate, or generate an AI proposal governance artifact.
+    AiProposalGovernance {
+        /// Optional AI proposal governance JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// ArtifactDescriptor JSON path to project into ai-proposal-governance-v0.
+        #[arg(long)]
+        descriptor: Option<PathBuf>,
+
+        /// Optional operation-support-estimate-v0 id retained as a governance source ref.
+        #[arg(long = "operation-support-id")]
+        operation_support_id: Option<String>,
+
+        /// Optional consequence-envelope-report-v0 id retained as a governance source ref.
+        #[arg(long = "consequence-envelope-id")]
+        consequence_envelope_id: Option<String>,
+
+        /// Emit the canonical minimal ai-proposal-governance-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output governance artifact or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1863,6 +1893,49 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-forecast-calibration-hook".to_string());
             let validation: ForecastCalibrationHookValidationReportV0 =
                 validate_forecast_calibration_hook(&hook, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::AiProposalGovernance {
+            input,
+            descriptor,
+            operation_support_id,
+            consequence_envelope_id,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let governance: AiProposalGovernanceV0 = static_ai_proposal_governance();
+                write_json(out, &governance)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            if let Some(descriptor_path) = descriptor {
+                let descriptor_value: ArtifactDescriptorV0 = read_json(&descriptor_path)?;
+                let governance: AiProposalGovernanceV0 =
+                    build_ai_proposal_governance_from_descriptor(
+                        &descriptor_value,
+                        operation_support_id.as_deref(),
+                        consequence_envelope_id.as_deref(),
+                    );
+                write_json(out, &governance)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let governance: AiProposalGovernanceV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_ai_proposal_governance);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-ai-proposal-governance".to_string());
+            let validation: AiProposalGovernanceValidationReportV0 =
+                validate_ai_proposal_governance(&governance, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
             Ok(if failed {

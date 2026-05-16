@@ -351,7 +351,10 @@ pub fn build_artifact_descriptor_from_ai_proposal_json(
             "rationale",
             "constraints",
             "model",
+            "promptRef",
             "promptRefs",
+            "policyRef",
+            "policyRefs",
         ],
     );
     let normalized_text = json_text_projection(value);

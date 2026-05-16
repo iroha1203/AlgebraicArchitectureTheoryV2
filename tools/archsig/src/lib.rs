@@ -1,3 +1,4 @@
+mod ai_governance;
 mod air;
 mod air_validation;
 mod architecture_dynamics_metrics;
@@ -46,6 +47,10 @@ mod validation;
 #[cfg(test)]
 mod test_support;
 
+pub use ai_governance::{
+    build_ai_proposal_governance_from_descriptor, static_ai_proposal_governance,
+    validate_ai_proposal_governance,
+};
 pub use air::build_air_document;
 pub use air_validation::validate_air_document_report;
 pub use architecture_dynamics_metrics::{

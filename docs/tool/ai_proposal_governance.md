@@ -115,8 +115,8 @@ posterior update は少なくとも次を区別する。
 
 ## Artifact Plan
 
-初期段階では新しい schema を急がず、既存 artifact の source refs と boundary field を使って
-AI governance を表す。
+Rust tooling では `ai-proposal-governance-v0` を最小 projection として追加し、
+既存 artifact の source refs と boundary field を接続して AI governance を表す。
 
 | Artifact | 用途 |
 | --- | --- |
@@ -124,9 +124,10 @@ AI governance を表す。
 | `operation-support-estimate-v0` | allowed / forbidden / unknown support、policy constraints、unknown remainder を保持する。 |
 | `consequence-envelope-report-v0` | affected axes、obstruction candidates、theorem boundary、review / CI recommendation を保持する。 |
 | `forecast-calibration-hook-v0` | shortcut witness refs と observed PR / review / CI / outcome refs を対応付ける。 |
+| `ai-proposal-governance-v0` | prompt / policy boundary、allowed / conditionallyAllowed / forbidden / unknown / outOfScope support、shortcut witness、review / CI mediation、posterior field update を保持する。 |
 | B10 / B11 operational artifacts | review mediation、incident、rollback、ownership boundary、hypothesis refresh を保存する。 |
 
-将来 schema を追加する場合も、AI policy compliance、review pass、CI pass、schema validation pass を
+この governance artifact でも、AI policy compliance、review pass、CI pass、schema validation pass を
 architecture lawfulness や forecast correctness に昇格しない。
 
 ## Non-Conclusions
