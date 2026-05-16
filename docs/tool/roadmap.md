@@ -174,10 +174,13 @@ boundary を保持する。`ForecastConeSkeleton` は finite support と bounded
 path class candidates を保持する。`ConsequenceEnvelope` は affected architecture
 regions、comparable signature axes、expected axis delta ranges、selected obstruction
 witness candidates、missing boundary、theorem boundary、review / CI recommendation を
-report projection として保持する。`ForecastCalibrationHook` は forecast item refs と
-B10 / B11 の observed artifact refs を対応付ける。いずれも accepted PR history、actual
-future support、global policy safety、future trajectory safety、forecast correctness、
-causal proof、Lean theorem claim は主張しない。
+report projection として保持する。この projection は一つ以上の bounded cone skeleton
+から reviewer-facing envelope を作る片方向写像であり、path classes、affected regions、
+comparable axes、unknown remainder、forecast non-conclusions を落とさず引き継ぐ。
+`ForecastCalibrationHook` は forecast item refs と B10 / B11 の observed artifact refs を
+対応付ける。いずれも accepted PR history、actual future support、global policy safety、
+future trajectory safety、forecast correctness、causal proof、cone family の一意復元、
+Lean theorem claim は主張しない。
 
 ### B12 milestones
 

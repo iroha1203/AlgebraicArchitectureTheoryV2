@@ -616,11 +616,55 @@ ConsequenceEnvelope :=
   + unknown / unmodeled remainder
 ```
 
+より形式的には、`ConsequenceEnvelope` は cone family からの loss-aware report
+projection として読む。
+
+```text
+ConeFamily :=
+  nonempty selected set of ForecastCone(F_i, U_i, h_i)
+
+EnvelopeProjection(ConeFamily, ObservationBoundary) :=
+  path classes visible through the boundary
+  + affected region refs obtained from observed path endpoints / supports
+  + comparable signature axes under the selected measurement universe
+  + axis delta ranges for comparable axes
+  + obstruction candidates witnessed inside the observed projection
+  + missing boundary / theorem boundary items
+  + non-conclusions inherited from all selected cones
+  + unknown remainder not discharged by the projection
+```
+
+この projection は全情報を保存しない。path の個数、probability weight、unobserved
+field coordinates、support の完全性、calibrated correctness は、明示された
+boundary に入っていない限り envelope へ昇格しない。
+したがって soundness boundary は片方向である。
+
+```text
+ForecastCone family
+  -> ConsequenceEnvelope report projection
+
+ConsequenceEnvelope report
+  -/-> unique ForecastCone family
+  -/-> causal correctness
+  -/-> calibrated point prediction
+```
+
+`unknown / unmodeled remainder` と `forecast non-conclusions` は projection の副産物ではなく、
+保持すべき構成要素である。ある cone に unknown support、unmeasured axis、missing theorem
+boundary が残るなら、envelope はそれを missing / theorem boundary item として残す。
+複数 cone をまとめる場合も、unknown remainder は相殺されない。
+
 理論家には `ForecastCone`、実務家には `ConsequenceEnvelope`、tooling には simulator output を返す。
 ArchSig の `forecast-cone-skeleton-v0` は、この formal core の有限 support refs、
 bounded horizon、path class candidates、forecast boundary、unknown remainder を保持する
 review artifact である。これは `ForecastCone(F, U, h)` の Lean theorem witness ではなく、
 probability、causal correctness、global safety、または calibration 済み予測を結論しない。
+ArchSig の `consequence-envelope-report-v0` は、`forecast-cone-skeleton-v0` から
+affected regions、comparable axes、axis delta ranges、obstruction candidates、missing
+boundary / theorem boundary、review recommendation を生成する report projection である。
+これは formal core の `EnvelopeProjection` に対応する tooling artifact だが、Lean theorem
+witness ではなく、projection 元の cone family の一意復元、probability、causal proof、
+forecast correctness を結論しない。
 
 ### 13. Observation Boundaries and Governance Interventions（観測境界と governance intervention）
 
