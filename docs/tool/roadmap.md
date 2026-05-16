@@ -242,6 +242,53 @@ calibration refs、non-conclusions を保持する。schema、fixture、validato
 future trajectory safety、global risk reduction、forecast correctness は non-conclusions として
 保持する。
 
+## Phase B16: Closed-loop SFT workbench
+
+Closed-loop SFT workbench は、B10 operational feedback、B12 / B13 SFT forecast artifact、
+AI proposal governance、lifecycle decision surface、future adapters、calibration hook を
+一つの review cycle に束ねる deployed workflow の最小設計である。目的は自動判断ではなく、
+入力、bounded forecast、governance intervention、observed outcome、calibration input を
+同じ artifact graph として追跡できるようにすることである。
+
+最小 input / output boundary は次である。
+
+```text
+PRD / design memo / Issue / AI proposal refs
+  + codebase / ArchitectureSignature snapshot refs
+  + review / CI / PR / incident / ownership trace refs
+  + AI agent policy refs
+  -> SFT forecast artifact bundle
+  -> ConsequenceEnvelope / governance / lifecycle projections
+  -> review / CI / issue decomposition intervention refs
+  -> observed outcome refs
+  -> ForecastCalibrationHook + B10 operational feedback refs
+  -> field update note / hypothesis refresh input
+```
+
+### B16 dependency map
+
+| 依存 | workbench での役割 | 境界 |
+| --- | --- | --- |
+| B10 operational feedback | outcome ledger、calibration review、threshold、ownership、incident correlation、hypothesis refresh を保存する。 | correlation と operational observation であり、causal theorem ではない。 |
+| B12 / B13 SFT forecast | descriptor、support estimate、cone skeleton、envelope report を生成する。 | bounded forecast artifact であり、probability や forecast correctness ではない。 |
+| calibration hook | forecast item refs と observed refs を対応付ける。 | match / unmatched / unavailable / private / notComparable を保存するだけで、自動採点しない。 |
+| future adapters | GitHub Issue、AI proposal、framework semantics、runtime / incident trace を正規化する。 | supplied evidence adapter であり、private field 復元や extractor completeness を主張しない。 |
+| governance / lifecycle projections | review / CI / issue decomposition、AI proposal constraint、repair / migration / deletion comparison を出す。 | reviewer-facing intervention surface であり、自動 governance correctness ではない。 |
+
+### B16 phase plan
+
+| Phase | 成果物 | 次の実装 Issue 候補 |
+| --- | --- | --- |
+| B16.0 artifact inventory | B10 / B12 / B13 / governance / lifecycle artifact refs と missing adapters の一覧。 | workbench run manifest schema を作る。 |
+| B16.1 offline workbench bundle | 1 件の PRD / Issue / AI proposal から forecast bundle、governance projection、feedback refs を手動結合する。 | `workbench-run-manifest-v0` fixture / validator。 |
+| B16.2 review-loop dry run | envelope と governance projection を review / CI checklist、issue decomposition refs に接続する。 | review intervention record schema。 |
+| B16.3 calibration join | observed refs を `ForecastCalibrationHook` と B10 artifact に接続する。 | calibration join report / benchmark fixture。 |
+| B16.4 deployed pilot | scheduler、team threshold、ownership / incident monitor と接続する。 | prospective dataset と organization-specific calibration policy。 |
+
+B16 は real organization deployment、automatic governance correctness、forecast quality、
+AI safety、global risk reduction を完了条件にしない。これらは実 dataset と prospective
+validation が揃った後の empirical research task として扱う。
+
 ### B12 milestones
 
 | Milestone | 目標 |
