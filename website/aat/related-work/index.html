@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT related work map: ISO 42010, ATAM, architecture metrics, graph analysis, formal methods, and novelty boundaries."
+      content="AAT related work and novelty boundary: ISO 42010, ATAM, architecture metrics, graph analysis, formal methods, category models, Lean status, and non-replacement claims."
     >
     <title>AAT Related Work and Novelty</title>
     <link rel="alternate" hreflang="en" href="./">
@@ -49,12 +49,13 @@
             <span>Related Work</span>
           </nav>
           <p class="eyebrow">Appendix</p>
-          <h1>Related Work and Novelty</h1>
+          <h1>Related Work<br>and Novelty</h1>
           <p class="lede">
-            AAT reuses familiar architecture description, evaluation,
-            dependency, metric, and formal-methods ideas, but its contribution
-            is the bounded theorem discipline that connects invariants,
-            obstruction witnesses, multi-axis signatures, and explicit
+            Related work is not a list of methods that AAT replaces. It is the
+            boundary map that shows which architecture-description, review,
+            metric, graph, formal-methods, and categorical ideas AAT reuses,
+            and where AAT adds a bounded claim grammar for invariants,
+            obstruction witnesses, signatures, theorem boundaries, and
             non-conclusions.
           </p>
         </div>
@@ -66,7 +67,8 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#positioning">Positioning</a></li>
+                <li><a href="#reader-model">Reader model</a></li>
+                <li><a href="#comparison-contract">Comparison contract</a></li>
                 <li><a href="#iso-42010">ISO 42010</a></li>
                 <li><a href="#atam">ATAM</a></li>
                 <li><a href="#metrics">Architecture metrics</a></li>
@@ -74,23 +76,40 @@
                 <li><a href="#formal-methods">Formal methods</a></li>
                 <li><a href="#category-models">Category-theoretic models</a></li>
                 <li><a href="#novelty-claim">Novelty claim</a></li>
+                <li><a href="#formal-anchors">Formal anchors</a></li>
               </ol>
             </nav>
+            <div class="source-panel">
+              <h2>Citable statements</h2>
+              <ul>
+                <li><a href="#positioning-a-1">Positioning A.1</a></li>
+                <li><a href="#non-replacement-a-2">Non-replacement A.2</a></li>
+                <li><a href="#signature-boundary-a-3">Signature boundary A.3</a></li>
+                <li><a href="#formal-anchor-a-4">Formal anchor A.4</a></li>
+                <li><a href="#novelty-boundary-a-5">Novelty boundary A.5</a></li>
+                <li><a href="#non-conclusion-a-6">Non-conclusion A.6</a></li>
+              </ul>
+            </div>
             <div class="source-panel">
               <h2>Canonical sources</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/mathematical_theory.md">
                     AAT mathematical theory
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/research_goal.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/research_goal.md">
                     Research goal
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/proof_obligations.md">
+                    Proof obligations
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md">
                     Lean theorem index
                   </a>
                 </li>
@@ -100,13 +119,13 @@
               <h2>AAT release snapshot</h2>
               <dl>
                 <dt>Updated</dt>
-                <dd>2026-05-15</dd>
+                <dd>2026-05-16</dd>
                 <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/89b4502b6fc01937bfafa409155a7b4a194a80fe">89b4502</a></dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/44d6266ec321ef19f0c00da53f60bde92ea7a18b">44d6266</a></dd>
                 <dt>Lean status</dt>
-                <dd>Related-work synthesis. It introduces no new Lean theorem.</dd>
+                <dd>Website synthesis only. It introduces no new Lean theorem and audits existing formal anchors.</dd>
                 <dt>Claim level</dt>
-                <dd>Conceptual comparison and novelty boundary, not an empirical validation result.</dd>
+                <dd>Conceptual comparison, source-boundary map, and non-replacement claim; not an empirical validation result.</dd>
               </dl>
             </div>
             <div class="boundary-note">
@@ -121,25 +140,111 @@
           </aside>
 
           <div class="article-main">
-            <section id="positioning" class="article-section">
-              <h2>Positioning</h2>
+            <section id="reader-model" class="article-section">
+              <h2>Reader model</h2>
+              <div class="reader-model">
+                <div>
+                  <h3>AAT does not say</h3>
+                  <p>
+                    "Architecture description, scenario review, dependency
+                    metrics, graph algorithms, model checking, or categorical
+                    models are obsolete." AAT does not replace the practices
+                    that produce evidence, review questions, or formal models.
+                  </p>
+                </div>
+                <div>
+                  <h3>AAT says</h3>
+                  <p>
+                    When those practices feed a bounded architecture claim,
+                    the claim should record the selected object, invariant
+                    family, witness universe, measured signature axes, theorem
+                    boundary, and non-conclusions.
+                  </p>
+                </div>
+              </div>
               <p>
-                AAT is not a new notation for every architecture document, a
-                replacement for scenario-based review, or a single quality
-                metric. It is a local algebra for stating what architecture
-                operation is being considered, which invariant family is in
-                scope, which obstruction witnesses count as failures, and which
-                theorem boundary licenses a conclusion.
+                This page is therefore a novelty boundary, not a survey of all
+                adjacent literature. Its job is to keep replacement claims,
+                empirical superiority claims, and formal theorem claims
+                separated.
               </p>
               <figure class="code-panel">
                 <figcaption>Novelty boundary</figcaption>
                 <pre><code>AAT contribution
   = bounded architecture object
+  + architecture operation
   + invariant family
   + obstruction witness universe
   + multi-axis ArchitectureSignature
-  + theorem boundary and non-conclusions</code></pre>
+  + theorem boundary
+  + recorded non-conclusions</code></pre>
               </figure>
+              <p id="positioning-a-1" class="statement">
+                <a class="statement-anchor" href="#positioning-a-1">Positioning A.1.</a>
+                AAT's novelty is the bounded claim grammar that ties an
+                architecture operation to invariant families, obstruction
+                witnesses, signature axes, theorem boundaries, and
+                non-conclusions. The novelty is not a replacement of adjacent
+                description, review, metric, graph, model-checking, or
+                category-theoretic methods.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Positioning A.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">indexed synthesis</span>
+                <span>Anchored by the AAT mathematical theory, research goal, and proof-obligation boundary. This page adds no new Lean theorem.</span>
+              </p>
+            </section>
+
+            <section id="comparison-contract" class="article-section">
+              <h2>Comparison contract</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> AAT compares to adjacent work
+                by asking what the neighbor supplies, what AAT imports, what
+                AAT adds, and what conclusion still does not follow.
+              </p>
+              <div class="article-table">
+                <table>
+                  <caption>How to read an adjacent-work comparison</caption>
+                  <thead>
+                    <tr>
+                      <th>Question</th>
+                      <th>AAT reading</th>
+                      <th>Guardrail</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>What does the neighbor supply?</td>
+                      <td>A notation, review process, metric, graph fact, model, or proof technique.</td>
+                      <td>Do not restate the neighbor as if AAT invented it.</td>
+                    </tr>
+                    <tr>
+                      <td>What does AAT import?</td>
+                      <td>A selected evidence boundary, law family, witness universe, axis, or representation.</td>
+                      <td>The import remains relative to the selected universe and assumptions.</td>
+                    </tr>
+                    <tr>
+                      <td>What does AAT add?</td>
+                      <td>The theorem boundary, obstruction reading, signature status, and explicit non-conclusion.</td>
+                      <td>The added package is not an empirical superiority result by itself.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p id="non-replacement-a-2" class="statement">
+                <a class="statement-anchor" href="#non-replacement-a-2">Non-replacement A.2.</a>
+                AAT is a boundary discipline for architecture claims. It can
+                use architecture descriptions, ATAM-style scenarios, metrics,
+                graph analyses, theorem proving, and categorical vocabulary as
+                inputs or representations, but it does not replace those
+                methods as documentation standards, review practices,
+                empirical protocols, or verification engines.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Non-replacement A.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">claim boundary</span>
+                <span>Recorded as website source-boundary guidance. No additional formal claim is introduced.</span>
+              </p>
             </section>
 
             <section id="iso-42010" class="article-section">
@@ -186,6 +291,12 @@
                   </tbody>
                 </table>
               </div>
+              <p class="statement-note">
+                The useful mapping is viewpoint to observation boundary,
+                concern to invariant family, and model kind to representation.
+                Each mapping requires a bridge claim before a documented view
+                can be read as a theorem premise or signature coordinate.
+              </p>
             </section>
 
             <section id="atam" class="article-section">
@@ -212,6 +323,13 @@
                   <span>AAT requires the theorem boundary or artifact boundary to say what the conclusion does not cover.</span>
                 </li>
               </ul>
+              <p>
+                This makes AAT complementary to review. A review can identify
+                a risk, sensitivity point, or tradeoff; AAT asks whether that
+                risk has a selected witness, whether the corresponding
+                signature axis was measured, and whether a theorem package or
+                report boundary licenses the proposed conclusion.
+              </p>
             </section>
 
             <section id="metrics" class="article-section">
@@ -219,9 +337,32 @@
               <p>
                 Architecture metrics often summarize dependency, coupling,
                 complexity, volatility, or risk. AAT deliberately does not make
-                quality a single scalar. `ArchitectureSignature` is a
+                quality a single scalar. <code>ArchitectureSignature</code> is a
                 multi-axis diagnostic whose coordinates carry measurement
                 status, evidence, universe, and non-conclusions.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Measurement status boundary</figcaption>
+                <pre><code>MeasurementStatus
+  = measured_zero
+  + measured_nonzero(value)
+  + unmeasured
+  + out_of_scope
+  + private_unavailable
+  + not_applicable</code></pre>
+              </figure>
+              <p id="signature-boundary-a-3" class="statement">
+                <a class="statement-anchor" href="#signature-boundary-a-3">Signature boundary A.3.</a>
+                A measured-zero coordinate is not a global quality certificate,
+                and an unmeasured coordinate is not a zero coordinate.
+                Signature comparison is meaningful only on selected axes where
+                both sides are measured and an axis-local order has been
+                declared.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Signature boundary A.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">defined / proved</span>
+                <span>Anchored by <code>ArchitectureSignatureV1.axisMeasuredZero</code>, <code>axisAvailableAndZero</code>, and the optional-axis non-conclusion lemmas.</span>
               </p>
               <div class="claim-strip">
                 <p>
@@ -258,6 +399,35 @@
                   <span>A clean selected graph does not imply complete extraction, semantic flatness, runtime safety, or empirical cost improvement.</span>
                 </li>
               </ul>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Graph bridge</span>
+                      <h3>Finite graph facts are theorem inputs, not global architecture claims</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ComponentUniverse.reachable_exists_bounded_path</code>, <code>hasCycleBool_correct_under_finite_universe</code>, and <code>sccExcessSizeOfFinite_eq_zero_iff_sccMaxSizeOfFinite_le_one</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Imported from graph analysis</dt>
+                      <dd>Reachability, cycles, SCCs, path and walk witnesses, adjacency-style calculations, and finite metrics.</dd>
+                    </div>
+                    <div>
+                      <dt>AAT boundary</dt>
+                      <dd>Every graph fact is relative to a finite component universe, selected relation, coverage premise, and exactness premise.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No complete real-code extraction, semantic flatness, runtime telemetry completeness, or empirical cost improvement follows.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="formal-methods" class="article-section">
@@ -277,6 +447,49 @@
                 semantic coverage, and empirical outcome claims remain outside
                 that anchor unless separate theorem packages are supplied.
               </p>
+              <p id="formal-anchor-a-4" class="statement">
+                <a class="statement-anchor" href="#formal-anchor-a-4">Formal anchor A.4.</a>
+                The current proved core is a finite static structural theorem
+                package: selected lawfulness is equivalent to selected
+                required signature axes being available and zero, under the
+                recorded finite universe, coverage, and exactness assumptions.
+                It is not a theorem of runtime completeness, semantic
+                completeness, or empirical outcome.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Formal anchor A.4">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchor</span>
+                <span>Anchored by <code>architectureLawful_iff_requiredSignatureAxesZero</code> and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code>.</span>
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Formal-methods boundary</span>
+                      <h3>The proof package is intentionally bounded</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ArchitectureLawModel</code>, <code>ArchitectureLawful</code>, <code>RequiredSignatureAxesZero</code>, and <code>ArchitectureZeroCurvatureTheoremPackage</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Finite static universe, selected law family, selected witness coverage, and required-axis exactness.</dd>
+                    </div>
+                    <div>
+                      <dt>Conclusion</dt>
+                      <dd>Selected required static lawfulness matches the selected required zero-axis signature package.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>No model-checking completeness, runtime extraction completeness, global semantic flatness, or empirical quality ranking is added.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="category-models" class="article-section">
@@ -285,15 +498,44 @@
                 AAT uses categorical vocabulary where it clarifies structure,
                 composition, projection, lifting, and obstruction. It does not
                 claim that every architecture concern is solved by naming a
-                category, and its current `ComponentCategory` is intentionally
+                category, and its current <code>ComponentCategory</code> is intentionally
                 thin: it forgets path counts and walk lengths.
               </p>
               <p>
-                Quantitative path information belongs to `Walk`, `Path`,
+                Quantitative path information belongs to <code>Walk</code>, <code>Path</code>,
                 adjacency matrices, finite metric representations, or future
                 free-category constructions. This separation keeps categorical
                 structure from swallowing measurement semantics.
               </p>
+              <div class="article-table">
+                <table>
+                  <caption>Category vocabulary boundary</caption>
+                  <thead>
+                    <tr>
+                      <th>Concept</th>
+                      <th>Current AAT use</th>
+                      <th>Not concluded</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>ComponentCategory</code></td>
+                      <td>Thin reachability category over selected components.</td>
+                      <td>Path count, walk length, or weighted propagation.</td>
+                    </tr>
+                    <tr>
+                      <td>Projection / lifting</td>
+                      <td>Explicit bridge between concrete and abstract architecture objects or operations.</td>
+                      <td>Automatic exactness for every model kind.</td>
+                    </tr>
+                    <tr>
+                      <td>Analytic representation</td>
+                      <td>Structure-preserving and reflecting directions under coverage and completeness premises.</td>
+                      <td>Semantic completeness from a representation name alone.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="novelty-claim" class="article-section">
@@ -307,6 +549,19 @@
                 invariant families, failures are explicit obstruction
                 witnesses, and quality is read as a multi-axis signature under
                 theorem boundaries.
+              </p>
+              <p id="novelty-boundary-a-5" class="statement">
+                <a class="statement-anchor" href="#novelty-boundary-a-5">Novelty boundary A.5.</a>
+                AAT contributes an architecture-specific packaging of
+                operation, invariant, obstruction witness, signature axis, and
+                theorem boundary. Its novelty is the disciplined composition of
+                these pieces and the refusal to promote missing evidence into
+                stronger conclusions.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Novelty boundary A.5">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">theory synthesis</span>
+                <span>Tracks the mathematical theory and proof-obligation text; it is not an additional Lean theorem.</span>
               </p>
               <div class="article-table">
                 <table>
@@ -340,6 +595,155 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <p id="non-conclusion-a-6" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-a-6">Non-conclusion A.6.</a>
+                This related-work map does not prove that AAT is empirically
+                superior to adjacent methods, that AAT can fully extract real
+                codebases, that static split implies runtime or semantic
+                flatness, or that architecture quality can be reduced to a
+                scalar score.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Non-conclusion A.6">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">recorded boundary</span>
+                <span>Matches the non-conclusions in the AAT mathematical theory, proof obligations, and examples boundary page.</span>
+              </p>
+            </section>
+
+            <section id="formal-anchors" class="article-section">
+              <h2>Formal anchors</h2>
+              <p>
+                These cards keep the related-work claims tied to the current
+                source of truth. They are an audit trail for the page, not a
+                new theorem index and not a replacement for the canonical docs.
+              </p>
+              <div class="formal-anchor-cards" aria-label="Related work formal-anchor audit trail">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Architecture signature is multi-axis</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#signature-boundary-a-3">Signature boundary A.3</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ArchitectureSignatureV1</code>, <code>ArchitectureSignatureV1Axis</code>, <code>AxisMeasurementClass</code>, <code>axisMeasuredZero</code>, and <code>axisAvailableAndZero</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Signature schema and axis classifiers are <code>defined only</code>; selected axis-value and optional-axis boundary lemmas are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Multi-axis diagnostic, not a scalar ranking or empirical outcome predictor.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#signature-v0">Signature v0 / v1 index</a></dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Finite graph and metric bridge</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits the graph-analysis comparison and selected metric
+                    boundary.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ComponentUniverse</code>, <code>FiniteArchGraph</code>, <code>reachableConeSizeOfFinite_eq_max_reachableConeSize_under_universe</code>, and <code>hasCycleBool_correct_under_finite_universe</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Finite-universe bridge theorems and selected metric correctness lemmas are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Finite selected universe, explicit coverage, and selected relation. No complete extractor claim.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">Finite Universe / Bridge Theorems</a></dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Finite static structural core</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchor</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#formal-anchor-a-4">Formal anchor A.4</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ArchitectureLawModel</code>, <code>RequiredSignatureAxesZero</code>, <code>architectureLawful_iff_requiredSignatureAxesZero</code>, and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>The finite static structural core theorem package is <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Selected static lawfulness only; runtime, semantic, empirical, and extractor-completeness claims stay outside the package.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">Finite Static Structural Core Formal Anchor</a></dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Category and representation boundary</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits the category-theoretic comparison and analytic
+                    representation boundary.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ComponentCategory</code>, <code>Decomposable</code>, <code>AnalyticRepresentation</code>, and <code>Chapter11AnalyticRepresentation.architectureSignatureAnalyticRepresentation_nonConclusions</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Vocabulary and representations are <code>defined only</code>; selected bridge and non-conclusion lemmas are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Thin reachability category and explicit preserving / reflecting premises; no path-count semantics or automatic semantic completeness.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#analytic-representation">Analytic Representation</a></dd>
+                    </div>
+                  </dl>
+                </article>
               </div>
             </section>
 

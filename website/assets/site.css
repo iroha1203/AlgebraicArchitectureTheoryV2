@@ -81,7 +81,8 @@ select {
 }
 
 .site-shell {
-  width: min(1120px, calc(100% - 40px));
+  width: calc(100vw - 40px);
+  max-width: 1120px;
   margin-inline: auto;
 }
 
@@ -1150,7 +1151,8 @@ p {
   }
 
   .site-shell {
-    width: min(100% - 28px, 720px);
+    width: calc(100vw - 28px);
+    max-width: 720px;
   }
 
   .header-inner {
