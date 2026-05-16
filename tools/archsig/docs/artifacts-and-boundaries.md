@@ -83,6 +83,7 @@ non-conclusions を落とさない。
 | ForecastCalibrationHook validation report | `forecast-calibration-hook-validation-report-v0` | matched / unmatched / unavailable / private / notComparable を measured zero と混同していないことを検査する。 |
 | AI Proposal Governance | `ai-proposal-governance-v0` | AI proposal の prompt / policy boundary、support taxonomy、shortcut witness、review / CI mediation、posterior field update を保持する。 |
 | AI Proposal Governance validation report | `ai-proposal-governance-validation-report-v0` | support category、shortcut witness、review / CI / posterior boundary、AI safety / forecast correctness / lawfulness non-conclusions を検査する。 |
+| Lifecycle Decision Report | planned `lifecycle-decision-report-v0` | repair / migration / contraction / deletion の selected inputs、field capacity impact、runtime / ownership boundary、non-conclusions を保持する将来候補。 |
 
 `artifact-descriptor-v0` は B12 SFT forecasting MVP の最初の入力正規化 artifact である。
 後段では `operation-support-estimate-v0`、`forecast-cone-skeleton-v0`、
@@ -117,6 +118,14 @@ prompt / policy boundary、allowed / conditionallyAllowed / forbidden / unknown 
 support、shortcut witness、review / CI mediation、posterior field update を接続するが、
 AI policy compliance、review pass、CI pass、schema validation pass を architecture lawfulness
 や forecast correctness に昇格しない。
+
+Lifecycle decision report は将来 artifact 候補であり、現時点では schema / validator / CLI を
+持たない。入力は ArchitectureSignature trajectory、`ConsequenceEnvelope` family、runtime /
+incident evidence refs、ownership / staffing boundary、repair / migration support refs に限定して
+読む。出力は intervention comparison であり、repair、migration、contraction、deletion を
+market success、human intention、staffing availability、project management recommendation として
+rank しない。実装時は selected inputs、excluded inputs、private / unavailable evidence、
+unknown remainder、calibration refs、non-conclusions を report に残す。
 
 `consequence-envelope-report-v0` は `forecast-cone-skeleton-v0` からの
 loss-aware report projection として読む。一つ以上の bounded cone skeleton から、
