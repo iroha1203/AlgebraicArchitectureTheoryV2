@@ -89,6 +89,11 @@ non-conclusions を落とさない。
 claim を生成しない。missing evidence、unsupported constructs、forecast non-conclusions は
 後段 artifact に引き継ぐ境界として読む。
 
+`forecast-calibration-hook-v0` は `docs/tool/sft_calibration_benchmark.md` の protocol で読む。
+hook は forecast item refs と observed refs の対応を保存するだけであり、forecast quality を
+自動判定しない。review mediation と AI shortcut detection は別 benchmark として集計し、
+private / unavailable / missing data は non-conclusion boundary として残す。
+
 `sft-forecast` は Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、
 AI proposal JSON から
 `artifact-descriptor-v0`、`operation-support-estimate-v0`、
