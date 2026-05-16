@@ -64,22 +64,48 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#reading-model">Reading model</a></li>
                 <li><a href="#signature">Architecture Signature</a></li>
                 <li><a href="#measurement-status">Measurement status</a></li>
                 <li><a href="#signature-record">Signature record</a></li>
-                <li><a href="#measurement-semantics">Measurement semantics</a></li>
                 <li><a href="#theorem-boundary">Theorem boundary</a></li>
                 <li><a href="#claim-levels">Claim levels</a></li>
                 <li><a href="#comparison-rules">Comparison rules</a></li>
                 <li><a href="#non-conclusions">Non-conclusions</a></li>
+                <li><a href="#status-index">Formal anchors</a></li>
               </ol>
             </nav>
+            <div class="source-panel">
+              <h2>Citable statements</h2>
+              <ul>
+                <li><a href="#definition-5-1">Definition 5.1</a></li>
+                <li><a href="#proposition-5-2">Proposition 5.2</a></li>
+                <li><a href="#definition-5-3">Definition 5.3</a></li>
+                <li><a href="#proposition-5-4">Proposition 5.4</a></li>
+                <li><a href="#definition-5-5">Definition 5.5</a></li>
+                <li><a href="#definition-6-1">Definition 6.1</a></li>
+                <li><a href="#proposition-6-2">Proposition 6.2</a></li>
+                <li><a href="#definition-6-3">Definition 6.3</a></li>
+                <li><a href="#proposition-6-4">Proposition 6.4</a></li>
+                <li><a href="#non-conclusion-6-5">Non-conclusion 6.5</a></li>
+              </ul>
+            </div>
             <div class="source-panel">
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#5-architecture-signature">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/mathematical_theory.md#5-architecture-signature">
                     Chapters 5-6 in the AAT text
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/proof_obligations.md#L107">
+                    Current QED boundary
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#signature-integrated-lawfulness">
+                    Signature-integrated lawfulness index
                   </a>
                 </li>
               </ul>
@@ -88,11 +114,11 @@
               <h2>AAT release snapshot</h2>
               <dl>
                 <dt>Updated</dt>
-                <dd>2026-05-15</dd>
+                <dd>2026-05-16</dd>
                 <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/89b4502b6fc01937bfafa409155a7b4a194a80fe">89b4502</a></dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/3bf99081cf64d10ca230ed89d13ec734cf15cae6">3bf9908</a></dd>
                 <dt>Lean status</dt>
-                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+                <dd><code>lake build</code> passed for this snapshot; see local status notes and Status page.</dd>
               </dl>
             </div>
             <div class="boundary-note">
@@ -106,29 +132,181 @@
           </aside>
 
           <div class="article-main">
+            <section id="reading-model" class="article-section">
+              <h2>Reading model</h2>
+              <div class="reader-model">
+                <div>
+                  <h3>AAT does not say</h3>
+                  <p>
+                    "This design has quality score 92." A signature is not a
+                    scalar rank, a global cleanliness certificate, or a way to
+                    turn missing evidence into a zero measurement.
+                  </p>
+                </div>
+                <div>
+                  <h3>AAT says</h3>
+                  <p>
+                    Under this selected universe, with these measured axes,
+                    coverage assumptions, exactness assumptions, and
+                    non-conclusions, these obstruction coordinates are zero,
+                    nonzero, or unmeasured.
+                  </p>
+                </div>
+              </div>
+              <p class="statement-note">
+                The chapter is a boundary discipline for reading reports and
+                theorem packages. It separates the general mathematical
+                vocabulary from the concrete Lean anchors that currently carry
+                proved finite static structural claims.
+              </p>
+            </section>
+
             <section id="signature" class="article-section">
               <h2>Architecture Signature</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> A signature is a typed
+                diagnostic vector over selected obstruction families, not a
+                single score for architecture quality.
+              </p>
               <p>
-                `ArchitectureSignature` records coordinates of selected
-                obstruction families. Static, boundary, abstraction, projection
-                or LSP, runtime, semantic, operation, extension, and analytic
-                axes may all appear, but they do not collapse into one score.
+                <code>ArchitectureSignature</code> records coordinates of
+                selected obstruction families. Static, boundary, abstraction,
+                projection or LSP, runtime, semantic, operation, extension, and
+                analytic axes may all appear, but they do not collapse into one
+                score or one total order.
               </p>
               <figure class="code-panel">
                 <figcaption>Signature reading</figcaption>
                 <pre><code>ArchitectureSignature(X)
   = coordinates of selected obstruction families of X</code></pre>
               </figure>
+              <p id="definition-5-1" class="statement">
+                <a class="statement-anchor" href="#definition-5-1">Definition 5.1.</a>
+                An <code>ArchitectureSignature</code> is a family of typed
+                coordinates indexed by selected obstruction axes. A coordinate
+                is meaningful only together with its measurement status,
+                evidence universe, claim level, and non-conclusions.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 5.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined / proved bridge</span>
+                <span>General vocabulary is documented in Chapter 5. The current concrete Lean schema is <code>ArchitectureSignatureV1</code>, <code>ArchitectureSignatureV1Axis</code>, <code>axisValue</code>, and <code>axisMeasurementClass</code>; selected required-law bridges are proved where listed below.</span>
+              </p>
+              <p id="proposition-5-2" class="statement">
+                <a class="statement-anchor" href="#proposition-5-2">Proposition 5.2.</a>
+                In the current finite static theorem package, selected
+                required signature axes are exactly the axes that participate
+                in the required zero-law bridge. Runtime, empirical, matrix,
+                and analytic axes may be useful diagnostics, but they are not
+                silently added to <code>RequiredSignatureAxesZero</code>.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 5.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchor</span>
+                <span>Anchored by <code>selectedRequiredLawAxes</code>, <code>mem_selectedRequiredLawAxes_iff</code>, <code>RequiredSignatureAxesZero</code>, and <code>architectureLawful_iff_requiredSignatureAxesZero</code>.</span>
+              </p>
+              <p id="proof-5-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-2">Proof idea.</a>
+                Lean fixes the selected required-axis list and proves that the
+                lawfulness package is equivalent to those selected axes being
+                available and zero. Matrix diagnostics are then derived by
+                <code>matrixDiagnosticCorollaries_of_requiredSignatureAxesZero</code>,
+                so they remain consequences of the package rather than extra
+                required zero axes.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Proposition tracking</span>
+                      <h3>Selected required axes carry the finite static theorem bridge</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchor</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchor</dt>
+                      <dd><code>ArchitectureSignature.ArchitectureLawModel.signatureOf</code>, <code>RequiredSignatureAxesZero</code>, <code>architectureLawful_iff_requiredSignatureAxesZero</code>, and <code>ArchitectureZeroCurvatureTheoremPackage</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Finite static universe, selected law family, witness coverage, axis exactness, boundary policy, abstraction policy, projection, and observation inputs.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The theorem package is the selected finite static structural core; runtime, semantic, empirical, and optional analytic axes are outside the required-zero policy unless a separate bridge is supplied.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No scalar architecture quality rank, extractor completeness, global semantic flatness, runtime telemetry completeness, or cost outcome follows from the required-axis theorem.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
             <section id="measurement-status" class="article-section">
               <h2>Measurement status</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> Unknown is not zero. Missing
+                or private evidence changes the claim boundary instead of
+                contributing a numeric value.
+              </p>
               <p>
-                Every axis carries a status. `measured_zero`,
-                `measured_nonzero(value)`, `unmeasured`, `out_of_scope`,
-                `private_unavailable`, and `not_applicable` are different claim
-                states. `unmeasured` is not simply a worse numeric value than
-                `measured_zero`; it is a boundary on what can be compared.
+                Every axis carries a status. <code>measured_zero</code>,
+                <code>measured_nonzero(value)</code>, <code>unmeasured</code>,
+                <code>out_of_scope</code>, <code>private_unavailable</code>,
+                and <code>not_applicable</code> are different claim states.
+                <code>unmeasured</code> is not simply a worse numeric value
+                than <code>measured_zero</code>; it is a boundary on what can
+                be compared.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Status vocabulary</figcaption>
+                <pre><code>MeasurementStatus
+  = measured_zero
+  + measured_nonzero(value)
+  + unmeasured
+  + out_of_scope
+  + private_unavailable
+  + not_applicable</code></pre>
+              </figure>
+              <p id="definition-5-3" class="statement">
+                <a class="statement-anchor" href="#definition-5-3">Definition 5.3.</a>
+                A measurement status classifies how an axis value was obtained:
+                measured zero, measured nonzero, unmeasured, out of scope,
+                private or unavailable, or not applicable.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 5.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>MeasurementBoundary</code>, <code>ArchitectureClaim</code>, <code>ArchitectureSignatureV1.axisMeasurementClass</code>, and Chapter 11 analytic-axis boundary vocabulary.</span>
+              </p>
+              <p id="proposition-5-4" class="statement">
+                <a class="statement-anchor" href="#proposition-5-4">Proposition 5.4.</a>
+                An unmeasured boundary is not measured-zero evidence. In
+                particular, an optional signature axis with value
+                <code>none</code> may satisfy a weak no-nonzero predicate, but
+                it does not discharge an available-and-zero theorem
+                precondition.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 5.4">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>MeasurementBoundary.unmeasured_not_measuredZero</code>, <code>ArchitectureClaim.unmeasured_not_measuredZero</code>, <code>ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code>, and <code>AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured</code>.</span>
+              </p>
+              <p id="proof-5-4" class="statement-proof">
+                <a class="statement-anchor" href="#proof-5-4">Proof.</a>
+                Lean keeps two predicates apart. The weak
+                <code>axisMeasuredZero</code> predicate can hold for
+                <code>none</code>, because no positive value is present. The
+                stronger <code>axisAvailableAndZero</code> predicate requires
+                an available <code>some 0</code> value, and
+                <code>not_axisAvailableAndZero_of_axisValue_none</code> proves
+                that <code>none</code> does not satisfy it. The report-facing
+                claim boundary mirrors this separation through
+                <code>MeasurementBoundary.unmeasured_not_measuredZero</code>
+                and <code>ArchitectureClaim.unmeasured_not_measuredZero</code>.
               </p>
               <ul class="term-list">
                 <li>
@@ -166,42 +344,22 @@
   + evidence references
   + non-conclusions</code></pre>
               </figure>
+              <p id="definition-5-5" class="statement">
+                <a class="statement-anchor" href="#definition-5-5">Definition 5.5.</a>
+                A signature coordinate is the tuple consisting of an axis, a
+                measurement status, a value when measured, a claim level, a
+                universe or coverage boundary, evidence references, and
+                recorded non-conclusions.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 5.5">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined / tooling boundary</span>
+                <span>Concrete Lean anchors include <code>ArchitectureSignatureV1.axisValue</code>, <code>ArchitectureClaim</code>, <code>ToolingTheoremPackageMetadata</code>, and <code>AnalyticAxisBoundary</code>. Tool artifacts mirror this shape in <code>docs/tool/signature_artifacts.md</code>.</span>
+              </p>
               <p>
                 This is why two reports cannot be compared merely because they
                 both contain a value. The coordinate must be read together with
                 its boundary and its axis-specific order.
-              </p>
-            </section>
-
-            <section id="measurement-semantics" class="article-section">
-              <h2>Measurement semantics</h2>
-              <p>
-                A signature is useful only if its coordinates preserve the
-                difference between value and status. The value says what was
-                measured on an axis; the status says whether that measurement
-                can be read as evidence for a claim.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>`measured_zero`</strong>
-                  <span>The selected witness universe has a zero value for that axis under the recorded boundary.</span>
-                </li>
-                <li>
-                  <strong>`measured_nonzero(value)`</strong>
-                  <span>A selected obstruction or risk coordinate was measured and remains nonzero.</span>
-                </li>
-                <li>
-                  <strong>`unmeasured`</strong>
-                  <span>The axis has not been observed; this is not the same claim as zero.</span>
-                </li>
-                <li>
-                  <strong>`out_of_scope` / `not_applicable`</strong>
-                  <span>The axis is outside the selected universe or does not apply to the object being read.</span>
-                </li>
-              </ul>
-              <p>
-                This semantics lets AAT compare architectures without turning
-                unknowns into zeros or forcing all axes into one total order.
               </p>
               <div class="article-table">
                 <table>
@@ -217,21 +375,21 @@
                   <tbody>
                     <tr>
                       <td>Architecture Signature as multi-axis diagnostic</td>
-                      <td>`defined only` / `proved` for required-axis bridge packages</td>
+                      <td><code>defined only</code> / <code>proved</code> for required-axis bridge packages</td>
                       <td>Selected axes, measurement status, and explicit theorem boundary.</td>
                       <td>Does not rank architectures by one scalar quality value.</td>
-                      <td>Lean theorem index, signature entries.</td>
+                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#signature-integrated-lawfulness">Lean theorem index, signature entries.</a></td>
                     </tr>
                     <tr>
                       <td>Measured zero versus unmeasured status</td>
-                      <td>`proved` for current required-axis availability / zero bridges</td>
+                      <td><code>proved</code> for current boundary distinction theorems</td>
                       <td>Axis availability and exactness assumptions must be recorded.</td>
-                      <td>`none`, missing, private, or out-of-scope evidence is not zero.</td>
-                      <td>AAT Status and theorem index.</td>
+                      <td><code>none</code>, missing, private, or out-of-scope evidence is not zero.</td>
+                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#chapter-11-analytic-axis-boundary-api">Chapter 11 boundary index.</a></td>
                     </tr>
                     <tr>
                       <td>Empirical cost or product outcome reading</td>
-                      <td>`empirical hypothesis`</td>
+                      <td><code>empirical hypothesis</code></td>
                       <td>Requires separate dataset, calibration protocol, and artifact boundary.</td>
                       <td>Not a Lean theorem and not a required zero-axis claim.</td>
                       <td>Proof-obligation ledger.</td>
@@ -243,6 +401,11 @@
 
             <section id="theorem-boundary" class="article-section">
               <h2>Theorem boundary</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> A theorem package says what
+                was proved, under which assumptions, and which tempting
+                stronger readings remain outside the proof.
+              </p>
               <p>
                 A theorem boundary packages selected universe, required laws,
                 invariant family, witness universe, coverage assumptions,
@@ -263,6 +426,39 @@
   + conclusion
   + non-conclusions</code></pre>
               </figure>
+              <p id="definition-6-1" class="statement">
+                <a class="statement-anchor" href="#definition-6-1">Definition 6.1.</a>
+                A <code>TheoremBoundary</code> is the package of selected
+                universe, required laws, invariant family, witness universe,
+                coverage assumptions, exactness assumptions, operation
+                preconditions, conclusion, and non-conclusions that licenses a
+                formal or report-side claim.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 6.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>The exact schematic name is docs vocabulary. Lean encodes this boundary through <code>ProofObligation</code>, <code>ArchitectureTheoremPackage</code>, <code>ArchitectureClaim</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, and <code>ToolingTheoremPackageMetadata</code>.</span>
+              </p>
+              <p id="proposition-6-2" class="statement">
+                <a class="statement-anchor" href="#proposition-6-2">Proposition 6.2.</a>
+                A theorem-boundary-backed claim does not automatically become
+                a global architecture claim. The non-conclusion field is part
+                of the package, not commentary after the fact.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 6.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved accessors</span>
+                <span>Anchored by <code>ArchitectureClaim.records_nonConclusions_iff</code>, <code>ToolingTheoremPackageMetadata.records_nonConclusions_iff</code>, <code>measuredWitness_not_formalProvedClaim</code>, and <code>not_formalProvedClaim_of_missingPreconditions</code>.</span>
+              </p>
+              <p id="proof-6-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-2">Proof idea.</a>
+                The Lean records expose the non-conclusion clause as a field
+                and prove accessor theorems showing that the predicate read by
+                clients is exactly that field. Tooling metadata also proves
+                that a measured witness is not a formal proved claim and that
+                missing preconditions block formal proved status. The boundary
+                therefore travels with the claim object.
+              </p>
               <div class="claim-strip">
                 <p>
                   Static split does not imply runtime or semantic flatness, and
@@ -280,6 +476,17 @@
                 by an extractor or validator; an empirical coordinate belongs
                 to a dataset or calibration protocol; a hypothesis is a future
                 research claim.
+              </p>
+              <p id="definition-6-3" class="statement">
+                <a class="statement-anchor" href="#definition-6-3">Definition 6.3.</a>
+                A claim level classifies the evidence basis for a coordinate or
+                report claim as <code>formal</code>, <code>tooling</code>,
+                <code>empirical</code>, or <code>hypothesis</code>.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 6.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>ClaimLevel</code>, <code>ArchitectureClaim</code>, <code>ClaimClassification</code>, and <code>ToolingTheoremPackageMetadata</code>.</span>
               </p>
               <ul class="term-list">
                 <li>
@@ -299,6 +506,11 @@
 
             <section id="comparison-rules" class="article-section">
               <h2>Comparison rules</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> Compare only like with like:
+                same axis, compatible boundary, measured on both sides, and an
+                axis-specific order.
+              </p>
               <p>
                 Signature comparison is axis-local. Two reports are comparable
                 only where the same axis is present on both sides, measured
@@ -315,16 +527,51 @@
   + compatible boundary
   -&gt; compare selected measured axes</code></pre>
               </figure>
+              <p id="proposition-6-4" class="statement">
+                <a class="statement-anchor" href="#proposition-6-4">Proposition 6.4.</a>
+                Signature comparison is valid only on selected compatible
+                measured axes with an axis-specific order. Missing evidence,
+                private evidence, or a changed measurement universe breaks the
+                comparison for that axis.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 6.4">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">design boundary</span>
+                <span>The status and claim-boundary vocabulary is defined and partially proved; AAT does not currently expose a general total-order theorem over full signatures.</span>
+              </p>
+              <p id="proof-6-4" class="statement-proof">
+                <a class="statement-anchor" href="#proof-6-4">Proof idea.</a>
+                The rule follows from the boundary vocabulary rather than from
+                a global ordering theorem. Because <code>unmeasured</code> is
+                not <code>measured_zero</code>, and because each coordinate is
+                read relative to a selected universe and axis order, a full
+                scalar comparison would require assumptions not present in the
+                signature record.
+              </p>
             </section>
 
             <section id="non-conclusions" class="article-section">
               <h2>Non-conclusions</h2>
               <p>
-                `ArchitectureSignature` does not rank architectures by one
+                <code>ArchitectureSignature</code> does not rank architectures by one
                 scalar quality value. It does not make unmeasured axes safe,
                 turn private evidence into measured zero, infer runtime or
                 semantic flatness from a static split, or claim empirical cost
                 reduction from a formal zero-axis theorem.
+              </p>
+              <p id="non-conclusion-6-5" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-6-5">Non-conclusion 6.5.</a>
+                A signature report, theorem package, or website summary does
+                not by itself prove repository-wide quality, complete
+                extraction, complete telemetry, global semantic flatness,
+                runtime safety, product outcome improvement, or a single
+                quality ranking. Those require separate evidence and separate
+                theorem or empirical boundaries.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Non-conclusion 6.5">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">boundary anchors</span>
+                <span>Tracked by non-conclusion fields in <code>ArchitectureClaim</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, <code>ToolingTheoremPackageMetadata</code>, and related theorem-package records.</span>
               </p>
               <div class="claim-strip">
                 <p>
@@ -333,6 +580,207 @@
                   theorem boundary and the artifact boundary that produced the
                   coordinate.
                 </p>
+              </div>
+            </section>
+
+            <section id="status-index" class="article-section">
+              <h2>Formal anchors</h2>
+              <p>
+                The cards below are the audit trail for the chapter. They do
+                not replace the theorem index; they show which Lean
+                declarations support the numbered statements and where the
+                current claim boundary stops.
+              </p>
+              <div class="formal-anchor-cards" aria-label="Signature and Boundary formal-anchor audit trail">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Signature schema and selected axes</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#definition-5-1">Definition 5.1</a> and
+                    <a href="#proposition-5-2">Proposition 5.2</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ArchitectureSignatureV1</code>, <code>ArchitectureSignatureV1Axis</code>, <code>selectedRequiredLawAxes</code>, <code>mem_selectedRequiredLawAxes_iff</code>, and <code>axisMeasurementClass</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> for schema and axis classifiers; selected-axis membership and bridge facts are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The concrete schema is a bounded v1 signature surface. It does not define a scalar quality score or make optional axes required.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#signature-integrated-lawfulness">Signature-integrated lawfulness</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ArchitectureSignature.ArchitectureSignatureV1Core</code></li>
+                      <li><code>ArchitectureSignature.ArchitectureSignatureV1</code></li>
+                      <li><code>ArchitectureSignature.ArchitectureSignatureV1Axis</code></li>
+                      <li><code>ArchitectureSignature.selectedRequiredLawAxes</code></li>
+                      <li><code>ArchitectureSignature.IsSelectedRequiredLawAxis</code></li>
+                      <li><code>ArchitectureSignature.mem_selectedRequiredLawAxes_iff</code></li>
+                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisValue</code></li>
+                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisMeasurementClass</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Required zero-axis theorem package</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchor</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#proposition-5-2">Proposition 5.2</a> and
+                    the finite static theorem boundary.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>RequiredSignatureAxesZero</code>, <code>architectureLawful_iff_requiredSignatureAxesZero</code>, <code>ArchitectureZeroCurvatureTheoremPackage</code>, and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>proved</code> for the selected finite static structural bridge and its matrix diagnostic corollaries.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Finite law universe, complete witness coverage, required-axis exactness, and selected static structural laws. Matrix diagnostics are derived corollaries, not required zero axes.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/proof_obligations.md#L107">Current QED boundary</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ArchitectureSignature.ArchitectureLawModel</code></li>
+                      <li><code>ArchitectureSignature.ArchitectureLawModel.signatureOf</code></li>
+                      <li><code>ArchitectureSignature.RequiredSignatureAxesAvailableAndZero</code></li>
+                      <li><code>ArchitectureSignature.RequiredSignatureAxesZero</code></li>
+                      <li><code>ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesAvailableAndZero</code></li>
+                      <li><code>ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero</code></li>
+                      <li><code>ArchitectureSignature.MatrixDiagnosticCorollaries</code></li>
+                      <li><code>ArchitectureSignature.matrixDiagnosticCorollaries_of_requiredSignatureAxesZero</code></li>
+                      <li><code>ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage</code></li>
+                      <li><code>ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Measurement boundary and unmeasured axes</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#definition-5-3">Definition 5.3</a>,
+                    <a href="#proposition-5-4">Proposition 5.4</a>, and
+                    <a href="#definition-5-5">Definition 5.5</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>MeasurementBoundary</code>, <code>ArchitectureClaim.unmeasured_not_measuredZero</code>, <code>ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code>, and <code>AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> for boundary records; unmeasured-not-zero accessors and optional-axis boundary theorems are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd><code>none</code>, missing, private, out-of-scope, and unmeasured evidence are not available measured-zero certificates.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#chapter-11-analytic-axis-boundary-api">Chapter 11 analytic axis boundary API</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>MeasurementBoundary</code></li>
+                      <li><code>MeasurementBoundary.IsMeasuredZero</code></li>
+                      <li><code>MeasurementBoundary.IsUnmeasured</code></li>
+                      <li><code>MeasurementBoundary.unmeasured_not_measuredZero</code></li>
+                      <li><code>ArchitectureClaim.unmeasured_not_measuredZero</code></li>
+                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisMeasuredZero_of_axisValue_none</code></li>
+                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.AnalyticAxisBoundary.unmeasured_not_availableAndZero</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Claim level and theorem-boundary metadata</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="#definition-6-1">Definition 6.1</a>,
+                    <a href="#proposition-6-2">Proposition 6.2</a>,
+                    <a href="#definition-6-3">Definition 6.3</a>, and
+                    <a href="#non-conclusion-6-5">Non-conclusion 6.5</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ClaimLevel</code>, <code>ArchitectureClaim</code>, <code>ArchitectureTheoremPackage</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, and <code>ToolingTheoremPackageMetadata</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>defined only</code> for schemas; non-conclusion accessors, tooling-vs-formal separation, and missing-precondition blockers are <code>proved</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Formal, tooling, empirical, and hypothesis claims remain distinct. Tooling evidence and measured witnesses are not promoted to formal proved claims without theorem references and discharged assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Primary index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">Architecture Core / Certified Architecture</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ClaimLevel</code></li>
+                      <li><code>ArchitectureClaim</code></li>
+                      <li><code>ArchitectureClaim.records_nonConclusions_iff</code></li>
+                      <li><code>ArchitectureClaim.toolingOnly_no_formalPackage</code></li>
+                      <li><code>ArchitectureClaim.unmeasured_not_measuredZero</code></li>
+                      <li><code>ArchitectureTheoremPackage</code></li>
+                      <li><code>ArchitectureCore.SelectedClaimBoundary</code></li>
+                      <li><code>ArchitectureCore.selectedClaimBoundary</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.measuredWitness_not_formalProvedClaim</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.not_formalProvedClaim_of_missingPreconditions</code></li>
+                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.records_nonConclusions_iff</code></li>
+                    </ul>
+                  </details>
+                </article>
               </div>
             </section>
 
