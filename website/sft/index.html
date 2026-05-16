@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="Software Field Theory reading path, computable core, claim boundary, and canonical SFT sources."
+      content="Software Field Theory overview, central proposition, main contributions, chapter navigation, computable core, claim boundary, and worked example preview."
     >
     <title>Software Field Theory</title>
     <link rel="alternate" hreflang="en" href="./">
@@ -62,27 +62,56 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#reading-order">Reading order</a></li>
+                <li><a href="#abstract">Abstract</a></li>
+                <li><a href="#main-contributions">Main contributions</a></li>
+                <li><a href="#division-of-work">AAT / ArchSig / SFT</a></li>
                 <li><a href="#computable-core">Computable core</a></li>
+                <li><a href="#worked-example-preview">Worked example preview</a></li>
                 <li><a href="#claim-boundary">Claim boundary</a></li>
-                <li><a href="#canonical-sources">Canonical sources</a></li>
+                <li><a href="#source-references">Source references</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT chapters</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md">
-                    SFT monograph
+                  <a href="./" aria-current="page">
+                    SFT overview
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/README.md">
-                    SFT repository entry
+                  <a href="part-i-new-object/">
+                    Part I. The New Object
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/aat_interface.md">
-                    AAT / SFT interface
+                  <a href="part-ii-basis/">
+                    Part II. AAT / SFT Interface and Basis
+                  </a>
+                </li>
+                <li>
+                  <a href="part-iii-core/">
+                    Part III. SFT Core
+                  </a>
+                </li>
+                <li>
+                  <a href="part-iv-principles/">
+                    Part IV. Principles and Theorems
+                  </a>
+                </li>
+                <li>
+                  <a href="part-v-computing-systems/">
+                    Part V. Computing Systems
+                  </a>
+                </li>
+                <li>
+                  <a href="part-vi-case-studies/">
+                    Part VI. Case Studies
+                  </a>
+                </li>
+                <li>
+                  <a href="part-vii-research-program/">
+                    Part VII. Research Program
                   </a>
                 </li>
               </ul>
@@ -101,10 +130,12 @@
             <section id="reading-order" class="article-section">
               <h2>Reading order</h2>
               <p>
-                The repository keeps the SFT monograph as the source of truth.
-                The website splits it by Part so readers can move through the
-                theory without losing the boundary between exposition,
-                formalizable schema, tooling estimates, and empirical work.
+                Start here for the full map, then read Part I and Part II
+                before using the core, computing-system, and case-study pages.
+                The SFT website is written as an independent monograph entry:
+                source documents remain available for audit, but the main
+                concepts, boundaries, and reading path are present on the
+                website itself.
               </p>
               <p>
                 Each Part page follows the same contract: it states the local
@@ -144,6 +175,100 @@
               </ul>
             </section>
 
+            <section id="abstract" class="article-section">
+              <h2>Abstract</h2>
+              <p>
+                Software Field Theory studies software evolution as a bounded
+                computation over codebase memory, artifacts, practices, agents,
+                governance mechanisms, operational feedback, and lifecycle
+                pressure. Its central proposition is that a codebase does not
+                evolve only by receiving code diffs: the surrounding field
+                changes which architecture futures are reachable, natural,
+                cheap, risky, observable, or governable.
+              </p>
+              <p>
+                SFT makes this proposition useful by naming a computable slice:
+                selected field model, operation support, policy, observation
+                axes, governance intervention, horizon, and forecast boundary.
+                Inside that boundary, SFT can discuss reachability, support
+                inference, ForecastCone generation, ConsequenceEnvelope
+                reporting, proposal accounting, and feedback update. Outside
+                that boundary, it records unknown or unmodeled remainder rather
+                than turning the forecast into a theorem.
+              </p>
+              <figure class="code-panel">
+                <figcaption>SFT central proposition</figcaption>
+                <pre><code>software evolution
+  = field-shaped computation over
+      artifacts
+      + practices
+      + agents
+      + governance
+      + operational feedback
+      + lifecycle pressure
+  -> reachable architectural futures</code></pre>
+              </figure>
+            </section>
+
+            <section id="main-contributions" class="article-section">
+              <h2>Main contributions</h2>
+              <ul class="status-list">
+                <li>
+                  <strong>Software evolution as a computable object</strong>
+                  <span>SFT treats reachable architecture futures as bounded objects of calculation under an explicit model, support relation, policy, horizon, and observation boundary.</span>
+                </li>
+                <li>
+                  <strong>Field memory and artifact-mediated change</strong>
+                  <span>Codebases are read as accumulated implementation, requirements, review, incident, ownership, workaround, and tooling memory; artifacts change operation support instead of selecting a single deterministic next state.</span>
+                </li>
+                <li>
+                  <strong>ForecastCone and ConsequenceEnvelope</strong>
+                  <span>A ForecastCone is a set of reachable paths under stated support and horizon. A ConsequenceEnvelope is the boundary-aware report that summarizes selected cones, affected axes, witness candidates, and non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>Governance as field intervention</strong>
+                  <span>Review, CI, type checking, issue decomposition, AI policy, and runtime feedback are modeled as interventions that can reshape supported paths and update field memory.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="division-of-work" class="article-section">
+              <h2>AAT / ArchSig / SFT</h2>
+              <p>
+                SFT uses AAT and ArchSig, but it keeps their claim levels
+                separate. AAT supplies local algebra and theorem boundaries.
+                ArchSig supplies observations, signatures, witness candidates,
+                evidence status, and field estimates. SFT uses those inputs to
+                model reachable software-evolution futures under stated
+                support, policy, and forecast boundaries.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Division of work</figcaption>
+                <pre><code>AAT
+  -> local algebra of architecture
+
+ArchSig
+  -> observable signatures, witnesses, and field estimates
+
+SFT
+  -> bounded computation over reachable architecture futures</code></pre>
+              </figure>
+              <ul class="term-list">
+                <li>
+                  <strong>AAT theorem</strong>
+                  <span>A local theorem claim under selected universe, assumptions, coverage, exactness, and non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>ArchSig tooling estimate</strong>
+                  <span>A measurement or report with evidence boundaries. It does not become a Lean proof or ground-truth architecture object.</span>
+                </li>
+                <li>
+                  <strong>SFT forecast claim</strong>
+                  <span>A bounded reachability or forecast statement whose status depends on the field model, support relation, calibration, and observation boundary.</span>
+                </li>
+              </ul>
+            </section>
+
             <section id="computable-core" class="article-section">
               <h2>Computable core</h2>
               <p>
@@ -173,6 +298,37 @@
               </p>
             </section>
 
+            <section id="worked-example-preview" class="article-section">
+              <h2>Worked example preview</h2>
+              <p>
+                The running example is a coupon PRD that touches checkout and
+                payment. SFT reads the PRD as an artifact action: it may make
+                several operation families look available, not just request a
+                feature endpoint. The useful question is which paths become
+                supported, which boundaries are missing, and which review or
+                specification interventions narrow the selected cone.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Coupon PRD path classes</figcaption>
+                <pre><code>Coupon PRD may expose:
+  lawful DiscountPolicy insertion path
+  + PaymentAdapter shortcut path
+  + UI-only discount drift path
+  + rounding semantic obstruction path
+  + unknown / unmodeled remainder</code></pre>
+              </figure>
+              <ul class="term-list">
+                <li>
+                  <strong><a href="part-vi-case-studies/#coupon-prd">Coupon PRD case study</a></strong>
+                  <span>Shows how a vague feature artifact becomes path classes, missing invariants, a ConsequenceEnvelope, and review governance questions.</span>
+                </li>
+                <li>
+                  <strong><a href="part-v-computing-systems/#simulator">PRD-to-ConsequenceEnvelope simulator</a></strong>
+                  <span>Frames the eventual tooling problem: artifact, field estimate, support relation, horizon, evidence, and claim level must all be named.</span>
+                </li>
+              </ul>
+            </section>
+
             <section id="claim-boundary" class="article-section">
               <h2>Claim boundary</h2>
               <p>
@@ -190,26 +346,26 @@
               </div>
             </section>
 
-            <section id="canonical-sources" class="article-section">
-              <h2>Canonical sources</h2>
+            <section id="source-references" class="article-section">
+              <h2>Source references</h2>
               <p>
-                SFT depends on AAT, but AAT does not depend on SFT. The
-                interface document keeps this direction explicit and prevents
-                AAT theorem status from being reinterpreted as empirical
-                software forecast status.
+                These repository documents are audit references for the website
+                text. They are not required to understand this overview, and
+                they do not make website copy the source of truth for Lean
+                theorem status or tooling schema.
               </p>
               <ul class="term-list">
                 <li>
-                  <strong>SFT monograph</strong>
-                  <span>`docs/sft/software_field_theory.md` is the canonical long-form theory text.</span>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/0741061d4b41c8c31305ca30f285065b5cbb8136/docs/sft/software_field_theory.md">SFT monograph source</a></strong>
+                  <span>Long-form source for Software Field Theory, including the central proposition, field memory, core definitions, and research program.</span>
                 </li>
                 <li>
-                  <strong>AAT / SFT interface</strong>
-                  <span>`docs/sft/aat_interface.md` states the one-way dependency and forbidden readings.</span>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/0741061d4b41c8c31305ca30f285065b5cbb8136/docs/sft/aat_interface.md">AAT / SFT interface source</a></strong>
+                  <span>Defines the one-way dependency, translation rules, claim levels, and forbidden readings.</span>
                 </li>
                 <li>
-                  <strong>Repository entry</strong>
-                  <span>`docs/sft/README.md` gives the short entry point and vocabulary list.</span>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/0741061d4b41c8c31305ca30f285065b5cbb8136/docs/sft/README.md">Repository entry source</a></strong>
+                  <span>Short source entry for SFT vocabulary, core questions, and AAT / ArchSig / SFT division of work.</span>
                 </li>
               </ul>
             </section>
