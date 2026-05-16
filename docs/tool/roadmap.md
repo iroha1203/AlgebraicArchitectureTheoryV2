@@ -36,6 +36,7 @@ Markdown PRD / Spec / Issue / AI proposal から `ForecastConeSkeleton` と
 | AI-generated change boundary | AI session metadata、generated patch provenance、human review boundary、formal claim block を扱う。 | proposal support 全体の制御や shortcut distribution の推定は未完成。 |
 | Empirical feedback | PR history、feature dataset、outcome linkage、B10 operational artifacts がある。SFT calibration / benchmark protocol は `docs/tool/sft_calibration_benchmark.md` で定義する。 | 実 dataset での継続 calibration と hypothesis refresh の運用。 |
 | Architecture dynamics | PR force、trajectory、dynamics metrics、field snapshot、operation proposal log の schema / validator と bounded SFT forecast pipeline がある。GitHub Issue JSON / AI proposal JSON adapter は supplied JSON artifact の正規化として実装済み。 | 実 dataset での calibration と framework semantics adapter。 |
+| Lifecycle decision | repair / migration / contraction / deletion を SFT lifecycle governance の decision surface として定義する。 | decision artifact schema、fixture、validator、実 dataset calibration は未実装。market / staffing success prediction は扱わない。 |
 
 ## Tooling capability surface and remaining gaps
 
@@ -48,6 +49,7 @@ ArchSig の現状を、実行可能な command / artifact / workflow と remaini
 | ArchSig Review | AIR、validate-air、theorem-check、Feature Extension Report、policy decision、PR comment、baseline suppression。review / CI の補助 report として読む。 | organization policy calibration、review practice tuning、任意 invariant の完全判定は未完成。formal claim promotion は Lean theorem refs と precondition が揃う場合だけ。 |
 | ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、validation report を生成する B13 pipeline。`docs/tool/software_field_reconstruction_protocol.md` は trace-grounded `SoftwareFieldEstimate` の evidence boundary を定義し、`docs/tool/sft_calibration_benchmark.md` は forecast item と observed refs の照合 protocol を定義し、`docs/tool/ai_proposal_governance.md` は AI proposal governance の allowed support / shortcut witness / review feedback boundary を定義する。 | real dataset calibration、framework semantics adapter。forecast、AI policy compliance、review pass は probability、causal proof、architecture lawfulness、global safety を結論しない。 |
 | ArchSig Operational | PR history dataset、Feature Extension dataset、outcome linkage、B10 daily ledger、calibration review、team threshold、ownership boundary、repair adoption、incident correlation、hypothesis refresh artifacts。`SoftwareFieldEstimate` 用 trace inventory は unavailable / private / unknown remainder を保持する。 | 実運用 dataset の継続収集、confounder 管理、incident / rollback / MTTR との組織別接続。 |
+| SFT Lifecycle | `LifecycleDecisionModel` / `EndOfLifeDecision` は repair、migration、contraction、deletion の selected inputs と non-conclusions を整理する planned decision surface。 | `lifecycle-decision-report-v0` 相当の schema / command は未実装。人間の意図、market success、project management recommendation は結論しない。 |
 
 ## Phase B0: AIR and boundary
 
@@ -210,6 +212,35 @@ prompt / policy boundary
 この phase の出力は reviewer-facing governance artifact であり、AI agent の一般的安全性、
 prompt / policy compliance からの architecture lawfulness、review pass / CI pass からの
 semantic preservation、または autonomous coding policy の本番 correctness を主張しない。
+
+## Phase B15: Lifecycle decision surface
+
+Lifecycle decision は、repair、migration、contraction、deletion を同じ比較面に置く
+SFT governance artifact として扱う。目的は project management の自動推薦ではなく、
+選択された architecture signature trajectory、runtime / incident evidence、
+ownership / staffing boundary、`ConsequenceEnvelope` family を束ね、intervention ごとの
+known support、obstruction witness、missing evidence、unknown remainder を読めるようにすること
+である。
+
+最小 input / output boundary は次である。
+
+```text
+ArchitectureSignature trajectory
+  + ConsequenceEnvelope family
+  + runtime / incident evidence refs
+  + ownership / staffing boundary refs
+  + migration / repair support refs
+  -> lifecycle decision report
+  -> intervention comparison
+  -> missing boundary / calibration hook
+```
+
+最小 report は、repair、migration、contraction、deletion それぞれについて selected inputs、
+affected regions、field capacity impact、runtime risk boundary、ownership boundary、
+calibration refs、non-conclusions を保持する。schema、fixture、validator、CLI はまだない。
+将来実装する場合でも、human intention、market success、staffing availability の予測、
+future trajectory safety、global risk reduction、forecast correctness は non-conclusions として
+保持する。
 
 ### B12 milestones
 

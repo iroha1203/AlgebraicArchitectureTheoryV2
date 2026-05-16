@@ -1173,6 +1173,37 @@ LifecycleTrajectory :=
 End-of-life は失敗ではなく、lifecycle governance / field reconfiguration decision の一種である。
 修復コスト、migration path、runtime risk、organizational capacity for repair / migration、
 ConsequenceEnvelope の広がりを見て、repair、migration、deletion のどれを選ぶかを扱う。
+この判断は project management recommendation ではなく、選択された観測境界の下で
+architecture future と field capacity の変化を比較する bounded decision model である。
+
+```text
+LifecycleDecisionModel :=
+  current LifecycleTrajectory
+  + ArchitectureSignature trajectory
+  + ConsequenceEnvelope family
+  + runtime / incident risk boundary
+  + ownership / staffing boundary
+  + selected intervention set
+  + non-conclusions
+
+SelectedIntervention :=
+  repair | migration | contraction | deletion
+```
+
+比較軸は intervention ごとに異なる。
+
+| intervention | 読み | 主な比較軸 |
+| --- | --- | --- |
+| repair | 既存 field を保ち、局所的な support / invariant を補う。 | repair adoption、missing invariant、runtime regression risk、ownership capacity。 |
+| migration | old field から new field へ support と memory を写す。 | projection mismatch、dual-run cost、consumer compatibility、rollback path。 |
+| contraction | support できない surface を縮小し、field capacity を再配分する。 | removed operation family、affected user / runtime boundary、simplified signature axes。 |
+| deletion | field component または subsystem を lifecycle から外す。 | dependent operation loss、data / API retirement boundary、incident avoidance、unknown remainder。 |
+
+`ConsequenceEnvelope` は各 intervention の affected regions、signature axes、obstruction
+witness candidates、missing boundary を比較可能にする report projection である。
+field capacity は、available operation support、ownership / staffing boundary、runtime
+guard、migration support の組として読む。したがって、envelope が広いことは直ちに削除を
+意味しないし、repair cost が低いことは future trajectory safety を意味しない。
 
 SFT は benchmark と calibration を必要とする。
 
@@ -1300,6 +1331,7 @@ EndOfLifeDecision :=
   current architecture signature
   + repair cost
   + migration support
+  + contraction boundary
   + runtime risk
   + ownership / staffing boundary
   + ConsequenceEnvelope
@@ -1309,6 +1341,9 @@ EndOfLifeDecision :=
 SFT は market success や human intention を予測しない。
 扱うのは、repair、migration、contraction、deletion が architecture future と field capacity に
 与える影響である。
+decision artifact は、選択肢を rank する automated recommendation ではなく、selected inputs、
+excluded inputs、known missing evidence、non-conclusions を明示して reviewer / governance
+discussion に渡す bounded report である。
 
 ## Part VII. Non-Conclusions and Research Program（非主張と研究プログラム）
 
