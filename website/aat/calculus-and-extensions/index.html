@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT calculus and extensions: ArchitectureOperation, operation laws, FeatureExtension, and extension obstruction."
+      content="AAT calculus and extensions as theorem-boundary-backed operation packages, feature-extension evidence, and structural obstruction classifications."
     >
     <title>AAT Calculus and Extensions</title>
     <link rel="alternate" hreflang="en" href="./">
@@ -51,10 +51,11 @@
           <p class="eyebrow">AAT Part V</p>
           <h1>Calculus and Extensions</h1>
           <p class="lede">
-            Architecture operations are boundary-indexed partial morphisms.
-            Feature extension is one important operation family, and its
-            obstruction formula records where an extension fails without
-            pretending that the categories are mutually exclusive.
+            AAT treats architecture moves as partial operations with explicit
+            proof boundaries. Feature extension is the running example: a core
+            may be embedded into a larger architecture, but preservation,
+            lifting, filling, coverage, and obstruction classification each
+            require separate evidence.
           </p>
         </div>
       </section>
@@ -65,22 +66,55 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#reading-model">Reading model</a></li>
                 <li><a href="#architecture-operation">Architecture operation</a></li>
                 <li><a href="#operation-laws">Operation laws</a></li>
+                <li><a href="#invariant-correspondence">Invariant correspondence</a></li>
                 <li><a href="#feature-extension">Feature extension</a></li>
-                <li><a href="#operation-families">Operation families</a></li>
-                <li><a href="#proof-obligations">Proof obligations</a></li>
-                <li><a href="#extension-theorem">Extension theorem schema</a></li>
                 <li><a href="#extension-evidence">Extension evidence</a></li>
-                <li><a href="#lean-status">Lean status</a></li>
+                <li><a href="#extension-obstruction">Extension obstruction</a></li>
+                <li><a href="#example-counterexample">Example and counterexample</a></li>
+                <li><a href="#formal-anchors">Formal anchors</a></li>
               </ol>
             </nav>
+            <div class="source-panel">
+              <h2>Citable statements</h2>
+              <ul>
+                <li><a href="#definition-9-1">Definition 9.1</a></li>
+                <li><a href="#proposition-9-2">Proposition 9.2</a></li>
+                <li><a href="#proposition-9-3">Proposition 9.3</a></li>
+                <li><a href="#definition-10-1">Definition 10.1</a></li>
+                <li><a href="#proposition-10-2">Proposition 10.2</a></li>
+                <li><a href="#proposition-10-3">Proposition 10.3</a></li>
+                <li><a href="#non-conclusion-10-4">Non-conclusion 10.4</a></li>
+              </ul>
+            </div>
             <div class="source-panel">
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#9-architecture-calculus">
-                    Chapters 9-10 in the AAT text
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/mathematical_theory.md#L429">
+                    Chapter 9 in the AAT text
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/mathematical_theory.md#L499">
+                    Chapter 10 in the AAT text
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/proof_obligations.md#L165-L173">
+                    Proof-obligation status ledger
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L453">
+                    Operation Lean index
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L280">
+                    Feature-extension Lean index
                   </a>
                 </li>
               </ul>
@@ -89,74 +123,316 @@
               <h2>AAT release snapshot</h2>
               <dl>
                 <dt>Updated</dt>
-                <dd>2026-05-15</dd>
+                <dd>2026-05-16</dd>
                 <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/89b4502b6fc01937bfafa409155a7b4a194a80fe">89b4502</a></dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/5a90d46853ae2ee6ad014438ea0ad242869bdb37">5a90d46</a></dd>
                 <dt>Lean status</dt>
-                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+                <dd>No new Lean theorem is added here; status badges cite the proof-obligation and theorem-index snapshot.</dd>
               </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
               <p>
-                An operation tag alone carries no theorem. Each operation must
-                state preconditions, preserved invariants, witness mapping,
-                conclusions, and non-conclusions.
+                An operation tag, an extension schema, or an observed metric is
+                not a preservation theorem. AAT asks which selected evidence
+                discharges which selected theorem boundary.
               </p>
             </div>
           </aside>
 
           <div class="article-main">
+            <section id="reading-model" class="article-section">
+              <h2>Reading model</h2>
+              <div class="reader-model">
+                <div>
+                  <h3>AAT does not say</h3>
+                  <p>
+                    "This refactoring is an architecture operation, therefore
+                    every invariant is preserved." The family name is not a
+                    theorem, and neither is the existence of an extension.
+                  </p>
+                </div>
+                <div>
+                  <h3>AAT says</h3>
+                  <p>
+                    Under this operation boundary, selected observation model,
+                    witness universe, coverage or exactness assumption, and
+                    non-conclusion clause, a bounded conclusion can be read as
+                    theorem-grade.
+                  </p>
+                </div>
+              </div>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>operation boundary</dt>
+                  <dd>The source, target, support, precondition, transition, invariant family, witness map, conclusion, and non-conclusion record for an architecture move.</dd>
+                </div>
+                <div>
+                  <dt>law package</dt>
+                  <dd>A bounded theorem wrapper that carries an operation kind, a law kind, explicit assumptions, and a conclusion. The law tag alone is only metadata.</dd>
+                </div>
+                <div>
+                  <dt>feature extension</dt>
+                  <dd>A first-class addition schema with core and feature embeddings plus a selected feature view. Static split, lifting, runtime, and semantic evidence are separate.</dd>
+                </div>
+                <div>
+                  <dt>extension obstruction</dt>
+                  <dd>A selected witness classified as inherited core, feature-local, interaction, lifting failure, filling failure, complexity transfer, or residual coverage gap.</dd>
+                </div>
+              </dl>
+            </section>
+
             <section id="architecture-operation" class="article-section">
               <h2>Architecture operation</h2>
-              <p>
-                `ArchitectureOperation` maps one architecture object to another
-                under a theorem boundary. The operation includes support,
-                precondition, transition relation, invariant preservation
-                claim, witness mapping, theorem boundary, and non-conclusions.
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> An operation is a proof
+                interface for an architecture move. It says what changed, when
+                the move is allowed, what witness mapping is available, and
+                what claims remain outside the theorem.
               </p>
               <figure class="code-panel">
                 <figcaption>Operation carrier</figcaption>
                 <pre><code>ArchitectureOperation X Y
-  = support
+  = operation kind
+  + source / target state
   + precondition
-  + transition relation
-  + invariant preservation claim
-  + witness mapping
-  + theorem boundary
+  + generated proof obligation
+  + witness family before and after
+  + target-to-source witness mapping
+  + mapping soundness
   + non-conclusions</code></pre>
               </figure>
+              <p id="definition-9-1" class="statement">
+                <a class="statement-anchor" href="#definition-9-1">Definition 9.1.</a>
+                An architecture operation is a boundary-indexed partial
+                morphism between selected architecture states. It becomes a
+                theorem package only after its preconditions, witness mapping,
+                invariant family, bounded conclusion, and non-conclusions have
+                been supplied.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 9.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>ArchitectureOperation</code>, <code>OperationProofObligation</code>, <code>ArchitectureOperationKind</code>, and <code>OperationRoleSchema</code>.</span>
+              </p>
+              <p id="proposition-9-2" class="statement">
+                <a class="statement-anchor" href="#proposition-9-2">Proposition 9.2.</a>
+                The operation schema preserves its generated operation kind and
+                exposes a one-way witness bridge from post-operation witnesses
+                back to pre-operation witnesses.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 9.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>ArchitectureOperation.generatedObligation_kind</code>, <code>ArchitectureOperation.witnessMapping_sound</code>, and <code>ArchitectureOperation.exists_sourceWitness_of_targetWitness</code>.</span>
+              </p>
+              <p id="proof-9-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-9-2">Proof idea.</a>
+                The schema stores the generated obligation and witness mapping
+                as fields. The accessor theorems recover those fields and the
+                existential witness bridge without adding any new preservation
+                claim.
+              </p>
             </section>
 
             <section id="operation-laws" class="article-section">
               <h2>Operation laws</h2>
               <p>
-                Under fixed observation and theorem-boundary compatibility,
-                operations can be read as a partial category with identity,
-                composition, and associativity under observation. Stronger laws
-                such as replacement equivalence, protection idempotence, repair
-                monotonicity, and synthesis soundness depend on their own
-                assumptions.
+                The calculus names familiar architecture moves:
+                <code>compose</code>, <code>replace</code>, <code>refine</code>,
+                <code>abstract</code>, <code>split</code>, <code>merge</code>,
+                <code>isolate</code>, <code>protect</code>, <code>migrate</code>,
+                <code>reverse</code>, <code>contract</code>, <code>repair</code>,
+                and <code>synthesize</code>. A name makes the operation
+                auditable; it does not discharge the law.
               </p>
               <p>
-                Operation families and invariant families also form a weak
-                Galois-style correspondence: requiring stronger invariants
-                reduces allowed operations, while allowing more operations
-                reduces the invariant family that can be guaranteed.
+                Bounded law packages state exactly which observation,
+                interface, coverage, exactness, finite universe, obstruction
+                universe, or certificate makes a law readable as proved. The
+                same surface phrase can therefore have different proof
+                boundaries in graph, runtime, migration, repair, and synthesis
+                settings.
+              </p>
+              <p id="proposition-9-3" class="statement">
+                <a class="statement-anchor" href="#proposition-9-3">Proposition 9.3.</a>
+                A bounded architecture calculus law yields its recorded
+                conclusion from its recorded assumptions, but it does not yield
+                an unconditional algebraic law for every operation.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 9.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>ArchitectureCalculusLaw.conclusion_of_assumptions</code> and the concrete law entrypoints in <code>OperationLaws.lean</code>.</span>
+              </p>
+              <div class="article-table">
+                <table>
+                  <caption>Representative operation-law boundaries</caption>
+                  <thead>
+                    <tr>
+                      <th>Law family</th>
+                      <th>Lean anchors</th>
+                      <th>Theorem-grade reading</th>
+                      <th>Non-conclusion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>Finite graph compose / replace</th>
+                      <td><code>finiteComposeEdgeUnionLaw_conclusion</code>, <code>finiteReplaceEdgeEquivalenceLaw_conclusion</code></td>
+                      <td>Finite edge-union and edge-equivalence facts under explicit graph assumptions.</td>
+                      <td>No global acyclicity, flatness, runtime, or semantic preservation.</td>
+                    </tr>
+                    <tr>
+                      <th>Refine / abstract / merge / contract</th>
+                      <td><code>refinementObservationEquivalenceLaw_conclusion</code>, <code>abstractionObservationEquivalenceLaw_conclusion</code>, <code>mergeExternalContractPreservationLaw_conclusion</code>, <code>contractExplicitizationLaw_conclusion</code></td>
+                      <td>Selected projection, exactness, representative stability, and observation-preservation claims.</td>
+                      <td>No completeness of all abstraction choices or all client semantics.</td>
+                    </tr>
+                    <tr>
+                      <th>Protect / isolate / migrate</th>
+                      <td><code>protectRuntimeProtectionLaw_conclusion</code>, <code>isolateRuntimeLocalizationLaw_conclusion</code>, <code>migrateObservationEquivalenceLaw_conclusion</code></td>
+                      <td>Selected runtime localization, runtime flatness, and staged migration compatibility.</td>
+                      <td>No telemetry completeness, incident reduction theorem, or semantic completeness.</td>
+                    </tr>
+                    <tr>
+                      <th>Repair / synthesize</th>
+                      <td><code>repairStepDecreasesLaw_conclusion</code>, <code>synthesisCandidateSoundnessLaw_conclusion</code>, <code>noSolutionCertificateSoundnessLaw_conclusion</code></td>
+                      <td>Selected obstruction decrease, candidate soundness, or valid no-solution certificate soundness.</td>
+                      <td>No solver completeness and no guarantee that all obstructions are removed.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="invariant-correspondence" class="article-section">
+              <h2>Invariant correspondence</h2>
+              <p>
+                The operation calculus is paired with invariant families. For a
+                selected family of invariants <code>S</code>, <code>Ops(S)</code>
+                is the operation family that preserves them. For a selected
+                family of operations <code>T</code>, <code>Inv(T)</code> is the
+                invariant family preserved by them.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Weak Galois reading</figcaption>
+                <pre><code>T subset Ops(S)  &lt;-&gt;  S subset Inv(T)</code></pre>
+              </figure>
+              <p>
+                This correspondence is useful because it makes design
+                principles compare as operation/invariant packages instead of
+                slogans. It is intentionally weak: it does not classify all
+                operations, prove a lattice isomorphism, or promote local
+                contracts into global decomposability.
+              </p>
+              <p class="statement-status" aria-label="Lean status for invariant correspondence">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>operationInvariant_galois</code>, <code>Ops_antitone</code>, <code>Inv_antitone</code>, and the <code>DesignPattern</code> closure-law accessors.</span>
               </p>
             </section>
 
             <section id="feature-extension" class="article-section">
               <h2>Feature extension</h2>
-              <p>
-                `FeatureExtension` moves from an existing architecture into a
-                larger one while keeping a feature view. Static split,
-                interface declarations, lifting, runtime preservation, and
-                semantic preservation are not bundled into the base extension;
-                they are separate evidence packages.
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> A base feature extension says
+                that an existing core and a new feature are embedded into a
+                larger architecture with a selected feature view. It does not
+                automatically say the extension is static-split, liftable,
+                runtime-flat, semantic-flat, or complete.
               </p>
               <figure class="code-panel">
-                <figcaption>Extension obstruction formula</figcaption>
+                <figcaption>Extension schema</figcaption>
+                <pre><code>FeatureExtension
+  = existing core
+  + feature component family
+  + extended architecture
+  + core embedding
+  + feature embedding
+  + featureView under selected observation
+  + preservation / interaction / coverage obligations</code></pre>
+              </figure>
+              <p id="definition-10-1" class="statement">
+                <a class="statement-anchor" href="#definition-10-1">Definition 10.1.</a>
+                A feature extension is a local operation from a selected core
+                into a selected extended architecture. Static split evidence,
+                declared interface factorization, lifting evidence, runtime
+                preservation, semantic preservation, and coverage are separate
+                packages that may or may not accompany the base extension.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 10.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only / proved accessors</span>
+                <span>Anchored by <code>FeatureExtension</code>, <code>StaticSplitFeatureExtension</code>, <code>FeatureViewSectionPackage</code>, <code>SplitExtensionLiftingData</code>, and <code>SplitFeatureExtensionWithin</code>.</span>
+              </p>
+              <p>
+                The base extension and the evidence packages are intentionally
+                separated so a page, proof, or report can say exactly which
+                layer failed. A static hidden dependency is not the same object
+                as a semantic filling failure, and an unmeasured runtime axis is
+                not measured zero.
+              </p>
+            </section>
+
+            <section id="extension-evidence" class="article-section">
+              <h2>Extension evidence</h2>
+              <p>
+                Extension proofs accumulate evidence. The useful question is
+                not whether an extension exists, but which selected evidence is
+                available and what conclusion it can discharge.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Static split</strong>
+                  <span><code>StaticSplitFeatureExtension</code> records core edge preservation, declared interface factorization, absence of forbidden static edges, and embedding policy preservation.</span>
+                </li>
+                <li>
+                  <strong>Feature view</strong>
+                  <span><code>FeatureViewSectionPackage</code> and <code>FeatureViewSound</code> state that the selected feature observation is read correctly through the extension.</span>
+                </li>
+                <li>
+                  <strong>Lifting</strong>
+                  <span><code>SplitExtensionLiftingData</code> and <code>SplitExtensionLiftingPreservationPackage</code> make selected feature steps lift through declared interfaces while preserving selected core and feature invariants.</span>
+                </li>
+                <li>
+                  <strong>Bounded flatness</strong>
+                  <span><code>SplitFeatureExtensionWithin</code> and <code>architectureFlatWithin_of_splitFeatureExtensionWithin</code> produce bounded <code>ArchitectureFlatWithin</code> only when coverage, static side conditions, runtime evidence, and semantic evidence are supplied.</span>
+                </li>
+              </ul>
+              <p id="proposition-10-2" class="statement">
+                <a class="statement-anchor" href="#proposition-10-2">Proposition 10.2.</a>
+                A split feature extension yields bounded flatness only inside
+                the selected universe and only with the static, runtime,
+                semantic, coverage, and non-conclusion evidence carried by the
+                package.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 10.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>architectureFlatWithin_of_splitFeatureExtensionWithin</code>, <code>LawfulExtensionPreservesFlatness</code>, and <code>ThreeLayerFlatnessPositiveExample.architectureFlatWithin</code>.</span>
+              </p>
+              <p id="proof-10-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-10-2">Proof idea.</a>
+                The theorem reads the supplied split package as coverage-aware
+                flatness evidence. Static, runtime, and semantic axes are
+                separate inputs, so the conclusion remains bounded to the
+                selected universe and does not become global
+                <code>ArchitectureFlat</code>.
+              </p>
+            </section>
+
+            <section id="extension-obstruction" class="article-section">
+              <h2>Extension obstruction</h2>
+              <p>
+                The structural extension formula classifies selected
+                obstruction witnesses. The classification is explanatory: it
+                records where a witness can be read, and it allows the same
+                payload to be embedded into a multi-label layer. It is not a
+                disjoint sum theorem.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Structural extension formula</figcaption>
                 <pre><code>ExtensionObstruction
   = inherited core obstruction
   + feature-local obstruction
@@ -166,173 +442,253 @@
   + complexity transfer
   + residual coverage gap</code></pre>
               </figure>
+              <p id="proposition-10-3" class="statement">
+                <a class="statement-anchor" href="#proposition-10-3">Proposition 10.3.</a>
+                Under the selected extension-obstruction universe, a selected
+                single-label witness is covered by at least one of the seven
+                structural obstruction predicates.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 10.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>ArchitectureExtensionFormula_structural</code>, <code>ExtensionObstructionWitness.toMultiLabel_label_iff</code>, and the filling / lifting / complexity / residual-coverage bridge theorems.</span>
+              </p>
+              <p id="non-conclusion-10-4" class="statement-note">
+                <a class="statement-anchor" href="#non-conclusion-10-4">Non-conclusion 10.4.</a>
+                The extension formula does not prove that classes are mutually
+                exclusive, that every possible real-world obstruction has been
+                extracted, that every extension is safe, or that unmeasured
+                runtime and semantic axes are zero.
+              </p>
+            </section>
+
+            <section id="example-counterexample" class="article-section">
+              <h2>Example and counterexample</h2>
+              <p>
+                The coupon feature extension is the canonical small example.
+                A good extension routes the feature interaction through a
+                declared payment port. A bad extension introduces a direct
+                dependency from the feature service to the payment adapter's
+                internal cache. Repair restores the declared interface route.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Positive example</span>
+                      <h3>Declared interface route carries selected static split evidence</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchors</dt>
+                      <dd><code>CouponStaticDependencyExample.good_selectedStaticSplitFeatureExtension</code>, <code>extensionOf_featureViewSound</code>, <code>good_featureObservationCoverage</code></dd>
+                    </div>
+                    <div>
+                      <dt>Claim boundary</dt>
+                      <dd>Selected static split and selected feature observation coverage for the coupon example.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No runtime flatness, semantic flatness, or extractor completeness theorem follows from this static example alone.</dd>
+                    </div>
+                    <div>
+                      <dt>Use</dt>
+                      <dd>Shows what evidence a feature extension needs before it can be read as a bounded theorem package.</dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Counterexample</span>
+                      <h3>Hidden dependency refutes the selected static split predicate</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Lean anchors</dt>
+                      <dd><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code>, <code>bad_not_selectedStaticSplitFeatureExtension</code></dd>
+                    </div>
+                    <div>
+                      <dt>Claim boundary</dt>
+                      <dd>The witness is a selected static hidden dependency inside the coupon extension family.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>The witness does not classify every possible runtime or semantic failure and does not imply solver or extractor completeness.</dd>
+                    </div>
+                    <div>
+                      <dt>Repair reading</dt>
+                      <dd><code>repaired_selectedStaticSplitFeatureExtension</code> shows the selected static split predicate can be recovered for the repaired route.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
               <div class="claim-strip">
                 <p>
-                  The formula is explanatory, not a disjoint decomposition. One
-                  measured witness can belong to multiple obstruction classes.
+                  The example is deliberately narrow. It demonstrates selected
+                  static split evidence, a selected hidden-dependency witness,
+                  and a repaired static split package; it does not promote the
+                  coupon model into a universal extension theorem.
                 </p>
               </div>
             </section>
 
-            <section id="operation-families" class="article-section">
-              <h2>Operation families</h2>
+            <section id="formal-anchors" class="article-section">
+              <h2>Formal anchors</h2>
               <p>
-                The calculus treats common refactoring and architecture moves
-                as operation families sharing the same boundary-indexed shape.
-                `compose`, `replace`, `refine`, `abstract`, `split`, `merge`,
-                `isolate`, `protect`, `migrate`, `reverse`, `contract`,
-                `repair`, and `synthesize` can each be useful, but the family
-                name is not itself a proof.
+                These anchors are the audit trail for theorem-grade claims on
+                this page. Entries marked "defined only" are stable vocabulary
+                or schema carriers; entries marked "proved" are bounded
+                theorems or accessor theorems under the assumptions named by
+                the package.
               </p>
-              <p>
-                Each operation needs its own support, precondition, transition
-                relation, invariant preservation claim, witness mapping, and
-                non-conclusions. A replacement theorem, a migration theorem,
-                and a protection theorem may share notation while requiring
-                different observation and exactness assumptions.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Boundary-indexed operation</figcaption>
-                <pre><code>operation tag
-  + selected support
-  + precondition
-  + invariant family
-  + witness mapping
-  + theorem boundary
-  -&gt; bounded conclusion</code></pre>
-              </figure>
-            </section>
+              <div class="formal-anchor-cards">
+                <article class="formal-anchor-card">
+                  <div class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Operation schema</span>
+                      <h3>ArchitectureOperation / OperationRoleSchema</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">defined / proved</span>
+                  </div>
+                  <p class="formal-anchor-audits">
+                    Operation tags, generated obligations, role packages, and
+                    one-way witness mapping accessors.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Files</dt>
+                      <dd><code>Formal/Arch/Operation/Operation.lean</code></dd>
+                    </div>
+                    <div>
+                      <dt>Index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L453">Architecture Operation</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Representative declarations</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ArchitectureOperation</code></li>
+                      <li><code>OperationProofObligation</code></li>
+                      <li><code>ArchitectureOperation.generatedObligation_kind</code></li>
+                      <li><code>ArchitectureOperation.exists_sourceWitness_of_targetWitness</code></li>
+                      <li><code>OperationRoleSchema.discharged_of_conclusion</code></li>
+                      <li><code>OperationRoleSchema.generatedObligation_kind</code></li>
+                    </ul>
+                  </details>
+                </article>
 
-            <section id="proof-obligations" class="article-section">
-              <h2>Proof obligations</h2>
-              <p>
-                To turn an architecture operation into a theorem package, the
-                operation must expose the data that a proof can actually use.
-                This is the calculus-level version of claim discipline.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Well-formed support</strong>
-                  <span>The source, target, and affected sub-universe are explicit enough to state the transition.</span>
-                </li>
-                <li>
-                  <strong>Precondition and transition</strong>
-                  <span>The operation says when it is allowed and what relation connects source and target.</span>
-                </li>
-                <li>
-                  <strong>Invariant and witness mapping</strong>
-                  <span>The proof states which invariant is preserved and how selected witnesses are removed, preserved, introduced, or transferred.</span>
-                </li>
-                <li>
-                  <strong>Conclusion boundary</strong>
-                  <span>The theorem records which axes are not claimed to improve and which evidence remains outside the operation.</span>
-                </li>
-              </ul>
-            </section>
+                <article class="formal-anchor-card">
+                  <div class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Calculus laws</span>
+                      <h3>Bounded law packages</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </div>
+                  <p class="formal-anchor-audits">
+                    Law packages expose conclusions only after their bounded
+                    assumptions are supplied.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Files</dt>
+                      <dd><code>Formal/Arch/Operation/OperationLaws.lean</code></dd>
+                    </div>
+                    <div>
+                      <dt>Index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L599">Architecture Calculus Laws</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Representative declarations</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ArchitectureCalculusLaw</code></li>
+                      <li><code>ArchitectureCalculusLaw.conclusion_of_assumptions</code></li>
+                      <li><code>finiteComposeEdgeUnionLaw_conclusion</code></li>
+                      <li><code>finiteReplaceEdgeEquivalenceLaw_conclusion</code></li>
+                      <li><code>protectRuntimeProtectionLaw_conclusion</code></li>
+                      <li><code>noSolutionCertificateSoundnessLaw_conclusion</code></li>
+                    </ul>
+                  </details>
+                </article>
 
-            <section id="extension-theorem" class="article-section">
-              <h2>Extension theorem schema</h2>
-              <p>
-                Feature extension is the running operation family because it
-                forces all boundaries to appear at once: inherited core
-                structure, feature-local behavior, interaction with the core,
-                lifting through declared interfaces, semantic filling, and
-                residual coverage.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Extension reading</figcaption>
-                <pre><code>FeatureExtension X X'
-  + StaticSplitFeatureExtension evidence
-  + selected feature-view section laws
-  + SplitExtensionLiftingData
-  + runtime / semantic preservation evidence
-  + theorem boundary B
-  -&gt; bounded extension claim within B</code></pre>
-              </figure>
-              <p>
-                The structural extension formula classifies where a witness
-                comes from. It does not say the classes are disjoint and does
-                not provide global witness completeness by itself.
-              </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Claim</th>
-                      <th>Current Lean status</th>
-                      <th>Boundary</th>
-                      <th>Non-conclusion</th>
-                      <th>Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>`ArchitectureOperation` / proof-obligation schema</td>
-                      <td>`defined only` / `proved` for schema accessor theorems</td>
-                      <td>Operation support, precondition, transition relation, invariant family, witness mapping, and boundary record.</td>
-                      <td>A named operation tag is not by itself a theorem.</td>
-                      <td>Lean theorem index, architecture operation entries.</td>
-                    </tr>
-                    <tr>
-                      <td>Bounded operation laws</td>
-                      <td>`defined only` / `proved` for bounded accessor packages</td>
-                      <td>Fixed observation and theorem-boundary compatibility.</td>
-                      <td>Does not provide unrestricted replacement, migration, protection, or synthesis laws.</td>
-                      <td>Lean theorem index, architecture calculus laws.</td>
-                    </tr>
-                    <tr>
-                      <td>Structural extension formula</td>
-                      <td>`defined only` / `proved` for structural entrypoints</td>
-                      <td>Selected split-extension, lifting, filling, complexity-transfer, and residual-coverage evidence.</td>
-                      <td>Not a disjoint decomposition, global witness-completeness theorem, or proof that every feature extension is safe.</td>
-                      <td>Lean theorem index, Chapter 10 entrypoint.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
+                <article class="formal-anchor-card">
+                  <div class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Feature extension</span>
+                      <h3>Static split, lifting, and bounded flatness</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </div>
+                  <p class="formal-anchor-audits">
+                    Base extension, selected static split evidence, feature
+                    observation laws, selected lifting, and bounded flatness
+                    entrypoints.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Files</dt>
+                      <dd><code>Formal/Arch/Extension/FeatureExtension.lean</code>, <code>SplitExtensionLifting.lean</code>, <code>Flatness.lean</code></dd>
+                    </div>
+                    <div>
+                      <dt>Index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L280">Feature Extension</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Representative declarations</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>FeatureExtension</code></li>
+                      <li><code>StaticSplitFeatureExtension</code></li>
+                      <li><code>SelectedStaticSplitExtension</code></li>
+                      <li><code>FeatureViewSectionPackage</code></li>
+                      <li><code>SplitExtensionLifting_preservationPackage</code></li>
+                      <li><code>architectureFlatWithin_of_splitFeatureExtensionWithin</code></li>
+                    </ul>
+                  </details>
+                </article>
 
-            <section id="extension-evidence" class="article-section">
-              <h2>Extension evidence</h2>
-              <p>
-                A base `FeatureExtension` only says that an existing core has
-                been embedded into a larger object with a feature view. Stronger
-                readings require additional evidence packages: static split,
-                declared interface use, selected feature-view section laws,
-                lifting data, runtime preservation, and semantic preservation.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>StaticSplitFeatureExtension</strong>
-                  <span>Evidence about static relations and boundary policy for the extension.</span>
-                </li>
-                <li>
-                  <strong>FeatureViewSectionPackage</strong>
-                  <span>Evidence that the feature view reads the selected feature correctly under the observation model.</span>
-                </li>
-                <li>
-                  <strong>SplitExtensionLiftingData</strong>
-                  <span>Evidence that selected feature steps lift through the declared interface.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="lean-status" class="article-section">
-              <h2>Lean status</h2>
-              <p>
-                The Lean API contains defined operation schemas, accessor
-                theorems, bounded calculus laws, feature-extension structures,
-                split-extension lifting APIs, and structural extension formula
-                entrypoints. Some components are proved theorem packages and
-                some remain defined-only APIs or docs-facing metadata.
-              </p>
-              <div class="claim-strip">
-                <p>
-                  The structural extension formula explains obstruction
-                  sources; it is not a disjoint decomposition, not a global
-                  witness-completeness theorem, and not evidence that every
-                  feature extension is safe.
-                </p>
+                <article class="formal-anchor-card">
+                  <div class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Extension formula</span>
+                      <h3>Structural obstruction classification</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </div>
+                  <p class="formal-anchor-audits">
+                    Single-label and multi-label obstruction witnesses, plus
+                    bounded bridges for filling, lifting, complexity transfer,
+                    and residual coverage gaps.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Files</dt>
+                      <dd><code>Formal/Arch/Extension/ArchitectureExtensionFormula.lean</code>, <code>Formal/Arch/Evolution/Chapter10ArchitectureExtensionFormula.lean</code></dd>
+                    </div>
+                    <div>
+                      <dt>Index</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L1161">Architecture Extension Formula</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Representative declarations</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ExtensionObstructionWitness</code></li>
+                      <li><code>MultiLabelExtensionObstructionWitness</code></li>
+                      <li><code>ArchitectureExtensionFormula_structural</code></li>
+                      <li><code>liftingFailureExtensionObstructionWitness_classified</code></li>
+                      <li><code>complexityTransferExtensionObstructionWitness_classified</code></li>
+                      <li><code>residualCoverageGapExtensionObstructionWitness_classified</code></li>
+                    </ul>
+                  </details>
+                </article>
               </div>
             </section>
 
