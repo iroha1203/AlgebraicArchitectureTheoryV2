@@ -107,6 +107,15 @@ GitHub API からの authenticated fetch、private project fields の復元、AI
 evaluation、human review acceptance、runtime extraction を行わない。これらは
 missing evidence / unavailable evidence boundary として後段 artifact に渡す。
 
+AI proposal governance は `docs/tool/ai_proposal_governance.md` の protocol で読む。
+初期段階では専用 schema を増やさず、`artifact-descriptor-v0`、
+`operation-support-estimate-v0`、`consequence-envelope-report-v0`、
+`forecast-calibration-hook-v0` と B10 / B11 operational artifact の source refs で、
+prompt / policy boundary、allowed / forbidden / unknown support、shortcut witness、
+review / CI mediation、posterior field update を接続する。この接続は reviewer-facing
+governance artifact であり、AI policy compliance、review pass、CI pass、schema validation pass を
+architecture lawfulness や forecast correctness に昇格しない。
+
 `consequence-envelope-report-v0` は `forecast-cone-skeleton-v0` からの
 loss-aware report projection として読む。一つ以上の bounded cone skeleton から、
 path class candidates、affected regions、comparable signature axes、axis delta ranges、

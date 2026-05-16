@@ -1115,6 +1115,10 @@ AI agent :=
 SFT は AI agent の一般的安全性を証明しない。
 AI agent が生成する operation support を bound し、AAT theorem boundary と SFT forecast boundary の中で
 review / CI feedback により制御する枠組みを与える。
+最小 protocol は `docs/tool/ai_proposal_governance.md` で管理する。
+そこでは prompt / policy boundary、allowed operation support、shortcut witness、
+review / CI mediation、posterior field update を分け、AI policy compliance を
+architecture lawfulness に昇格しない。
 
 ```text
 AI Proposal Governance :=
@@ -1125,6 +1129,13 @@ AI Proposal Governance :=
   + observed shortcut / witness report
   + field update
 ```
+
+allowed operation support は、選択された boundary の下で reviewer が評価する
+bounded candidate set である。shortcut witness は、その candidate set とは別に、
+forbidden edge、missing invariant、runtime boundary、theorem boundary、review load などの
+危険な低コスト path を report する。どちらも AI model capability evaluation や
+forecast correctness の証明ではなく、後続の review / CI / incident trace と照合される
+empirical input である。
 
 ### 23. Review / CI / Type Systems as Governance Interventions（governance intervention としての review・CI・type system）
 
