@@ -679,6 +679,26 @@ p {
   line-height: 1.52;
 }
 
+.plain-reading {
+  border-left: 4px solid var(--accent-blue);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 620;
+  line-height: 1.52;
+  padding-left: 16px;
+}
+
+.plain-reading strong,
+.micro-example strong {
+  color: var(--accent-blue);
+  font-weight: 850;
+}
+
+.micro-example {
+  margin-top: 18px;
+}
+
 .reader-model {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -709,6 +729,30 @@ p {
 
 .reader-model p {
   margin: 0;
+}
+
+.definition-list {
+  padding-left: 0;
+}
+
+.definition-list > div {
+  border-bottom: 1px solid var(--rule);
+  padding: 18px 0;
+}
+
+.definition-list dt {
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.definition-list dd {
+  margin: 4px 0 0;
+  color: var(--ink-muted);
+  font-size: 0.98rem;
+  line-height: 1.48;
 }
 
 .theorem-card-list {
@@ -1063,6 +1107,50 @@ p {
 
   .reader-model {
     grid-template-columns: 1fr;
+  }
+
+  .formal-anchors-table {
+    overflow-x: visible;
+  }
+
+  .formal-anchors-table table {
+    min-width: 0;
+    border-top: 0;
+  }
+
+  .formal-anchors-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .formal-anchors-table tbody tr {
+    display: block;
+    border-top: 1px solid var(--rule-strong);
+    padding: 14px 0;
+  }
+
+  .formal-anchors-table th[scope="row"],
+  .formal-anchors-table td {
+    display: block;
+    border-bottom: 0;
+    padding: 6px 0;
+  }
+
+  .formal-anchors-table td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--accent-blue);
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 850;
+    line-height: 1.2;
+    margin-bottom: 3px;
+    text-transform: uppercase;
   }
 
   h1 {
