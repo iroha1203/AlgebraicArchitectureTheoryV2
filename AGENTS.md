@@ -24,7 +24,9 @@
 
 - Lean 変更を含む PR では、必ず `lake build` を実行する。
 - Rust tooling 変更を含む PR では、必ず `cargo test --manifest-path tools/archsig/Cargo.toml` を実行する。
-- website 変更を含む PR では、静的ページをローカル preview し、リンク・asset path・レイアウト崩れを確認する。
+- website 変更を含む PR では、静的ページをグローバルインストール済み Playwright で確認し、リンク・asset path・レイアウト崩れを確認する。
+- website 動作確認では、`python3 -m http.server 8000 --directory website` のような固定ポートの常駐サーバーを原則として避ける。
+- Codex から Playwright を実行する場合、macOS のブラウザ起動権限により sandbox 外実行が必要になることがある。
 - ドキュメントのみの PR でも、Lean status、tool schema、website copy への影響を確認する。迷う場合は関連する build / test を実行する。
 - PR 前に `git diff --check` を実行する。
 - PR 前に hidden / bidirectional Unicode scan を実行し、bidi control や zero-width 文字が混入していないことを確認する。
@@ -58,7 +60,8 @@
 - `lake env lean Formal/Arch/Core/Layering.lean`: 単一ファイルを type-check する。
 - `cargo test --manifest-path tools/archsig/Cargo.toml`: Rust tooling の test suite を実行する。
 - `cargo run --manifest-path tools/archsig/Cargo.toml -- --root . --out .lake/sig0.json`: repository root の ArchSig scan を実行する。
-- `python3 -m http.server 8000 --directory website`: website をローカル preview する。
+- `playwright --version`: グローバルインストール済み Playwright CLI が利用可能か確認する。
+- `NODE_PATH="$(npm root -g)" node -e "const { chromium } = require('playwright'); (async () => { const browser = await chromium.launch({ headless: true }); const page = await browser.newPage(); await page.goto('file://' + process.cwd() + '/website/index.html'); console.log(await page.title()); await browser.close(); })();"`: website の静的ページを Playwright で確認する。
 
 ## 形式化ポリシー
 
