@@ -1083,6 +1083,12 @@ SFT が計算理論として成立する最低ラインは level 3 である。
 実務ツールとしての価値は level 4 から強くなり、予測理論としての主張は level 5 以降、
 科学的な検証可能性は level 6 の calibration に依存する。
 
+level 6 の最小 protocol は `docs/tool/sft_calibration_benchmark.md` で管理する。
+そこでは forecast item refs と observed PR / review / CI / outcome refs を held-out trace として
+対応付け、review mediation と AI shortcut detection を別 benchmark として評価する。
+calibration がない段階の `ConsequenceEnvelope` は、bounded review artifact であり、
+forecast correctness、probability weighting、causal proof、global risk reduction を結論しない。
+
 ### 22. AI-Agent Governance under SFT（SFT における AI agent governance）
 
 SFT は AI-mediated software evolution の基礎理論である。

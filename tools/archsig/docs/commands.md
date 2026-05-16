@@ -360,6 +360,8 @@ items、review / CI / issue recommendation を保持する。`forecast-calibrati
 は forecast item refs と observed PR / review / CI / outcome refs、B10 / B11 artifact
 boundary を対応付ける。これらは probability、global risk reduction、trajectory-level
 safety、forecast correctness、causal proof、Lean theorem claim を主張しない。
+Calibration / benchmark の読み方は `docs/tool/sft_calibration_benchmark.md` に置き、
+review mediation と AI shortcut detection を分けて扱う。
 
 Markdown PRD / Spec / Issue / AI proposal から B13 pipeline を end-to-end で実行し、
 中間 artifact と validation report、final `ConsequenceEnvelope` を出力する。

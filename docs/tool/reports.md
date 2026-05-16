@@ -143,3 +143,7 @@ hypothesis-refresh-cycle-v0
 ```
 
 これらは empirical / operational artifact であり、causal theorem を直接主張しない。
+SFT forecast の calibration / benchmark では、`docs/tool/sft_calibration_benchmark.md` に従い、
+forecast item refs と observed PR / review / CI / outcome refs を held-out trace として照合する。
+false positive / false negative review は review mediation と AI shortcut detection を分けて記録し、
+private / unavailable / missing data を measured zero に丸めない。
