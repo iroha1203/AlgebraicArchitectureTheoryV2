@@ -689,14 +689,9 @@ p {
   padding-left: 16px;
 }
 
-.plain-reading strong,
-.micro-example strong {
+.plain-reading strong {
   color: var(--accent-blue);
   font-weight: 850;
-}
-
-.micro-example {
-  margin-top: 18px;
 }
 
 .reader-model {
