@@ -457,6 +457,36 @@
           "renamed fields do not discharge new required assumptions"
         ]
       }
+    },
+    {
+      "artifactId": "ai-proposal-governance",
+      "artifactName": "AI Proposal Governance",
+      "schemaVersionName": "ai-proposal-governance-v0",
+      "artifactRole": "review-governance-output",
+      "ownerPhase": "B14",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/ai_proposal_governance.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md#sft-forecasting-input-artifacts"
+      ],
+      "downstreamIssues": ["#900"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map proposal refs, prompt / policy boundary, support taxonomy, shortcut witnesses, review / CI mediation, posterior field update, evidence boundary, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New support categories must remain within allowed, conditionallyAllowed, forbidden, unknown, or outOfScope unless a schema migration records the boundary.",
+          "New mediation fields must preserve that policy compliance, review pass, and CI pass are not architecture lawfulness."
+        ],
+        "coverageExactnessBoundary": [
+          "AI proposal governance is reviewer-facing process evidence, not an AI safety theorem.",
+          "Posterior field update refs are calibration hooks, not causal proofs."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
     }
   ],
   "compatibilityPolicy": {

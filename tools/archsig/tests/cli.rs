@@ -5879,6 +5879,129 @@ fn cli_field_snapshot_and_operation_proposal_log_preserve_selected_boundaries() 
 }
 
 #[test]
+fn cli_ai_proposal_governance_projects_and_validates_boundaries() {
+    let root = fixture_root();
+    let out_dir = temp_dir("ai-proposal-governance");
+    let descriptor = out_dir.join("artifact-descriptor.json");
+    let governance_from_descriptor = out_dir.join("ai-proposal-governance-from-descriptor.json");
+    let fixture_artifact = out_dir.join("ai-proposal-governance.json");
+    let fixture_validation = out_dir.join("ai-proposal-governance-validation.json");
+    let invalid_artifact = out_dir.join("ai-proposal-governance-invalid.json");
+    let invalid_validation = out_dir.join("ai-proposal-governance-invalid-validation.json");
+
+    run_sig0(&[
+        "artifact-descriptor",
+        "--from-ai-proposal-json",
+        root.join("ai_proposal_sft_adapter.json")
+            .to_str()
+            .expect("AI proposal fixture path is utf-8"),
+        "--out",
+        descriptor
+            .to_str()
+            .expect("descriptor output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "ai-proposal-governance",
+        "--descriptor",
+        descriptor.to_str().expect("descriptor path is utf-8"),
+        "--operation-support-id",
+        "fixture-operation-support-estimate-v0",
+        "--consequence-envelope-id",
+        "fixture-consequence-envelope-report-v0",
+        "--out",
+        governance_from_descriptor
+            .to_str()
+            .expect("governance output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "ai-proposal-governance",
+        "--fixture",
+        "--out",
+        fixture_artifact
+            .to_str()
+            .expect("fixture artifact path is utf-8"),
+    ]);
+    run_sig0(&[
+        "ai-proposal-governance",
+        "--input",
+        root.join("ai_proposal_governance.json")
+            .to_str()
+            .expect("governance fixture path is utf-8"),
+        "--out",
+        fixture_validation
+            .to_str()
+            .expect("fixture validation path is utf-8"),
+    ]);
+
+    let json = read_json(&governance_from_descriptor);
+    assert_eq!(json["schemaVersion"], "ai-proposal-governance-v0");
+    assert_eq!(
+        json["proposalRef"]["operationSupportEstimateId"],
+        "fixture-operation-support-estimate-v0"
+    );
+    assert!(
+        json["supportAssessments"]
+            .as_array()
+            .expect("supportAssessments is array")
+            .iter()
+            .any(|assessment| {
+                assessment["supportCategory"] == "forbidden"
+                    && assessment["appliesToRef"] == "architecture-lawfulness-claim"
+            })
+    );
+    assert!(
+        json["shortcutWitnesses"]
+            .as_array()
+            .expect("shortcutWitnesses is array")
+            .iter()
+            .any(|witness| witness["shortcutKind"] == "runtime-boundary shortcut")
+    );
+
+    let validation = read_json(&fixture_validation);
+    assert_eq!(validation["summary"]["result"], "pass");
+    assert!(
+        validation["governance"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions is array")
+            .iter()
+            .any(|conclusion| conclusion == "AI proposal governance is a reviewer-facing artifact, not an AI safety theorem")
+    );
+
+    let mut invalid_json = read_json(&fixture_artifact);
+    invalid_json["supportAssessments"][0]["supportCategory"] = serde_json::json!("safe");
+    fs::write(
+        &invalid_artifact,
+        serde_json::to_string_pretty(&invalid_json).expect("json serializes"),
+    )
+    .expect("invalid AI governance artifact is written");
+    let output = run_sig0_output(&[
+        "ai-proposal-governance",
+        "--input",
+        invalid_artifact
+            .to_str()
+            .expect("invalid artifact path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid AI governance artifact should fail validation"
+    );
+    let json = read_json(&invalid_validation);
+    assert!(
+        json["checks"]
+            .as_array()
+            .expect("checks is array")
+            .iter()
+            .any(|check| {
+                check["id"] == "ai-governance-support-categories" && check["result"] == "fail"
+            })
+    );
+}
+
+#[test]
 fn cli_architecture_dynamics_metrics_fixture_and_validator_preserve_boundaries() {
     let root = fixture_root();
     let out_dir = temp_dir("architecture-dynamics-metrics");
