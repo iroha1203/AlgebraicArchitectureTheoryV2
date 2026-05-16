@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="SFT status vocabulary, claim levels, ForecastCone and ConsequenceEnvelope non-conclusions, and ArchSig-SFT tooling boundaries."
+    >
+    <title>SFT Status and Claim Boundary</title>
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a class="is-active" href="../">SFT</a>
+          <a href="../../archsig/">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../">Home</a>
+            <a href="../">SFT</a>
+            <span>Status</span>
+          </nav>
+          <p class="eyebrow">SFT Appendix</p>
+          <h1>Status and Claim Boundary</h1>
+          <p class="lede">
+            This page records how to read SFT claims without promoting a
+            conceptual model, tool output, forecast report, or governance
+            practice into a Lean theorem or causal proof.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#status-vocabulary">Status vocabulary</a></li>
+                <li><a href="#claim-level-map">Claim level map</a></li>
+                <li><a href="#forecast-boundary">Forecast boundary</a></li>
+                <li><a href="#archsig-sft-boundary">ArchSig-SFT boundary</a></li>
+                <li><a href="#promotion-rules">Promotion rules</a></li>
+                <li><a href="#source-references">Source references</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT chapters</h2>
+              <ul>
+                <li><a href="../">SFT overview</a></li>
+                <li><a href="../part-ii-basis/">Part II. AAT / SFT Interface</a></li>
+                <li><a href="../part-iv-principles/">Part IV. Principles</a></li>
+                <li><a href="../part-vii-research-program/">Part VII. Research Program</a></li>
+                <li><a href="./" aria-current="page">Status and claim boundary</a></li>
+              </ul>
+            </div>
+            <div class="boundary-note">
+              <h2>Boundary note</h2>
+              <p>
+                A claim level names the evidence and semantics currently
+                available. It does not upgrade the claim to a stronger level.
+              </p>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="status-vocabulary" class="article-section">
+              <h2>Status vocabulary</h2>
+              <p>
+                SFT uses status labels to keep theory exposition, bounded
+                schemas, tool reports, empirical studies, and deployed
+                governance systems distinct. The label belongs to a specific
+                statement under a stated model and observation boundary.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Conceptual</strong>
+                  <span>A vocabulary or interpretation for field-shaped software evolution. It is not evidence of reachability, prediction, or safety.</span>
+                </li>
+                <li>
+                  <strong>Trace-grounded</strong>
+                  <span>A diagnosis or reconstruction supported by named artifacts, review records, incident records, or signature observations.</span>
+                </li>
+                <li>
+                  <strong>Set-valued schema</strong>
+                  <span>A theorem-shaped statement over explicit support semantics, horizon, step relation, and observation boundary.</span>
+                </li>
+                <li>
+                  <strong>Transition-kernel model</strong>
+                  <span>A probabilistic or stochastic model after transition semantics have been supplied. It is not implied by set-valued reachability.</span>
+                </li>
+                <li>
+                  <strong>Calibrated empirical forecast</strong>
+                  <span>A forecast claim evaluated against trace or dataset evidence with calibration criteria and held-out checks.</span>
+                </li>
+                <li>
+                  <strong>Deployed governance</strong>
+                  <span>An operational workflow that uses reports, thresholds, feedback, and policy. It remains separate from formal theorem status.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="claim-level-map" class="article-section">
+              <h2>Claim level map</h2>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Level</th>
+                      <th>Readable claim</th>
+                      <th>Required boundary</th>
+                      <th>Not concluded</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>L0</td>
+                      <td>Conceptual or diagnostic interpretation.</td>
+                      <td>Named vocabulary, non-conclusions, and scope.</td>
+                      <td>Reachability, proof, or prediction.</td>
+                    </tr>
+                    <tr>
+                      <td>L1</td>
+                      <td>Trace-grounded field diagnosis.</td>
+                      <td>Artifact, trace, measurement, and missing-data boundary.</td>
+                      <td>Causal uniqueness or global completeness.</td>
+                    </tr>
+                    <tr>
+                      <td>L2</td>
+                      <td>Set-valued theorem schema.</td>
+                      <td>Support relation, step semantics, horizon, and observation axes.</td>
+                      <td>Probability, accuracy, or deployed safety.</td>
+                    </tr>
+                    <tr>
+                      <td>L3</td>
+                      <td>Transition-kernel or stochastic model claim.</td>
+                      <td>Transition kernel, assumptions, and inference rule.</td>
+                      <td>Dataset-calibrated correctness.</td>
+                    </tr>
+                    <tr>
+                      <td>L4</td>
+                      <td>Calibrated empirical forecast.</td>
+                      <td>Dataset, calibration protocol, held-out evidence, and failure modes.</td>
+                      <td>Lean theorem status or causal proof.</td>
+                    </tr>
+                    <tr>
+                      <td>Ops</td>
+                      <td>Deployed governance or review workflow.</td>
+                      <td>Policy, threshold, feedback loop, ownership, and audit record.</td>
+                      <td>Universal safety or market outcome prediction.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="forecast-boundary" class="article-section">
+              <h2>ForecastCone and ConsequenceEnvelope</h2>
+              <p>
+                A <code>ForecastCone</code> is a set of reachable field paths
+                under selected support, policy, observation, and horizon. It
+                is not a point prediction and does not become an empirical
+                forecast without calibration.
+              </p>
+              <p>
+                A <code>ConsequenceEnvelope</code> is the report form that
+                summarizes selected cones, path classes, affected signature
+                axes, witness candidates, missing boundaries, and recommended
+                review or CI interventions. It is not a causal proof and not a
+                Lean theorem proof.
+              </p>
+              <div class="claim-strip">
+                <p>
+                  Forecast output must preserve unknown or unmodeled
+                  remainder. A narrower cone only means narrower under the
+                  stated support semantics and selected axes.
+                </p>
+              </div>
+            </section>
+
+            <section id="archsig-sft-boundary" class="article-section">
+              <h2>ArchSig-SFT tooling boundary</h2>
+              <p>
+                ArchSig-SFT can turn bounded inputs such as Markdown PRDs,
+                specs, issues, and AI proposal text into artifact descriptors,
+                operation-support estimates, forecast-cone skeletons, and
+                consequence-envelope reports. Those artifacts are useful
+                review aids, not proof objects.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Current capability</strong>
+                  <span>Generate bounded forecast artifacts with source references, measured axes, missing axes, theorem-boundary items, and non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>Remaining gaps</strong>
+                  <span>GitHub Issue JSON adapters, AI proposal JSON adapters, real dataset calibration, and framework semantics adapters remain outside the current claim.</span>
+                </li>
+                <li>
+                  <strong>Reader rule</strong>
+                  <span>Tool output may inform an SFT field estimate; it does not strengthen an AAT theorem or prove forecast correctness.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="promotion-rules" class="article-section">
+              <h2>Promotion rules</h2>
+              <p>
+                Moving a statement to a stronger level requires new evidence
+                or semantics. Rewording a page, adding a diagram, or producing
+                a report does not promote the statement.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>From L0 to L1</strong>
+                  <span>Name the artifacts, traces, observations, and missing-data boundary.</span>
+                </li>
+                <li>
+                  <strong>From L1 to L2</strong>
+                  <span>Define the support relation, step semantics, selected horizon, and set-valued conclusion.</span>
+                </li>
+                <li>
+                  <strong>From L2 to L3</strong>
+                  <span>Add transition-kernel semantics and inference assumptions.</span>
+                </li>
+                <li>
+                  <strong>From L3 to L4</strong>
+                  <span>Run dataset calibration and report failures, residuals, and held-out checks.</span>
+                </li>
+                <li>
+                  <strong>From any level to Lean theorem</strong>
+                  <span>Add formal definitions and a checked proof in Lean, with theorem boundaries and non-conclusions preserved.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="source-references" class="article-section">
+              <h2>Source references</h2>
+              <ul class="chapter-list">
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/31ea6b9d8e5ef2c5bb8687f42d2ce6c14aa78b68/docs/sft/software_field_theory.md">
+                    SFT monograph source
+                  </a>
+                  <span>Claim boundaries, Part IV schemas, Part V computational problems, and Part VII non-conclusions.</span>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/31ea6b9d8e5ef2c5bb8687f42d2ce6c14aa78b68/docs/sft/aat_interface.md">
+                    AAT / SFT interface source
+                  </a>
+                  <span>Dependency direction, translation rules, and forbidden readings.</span>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/31ea6b9d8e5ef2c5bb8687f42d2ce6c14aa78b68/docs/tool/roadmap.md">
+                    ArchSig tooling roadmap
+                  </a>
+                  <span>Current ArchSig-SFT pipeline capability and remaining gaps.</span>
+                </li>
+                <li>
+                  <a href="../../aat/status/">
+                    AAT Lean Status
+                  </a>
+                  <span>How to read checked AAT declarations without mixing them with SFT forecast status.</span>
+                </li>
+              </ul>
+            </section>
+
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../part-vii-research-program/">
+                <span>Previous</span>
+                <strong>Part VII. Research Program</strong>
+              </a>
+              <a href="../">
+                <span>Back to</span>
+                <strong>SFT overview</strong>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> AAT / SFT Research Notes.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
+          Repository
+        </a>
+      </div>
+    </footer>
+  </body>
+</html>
