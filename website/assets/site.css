@@ -505,7 +505,7 @@ p {
   position: sticky;
   top: 92px;
   display: grid;
-  gap: 22px;
+  gap: 18px;
   min-width: 0;
 }
 
@@ -513,19 +513,71 @@ p {
 .source-panel,
 .version-panel,
 .boundary-note {
-  border-top: 3px solid var(--ink);
-  padding-top: 16px;
+  border-top: 2px solid var(--rule-strong);
+  padding-top: 10px;
 }
 
 .toc-panel h2,
 .source-panel h2,
 .version-panel h2,
 .boundary-note h2 {
-  margin-bottom: 10px;
+  margin: 0;
   font-family: var(--font-sans);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.toc-panel.is-open h2,
+.source-panel.is-open h2,
+.version-panel.is-open h2,
+.boundary-note.is-open h2 {
+  margin-bottom: 11px;
+}
+
+.sidebar-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.sidebar-toggle:hover {
+  color: var(--accent-strong);
+}
+
+.sidebar-toggle::after {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid var(--ink-muted);
+  border-bottom: 2px solid var(--ink-muted);
+  transform: rotate(45deg) translateY(-2px);
+  transition: transform 140ms ease, border-color 140ms ease;
+}
+
+.sidebar-toggle[aria-expanded="true"]::after {
+  border-color: var(--accent-strong);
+  transform: rotate(225deg) translateY(-1px);
+}
+
+.sidebar-toggle:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 4px;
+}
+
+.sidebar-panel-content {
+  padding-top: 1px;
 }
 
 .toc-panel ol,
@@ -544,11 +596,40 @@ p {
 
 .toc-panel a,
 .source-panel a {
+  display: block;
   font-family: var(--font-sans);
   font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.35;
   text-decoration: none;
+}
+
+.toc-panel li,
+.source-panel li {
+  position: relative;
+  padding-left: 12px;
+}
+
+.toc-panel li::before,
+.source-panel li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--rule-strong);
+}
+
+.toc-panel a[aria-current="page"],
+.source-panel a[aria-current="page"] {
+  color: var(--accent-warm);
+}
+
+.toc-panel li:has(a[aria-current="page"])::before,
+.source-panel li:has(a[aria-current="page"])::before {
+  background: var(--accent-warm);
 }
 
 .source-panel p,
