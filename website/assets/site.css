@@ -1235,6 +1235,32 @@ p {
   line-height: 1.48;
 }
 
+.numbered-status-list {
+  counter-reset: numbered-status;
+  list-style: none;
+}
+
+.numbered-status-list li {
+  counter-increment: numbered-status;
+  display: grid;
+  grid-template-columns: 2.2rem minmax(0, 1fr);
+  column-gap: 12px;
+}
+
+.numbered-status-list li::before {
+  content: counter(numbered-status, decimal-leading-zero);
+  color: var(--accent-blue);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.52;
+}
+
+.numbered-status-list strong,
+.numbered-status-list span {
+  grid-column: 2;
+}
+
 .article-section code,
 .article-table code {
   font-family: var(--font-mono);
