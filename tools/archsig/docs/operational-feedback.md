@@ -67,6 +67,13 @@ SFT `ConsequenceEnvelope` の calibration / benchmark protocol は
 observed PR / review / CI / outcome refs と false positive / false negative review を保持する
 入力であり、forecast correctness や causal proof ではない。
 
+Closed-loop SFT workbench では、B10 artifact は forecast 後の観測面を担当する。最小 flow は
+`sft-forecast` が生成した `ConsequenceEnvelope` / forecast item refs、review / CI
+intervention refs、observed PR / review / CI / incident refs を
+`forecast-calibration-hook-v0` と B10 artifact に接続し、hypothesis refresh の入力として
+保存することである。この接続は deployment evidence の台帳であり、自動 governance
+correctness、forecast quality、global risk reduction、または incident causality を結論しない。
+
 - unavailable / private / missing / unmeasured outcome data を measured-zero evidence に丸めない。
 - reviewer decision は threshold / CI policy の empirical calibration input として読む。
 - team threshold は formal theorem precondition discharge ではない。

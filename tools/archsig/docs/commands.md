@@ -431,6 +431,14 @@ unknown remainder、non-conclusions が B13 pipeline 内で保持されたこと
 probability、causal prediction、global safety、Lean theorem claim、extractor
 completeness、forecast correctness は結論しない。
 
+Closed-loop SFT workbench の最小設計では、この `sft-forecast` 出力を
+AI proposal governance、lifecycle decision surface、`forecast-calibration-hook-v0`、
+B10 operational feedback artifact と束ねて読む。現時点では workbench 専用 CLI はなく、
+workbench run manifest、review intervention record、calibration join report は将来の
+schema / fixture / validator 候補である。`sft-forecast` の成功や B10 artifact との接続は、
+deployed governance correctness、forecast quality、global risk reduction、または incident
+causality を意味しない。
+
 B5 repair / synthesis artifact を検査する。
 
 ```bash

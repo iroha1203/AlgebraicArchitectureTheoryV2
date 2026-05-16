@@ -80,3 +80,27 @@ architecture field snapshot
 
 probabilistic operation distribution は empirical reading として扱い、formal core では
 finite support と bounded script を明示する。
+
+## Closed-loop SFT workbench
+
+Closed-loop SFT workbench は、SFT forecast artifact、governance projection、operational
+feedback、calibration hook を一つの review cycle に束ねる workflow である。
+
+```text
+PRD / design memo / Issue / AI proposal
+  + codebase / ArchitectureSignature snapshot
+  + review / CI / incident / ownership trace
+  + AI agent policy
+  -> sft-forecast artifact bundle
+  -> ConsequenceEnvelope report
+  -> AI proposal governance / lifecycle decision projection
+  -> review / CI / issue decomposition intervention
+  -> observed PR / review / CI / outcome refs
+  -> forecast calibration hook
+  -> B10 operational feedback
+  -> hypothesis refresh / field update note
+```
+
+workbench flow は loop 全体で artifact refs と non-conclusions を保持する。
+forecast report を probability claim にせず、review decision を formal theorem にせず、
+observed operational correlation を causal proof にしない。

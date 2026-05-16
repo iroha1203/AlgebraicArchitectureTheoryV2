@@ -1441,3 +1441,58 @@ SFT Workbench
 
 SFT は開発者を置き換えるものではない。
 ソフトウェア進化を、観測し、計算し、統治できる対象として見えるようにする。
+
+最小の deployed closed-loop workbench は、単一の自動判断器ではなく、既存の
+ArchSig-SFT artifact と operational feedback artifact を review cycle に束ねる
+bounded workflow である。
+
+```text
+PRD / design memo / issue plan / AI proposal
+  + existing codebase / ArchitectureSignature snapshot
+  + review / CI / PR / incident / ownership trace
+  + AI agent policy
+  -> ArtifactDescriptor
+  -> OperationSupportEstimate
+  -> ForecastConeSkeleton family
+  -> ConsequenceEnvelope report
+  -> AI proposal governance / lifecycle decision surface
+  -> review / CI / issue decomposition intervention
+  -> observed PR / review / CI / outcome refs
+  -> ForecastCalibrationHook + B10 operational feedback
+  -> field update note / hypothesis refresh input
+```
+
+最小 artifact flow は、次の責務を分ける。
+
+| layer | 入力 | 出力 | 境界 |
+| --- | --- | --- | --- |
+| input normalization | PRD、Issue、AI proposal、source refs | `ArtifactDescriptor` | source refs と missing evidence を保存する。 |
+| forecast construction | descriptor、policy constraints、bounded horizon | `OperationSupportEstimate`、`ForecastConeSkeleton` | finite support と unknown remainder を保存する。 |
+| review projection | cone family、signature axes、theorem boundary | `ConsequenceEnvelope` | reviewer-facing report であり、causal forecast ではない。 |
+| governance projection | AI policy、review / CI mediation refs | AI proposal governance / lifecycle decision surface | allowed / forbidden / unknown support を分ける。 |
+| feedback join | observed PR / review / CI / outcome refs、B10 artifact | `ForecastCalibrationHook`、calibration review、hypothesis refresh input | observation linkage であり、forecast correctness の証明ではない。 |
+
+依存関係は次の通りである。
+
+- B12 / B13 SFT forecasting が `ConsequenceEnvelope` までの bounded forecast artifact を作る。
+- future adapters は GitHub Issue JSON、AI proposal JSON、framework semantics、runtime / incident
+  trace を supplied evidence として正規化する。
+- B10 operational feedback は observed outcome、calibration review、threshold、ownership、
+  repair adoption、incident correlation、hypothesis refresh を保存する。
+- calibration hook は forecast item refs と observed refs を対応付け、benchmark protocol へ渡す。
+- deployed workbench はこれらを一つの review cycle に束ねるが、実組織 deployment、
+  automatic governance correctness、または causal theorem を追加しない。
+
+phase plan は次の最小順序で進める。
+
+| phase | 目的 | 次に必要なもの |
+| --- | --- | --- |
+| W0 artifact inventory | 既存 B10 / B12 / B13 / governance artifact と missing adapter を一覧化する。 | workbench run manifest の設計。 |
+| W1 offline bundle | 1 件の PRD / Issue / AI proposal と既存 trace refs から workbench bundle を手動生成する。 | artifact refs、excluded inputs、non-conclusions の manifest 化。 |
+| W2 review-loop dry run | generated envelope と governance projection を review / CI checklist に接続する。 | reviewer decision と CI outcome refs の収集。 |
+| W3 calibration join | forecast items と observed refs を `ForecastCalibrationHook` / B10 artifact に接続する。 | held-out / prospective benchmark set。 |
+| W4 deployed pilot | selected repository で scheduler と policy threshold を運用する。 | 組織別 calibration と incident / rollback / MTTR との継続照合。 |
+
+W4 でも、workbench は forecast correctness、global risk reduction、AI safety、
+automatic governance correctness、または real organization outcome の因果説明を結論しない。
+その主張には、別途 calibration dataset、confounder 管理、prospective validation が必要である。
