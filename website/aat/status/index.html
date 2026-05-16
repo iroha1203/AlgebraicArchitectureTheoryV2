@@ -66,6 +66,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#source-map">Source map</a></li>
+                <li><a href="#release-snapshot">Release snapshot</a></li>
                 <li><a href="#audit-snapshot">Audit snapshot</a></li>
                 <li><a href="#formal-claim-map">Formal claim map</a></li>
                 <li><a href="#formal-anchor-package">Formal anchor package</a></li>
@@ -75,58 +76,65 @@
                 <li><a href="#qed-boundary">Current QED boundary</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Status sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>AAT chapters</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md">
-                    Lean theorem index
+                  <a href="../">
+                    AAT overview
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/proof_obligations.md">
-                    Proof obligations
+                  <a href="../foundations/">
+                    Foundations
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">
-                    Selected presentation boundary
+                  <a href="../laws-and-witnesses/">
+                    Laws and Witnesses
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">
-                    Architecture core claim boundary
+                  <a href="../signature-and-boundary/">
+                    Signature and Theorem Boundary
                   </a>
                 </li>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">
-                    Formal anchor theorem package
+                  <a href="../local-law-packages/">
+                    Local Law Packages
+                  </a>
+                </li>
+                <li>
+                  <a href="../calculus-and-extensions/">
+                    Calculus and Extensions
+                  </a>
+                </li>
+                <li>
+                  <a href="../repair-and-dynamics/">
+                    Repair and Dynamics
+                  </a>
+                </li>
+                <li>
+                  <a href="../representations-and-effects/">
+                    Representations and Effects
+                  </a>
+                </li>
+                <li>
+                  <a href="../examples-and-boundaries/">
+                    Examples and Boundaries
+                  </a>
+                </li>
+                <li>
+                  <a href="../related-work/">
+                    Related Work and Novelty
+                  </a>
+                </li>
+                <li>
+                  <a href="../status/" aria-current="page">
+                    Status
                   </a>
                 </li>
               </ul>
-            </div>
-            <div class="version-panel">
-              <h2>AAT release snapshot</h2>
-              <dl>
-                <dt>Updated</dt>
-                <dd>2026-05-16</dd>
-                <dt>Lean toolchain</dt>
-                <dd><code>leanprover/lean4:v4.28.0</code></dd>
-                <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/6709857b5cf840218f3a88a3a776c184dbf825d4">6709857</a></dd>
-                <dt>Build evidence</dt>
-                <dd><code>lake build</code> is the whole-repository check used for Lean PRs and release snapshots.</dd>
-                <dt>Audit scans</dt>
-                <dd>Placeholder, unsafe Lean keyword, and hidden Unicode scans are separate checks; a passing build is not a substitute for them.</dd>
-              </dl>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <p>
-                Mathematical theorem candidates are not automatically current
-                Lean theorems. The theorem index and proof-obligation document
-                provide the status boundary.
-              </p>
             </div>
           </aside>
 
@@ -146,14 +154,60 @@
                   <span>`docs/aat/mathematical_theory.md` is the first-class theory text.</span>
                 </li>
                 <li>
-                  <strong>Implemented Lean API</strong>
-                  <span>`docs/aat/lean_theorem_index.md` lists declarations, file paths, meanings, and status.</span>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md">Implemented Lean API</a></strong>
+                  <span>The theorem index lists declarations, file paths, meanings, and status.</span>
                 </li>
                 <li>
-                  <strong>Future work and empirical hypotheses</strong>
-                  <span>`docs/aat/proof_obligations.md` tracks proof obligations and empirical boundaries.</span>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/proof_obligations.md">Future work and empirical hypotheses</a></strong>
+                  <span>The proof-obligation ledger tracks future proof work and empirical boundaries.</span>
+                </li>
+                <li>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">Selected presentation boundary</a></strong>
+                  <span>Records the formal boundary between selected presentation-level reading and ambient complete extraction.</span>
+                </li>
+                <li>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">Architecture core claim boundary</a></strong>
+                  <span>Records the current formal boundary for architecture core and certified architecture claims.</span>
+                </li>
+                <li>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">Formal anchor theorem package</a></strong>
+                  <span>Maps the finite static structural anchor to Lean declarations, derived diagnostics, and non-conclusions.</span>
                 </li>
               </ul>
+            </section>
+
+            <section id="release-snapshot" class="article-section">
+              <h2>Release snapshot</h2>
+              <p>
+                This status page is tied to a named repository snapshot and
+                toolchain. Read build and audit evidence at that boundary.
+              </p>
+              <div class="article-table">
+                <table>
+                  <tbody>
+                    <tr>
+                      <th>Updated</th>
+                      <td>2026-05-16</td>
+                    </tr>
+                    <tr>
+                      <th>Lean toolchain</th>
+                      <td><code>leanprover/lean4:v4.28.0</code></td>
+                    </tr>
+                    <tr>
+                      <th>Repository snapshot</th>
+                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/6709857b5cf840218f3a88a3a776c184dbf825d4">6709857</a></td>
+                    </tr>
+                    <tr>
+                      <th>Build evidence</th>
+                      <td><code>lake build</code> is the whole-repository check used for Lean PRs and release snapshots.</td>
+                    </tr>
+                    <tr>
+                      <th>Audit scans</th>
+                      <td>Placeholder, unsafe Lean keyword, and hidden Unicode scans are separate checks; a passing build is not a substitute for them.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="audit-snapshot" class="article-section">

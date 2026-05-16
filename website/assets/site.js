@@ -58,6 +58,50 @@ navLinks
 document.querySelector("[data-current-year]").textContent =
   new Date().getFullYear();
 
+document
+  .querySelectorAll(
+    ".article-sidebar > .toc-panel, .article-sidebar > .source-panel, .article-sidebar > .version-panel, .article-sidebar > .boundary-note"
+  )
+  .forEach((panel, index) => {
+    const heading = panel.querySelector(":scope > h2");
+    if (!heading) return;
+
+    const panelId =
+      panel.id || `sidebar-panel-${index + 1}-${heading.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+    panel.id = panelId;
+
+    const content = document.createElement("div");
+    content.id = `${panelId}-content`;
+    content.className = "sidebar-panel-content";
+
+    Array.from(panel.children)
+      .filter((child) => child !== heading)
+      .forEach((child) => {
+        content.appendChild(child);
+      });
+    panel.appendChild(content);
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "sidebar-toggle";
+    button.setAttribute("aria-controls", content.id);
+    button.textContent = heading.textContent;
+    heading.replaceChildren(button);
+
+    const expanded =
+      panel.classList.contains("toc-panel") || panel.dataset.sidebarOpen === "true";
+    button.setAttribute("aria-expanded", String(expanded));
+    panel.classList.toggle("is-open", expanded);
+    content.hidden = !expanded;
+
+    button.addEventListener("click", () => {
+      const nextExpanded = button.getAttribute("aria-expanded") !== "true";
+      button.setAttribute("aria-expanded", String(nextExpanded));
+      panel.classList.toggle("is-open", nextExpanded);
+      content.hidden = !nextExpanded;
+    });
+  });
+
 document.querySelectorAll("[data-copy-code]").forEach((button) => {
   const figure = button.closest(".code-panel");
   const code = figure?.querySelector("code");
