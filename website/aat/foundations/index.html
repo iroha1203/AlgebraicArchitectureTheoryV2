@@ -94,7 +94,7 @@
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/mathematical_theory.md#1-%E4%B8%AD%E5%BF%83%E5%91%BD%E9%A1%8C">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/mathematical_theory.md#1-%E4%B8%AD%E5%BF%83%E5%91%BD%E9%A1%8C">
                     Chapters 1-2 in the AAT text
                   </a>
                 </li>
@@ -106,7 +106,7 @@
                 <dt>Updated</dt>
                 <dd>2026-05-16</dd>
                 <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/72fd871738787fd8f6804ae8f173fa1d0100d540">72fd871</a></dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/6709857b5cf840218f3a88a3a776c184dbf825d4">6709857</a></dd>
                 <dt>Lean status</dt>
                 <dd><code>lake build</code> passed for this snapshot; see Status for proved / defined-only boundaries.</dd>
               </dl>
@@ -280,15 +280,18 @@ P |-AAT phi
               <p class="statement-status" aria-label="Lean status for Proposition 1.2">
                 <span class="statement-status-label">Lean status</span>
                 <span class="status-badge status-badge-proved">proved anchor</span>
-                <span>Anchored by <code>AATJudgement</code> and <code>aatJudgement_iff</code>: the judgement is evaluation at the supplied <code>SelectedPresentation</code>.</span>
+                <span>Anchored by <code>AATJudgement</code>, <code>aatJudgement_iff</code>, and <code>ArchitectureCore.selectedPresentationJudgement_iff</code>: the judgement is evaluation at the supplied <code>SelectedPresentation</code>.</span>
               </p>
               <p id="proof-1-2" class="statement-proof">
-                <a class="statement-anchor" href="#proof-1-2">Proof idea.</a>
-                The Lean judgement is presentation-indexed by construction:
-                <code>AATJudgement P phi</code> unfolds to <code>phi P</code>.
-                The object schema supplies the selected carrier, policies, and
-                observation context that determine <code>P</code>. Changing
-                those selected inputs changes the proposition being evaluated.
+                <a class="statement-anchor" href="#proof-1-2">Proof.</a>
+                In Lean, <code>AATJudgement P phi</code> is defined as
+                <code>phi P</code>, and <code>aatJudgement_iff</code> records
+                that equivalence. For a core object,
+                <code>ArchitectureCore.selectedPresentationJudgement_iff</code>
+                applies the same bridge to <code>X.selectedPresentation</code>.
+                Thus the licensed claim is indexed by the selected
+                presentation itself; changing the selected carrier, policy, or
+                observation context changes the proposition being evaluated.
               </p>
               <div class="theorem-card-list">
                 <article class="theorem-card lean-status-card">
@@ -302,7 +305,7 @@ P |-AAT phi
                   <dl class="theorem-card-grid">
                     <div>
                       <dt>Lean anchor</dt>
-                      <dd><code>SelectedPresentation</code>, <code>PresentationClaim</code>, <code>AATJudgement</code>, <code>aatJudgement_iff</code>, and <code>ArchitectureObject</code>.</dd>
+                      <dd><code>SelectedPresentation</code>, <code>PresentationClaim</code>, <code>AATJudgement</code>, <code>aatJudgement_iff</code>, <code>ArchitectureCore.selectedPresentationJudgement_iff</code>, and <code>ArchitectureObject</code>.</dd>
                     </div>
                     <div>
                       <dt>Assumptions</dt>
@@ -376,18 +379,24 @@ P |-AAT phi
               <p class="statement-status" aria-label="Lean status for Proposition 2.1">
                 <span class="statement-status-label">Lean status</span>
                 <span class="status-badge status-badge-proved">proved counterexample</span>
-                <span>Lean proves a selected-presentation counterexample: <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>.</span>
+                <span>Lean proves the selected-presentation counterexample and packages the core-side boundary as <code>ArchitectureCore.selectedClaimBoundary</code>.</span>
               </p>
               <p id="proof-2-1" class="statement-proof">
-                <a class="statement-anchor" href="#proof-2-1">Proof idea.</a>
-                A selected presentation restricts ambient edges through
-                <code>EdgeRestriction</code>. Complete extraction would require
-                the extra premise <code>CompleteForRelation</code>, saying that
-                every ambient edge has selected endpoints. Lean constructs two
-                ambient relations with the same selected restriction while one
-                has an out-of-scope edge and therefore fails
-                <code>CompleteForRelation</code>. Thus selected presentation
-                equality does not force ambient completeness equality.
+                <a class="statement-anchor" href="#proof-2-1">Proof.</a>
+                Lean separates the positive core package from the ambient
+                non-implication. The theorem
+                <code>ArchitectureCore.selectedClaimBoundary</code> bundles
+                what a core supplies at <code>X.selectedPresentation</code>:
+                the judgement bridge, static and runtime restriction
+                equalities, selected relation and graph completeness, and
+                static coverage. Complete extraction for an ambient relation is
+                still the extra premise <code>CompleteForRelation P edge</code>.
+                The counterexample
+                <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>
+                constructs two ambient relations with the same selected
+                restriction, while one has an out-of-scope edge and fails
+                <code>CompleteForRelation</code>. Therefore selected core
+                evidence cannot be promoted to ambient complete extraction.
               </p>
               <p id="counterexample-2-2" class="statement">
                 <a class="statement-anchor" href="#counterexample-2-2">Counterexample 2.2.</a>
@@ -425,7 +434,7 @@ P |-AAT phi
                   <dl class="theorem-card-grid">
                     <div>
                       <dt>Lean anchor</dt>
-                      <dd><code>CompleteForRelation</code>, <code>SameEdgeRestriction</code>, <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>, and <code>ArchitectureCore.selectedPresentation</code>.</dd>
+                      <dd><code>CompleteForRelation</code>, <code>CompleteForGraph</code>, <code>SameEdgeRestriction</code>, <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, and <code>ArchitectureCore.selectedClaimBoundary</code>.</dd>
                     </div>
                     <div>
                       <dt>Assumptions</dt>
@@ -433,7 +442,7 @@ P |-AAT phi
                     </div>
                     <div>
                       <dt>Boundary</dt>
-                      <dd><code>ArchitectureCore</code> has proved selected-presentation accessors; ambient complete extraction remains a separate <code>CompleteForRelation</code> premise.</dd>
+                      <dd><code>ArchitectureCore.selectedClaimBoundary</code> packages selected-presentation facts; ambient complete extraction remains a separate <code>CompleteForRelation</code> premise.</dd>
                     </div>
                     <div>
                       <dt>Non-conclusion</dt>
@@ -666,13 +675,15 @@ not selected:
                         <code>AATJudgement</code>,
                         <code>aatJudgement_iff</code>,
                         <code>CompleteForRelation</code>,
+                        <code>CompleteForGraph</code>,
+                        <code>completeForGraph_iff_completeForRelation</code>,
                         <code>SameEdgeRestriction</code>,
                         <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code>
                       </td>
-                      <td data-label="Current Lean status"><code>defined only</code> for vocabulary; selected judgement and counterexample anchors <code>proved</code></td>
+                      <td data-label="Current Lean status"><code>defined only</code> for vocabulary; judgement, graph bridge, and counterexample anchors <code>proved</code></td>
                       <td data-label="Boundary">Selected presentation equality is not ambient repository completeness; real-code extraction, telemetry completeness, and semantic universe completeness remain separate premises.</td>
                       <td data-label="Primary index">
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">
                           Selected Presentation / Complete Extraction Boundary
                         </a>
                       </td>
@@ -691,15 +702,22 @@ not selected:
                       <td data-label="Formal anchor">
                         <code>ArchitectureCore</code>,
                         <code>ArchitectureCore.selectedPresentation</code>,
+                        <code>ArchitectureCore.selectedPresentationJudgement_iff</code>,
+                        <code>ArchitectureCore.staticGraphRestriction_eq_staticGraph</code>,
+                        <code>ArchitectureCore.runtimeGraphRestriction_eq_runtimeGraph</code>,
                         <code>ArchitectureCore.staticCompleteForSelectedPresentation</code>,
                         <code>ArchitectureCore.runtimeCompleteForSelectedPresentation</code>,
+                        <code>ArchitectureCore.staticCompleteGraphForSelectedPresentation</code>,
+                        <code>ArchitectureCore.runtimeCompleteGraphForSelectedPresentation</code>,
                         <code>ArchitectureCore.component_mem_staticUniverse</code>,
-                        <code>ArchitectureCore.staticCoverageComplete</code>
+                        <code>ArchitectureCore.staticCoverageComplete</code>,
+                        <code>ArchitectureCore.SelectedClaimBoundary</code>,
+                        <code>ArchitectureCore.selectedClaimBoundary</code>
                       </td>
-                      <td data-label="Current Lean status"><code>defined only</code> for <code>ArchitectureCore</code>; selected-presentation accessors <code>proved</code></td>
-                      <td data-label="Boundary">Supplied finite universe and selected predicates; no global extraction completeness.</td>
+                      <td data-label="Current Lean status"><code>defined only</code> for <code>ArchitectureCore</code> and <code>SelectedClaimBoundary</code>; selected-presentation bridge and package theorem <code>proved</code></td>
+                      <td data-label="Boundary">Supplied finite universe and selected predicates; no global extraction completeness, runtime telemetry completeness, or global semantic universe completeness.</td>
                       <td data-label="Primary index">
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">
                           Architecture Core / Certified Architecture
                         </a>
                       </td>
@@ -724,7 +742,7 @@ not selected:
                       <td data-label="Current Lean status"><code>defined only</code> / <code>proved</code> by declaration</td>
                       <td data-label="Boundary">Finite component list, coverage, edge closure, and explicit graph assumptions.</td>
                       <td data-label="Primary index">
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">
                           Finite Universe / Bridge Theorems
                         </a>
                       </td>
@@ -745,7 +763,7 @@ not selected:
                       <td data-label="Current Lean status"><code>defined only</code> / selected bridge facts <code>proved</code></td>
                       <td data-label="Boundary">Reachability existence and strict layering; path count, walk length, nilpotence, and spectral facts are separate.</td>
                       <td data-label="Primary index">
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/72fd871738787fd8f6804ae8f173fa1d0100d540/docs/aat/mathematical_theory.md#2-architecture-object">
+                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/mathematical_theory.md#2-architecture-object">
                           mathematical theory, Chapter 2
                         </a>
                       </td>
