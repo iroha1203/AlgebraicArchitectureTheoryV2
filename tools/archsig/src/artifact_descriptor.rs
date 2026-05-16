@@ -1,5 +1,7 @@
 use std::collections::BTreeSet;
 
+use serde_json::Value;
+
 use crate::validation::{count_checks, generic_validation_example, validation_check};
 use crate::{
     ARTIFACT_DESCRIPTOR_SCHEMA_VERSION, ARTIFACT_DESCRIPTOR_VALIDATION_REPORT_SCHEMA_VERSION,
@@ -250,6 +252,154 @@ pub fn build_artifact_descriptor_from_markdown(
         forecast_non_conclusions: strings(&REQUIRED_FORECAST_NON_CONCLUSIONS),
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+pub fn build_artifact_descriptor_from_github_issue_json(
+    path_or_url: &str,
+    value: &Value,
+) -> ArtifactDescriptorV0 {
+    let title = json_string(value, &["title"]).unwrap_or_else(|| fallback_title(path_or_url));
+    let slug = slugify(&title);
+    let source_ref_id = format!("source:github-issue-json:{slug}");
+    let path = json_string(value, &["html_url", "url"]).unwrap_or_else(|| path_or_url.to_string());
+    let stable_ref = json_u64(value, &["number"]).map(|number| format!("GitHub Issue #{number}"));
+    let retained_fields = retained_json_fields(
+        value,
+        &[
+            "number",
+            "title",
+            "body",
+            "state",
+            "labels",
+            "assignees",
+            "milestone",
+            "html_url",
+        ],
+    );
+    let body = json_string(value, &["body"]).unwrap_or_default();
+    let normalized_text = format!(
+        "{}\n{}\n{}",
+        title,
+        body,
+        json_labels_text(value, "labels").unwrap_or_default()
+    );
+    let source_refs = vec![source_ref(
+        &source_ref_id,
+        "github-issue-json",
+        &path,
+        stable_ref.as_deref(),
+        "primary GitHub Issue JSON artifact input",
+        &retained_fields
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
+    )];
+    build_json_descriptor(
+        path_or_url,
+        "issue",
+        title,
+        slug,
+        source_ref_id,
+        source_refs,
+        normalized_text,
+        "normalizes GitHub Issue JSON before operation support estimation",
+        "github issue json adapter preserves selected source refs and boundary metadata",
+        vec![
+            missing_evidence(
+                "missing:github-api-context",
+                "github-api-context",
+                "GitHub Issue JSON adapter consumes a provided JSON artifact and does not fetch authenticated API context",
+                "private labels, project fields, linked PRs, and hidden discussion remain unavailable unless supplied",
+                "unmeasured",
+            ),
+            missing_evidence(
+                "missing:runtime-evidence",
+                "runtime-evidence",
+                "GitHub Issue JSON adapter does not observe runtime traces",
+                "runtime propagation remains a downstream boundary item",
+                "unmeasured",
+            ),
+            missing_evidence(
+                "missing:accepted-pr-history",
+                "accepted-pr-history",
+                "GitHub Issue JSON adapter does not infer accepted PR history from the issue artifact",
+                "accepted support cannot be inferred from this descriptor",
+                "missing",
+            ),
+        ],
+    )
+}
+
+pub fn build_artifact_descriptor_from_ai_proposal_json(
+    path_or_url: &str,
+    value: &Value,
+) -> ArtifactDescriptorV0 {
+    let title = json_string(value, &["title", "name", "proposalTitle"])
+        .unwrap_or_else(|| fallback_title(path_or_url));
+    let slug = slugify(&title);
+    let source_ref_id = format!("source:ai-proposal-json:{slug}");
+    let retained_fields = retained_json_fields(
+        value,
+        &[
+            "title",
+            "name",
+            "summary",
+            "body",
+            "proposal",
+            "changes",
+            "targets",
+            "rationale",
+            "constraints",
+            "model",
+            "promptRefs",
+        ],
+    );
+    let normalized_text = json_text_projection(value);
+    let source_refs = vec![source_ref(
+        &source_ref_id,
+        "ai-proposal-json",
+        path_or_url,
+        json_string(value, &["id", "proposalId"]).as_deref(),
+        "primary AI proposal JSON artifact input",
+        &retained_fields
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
+    )];
+    build_json_descriptor(
+        path_or_url,
+        "ai-proposal",
+        title,
+        slug,
+        source_ref_id,
+        source_refs,
+        normalized_text,
+        "normalizes AI proposal JSON before operation support estimation",
+        "ai proposal json adapter preserves selected source refs and boundary metadata",
+        vec![
+            missing_evidence(
+                "missing:human-review",
+                "human-review",
+                "AI proposal JSON adapter does not establish human review or acceptance",
+                "proposal support remains candidate-only until reviewed evidence is supplied",
+                "missing",
+            ),
+            missing_evidence(
+                "missing:model-evaluation",
+                "model-evaluation",
+                "AI proposal JSON adapter does not evaluate model quality or benchmark performance",
+                "forecast quality and proposal correctness remain unavailable",
+                "unmeasured",
+            ),
+            missing_evidence(
+                "missing:runtime-evidence",
+                "runtime-evidence",
+                "AI proposal JSON adapter does not observe runtime traces",
+                "runtime propagation remains a downstream boundary item",
+                "unmeasured",
+            ),
+        ],
+    )
 }
 
 pub fn validate_artifact_descriptor_report(
@@ -786,6 +936,79 @@ fn missing_evidence_from_markdown(contents: &str) -> Vec<ArtifactDescriptorMissi
     evidence
 }
 
+fn build_json_descriptor(
+    path_or_url: &str,
+    artifact_kind: &str,
+    title: String,
+    slug: String,
+    source_ref_id: String,
+    source_refs: Vec<ArtifactDescriptorSourceRefV0>,
+    normalized_text: String,
+    artifact_boundary: &str,
+    builder_assumption: &str,
+    missing_evidence: Vec<ArtifactDescriptorMissingEvidenceV0>,
+) -> ArtifactDescriptorV0 {
+    let source_ref_ids = vec![source_ref_id.clone()];
+    let selected_region_refs = selected_region_refs(&normalized_text, path_or_url);
+    let excluded_region_refs = excluded_region_refs(&normalized_text);
+    let target_audience = target_audience(&normalized_text);
+    let missing_evidence_ids = missing_evidence
+        .iter()
+        .map(|evidence| evidence.evidence_id.clone())
+        .collect::<Vec<_>>();
+
+    ArtifactDescriptorV0 {
+        schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
+        descriptor_id: format!("descriptor:{slug}"),
+        artifact_kind: artifact_kind.to_string(),
+        artifact_title: title,
+        source_refs,
+        action_class_candidates: infer_action_candidates(&normalized_text, &source_ref_id),
+        scope: ArtifactDescriptorScopeV0 {
+            scope_id: format!("scope:{slug}"),
+            selected_region_refs: selected_region_refs.clone(),
+            excluded_region_refs,
+            target_audience,
+            artifact_boundary: artifact_boundary.to_string(),
+            assumptions: vec![
+                "JSON fields and retained text are bounded tooling evidence".to_string(),
+                "action class candidates are heuristic labels for downstream estimation only"
+                    .to_string(),
+            ],
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+        missing_evidence,
+        measurement_boundary: ArtifactDescriptorMeasurementBoundaryV0 {
+            boundary_id: format!("boundary:{slug}"),
+            measured_layers: vec!["artifact-normalization".to_string()],
+            measured_axes: vec![
+                "sourceRefs".to_string(),
+                "actionClassCandidates".to_string(),
+                "scope".to_string(),
+                "missingEvidence".to_string(),
+                "forecastNonConclusions".to_string(),
+            ],
+            source_ref_ids,
+            selected_region_refs,
+            assumptions: vec![
+                builder_assumption.to_string(),
+                "JSON builder does not run repository, runtime, or authenticated remote extraction"
+                    .to_string(),
+            ],
+            unsupported_constructs: vec![
+                "operation support probability".to_string(),
+                "ground truth architecture reconstruction".to_string(),
+                "future outcome causality".to_string(),
+                "implicit requirements not present in the supplied JSON artifact".to_string(),
+            ],
+            missing_evidence_ids,
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+        forecast_non_conclusions: strings(&REQUIRED_FORECAST_NON_CONCLUSIONS),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
 fn extract_section_values(contents: &str, section_markers: &[&str]) -> Vec<String> {
     let mut values = Vec::new();
     let mut in_section = false;
@@ -814,6 +1037,77 @@ fn extract_section_values(contents: &str, section_markers: &[&str]) -> Vec<Strin
         }
     }
     values
+}
+
+fn json_string(value: &Value, keys: &[&str]) -> Option<String> {
+    keys.iter().find_map(|key| {
+        value
+            .get(*key)
+            .and_then(Value::as_str)
+            .map(str::trim)
+            .filter(|text| !text.is_empty())
+            .map(str::to_string)
+    })
+}
+
+fn json_u64(value: &Value, keys: &[&str]) -> Option<u64> {
+    keys.iter()
+        .find_map(|key| value.get(*key).and_then(Value::as_u64))
+}
+
+fn retained_json_fields(value: &Value, candidates: &[&str]) -> Vec<String> {
+    let retained = candidates
+        .iter()
+        .filter(|key| value.get(**key).is_some())
+        .map(|key| (*key).to_string())
+        .collect::<Vec<_>>();
+    if retained.is_empty() {
+        vec!["json".to_string()]
+    } else {
+        retained
+    }
+}
+
+fn json_labels_text(value: &Value, key: &str) -> Option<String> {
+    let labels = value.get(key)?.as_array()?;
+    let names = labels
+        .iter()
+        .filter_map(|label| {
+            label
+                .get("name")
+                .and_then(Value::as_str)
+                .or_else(|| label.as_str())
+        })
+        .collect::<Vec<_>>();
+    (!names.is_empty()).then(|| names.join("\n"))
+}
+
+fn json_text_projection(value: &Value) -> String {
+    let mut text = Vec::new();
+    collect_json_text(value, &mut text);
+    text.join("\n")
+}
+
+fn collect_json_text(value: &Value, output: &mut Vec<String>) {
+    match value {
+        Value::String(text) => {
+            let trimmed = text.trim();
+            if !trimmed.is_empty() {
+                output.push(trimmed.to_string());
+            }
+        }
+        Value::Array(values) => {
+            for item in values {
+                collect_json_text(item, output);
+            }
+        }
+        Value::Object(map) => {
+            for item in map.values() {
+                collect_json_text(item, output);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn extract_inline_refs(contents: &str) -> Vec<String> {

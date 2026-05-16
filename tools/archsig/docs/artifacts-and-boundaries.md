@@ -89,12 +89,18 @@ non-conclusions を落とさない。
 claim を生成しない。missing evidence、unsupported constructs、forecast non-conclusions は
 後段 artifact に引き継ぐ境界として読む。
 
-`sft-forecast` は Markdown PRD / Spec / Issue / AI proposal から
+`sft-forecast` は Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、
+AI proposal JSON から
 `artifact-descriptor-v0`、`operation-support-estimate-v0`、
 `forecast-cone-skeleton-v0`、`consequence-envelope-report-v0` と各 validation report を
 同じ出力 directory に生成する end-to-end command である。command の成功は bounded
 tooling pipeline の validation 成功であり、extractor completeness、forecast correctness、
 causal prediction、Lean theorem claim への昇格を意味しない。
+
+GitHub Issue JSON / AI proposal JSON adapter は supplied JSON artifact の正規化であり、
+GitHub API からの authenticated fetch、private project fields の復元、AI model
+evaluation、human review acceptance、runtime extraction を行わない。これらは
+missing evidence / unavailable evidence boundary として後段 artifact に渡す。
 
 `consequence-envelope-report-v0` は `forecast-cone-skeleton-v0` からの
 loss-aware report projection として読む。一つ以上の bounded cone skeleton から、

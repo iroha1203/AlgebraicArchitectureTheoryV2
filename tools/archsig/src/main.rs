@@ -32,10 +32,11 @@ use archsig::{
     SignatureTrajectoryReportV0, SignatureTrajectoryReportValidationReportV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence,
-    build_air_document, build_artifact_descriptor_from_markdown, build_baseline_suppression_report,
-    build_consequence_envelope_from_forecast_cone, build_empirical_dataset,
-    build_feature_extension_dataset_from_files, build_feature_extension_report,
-    build_forecast_cone_skeleton_from_operation_support,
+    build_air_document, build_artifact_descriptor_from_ai_proposal_json,
+    build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
+    build_baseline_suppression_report, build_consequence_envelope_from_forecast_cone,
+    build_empirical_dataset, build_feature_extension_dataset_from_files,
+    build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
     build_operation_support_estimate_from_descriptor, build_outcome_linkage_dataset_from_files,
     build_policy_decision_report, build_pr_history_dataset_from_github_files,
     build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
@@ -687,6 +688,14 @@ enum Command {
         #[arg(long = "from-markdown")]
         from_markdown: Option<PathBuf>,
 
+        /// GitHub Issue JSON path to normalize into artifact-descriptor-v0.
+        #[arg(long = "from-github-issue-json")]
+        from_github_issue_json: Option<PathBuf>,
+
+        /// AI proposal JSON path to normalize into artifact-descriptor-v0.
+        #[arg(long = "from-ai-proposal-json")]
+        from_ai_proposal_json: Option<PathBuf>,
+
         /// Artifact kind for --from-markdown output.
         #[arg(long = "artifact-kind", default_value = "prd", value_parser = ["prd", "spec", "issue", "ai-proposal"])]
         artifact_kind: String,
@@ -774,7 +783,11 @@ enum Command {
         #[arg(long)]
         artifact: PathBuf,
 
-        /// Artifact kind for the generated artifact-descriptor-v0.
+        /// Input format for the generated artifact-descriptor-v0.
+        #[arg(long = "artifact-format", default_value = "markdown", value_parser = ["markdown", "github-issue-json", "ai-proposal-json"])]
+        artifact_format: String,
+
+        /// Artifact kind for markdown-generated artifact-descriptor-v0.
         #[arg(long = "artifact-kind", default_value = "prd", value_parser = ["prd", "spec", "issue", "ai-proposal"])]
         artifact_kind: String,
 
@@ -1564,6 +1577,8 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         Some(Command::ArtifactDescriptor {
             input,
             from_markdown,
+            from_github_issue_json,
+            from_ai_proposal_json,
             artifact_kind,
             fixture,
             out,
@@ -1580,6 +1595,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     &contents,
                     &artifact_kind,
                 );
+                write_json(out, &descriptor)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            if let Some(issue_json_path) = from_github_issue_json {
+                let value: serde_json::Value = read_json(&issue_json_path)?;
+                let descriptor: ArtifactDescriptorV0 =
+                    build_artifact_descriptor_from_github_issue_json(
+                        &issue_json_path.display().to_string(),
+                        &value,
+                    );
+                write_json(out, &descriptor)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            if let Some(proposal_json_path) = from_ai_proposal_json {
+                let value: serde_json::Value = read_json(&proposal_json_path)?;
+                let descriptor: ArtifactDescriptorV0 =
+                    build_artifact_descriptor_from_ai_proposal_json(
+                        &proposal_json_path.display().to_string(),
+                        &value,
+                    );
                 write_json(out, &descriptor)?;
                 return Ok(ExitCode::SUCCESS);
             }
@@ -1721,6 +1756,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }
         Some(Command::SftForecast {
             artifact,
+            artifact_format,
             artifact_kind,
             horizon_steps,
             horizon_window,
@@ -1728,10 +1764,25 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }) => {
             std::fs::create_dir_all(&out_dir)?;
 
-            let contents = std::fs::read_to_string(&artifact)?;
             let artifact_path = artifact.display().to_string();
-            let descriptor: ArtifactDescriptorV0 =
-                build_artifact_descriptor_from_markdown(&artifact_path, &contents, &artifact_kind);
+            let descriptor: ArtifactDescriptorV0 = match artifact_format.as_str() {
+                "github-issue-json" => {
+                    let value: serde_json::Value = read_json(&artifact)?;
+                    build_artifact_descriptor_from_github_issue_json(&artifact_path, &value)
+                }
+                "ai-proposal-json" => {
+                    let value: serde_json::Value = read_json(&artifact)?;
+                    build_artifact_descriptor_from_ai_proposal_json(&artifact_path, &value)
+                }
+                _ => {
+                    let contents = std::fs::read_to_string(&artifact)?;
+                    build_artifact_descriptor_from_markdown(
+                        &artifact_path,
+                        &contents,
+                        &artifact_kind,
+                    )
+                }
+            };
             let descriptor_path = out_dir.join("artifact-descriptor.json");
             let descriptor_validation_path = out_dir.join("artifact-descriptor-validation.json");
             let descriptor_validation: ArtifactDescriptorValidationReportV0 =

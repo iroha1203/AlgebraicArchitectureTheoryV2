@@ -252,6 +252,23 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- artifact-descriptor \
 request body から source refs、scope、action class candidates、missing evidence を
 組み立てる。生成 descriptor は通常の `artifact-descriptor --input` validator に渡せる。
 
+GitHub Issue JSON または AI proposal JSON を実入力として descriptor を生成する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- artifact-descriptor \
+  --from-github-issue-json issue-878.json \
+  --out .lake/signature-current/artifact-descriptor.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- artifact-descriptor \
+  --from-ai-proposal-json ai-proposal.json \
+  --out .lake/signature-current/artifact-descriptor.json
+```
+
+JSON adapter は与えられた artifact を正規化するだけで、GitHub API 取得、
+authenticated connector、AI model evaluation、runtime extraction は行わない。
+GitHub Issue JSON では private / unavailable API context、AI proposal JSON では
+human review と model evaluation を missing evidence boundary として保持する。
+
 B12 OperationSupportEstimate の canonical fixture を出力し、既存 estimate を検査する。
 
 ```bash
@@ -353,6 +370,18 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- sft-forecast \
   --artifact-kind prd \
   --horizon-steps 4 \
   --horizon-window "Coupon PRD bounded forecast horizon" \
+  --out-dir .lake/signature-current/sft-forecast
+```
+
+GitHub Issue JSON または AI proposal JSON から同じ pipeline を実行する場合は
+`--artifact-format` を指定する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- sft-forecast \
+  --artifact issue-878.json \
+  --artifact-format github-issue-json \
+  --horizon-steps 3 \
+  --horizon-window "GitHub Issue bounded forecast horizon" \
   --out-dir .lake/signature-current/sft-forecast
 ```
 
