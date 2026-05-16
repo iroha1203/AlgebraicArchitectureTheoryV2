@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT local law packages: projection, observation, LSP, DIP, and three-layer flatness."
+      content="AAT local law packages as theorem-boundary-backed statements for projection, observation, LSP, DIP, and three-layer flatness."
     >
     <title>AAT Local Law Packages</title>
     <link rel="alternate" hreflang="en" href="./">
@@ -51,10 +51,11 @@
           <p class="eyebrow">AAT Part IV</p>
           <h1>Local Law Packages</h1>
           <p class="lede">
-            Projection, observation, substitutability, abstraction, and flatness
-            are local packages with explicit assumptions. This page separates
-            local contract soundness from global structure and from runtime or
-            semantic flatness.
+            Projection, observation, substitutability, abstraction, and
+            flatness are local theorem packages with explicit assumptions. AAT
+            uses them to state local contract soundness without promoting that
+            soundness into global layering, runtime flatness, or semantic
+            completeness.
           </p>
         </div>
       </section>
@@ -65,22 +66,54 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#reading-model">Reading model</a></li>
                 <li><a href="#projection-observation">Projection and observation</a></li>
-                <li><a href="#projection-theorem">Projection theorem schema</a></li>
-                <li><a href="#lsp-dip">LSP and DIP</a></li>
+                <li><a href="#projection-dip">Projection and DIP</a></li>
+                <li><a href="#observation-lsp">Observation and LSP</a></li>
+                <li><a href="#local-contract-packages">Local contract packages</a></li>
                 <li><a href="#three-layer-flatness">Three-layer flatness</a></li>
-                <li><a href="#assumption-strength">Assumption strength</a></li>
-                <li><a href="#non-implication-map">Non-implication map</a></li>
-                <li><a href="#contract-example">Contract example</a></li>
-                <li><a href="#lean-status">Lean status</a></li>
+                <li><a href="#example-counterexample">Example and counterexample</a></li>
+                <li><a href="#status-index">Formal anchors</a></li>
               </ol>
             </nav>
+            <div class="source-panel">
+              <h2>Citable statements</h2>
+              <ul>
+                <li><a href="#definition-7-1">Definition 7.1</a></li>
+                <li><a href="#proposition-7-2">Proposition 7.2</a></li>
+                <li><a href="#definition-7-3">Definition 7.3</a></li>
+                <li><a href="#proposition-7-4">Proposition 7.4</a></li>
+                <li><a href="#definition-7-5">Definition 7.5</a></li>
+                <li><a href="#proposition-7-6">Proposition 7.6</a></li>
+                <li><a href="#proposition-7-7">Proposition 7.7</a></li>
+                <li><a href="#definition-8-1">Definition 8.1</a></li>
+                <li><a href="#proposition-8-2">Proposition 8.2</a></li>
+                <li><a href="#non-conclusion-8-3">Non-conclusion 8.3</a></li>
+                <li><a href="#example-8-4">Example 8.4</a></li>
+                <li><a href="#counterexample-8-5">Counterexample 8.5</a></li>
+              </ul>
+            </div>
             <div class="source-panel">
               <h2>Canonical source</h2>
               <ul>
                 <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#7-projection-observation-lsp-dip">
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/mathematical_theory.md#L347">
                     Chapters 7-8 in the AAT text
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/proof_obligations.md#L176-L222">
+                    Projection, LSP, and SOLID boundary ledger
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#projection--dip">
+                    Projection / DIP Lean index
+                  </a>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#flatness">
+                    Flatness Lean index
                   </a>
                 </li>
               </ul>
@@ -89,35 +122,81 @@
               <h2>AAT release snapshot</h2>
               <dl>
                 <dt>Updated</dt>
-                <dd>2026-05-15</dd>
+                <dd>2026-05-16</dd>
                 <dt>Docs source commit</dt>
-                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/89b4502b6fc01937bfafa409155a7b4a194a80fe">89b4502</a></dd>
+                <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/3bf99081cf64d10ca230ed89d13ec734cf15cae6">3bf9908</a></dd>
                 <dt>Lean status</dt>
-                <dd>`lake build` passed for this snapshot; see local status notes and Status page.</dd>
+                <dd>No new Lean theorem is added here; status badges cite the proof-obligation and theorem-index snapshot.</dd>
               </dl>
             </div>
             <div class="boundary-note">
               <h2>Boundary note</h2>
               <p>
-                A local contract can be sound without proving global
-                decomposability. Static flatness also does not provide runtime
-                or semantic flatness without separate evidence.
+                SOLID-style local contracts are local contract-layer packages.
+                They do not by themselves prove global decomposability,
+                acyclicity, runtime protection, or semantic flatness.
               </p>
             </div>
           </aside>
 
           <div class="article-main">
+            <section id="reading-model" class="article-section">
+              <h2>Reading model</h2>
+              <div class="reader-model">
+                <div>
+                  <h3>AAT does not say</h3>
+                  <p>
+                    "SOLID proves the architecture is clean." A local contract
+                    law is not a global layering theorem, a runtime telemetry
+                    completeness theorem, or a semantic equivalence theorem for
+                    all possible clients.
+                  </p>
+                </div>
+                <div>
+                  <h3>AAT says</h3>
+                  <p>
+                    Under this selected projection, observation, client
+                    context universe, measurement boundary, and proof-carrying
+                    contract, these local projection, LSP, and DIP obligations
+                    hold. Stronger claims need their own theorem boundary.
+                  </p>
+                </div>
+              </div>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>projection</dt>
+                  <dd>A map from concrete components or dependencies into a selected abstract graph.</dd>
+                </div>
+                <div>
+                  <dt>observation</dt>
+                  <dd>The selected output, behavior, trace, or diagnostic read from a concrete implementation.</dd>
+                </div>
+                <div>
+                  <dt>local contract</dt>
+                  <dd>A proof-carrying package that preserves selected local invariants such as projection soundness, LSP compatibility, and DIP compatibility.</dd>
+                </div>
+                <div>
+                  <dt>non-conclusion</dt>
+                  <dd>The global property that remains outside the theorem, even when the local package is proved.</dd>
+                </div>
+              </dl>
+            </section>
+
             <section id="projection-observation" class="article-section">
               <h2>Projection and observation</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> A projection says which
+                concrete things count as the same abstraction. An observation
+                says which selected behavior is visible for the claim.
+              </p>
               <p>
-                A projection maps concrete structure to abstract structure. An
-                observation maps concrete structure or operation results to
-                selected observations. They are related by the claim that equal
-                abstractions should have equivalent observations in the selected
-                context.
+                Local law packages become theorem-grade only after the
+                projection, observation, equality, and selected context universe
+                have been named. The schematic kernel inclusion below is useful
+                only relative to that boundary.
               </p>
               <figure class="code-panel">
-                <figcaption>Kernel inclusion</figcaption>
+                <figcaption>Projection / observation kernel</figcaption>
                 <pre><code>F : Concrete -&gt; Abstract
 Obs : Concrete -&gt; Observation
 
@@ -125,105 +204,314 @@ F(x) = F(y) -&gt; Obs(x) ~= Obs(y)
 
 ker(F) &lt;= ker(Obs)</code></pre>
               </figure>
+              <p id="definition-7-1" class="statement">
+                <a class="statement-anchor" href="#definition-7-1">Definition 7.1.</a>
+                A local projection-observation boundary consists of an
+                <code>InterfaceProjection</code>, an <code>Observation</code>,
+                an observation equivalence relation, and a selected universe of
+                concrete objects or client contexts to which the claim is
+                allowed to apply.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 7.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>InterfaceProjection</code>, <code>Observation</code>, <code>ObservationallyEquivalent</code>, <code>lspCandidatePairs</code>, and <code>ComponentUniverse</code>. Source: Chapter 7 and the Projection / Observation entries in the Lean theorem index.</span>
+              </p>
+              <p id="proposition-7-2" class="statement">
+                <a class="statement-anchor" href="#proposition-7-2">Proposition 7.2.</a>
+                If a selected observation factors through the selected
+                projection, then same-abstraction pairs have equivalent
+                selected observations. In finite measured universes, this
+                supports zero LSP violation-count bridges under the stated
+                closure assumptions.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 7.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>lspCompatible_of_observationFactorsThrough</code>, <code>lspViolationCount_eq_zero_of_observationFactorsThrough</code>, <code>mem_lspViolationPairs_iff</code>, and <code>lspCompatible_of_lspViolationCount_eq_zero</code>.</span>
+              </p>
+              <p id="proof-7-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-7-2">Proof idea.</a>
+                Observation factorization means the observation is determined
+                by the abstract representative. Two concrete implementations in
+                the same abstract fiber therefore receive the same selected
+                observation. The finite violation-count bridge adds the
+                explicit measurement-universe closure premise needed to read
+                zero counted violations as graph-level LSP compatibility.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Projection / observation claim</span>
+                      <h3>Kernel inclusion is local to a selected observation model</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved bridge</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Selected projection, selected observation, same-abstraction pair coverage, observation equivalence, and finite measurement closure where counts are used.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The result is about selected observations in the named universe, not every possible client, effect, or runtime trace.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>It does not prove global decomposability, projection completeness, semantic completeness, or runtime flatness.</dd>
+                    </div>
+                    <div>
+                      <dt>Docs source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/mathematical_theory.md#L347">AAT Chapter 7</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#observation--lsp">Observation / LSP index</a>.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
-            <section id="projection-theorem" class="article-section">
-              <h2>Projection theorem schema</h2>
-              <p>
-                Projection claims become architecture claims only after the
-                strength of the projection is stated. Soundness, completeness,
-                exactness, and representative stability support different
+            <section id="projection-dip" class="article-section">
+              <h2>Projection and DIP</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> DIP is not one theorem
+                strength. Sound projection, complete projection, exact
+                projection, and representative stability license different
                 conclusions.
               </p>
               <figure class="code-panel">
-                <figcaption>Projection bridge</figcaption>
-                <pre><code>ProjectionSound F
-  -&gt; concrete dependency evidence is represented abstractly
-
-ProjectionComplete F
-  -&gt; abstract dependency evidence has concrete representatives
-
-ProjectionExact F + RepresentativeStable F
-  -&gt; quotient-style or replacement-style readings may be stated</code></pre>
+                <figcaption>Strength ladder</figcaption>
+                <pre><code>ProjectionSound
+  does not imply
+ProjectionComplete
+  does not imply
+ProjectionExact + RepresentativeStable</code></pre>
               </figure>
+              <p id="definition-7-3" class="statement">
+                <a class="statement-anchor" href="#definition-7-3">Definition 7.3.</a>
+                <code>ProjectionSound</code> states that concrete dependency
+                evidence is represented in the abstract graph.
+                <code>ProjectionComplete</code> states that abstract edges have
+                concrete representatives. <code>ProjectionExact</code> bundles
+                soundness and completeness. <code>RepresentativeStable</code>
+                states the stability needed for quotient-style readings.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 7.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>ProjectionSound</code>, <code>ProjectionComplete</code>, <code>ProjectionExact</code>, <code>RepresentativeStable</code>, <code>DIPCompatible</code>, and <code>StrongDIPCompatible</code>.</span>
+              </p>
+              <p id="proposition-7-4" class="statement">
+                <a class="statement-anchor" href="#proposition-7-4">Proposition 7.4.</a>
+                Exact projection together with representative stability yields
+                strong DIP compatibility; strong DIP compatibility exposes
+                exact projection, representative stability, quotient
+                well-definedness, and ordinary DIP compatibility.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 7.4">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>strongDIPCompatible_of_projectionExact_representativeStable</code>, <code>projectionExact_of_strongDIPCompatible</code>, <code>representativeStable_of_strongDIPCompatible</code>, <code>quotientWellDefined_of_strongDIPCompatible</code>, and <code>dipCompatible_of_strongDIPCompatible</code>.</span>
+              </p>
+              <p id="proof-7-4" class="statement-proof">
+                <a class="statement-anchor" href="#proof-7-4">Proof idea.</a>
+                Lean keeps the strength assumptions as separate fields and
+                proves accessor theorems from the bundled strong-DIP package.
+                The accessors prevent a soundness-only projection from being
+                silently read as an exact quotient or as an exhaustive
+                abstraction.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">DIP claim</span>
+                      <h3>Projection strength determines the licensed abstraction reading</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved bridge</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Concrete graph, interface projection, abstract graph, exactness or soundness premise, and representative-stability premise where quotient readings are used.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The claim is dependency-projection local; it says what the selected abstraction graph represents.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>It does not say the abstract graph is acyclic, layered, complete for runtime dependencies, or semantically complete.</dd>
+                    </div>
+                    <div>
+                      <dt>Docs source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#projection--dip">Projection / DIP index</a> and the Chapter 7 proof-obligation ledger.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+
+            <section id="observation-lsp" class="article-section">
+              <h2>Observation and LSP</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> LSP compatibility is selected
+                substitutability: it is stated for named abstractions,
+                observations, equivalences, and client contexts.
+              </p>
               <p>
-                For LSP-style claims, the same discipline appears as selected
-                client contexts and selected observations. Equal abstractions
-                must preserve observations only for the contexts and
-                equivalence relation named in the theorem boundary.
+                AAT reads LSP-style claims through observation. Two concrete
+                implementations may be substitutable for checkout totals,
+                rounding traces, and selected errors without being
+                substitutable for every client, timing property, or hidden
+                effect.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Selected client contexts</figcaption>
+                <pre><code>for all client context C in selected context universe:
+  F(x) = F(y)
+    -&gt; Obs(C[x]) ~= Obs(C[y])</code></pre>
+              </figure>
+              <p id="definition-7-5" class="statement">
+                <a class="statement-anchor" href="#definition-7-5">Definition 7.5.</a>
+                <code>LSPCompatible</code> is the selected observation
+                compatibility predicate for implementations in the same
+                abstract fiber. Its finite measurement form counts selected
+                same-abstraction pairs whose observations diverge.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 7.5">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>LSPCompatibleAt</code>, <code>LSPCompatible</code>, <code>LSPObstruction</code>, <code>lspViolationPairs</code>, and <code>lspViolationCount</code>.</span>
+              </p>
+              <p id="proposition-7-6" class="statement">
+                <a class="statement-anchor" href="#proposition-7-6">Proposition 7.6.</a>
+                In the current finite theorem package, LSP compatibility is
+                equivalent to absence of selected LSP obstruction witnesses;
+                when the finite measurement universe closes the relevant
+                same-abstraction pairs, zero violation count yields
+                <code>LSPCompatible</code>.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 7.6">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>lspCompatible_iff_noLSPObstruction</code>, <code>lspViolationCount_eq_zero_of_lspCompatible</code>, <code>lspViolationCount_eq_zero_of_observationFactorsThrough</code>, and <code>lspCompatible_of_lspViolationCount_eq_zero</code>.</span>
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">LSP claim</span>
+                      <h3>Violation counts are theorem claims only inside the measured universe</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved bridge</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Selected finite universe, pair coverage for same-abstraction candidates, observation equivalence, and decidable observation comparisons.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The count is about selected pairs and selected observations. Unmeasured clients remain outside the claim.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No claim follows about all behavioral semantics, all effects, all clients, or every runtime dependency.</dd>
+                    </div>
+                    <div>
+                      <dt>Docs source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/proof_obligations.md#L177">Observation / LSP bridge ledger</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#observation--lsp">Lean index</a>.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+
+            <section id="local-contract-packages" class="article-section">
+              <h2>Local contract packages</h2>
+              <p>
+                SOLID-style laws are useful because they are local enough to
+                state with explicit theorem boundaries. In AAT, local contract
+                replacement packages preserve selected projection soundness,
+                LSP compatibility, and DIP compatibility. The package also
+                records the global layering claim that it does not prove.
+              </p>
+              <p id="proposition-7-7" class="statement">
+                <a class="statement-anchor" href="#proposition-7-7">Proposition 7.7.</a>
+                A proof-carrying <code>LocalReplacementContract</code> gives
+                the target state projection soundness, LSP compatibility, and
+                DIP compatibility selected by the local contract invariant
+                family. As a <code>DesignPattern</code>, the local contract
+                package records that unconditional <code>Decomposable</code>
+                or <code>StrictLayered</code> does not follow.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 7.7">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>projectionSound_of_localReplacementContract</code>, <code>localReplacementOperation_preserves_lspCompatible</code>, <code>localReplacementOperation_preserves_dipCompatible</code>, <code>localContractDesignPattern_closure_law</code>, and <code>localContractDesignPattern_records_nonConclusion</code>.</span>
+              </p>
+              <p id="proof-7-7" class="statement-proof">
+                <a class="statement-anchor" href="#proof-7-7">Proof idea.</a>
+                The local replacement operation carries the target-side
+                contract as evidence. Lean extracts the selected invariants
+                from that evidence, then places the operation family and
+                invariant family into the general <code>DesignPattern</code>
+                closure schema. The non-conclusion is a field of the pattern,
+                so the global layering boundary travels with the package.
               </p>
               <div class="article-table">
                 <table>
                   <thead>
                     <tr>
-                      <th>Claim</th>
-                      <th>Current Lean status</th>
+                      <th>Principle reading</th>
+                      <th>Status</th>
+                      <th>Assumptions</th>
                       <th>Boundary</th>
                       <th>Non-conclusion</th>
-                      <th>Source</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>Projection / DIP soundness bridge</td>
-                      <td>`proved` for soundness bridges</td>
-                      <td>Concrete dependency evidence and selected abstract graph.</td>
-                      <td>Soundness alone does not imply completeness, exactness, or global layering.</td>
-                      <td>Lean theorem index, projection / DIP entries.</td>
+                      <td>LSP</td>
+                      <td><code>proved</code> for selected observation bridges</td>
+                      <td>Selected abstraction fiber, client contexts, observation equivalence, and finite pair coverage when measured.</td>
+                      <td>Local substitutability for the named observation universe.</td>
+                      <td>Not all behavioral semantics or all clients.</td>
                     </tr>
                     <tr>
-                      <td>Observation / LSP violation-count bridge</td>
-                      <td>`proved` for finite selected observations</td>
-                      <td>Selected client-context universe and observation equivalence.</td>
-                      <td>Does not prove substitutability for all possible clients or effects.</td>
-                      <td>Lean theorem index, observation / LSP entries.</td>
+                      <td>DIP</td>
+                      <td><code>proved</code> for projection / local contract bridges</td>
+                      <td>Selected concrete graph, interface projection, abstract graph, and representative stability where strong readings are used.</td>
+                      <td>Local dependency abstraction soundness or exactness.</td>
+                      <td>Not global acyclicity, layering, or runtime dependency completeness.</td>
                     </tr>
                     <tr>
-                      <td>Three-layer flatness connection</td>
-                      <td>`future proof obligation` unless a theorem boundary connects layers</td>
-                      <td>Static, runtime, and semantic evidence packages must be named separately.</td>
-                      <td>Static flatness does not imply runtime or semantic flatness.</td>
-                      <td>AAT mathematical theory, Chapters 7-8.</td>
+                      <td>SOLID as a family</td>
+                      <td><code>defined only</code> / <code>proved</code> for bounded representative packages</td>
+                      <td>Each principle is read through its selected local invariant family.</td>
+                      <td>Local contract layer; other design layers require separate packages.</td>
+                      <td>SOLID is not a universal architecture theorem.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-            </section>
-
-            <section id="lsp-dip" class="article-section">
-              <h2>LSP and DIP</h2>
-              <p>
-                LSP-style substitutability is read through a selected client
-                context universe. DIP and Clean Architecture style abstraction
-                soundness are read as concrete dependencies mapping soundly to
-                abstract dependencies, with stronger claims requiring
-                completeness, exactness, and representative stability.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>ProjectionSound</strong>
-                  <span>Concrete dependency evidence is represented in the abstract graph.</span>
-                </li>
-                <li>
-                  <strong>ProjectionComplete</strong>
-                  <span>Abstract dependencies have concrete representatives under stated assumptions.</span>
-                </li>
-                <li>
-                  <strong>RepresentativeStable</strong>
-                  <span>Chosen representatives remain stable for the claim being made.</span>
-                </li>
-              </ul>
+              <div class="claim-strip">
+                <p>
+                  SOLID belongs to the local contract layer in this taxonomy;
+                  Layered and Clean Architecture are global structural layers,
+                  state-transition patterns are algebraic layers, and runtime
+                  protection or distributed convergence require their own
+                  evidence.
+                </p>
+              </div>
             </section>
 
             <section id="three-layer-flatness" class="article-section">
               <h2>Three-layer flatness</h2>
-              <p>
-                AAT separates static flatness, runtime flatness, and semantic
-                flatness. Static flatness handles dependency direction,
-                boundary, and abstraction violations. Runtime flatness handles
-                protection, propagation, and exposure. Semantic flatness handles
-                observation-level commutativity, diagram filling, and contract
-                preservation.
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> Static flatness, runtime
+                flatness, and semantic flatness are different axes. A static
+                split is not a proof of runtime or semantic flatness.
               </p>
               <figure class="code-panel">
                 <figcaption>Bounded flatness</figcaption>
@@ -234,108 +522,184 @@ ProjectionExact F + RepresentativeStable F
   + no unmeasured required axis
   + coverage / exactness boundary</code></pre>
               </figure>
+              <p id="definition-8-1" class="statement">
+                <a class="statement-anchor" href="#definition-8-1">Definition 8.1.</a>
+                <code>ArchitectureFlatWithin</code> is the bounded,
+                coverage-aware flatness predicate that bundles selected static,
+                runtime, and semantic flatness with required-axis coverage and
+                exactness boundaries.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Definition 8.1">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-defined">defined only</span>
+                <span>Anchored by <code>ArchitectureFlatnessModel</code>, <code>StaticFlatWithin</code>, <code>RuntimeFlatWithin</code>, <code>SemanticFlatWithin</code>, <code>NoUnmeasuredRequiredAxis</code>, and <code>ArchitectureFlatWithin</code>.</span>
+              </p>
+              <p id="proposition-8-2" class="statement">
+                <a class="statement-anchor" href="#proposition-8-2">Proposition 8.2.</a>
+                A lawful split-feature or extension package yields bounded
+                <code>ArchitectureFlatWithin</code> only when extension
+                coverage, static side conditions, runtime coverage / flatness,
+                semantic coverage / flatness, and recorded non-conclusions are
+                supplied.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Proposition 8.2">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved anchors</span>
+                <span>See <code>LawfulExtensionPreservesFlatness</code>, <code>LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation</code>, <code>architectureFlatWithin_of_splitFeatureExtensionWithin</code>, and <code>splitFeatureExtensionWithin_recordsNonConclusions</code>.</span>
+              </p>
+              <p id="non-conclusion-8-3" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-8-3">Non-conclusion 8.3.</a>
+                Static split, static flatness, projection soundness, or local
+                contract compatibility does not by itself imply runtime
+                flatness, semantic flatness, global <code>ArchitectureFlat</code>,
+                extractor completeness, telemetry completeness, or semantic
+                universe completeness.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Non-conclusion 8.3">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved / recorded boundary</span>
+                <span>Anchored by <code>SplitFeatureExtensionWithinNonConclusions</code>, <code>splitFeatureExtensionWithin_recordsNonConclusions</code>, <code>GlobalFlatCertificate.nonConclusions_recorded</code>, and the static / semantic counterexample package.</span>
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Flatness claim</span>
+                      <h3>Flatness is a three-axis theorem package, not a static split slogan</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved bridge</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd>Static lawfulness, runtime coverage and protection, semantic coverage and commutation, no unmeasured required axis, and explicit non-conclusions.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The conclusion is bounded <code>ArchitectureFlatWithin</code> unless exhaustive coverage and exact observation promote it through a separate certificate.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No runtime telemetry completeness, global semantic completeness, extractor completeness, or automatic global flatness follows.</dd>
+                    </div>
+                    <div>
+                      <dt>Docs source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/mathematical_theory.md#L398">AAT Chapter 8</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#flatness">Flatness theorem index</a>.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
             </section>
 
-            <section id="assumption-strength" class="article-section">
-              <h2>Assumption strength</h2>
-              <p>
-                Projection claims come in different strengths. `ProjectionSound`
-                says concrete dependency evidence is represented abstractly.
-                `ProjectionComplete` says abstract dependencies have concrete
-                representatives. `ProjectionExact` and
-                `RepresentativeStable` add stronger assumptions needed for
-                quotient-style or replacement-style readings.
+            <section id="example-counterexample" class="article-section">
+              <h2>Example and counterexample</h2>
+              <p id="example-8-4" class="statement">
+                <a class="statement-anchor" href="#example-8-4">Example 8.4.</a>
+                In a coupon extension, replacing a discount implementation can
+                be LSP-sound for selected checkout clients when observed totals,
+                rounding traces, and selected error behavior remain equivalent.
+                That local theorem still needs separate static, runtime, and
+                semantic packages before it can be read as bounded flatness.
               </p>
-              <p>
-                The page therefore separates local abstraction soundness from
-                global layering. A DIP-style statement may be true because
-                concrete calls depend on declared interfaces, while the
-                interface layer itself still contains a cycle or a semantic
-                mismatch outside the local contract.
+              <p class="statement-status" aria-label="Lean status for Example 8.4">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved representative package</span>
+                <span>Related anchors include the coupon / discount semantic examples, <code>ThreeLayerFlatnessPositiveExample.architectureFlatWithin</code>, <code>ThreeLayerFlatnessPositiveExample.noUnmeasuredRequiredAxis</code>, and <code>ThreeLayerFlatnessPositiveExample.recordsNonConclusions</code>.</span>
               </p>
-              <figure class="code-panel">
-                <figcaption>Strength ladder</figcaption>
-                <pre><code>ProjectionSound
-  does not imply
-ProjectionComplete
-  does not imply
-ProjectionExact + RepresentativeStable</code></pre>
-              </figure>
+              <p id="counterexample-8-5" class="statement">
+                <a class="statement-anchor" href="#counterexample-8-5">Counterexample 8.5.</a>
+                A package can satisfy strong DIP-style projection conditions
+                and selected LSP compatibility while the abstract graph remains
+                cyclic and therefore not <code>Decomposable</code>. This is
+                the precise failure mode that prevents SOLID from being treated
+                as a universal architecture theorem.
+              </p>
+              <p class="statement-status" aria-label="Lean status for Counterexample 8.5">
+                <span class="statement-status-label">Lean status</span>
+                <span class="status-badge status-badge-proved">proved counterexample</span>
+                <span>Anchored by <code>StrongAbstractCycleComponent.strongDIPCompatible</code>, <code>StrongAbstractCycleComponent.lspCompatible</code>, <code>StrongAbstractCycleComponent.abstractGraph_not_decomposable</code>, and <code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code>.</span>
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Scenario</th>
+                      <th>What is proved or measured</th>
+                      <th>What remains outside</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Coupon replacement</td>
+                      <td>Selected checkout observations can remain equivalent under the named client-context universe.</td>
+                      <td>Background jobs, caches, callbacks, hidden runtime dependencies, and unmeasured semantic diagrams.</td>
+                    </tr>
+                    <tr>
+                      <td>Strong abstract cycle</td>
+                      <td>Projection exactness, representative stability, strong DIP compatibility, and LSP compatibility can hold.</td>
+                      <td>Global decomposability and abstract-layer acyclicity.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
-            <section id="non-implication-map" class="article-section">
-              <h2>Non-implication map</h2>
+            <section id="status-index" class="article-section">
+              <h2>Formal anchors</h2>
               <p>
-                Local law packages are useful because they make a precise claim
-                small enough to prove. They are dangerous only when their
-                conclusion is promoted into a different invariant family without
-                a bridge theorem.
+                This page adds no theorem. It repackages the current
+                proof-obligation and theorem-index entries as a web-native
+                chapter with citable statements and nearby non-conclusions.
               </p>
-              <figure class="code-panel">
-                <figcaption>Separate invariant families</figcaption>
-                <pre><code>LSP-compatible selected contexts
-  does not imply
-global decomposability
-
-DIP-compatible dependency direction
-  does not imply
-abstract layer acyclicity
-
-StaticFlatWithin X U
-  does not imply
-RuntimeFlatWithin X or SemanticFlatWithin X</code></pre>
-              </figure>
-              <p>
-                AAT keeps these failures as theory content. The point is not to
-                weaken design principles, but to place each principle in the
-                invariant family where it can be stated and checked correctly.
-              </p>
-            </section>
-
-            <section id="contract-example" class="article-section">
-              <h2>Contract example</h2>
-              <p>
-                In a coupon extension, replacing a discount implementation by
-                another implementation can be LSP-sound for selected checkout
-                clients if the observed totals, rounding trace, and error
-                behavior remain equivalent. That does not prove that the
-                coupon service respects a global dependency ranking, nor that
-                background jobs, caches, or payment callbacks preserve the same
-                observations.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Client context universe</strong>
-                  <span>The selected callers and call shapes for which substitutability is checked.</span>
-                </li>
-                <li>
-                  <strong>Observation equivalence</strong>
-                  <span>The chosen equality or tolerance on visible behavior.</span>
-                </li>
-                <li>
-                  <strong>Missing layer claim</strong>
-                  <span>Runtime and semantic flatness require separate evidence packages.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="lean-status" class="article-section">
-              <h2>Lean status</h2>
-              <p>
-                Projection / DIP bridges and finite observation / LSP
-                violation-count bridges are tracked as Lean APIs and theorem
-                packages. Three-layer flatness is a boundary discipline: static
-                flatness, runtime flatness, and semantic flatness remain
-                separate claims unless a theorem boundary explicitly connects
-                them.
-              </p>
-              <div class="claim-strip">
-                <p>
-                  Soundness-only projection is enough for some local readings,
-                  but exactness, completeness, and representative stability are
-                  separate assumptions and should not be inferred from the
-                  word "projection" alone.
-                </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Claim</th>
+                      <th>Lean anchor and status</th>
+                      <th>Assumptions</th>
+                      <th>Boundary</th>
+                      <th>Non-conclusion</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Projection / DIP bridge</td>
+                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#projection--dip"><code>ProjectionSound</code>, <code>ProjectionExact</code>, <code>StrongDIPCompatible</code>; <code>proved</code> bridge theorems</a></td>
+                      <td>Concrete graph, projection, abstract graph, exactness or soundness, and representative stability where needed.</td>
+                      <td>Selected dependency abstraction.</td>
+                      <td>No global layering or runtime completeness.</td>
+                    </tr>
+                    <tr>
+                      <td>Observation / LSP bridge</td>
+                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#observation--lsp"><code>LSPCompatible</code>, <code>lspCompatible_iff_noLSPObstruction</code>; <code>proved</code> finite bridges</a></td>
+                      <td>Selected observation, equivalence, finite same-abstraction pair coverage, and decidable observations.</td>
+                      <td>Selected client-context universe.</td>
+                      <td>No all-client or all-effect substitutability.</td>
+                    </tr>
+                    <tr>
+                      <td>Local contract design pattern</td>
+                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#L871"><code>LocalContractInvariant</code>, <code>localContractDesignPattern</code>; <code>defined only</code> / <code>proved</code></a></td>
+                      <td>Proof-carrying local replacement contract and selected invariant family.</td>
+                      <td>Local contract layer.</td>
+                      <td>No unconditional <code>Decomposable</code> or <code>StrictLayered</code>.</td>
+                    </tr>
+                    <tr>
+                      <td>Three-layer flatness</td>
+                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#flatness"><code>ArchitectureFlatWithin</code>, <code>LawfulExtensionPreservesFlatness</code>; <code>defined only</code> / <code>proved</code></a></td>
+                      <td>Static, runtime, and semantic evidence plus coverage and exactness boundaries.</td>
+                      <td>Bounded flatness within selected universes.</td>
+                      <td>No automatic global <code>ArchitectureFlat</code>, extractor completeness, or telemetry completeness.</td>
+                    </tr>
+                    <tr>
+                      <td>SOLID-style counterexamples</td>
+                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#solid-counterexamples"><code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code>; <code>proved</code></a></td>
+                      <td>Strong projection and selected observation package over a cyclic abstract graph.</td>
+                      <td>Counterexample to promoting local contracts into global decomposability.</td>
+                      <td>SOLID is not a universal global structure theorem.</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
 
