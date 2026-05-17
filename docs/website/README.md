@@ -25,6 +25,8 @@
 - 日本語の説明は Qiita、Zenn、Hashnode などの outreach article として扱い、必要に応じて canonical English pages へ戻す。
 - AAT / SFT の公開ページは宣伝文ではなく、web-native preprint / monograph として、定義、前提、定理境界、例、反例、Lean status、non-conclusion を保つ。
 - ArchSig ページでは Core、Review、SFT、Operational の product surface と、research gap / calibration gap / adapter boundary を分けて書く。
+- repository、docs、Lean status、Issue、claim boundary への言及は、公開コピーへそのまま出すための素材ではない。これらは編集時の制約として扱い、本文では読者にとって自然な研究内容、読書導線、概念説明へ翻訳する。
+- landing page や section copy では、内部の根拠管理、進捗管理、運用方針を説明しない。公開本文は「何を読めるか」「何を理解できるか」「どの概念へ進むか」を中心に書く。
 
 ## 公開設定
 

@@ -107,6 +107,8 @@
 - `website` は GitHub Pages 向けの公開読書面であり、`docs` の研究・実装管理文書とは責務を分ける。
 - AAT / SFT の canonical page は宣伝文ではなく、web-native preprint / monograph として、定義・仮定・定理境界・例・反例・Lean status・non-conclusion を保つ。
 - website の説明は `docs/aat/mathematical_theory.md`, `docs/sft/software_field_theory.md`, `docs/sft/aat_interface.md`, `docs/tool` の claim boundary から逸脱しない。
+- claim boundary、Lean status、Issue 管理、repository / docs の責務分離は編集時の制約として扱い、公開コピーにそのまま出さない。読者向け本文では「何を読めるか」「何を理解できるか」「どの概念へ進むか」に翻訳する。
+- 公開ページで repository、docs、Lean status、Issue、内部運用方針に触れるのは、読者の理解や検証に必要な場合に限る。landing page や section copy では、内部の根拠管理・進捗管理を説明文として書かない。
 - public release で docs や Lean status にリンクする場合は、可能な限り commit-pinned GitHub URL を使い、`blob/main` による silent drift を避ける。
 - ArchSig website では Core, Review, SFT, Operational の product surface と、research gap / calibration gap / adapter boundary を分けて書く。
 - 現在の website は no-build static stack として扱う。重い frontend framework は、静的 HTML / CSS / 小さな JavaScript では足りない明確な理由がある場合だけ導入する。
