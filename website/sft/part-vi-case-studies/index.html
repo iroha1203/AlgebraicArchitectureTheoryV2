@@ -108,9 +108,39 @@
             <section id="coupon-prd" class="article-section">
               <h2>Coupon PRD</h2>
               <p>
-                The coupon PRD is the running example. It targets checkout and
-                payment as a feature addition artifact action, but an
-                underspecified PRD can expose several operation families.
+                The coupon PRD is the running example because it looks small
+                while touching requirements, checkout policy, payment
+                authorization, refund behavior, review ownership, and field
+                memory. SFT reads it as a bounded artifact action, then carries
+                the same evidence through descriptor, support estimate, cone
+                skeleton, envelope, review intervention, observed outcome, and
+                field update records.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Concrete PRD input</figcaption>
+                <pre><code>Coupon PRD draft
+  "Customers can enter one coupon during checkout.
+   The discount is applied before payment.
+   The receipt should show the coupon code and discounted total."
+
+Available refs
+  checkout flow doc
+  payment authorization interface
+  refund handler notes
+
+Missing from input
+  rounding order
+  discount composition law
+  coupon ownership boundary
+  payment authorization boundary
+  refund / cancellation semantics</code></pre>
+              </figure>
+              <p>
+                The <a href="../part-v-computing-systems/#simulator">Part V
+                simulator contract</a> names the same artifact stages from the
+                tooling side. This case keeps the narrative side visible while
+                preserving the same non-conclusions: it is not a PR predictor,
+                extractor-completeness claim, or market-success claim.
               </p>
               <figure class="code-panel">
                 <figcaption>ConsequenceEnvelope path classes</figcaption>
@@ -128,11 +158,14 @@
               </p>
               <figure class="code-panel">
                 <figcaption>Coupon PRD descriptor</figcaption>
-                <pre><code>RawArtifactAction
+                <pre><code>ArtifactDescriptor
   source artifact = PRD
+  action class = feature addition
   target field components = requirements, constraints, operation support
   target architecture regions = Checkout / Payment
   action boundary = coupon feature addition only
+  source refs = checkout doc, payment interface, refund notes
+  missing evidence = rounding, composition, ownership, refund semantics
   non-conclusions = pricing strategy, marketing success, fraud model</code></pre>
               </figure>
               <ul class="term-list">
@@ -147,55 +180,156 @@
               </ul>
               <figure class="code-panel">
                 <figcaption>Coupon PRD worked example flow</figcaption>
-                <pre><code>RawArtifactAction
+                <pre><code>PRD input
   -> ArtifactDescriptor
-  -> ForceDescriptor candidates
   -> OperationSupportEstimate
   -> ForecastConeSkeleton path classes
   -> ConsequenceEnvelope
-  -> review / CI / issue decomposition recommendation
-  -> observed outcome
+  -> review intervention
+  -> observed update
   -> FieldUpdate</code></pre>
               </figure>
-              <div class="article-table">
-                <table>
-                  <caption>Coupon PRD from artifact action to field update</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">Step</th>
-                      <th scope="col">Reading</th>
-                      <th scope="col">Boundary preserved</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th scope="row"><code>RawArtifactAction</code></th>
-                      <td>Coupon feature addition targets Checkout / Payment requirements and operation support.</td>
-                      <td>No pricing strategy, marketing success, or fraud model conclusion.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row"><code>ForceDescriptor</code></th>
-                      <td>Candidate forces include DiscountPolicy insertion, PaymentAdapter patching, repository dependency, and UI-only flag paths.</td>
-                      <td>These are candidates under selected text, not an exhaustive repository extraction.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row"><code>OperationSupportEstimate</code></th>
-                      <td>Lawful policy insertion can become cheaper when rounding, composition, authorization, and refund semantics are explicit.</td>
-                      <td>Support estimates do not imply accepted PR history or future implementation choices.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row"><code>ConsequenceEnvelope</code></th>
-                      <td>Path classes expose hidden dependency, rounding obstruction, UI drift, and unknown remainder risks.</td>
-                      <td>The envelope is not a causal proof or a single forecast.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row"><code>FieldUpdate</code></th>
-                      <td>Observed PR, review, CI, or incident outcome can revise missing invariant and support records.</td>
-                      <td>Update quality depends on observed evidence and calibration, not on the case narrative alone.</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="comparison-cards">
+                <article class="comparison-card">
+                  <h3>1. <code>ArtifactDescriptor</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Reading</dt>
+                      <dd>Coupon feature addition targets Checkout / Payment requirements, constraints, and operation support.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Action class, target regions, source refs, missing evidence, and explicit non-conclusions.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Not a ground-truth architecture object and not an exhaustive repository extraction.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>2. <code>OperationSupportEstimate</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Reading</dt>
+                      <dd>Candidate operation families include lawful DiscountPolicy insertion, PaymentAdapter patching, repository dependency, and UI-only flag paths.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Allowed support, known forbidden support, likely shortcut support, and unknown remainder.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Does not imply accepted PR history, future implementation choice, or real team preference.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>3. <code>ForecastConeSkeleton</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Reading</dt>
+                      <dd>A bounded horizon enumerates path classes reachable under selected support and policy constraints.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Lawful insertion, hidden dependency, rounding obstruction, UI drift, and unknown remainder classes.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Not a probability distribution, point prediction, or global future trajectory safety theorem.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>4. <code>ConsequenceEnvelope</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Reading</dt>
+                      <dd>The cone skeleton is projected into affected axes, obstruction witnesses, missing boundaries, and review prompts.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Reviewer-facing report for checkout semantics, payment boundary, refund behavior, CI checks, and issue splits.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Not a causal proof, Lean theorem witness, forecast correctness certificate, or complete tool extraction.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>5. Review intervention</h3>
+                  <dl>
+                    <div>
+                      <dt>Reading</dt>
+                      <dd>Human review uses the envelope to request spec tightening before implementation locks in a shortcut path.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Require rounding-order text, DiscountPolicy owner, payment authorization boundary, refund tests, and coupon issue decomposition.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Recommendation quality depends on the chosen field model and supplied refs; it is not automatic governance correctness.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>6. Observed update</h3>
+                  <dl>
+                    <div>
+                      <dt>Reading</dt>
+                      <dd>The later PR, review thread, CI result, or incident note supplies observed evidence against the earlier envelope.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Observed refs mark which warnings materialized, which were avoided by review, and which remained unmeasured.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Observation linkage is calibration input, not proof that the original envelope was correct.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>7. <code>FieldUpdate</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Reading</dt>
+                      <dd>Field memory records the new invariant text, support constraints, review outcome, and unresolved unknowns.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Updated evidence boundary for the next coupon-related artifact, not a blanket accuracy improvement theorem.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Lean record preservation keeps update fields coherent; it does not prove empirical prediction quality.</dd>
+                    </div>
+                  </dl>
+                </article>
               </div>
+              <figure class="code-panel">
+                <figcaption>Review intervention and feedback join</figcaption>
+                <pre><code>ConsequenceEnvelope recommendation
+  require rounding-order invariant
+  require DiscountPolicy ownership boundary
+  require payment authorization / refund tests
+  split UI copy from checkout policy implementation
+
+Observed update refs
+  PR review requested rounding invariant
+  CI added refund-after-coupon regression test
+  hidden PaymentAdapter dependency did not appear in selected PR
+  unknown remainder remains unmeasured
+
+FieldUpdate note
+  preserve descriptor refs
+  add observed refs
+  refresh missing-boundary list
+  do not assert forecast correctness</code></pre>
+              </figure>
               <div class="claim-strip">
                 <p>
                   A useful Coupon PRD report should recommend specification
