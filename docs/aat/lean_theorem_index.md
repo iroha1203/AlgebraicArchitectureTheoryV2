@@ -1917,6 +1917,45 @@ safety、empirical risk reduction、extractor completeness を結論すること
 | `GovernanceIntervention.instrumenting_records_observationEnrichment` | `theorem` | instrumenting intervention から observation enrichment boundary を取り出す。 | `proved` |
 | `GovernanceIntervention.policy_pass_does_not_discharge_lawfulness` | `theorem` | policy pass / governance non-conclusion boundary を accessor として公開する。 | `proved` |
 
+## SFT Reachability / Stable Region
+
+File: `Formal/Arch/Evolution/SFTReachability.lean`
+
+Issue [#914](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/914) では、
+SFT Part IV の set-valued reachability vocabulary として `MayReach`、`MustReach`、
+`StableRegion`、`ReachablePreimage` を `ForecastCone` core に接続した。
+`MayReach` / `MustReach` は selected support、selected step relation、finite horizon、
+selected region に相対化される。`StableRegion` は one-step closure predicate として扱い、
+finite `FieldPath` と `ForecastCone` endpoint への accessor theorem を持つ。これは strong
+attractor、global basin、probability、transition kernel、recurrence、convergence、
+calibrated future prediction、global safety、extractor completeness を結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `FieldRegion` | `abbrev` | selected field state region を表す predicate alias。 | `defined only` |
+| `MayReach` | `def` | selected `ForecastCone` endpoint が target region に入る existential reachability predicate。 | `defined only` |
+| `MustReach` | `def` | selected `ForecastCone` のすべての endpoint が target region に入る universal reachability predicate。 | `defined only` |
+| `StableRegion` | `def` | selected support と selected step relation に対する one-step closure predicate。 | `defined only` |
+| `ReachablePreimage` | `def` | target region への finite-horizon `MayReach` を source 側 predicate として読む vocabulary。 | `defined only` |
+| `SFTReachabilityBoundary` | `structure` | probability / attractor / basin / recurrence / non-conclusion boundary を reachability vocabulary と分離して保持する record。 | `defined only` |
+| `SFTReachabilityBoundary.RecordsProbabilityBoundary` | `def` | probability / transition-kernel boundary を predicate として取り出す。 | `defined only` |
+| `SFTReachabilityBoundary.RecordsAttractorBoundary` | `def` | strong attractor boundary を predicate として取り出す。 | `defined only` |
+| `SFTReachabilityBoundary.RecordsBasinBoundary` | `def` | strong basin boundary を predicate として取り出す。 | `defined only` |
+| `SFTReachabilityBoundary.RecordsRecurrenceBoundary` | `def` | recurrence assumptions boundary を predicate として取り出す。 | `defined only` |
+| `SFTReachabilityBoundary.RecordsNonConclusions` | `def` | reachability boundary と underlying support / relation の non-conclusions を組み合わせる。 | `defined only` |
+| `MayReach.of_forecastCone` | `theorem` | 明示的な `ForecastCone` witness と target-region membership から `MayReach` を構成する。 | `proved` |
+| `MayReach.nil` | `theorem` | source が target region に入るなら nil path により任意 horizon で `MayReach` する。 | `proved` |
+| `MayReach.witness` | `theorem` | `MayReach` から endpoint、field path、cone membership、target-region witness を取り出す。 | `proved` |
+| `MustReach.target` | `theorem` | `MustReach` を明示的な cone endpoint に適用して target-region membership を得る。 | `proved` |
+| `MustReach.source_mem` | `theorem` | nil path により `MustReach` region が source を含むことを取り出す。 | `proved` |
+| `MustReach.mayReach` | `theorem` | `MustReach` から nil witness による `MayReach` を得る。 | `proved` |
+| `StableRegion.supportedStep` | `theorem` | stable-region closure を `SupportedFieldStep` に適用する accessor theorem。 | `proved` |
+| `StableRegion.fieldPath_target` | `theorem` | stable region が support-witnessed finite `FieldPath` の endpoint まで保存されること。 | `proved` |
+| `StableRegion.forecastCone_target` | `theorem` | source が stable region に入るなら selected `ForecastCone` endpoint もその region に入ること。 | `proved` |
+| `StableRegion.mustReach` | `theorem` | stable-region closure と source membership から任意 finite horizon の `MustReach` を得る。 | `proved` |
+| `ReachablePreimage.iff_mayReach` | `theorem` | `ReachablePreimage` が source 側の `MayReach` predicate と同値であること。 | `proved` |
+| `ReachablePreimage.of_mem` | `theorem` | target region membership から reachable preimage membership を nil path で構成する。 | `proved` |
+
 ## SFT Support Safety
 
 File: `Formal/Arch/Evolution/SFTSupportSafety.lean`
