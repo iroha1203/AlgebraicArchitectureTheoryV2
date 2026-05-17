@@ -64,4 +64,5 @@ import Formal.Arch.Evolution.SFTReachability
 import Formal.Arch.Evolution.SFTFieldUpdate
 import Formal.Arch.Evolution.SFTEnvelope
 import Formal.Arch.Evolution.SFTInterfaceBoundary
+import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Evolution.SFTCounterexamples
