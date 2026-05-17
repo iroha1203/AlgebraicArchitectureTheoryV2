@@ -1,27 +1,232 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="SFT 2-8: support safety, step simulation, safe regions, and cone narrowing under selected boundaries.">
     <title>SFT 2-8: Support Safety and Cone Narrowing</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/computation/support-safety/">
-    <meta property="og:site_name" content="AAT / SFT Research Notes"><meta property="og:type" content="article"><meta property="og:title" content="SFT 2-8: Support Safety and Cone Narrowing"><meta property="og:description" content="Support inclusion, step simulation, safe regions, and cone narrowing without global safety claims."><meta property="og:url" content="https://iroha1203.dev/sft/computation/support-safety/"><meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
-    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="SFT 2-8: Support Safety and Cone Narrowing"><meta name="twitter:description" content="Selected support safety and bounded cone projection."><meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
-    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png"><link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png"><link rel="alternate" hreflang="en" href="./"><link rel="alternate" hreflang="x-default" href="./"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet"><link rel="stylesheet" href="../../../assets/site.css"><script defer src="../../../assets/site.js"></script>
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SFT 2-8: Support Safety and Cone Narrowing">
+<meta property="og:description" content="Support inclusion, step simulation, safe regions, and cone narrowing without global safety claims.">
+<meta property="og:url" content="https://iroha1203.dev/sft/computation/support-safety/">
+<meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SFT 2-8: Support Safety and Cone Narrowing">
+<meta name="twitter:description" content="Selected support safety and bounded cone projection.">
+<meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="alternate" hreflang="en" href="./">
+<link rel="alternate" hreflang="x-default" href="./">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script defer src="../../../assets/site.js">
+</script>
   </head>
-  <body><a class="skip-link" href="#main">Skip to content</a><header class="site-header" data-site-header><div class="site-shell header-inner"><a class="brand" href="../../../" aria-label="AAT SFT home"><img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true"><span class="brand-mark">AAT/SFT</span><span class="brand-text">Research Notes</span></a><nav class="site-nav" aria-label="Primary navigation"><a href="../../../">Home</a><a href="../../../aat/">AAT</a><a class="is-active" href="../../">SFT</a><a href="../../../archsig/">ArchSig</a><a href="../../../outreach/">Outreach</a></nav></div></header>
-    <main id="main"><section class="article-hero section-band"><div class="site-shell"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../../">Home</a><a href="../../">SFT</a><a href="../">Computation</a><span>Support Safety</span></nav><p class="eyebrow">SFT 2-8</p><h1>Support Safety and Cone Narrowing</h1><p class="lede">Support safety asks whether a selected support relation and step semantics keep reachable paths inside a selected safe region. Cone narrowing studies how added constraints reduce reachable futures under the chosen boundary.</p></div></section>
-    <section class="section-band"><div class="site-shell article-layout"><aside class="article-sidebar" aria-label="Local navigation"><nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#safety">Support safety</a></li><li><a href="#narrowing">Cone narrowing</a></li><li><a href="#boundary">Boundary</a></li></ol></nav><div class="source-panel" data-sidebar-open="true"><h2>Part 2 routes</h2><ul><li><a href="../../">SFT overview</a></li><li><a href="../../field/">Part 1. Field</a></li><li><a href="../">Part 2. Computation</a></li><li><a href="../computable-slice/">2-1. Computable Slice</a></li><li><a href="../aat-interface/">2-2. AAT / SFT Interface</a></li><li><a href="../observation/">2-3. Observation Layer</a></li><li><a href="../operation-support/">2-4. Operation Support</a></li><li><a href="../step-relation/">2-5. StepRelation</a></li><li><a href="../forecast-cone/">2-6. ForecastCone</a></li><li><a href="../consequence-envelope/">2-7. ConsequenceEnvelope</a></li><li><a href="./" aria-current="page">2-8. Support Safety</a></li><li><a href="../proposal-accounting/">2-9. Proposal Accounting</a></li><li><a href="../computational-problems/">2-10. Computational Problems</a></li><li><a href="../archsig-pipeline/">2-11. ArchSig-SFT Pipeline</a></li><li><a href="../simulator-calibration/">2-12. Simulator and Calibration</a></li><li><a href="../../intervention/">Part 3. Intervention</a></li></ul></div></aside>
-      <div class="article-main"><aside class="question-card" aria-label="Guiding question"><span class="question-card-label">Question</span><p>When does a policy actually narrow the future paths that matter?</p></aside>
-        <section id="safety" class="article-section"><h2>Support safety</h2><p>Support safety is relative to selected predicates. It may ask whether every supported step preserves a selected invariant, whether a script remains inside a safe region, or whether one support relation simulates another over the measured axes.</p><p id="definition-2-15" class="statement"><a class="statement-anchor" href="#definition-2-15">Definition 2.15.</a> Support safety is a boundary-relative claim that supported steps preserve a selected safe region or simulate a selected safer transition system.</p><p class="statement-status" aria-label="SFT status for Definition 2.15"><span class="statement-status-label">SFT status</span><span class="status-badge status-badge-future">formal target</span><span>Source: SFT sections 15 and 16; global safety is not claimed.</span></p></section>
-        <section id="narrowing" class="article-section"><h2>Cone narrowing</h2><p>If a policy removes unsafe support, adds missing witnesses, or makes bad shortcuts expensive, a selected cone projection may narrow. The word "selected" matters. A cone can narrow over measured axes while unmeasured axes remain unknown, and a safe projected cone need not imply global system safety.</p><figure class="code-panel"><figcaption>Selected narrowing</figcaption><pre><code>support inclusion
+  <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" data-site-header>
+<div class="site-shell header-inner">
+<a class="brand" href="../../../" aria-label="AAT SFT home">
+<img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+<span class="brand-mark">AAT/SFT</span>
+<span class="brand-text">Research Notes</span>
+</a>
+<nav class="site-nav" aria-label="Primary navigation">
+<a href="../../../">Home</a>
+<a href="../../../aat/">AAT</a>
+<a class="is-active" href="../../">SFT</a>
+<a href="../../../archsig/">ArchSig</a>
+<a href="../../../outreach/">Outreach</a>
+</nav>
+</div>
+</header>
+    <main id="main">
+<section class="article-hero section-band">
+<div class="site-shell">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+<a href="../../../">Home</a>
+<a href="../../">SFT</a>
+<a href="../">Computation</a>
+<span>Support Safety</span>
+</nav>
+<p class="eyebrow">SFT 2-8</p>
+<h1>Support Safety and Cone Narrowing</h1>
+<p class="lede">Support safety asks whether a selected support relation and step semantics keep reachable paths inside a selected safe region. Cone narrowing studies how added constraints reduce reachable futures under the chosen boundary.</p>
+</div>
+</section>
+    <section class="section-band">
+<div class="site-shell article-layout">
+<aside class="article-sidebar" aria-label="Local navigation">
+<nav class="toc-panel" aria-labelledby="toc-title">
+<h2 id="toc-title">On this page</h2>
+<ol>
+<li>
+<a href="#safety">Support safety</a>
+</li>
+<li>
+<a href="#narrowing">Cone narrowing</a>
+</li>
+<li>
+<a href="#boundary">Boundary</a>
+</li>
+</ol>
+</nav>
+<div class="source-panel" data-sidebar-open="true">
+<h2>Part 2 routes</h2>
+<ul>
+<li>
+<a href="../../">SFT overview</a>
+</li>
+<li>
+<a href="../../field/">Part 1. Field</a>
+</li>
+<li>
+<a href="../">Part 2. Computation</a>
+</li>
+<li>
+<a href="../computable-slice/">2-1. Computable Slice</a>
+</li>
+<li>
+<a href="../aat-interface/">2-2. AAT / SFT Interface</a>
+</li>
+<li>
+<a href="../observation/">2-3. Observation Layer</a>
+</li>
+<li>
+<a href="../operation-support/">2-4. Operation Support</a>
+</li>
+<li>
+<a href="../step-relation/">2-5. StepRelation</a>
+</li>
+<li>
+<a href="../forecast-cone/">2-6. ForecastCone</a>
+</li>
+<li>
+<a href="../consequence-envelope/">2-7. ConsequenceEnvelope</a>
+</li>
+<li>
+<a href="./" aria-current="page">2-8. Support Safety</a>
+</li>
+<li>
+<a href="../proposal-accounting/">2-9. Proposal Accounting</a>
+</li>
+<li>
+<a href="../computational-problems/">2-10. Computational Problems</a>
+</li>
+<li>
+<a href="../archsig-pipeline/">2-11. ArchSig-SFT Pipeline</a>
+</li>
+<li>
+<a href="../simulator-calibration/">2-12. Simulator and Calibration</a>
+</li>
+<li>
+<a href="../../intervention/">Part 3. Intervention</a>
+</li>
+</ul>
+</div>
+</aside>
+      <div class="article-main">
+<aside class="question-card" aria-label="Guiding question">
+<span class="question-card-label">Question</span>
+<p>When does a policy actually narrow the future paths that matter?</p>
+</aside>
+<section id="safety" class="article-section">
+<h2>Support safety</h2>
+<p>Support safety is relative to selected predicates. It may ask whether every supported step preserves a selected invariant, whether a script remains inside a safe region, or whether one support relation simulates another over the measured axes.</p>
+<p>
+This is where SFT becomes precise about the word "safe." A supported operation
+can be natural without being safe. A selected policy can reject some bad paths
+without controlling all future risk. Support safety therefore names a bounded
+claim: under this support relation, this step semantics, and this selected safe
+region, the modeled paths remain inside the region or simulate a safer system.
+</p>
+<p>
+The value is not that SFT suddenly proves global software safety. The value is
+that it can state exactly which safety claim is being made and which part of the
+cone it applies to.
+</p>
+<p>
+This makes support safety useful in review. Instead of saying "this policy makes
+the system safe," a review can ask whether this policy removes a selected
+unsupported operation, whether the remaining steps simulate a safer transition
+system, or whether the cone merely looks narrower because unmeasured paths were
+left outside the slice.
+</p>
+<p id="definition-2-15" class="statement">
+<a class="statement-anchor" href="#definition-2-15">Definition 2.15.</a> Support safety is a boundary-relative claim that supported steps preserve a selected safe region or simulate a selected safer transition system.</p>
+<p class="statement-status" aria-label="SFT status for Definition 2.15">
+<span class="statement-status-label">SFT status</span>
+<span class="status-badge status-badge-future">formal target</span>
+<span>Source: SFT sections 15 and 16; global safety is not claimed.</span>
+</p>
+</section>
+        <section id="narrowing" class="article-section">
+<h2>Cone narrowing</h2>
+<p>If a policy removes unsafe support, adds missing witnesses, or makes bad shortcuts expensive, a selected cone projection may narrow. The word "selected" matters. A cone can narrow over measured axes while unmeasured axes remain unknown, and a safe projected cone need not imply global system safety.</p>
+<p>
+Narrowing is most interesting when it changes naturalness, not only when it
+adds a gate. A review rule that merely rejects a shortcut after it is proposed
+may leave the shortcut cheap. A better intervention makes the lawful path
+visible, testable, and easier to select, while making the shortcut costly,
+observable, or unsupported. The cone narrows because the field has changed.
+</p>
+<p>
+This is the computational reading of good governance. It is not only a filter at
+the end of a proposal stream. It is a transformation of support. If the
+intervention works, the next reachable futures have a different shape.
+</p>
+<p>
+The subtle point is that narrowing can be good, bad, or merely apparent. It is
+good when it removes unsupported or unsafe paths while preserving useful
+architecture futures. It is bad when it blocks necessary repair paths. It is
+apparent when the model has only narrowed what it can see. SFT keeps the
+selected safe region and observation boundary attached to the claim so this
+difference remains visible.
+</p>
+<figure class="code-panel">
+<figcaption>Selected narrowing</figcaption>
+<pre>
+<code>support inclusion
   + step simulation
   + selected safe region
   =&gt; cone projection / narrowing
-     under the same observation boundary</code></pre></figure></section>
-        <section id="boundary" class="article-section"><h2>Boundary</h2><p id="non-conclusion-2-16" class="statement"><a class="statement-anchor" href="#non-conclusion-2-16">Non-conclusion 2.16.</a> Cone narrowing over selected axes is not global risk reduction, not incident prevention, and not proof that unmeasured paths are safe.</p></section>
-        <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-previous" href="../consequence-envelope/"><span>Previous</span><strong>2-7. ConsequenceEnvelope</strong></a><a class="page-nav-next" href="../proposal-accounting/"><span>Next</span><strong>2-9. Proposal Accounting</strong></a></nav>
-      </div></div></section></main>
-    <footer class="site-footer"><div class="site-shell footer-inner"><p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a></div></footer>
+     under the same observation boundary</code>
+</pre>
+</figure>
+<p class="plain-reading">
+<strong>Computation habit.</strong> Treat a narrowed cone as a selected theorem-shaped
+claim, not as a universal statement that the system is now safe.
+</p>
+</section>
+        <section id="boundary" class="article-section">
+<h2>Boundary</h2>
+<p id="non-conclusion-2-16" class="statement">
+<a class="statement-anchor" href="#non-conclusion-2-16">Non-conclusion 2.16.</a> Cone narrowing over selected axes is not global risk reduction, not incident prevention, and not proof that unmeasured paths are safe.</p>
+</section>
+        <nav class="page-nav" aria-label="Reading sequence">
+<a class="page-nav-previous" href="../consequence-envelope/">
+<span>Previous</span>
+<strong>2-7. ConsequenceEnvelope</strong>
+</a>
+<a class="page-nav-next" href="../proposal-accounting/">
+<span>Next</span>
+<strong>2-9. Proposal Accounting</strong>
+</a>
+</nav>
+      </div>
+</div>
+</section>
+</main>
+    <footer class="site-footer">
+<div class="site-shell footer-inner">
+<p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+<a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+</div>
+</footer>
   </body>
 </html>
