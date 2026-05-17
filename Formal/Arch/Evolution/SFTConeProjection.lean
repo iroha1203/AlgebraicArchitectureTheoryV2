@@ -34,6 +34,19 @@ def StepSimulation
       relation₂.Realizes source operation target ->
         relation₁.Realizes source operation target
 
+/--
+The same step relation simulates itself for any selected narrower support.
+
+This helper isolates the common support-monotonicity case from the more
+general support-inclusion plus step-simulation projection theorem.
+-/
+def SameRelationStepSimulation
+    {Field : Type u} {Operation : Type v}
+    (support₂ : OperationSupport Field Operation)
+    (relation : StepRelation Field Operation) :
+    StepSimulation support₂ relation relation :=
+  fun _source _operation _target _hSupported hRealizes => hRealizes
+
 namespace ForecastConeProjection
 
 variable {Field : Type u} {Operation : Type v}
@@ -171,6 +184,59 @@ theorem exists_projected_forecastCone
   · rfl
   · exact forecastCone_projects_of_supportInclusion_and_stepSimulation
       hSupport hStep hCone
+
+/--
+Support inclusion alone is enough when both cones use the same selected step
+relation: every narrower-support cone path has a structural witness in the
+wider-support cone at the same horizon.
+-/
+theorem forecastCone_projects_of_supportInclusion
+    {relation : StepRelation Field Operation}
+    (hSupport : PointwiseSupportInclusion support₂ support₁)
+    {source target : Field} {horizon : Nat}
+    {path₂ : FieldPath support₂ relation source target}
+    (hCone : ForecastCone support₂ relation source horizon target path₂) :
+    ForecastCone support₁ relation source horizon target
+      (projectFieldPath hSupport
+        (SameRelationStepSimulation support₂ relation) path₂) :=
+  forecastCone_projects_of_supportInclusion_and_stepSimulation
+    hSupport (SameRelationStepSimulation support₂ relation) hCone
+
+/--
+Existential wrapper for support monotonicity with a shared step relation.
+
+The returned path is a projected witness, so the theorem does not claim that the
+original dependent path object can be reused across different support packages.
+-/
+theorem exists_projected_forecastCone_of_supportInclusion
+    {relation : StepRelation Field Operation}
+    (hSupport : PointwiseSupportInclusion support₂ support₁)
+    {source target : Field} {horizon : Nat}
+    {path₂ : FieldPath support₂ relation source target}
+    (hCone : ForecastCone support₂ relation source horizon target path₂) :
+    ∃ path₁ : FieldPath support₁ relation source target,
+      ProjectedFieldPath hSupport
+        (SameRelationStepSimulation support₂ relation) path₂ path₁ ∧
+        ForecastCone support₁ relation source horizon target path₁ :=
+  exists_projected_forecastCone
+    hSupport (SameRelationStepSimulation support₂ relation) hCone
+
+/--
+Combining support inclusion with horizon extension preserves cone membership
+after projecting the dependent path witness.
+-/
+theorem forecastCone_projects_of_supportInclusion_and_horizon_le
+    {relation : StepRelation Field Operation}
+    (hSupport : PointwiseSupportInclusion support₂ support₁)
+    {source target : Field} {horizon₁ horizon₂ : Nat}
+    {path₂ : FieldPath support₂ relation source target}
+    (hCone : ForecastCone support₂ relation source horizon₁ target path₂)
+    (hHorizon : horizon₁ <= horizon₂) :
+    ForecastCone support₁ relation source horizon₂ target
+      (projectFieldPath hSupport
+        (SameRelationStepSimulation support₂ relation) path₂) :=
+  ForecastCone.monotone_horizon
+    (forecastCone_projects_of_supportInclusion hSupport hCone) hHorizon
 
 end ForecastConeProjection
 
