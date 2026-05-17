@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT 2-1: computable slices, SoftwareFieldEstimate, modeling boundaries, and architecture projection.">
+    <title>SFT 2-1: Computable Slice</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/computation/computable-slice/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 2-1: Computable Slice">
+    <meta property="og:description" content="How SFT cuts a bounded SoftwareFieldEstimate from a larger DevelopmentField without claiming complete reconstruction.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/computation/computable-slice/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 2-1: Computable Slice">
+    <meta name="twitter:description" content="SoftwareFieldEstimate, modeling boundaries, and architecture projection.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home"><img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true"><span class="brand-mark">AAT/SFT</span><span class="brand-text">Research Notes</span></a>
+        <nav class="site-nav" aria-label="Primary navigation"><a href="../../../">Home</a><a href="../../../aat/">AAT</a><a class="is-active" href="../../">SFT</a><a href="../../../archsig/">ArchSig</a><a href="../../../outreach/">Outreach</a></nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../../">Home</a><a href="../../">SFT</a><a href="../">Computation</a><span>Computable Slice</span></nav>
+          <p class="eyebrow">SFT 2-1</p>
+          <h1>Computable Slice</h1>
+          <p class="lede">A development field is too large to compute directly. SFT begins computation by declaring what is inside the model, what evidence supports it, and what remains outside as unknown remainder.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#slice">From field to estimate</a></li><li><a href="#projection">Architecture projection</a></li><li><a href="#boundary">Boundary</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>Part 2 routes</h2><ul><li><a href="../">Part 2. Computation</a></li><li><a href="./" aria-current="page">2-1. Computable Slice</a></li><li><a href="../aat-interface/">2-2. AAT / SFT Interface</a></li><li><a href="../observation/">2-3. Observation Layer</a></li><li><a href="../operation-support/">2-4. Operation Support</a></li><li><a href="../step-relation/">2-5. StepRelation</a></li><li><a href="../forecast-cone/">2-6. ForecastCone</a></li><li><a href="../consequence-envelope/">2-7. ConsequenceEnvelope</a></li><li><a href="../support-safety/">2-8. Support Safety</a></li><li><a href="../proposal-accounting/">2-9. Proposal Accounting</a></li><li><a href="../computational-problems/">2-10. Problems</a></li><li><a href="../archsig-pipeline/">2-11. Pipeline</a></li><li><a href="../simulator-calibration/">2-12. Calibration</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <aside class="question-card" aria-label="Guiding question"><span class="question-card-label">Question</span><p>What must be selected before software evolution becomes a computable object?</p></aside>
+            <section id="slice" class="article-section">
+              <h2>From field to estimate</h2>
+              <p>The full <code>DevelopmentField</code> includes code, artifacts, people, review practice, operations, incidents, governance, and private or missing context. A computable slice does not erase that scale. It records a boundary and constructs a partial <code>SoftwareFieldEstimate</code> from the evidence available inside it.</p>
+              <figure class="code-panel"><figcaption>Field estimate</figcaption><pre><code>model_B : DevelopmentField -&gt; Partial SoftwareFieldEstimate
+
+SoftwareFieldEstimate
+  = selected evidence
+  + observation axes
+  + support hints
+  + policy hints
+  + unknown remainder</code></pre></figure>
+              <p id="definition-2-1" class="statement"><a class="statement-anchor" href="#definition-2-1">Definition 2.1.</a> A computable slice is a modeling boundary together with the evidence categories used to assemble a partial <code>SoftwareFieldEstimate</code>.</p>
+              <p class="statement-status" aria-label="SFT status for Definition 2.1"><span class="statement-status-label">SFT status</span><span class="status-badge status-badge-defined">conceptual definition</span><span>Source: SFT section 3 and the Software Field Reconstruction Protocol.</span></p>
+            </section>
+            <section id="projection" class="article-section">
+              <h2>Architecture projection</h2>
+              <p>The slice must also decide how the field is projected onto architecture. That projection is where AAT can enter: components, dependencies, operations, invariant families, signatures, and obstruction witnesses can be read as selected coordinates of the field.</p>
+              <p>The projection is not the whole field. It is the part of the field where architecture laws and tool observations can be stated clearly. A field estimate may preserve review history, lifecycle pressure, and missing evidence even when the architecture projection only exposes selected structural axes.</p>
+              <p class="plain-reading"><strong>Field habit.</strong> Treat every computed result as relative to its slice: boundary, evidence, axes, horizon, and missing remainder.</p>
+            </section>
+            <section id="boundary" class="article-section">
+              <h2>Boundary</h2>
+              <p id="non-conclusion-2-2" class="statement"><a class="statement-anchor" href="#non-conclusion-2-2">Non-conclusion 2.2.</a> A <code>SoftwareFieldEstimate</code> is not complete reconstruction of an organization, and an architecture projection is not ground truth about every force acting on future work.</p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 2. Computation</strong></a><a class="page-nav-next" href="../aat-interface/"><span>Next</span><strong>2-2. AAT / SFT Interface</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="site-shell footer-inner"><p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a></div></footer>
+  </body>
+</html>

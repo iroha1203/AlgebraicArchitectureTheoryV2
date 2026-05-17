@@ -97,6 +97,42 @@
     <loc>https://iroha1203.dev/sft/computation/</loc>
   </url>
   <url>
+    <loc>https://iroha1203.dev/sft/computation/computable-slice/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/aat-interface/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/observation/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/operation-support/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/step-relation/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/forecast-cone/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/consequence-envelope/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/support-safety/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/proposal-accounting/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/computational-problems/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/archsig-pipeline/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/simulator-calibration/</loc>
+  </url>
+  <url>
     <loc>https://iroha1203.dev/sft/intervention/</loc>
   </url>
 </urlset>
