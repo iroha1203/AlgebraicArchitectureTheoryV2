@@ -75,6 +75,7 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#sft-in-one-sentence">SFT in one sentence</a></li>
                 <li><a href="#reading-order">Reading order</a></li>
                 <li><a href="#abstract">Abstract</a></li>
                 <li><a href="#main-contributions">Main contributions</a></li>
@@ -148,10 +149,54 @@
           </aside>
 
           <div class="article-main">
+            <section id="sft-in-one-sentence" class="article-section">
+              <h2>SFT in one sentence</h2>
+              <p>
+                SFT studies how PRDs, issues, reviews, CI, AI proposals,
+                runtime feedback, and governance rules change the set of
+                supported software-evolution paths under an explicit modeling
+                boundary.
+              </p>
+              <div class="reader-model">
+                <div>
+                  <h3>What changes</h3>
+                  <p>
+                    An artifact does not choose one future. It can make some
+                    operation families supported, cheap, visible, or reviewable
+                    while leaving other paths unsupported or unknown.
+                  </p>
+                </div>
+                <div>
+                  <h3>What does not follow</h3>
+                  <p>
+                    A ForecastCone is not a point prediction, a
+                    ConsequenceEnvelope is not a causal proof, and ArchSig
+                    evidence is not a Lean theorem or a ground-truth extractor.
+                  </p>
+                </div>
+              </div>
+              <ul class="status-list">
+                <li>
+                  <strong>Inputs</strong>
+                  <span>PRDs, Issues, review traces, CI results, runtime observations, AI proposals, and selected codebase regions.</span>
+                </li>
+                <li>
+                  <strong>Modeling move</strong>
+                  <span>Name the field boundary, support relation, policy, observation axes, horizon, unavailable evidence, and unknown remainder.</span>
+                </li>
+                <li>
+                  <strong>Output surface</strong>
+                  <span>Reachable path classes, support estimates, ForecastCone candidates, ConsequenceEnvelope reports, and governance questions.</span>
+                </li>
+              </ul>
+            </section>
+
             <section id="reading-order" class="article-section">
               <h2>Reading order</h2>
               <p>
-                Start here for the full map, then read Part I and Part II
+                Read the short model above first: SFT is about supported
+                paths, costs, observations, and governance boundaries, not
+                about declaring a single future. Then read Part I and Part II
                 before using the core, computing-system, and case-study pages.
                 The SFT website is written as an independent monograph entry:
                 source documents remain available for audit, but the main
