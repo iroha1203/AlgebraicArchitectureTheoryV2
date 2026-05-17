@@ -136,7 +136,7 @@
               <p class="statement-status" aria-label="Claim status for Non-conclusion III.0">
                 <span class="statement-status-label">Claim status</span>
                 <span class="status-badge status-badge-future">boundary statement</span>
-                <span>Website exposition of the SFT source boundary; no Lean theorem is added here.</span>
+                <span>Website exposition of the SFT source boundary; checked Lean anchors are listed where available.</span>
               </p>
             </section>
 
@@ -388,17 +388,18 @@ ForecastConeFamilyAfterAction(F, a, h)
               </p>
               <p class="statement-status" aria-label="Claim status for Schema III.7">
                 <span class="statement-status-label">Claim status</span>
-                <span class="status-badge status-badge-future">closed-loop schema</span>
-                <span>Record preservation is the claim; forecast-quality calibration remains separate.</span>
+                <span class="status-badge status-badge-proved">Lean record package</span>
+                <span><code>Formal/Arch/Evolution/SFTFieldUpdate.lean</code> proves record-preservation accessors; forecast-quality calibration remains separate.</span>
               </p>
             </section>
 
             <section id="core-anchors" class="article-section">
               <h2>Formal and computational anchors</h2>
               <p>
-                Part III currently names website-level and source-document
-                anchors for future formalization. These anchors prevent the
-                public text from reading SFT as an already-proved Lean theory.
+                Part III combines source-document schemas with checked Lean
+                anchors for bounded fragments. These anchors prevent the public
+                text from reading SFT as an unqualified empirical prediction
+                theory.
               </p>
               <div class="formal-anchor-cards" aria-label="SFT Part III computational anchors">
                 <article class="formal-anchor-card">
@@ -426,16 +427,16 @@ ForecastConeFamilyAfterAction(F, a, h)
                       <span class="formal-anchor-card-label">Forecast core</span>
                       <h3>Reachable paths and report boundary</h3>
                     </div>
-                    <span class="status-badge status-badge-defined">source schema</span>
+                    <span class="status-badge status-badge-proved">Lean core</span>
                   </header>
                   <dl class="formal-anchor-grid">
                     <div>
                       <dt>Representative terms</dt>
-                      <dd><code>ArtifactAction</code>, <code>ForecastCone</code>, <code>ConsequenceEnvelope</code>, <code>FieldUpdate</code></dd>
+                      <dd><code>ForecastCone</code>, <code>ConsequenceEnvelope</code>, <code>FieldUpdate</code></dd>
                     </div>
                     <div>
                       <dt>Boundary</dt>
-                      <dd>Reachability is set-valued and bounded; empirical accuracy requires calibration outside Part III.</dd>
+                      <dd>Reachability and update preservation have checked Lean anchors; envelope reconstruction and empirical accuracy require separate calibration.</dd>
                     </div>
                   </dl>
                 </article>

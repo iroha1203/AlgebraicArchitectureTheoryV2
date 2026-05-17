@@ -57,3 +57,4 @@ import Formal.Arch.Evolution.AttractorEngineering
 import Formal.Arch.Evolution.SFTForecastCone
 import Formal.Arch.Evolution.SFTConeProjection
 import Formal.Arch.Evolution.SFTSupportSafety
+import Formal.Arch.Evolution.SFTFieldUpdate

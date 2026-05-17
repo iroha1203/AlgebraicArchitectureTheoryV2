@@ -1813,6 +1813,40 @@ calibration、global safety を結論しない。
 | `SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety` | `theorem` | ForecastCone witness と support safety conclusion を同時に返す wrapper。 | `proved` |
 | `SFTSupportSafetyPackage.AcceptedSupportedTrajectory.acceptedEvidence` | `theorem` | accepted evidence を accessor として公開し、support-preservation premise と分離する。 | `proved` |
 
+## SFT FieldUpdate
+
+File: `Formal/Arch/Evolution/SFTFieldUpdate.lean`
+
+Issue [#908](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/908) では、
+SFT の closed-loop feedback を、`ForecastCone` witness を含む prior forecast record、
+observed outcome、posterior field record、selected update soundness predicate に分解した。
+`UpdateSound` は observed feedback classes が posterior record に保存されることだけを述べる。
+これは forecast accuracy improvement、empirical calibration、governance effectiveness、
+operational feedback artifact の extractor completeness を結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `ForecastRecord` | `structure` | selected `ForecastCone` witness と forecast / non-conclusion boundary を束ねる prior forecast record。 | `defined only` |
+| `ForecastRecord.length_le_horizon` | `theorem` | stored cone witness から finite horizon bound を取り出す accessor theorem。 | `proved` |
+| `ForecastRecord.RecordsForecastBoundary` | `def` | forecast/model boundary を predicate として取り出す。 | `defined only` |
+| `ForecastRecord.RecordsNonConclusions` | `def` | forecast record の non-conclusion boundary を取り出す。 | `defined only` |
+| `ObservedOutcome` | `structure` | observed field と forecast error / missing evidence / unexpected witness / policy drift / observation boundary / non-conclusions を保持する feedback record。 | `defined only` |
+| `ObservedOutcome.RecordsObservationBoundary` | `def` | observed outcome の observation boundary を取り出す。 | `defined only` |
+| `ObservedOutcome.RecordsNonConclusions` | `def` | observed outcome の non-conclusion boundary を取り出す。 | `defined only` |
+| `PosteriorFieldRecord` | `structure` | posterior field と保存された feedback classes、update boundary、calibration boundary、non-conclusions を保持する record。 | `defined only` |
+| `PosteriorFieldRecord.RecordsUpdateBoundary` | `def` | posterior record の update boundary を取り出す。 | `defined only` |
+| `PosteriorFieldRecord.RecordsCalibrationBoundary` | `def` | preserved feedback が accuracy-improvement theorem ではない calibration boundary を取り出す。 | `defined only` |
+| `PosteriorFieldRecord.RecordsNonConclusions` | `def` | posterior record の non-conclusion boundary を取り出す。 | `defined only` |
+| `FieldUpdate` | `structure` | forecast record、observed outcome、posterior record、update-level boundary を束ねる selected closed-loop update。 | `defined only` |
+| `FieldUpdate.RecordsUpdateBoundary` | `def` | update-level boundary を predicate として取り出す。 | `defined only` |
+| `FieldUpdate.RecordsNonConclusions` | `def` | forecast / observation / posterior / update の non-conclusion boundaries を組み合わせて取り出す。 | `defined only` |
+| `FieldUpdate.UpdateSound` | `structure` | observed feedback classes が posterior record に保存され、update / calibration / non-conclusion boundaries が記録されていることを表す predicate。 | `defined only` |
+| `FieldUpdate.UpdateSound.fieldUpdate_preserves_forecastError_and_missingEvidence` | `theorem` | sound update rule から forecast error と missing evidence の posterior preservation を取り出す。 | `proved` |
+| `FieldUpdate.UpdateSound.fieldUpdate_preserves_unexpectedWitness_and_policyDrift` | `theorem` | sound update rule から unexpected witness と policy drift の posterior preservation を取り出す。 | `proved` |
+| `FieldUpdate.UpdateSound.fieldUpdate_preserves_nonConclusions` | `theorem` | observed non-conclusion boundary が posterior record に保存されることを取り出す。 | `proved` |
+| `FieldUpdate.UpdateSound.fieldUpdate_records_calibrationBoundary` | `theorem` | update package が calibration boundary を保持し、accuracy improvement を結論しないことを accessor として公開する。 | `proved` |
+| `FieldUpdate.UpdateSound.fieldUpdate_records_nonConclusions` | `theorem` | update package 全体の non-conclusion boundary を取り出す。 | `proved` |
+
 ## Signature Dynamics
 
 File: `Formal/Arch/Evolution/SignatureDynamics.lean`
