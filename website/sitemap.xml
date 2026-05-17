@@ -70,6 +70,9 @@
     <loc>https://iroha1203.dev/outreach/</loc>
   </url>
   <url>
+    <loc>https://iroha1203.dev/profile/</loc>
+  </url>
+  <url>
     <loc>https://iroha1203.dev/sft/</loc>
   </url>
   <url>
@@ -152,5 +155,23 @@
   </url>
   <url>
     <loc>https://iroha1203.dev/sft/intervention/closed-loop/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/formal-core/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/theorem-candidates/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/research-program/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/positioning/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/status/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/glossary/</loc>
   </url>
 </urlset>
