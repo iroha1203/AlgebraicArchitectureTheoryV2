@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT 3-5: lifecycle decisions as field capacity and architecture-future changes, not project management recommendations.">
+    <title>SFT 3-5: Lifecycle Decisions</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/intervention/lifecycle/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 3-5: Lifecycle Decisions">
+    <meta property="og:description" content="Repair, migration, contraction, deletion, and end-of-life as bounded field-capacity choices.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/intervention/lifecycle/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 3-5: Lifecycle Decisions">
+    <meta name="twitter:description" content="Lifecycle decisions compare architecture futures and field capacity under explicit boundaries.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header><div class="site-shell header-inner"><a class="brand" href="../../../" aria-label="AAT SFT home"><img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true"><span class="brand-mark">AAT/SFT</span><span class="brand-text">Research Notes</span></a><nav class="site-nav" aria-label="Primary navigation"><a href="../../../">Home</a><a href="../../../aat/">AAT</a><a class="is-active" href="../../">SFT</a><a href="../../../archsig/">ArchSig</a><a href="../../../outreach/">Outreach</a></nav></div></header>
+    <main id="main">
+      <section class="article-hero section-band"><div class="site-shell"><nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../../">Home</a><a href="../../">SFT</a><a href="../">Intervention</a><span>Lifecycle</span></nav><p class="eyebrow">SFT 3-5</p><h1>Lifecycle Decisions</h1><p class="lede">Repair, migration, contraction, deletion, and end-of-life are field interventions. They change architecture futures by reallocating support, risk, ownership, observation, and capacity.</p></div></section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#trajectory">Lifecycle trajectory</a></li><li><a href="#decision-model">Decision model</a></li><li><a href="#interventions">Interventions</a></li><li><a href="#boundary">Boundary</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>Part 3 routes</h2><ul><li><a href="../../">SFT overview</a></li><li><a href="../">Part 3. Intervention</a></li><li><a href="../governance/">3-1. Governance</a></li><li><a href="../attractor-engineering/">3-2. Attractor Engineering</a></li><li><a href="../stable-regions/">3-3. Stable Regions</a></li><li><a href="../ai-governance/">3-4. AI Governance</a></li><li><a href="./" aria-current="page">3-5. Lifecycle</a></li><li><a href="../closed-loop/">3-6. Closed Loop</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <aside class="question-card" aria-label="Guiding question"><span class="question-card-label">Question</span><p>When does a field have capacity to repair, migrate, shrink, or retire a surface?</p></aside>
+            <section id="trajectory" class="article-section">
+              <h2>Lifecycle trajectory</h2>
+              <p>A software field includes birth, growth, stabilization, drift, repair, migration, contraction, and end-of-life. End-of-life is not a moral failure. It can be the correct field reconfiguration when the remaining operation support, ownership capacity, runtime guard, and migration path no longer justify preserving a surface.</p>
+              <p>SFT treats lifecycle decisions as changes to reachable architecture futures. The same codebase can have different futures depending on whether the field can still support repair, must migrate to a new support structure, should contract unsupported surface, or should remove a component from active lifecycle.</p>
+            </section>
+            <section id="decision-model" class="article-section">
+              <h2>Decision model</h2>
+              <figure class="code-panel"><figcaption>Lifecycle decision model</figcaption><pre><code>current lifecycle trajectory
++ ArchitectureSignature trajectory
++ ConsequenceEnvelope family
++ runtime / incident risk boundary
++ ownership / staffing boundary
++ selected intervention set
++ non-conclusions</code></pre></figure>
+              <p>The model compares architecture signature movement, affected regions, obstruction witnesses, missing boundaries, runtime risk, and ownership capacity. It does not output a managerial recommendation detached from the field. It asks how each intervention changes future support and unknown remainder.</p>
+            </section>
+            <section id="interventions" class="article-section">
+              <h2>Interventions</h2>
+              <p>Repair preserves the existing field while adding missing invariant or support. Migration transfers support and memory from an old field to a new one. Contraction reduces unsupported surface and reallocates capacity. Deletion removes a component or subsystem from the active lifecycle while recording dependent operation loss and retirement boundaries.</p>
+              <p>A ConsequenceEnvelope family makes these options comparable. A wide envelope is not automatically a reason to delete, and a local repair is not automatically safe. Each option has a different support, risk, capacity, and unknown-remainder profile.</p>
+            </section>
+            <section id="boundary" class="article-section">
+              <h2>Boundary</h2>
+              <p id="non-conclusion-3-5" class="statement"><a class="statement-anchor" href="#non-conclusion-3-5">Non-conclusion 3.5.</a> Lifecycle modeling is not project management advice. It is a bounded comparison of architecture futures and field capacity under selected evidence, selected interventions, and explicit non-conclusions.</p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-previous" href="../ai-governance/"><span>Previous</span><strong>3-4. AI Proposal Governance</strong></a><a class="page-nav-next" href="../closed-loop/"><span>Next</span><strong>3-6. Closed-Loop Field Update</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="site-shell footer-inner"><p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a></div></footer>
+  </body>
+</html>
