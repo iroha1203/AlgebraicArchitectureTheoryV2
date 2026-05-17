@@ -1712,6 +1712,53 @@ flatness predicate の自動保存は主張しない。
 | `eventuallyFlat_of_targetFlat` | `theorem` | `MigrationSequence plan`, `EveryStepLawful plan`, `TargetFlat plan` から `EventuallyFlat plan` を得る bounded theorem package。 | `proved` |
 | `evolutionPathPreservesFlatness` | `theorem` | 既存 `ArchitecturePath.pathPreservesInvariant` を evolution-specific な `EventuallyFlat` 名へ bridge する theorem。 | `proved` |
 
+## SFT SoftwareField / Architecture Projection Boundary
+
+File: `Formal/Arch/Evolution/SFTField.lean`
+
+Issue [#919](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/919) では、
+SFT の field state / estimate / architecture projection boundary を最小 Lean record として
+追加した。`SoftwareField` は selected field carrier と AAT `ArchitectureObject` への
+projection を束ねる wrapper であり、field 自体を architecture object と同一視しない。
+coverage、observation、reconstruction、missing evidence、non-conclusion は caller-supplied
+boundary accessor として保持し、development field 全体の完全モデル化、trace-grounded
+reconstruction completeness、extractor completeness、global future trajectory safety は
+結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `SoftwareField` | `structure` | selected field carrier、architecture projection、observed signature、history / support / policy / constraint / observation / governance / artifact input boundaries、non-conclusions を束ねる SFT field wrapper。 | `defined only` |
+| `SoftwareField.arch` | `def` | field から AAT `ArchitectureObject` への selected projection を取り出す。 | `defined only` |
+| `SoftwareField.RecordsObservedSignature` | `def` | selected field が observable signature evidence を記録する boundary accessor。 | `defined only` |
+| `SoftwareField.RecordsHistoryBoundary` | `def` | history boundary を取り出す。 | `defined only` |
+| `SoftwareField.RecordsOperationSupportBoundary` | `def` | operation support boundary を取り出す。 | `defined only` |
+| `SoftwareField.RecordsOperationPolicyBoundary` | `def` | operation policy boundary を取り出す。 | `defined only` |
+| `SoftwareField.RecordsConstraintEnvironmentBoundary` | `def` | constraint environment boundary を取り出す。 | `defined only` |
+| `SoftwareField.RecordsObservationModelBoundary` | `def` | observation model boundary を取り出す。 | `defined only` |
+| `SoftwareField.RecordsGovernanceInterventionBoundary` | `def` | governance intervention boundary を取り出す。 | `defined only` |
+| `SoftwareField.RecordsExogenousArtifactInputBoundary` | `def` | exogenous artifact input boundary を取り出す。 | `defined only` |
+| `SoftwareField.RecordsFieldNotArchitectureObjectBoundary` | `def` | `SoftwareField` を直接 `ArchitectureObject` として読まない boundary を取り出す。 | `defined only` |
+| `SoftwareField.RecordsNonConclusions` | `def` | field-level non-conclusions を取り出す。 | `defined only` |
+| `SoftwareField.arch_eq_architectureProjection` | `theorem` | `arch` accessor が stored architecture projection と一致すること。 | `proved` |
+| `SoftwareFieldEstimate` | `structure` | selected `SoftwareField` と coverage / observation / reconstruction / estimator / missing evidence / non-conclusion boundaries を束ねる partial estimate。 | `defined only` |
+| `SoftwareFieldEstimate.selectedField` | `def` | estimate が保持する selected field を取り出す。 | `defined only` |
+| `SoftwareFieldEstimate.arch` | `def` | estimate から selected field の architecture projection を取り出す。 | `defined only` |
+| `SoftwareFieldEstimate.RecordsCoverageAssumptions` | `def` | coverage assumptions を取り出す。 | `defined only` |
+| `SoftwareFieldEstimate.RecordsObservationBoundary` | `def` | observation boundary を取り出す。 | `defined only` |
+| `SoftwareFieldEstimate.RecordsReconstructionBoundary` | `def` | reconstruction boundary を取り出す。 | `defined only` |
+| `SoftwareFieldEstimate.RecordsEstimatorBoundary` | `def` | estimator/model boundary を取り出す。 | `defined only` |
+| `SoftwareFieldEstimate.RecordsMissingEvidence` | `def` | missing evidence を取り出す。 | `defined only` |
+| `SoftwareFieldEstimate.RecordsNonConclusions` | `def` | estimate と selected field の non-conclusions を組み合わせて取り出す。 | `defined only` |
+| `SoftwareFieldEstimate.arch_eq_field_arch` | `theorem` | estimate の `arch` accessor が selected field の `arch` と一致すること。 | `proved` |
+| `ArchitectureProjectionBoundary` | `structure` | `SoftwareFieldEstimate` から selected `ArchitectureObject` への片方向 projection boundary と保存 obligations を束ねる predicate record。 | `defined only` |
+| `ArchitectureProjectionBoundary.projection_eq_selected_arch` | `theorem` | projected architecture object が estimate の selected projection と一致することを取り出す。 | `proved` |
+| `ArchitectureProjectionBoundary.projection_preserves_coverageAssumptions` | `theorem` | projection boundary が coverage assumptions を保持すること。 | `proved` |
+| `ArchitectureProjectionBoundary.projection_preserves_observationBoundary` | `theorem` | projection boundary が observation boundary を保持すること。 | `proved` |
+| `ArchitectureProjectionBoundary.projection_preserves_reconstructionBoundary` | `theorem` | projection boundary が reconstruction boundary を保持すること。 | `proved` |
+| `ArchitectureProjectionBoundary.projection_preserves_missingEvidence` | `theorem` | projection boundary が missing evidence を保持すること。 | `proved` |
+| `ArchitectureProjectionBoundary.projection_records_fieldNotArchitectureObjectBoundary` | `theorem` | field を projected `ArchitectureObject` と同一視しない boundary を保持すること。 | `proved` |
+| `ArchitectureProjectionBoundary.projection_records_nonConclusions` | `theorem` | projection-boundary non-conclusions を保持すること。 | `proved` |
+
 ## SFT ForecastCone Core
 
 File: `Formal/Arch/Evolution/SFTForecastCone.lean`
