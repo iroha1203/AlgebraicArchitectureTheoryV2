@@ -1749,6 +1749,32 @@ global safety、extractor completeness は結論しない。
 | `ForecastCone.RecordsHorizonBoundary` | `def` | horizon が finite path-length bound に限られる boundary を predicate として取り出す。 | `defined only` |
 | `ForecastCone.RecordsNonConclusions` | `def` | support と step relation の non-conclusions を組み合わせて ForecastCone の non-conclusion boundary を取り出す。 | `defined only` |
 
+## SFT Cone Projection
+
+File: `Formal/Arch/Evolution/SFTConeProjection.lean`
+
+Issue [#910](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/910) では、
+same `Field` / `Operation` 上の set-valued support semantics に限定し、
+pointwise support inclusion と step simulation から `ForecastCone` membership が
+同じ horizon で射影されることを証明した。これは identity-field projection の Lean core であり、
+probability、transition kernel、calibration、global risk reduction、causal correctness、
+global safety、extractor completeness は結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `PointwiseSupportInclusion` | `def` | 各 selected field state で narrower support の operation membership が wider support に含まれること。 | `defined only` |
+| `StepSimulation` | `def` | narrower support で supported な primitive transition が、同じ source / operation / target で wider step relation により realize されること。 | `defined only` |
+| `ForecastConeProjection.projectSupportedFieldStep` | `def` | support inclusion と step simulation に沿って `SupportedFieldStep` を wider model へ写す。 | `defined only` |
+| `ForecastConeProjection.projectFieldPath` | `def` | support-witnessed `FieldPath` を構造再帰で wider model へ写す。 | `defined only` |
+| `ForecastConeProjection.ProjectedFieldPath` | `def` | wider model の path が narrower path の structural projection であることを表す predicate。 | `defined only` |
+| `ForecastConeProjection.projectFieldPath_nil` | `theorem` | zero-length path の projection が zero-length path であること。 | `proved` |
+| `ForecastConeProjection.projectFieldPath_cons` | `theorem` | successor path の projection が head step projection と tail path projection に分解されること。 | `proved` |
+| `ForecastConeProjection.projectFieldPath_length` | `theorem` | path projection が finite path length を保存すること。 | `proved` |
+| `ForecastConeProjection.forecastCone_project_zero` | `theorem` | zero-horizon cone membership が projected zero-length path で保存されること。 | `proved` |
+| `ForecastConeProjection.projectedFieldPath_cons` | `theorem` | tail の projected-path relation が successor path へ持ち上がること。 | `proved` |
+| `ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_stepSimulation` | `theorem` | pointwise support inclusion と step simulation の下で、narrower cone membership が同じ horizon の wider cone membership へ射影されること。 | `proved` |
+| `ForecastConeProjection.exists_projected_forecastCone` | `theorem` | projected path witness と wider cone membership を存在形で取り出す wrapper。 | `proved` |
+
 ## Signature Dynamics
 
 File: `Formal/Arch/Evolution/SignatureDynamics.lean`
