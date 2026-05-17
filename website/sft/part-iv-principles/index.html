@@ -80,6 +80,7 @@
                 <li><a href="#cone-narrowing">Cone narrowing</a></li>
                 <li><a href="#support-safety">Support safety</a></li>
                 <li><a href="#proposal-accounting">Proposal accounting</a></li>
+                <li><a href="#counterexample-anchors">Counterexample anchors</a></li>
                 <li><a href="#feedback-update">Feedback update</a></li>
                 <li><a href="#stable-regions">Stable regions</a></li>
                 <li><a href="#principle-anchors">Anchors</a></li>
@@ -227,6 +228,15 @@
   + SupportOperationsPreserveSafeRegion(U, O, R)
   -> accepted trajectory remains in R</code></pre>
               </figure>
+              <div class="claim-strip">
+                <p>
+                  The counterexample
+                  <a href="#counterexample-anchors">below</a> keeps accepted
+                  preservation separate from support preservation. Evidence
+                  about accepted steps does not prove that every operation in
+                  the finite support preserves the selected safe region.
+                </p>
+              </div>
             </section>
 
             <section id="proposal-accounting" class="article-section">
@@ -266,6 +276,68 @@
     runtime_pressure_estimate
     unaccounted_remainder</code></pre>
               </figure>
+            </section>
+
+            <section id="counterexample-anchors" class="article-section">
+              <h2>Counterexample anchors</h2>
+              <p>
+                These anchors are the theorem-boundary checks behind the Part
+                IV schemas. They are finite Lean witnesses exposed through the
+                SFT-native counterexample package, not empirical degradation
+                claims or repository-frequency estimates.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lean proved wrapper</span>
+                      <h3>Endpoint safety is not path safety</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <p>
+                    <code>SFTCounterexamples.endpoint_safe_zero_delta_not_path_safe</code>
+                    blocks the inference from safe endpoints and zero selected
+                    endpoint delta to whole-trajectory safety.
+                  </p>
+                </article>
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lean proved wrapper</span>
+                      <h3>Accepted preservation is not support preservation</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <p>
+                    <code>SFTCounterexamples.accepted_preservation_not_support_preservation</code>
+                    separates governance evidence about accepted steps from a
+                    theorem that every supported operation preserves the
+                    selected safe region.
+                  </p>
+                </article>
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lean proved wrapper</span>
+                      <h3>Same current signature is not same future trajectory</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved</span>
+                  </div>
+                  <p>
+                    <code>SFTCounterexamples.same_observed_signature_different_future_trajectory</code>
+                    keeps current observation, future operation support, and
+                    future signature trajectory as separate claims.
+                  </p>
+                </article>
+              </div>
+              <div class="claim-strip">
+                <p>
+                  See the <a href="../theorem-candidates/#counterexample-anchors">Theorem Candidates counterexample index</a>
+                  and the <a href="../status/#lean-roadmap">SFT Lean Roadmap</a>
+                  for the source-of-truth status vocabulary.
+                </p>
+              </div>
             </section>
 
             <section id="feedback-update" class="article-section">

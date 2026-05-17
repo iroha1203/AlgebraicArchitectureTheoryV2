@@ -1193,6 +1193,7 @@ p {
 .term-list li,
 .status-list li {
   border-bottom: 1px solid var(--rule);
+  min-width: 0;
   padding: 18px 0;
 }
 
@@ -1219,6 +1220,13 @@ p {
   color: var(--ink-muted);
   font-size: 0.98rem;
   line-height: 1.48;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.article-main p code,
+.article-main li code {
+  overflow-wrap: anywhere;
 }
 
 .numbered-status-list {

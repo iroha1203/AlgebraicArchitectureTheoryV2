@@ -81,6 +81,7 @@
                 <li><a href="#field-memory">Field memory</a></li>
                 <li><a href="#development-field">Development field</a></li>
                 <li><a href="#architecture-futures">Architecture futures</a></li>
+                <li><a href="#counterexample-anchor">Counterexample anchor</a></li>
                 <li><a href="#formal-anchors">Formal anchors</a></li>
                 <li><a href="#part-boundary">Boundary</a></li>
               </ol>
@@ -374,6 +375,42 @@ SoftwareFieldEstimate
                 <li>
                   <strong>Rounding obstruction</strong>
                   <span>Ambiguous currency semantics can become an obstruction witness candidate before implementation starts.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="counterexample-anchor" class="article-section">
+              <h2>First counterexample anchor</h2>
+              <p>
+                The first forbidden reading is endpoint-only safety. A
+                trajectory can start safe, end safe, and have zero selected
+                endpoint delta while still leaving the safe region along the
+                way. SFT therefore keeps the observed path visible instead of
+                replacing it with a final-state summary.
+              </p>
+              <p id="counterexample-i-7" class="statement">
+                <a class="statement-anchor" href="#counterexample-i-7">Counterexample I.7.</a>
+                <code>SFTCounterexamples.endpoint_safe_zero_delta_not_path_safe</code>
+                is a Lean proved wrapper showing that endpoint delta zero and
+                safe endpoints do not imply selected path safety.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Counterexample I.7">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-proved">Lean proved wrapper</span>
+                <span>Finite witness packaged by #920; see the <a href="../theorem-candidates/#counterexample-anchors">counterexample anchors</a>.</span>
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Endpoint is not path</strong>
+                  <span>A final signature and a net delta do not record intermediate excursions.</span>
+                </li>
+                <li>
+                  <strong>Current signature is not future trajectory</strong>
+                  <span><code>SFTCounterexamples.same_observed_signature_different_future_trajectory</code> separates present observation from future support and signature path.</span>
+                </li>
+                <li>
+                  <strong>Counterexample is not frequency</strong>
+                  <span>The Lean witness marks a forbidden inference; it does not estimate how often the pattern occurs in repositories.</span>
                 </li>
               </ul>
             </section>
