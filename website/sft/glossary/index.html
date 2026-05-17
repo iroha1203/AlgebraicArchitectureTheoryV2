@@ -104,111 +104,223 @@
           <div class="article-main">
             <section id="reader-model" class="article-section">
               <h2>Reader model</h2>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>SFT does not say</th>
-                      <th>SFT says</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Software evolution is governed by physical laws.</td>
-                      <td>Software evolution can be modeled as bounded computation over selected artifacts, practices, policies, observations, and feedback.</td>
-                    </tr>
-                    <tr>
-                      <td>A forecast is a single predicted future.</td>
-                      <td>A forecast is set-valued or report-valued under an explicit horizon, support relation, policy, and observation boundary.</td>
-                    </tr>
-                    <tr>
-                      <td>Tool output is an architecture theorem.</td>
-                      <td>Tool output is an observation, estimate, report, or review artifact with non-conclusions attached.</td>
-                    </tr>
-                    <tr>
-                      <td>Organization culture and human intention are fully modeled.</td>
-                      <td>The model records selected evidence and preserves unknown or unmodeled remainder.</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="claim-pairs" aria-label="SFT glossary reader model">
+                <article class="claim-pair">
+                  <div>
+                    <h3>SFT does not say</h3>
+                    <p>Software evolution is governed by physical laws.</p>
+                  </div>
+                  <div>
+                    <h3>SFT says</h3>
+                    <p>Software evolution can be modeled as bounded computation over selected artifacts, practices, policies, observations, and feedback.</p>
+                  </div>
+                </article>
+                <article class="claim-pair">
+                  <div>
+                    <h3>SFT does not say</h3>
+                    <p>A forecast is a single predicted future.</p>
+                  </div>
+                  <div>
+                    <h3>SFT says</h3>
+                    <p>A forecast is set-valued or report-valued under an explicit horizon, support relation, policy, and observation boundary.</p>
+                  </div>
+                </article>
+                <article class="claim-pair">
+                  <div>
+                    <h3>SFT does not say</h3>
+                    <p>Tool output is an architecture theorem.</p>
+                  </div>
+                  <div>
+                    <h3>SFT says</h3>
+                    <p>Tool output is an observation, estimate, report, or review artifact with non-conclusions attached.</p>
+                  </div>
+                </article>
+                <article class="claim-pair">
+                  <div>
+                    <h3>SFT does not say</h3>
+                    <p>Organization culture and human intention are fully modeled.</p>
+                  </div>
+                  <div>
+                    <h3>SFT says</h3>
+                    <p>The model records selected evidence and preserves unknown or unmodeled remainder.</p>
+                  </div>
+                </article>
               </div>
             </section>
 
             <section id="term-boundary" class="article-section">
               <h2>Term boundary</h2>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Term</th>
-                      <th>Formal or computational reading</th>
-                      <th>Avoided reading</th>
-                      <th>Related parts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th><code>field</code></th>
-                      <td>A selected development context or <code>SoftwareField</code> slice containing codebase memory, artifacts, support, policy, observations, and feedback.</td>
-                      <td>A physical field or complete model of the organization.</td>
-                      <td><a href="../part-i-new-object/">Part I</a>, <a href="../part-iii-core/">Part III</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>force</code></th>
-                      <td>An informal name for artifact-mediated pressure that changes candidate field updates, operation support, policy, or observation components.</td>
-                      <td>A physical vector quantity or deterministic cause.</td>
-                      <td><a href="../part-iii-core/#artifact-action">Part III</a>, <a href="../part-vi-case-studies/">Part VI</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>dissipation</code></th>
-                      <td>Loss, leakage, or untracked remainder across a bounded model, such as missing evidence, review rework, or unobserved risk.</td>
-                      <td>Thermodynamic dissipation or automatic degradation law.</td>
-                      <td><a href="../status/#forecast-boundary">Status</a>, <a href="../part-vii-research-program/">Part VII</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>attractor</code></th>
-                      <td>A stable or preferred region only when stability, recurrence, policy, or probability semantics are supplied.</td>
-                      <td>A guaranteed destination or informal label for any good design.</td>
-                      <td><a href="../part-iv-principles/">Part IV</a>, <a href="../status/">Status</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>basin</code></th>
-                      <td>A reachable preimage or region of support that tends toward a selected stable region under named semantics.</td>
-                      <td>A vague danger zone without a transition, support, or policy definition.</td>
-                      <td><a href="../part-iv-principles/">Part IV</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>ForecastCone</code></th>
-                      <td>A set of reachable field paths relative to a field model, operation support, policy, horizon, and observation boundary.</td>
-                      <td>A point prediction, empirical forecast, or global risk proof without calibration.</td>
-                      <td><a href="../part-iii-core/">Part III</a>, <a href="../status/#forecast-boundary">Status</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>ConsequenceEnvelope</code></th>
-                      <td>A report form that summarizes selected cones, path classes, affected axes, witnesses, missing evidence, and non-conclusions.</td>
-                      <td>A Lean proof, causal proof, or complete impact analysis.</td>
-                      <td><a href="../part-v-computing-systems/">Part V</a>, <a href="../part-vi-case-studies/">Part VI</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>support</code></th>
-                      <td>The operation family considered possible, natural, low-cost, accepted, or generated under an explicit field model.</td>
-                      <td>Universal permission or proof that unsupported paths cannot occur in reality.</td>
-                      <td><a href="../part-iii-core/">Part III</a>, <a href="../part-iv-principles/">Part IV</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>policy</code></th>
-                      <td>A selection, preorder, cost, review, CI, AI, or governance rule over supported operations.</td>
-                      <td>A guarantee that all future choices are safe or compliant.</td>
-                      <td><a href="../part-iii-core/">Part III</a>, <a href="../part-v-computing-systems/">Part V</a></td>
-                    </tr>
-                    <tr>
-                      <th><code>calibration</code></th>
-                      <td>Comparison of forecast reports or model outputs against trace, PR, review, CI, incident, or dataset evidence.</td>
-                      <td>Proof of causality, universal validity, or Lean theorem status.</td>
-                      <td><a href="../part-v-computing-systems/">Part V</a>, <a href="../part-vii-research-program/">Part VII</a></td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="comparison-cards" aria-label="Term boundary">
+                <article class="comparison-card">
+                  <h3><code>field</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>A selected development context or <code>SoftwareField</code> slice containing codebase memory, artifacts, support, policy, observations, and feedback.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>A physical field or complete model of the organization.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-i-new-object/">Part I</a>, <a href="../part-iii-core/">Part III</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>force</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>An informal name for artifact-mediated pressure that changes candidate field updates, operation support, policy, or observation components.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>A physical vector quantity or deterministic cause.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-iii-core/#artifact-action">Part III</a>, <a href="../part-vi-case-studies/">Part VI</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>dissipation</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>Loss, leakage, or untracked remainder across a bounded model, such as missing evidence, review rework, or unobserved risk.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>Thermodynamic dissipation or automatic degradation law.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../status/#forecast-boundary">Status</a>, <a href="../part-vii-research-program/">Part VII</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>attractor</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>A stable or preferred region only when stability, recurrence, policy, or probability semantics are supplied.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>A guaranteed destination or informal label for any good design.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-iv-principles/">Part IV</a>, <a href="../status/">Status</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>basin</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>A reachable preimage or region of support that tends toward a selected stable region under named semantics.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>A vague danger zone without a transition, support, or policy definition.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-iv-principles/">Part IV</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>ForecastCone</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>A set of reachable field paths relative to a field model, operation support, policy, horizon, and observation boundary.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>A point prediction, empirical forecast, or global risk proof without calibration.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-iii-core/">Part III</a>, <a href="../status/#forecast-boundary">Status</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>ConsequenceEnvelope</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>A report form that summarizes selected cones, path classes, affected axes, witnesses, missing evidence, and non-conclusions.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>A Lean proof, causal proof, or complete impact analysis.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-v-computing-systems/">Part V</a>, <a href="../part-vi-case-studies/">Part VI</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>support</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>The operation family considered possible, natural, low-cost, accepted, or generated under an explicit field model.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>Universal permission or proof that unsupported paths cannot occur in reality.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-iii-core/">Part III</a>, <a href="../part-iv-principles/">Part IV</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>policy</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>A selection, preorder, cost, review, CI, AI, or governance rule over supported operations.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>A guarantee that all future choices are safe or compliant.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-iii-core/">Part III</a>, <a href="../part-v-computing-systems/">Part V</a></dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>calibration</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Formal reading</dt>
+                      <dd>Comparison of forecast reports or model outputs against trace, PR, review, CI, incident, or dataset evidence.</dd>
+                    </div>
+                    <div>
+                      <dt>Avoided reading</dt>
+                      <dd>Proof of causality, universal validity, or Lean theorem status.</dd>
+                    </div>
+                    <div>
+                      <dt>Related parts</dt>
+                      <dd><a href="../part-v-computing-systems/">Part V</a>, <a href="../part-vii-research-program/">Part VII</a></dd>
+                    </div>
+                  </dl>
+                </article>
               </div>
             </section>
 

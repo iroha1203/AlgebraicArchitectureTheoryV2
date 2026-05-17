@@ -114,34 +114,47 @@
                 to check what SFT is allowed to inherit from AAT, what SFT adds
                 on its own side, and which readings are explicitly blocked.
               </p>
-              <div class="article-table">
-                <table>
-                  <caption>SFT says / SFT does not say</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">SFT says</th>
-                      <th scope="col">SFT does not say</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>AAT supplies local algebra, theorem boundaries, and selected non-conclusions.</td>
-                      <td>AAT theorem status automatically becomes empirical forecast status.</td>
-                    </tr>
-                    <tr>
-                      <td>AAT claims may be used as local premises inside bounded SFT reachability or safety schemas.</td>
-                      <td>AAT lawfulness alone proves future trajectory safety for a software field.</td>
-                    </tr>
-                    <tr>
-                      <td>ArchSig supplies measured axes, missing axes, evidence boundaries, and tooling estimates.</td>
-                      <td>ArchSig output is a ground-truth architecture object or a Lean theorem.</td>
-                    </tr>
-                    <tr>
-                      <td>SFT introduces field state, trajectories, forecast boundaries, and feedback governance.</td>
-                      <td>SFT redefines AAT concepts or makes AAT depend on software-field dynamics.</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="claim-pairs" aria-label="SFT says and SFT does not say">
+                <article class="claim-pair">
+                  <div>
+                    <h3>SFT says</h3>
+                    <p>AAT supplies local algebra, theorem boundaries, and selected non-conclusions.</p>
+                  </div>
+                  <div>
+                    <h3>SFT does not say</h3>
+                    <p>AAT theorem status automatically becomes empirical forecast status.</p>
+                  </div>
+                </article>
+                <article class="claim-pair">
+                  <div>
+                    <h3>SFT says</h3>
+                    <p>AAT claims may be used as local premises inside bounded SFT reachability or safety schemas.</p>
+                  </div>
+                  <div>
+                    <h3>SFT does not say</h3>
+                    <p>AAT lawfulness alone proves future trajectory safety for a software field.</p>
+                  </div>
+                </article>
+                <article class="claim-pair">
+                  <div>
+                    <h3>SFT says</h3>
+                    <p>ArchSig supplies measured axes, missing axes, evidence boundaries, and tooling estimates.</p>
+                  </div>
+                  <div>
+                    <h3>SFT does not say</h3>
+                    <p>ArchSig output is a ground-truth architecture object or a Lean theorem.</p>
+                  </div>
+                </article>
+                <article class="claim-pair">
+                  <div>
+                    <h3>SFT says</h3>
+                    <p>SFT introduces field state, trajectories, forecast boundaries, and feedback governance.</p>
+                  </div>
+                  <div>
+                    <h3>SFT does not say</h3>
+                    <p>SFT redefines AAT concepts or makes AAT depend on software-field dynamics.</p>
+                  </div>
+                </article>
               </div>
             </section>
 
@@ -258,44 +271,72 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 They may use AAT projections and ArchSig observations, but they
                 are not AAT definitions.
               </p>
-              <div class="article-table">
-                <table>
-                  <caption>Concepts introduced by SFT</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">SFT concept</th>
-                      <th scope="col">Role</th>
-                      <th scope="col">Boundary</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th scope="row">field state / <code>SoftwareField</code></th>
-                      <td>The selected computable state of a development field.</td>
-                      <td>It is not itself an AAT <code>ArchitectureObject</code>; AAT sees the architecture projection.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">trajectory</th>
-                      <td>A modeled sequence or set of possible field transitions.</td>
-                      <td>It is not proven safe by local AAT lawfulness alone.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row"><code>ForecastCone</code></th>
-                      <td>A bounded set of possible future states under stated support.</td>
-                      <td>Cone narrowing is not global risk reduction without calibration and stated axes.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row"><code>ConsequenceEnvelope</code></th>
-                      <td>A boundary-aware report of expected effects, missing axes, and non-conclusions.</td>
-                      <td>It is a forecast artifact, not a theorem unless separately formalized as a schema.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">field update / feedback governance</th>
-                      <td>Rules for updating estimates and review policy from observations.</td>
-                      <td>Operational usefulness does not promote correlation to a formal or causal claim.</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="comparison-cards" aria-label="Concepts introduced by SFT">
+                <article class="comparison-card">
+                  <h3>field state / <code>SoftwareField</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Role</dt>
+                      <dd>The selected computable state of a development field.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>It is not itself an AAT <code>ArchitectureObject</code>; AAT sees the architecture projection.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>trajectory</h3>
+                  <dl>
+                    <div>
+                      <dt>Role</dt>
+                      <dd>A modeled sequence or set of possible field transitions.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>It is not proven safe by local AAT lawfulness alone.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>ForecastCone</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Role</dt>
+                      <dd>A bounded set of possible future states under stated support.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Cone narrowing is not global risk reduction without calibration and stated axes.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3><code>ConsequenceEnvelope</code></h3>
+                  <dl>
+                    <div>
+                      <dt>Role</dt>
+                      <dd>A boundary-aware report of expected effects, missing axes, and non-conclusions.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>It is a forecast artifact, not a theorem unless separately formalized as a schema.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>field update / feedback governance</h3>
+                  <dl>
+                    <div>
+                      <dt>Role</dt>
+                      <dd>Rules for updating estimates and review policy from observations.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Operational usefulness does not promote correlation to a formal or causal claim.</dd>
+                    </div>
+                  </dl>
+                </article>
               </div>
             </section>
 
@@ -386,49 +427,85 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 Local architecture facts do not become global software-history
                 facts merely because they are useful premises in an SFT model.
               </p>
-              <div class="article-table">
-                <table>
-                  <caption>Claim-preserving readings and blocked promotions</caption>
-                  <thead>
-                    <tr>
-                      <th scope="col">AAT / tooling fact</th>
-                      <th scope="col">Allowed SFT reading</th>
-                      <th scope="col">Forbidden reading</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th scope="row">selected witness absence</th>
-                      <td>A selected local defect is not observed under the current measurement universe.</td>
-                      <td>Future trajectory safety, or absence of all latent action.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">signature axis zero / measured zero</th>
-                      <td>A selected measured coordinate is zero.</td>
-                      <td>Unmeasured axes are also safe or zero.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">operation preserves invariant</th>
-                      <td>One accepted transition is locally admissible under stated assumptions.</td>
-                      <td>The policy, organization, or future trajectory is globally safe.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">theorem boundary</th>
-                      <td>A premise boundary for SFT reachability or safety schema.</td>
-                      <td>An empirical prediction theorem.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">observed signature delta</th>
-                      <td>A comparable axis-wise trajectory observation.</td>
-                      <td>A unique causal identification of the artifact action.</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">ArchSig extraction</th>
-                      <td>A tooling estimate with measured axes and non-conclusions.</td>
-                      <td>A ground-truth architecture object or a Lean proof.</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="comparison-cards" aria-label="Claim-preserving readings and blocked promotions">
+                <article class="comparison-card">
+                  <h3>selected witness absence</h3>
+                  <dl>
+                    <div>
+                      <dt>Allowed SFT reading</dt>
+                      <dd>A selected local defect is not observed under the current measurement universe.</dd>
+                    </div>
+                    <div>
+                      <dt>Forbidden reading</dt>
+                      <dd>Future trajectory safety, or absence of all latent action.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>signature axis zero / measured zero</h3>
+                  <dl>
+                    <div>
+                      <dt>Allowed SFT reading</dt>
+                      <dd>A selected measured coordinate is zero.</dd>
+                    </div>
+                    <div>
+                      <dt>Forbidden reading</dt>
+                      <dd>Unmeasured axes are also safe or zero.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>operation preserves invariant</h3>
+                  <dl>
+                    <div>
+                      <dt>Allowed SFT reading</dt>
+                      <dd>One accepted transition is locally admissible under stated assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Forbidden reading</dt>
+                      <dd>The policy, organization, or future trajectory is globally safe.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>theorem boundary</h3>
+                  <dl>
+                    <div>
+                      <dt>Allowed SFT reading</dt>
+                      <dd>A premise boundary for SFT reachability or safety schema.</dd>
+                    </div>
+                    <div>
+                      <dt>Forbidden reading</dt>
+                      <dd>An empirical prediction theorem.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>observed signature delta</h3>
+                  <dl>
+                    <div>
+                      <dt>Allowed SFT reading</dt>
+                      <dd>A comparable axis-wise trajectory observation.</dd>
+                    </div>
+                    <div>
+                      <dt>Forbidden reading</dt>
+                      <dd>A unique causal identification of the artifact action.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>ArchSig extraction</h3>
+                  <dl>
+                    <div>
+                      <dt>Allowed SFT reading</dt>
+                      <dd>A tooling estimate with measured axes and non-conclusions.</dd>
+                    </div>
+                    <div>
+                      <dt>Forbidden reading</dt>
+                      <dd>A ground-truth architecture object or a Lean proof.</dd>
+                    </div>
+                  </dl>
+                </article>
               </div>
               <ul class="term-list">
                 <li>
