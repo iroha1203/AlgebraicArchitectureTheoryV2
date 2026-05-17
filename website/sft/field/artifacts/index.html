@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT 1-2: artifacts shape the field by changing candidate updates, support, selection policy, and observation boundaries.">
+    <title>SFT 1-2: Artifacts Shape the Field</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/field/artifacts/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 1-2: Artifacts Shape the Field">
+    <meta property="og:description" content="PRDs, specs, issues, design notes, review comments, and incident reports change operation support, selection policy, and observation boundaries.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/field/artifacts/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 1-2: Artifacts Shape the Field">
+    <meta name="twitter:description" content="Artifacts change operation support, selection policy, and observation boundaries before code changes.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../../">Home</a>
+          <a href="../../../aat/">AAT</a>
+          <a class="is-active" href="../../">SFT</a>
+          <a href="../../../archsig/">ArchSig</a>
+          <a href="../../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Field</a>
+            <span>Artifacts</span>
+          </nav>
+          <p class="eyebrow">SFT 1-2</p>
+          <h1>Artifacts Shape the Field</h1>
+          <p class="lede">
+            PRDs, specs, issues, design notes, review comments, and incident
+            reports are not passive documents. They reshape the field by making
+            some updates expressible, some invariants visible, and some review
+            questions unavoidable.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#documents-that-push">Documents that push</a></li>
+                <li><a href="#artifact-action">Artifact action</a></li>
+                <li><a href="#force">Force without physics</a></li>
+                <li><a href="#support">Support and observation</a></li>
+                <li><a href="#counter-reading">Counter-reading</a></li>
+                <li><a href="#boundary">Boundary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>Part 1 routes</h2>
+              <ul>
+                <li><a href="../">Part 1. Field</a></li>
+                <li><a href="../codebase-memory/">1-1. Codebase Memory</a></li>
+                <li><a href="./" aria-current="page">1-2. Artifacts</a></li>
+                <li><a href="../agents/">1-3. Agents</a></li>
+                <li><a href="../organization-structure/">1-4. Organization Structure</a></li>
+                <li><a href="../governance-feedback/">1-5. Governance Feedback</a></li>
+                <li><a href="../architecture-futures/">1-6. Architecture Futures</a></li>
+                <li><a href="../../computation/">Part 2. Computation</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <aside class="question-card" aria-label="Guiding question">
+              <span class="question-card-label">Question</span>
+              <p>How can a document change software evolution before it changes a single line of code?</p>
+            </aside>
+
+            <section id="documents-that-push" class="article-section">
+              <h2>Documents that push</h2>
+              <p>
+                A requirement document is usually treated as a message: someone
+                asks for a feature, and engineers respond by changing code. SFT
+                reads it more dynamically. A document enters the development
+                field and changes the set of operations that people can name,
+                defend, split, review, test, and automate.
+              </p>
+              <p>
+                The interesting question is not whether an artifact uniquely
+                determines an implementation. It does not. The interesting
+                question is what the artifact makes easier to see. Does it name
+                the invariant? Does it expose the boundary? Does it make a
+                shortcut look harmless? Does it give reviewers a vocabulary for
+                refusing the wrong path? Does it leave the most important
+                observation outside the model?
+              </p>
+              <p>
+                This is why a short issue, a design note, or a review comment
+                can matter as much as a large spec. The artifact is a field
+                action. It pushes on the future without dictating it.
+              </p>
+              <p>
+                The most powerful artifacts are often not the longest ones.
+                They are the ones that change the coordinate system of the
+                conversation. After a good artifact, people stop arguing about
+                vague preference and start asking about a named boundary,
+                invariant, observation, or migration path. The future has not
+                been selected, but the field has been reoriented.
+              </p>
+              <p>
+                This is the intellectual turn: an artifact is not important only
+                because it contains information. It is important because it
+                changes the geometry of action. It can open a path, close a
+                shortcut, make an invariant observable, or leave the field with
+                too many cheap interpretations.
+              </p>
+            </section>
+
+            <section id="artifact-action" class="article-section">
+              <h2>Artifact action</h2>
+              <p>
+                A useful artifact changes the field before code changes. It
+                names a boundary, asks for a responsibility split, exposes a
+                missing invariant, records a previous failure, or makes a
+                review question reusable. Even an ambiguous artifact has field
+                effects: it may invite shortcut paths, create competing
+                interpretations, or hide the observation needed for reviewers
+                to distinguish safe and unsafe futures.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Artifact-mediated field action</figcaption>
+                <pre><code>ArtifactAction
+  = source artifact refs
+  + target field components
+  + candidate field updates
+  + changed operation support
+  + changed selection policy
+  + changed observation boundary
+  + unknown remainder</code></pre>
+              </figure>
+              <p id="definition-1-4" class="statement">
+                <a class="statement-anchor" href="#definition-1-4">Definition 1.4.</a>
+                Artifact-mediated force is the field-level reading of how a
+                PRD, spec, issue, design note, review comment, or incident
+                report changes supported candidate updates.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1.4">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual definition</span>
+                <span>Formal support and cone objects are deferred to Part 2.</span>
+              </p>
+            </section>
+
+            <section id="force" class="article-section">
+              <h2>Force without physics</h2>
+              <p>
+                The word <em>force</em> is useful because artifacts do not
+                merely sit beside the codebase. They push on the field. A
+                carefully written incident report can make an invariant hard to
+                ignore. A vague issue can make several incompatible paths look
+                equally legitimate. A review comment can turn one person's
+                judgment into a reusable selection rule. An AI proposal can
+                amplify a local pattern until it becomes the default candidate.
+              </p>
+              <p>
+                The force is not a vector and not a causal guarantee. Its
+                computable reading is smaller and sharper: which operation
+                families gained support, which lost support, which selection
+                policy changed, and which observations became possible or
+                remained missing.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Computable reading of artifact force</figcaption>
+                <pre><code>artifact-mediated force
+  -> operation support changes
+  -> selection policy changes
+  -> observation boundary changes
+  -> reachable future shape changes</code></pre>
+              </figure>
+              <p class="plain-reading">
+                <strong>Field habit.</strong> Do not ask only what the artifact
+                requests. Ask what operations it makes newly easy to name.
+              </p>
+            </section>
+
+            <section id="support" class="article-section">
+              <h2>Support and observation</h2>
+              <p>
+                The key shift is from "artifact as requirement" to "artifact as
+                support transformation." A spec can make a lawful operation
+                cheap by stating its preconditions. A design note can make a
+                hidden coupling reviewable. An incident report can make a
+                previously unmeasured runtime axis visible. A review comment can
+                convert local judgement into durable field memory.
+              </p>
+              <p>
+                A weak artifact can do the opposite. It can ask for behavior
+                while hiding the boundary, demand speed while omitting the
+                invariant, or define success only at the UI surface while the
+                deeper state transition remains ambiguous. In that field, the
+                lowest-friction implementation may be locally reasonable and
+                globally expensive.
+              </p>
+              <p>
+                This is why SFT is careful with examples. A bad future is rarely
+                interesting merely because a reviewer could have stopped it. The
+                interesting question is why that future was easy to generate,
+                hard to distinguish early, or cheap to justify. Artifact quality
+                is therefore a question about future support, not about blaming
+                the author of a document.
+              </p>
+              <p id="proposition-1-5" class="statement">
+                <a class="statement-anchor" href="#proposition-1-5">Proposition 1.5.</a>
+                A strong artifact narrows ambiguity by moving relevant
+                assumptions from implicit field memory into observable support
+                and review vocabulary.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Proposition 1.5">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-future">theorem-shaped claim</span>
+                <span>Future formalization target: artifact actions as updates to operation support and observation boundary.</span>
+              </p>
+            </section>
+
+            <section id="counter-reading" class="article-section">
+              <h2>Counter-reading</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> The artifact is not evaluated
+                by whether it maps to one ideal implementation. It is evaluated
+                by what it makes possible, cheap, visible, ambiguous, or
+                unmeasured.
+              </p>
+              <p>
+                This avoids a common failure mode: treating a PRD as a hidden
+                source file and then judging the theory by whether the PRD
+                predicts the merged diff. SFT asks which future paths moved
+                closer, which obstruction candidates appeared, and which
+                evidence remained outside the model.
+              </p>
+              <p>
+                A field reading can therefore say something useful before it
+                knows the final implementation. It can say: this artifact makes
+                boundary-preserving work easy to name; this one leaves rounding,
+                authorization, ownership, or rollback outside the observation
+                surface; this one converts an incident into durable review
+                vocabulary. Those are computationally relevant differences.
+              </p>
+            </section>
+
+            <section id="boundary" class="article-section">
+              <h2>Boundary</h2>
+              <p id="non-conclusion-1-6" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-1-6">Non-conclusion 1.6.</a>
+                Artifact analysis is not a PRD-to-PR predictor, not a causal
+                proof, and not a claim that every relevant field component was
+                observed.
+              </p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../codebase-memory/"><span>Previous</span><strong>1-1. Codebase as Field Memory</strong></a>
+              <a class="page-nav-next" href="../agents/"><span>Next</span><strong>1-3. Developers and AI Agents</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>
