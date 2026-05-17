@@ -3,11 +3,29 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SFT 1-1: codebase as field memory.">
+    <meta name="description" content="SFT 1-1: codebase as field memory, where requirements, design decisions, review traces, incidents, ownership, and tooling practice shape future support.">
     <title>SFT 1-1: Codebase as Field Memory</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/field/codebase-memory/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 1-1: Codebase as Field Memory">
+    <meta property="og:description" content="A codebase is field memory: requirements, design decisions, review traces, incidents, ownership, and tooling practice shape future support.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/field/codebase-memory/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 1-1: Codebase as Field Memory">
+    <meta name="twitter:description" content="A codebase is field memory: requirements, design decisions, review traces, incidents, ownership, and tooling practice shape future support.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
     <link rel="stylesheet" href="../../../assets/site.css">
     <script defer src="../../../assets/site.js"></script>
   </head>
@@ -41,16 +59,27 @@
           <p class="eyebrow">SFT 1-1</p>
           <h1>Codebase as Field Memory</h1>
           <p class="lede">
-            A codebase is not only an implementation state. It is accumulated
-            memory: requirements, design decisions, review history, incidents,
-            ownership, and tooling practices sediment into the next changes
-            that look natural.
+            A codebase is not only the current implementation. It is the
+            sedimented memory of requirements, design decisions, review
+            histories, incidents, ownership, and tooling practice. That memory
+            makes some next operations feel obvious and others too expensive to
+            attempt.
           </p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
-          <aside class="article-sidebar" aria-label="SFT navigation">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#repository-remembers">The repository remembers</a></li>
+                <li><a href="#memory-carrier">Memory carrier</a></li>
+                <li><a href="#same-graph">Same graph, different field</a></li>
+                <li><a href="#measurement">What can be observed</a></li>
+                <li><a href="#boundary">Boundary</a></li>
+              </ol>
+            </nav>
             <div class="source-panel" data-sidebar-open="true">
               <h2>Part 1 routes</h2>
               <ul>
@@ -66,48 +95,169 @@
             </div>
           </aside>
           <div class="article-main">
-            <section class="article-section">
-              <h2>Memory beyond files</h2>
+            <aside class="question-card" aria-label="Guiding question">
+              <span class="question-card-label">Question</span>
+              <p>What does a codebase remember, and how does that memory make some future operations easier than others?</p>
+            </aside>
+
+            <section id="repository-remembers" class="article-section">
+              <h2>The repository remembers</h2>
               <p>
-                The source tree records more than functions and module edges.
-                It carries requirements that became defaults, design decisions
-                that became local idioms, review comments that hardened into
-                norms, incident fixes that became permanent workarounds, and
-                CI failures that changed what developers attempt first.
+                A codebase is often described as if it were a machine: modules,
+                functions, dependencies, tests. That description is useful, but
+                it misses the strange fact that a codebase also remembers how it
+                was changed. It remembers through names, through tests that ask
+                for one invariant and ignore another, through dead branches left
+                after a migration, through comments written after incidents, and
+                through APIs nobody touches because the last attempt was painful.
               </p>
               <p>
-                SFT calls this accumulated structure field memory. The memory
-                may be explicit, such as tests, comments, ADRs, and ownership
-                metadata. It may also be implicit, such as repeated copy-paste
-                patterns, review expectations, migration scars, and areas that
-                only one team is comfortable changing.
+                This memory does not sit in a separate diary. It is inside the
+                development surface itself. A duplicated idiom can become a
+                suggestion. A missing test can become permission. A carefully
+                named boundary can become a path. A half-finished migration can
+                become a gravitational pull toward more half-finished work.
+              </p>
+              <p>
+                Read this way, a repository is less like a filing cabinet and
+                more like an experimental plate. Past events have left tracks.
+                Some tracks are written as code. Others are written as things
+                nobody tries anymore, tests nobody removes, boundaries everyone
+                respects without naming, and fragile areas that quietly bend
+                future plans around themselves.
+              </p>
+              <p>
+                SFT treats this as field memory: past field actions remaining
+                active in the present by shaping the support, cost, visibility,
+                and reviewability of future operations.
+              </p>
+              <p>
+                This is a different way to look at technical debt. Debt is not
+                merely the amount of bad code present today. It is the way past
+                decisions change the menu of plausible next moves. A workaround
+                that everyone understands may be less dangerous than a clean
+                abstraction nobody can safely modify. A test that looks small
+                may matter because it keeps a whole family of future changes
+                visible. Field memory is about this active remainder of history.
               </p>
             </section>
-            <section class="article-section">
-              <h2>Same graph, different futures</h2>
+
+            <section id="memory-carrier" class="article-section">
+              <h2>Memory carrier</h2>
               <p>
-                Two systems can share a similar module graph while supporting
-                different next operations. In one field, adding a feature may
-                naturally start with a domain model change and a property test.
-                In another, the low-cost path may be another branch in a
-                controller because past incidents, missing ownership, and weak
-                test support made deeper changes expensive.
+                Codebase memory is a practical carrier of organizational
+                history. It includes explicit artifacts such as tests, comments,
+                ADRs, migration scripts, ownership files, deprecation notices,
+                and CI rules. It also includes implicit traces: duplicated
+                patterns, avoided modules, old workaround seams, naming
+                conventions, and the places where review always asks for the
+                same justification.
               </p>
-              <p>
-                This is why codebase memory is not a static metric. It changes
-                operation support and selection policy. It tells developers and
-                AI agents which local patterns look legitimate, which boundary
-                crossings feel costly, and which invariants are visible enough
-                to preserve.
+              <figure class="code-panel">
+                <figcaption>Codebase memory reading</figcaption>
+                <pre><code>CodebaseMemory
+  = implementation state
+  + requirement residue
+  + design decision residue
+  + review and CI history
+  + incident and workaround history
+  + ownership and tooling practice
+  + latent default paths</code></pre>
+              </figure>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
+                Codebase memory is the selected code-adjacent field evidence
+                that changes the support, cost, visibility, and reviewability
+                of future operations.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1.1">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual definition</span>
+                <span>Source: SFT Part I section 2; formal extraction completeness is not claimed.</span>
               </p>
             </section>
-            <section class="article-section">
+
+            <section id="same-graph" class="article-section">
+              <h2>Same graph, different field</h2>
+              <p>
+                Two systems may have similar module graphs and still support
+                different next operations. In one system, a checkout change may
+                naturally begin with a domain invariant and a property test. In
+                another, the low-cost move may be another conditional in a
+                controller because previous incidents, missing ownership, and
+                weak tests made deeper change costly.
+              </p>
+              <p>
+                The graph is the same, but the field is not. The first system
+                has made the deeper operation visible and reviewable. The second
+                has made the local operation easier to justify. A static module
+                diagram cannot see that difference by itself, because the
+                difference lives in accumulated practice.
+              </p>
+              <p>
+                The difference also matters for AI. A model asked to edit the
+                second system does not see "the true architecture"; it sees
+                nearby code, tests, names, comments, and examples. If the field
+                memory says "patch here," automated proposal generation will
+                often comply. If the field memory says "this invariant is the
+                entry point," the generated proposal has a different basin to
+                fall into.
+              </p>
+              <p id="proposition-1-2" class="statement">
+                <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
+                Field memory is not reducible to the current module graph.
+                The same selected graph can have different supported operation
+                families when review history, incidents, ownership, and tooling
+                practice differ.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Proposition 1.2">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-future">theorem-shaped claim</span>
+                <span>Future formalization target: compare fields with the same architecture projection and different support relation.</span>
+              </p>
+            </section>
+
+            <section id="measurement" class="article-section">
+              <h2>What can be observed</h2>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>review trace</dt>
+                  <dd>Evidence of which invariants are routinely demanded, ignored, or negotiated.</dd>
+                </div>
+                <div>
+                  <dt>incident residue</dt>
+                  <dd>Operational failures that change later design defaults, test expectations, and risk language.</dd>
+                </div>
+                <div>
+                  <dt>ownership boundary</dt>
+                  <dd>The practical line that decides who can approve or safely attempt a change.</dd>
+                </div>
+                <div>
+                  <dt>local pattern</dt>
+                  <dd>A repeatable implementation idiom that becomes attractive to humans and AI agents because it is nearby and legible.</dd>
+                </div>
+              </dl>
+              <p>
+                None of these observations is complete. That is the point. SFT
+                begins with partial evidence and asks what that evidence can
+                responsibly support. A field estimate is not a photograph of the
+                whole organization. It is a selected reading of the traces that
+                still have force over future operations.
+              </p>
+              <p class="plain-reading">
+                <strong>Field habit.</strong> When a change feels obvious, ask
+                what memory made it obvious.
+              </p>
+            </section>
+
+            <section id="boundary" class="article-section">
               <h2>Boundary</h2>
-              <p>
-                Codebase memory does not causally determine a future PR. It
-                gives a bounded reading of why some operations are supported,
-                cheap, and repeatable under a selected field model, while other
-                operations remain difficult or unobserved.
+              <p id="non-conclusion-1-3" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-1-3">Non-conclusion 1.3.</a>
+                Codebase memory does not prove what the next PR will be. It
+                explains why, under a selected field model, some operation
+                families are natural, cheap, visible, or reviewable while
+                others remain costly or unobserved.
               </p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">

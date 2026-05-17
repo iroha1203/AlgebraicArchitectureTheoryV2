@@ -3,11 +3,29 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SFT 1-4: organization structure as field.">
+    <meta name="description" content="SFT 1-4: organization structure as field, where communication paths, ownership, review routes, and approval flows shape recurrent PR structure.">
     <title>SFT 1-4: Organization Structure as Field</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/field/organization-structure/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 1-4: Organization Structure as Field">
+    <meta property="og:description" content="Communication paths, ownership boundaries, review routes, approval flows, and issue decomposition shape recurrent PR structure.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/field/organization-structure/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 1-4: Organization Structure as Field">
+    <meta name="twitter:description" content="Organization structure changes operation support by shaping communication, ownership, review routes, and recurrent PR structure.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
     <link rel="stylesheet" href="../../../assets/site.css">
     <script defer src="../../../assets/site.js"></script>
   </head>
@@ -41,15 +59,26 @@
           <p class="eyebrow">SFT 1-4</p>
           <h1>Organization Structure as Field</h1>
           <p class="lede">
-            Communication paths, ownership boundaries, review routes, approval
-            flows, on-call boundaries, and issue decomposition become recurrent
-            pressure on architecture futures.
+            Organization structure is not background context. Communication
+            paths, ownership boundaries, review routes, approval flows, on-call
+            boundaries, and issue decomposition make recurring change shapes
+            more or less natural.
           </p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
-          <aside class="article-sidebar" aria-label="SFT navigation">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#architecture-of-communication">Architecture of communication</a></li>
+                <li><a href="#conway">Conway through SFT</a></li>
+                <li><a href="#pr-shape">Recurrent PR shape</a></li>
+                <li><a href="#design">Design implication</a></li>
+                <li><a href="#boundary">Boundary</a></li>
+              </ol>
+            </nav>
             <div class="source-panel" data-sidebar-open="true">
               <h2>Part 1 routes</h2>
               <ul>
@@ -65,48 +94,161 @@
             </div>
           </aside>
           <div class="article-main">
-            <section class="article-section">
+            <aside class="question-card" aria-label="Guiding question">
+              <span class="question-card-label">Question</span>
+              <p>How does an organization make some architecture changes ordinary and others exceptional?</p>
+            </aside>
+
+            <section id="architecture-of-communication" class="article-section">
+              <h2>Architecture of communication</h2>
+              <p>
+                A software architecture is not only drawn in modules. It is also
+                drawn in communication. Which team can approve a boundary change?
+                Which reviewer sees the invariant? Which service has an owner?
+                Which migration has no sponsor? Which incident crosses an
+                on-call boundary and therefore becomes nobody's local memory?
+              </p>
+              <p>
+                These questions sound organizational, but in SFT they are also
+                architectural. They decide which operations can be attempted at
+                ordinary cost. A technically clean refactor that needs four
+                teams, two release windows, and an unclear owner may be less
+                supported than a messy local patch. Over time, repeated support
+                becomes shape.
+              </p>
+              <p>
+                This gives Conway's Law a field reading. The organization does
+                not mechanically print architecture. It changes the pressure
+                under which architecture futures become reachable.
+              </p>
+              <p>
+                Pressure is the right word here because the effect is rarely a
+                command. Nobody needs to order a team to preserve the old
+                boundary. The field can do it quietly by making every
+                alternative require more meetings, unclear approvals, uncertain
+                rollback, and ownership nobody wants to inherit.
+              </p>
+              <p>
+                This is why the same architecture recommendation can be trivial
+                in one organization and nearly impossible in another. "Extract
+                the service," "move the boundary," or "preserve the invariant"
+                are not just technical operations. They are paths through
+                communication, ownership, review, deployment, and operational
+                responsibility. The operation is supported only if those paths
+                exist at ordinary cost.
+              </p>
+              <p>
+                The org chart is only the visible skeleton. The field lives in
+                the actual routes by which work moves: who can be interrupted,
+                who can say no, who owns cleanup, who remembers production, and
+                which boundary has a review path instead of a heroic exception.
+              </p>
+            </section>
+
+            <section id="conway" class="article-section">
               <h2>Conway through SFT</h2>
               <p>
-                Conway's Law is usually read as the empirical observation that
-                systems reflect the communication structures of the
-                organizations that build them. SFT reads the same phenomenon as
-                a field effect: organizational structure changes operation
-                support, and operation support changes day-to-day design
-                changes.
+                Conway's Law is usually stated as an empirical relationship
+                between communication structure and system design. SFT reads it
+                as a field mechanism: communication paths and ownership
+                boundaries alter which changes are supported at ordinary cost.
               </p>
-              <p>
-                A team boundary can make a clean interface cheap or a cross-cut
-                refactor expensive. A review route can make one invariant
-                routinely visible and another invisible. An approval flow can
-                reward local patches while making architectural repair too slow
-                to attempt.
+              <figure class="code-panel">
+                <figcaption>Organization field mechanism</figcaption>
+                <pre><code>OrganizationField
+  = communication paths
+  + ownership boundaries
+  + review routes
+  + approval flows
+  + on-call boundaries
+  + issue decomposition
+  -> recurrent operation support
+  -> recurrent architecture pressure</code></pre>
+              </figure>
+              <p id="definition-1-10" class="statement">
+                <a class="statement-anchor" href="#definition-1-10">Definition 1.10.</a>
+                Organization structure is a field component when it changes the
+                cost, visibility, approval path, or ownership premise of an
+                architecture operation.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1.10">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual definition</span>
+                <span>Source: SFT reading of Conway-style organization pressure.</span>
               </p>
             </section>
-            <section class="article-section">
+
+            <section id="pr-shape" class="article-section">
               <h2>Recurrent PR shape</h2>
               <p>
-                Organization structure becomes visible in the repeated shape of
-                changes: which files move together, which owners are asked for
-                review, which issues are split apart, which runtime boundaries
-                are treated as somebody else's responsibility, and which
-                migrations never receive a shared owner.
+                Organization structure appears in repeated pull request shapes:
+                which files move together, which owners are requested, which
+                APIs are avoided, which teams need synchronous coordination,
+                which migrations never get a sponsor, and which operational
+                risks are treated as somebody else's boundary.
               </p>
               <p>
-                Those repeated shapes do not deterministically produce an
-                architecture. They make some futures natural and others
-                expensive. If a desirable architecture should become reachable
-                without heroic coordination, the organization field has to make
-                preserving changes low-cost and repeatable.
+                These repeated shapes are empirical clues. They reveal where the
+                field has made a path smooth and where it has made a path
+                exceptional. When the same awkward cross-boundary change keeps
+                being avoided, the field is telling us something about the
+                architecture future it can actually reach.
+              </p>
+              <p>
+                SFT therefore reads pull requests as more than code changes.
+                They are small experiments in organizational physics. Which
+                boundaries resisted movement? Which approvals were needed? Which
+                tests stood in for missing trust? Which files had to move
+                together because no social path existed for separating them?
+                The answer is a map of support.
+              </p>
+              <p id="proposition-1-11" class="statement">
+                <a class="statement-anchor" href="#proposition-1-11">Proposition 1.11.</a>
+                Recurrent PR shape is evidence of field support. It shows which
+                architecture changes have become repeatable under the current
+                organization, and which changes require exceptional effort.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Proposition 1.11">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-future">empirical / tooling hypothesis</span>
+                <span>Future evidence: PR traces, review routes, CODEOWNERS-like ownership, issue split, and incident follow-up.</span>
               </p>
             </section>
-            <section class="article-section">
-              <h2>Boundary</h2>
+
+            <section id="design" class="article-section">
+              <h2>Design implication</h2>
+              <p class="plain-reading">
+                <strong>Plain reading.</strong> If a desired architecture needs
+                repeated boundary-preserving changes, the organization field
+                must make those changes low-cost and reviewable.
+              </p>
               <p>
-                This is not a metaphor-only account, but it is also not a claim
-                that org charts predict systems. The claim is bounded: selected
-                communication and ownership structures can be read as field
-                components that reshape supported architecture paths.
+                A good architecture cannot remain natural if every lawful path
+                requires exceptional coordination while every shortcut is local,
+                cheap, and invisible. In SFT, organization design is therefore
+                architecture design through the field: it changes the support
+                relation before code is written.
+              </p>
+              <p>
+                This does not reduce architecture to management. It says the
+                opposite: architecture is too real to be protected only by
+                diagrams. If the organization cannot repeatedly enact the
+                boundary, the boundary is not yet a stable part of the field.
+              </p>
+              <p class="plain-reading">
+                <strong>Field habit.</strong> If the desired architecture is
+                never the low-friction path, redesign the field before blaming
+                the code.
+              </p>
+            </section>
+
+            <section id="boundary" class="article-section">
+              <h2>Boundary</h2>
+              <p id="non-conclusion-1-12" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-1-12">Non-conclusion 1.12.</a>
+                Organization structure does not deterministically produce
+                architecture. It supplies bounded field evidence about which
+                operation families are cheap, selected, blocked, or invisible.
               </p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
