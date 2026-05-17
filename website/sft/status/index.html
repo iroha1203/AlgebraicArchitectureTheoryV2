@@ -80,6 +80,7 @@
                 <li><a href="#claim-level-map">Claim level map</a></li>
                 <li><a href="#forecast-boundary">Forecast boundary</a></li>
                 <li><a href="#archsig-sft-boundary">ArchSig-SFT boundary</a></li>
+                <li><a href="#lean-roadmap">SFT Lean Roadmap</a></li>
                 <li><a href="#promotion-rules">Promotion rules</a></li>
                 <li><a href="#source-references">Source references</a></li>
               </ol>
@@ -262,6 +263,83 @@
               </ul>
             </section>
 
+            <section id="lean-roadmap" class="article-section">
+              <h2>SFT Lean Roadmap</h2>
+              <p>
+                The current SFT formal surface is intentionally staged. Each
+                stage names the Lean-backed reading that may be cited today
+                and the boundary that must not be promoted into a stronger
+                forecast, governance, or empirical claim.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>S1: trajectory and counterexample base</strong>
+                  <span>
+                    <code>SignatureTrajectory</code>, selected deltas, safe
+                    regions, endpoint/path counterexamples, same-signature
+                    future counterexamples, and observation-expansion shocks
+                    are Lean-defined with proved finite witnesses. They show
+                    bounded non-conclusions; they do not estimate frequency,
+                    operational incident risk, or extractor completeness.
+                  </span>
+                </li>
+                <li>
+                  <strong>S2: field paths and ForecastCone core</strong>
+                  <span>
+                    <code>SoftwareField</code>, <code>OperationSupport</code>,
+                    <code>StepRelation</code>, finite <code>FieldPath</code>,
+                    and <code>ForecastCone</code> membership are Lean-defined.
+                    Core accessors such as horizon bounds, nil membership, and
+                    horizon monotonicity are proved. This is set-valued
+                    reachability under supplied support semantics, not a
+                    probability model or calibrated prediction.
+                  </span>
+                </li>
+                <li>
+                  <strong>S3: cone narrowing and support safety</strong>
+                  <span>
+                    Same-field cone projection, support-inclusion projection,
+                    horizon extension, and selected support-safety theorems are
+                    proved under explicit assumptions. Accepted-step evidence
+                    is tracked separately; it does not imply support
+                    preservation, global safety, or a general relational
+                    simulation between unrelated field models.
+                  </span>
+                </li>
+                <li>
+                  <strong>S4: update and envelope boundary</strong>
+                  <span>
+                    <code>FieldUpdate</code> and <code>ConsequenceEnvelope</code>
+                    preserve selected forecast errors, missing evidence,
+                    policy drift, theorem boundaries, unknown remainder, and
+                    non-conclusions as record-level accessors. An ArchSig
+                    report may point to these boundaries, but the report is not
+                    itself a Lean witness and does not prove accuracy
+                    improvement or causal governance effectiveness.
+                  </span>
+                </li>
+                <li>
+                  <strong>S5: calibration remains empirical</strong>
+                  <span>
+                    Dataset calibration, held-out forecast quality, operational
+                    feedback, and adapter quality belong to empirical protocol
+                    and tooling validation. They may use SFT vocabulary and
+                    ArchSig artifacts, but they are not Lean theorem status
+                    unless separate formal semantics and checked proofs are
+                    added.
+                  </span>
+                </li>
+              </ul>
+              <div class="claim-strip">
+                <p>
+                  Issues #907 and #913 completed the current Lean formal
+                  surface used by this roadmap. Issue #916 packages the
+                  docs-facing theorem metadata, and Issue #920 packages the
+                  SFT-native counterexample anchors.
+                </p>
+              </div>
+            </section>
+
             <section id="promotion-rules" class="article-section">
               <h2>Promotion rules</h2>
               <p>
@@ -296,6 +374,24 @@
             <section id="source-references" class="article-section">
               <h2>Source references</h2>
               <ul class="chapter-list">
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b125514f99989acff580584fa69df361f6ba8ce4/Formal/Arch/Evolution/SFTTheoremPackages.lean">
+                    SFT theorem package entrypoint
+                  </a>
+                  <span>Docs-facing metadata for SFT candidate groups, representative declarations, schematic correspondences, and non-conclusion boundaries.</span>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b125514f99989acff580584fa69df361f6ba8ce4/docs/aat/lean_theorem_index.md#sft-theorem-package-entrypoint">
+                    Lean theorem index
+                  </a>
+                  <span>Checked Lean declaration status for the SFT formal surface and theorem-package entrypoint.</span>
+                </li>
+                <li>
+                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b125514f99989acff580584fa69df361f6ba8ce4/docs/aat/proof_obligations.md">
+                    Proof obligations
+                  </a>
+                  <span>Source-of-truth vocabulary for proved, defined-only, future proof obligation, and empirical hypothesis status.</span>
+                </li>
                 <li>
                   <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d7f18097bca0f71edb08b8ab0a33b009e68cd33d/docs/sft/software_field_theory.md">
                     SFT monograph source
