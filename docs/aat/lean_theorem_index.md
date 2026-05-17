@@ -1763,7 +1763,8 @@ reconstruction completeness、extractor completeness、global future trajectory 
 
 File: `Formal/Arch/Evolution/SFTForecastCone.lean`
 
-Issue [#909](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/909) では、
+Issue [#909](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/909) と
+Issue [#918](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/918) では、
 SFT の `ForecastCone` 最小 core として、set-valued support、selected step relation、
 support-witnessed finite `FieldPath`、bounded `ReachableFieldPath`、`ForecastCone`
 membership predicate を追加した。`ForecastCone` は finite path-length horizon に相対化した
@@ -1789,6 +1790,8 @@ global safety、extractor completeness は結論しない。
 | `ForecastCone.length_le_horizon` | `theorem` | cone membership から finite path-length horizon bound を取り出す accessor theorem。 | `proved` |
 | `ForecastCone.nil_mem` | `theorem` | source の zero-length path が zero-horizon cone に属すること。 | `proved` |
 | `ForecastCone.monotone_horizon` | `theorem` | horizon を大きくすると cone membership が保存されること。 | `proved` |
+| `ForecastCone.of_length_le` | `theorem` | finite path length が horizon 以下であることから cone membership を構成する helper theorem。 | `proved` |
+| `ForecastCone.of_length_eq_le` | `theorem` | 明示された path-length equality と horizon bound から cone membership を構成する helper theorem。 | `proved` |
 | `ForecastCone.RecordsSupportCoverageAssumptions` | `def` | ForecastCone core が support coverage assumptions を明示 accessor として保持すること。 | `defined only` |
 | `ForecastCone.RecordsStepCoverageAssumptions` | `def` | ForecastCone core が step coverage assumptions を明示 accessor として保持すること。 | `defined only` |
 | `ForecastCone.RecordsSupportBoundary` | `def` | ForecastCone core が support/model boundary を明示 accessor として保持すること。 | `defined only` |
@@ -1800,7 +1803,8 @@ global safety、extractor completeness は結論しない。
 
 File: `Formal/Arch/Evolution/SFTConeProjection.lean`
 
-Issue [#910](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/910) では、
+Issue [#910](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/910) と
+Issue [#918](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/918) では、
 same `Field` / `Operation` 上の set-valued support semantics に限定し、
 pointwise support inclusion と step simulation から `ForecastCone` membership が
 同じ horizon で射影されることを証明した。これは identity-field projection の Lean core であり、
@@ -1811,6 +1815,7 @@ global safety、extractor completeness は結論しない。
 | --- | --- | --- | --- |
 | `PointwiseSupportInclusion` | `def` | 各 selected field state で narrower support の operation membership が wider support に含まれること。 | `defined only` |
 | `StepSimulation` | `def` | narrower support で supported な primitive transition が、同じ source / operation / target で wider step relation により realize されること。 | `defined only` |
+| `SameRelationStepSimulation` | `def` | 同一 `StepRelation` が任意の narrower support に対して自分自身を simulate する helper。 | `defined only` |
 | `ForecastConeProjection.projectSupportedFieldStep` | `def` | support inclusion と step simulation に沿って `SupportedFieldStep` を wider model へ写す。 | `defined only` |
 | `ForecastConeProjection.projectFieldPath` | `def` | support-witnessed `FieldPath` を構造再帰で wider model へ写す。 | `defined only` |
 | `ForecastConeProjection.ProjectedFieldPath` | `def` | wider model の path が narrower path の structural projection であることを表す predicate。 | `defined only` |
@@ -1821,6 +1826,9 @@ global safety、extractor completeness は結論しない。
 | `ForecastConeProjection.projectedFieldPath_cons` | `theorem` | tail の projected-path relation が successor path へ持ち上がること。 | `proved` |
 | `ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_stepSimulation` | `theorem` | pointwise support inclusion と step simulation の下で、narrower cone membership が同じ horizon の wider cone membership へ射影されること。 | `proved` |
 | `ForecastConeProjection.exists_projected_forecastCone` | `theorem` | projected path witness と wider cone membership を存在形で取り出す wrapper。 | `proved` |
+| `ForecastConeProjection.forecastCone_projects_of_supportInclusion` | `theorem` | 同一 `StepRelation` 上で support inclusion だけから narrower cone membership を wider cone membership へ射影すること。 | `proved` |
+| `ForecastConeProjection.exists_projected_forecastCone_of_supportInclusion` | `theorem` | shared step relation の support monotonicity を projected path witness の存在形で取り出す wrapper。 | `proved` |
+| `ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le` | `theorem` | support inclusion と horizon extension を組み合わせても projected cone membership が保存されること。 | `proved` |
 
 ## SFT Support Safety
 

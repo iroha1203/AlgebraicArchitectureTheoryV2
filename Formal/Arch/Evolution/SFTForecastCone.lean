@@ -172,6 +172,23 @@ theorem monotone_horizon
     ForecastCone support relation source horizon₂ target path :=
   Nat.le_trans hCone hLe
 
+/-- A finite path-length bound is exactly the data needed for cone membership. -/
+theorem of_length_le
+    {source target : Field} {horizon : Nat}
+    {path : FieldPath support relation source target}
+    (hLength : ArchitecturePath.length path <= horizon) :
+    ForecastCone support relation source horizon target path :=
+  hLength
+
+/-- Cone membership can be re-established from an explicit path-length equality. -/
+theorem of_length_eq_le
+    {source target : Field} {length horizon : Nat}
+    {path : FieldPath support relation source target}
+    (hLength : ArchitecturePath.length path = length)
+    (hLe : length <= horizon) :
+    ForecastCone support relation source horizon target path := by
+  simpa [ForecastCone, ReachableFieldPath, hLength] using hLe
+
 /-- The support package coverage assumptions remain an explicit accessor. -/
 def RecordsSupportCoverageAssumptions :
     Prop :=
