@@ -1847,6 +1847,54 @@ operational feedback artifact の extractor completeness を結論しない。
 | `FieldUpdate.UpdateSound.fieldUpdate_records_calibrationBoundary` | `theorem` | update package が calibration boundary を保持し、accuracy improvement を結論しないことを accessor として公開する。 | `proved` |
 | `FieldUpdate.UpdateSound.fieldUpdate_records_nonConclusions` | `theorem` | update package 全体の non-conclusion boundary を取り出す。 | `proved` |
 
+## SFT ConsequenceEnvelope
+
+File: `Formal/Arch/Evolution/SFTEnvelope.lean`
+
+Issue [#911](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/911) では、
+selected `ForecastRecord` family から reviewer-facing `ConsequenceEnvelope` への
+loss-aware report projection を record-level boundary theorem package として追加した。
+これは envelope が selected cone family、missing / theorem boundary、unknown remainder、
+forecast non-conclusions を保存して読めることに限られ、cone family の一意復元、
+probability、causal proof、point prediction、calibrated forecast correctness、tooling artifact
+の Lean theorem witness 化は結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `ConeFamily` | `structure` | nonempty selected `ForecastRecord` list と family boundary / unknown remainder / non-conclusions を束ねる cone family record。 | `defined only` |
+| `ConeFamily.RecordsForecastListNonConclusions` | `def` | selected forecast record list の各要素が non-conclusion boundary を保持すること。 | `defined only` |
+| `ConeFamily.RecordsNonempty` | `def` | selected cone family が空でないことを predicate として取り出す。 | `defined only` |
+| `ConeFamily.RecordsForecastNonConclusions` | `def` | selected cone family 内の forecast non-conclusions を取り出す。 | `defined only` |
+| `ConeFamily.RecordsFamilyBoundary` | `def` | selected cone-family modeling boundary を取り出す。 | `defined only` |
+| `ConeFamily.RecordsUnknownRemainder` | `def` | unknown / unmodeled remainder を取り出す。 | `defined only` |
+| `ConeFamily.RecordsNonConclusions` | `def` | family と per-forecast non-conclusion boundaries を組み合わせて取り出す。 | `defined only` |
+| `ConeFamily.records_nonempty` | `theorem` | family record から nonempty witness を取り出す accessor theorem。 | `proved` |
+| `ObservationBoundary` | `structure` | path classes、affected regions、comparable axes、missing / theorem boundary、unknown remainder、non-conclusions を束ねる observation boundary。 | `defined only` |
+| `ObservationBoundary.RecordsPathClassesVisible` | `def` | projection で visible な path classes を取り出す。 | `defined only` |
+| `ObservationBoundary.RecordsAffectedRegionsVisible` | `def` | projection で visible な affected regions を取り出す。 | `defined only` |
+| `ObservationBoundary.RecordsComparableAxes` | `def` | selected measurement universe で comparable な axes を取り出す。 | `defined only` |
+| `ObservationBoundary.RecordsMissingBoundary` | `def` | missing boundary items を取り出す。 | `defined only` |
+| `ObservationBoundary.RecordsTheoremBoundary` | `def` | theorem / modeling boundary items を取り出す。 | `defined only` |
+| `ObservationBoundary.RecordsUnknownRemainder` | `def` | unknown / unmodeled remainder を取り出す。 | `defined only` |
+| `ObservationBoundary.RecordsNonConclusions` | `def` | observation-boundary non-conclusions を取り出す。 | `defined only` |
+| `ConsequenceEnvelope` | `structure` | reviewer-facing envelope report と projection / forecast / non-conclusion boundaries を束ねる projection target。 | `defined only` |
+| `ConsequenceEnvelope.RecordsPathClasses` | `def` | envelope の path classes を取り出す。 | `defined only` |
+| `ConsequenceEnvelope.RecordsAffectedRegions` | `def` | envelope の affected regions を取り出す。 | `defined only` |
+| `ConsequenceEnvelope.RecordsComparableAxes` | `def` | envelope の comparable axes を取り出す。 | `defined only` |
+| `ConsequenceEnvelope.RecordsMissingBoundary` | `def` | envelope の missing boundary items を取り出す。 | `defined only` |
+| `ConsequenceEnvelope.RecordsTheoremBoundary` | `def` | envelope の theorem / modeling boundary items を取り出す。 | `defined only` |
+| `ConsequenceEnvelope.RecordsUnknownRemainder` | `def` | envelope の unknown / unmodeled remainder を取り出す。 | `defined only` |
+| `ConsequenceEnvelope.RecordsForecastBoundary` | `def` | envelope の forecast/model boundary を取り出す。 | `defined only` |
+| `ConsequenceEnvelope.RecordsProjectionBoundary` | `def` | envelope の report projection boundary を取り出す。 | `defined only` |
+| `ConsequenceEnvelope.RecordsNonConclusions` | `def` | envelope-level non-conclusions を取り出す。 | `defined only` |
+| `EnvelopeProjection` | `structure` | selected cone family と observation boundary から envelope への loss-aware projection relation。 | `defined only` |
+| `EnvelopeProjection.envelope_records_selectedConeCount` | `theorem` | envelope が projected cone count を family record length として保持すること。 | `proved` |
+| `EnvelopeProjection.envelope_preserves_missingBoundary` | `theorem` | observation boundary の missing boundary items が envelope に保存されること。 | `proved` |
+| `EnvelopeProjection.envelope_preserves_theoremBoundary` | `theorem` | theorem / modeling boundary items が envelope に保存されること。 | `proved` |
+| `EnvelopeProjection.envelope_preserves_unknownRemainder` | `theorem` | selected cone family の unknown remainder が envelope に保存されること。 | `proved` |
+| `EnvelopeProjection.envelope_preserves_nonConclusions` | `theorem` | selected cone family の forecast non-conclusions が envelope に保存されること。 | `proved` |
+| `EnvelopeProjection.envelope_does_not_strengthen_forecast_claim` | `theorem` | envelope が forecast / projection / non-conclusion boundaries を保持し、forecast claim を強めないことを accessor として公開する。 | `proved` |
+
 ## Signature Dynamics
 
 File: `Formal/Arch/Evolution/SignatureDynamics.lean`
