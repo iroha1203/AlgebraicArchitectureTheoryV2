@@ -1871,6 +1871,52 @@ market success、human intention、extractor completeness を結論しない。
 | `ForecastConeFamilyAfterAction.RecordsFamilyBoundary` | `def` | action-after-cone family boundary を predicate として取り出す。 | `defined only` |
 | `ForecastConeFamilyAfterAction.RecordsNonConclusions` | `def` | family、artifact action、underlying forecast cone の non-conclusions を組み合わせて取り出す。 | `defined only` |
 
+## SFT OperationPolicy / GovernanceIntervention
+
+File: `Formal/Arch/Evolution/SFTPolicy.lean`
+
+Issue [#921](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/921) では、
+operation support に相対化された `OperationPolicy` と、before/after support・policy を束ねる
+`GovernanceIntervention` を追加した。restrictive intervention は after-support が
+before-support に pointwise inclusion される条件として扱い、既存の same-relation
+`ForecastCone` projection theorem に接続する。redirective / instrumenting は policy boundary
+と observation enrichment の accessor に留める。これは review、CI、type checking、
+architecture rules、AI policy、runtime guard が architecture lawfulness、future trajectory
+safety、empirical risk reduction、extractor completeness を結論することを意味しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `OperationPolicy` | `structure` | selected support に相対化された operation selection、preorder-like preference、cost / selection / policy / non-conclusion boundary の record。 | `defined only` |
+| `OperationPolicy.Selected` | `def` | selected operation が field state で policy により選択されること。 | `defined only` |
+| `OperationPolicy.NoHarderThan` | `def` | operation 間の no-harder / no-less-natural / no-less-preferred vocabulary。 | `defined only` |
+| `OperationPolicy.RecordsCostBoundary` | `def` | cost-order assumptions を boundary predicate として取り出す。 | `defined only` |
+| `OperationPolicy.RecordsSelectionBoundary` | `def` | selection assumptions を boundary predicate として取り出す。 | `defined only` |
+| `OperationPolicy.RecordsPolicyBoundary` | `def` | policy/modeling boundary を取り出す。 | `defined only` |
+| `OperationPolicy.RecordsNonConclusions` | `def` | policy と underlying support の non-conclusion boundary を組み合わせる。 | `defined only` |
+| `SupportTransformation` | `structure` | before/after support と support / policy / non-conclusion boundary を束ねる governance support transformation。 | `defined only` |
+| `SupportTransformation.Restricts` | `def` | after-support が before-support に pointwise inclusion される restrictive condition。 | `defined only` |
+| `SupportTransformation.RecordsSupportTransformation` | `def` | selected support transformation を boundary predicate として取り出す。 | `defined only` |
+| `SupportTransformation.RecordsSupportBoundary` | `def` | support-transformation assumptions を取り出す。 | `defined only` |
+| `SupportTransformation.RecordsPolicyBoundary` | `def` | policy-shaping assumptions を取り出す。 | `defined only` |
+| `SupportTransformation.RecordsNonConclusions` | `def` | support transformation と before/after support の non-conclusions を組み合わせる。 | `defined only` |
+| `GovernanceIntervention` | `structure` | before/after support、before/after policy、support transformation、observation / feedback / escalation / intervention / non-conclusion boundary を束ねる record。 | `defined only` |
+| `GovernanceIntervention.RecordsSupportTransformation` | `def` | intervention の selected support transformation を取り出す。 | `defined only` |
+| `GovernanceIntervention.RecordsPolicyBeforeBoundary` | `def` | before-policy boundary を取り出す。 | `defined only` |
+| `GovernanceIntervention.RecordsPolicyAfterBoundary` | `def` | after-policy boundary を取り出す。 | `defined only` |
+| `GovernanceIntervention.RecordsObservationEnrichment` | `def` | observation enrichment boundary を取り出す。 | `defined only` |
+| `GovernanceIntervention.RecordsFeedbackUpdate` | `def` | feedback-update assumptions を取り出す。 | `defined only` |
+| `GovernanceIntervention.RecordsEscalationBoundary` | `def` | escalation / deferral boundary を取り出す。 | `defined only` |
+| `GovernanceIntervention.RecordsInterventionBoundary` | `def` | intervention-level modeling boundary を取り出す。 | `defined only` |
+| `GovernanceIntervention.RecordsNonConclusions` | `def` | intervention、support transformation、before/after policy の non-conclusions を組み合わせる。 | `defined only` |
+| `GovernanceIntervention.Restrictive` | `def` | after-support を before-support に制限する intervention predicate。 | `defined only` |
+| `GovernanceIntervention.Redirective` | `def` | before/after policy と policy-shaping boundary を記録する intervention predicate。 | `defined only` |
+| `GovernanceIntervention.Instrumenting` | `def` | observation enrichment を記録する intervention predicate。 | `defined only` |
+| `GovernanceIntervention.restrictive_supportInclusion` | `theorem` | restrictive intervention から `PointwiseSupportInclusion supportAfter supportBefore` を取り出す。 | `proved` |
+| `GovernanceIntervention.restrictive_forecastCone_projects` | `theorem` | restrictive intervention により after-support cone path が before-support cone へ同じ horizon で射影される。 | `proved` |
+| `GovernanceIntervention.redirective_records_policyBoundaries` | `theorem` | redirective intervention から before/after policy boundaries を取り出す。 | `proved` |
+| `GovernanceIntervention.instrumenting_records_observationEnrichment` | `theorem` | instrumenting intervention から observation enrichment boundary を取り出す。 | `proved` |
+| `GovernanceIntervention.policy_pass_does_not_discharge_lawfulness` | `theorem` | policy pass / governance non-conclusion boundary を accessor として公開する。 | `proved` |
+
 ## SFT Support Safety
 
 File: `Formal/Arch/Evolution/SFTSupportSafety.lean`
