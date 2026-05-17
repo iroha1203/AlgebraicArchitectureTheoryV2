@@ -1775,6 +1775,44 @@ global safety、extractor completeness は結論しない。
 | `ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_stepSimulation` | `theorem` | pointwise support inclusion と step simulation の下で、narrower cone membership が同じ horizon の wider cone membership へ射影されること。 | `proved` |
 | `ForecastConeProjection.exists_projected_forecastCone` | `theorem` | projected path witness と wider cone membership を存在形で取り出す wrapper。 | `proved` |
 
+## SFT Support Safety
+
+File: `Formal/Arch/Evolution/SFTSupportSafety.lean`
+
+Issue [#912](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/912) では、
+既存の `AttractorEngineeringSupportPackage` / `FiniteOperationKernel` safe-region theorem を
+SFT-native support safety package として公開した。finite kernel を `OperationSupport`、
+operation semantics を existential transition witness 付き `StepRelation` として読み、
+realized supported script から `ForecastCone` witness と bounded safe observed trajectory を
+同時に取り出す。accepted-step evidence は record に保持するが、support preservation の導出には
+使わない。これは unmeasured axis、empirical review / CI capacity、forecast correctness、
+calibration、global safety を結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `SFTSupportSafetyPackage` | `structure` | checked support-preservation package と observation / accepted-step / forecast / non-conclusion boundary を束ねる SFT support safety wrapper。 | `defined only` |
+| `SFTSupportSafetyPackage.observation` | `def` | underlying package の selected observation を取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.kernel` | `def` | selected finite operation support kernel を取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.semantics` | `def` | selected operation transition semantics を取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.targetRegion` | `def` | theorem-bearing な selected safe region を取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.ForecastTrajectory` | `def` | package observation で finite architecture evolution を読んだ observed forecast trajectory。 | `defined only` |
+| `SFTSupportSafetyPackage.RecordsObservationBoundary` | `def` | observation boundary を predicate として取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.RecordsAcceptedStepBoundary` | `def` | accepted-step evidence が support preservation の代替ではない boundary を取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.RecordsForecastBoundary` | `def` | support safety が forecast correctness / calibration ではない boundary を取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.RecordsNonConclusions` | `def` | package と underlying Attractor Engineering package の non-conclusions / measurement boundary を組み合わせて取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.operationSupport` | `def` | finite kernel を SFT `OperationSupport` として読む vocabulary bridge。 | `defined only` |
+| `SFTSupportSafetyPackage.stepRelation` | `def` | operation semantics を primitive transition witness 付き SFT `StepRelation` として読む vocabulary bridge。 | `defined only` |
+| `SFTSupportSafetyPackage.supportedArchitectureStep` | `def` | supported operation が realize する primitive architecture transition を `SupportedFieldStep` へ変換する。 | `defined only` |
+| `SFTSupportSafetyPackage.fieldPathOfSupportedScript` | `def` | realized script が finite support だけを使う証拠から SFT `FieldPath` を構成する。 | `defined only` |
+| `SFTSupportSafetyPackage.fieldPathOfSupportedScript_length` | `theorem` | script-to-field-path conversion が operation count を保存すること。 | `proved` |
+| `SFTSupportSafetyPackage.AcceptedSupportedTrajectory` | `structure` | script / plan / start-safe / realization / support-use / accepted evidence を束ねる selected trajectory record。 | `defined only` |
+| `SFTSupportSafetyPackage.AcceptedSupportedTrajectory.fieldPath` | `def` | selected trajectory から induced SFT field path を取り出す。 | `defined only` |
+| `SFTSupportSafetyPackage.AcceptedSupportedTrajectory.fieldPath_length` | `theorem` | induced field path の length が script operation count と一致すること。 | `proved` |
+| `SFTSupportSafetyPackage.AcceptedSupportedTrajectory.mem_forecastCone` | `theorem` | accepted supported trajectory が script-length horizon の `ForecastCone` に入ること。 | `proved` |
+| `SFTSupportSafetyPackage.AcceptedSupportedTrajectory.supportSafety_preserves_forecastTrajectory` | `theorem` | stored support-preservation premise により selected forecast trajectory が target safe region 内に留まること。 | `proved` |
+| `SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety` | `theorem` | ForecastCone witness と support safety conclusion を同時に返す wrapper。 | `proved` |
+| `SFTSupportSafetyPackage.AcceptedSupportedTrajectory.acceptedEvidence` | `theorem` | accepted evidence を accessor として公開し、support-preservation premise と分離する。 | `proved` |
+
 ## Signature Dynamics
 
 File: `Formal/Arch/Evolution/SignatureDynamics.lean`

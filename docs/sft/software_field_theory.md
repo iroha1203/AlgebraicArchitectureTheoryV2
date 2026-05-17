@@ -828,6 +828,13 @@ StateInSafeRegion(O, R, F)
 これは明示された accepted trajectory と selected safe region に相対化された主張である。
 global future safety は従わない。
 
+Lean status:
+`Formal/Arch/Evolution/SFTSupportSafety.lean` は、finite kernel を SFT の
+`OperationSupport`、operation semantics を primitive transition witness 付き
+`StepRelation` として読み、realized supported script から `ForecastCone` witness と
+selected safe-region preservation を得る theorem package を持つ。accepted-step evidence は
+record に残すが、support preservation の導出には使わない。
+
 ### 17. Proposal Accounting and Review Mediation（proposal accounting と review mediation）
 
 Claim Level:
