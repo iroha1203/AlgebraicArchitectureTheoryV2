@@ -42,6 +42,9 @@ a proof system.
 - Home: https://iroha1203.dev/
 - AAT overview: https://iroha1203.dev/aat/
 - SFT overview: https://iroha1203.dev/sft/
+- SFT Part 1, Field: https://iroha1203.dev/sft/field/
+- SFT Part 2, Computation: https://iroha1203.dev/sft/computation/
+- SFT Part 3, Intervention: https://iroha1203.dev/sft/intervention/
 - ArchSig manual: https://iroha1203.dev/archsig/
 - Outreach: https://iroha1203.dev/outreach/
 
