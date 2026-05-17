@@ -842,6 +842,13 @@ Lean status:
 selected safe-region preservation を得る theorem package を持つ。accepted-step evidence は
 record に残すが、support preservation の導出には使わない。
 
+SFT Lean surface 全体の docs-facing entrypoint は
+`Formal/Arch/Evolution/SFTTheoremPackages.lean` である。この entrypoint は
+`SoftwareField`、`ForecastCone`、cone projection、artifact action、policy / governance、
+reachability、support safety、`FieldUpdate`、`ConsequenceEnvelope`、AAT / ArchSig boundary、
+counterexample package の代表 declaration と non-conclusion boundary を束ねる metadata であり、
+calibration、extractor completeness、global future safety を theorem claim に昇格しない。
+
 ### 17. Proposal Accounting and Review Mediation（proposal accounting と review mediation）
 
 Claim Level:
