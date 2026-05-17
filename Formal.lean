@@ -54,6 +54,7 @@ import Formal.Arch.Evolution.Chapter10ArchitectureExtensionFormula
 import Formal.Arch.Evolution.Chapter11AnalyticRepresentation
 import Formal.Arch.Evolution.SignatureDynamics
 import Formal.Arch.Evolution.AttractorEngineering
+import Formal.Arch.Evolution.SFTField
 import Formal.Arch.Evolution.SFTForecastCone
 import Formal.Arch.Evolution.SFTConeProjection
 import Formal.Arch.Evolution.SFTSupportSafety
