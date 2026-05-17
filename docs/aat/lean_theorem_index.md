@@ -1712,6 +1712,43 @@ flatness predicate の自動保存は主張しない。
 | `eventuallyFlat_of_targetFlat` | `theorem` | `MigrationSequence plan`, `EveryStepLawful plan`, `TargetFlat plan` から `EventuallyFlat plan` を得る bounded theorem package。 | `proved` |
 | `evolutionPathPreservesFlatness` | `theorem` | 既存 `ArchitecturePath.pathPreservesInvariant` を evolution-specific な `EventuallyFlat` 名へ bridge する theorem。 | `proved` |
 
+## SFT ForecastCone Core
+
+File: `Formal/Arch/Evolution/SFTForecastCone.lean`
+
+Issue [#909](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/909) では、
+SFT の `ForecastCone` 最小 core として、set-valued support、selected step relation、
+support-witnessed finite `FieldPath`、bounded `ReachableFieldPath`、`ForecastCone`
+membership predicate を追加した。`ForecastCone` は finite path-length horizon に相対化した
+到達可能 path predicate であり、point prediction、probability、calibration、causal proof、
+global safety、extractor completeness は結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `OperationSupport` | `structure` | field state ごとの selected operation support family と coverage / support boundary / non-conclusions を束ねる schema。 | `defined only` |
+| `OperationSupport.Supports` | `def` | selected operation が selected field state の support に含まれること。 | `defined only` |
+| `OperationSupport.RecordsCoverageAssumptions` | `def` | support package の coverage assumptions を predicate として取り出す。 | `defined only` |
+| `OperationSupport.RecordsSupportBoundary` | `def` | finite sampling、proposal completeness、weights、extractor coverage の boundary を predicate として取り出す。 | `defined only` |
+| `OperationSupport.RecordsNonConclusions` | `def` | support package の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `StepRelation` | `structure` | selected operation が field transition を realize する relation と coverage / theorem boundary / non-conclusions を束ねる schema。 | `defined only` |
+| `StepRelation.Realizes` | `def` | selected operation が source field から target field への selected step を realize すること。 | `defined only` |
+| `StepRelation.RecordsCoverageAssumptions` | `def` | step relation の coverage assumptions を predicate として取り出す。 | `defined only` |
+| `StepRelation.RecordsTheoremBoundary` | `def` | step relation が相対化される theorem / modeling boundary を predicate として取り出す。 | `defined only` |
+| `StepRelation.RecordsNonConclusions` | `def` | step relation の non-conclusion clause を predicate として取り出す。 | `defined only` |
+| `SupportedFieldStep` | `structure` | operation witness、support membership、step realization を保持する primitive SFT field step。 | `defined only` |
+| `FieldPath` | `abbrev` | `SupportedFieldStep` を primitive step とする finite field path。 | `defined only` |
+| `ReachableFieldPath` | `def` | endpoint-indexed `FieldPath` の length が selected horizon 以下であること。 | `defined only` |
+| `ForecastCone` | `def` | selected support / step relation / source / horizon に相対化された bounded reachable field path membership predicate。 | `defined only` |
+| `ForecastCone.length_le_horizon` | `theorem` | cone membership から finite path-length horizon bound を取り出す accessor theorem。 | `proved` |
+| `ForecastCone.nil_mem` | `theorem` | source の zero-length path が zero-horizon cone に属すること。 | `proved` |
+| `ForecastCone.monotone_horizon` | `theorem` | horizon を大きくすると cone membership が保存されること。 | `proved` |
+| `ForecastCone.RecordsSupportCoverageAssumptions` | `def` | ForecastCone core が support coverage assumptions を明示 accessor として保持すること。 | `defined only` |
+| `ForecastCone.RecordsStepCoverageAssumptions` | `def` | ForecastCone core が step coverage assumptions を明示 accessor として保持すること。 | `defined only` |
+| `ForecastCone.RecordsSupportBoundary` | `def` | ForecastCone core が support/model boundary を明示 accessor として保持すること。 | `defined only` |
+| `ForecastCone.RecordsStepTheoremBoundary` | `def` | ForecastCone core が step relation の theorem boundary を明示 accessor として保持すること。 | `defined only` |
+| `ForecastCone.RecordsHorizonBoundary` | `def` | horizon が finite path-length bound に限られる boundary を predicate として取り出す。 | `defined only` |
+| `ForecastCone.RecordsNonConclusions` | `def` | support と step relation の non-conclusions を組み合わせて ForecastCone の non-conclusion boundary を取り出す。 | `defined only` |
+
 ## Signature Dynamics
 
 File: `Formal/Arch/Evolution/SignatureDynamics.lean`
