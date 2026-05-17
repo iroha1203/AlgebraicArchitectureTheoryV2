@@ -1830,6 +1830,47 @@ global safety、extractor completeness は結論しない。
 | `ForecastConeProjection.exists_projected_forecastCone_of_supportInclusion` | `theorem` | shared step relation の support monotonicity を projected path witness の存在形で取り出す wrapper。 | `proved` |
 | `ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le` | `theorem` | support inclusion と horizon extension を組み合わせても projected cone membership が保存されること。 | `proved` |
 
+## SFT ArtifactAction / Candidate Update
+
+File: `Formal/Arch/Evolution/SFTArtifactAction.lean`
+
+Issue [#917](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/917) では、
+artifact-mediated change を、candidate update relation と、それを source とする
+action-after-cone family member に分解した。`ArtifactAction` は PRD / Spec / Issue /
+AI proposal が複数の candidate update と複数の future cone を生みうることを表す。
+`DeterministicArtifactAction` は candidate と applied target が一意な特殊ケースとして
+分離している。これは unique future、probability、causal proof、candidate completeness、
+market success、human intention、extractor completeness を結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `CandidateUpdateRelation` | `structure` | source field ごとの candidate update membership と candidate application relation、interpretation / update / non-conclusion boundary を束ねる schema。 | `defined only` |
+| `CandidateUpdateRelation.Candidate` | `def` | selected update が selected source field の candidate であること。 | `defined only` |
+| `CandidateUpdateRelation.AppliesTo` | `def` | selected update が selected source field から selected target field へ適用されること。 | `defined only` |
+| `CandidateUpdateRelation.RecordsInterpretationBoundary` | `def` | interpretation boundary を predicate として取り出す。 | `defined only` |
+| `CandidateUpdateRelation.RecordsUpdateBoundary` | `def` | candidate update boundary を predicate として取り出す。 | `defined only` |
+| `CandidateUpdateRelation.RecordsNonConclusions` | `def` | candidate update relation の non-conclusion clause を取り出す。 | `defined only` |
+| `ArtifactAction` | `structure` | source artifact、candidate update relation、target field component、action / composition / observable / non-conclusion boundary を束ねる schema。 | `defined only` |
+| `ArtifactAction.CandidateUpdate` | `def` | artifact action が誘導する candidate update membership。 | `defined only` |
+| `ArtifactAction.AppliesTo` | `def` | artifact action が誘導する candidate update application relation。 | `defined only` |
+| `ArtifactAction.RecordsTargetFieldComponents` | `def` | target field component assumptions を predicate として取り出す。 | `defined only` |
+| `ArtifactAction.RecordsInterpretationBoundary` | `def` | candidate update relation 側の interpretation boundary を取り出す。 | `defined only` |
+| `ArtifactAction.RecordsActionBoundary` | `def` | action-level boundary を predicate として取り出す。 | `defined only` |
+| `ArtifactAction.RecordsCompositionBoundary` | `def` | composition boundary を predicate として取り出す。 | `defined only` |
+| `ArtifactAction.RecordsObservableBoundary` | `def` | observable boundary を predicate として取り出す。 | `defined only` |
+| `ArtifactAction.RecordsNonConclusions` | `def` | action-level と candidate-relation の non-conclusions を組み合わせて取り出す。 | `defined only` |
+| `DeterministicArtifactAction` | `structure` | candidate update と applied target が source field ごとに一意な artifact action の特殊ケース。 | `defined only` |
+| `DeterministicArtifactAction.selected_candidate` | `theorem` | deterministic action の selected update が candidate であることを取り出す accessor theorem。 | `proved` |
+| `DeterministicArtifactAction.candidate_eq_selected` | `theorem` | 任意の candidate update が selected deterministic update と一致すること。 | `proved` |
+| `DeterministicArtifactAction.target_eq_selected` | `theorem` | 任意の applied candidate target が selected deterministic target と一致すること。 | `proved` |
+| `DeterministicArtifactAction.RecordsNonConclusions` | `def` | deterministic special case でも artifact-action non-conclusion boundary を保持すること。 | `defined only` |
+| `ForecastConeFamilyAfterAction` | `structure` | candidate update 適用後の selected field を source とする `ForecastCone` family member と family / non-conclusion boundary を束ねる schema。 | `defined only` |
+| `ForecastConeFamilyAfterAction.candidate_member` | `theorem` | stored family member から candidate update membership を取り出す accessor theorem。 | `proved` |
+| `ForecastConeFamilyAfterAction.applies_to_updatedField` | `theorem` | stored family member から candidate update application witness を取り出す accessor theorem。 | `proved` |
+| `ForecastConeFamilyAfterAction.length_le_horizon` | `theorem` | stored cone member から finite horizon bound を取り出す accessor theorem。 | `proved` |
+| `ForecastConeFamilyAfterAction.RecordsFamilyBoundary` | `def` | action-after-cone family boundary を predicate として取り出す。 | `defined only` |
+| `ForecastConeFamilyAfterAction.RecordsNonConclusions` | `def` | family、artifact action、underlying forecast cone の non-conclusions を組み合わせて取り出す。 | `defined only` |
+
 ## SFT Support Safety
 
 File: `Formal/Arch/Evolution/SFTSupportSafety.lean`
