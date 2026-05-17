@@ -175,6 +175,7 @@
   + OperationSupport
   + OperationPolicy
   + StepRelation
+  + bounded Horizon
   + ObservationRecord
   + GovernanceIntervention
   + ForecastCone
@@ -258,6 +259,43 @@
                 <span class="status-badge status-badge-defined">computational schema</span>
                 <span>Probability semantics are not assumed unless a distribution is part of the model.</span>
               </p>
+              <p>
+                In larger field models, support is not a single undifferentiated
+                relation. SFT separates generated operations, review candidates,
+                theorem-admissible steps, governed support, and accepted
+                trajectory steps.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Support layers</figcaption>
+                <pre><code>GeneratedSupport(F)
+  = operations produced by artifacts, agents, local patterns, or tools
+
+CandidateSupport(F)
+  = generated operations that enter the review or planning surface
+
+AdmissibleSupport(F)
+  = candidate operations satisfying selected theorem and invariant premises
+
+GovernedSupport(F)
+  = admissible operations after CI, policy, review, and governance filters
+
+SelectedSupport(F)
+  = operations actually chosen along an accepted trajectory</code></pre>
+              </figure>
+              <p>
+                Cone-narrowing claims must state which support layer is being
+                compared. The standard governance reading is a pointwise
+                inclusion of governed support, often after policy has been
+                compiled into <code>SelectedSupport_pi</code>.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Policy compiled into support</figcaption>
+                <pre><code>SelectedSupport_pi(F)
+  = { op in GovernedSupport(F) | Selected_pi(F, op) }
+
+PointwiseSupportInclusion(SelectedSupport_pi2, SelectedSupport_pi1)
+  -> selected cone projection under the stated Step relation and horizon</code></pre>
+              </figure>
               <figure class="code-panel">
                 <figcaption>Supported operation and policy forms</figcaption>
                 <pre><code>SupportedOperation
@@ -399,6 +437,15 @@ StepRelation(F, op, F')
 ForecastCone(F, U, h)
   = { p : FieldPath | ReachableFieldPath(F, U, h, p) }</code></pre>
               </figure>
+              <p>
+                Bounded reachability is not automatically computability. For a
+                cone to be used as a finite computation or report input, the
+                selected support must be finite or enumerable, support
+                membership must be decidable, step witnesses must be decidable
+                or semi-decidable, the horizon must be bounded, the observation
+                projection must be finite, and the unknown remainder must be
+                explicit.
+              </p>
               <figure class="code-panel">
                 <figcaption>ConsequenceEnvelope</figcaption>
                 <pre><code>ConsequenceEnvelope
@@ -406,8 +453,10 @@ ForecastCone(F, U, h)
   + reachable path classes
   + affected architecture regions
   + comparable signature axes
+  + expected axis delta ranges
   + obstruction witness candidates
   + missing invariants / boundaries
+  + review / CI / issue decomposition recommendations
   + forecast boundary
   + unknown / unmodeled remainder</code></pre>
               </figure>
@@ -452,6 +501,30 @@ EnvelopeProjection(ConeFamily, ObservationBoundary)
                 The projection is one-way: a consequence envelope does not
                 uniquely recover the cone family and does not supply causal
                 correctness, probability, or calibrated point prediction.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Envelope item witness contract</figcaption>
+                <pre><code>EnvelopeItem
+  = item_kind
+  + source_cone_ref
+  + path_witness_ref | heuristic_ref | empirical_ref
+  + observation_boundary
+  + comparable_axes
+  + non_conclusions
+  + unknown_remainder
+
+L2 path-class label requires:
+  at least one reachable path witness under the stated cone
+
+Otherwise label as:
+  heuristic / empirical / unsupported</code></pre>
+              </figure>
+              <p>
+                Each reported path class, affected axis, or obstruction
+                candidate must identify whether it is supported by a reachable
+                path witness, a heuristic reference, or empirical evidence.
+                This keeps the envelope connected to the formal core without
+                pretending that every report item is a Lean theorem.
               </p>
             </section>
 
