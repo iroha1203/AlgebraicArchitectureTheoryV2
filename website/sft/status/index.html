@@ -214,6 +214,13 @@
                 separately and does not imply support preservation by itself.
               </p>
               <p>
+                The Lean core exposes <code>FieldUpdate</code> as a record
+                preservation package: a sound selected update preserves
+                forecast error, missing evidence, unexpected witnesses, policy
+                drift, and non-conclusions in the posterior record. It does
+                not prove accuracy improvement or calibration.
+              </p>
+              <p>
                 A <code>ConsequenceEnvelope</code> is the report form that
                 summarizes selected cones, path classes, affected signature
                 axes, witness candidates, missing boundaries, and recommended

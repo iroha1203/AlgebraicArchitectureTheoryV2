@@ -736,6 +736,11 @@ FieldUpdate :=
 従うのは、指定された update rule の下で forecast error、missing evidence、
 unexpected witness、policy drift、non-conclusions が posterior field に保存されることである。
 
+Lean 側では `Formal/Arch/Evolution/SFTFieldUpdate.lean` が、この record-preservation
+boundary を `ForecastRecord` / `ObservedOutcome` / `PosteriorFieldRecord` /
+`FieldUpdate.UpdateSound` として切り出す。これは feedback preservation の anchor であり、
+accuracy improvement、calibration、governance effectiveness の theorem ではない。
+
 ```text
 UpdateSound(update)
   = observed delta / unexpected witness / review outcome
