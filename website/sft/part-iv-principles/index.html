@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="SFT Part IV: ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions."
+      content="SFT Part IV: attractor engineering, ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions."
     >
-    <title>SFT Part IV: Principles and Theorems</title>
+    <title>SFT Part IV: Attractor Engineering, Principles, and Theorems</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/part-iv-principles/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="SFT Part IV: Principles and Theorems">
-    <meta property="og:description" content="SFT Part IV: ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions.">
+    <meta property="og:title" content="SFT Part IV: Attractor Engineering, Principles, and Theorems">
+    <meta property="og:description" content="SFT Part IV: attractor engineering, ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions.">
     <meta property="og:url" content="https://iroha1203.dev/sft/part-iv-principles/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SFT Part IV: Principles and Theorems">
-    <meta name="twitter:description" content="SFT Part IV: ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions.">
+    <meta name="twitter:title" content="SFT Part IV: Attractor Engineering, Principles, and Theorems">
+    <meta name="twitter:description" content="SFT Part IV: attractor engineering, ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -61,11 +61,11 @@
             <span>Part IV</span>
           </nav>
           <p class="eyebrow">SFT Part IV</p>
-          <h1>Principles and Theorems</h1>
+          <h1>Attractor Engineering, Principles, and Theorems</h1>
           <p class="lede">
-            Part IV records the theorem-shaped claims SFT can make only under
-            explicit support semantics, step simulation, safe regions,
-            coverage policy, and observation boundaries.
+            Part IV treats attractor engineering as support, policy,
+            observation, and governance shaping, then states the
+            theorem-shaped schemas that make those interventions calculable.
           </p>
         </div>
       </section>
@@ -77,6 +77,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#reader-model">Reader model</a></li>
+                <li><a href="#attractor-engineering">Attractor engineering</a></li>
                 <li><a href="#cone-narrowing">Cone narrowing</a></li>
                 <li><a href="#support-safety">Support safety</a></li>
                 <li><a href="#proposal-accounting">Proposal accounting</a></li>
@@ -94,7 +95,7 @@
                 <li><a href="../part-i-new-object/">Part I. The New Object</a></li>
                 <li><a href="../part-ii-basis/">Part II. AAT / SFT Interface</a></li>
                 <li><a href="../part-iii-core/">Part III. SFT Core</a></li>
-                <li><a href="../part-iv-principles/" aria-current="page">Part IV. Principles</a></li>
+                <li><a href="../part-iv-principles/" aria-current="page">Part IV. Attractor Engineering and Principles</a></li>
                 <li><a href="../part-v-computing-systems/">Part V. Computing Systems</a></li>
                 <li><a href="../part-vi-case-studies/">Part VI. Case Studies</a></li>
                 <li><a href="../part-vii-research-program/">Part VII. Research Program</a></li>
@@ -139,6 +140,46 @@
                 <span class="status-badge status-badge-future">boundary schema</span>
                 <span>Website exposition of SFT claim discipline; no Lean theorem is added here. See the <a href="../status/">status page</a>.</span>
               </p>
+            </section>
+
+            <section id="attractor-engineering" class="article-section">
+              <h2>Attractor engineering</h2>
+              <p>
+                Attractor engineering is the practical face of SFT principles:
+                change the field so that intended paths are supported,
+                low-cost, visible, and reviewable, while unsafe shortcuts are
+                unsupported, costly, observable, or governance-mediated.
+              </p>
+              <p id="schema-iv-a" class="statement">
+                <a class="statement-anchor" href="#schema-iv-a">Schema IV.A.</a>
+                An attractor-engineering intervention is a support, policy,
+                observation, or governance transformation whose intended effect
+                is to reshape the selected forecast cone without changing the
+                feature direction being preserved.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Schema IV.A">
+                <span class="statement-status-label">Claim level</span>
+                <span class="status-badge status-badge-defined">principle schema</span>
+                <span>Formal claims require support inclusion, step simulation, safe-region, or recurrence semantics.</span>
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Support shaping</strong>
+                  <span>Add, remove, or condition operation families before they become accepted paths.</span>
+                </li>
+                <li>
+                  <strong>Policy shaping</strong>
+                  <span>Change cost, reviewability, priority, or selection order among supported operations.</span>
+                </li>
+                <li>
+                  <strong>Observation shaping</strong>
+                  <span>Add signatures, tests, runtime checks, or review prompts that make important paths visible.</span>
+                </li>
+                <li>
+                  <strong>Governance shaping</strong>
+                  <span>Escalate, split, block, or mediate operation families according to the selected field model.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="cone-narrowing" class="article-section">

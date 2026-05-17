@@ -94,7 +94,7 @@
                 <li><a href="../part-i-new-object/">Part I. The New Object</a></li>
                 <li><a href="../part-ii-basis/" aria-current="page">Part II. AAT / SFT Interface</a></li>
                 <li><a href="../part-iii-core/">Part III. SFT Core</a></li>
-                <li><a href="../part-iv-principles/">Part IV. Principles</a></li>
+                <li><a href="../part-iv-principles/">Part IV. Attractor Engineering and Principles</a></li>
                 <li><a href="../part-v-computing-systems/">Part V. Computing Systems</a></li>
                 <li><a href="../part-vi-case-studies/">Part VI. Case Studies</a></li>
                 <li><a href="../part-vii-research-program/">Part VII. Research Program</a></li>
@@ -508,6 +508,18 @@
                 zero, and tool output is not a theorem.
               </p>
               <figure class="code-panel">
+                <figcaption>ObservedSignatureRecord and SignatureDelta</figcaption>
+                <pre><code>ObservedSignatureRecord
+  = measured ArchitectureSignature axes
+  + unmeasured axes
+  + out-of-scope axes
+  + evidence boundary
+  + measurement non-conclusions
+
+SignatureDelta(S_before, S_after)
+  is defined only for comparable measured axes</code></pre>
+              </figure>
+              <figure class="code-panel">
                 <figcaption>ArchSigSFTReport</figcaption>
                 <pre><code>ArchSigSFTReport
   = action_class_candidates
@@ -546,8 +558,16 @@
                   <span>Set-valued formal theorem schema.</span>
                 </li>
                 <li>
-                  <strong>Level 3 and above</strong>
-                  <span>Transition-kernel models, calibrated forecasts, or deployed closed-loop governance systems.</span>
+                  <strong>Level 3</strong>
+                  <span>Probabilistic or transition-kernel model.</span>
+                </li>
+                <li>
+                  <strong>Level 4</strong>
+                  <span>Dataset-calibrated empirical forecast.</span>
+                </li>
+                <li>
+                  <strong>Level 5</strong>
+                  <span>Deployed closed-loop governance system.</span>
                 </li>
               </ul>
               <p>

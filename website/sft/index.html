@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="Software Field Theory overview, central proposition, main contributions, chapter navigation, computable core, claim boundary, and worked example preview."
+      content="Software Field Theory overview, computational thesis, core pipeline, main contributions, chapter navigation, claim boundary, and worked example preview."
     >
     <title>Software Field Theory</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="Software Field Theory">
-    <meta property="og:description" content="Software Field Theory overview, central proposition, main contributions, chapter navigation, computable core, claim boundary, and worked example preview.">
+    <meta property="og:description" content="Software Field Theory overview, computational thesis, core pipeline, main contributions, chapter navigation, claim boundary, and worked example preview.">
     <meta property="og:url" content="https://iroha1203.dev/sft/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Software Field Theory">
-    <meta name="twitter:description" content="Software Field Theory overview, central proposition, main contributions, chapter navigation, computable core, claim boundary, and worked example preview.">
+    <meta name="twitter:description" content="Software Field Theory overview, computational thesis, core pipeline, main contributions, chapter navigation, claim boundary, and worked example preview.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -77,10 +77,10 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#chapters">Chapters</a></li>
-                <li><a href="#abstract">Abstract</a></li>
+                <li><a href="#computational-thesis">Computational thesis</a></li>
+                <li><a href="#core-pipeline">Core pipeline</a></li>
                 <li><a href="#main-contributions">Main contributions</a></li>
                 <li><a href="#division-of-work">AAT / ArchSig / SFT</a></li>
-                <li><a href="#computable-core">Computable core</a></li>
                 <li><a href="#worked-example-preview">Worked example preview</a></li>
                 <li><a href="#claim-boundary">Claim boundary</a></li>
               </ol>
@@ -110,7 +110,7 @@
                 </li>
                 <li>
                   <a href="part-iv-principles/">
-                    Part IV. Principles and Theorems
+                    Part IV. Attractor Engineering and Principles
                   </a>
                 </li>
                 <li>
@@ -165,11 +165,11 @@
                 </li>
                 <li>
                   <a href="part-iii-core/">Part III. SFT Core</a>
-                  <span>SoftwareField, artifact-mediated change, operation support, policy, ForecastCone, and FieldUpdate.</span>
+                  <span>SoftwareField, artifact-mediated change, operation support, policy, attractor engineering, ForecastCone, and FieldUpdate.</span>
                 </li>
                 <li>
-                  <a href="part-iv-principles/">Part IV. Principles and Theorems</a>
-                  <span>ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions.</span>
+                  <a href="part-iv-principles/">Part IV. Attractor Engineering and Principles</a>
+                  <span>Attractor engineering schemas, ForecastCone narrowing, support safety, proposal accounting, feedback update, and stable regions.</span>
                 </li>
                 <li>
                   <a href="part-v-computing-systems/">Part V. Computing Systems Built from SFT</a>
@@ -198,26 +198,20 @@
               </ul>
             </section>
 
-            <section id="abstract" class="article-section">
-              <h2>Abstract</h2>
+            <section id="computational-thesis" class="article-section">
+              <h2>Computational thesis</h2>
               <p>
-                Software Field Theory studies software evolution as a bounded
-                computation over codebase memory, artifacts, practices, agents,
-                governance mechanisms, operational feedback, and lifecycle
-                pressure. Its central proposition is that a codebase does not
-                evolve only by receiving code diffs: the surrounding field
-                changes which architecture futures are reachable, natural,
-                cheap, risky, observable, or governable.
+                SFT makes software evolution a computable object. It studies
+                how codebase memory, artifacts, practices, agents, governance,
+                feedback, and lifecycle pressure reshape the operation space
+                from which future architecture paths are drawn.
               </p>
               <p>
-                SFT makes this proposition useful by naming a computable slice:
-                selected field model, operation support, policy, observation
-                axes, governance intervention, horizon, and forecast boundary.
-                Inside that boundary, SFT can discuss reachability, support
-                inference, ForecastCone generation, ConsequenceEnvelope
-                reporting, proposal accounting, and feedback update. Outside
-                that boundary, it records unknown or unmodeled remainder rather
-                than turning the forecast into a theorem.
+                The central move is to treat reachable architectural futures
+                as bounded objects of calculation: reconstruct a field slice,
+                infer supported operations, shape support and policy, generate
+                forecast cones, project them into consequence envelopes, and
+                feed observations back into the field.
               </p>
               <figure class="code-panel">
                 <figcaption>SFT central proposition</figcaption>
@@ -231,6 +225,40 @@
       + lifecycle pressure
   -> reachable architectural futures</code></pre>
               </figure>
+            </section>
+
+            <section id="core-pipeline" class="article-section">
+              <h2>Core pipeline</h2>
+              <p>
+                The core pipeline is the positive computational reading of
+                SFT. Artifacts and feedback do not select one future directly;
+                they reshape support, policy, observations, and governance so
+                that a family of reachable paths can be calculated and reported.
+              </p>
+              <figure class="code-panel">
+                <figcaption>SFT computation</figcaption>
+                <pre><code>SoftwareField estimate
+  + ArtifactMediatedChange
+  -> OperationSupport / OperationPolicy
+  -> ForecastCone family
+  -> ConsequenceEnvelope
+  -> GovernanceIntervention
+  -> FieldUpdate</code></pre>
+              </figure>
+              <ul class="status-list">
+                <li>
+                  <strong>Field reconstruction</strong>
+                  <span>Build a computable slice from codebase memory, artifacts, review, CI, incident, ownership, and runtime traces.</span>
+                </li>
+                <li>
+                  <strong>Attractor engineering</strong>
+                  <span>Make desirable paths natural, cheap, visible, and reviewable while making shortcuts unsupported, costly, or observable.</span>
+                </li>
+                <li>
+                  <strong>Envelope generation</strong>
+                  <span>Turn cone families into reviewer-facing path classes, affected axes, obstruction candidates, missing invariants, and governance questions.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="main-contributions" class="article-section">
@@ -293,35 +321,6 @@
                   <span>A bounded reachability or forecast statement whose status depends on the field model, support relation, calibration, and observation boundary.</span>
                 </li>
               </ul>
-            </section>
-
-            <section id="computable-core" class="article-section">
-              <h2>Computable core</h2>
-              <p>
-                SFT is not a claim that software history is fully determined.
-                Its computable core is the bounded slice obtained after a
-                modeling boundary, horizon, universe, observation axes,
-                support relation, and policy have been made explicit.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Computable SFT fragment</figcaption>
-                <pre><code>SoftwareField
-  + arch projection
-  + ArtifactMediatedChange
-  + OperationSupport
-  + OperationPolicy
-  + StepRelation
-  + ObservationRecord
-  + GovernanceIntervention
-  + ForecastCone
-  + FieldUpdate</code></pre>
-              </figure>
-              <p>
-                The broad development field remains larger than this fragment.
-                The point of the core is to make selected questions finite,
-                bounded, and auditable rather than to erase unmodeled human,
-                organizational, or operational context.
-              </p>
             </section>
 
             <section id="worked-example-preview" class="article-section">
