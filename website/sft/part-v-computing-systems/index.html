@@ -584,6 +584,23 @@ SelectedIntervention
                   <span>Compares repair, migration, contraction, and deletion recommendations against later evidence.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Forecast item calibration categories</figcaption>
+                <pre><code>ForecastItemOutcome
+  = path_class_predicted_and_observed
+  | path_class_predicted_not_observed
+  | observed_not_predicted
+  | boundary_correctly_flagged_unknown
+  | missing_evidence_later_resolved
+  | false_shortcut_witness
+  | missed_obstruction_witness</code></pre>
+              </figure>
+              <p>
+                Calibration therefore does not reduce SFT to whether a single
+                prediction came true. It also evaluates whether unknown
+                remainder, missing evidence, shortcut witnesses, and
+                obstruction witnesses were classified with the right boundary.
+              </p>
             </section>
 
             <section id="systems-boundary" class="article-section">

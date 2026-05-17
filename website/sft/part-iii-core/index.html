@@ -81,7 +81,6 @@
                 <li><a href="#software-field">SoftwareField</a></li>
                 <li><a href="#artifact-action">Artifact action</a></li>
                 <li><a href="#support-policy">Support and policy</a></li>
-                <li><a href="#attractor-engineering">Attractor engineering</a></li>
                 <li><a href="#forecast-envelope">Forecast and envelope</a></li>
                 <li><a href="#feedback">Feedback update</a></li>
                 <li><a href="#core-anchors">Anchors</a></li>
@@ -175,6 +174,7 @@
   + OperationSupport
   + OperationPolicy
   + StepRelation
+  + bounded Horizon
   + ObservationRecord
   + GovernanceIntervention
   + ForecastCone
@@ -258,6 +258,43 @@
                 <span class="status-badge status-badge-defined">computational schema</span>
                 <span>Probability semantics are not assumed unless a distribution is part of the model.</span>
               </p>
+              <p>
+                In larger field models, support is not a single undifferentiated
+                relation. SFT separates generated operations, review candidates,
+                theorem-admissible steps, governed support, and accepted
+                trajectory steps.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Support layers</figcaption>
+                <pre><code>GeneratedSupport(F)
+  = operations produced by artifacts, agents, local patterns, or tools
+
+CandidateSupport(F)
+  = generated operations that enter the review or planning surface
+
+AdmissibleSupport(F)
+  = candidate operations satisfying selected theorem and invariant premises
+
+GovernedSupport(F)
+  = admissible operations after CI, policy, review, and governance filters
+
+SelectedSupport(F)
+  = operations actually chosen along an accepted trajectory</code></pre>
+              </figure>
+              <p>
+                Cone-narrowing claims must state which support layer is being
+                compared. The standard governance reading is a pointwise
+                inclusion of governed support, often after policy has been
+                compiled into <code>SelectedSupport_pi</code>.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Policy compiled into support</figcaption>
+                <pre><code>SelectedSupport_pi(F)
+  = { op in GovernedSupport(F) | Selected_pi(F, op) }
+
+PointwiseSupportInclusion(SelectedSupport_pi2, SelectedSupport_pi1)
+  -> selected cone projection under the stated Step relation and horizon</code></pre>
+              </figure>
               <figure class="code-panel">
                 <figcaption>Supported operation and policy forms</figcaption>
                 <pre><code>SupportedOperation
@@ -295,69 +332,6 @@ PolicyAsSelection:
                 <li>
                   <strong>OperationPolicy</strong>
                   <span>A preorder, cost, selection relation, or explicitly probabilistic distribution on supported operations.</span>
-                </li>
-                <li>
-                  <strong>Attractor engineering</strong>
-                  <span>Support and policy shaping, not a hidden physical force or automatic stability theorem.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="attractor-engineering" class="article-section">
-              <h2>Attractor engineering</h2>
-              <p>
-                SFT reads attractor engineering as support and policy shaping.
-                The goal is not to assert a hidden physical force; it is to
-                design a field in which desirable operation families become
-                natural, cheap, visible, reviewable, and repeatable.
-              </p>
-              <p id="definition-iii-3a" class="statement">
-                <a class="statement-anchor" href="#definition-iii-3a">Definition III.3a.</a>
-                <code>AttractorEngineering</code> is the deliberate shaping of
-                operation support, operation policy, observation, and
-                governance so that selected paths are easier to take and
-                selected shortcuts become unsupported, costly, visible, or
-                review-mediated.
-              </p>
-              <p class="statement-status" aria-label="Claim status for Definition III.3a">
-                <span class="statement-status-label">Claim status</span>
-                <span class="status-badge status-badge-defined">computational reading</span>
-                <span>Stable-region or probabilistic attractor claims require additional semantics.</span>
-              </p>
-              <figure class="code-panel">
-                <figcaption>Attractor engineering as field design</figcaption>
-                <pre><code>AttractorEngineering(F, R)
-  = target region R
-  + support shaping
-  + policy shaping
-  + governance intervention
-  + observation boundary
-  + feedback update rule
-
-support shaping:
-  future operation support changes
-
-policy shaping:
-  lawful paths become lower cost or more reviewable
-
-observation shaping:
-  shortcut paths become visible to review / CI / runtime checks
-
-feedback shaping:
-  review / CI / incident outcome is saved in posterior field memory</code></pre>
-              </figure>
-              <ul class="status-list">
-                <li>
-                  <strong>Positive target</strong>
-                  <span>Make intended feature paths supported, low cost, observable, and easy to review.</span>
-                </li>
-                <li>
-                  <strong>Negative target</strong>
-                  <span>Make shortcut paths unsupported, high cost, visible, or subject to explicit governance.</span>
-                </li>
-                <li>
-                  <strong>Formal boundary</strong>
-                  <span>Attractor and basin become stronger claims only after stability, recurrence, policy, or probability semantics are supplied.</span>
                 </li>
               </ul>
             </section>
@@ -399,6 +373,15 @@ StepRelation(F, op, F')
 ForecastCone(F, U, h)
   = { p : FieldPath | ReachableFieldPath(F, U, h, p) }</code></pre>
               </figure>
+              <p>
+                Bounded reachability is not automatically computability. For a
+                cone to be used as a finite computation or report input, the
+                selected support must be finite or enumerable, support
+                membership must be decidable, step witnesses must be decidable
+                or semi-decidable, the horizon must be bounded, the observation
+                projection must be finite, and the unknown remainder must be
+                explicit.
+              </p>
               <figure class="code-panel">
                 <figcaption>ConsequenceEnvelope</figcaption>
                 <pre><code>ConsequenceEnvelope
@@ -406,8 +389,10 @@ ForecastCone(F, U, h)
   + reachable path classes
   + affected architecture regions
   + comparable signature axes
+  + expected axis delta ranges
   + obstruction witness candidates
   + missing invariants / boundaries
+  + review / CI / issue decomposition recommendations
   + forecast boundary
   + unknown / unmodeled remainder</code></pre>
               </figure>
@@ -452,6 +437,30 @@ EnvelopeProjection(ConeFamily, ObservationBoundary)
                 The projection is one-way: a consequence envelope does not
                 uniquely recover the cone family and does not supply causal
                 correctness, probability, or calibrated point prediction.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Envelope item witness contract</figcaption>
+                <pre><code>EnvelopeItem
+  = item_kind
+  + source_cone_ref
+  + path_witness_ref | heuristic_ref | empirical_ref
+  + observation_boundary
+  + comparable_axes
+  + non_conclusions
+  + unknown_remainder
+
+L2 path-class label requires:
+  at least one reachable path witness under the stated cone
+
+Otherwise label as:
+  heuristic / empirical / unsupported</code></pre>
+              </figure>
+              <p>
+                Each reported path class, affected axis, or obstruction
+                candidate must identify whether it is supported by a reachable
+                path witness, a heuristic reference, or empirical evidence.
+                This keeps the envelope connected to the formal core without
+                pretending that every report item is a Lean theorem.
               </p>
             </section>
 

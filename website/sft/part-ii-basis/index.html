@@ -234,6 +234,16 @@
                       <td><code>ArchitecturePath</code></td>
                       <td>A local skeleton for transition reasoning, not a complete history of software evolution.</td>
                     </tr>
+                    <tr>
+                      <th scope="row">Operation support</th>
+                      <td>Bounded operation family</td>
+                      <td>The operation family available under selected architecture assumptions and field boundaries.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Safe region predicate</th>
+                      <td>Selected invariant / flatness predicate</td>
+                      <td>The state-side region a support-safety claim is allowed to preserve.</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -502,6 +512,14 @@
   -> AAT observables
   -> SFT field estimates</code></pre>
               </figure>
+              <figure class="code-panel">
+                <figcaption>Bridge with intermediate presentations</figcaption>
+                <pre><code>real artifact
+  -> extracted candidate ArchitectureCore
+  -> selected ArchitectureObject presentation
+  -> AAT observable
+  -> SFT field estimate</code></pre>
+              </figure>
               <p>
                 Signature deltas are defined only where both sides are measured
                 and axis-wise comparison is available. Unmeasured does not mean
@@ -534,6 +552,27 @@ SignatureDelta(S_before, S_after)
   + unknown_unmodeled_remainder
   + claim_level</code></pre>
               </figure>
+              <figure class="code-panel">
+                <figcaption>Tool-family claim separation</figcaption>
+                <pre><code>ArchSig-AAT Extractor
+  -> signature / witness / theorem-boundary report
+
+ArchSig-SFT Forecaster
+  -> force descriptor / operation-support / forecast-boundary estimate
+  -> ConsequenceEnvelope report
+  -> comparable signature axis report
+
+ArchSig-Governance Reporter
+  -> missing invariant / review rule / issue decomposition recommendation</code></pre>
+              </figure>
+              <p>
+                The tooling skeleton can record finite support references,
+                bounded horizon settings, path class candidates, forecast
+                boundaries, and unknown remainders. It does not prove
+                <code>ReachableFieldPath</code> completeness,
+                <code>StepRelation</code> validity, cone projection theorems,
+                or calibrated forecast correctness.
+              </p>
             </section>
 
             <section id="claim-levels" class="article-section">
