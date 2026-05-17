@@ -765,6 +765,8 @@ sound constraint addition
 ```
 
 集合論的 core では、最初の theorem schema は support inclusion と step simulation である。
+Lean core ではまず same `Field` / `Operation` 上の identity-field projection として証明している。
+一般の対応関係 `~` をまたぐ simulation は、この schema の将来の拡張として扱う。
 
 ```text
 PointwiseSupportInclusion(U2, U1)
