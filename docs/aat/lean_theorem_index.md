@@ -2192,6 +2192,30 @@ SFT-native 索引である。
 | `SFTCounterexamples.nonConclusionList` | `def` | package が公開する selected non-conclusion kind list。 | `defined only` |
 | `SFTCounterexamples.records_nonConclusions` | `theorem` | package の non-conclusion clause を accessor theorem として取り出す。 | `proved` |
 
+## SFT Theorem Package Entrypoint
+
+File: `Formal/Arch/Evolution/SFTTheoremPackages.lean`
+
+Issue [#916](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/916) では、
+#907 / #913 配下で分割実装された SFT Lean core を、docs-facing theorem package entrypoint
+として束ねた。`SFTTheoremPackages` は横断 import surface と metadata を提供するだけで、
+未実装 theorem を `proved` に昇格しない。Part III / IV の schematic statement と既存
+bounded Lean API の対応、代表 declaration、non-conclusion boundary を追跡する。
+
+Non-conclusions: この entrypoint は empirical calibration、tooling extraction completeness、
+global future trajectory safety、market / human-intention prediction、ArchSig report の
+Lean theorem witness 化を結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `SFTTheoremPackages.SchematicCorrespondence` | `structure` | SFT schematic statement と対応する Lean declaration、bounded reading、status を保持する docs-facing metadata row。 | `defined only` |
+| `SFTTheoremPackages.Candidate` | `inductive` | SFT theorem-package group。`SoftwareField`, `ForecastCone`, cone projection, artifact action, policy / governance, reachability, support safety, `FieldUpdate`, `ConsequenceEnvelope`, AAT interface boundary, ArchSig report boundary, counterexample package を列挙する。 | `defined only` |
+| `SFTTheoremPackages.Candidate.sftSection` | `def` | candidate が主に対応する SFT source section を返す。 | `defined only` |
+| `SFTTheoremPackages.Candidate.schematicName` | `def` | docs / website status で使う stable schematic name を返す。 | `defined only` |
+| `SFTTheoremPackages.Candidate.representativeDeclarations` | `def` | candidate ごとの代表 Lean declaration 名を返す public entrypoint metadata。 | `defined only` |
+| `SFTTheoremPackages.Candidate.schematicCorrespondences` | `def` | Part III / IV statement と既存 bounded Lean API の読み替えを列挙する。 | `defined only` |
+| `SFTTheoremPackages.Candidate.nonConclusionBoundary` | `def` | candidate ごとの non-conclusion boundary summary を返す。 | `defined only` |
+
 ## Signature Dynamics
 
 File: `Formal/Arch/Evolution/SignatureDynamics.lean`

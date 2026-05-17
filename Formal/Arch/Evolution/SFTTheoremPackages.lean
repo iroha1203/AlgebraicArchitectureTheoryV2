@@ -1,0 +1,306 @@
+import Formal.Arch.Evolution.SFTField
+import Formal.Arch.Evolution.SFTForecastCone
+import Formal.Arch.Evolution.SFTConeProjection
+import Formal.Arch.Evolution.SFTSupportSafety
+import Formal.Arch.Evolution.SFTArtifactAction
+import Formal.Arch.Evolution.SFTPolicy
+import Formal.Arch.Evolution.SFTReachability
+import Formal.Arch.Evolution.SFTFieldUpdate
+import Formal.Arch.Evolution.SFTEnvelope
+import Formal.Arch.Evolution.SFTInterfaceBoundary
+import Formal.Arch.Evolution.SFTArchSigBoundary
+import Formal.Arch.Evolution.SFTCounterexamples
+
+/-!
+Documentation-facing entrypoints for the SFT Lean theorem packages.
+
+This module is intentionally thin. Importing it exposes the SFT formal surface
+implemented across the first `ForecastCone` wave and the remaining SFT boundary
+issues without adding forecast correctness, calibration, extractor completeness,
+or global future-safety claims.
+-/
+
+namespace Formal.Arch
+
+namespace SFTTheoremPackages
+
+/--
+A stable documentation-facing mapping from SFT schematic statements to the Lean
+declarations that currently carry the corresponding bounded package.
+-/
+structure SchematicCorrespondence where
+  schematic : String
+  leanDeclarations : List String
+  reading : String
+  status : String
+  deriving Repr
+
+/-- SFT theorem-package groups used by docs and website-facing status tables. -/
+inductive Candidate where
+  | softwareFieldProjection
+  | forecastConeCore
+  | coneProjection
+  | artifactAction
+  | operationPolicyGovernance
+  | stableRegionReachability
+  | supportSafety
+  | fieldUpdate
+  | consequenceEnvelope
+  | aatInterfaceBoundary
+  | archSigReportBoundary
+  | counterexamplePackage
+  deriving DecidableEq, Repr
+
+namespace Candidate
+
+/-- SFT source section that the candidate primarily indexes. -/
+def sftSection : Candidate -> String
+  | softwareFieldProjection => "Part III / 8"
+  | forecastConeCore => "Part III / 12"
+  | coneProjection => "Part III / 12"
+  | artifactAction => "Part III / 9"
+  | operationPolicyGovernance => "Part III / 10 and 13"
+  | stableRegionReachability => "Part IV / 19"
+  | supportSafety => "Part III / 12"
+  | fieldUpdate => "Part III / 14"
+  | consequenceEnvelope => "Part III / 12"
+  | aatInterfaceBoundary => "AAT / SFT interface"
+  | archSigReportBoundary => "AAT / SFT interface"
+  | counterexamplePackage => "AAT / SFT forbidden readings"
+
+/-- Stable schematic name used by documentation and status tables. -/
+def schematicName : Candidate -> String
+  | softwareFieldProjection => "SoftwareField projection boundary"
+  | forecastConeCore => "ForecastCone core"
+  | coneProjection => "ForecastCone projection and monotonicity"
+  | artifactAction => "Artifact-mediated candidate update"
+  | operationPolicyGovernance => "OperationPolicy and GovernanceIntervention"
+  | stableRegionReachability => "Stable-region reachability"
+  | supportSafety => "SFT support safety"
+  | fieldUpdate => "FieldUpdate record preservation"
+  | consequenceEnvelope => "ConsequenceEnvelope projection"
+  | aatInterfaceBoundary => "AAT theorem-status interface boundary"
+  | archSigReportBoundary => "ArchSig-SFT report boundary"
+  | counterexamplePackage => "SFT-native counterexample package"
+
+/-- Representative Lean declarations that serve as public entrypoints. -/
+def representativeDeclarations : Candidate -> List String
+  | softwareFieldProjection =>
+      ["SoftwareField",
+       "SoftwareFieldEstimate",
+       "ArchitectureProjectionBoundary",
+       "ArchitectureProjectionBoundary.projection_records_nonConclusions"]
+  | forecastConeCore =>
+      ["OperationSupport",
+       "StepRelation",
+       "FieldPath",
+       "ForecastCone",
+       "ForecastCone.monotone_horizon"]
+  | coneProjection =>
+      ["PointwiseSupportInclusion",
+       "StepSimulation",
+       "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_stepSimulation",
+       "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le"]
+  | artifactAction =>
+      ["CandidateUpdateRelation",
+       "ArtifactAction",
+       "DeterministicArtifactAction",
+       "ForecastConeFamilyAfterAction"]
+  | operationPolicyGovernance =>
+      ["OperationPolicy",
+       "SupportTransformation",
+       "GovernanceIntervention",
+       "GovernanceIntervention.restrictive_forecastCone_projects"]
+  | stableRegionReachability =>
+      ["FieldRegion",
+       "MayReach",
+       "MustReach",
+       "StableRegion",
+       "ReachablePreimage"]
+  | supportSafety =>
+      ["SFTSupportSafetyPackage",
+       "SFTSupportSafetyPackage.operationSupport",
+       "SFTSupportSafetyPackage.stepRelation",
+       "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety"]
+  | fieldUpdate =>
+      ["ForecastRecord",
+       "ObservedOutcome",
+       "PosteriorFieldRecord",
+       "FieldUpdate",
+       "FieldUpdate.UpdateSound.fieldUpdate_records_nonConclusions"]
+  | consequenceEnvelope =>
+      ["ConeFamily",
+       "ObservationBoundary",
+       "ConsequenceEnvelope",
+       "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim"]
+  | aatInterfaceBoundary =>
+      ["AATTheoremStatus",
+       "SFTForecastStatus",
+       "AATToSFTInterfaceBoundary",
+       "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary"]
+  | archSigReportBoundary =>
+      ["ArchSigSFTReport",
+       "ArchSigSFTReportEstimateBoundary",
+       "ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_aat_theorem_status",
+       "ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_calibrated_forecast"]
+  | counterexamplePackage =>
+      ["SFTCounterexampleKind",
+       "SFTCounterexamples.Package",
+       "SFTCounterexamples.canonicalPackage",
+       "SFTCounterexamples.records_nonConclusions"]
+
+/--
+Schematic-name to Lean-API correspondences for SFT Part III / IV.
+
+These rows are metadata only. They stabilize how SFT statements are read
+against existing bounded Lean APIs without turning empirical or tooling claims
+into Lean theorem claims.
+-/
+def schematicCorrespondences : Candidate -> List SchematicCorrespondence
+  | softwareFieldProjection =>
+      [{ schematic := "SoftwareField -> ArchitectureObject projection",
+         leanDeclarations :=
+          ["SoftwareField.arch",
+           "SoftwareFieldEstimate.arch",
+           "ArchitectureProjectionBoundary.projection_eq_selected_arch"],
+         reading :=
+          "selected field estimate has a one-way architecture projection boundary",
+         status := "defined only / proved accessors" }]
+  | forecastConeCore =>
+      [{ schematic := "ForecastCone support relation source horizon target path",
+         leanDeclarations :=
+          ["ForecastCone",
+           "ForecastCone.length_le_horizon",
+           "ForecastCone.nil_mem",
+           "ForecastCone.monotone_horizon"],
+         reading :=
+          "bounded finite field-path membership under selected support and step relation",
+         status := "defined only / proved accessors" }]
+  | coneProjection =>
+      [{ schematic := "support inclusion projects cone membership",
+         leanDeclarations :=
+          ["ForecastConeProjection.forecastCone_projects_of_supportInclusion",
+           "ForecastConeProjection.exists_projected_forecastCone_of_supportInclusion",
+           "ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_horizon_le"],
+         reading :=
+          "same-relation support monotonicity with projected finite path witness",
+         status := "proved" }]
+  | artifactAction =>
+      [{ schematic := "artifact action induces candidate update and after-action cone",
+         leanDeclarations :=
+          ["ArtifactAction.CandidateUpdate",
+           "ArtifactAction.AppliesTo",
+           "ForecastConeFamilyAfterAction.candidate_member",
+           "ForecastConeFamilyAfterAction.applies_to_updatedField"],
+         reading :=
+          "artifact-mediated change records candidate and applied target boundaries",
+         status := "defined only / proved accessors" }]
+  | operationPolicyGovernance =>
+      [{ schematic := "restrictive governance narrows support",
+         leanDeclarations :=
+          ["GovernanceIntervention.restrictive_supportInclusion",
+           "GovernanceIntervention.restrictive_forecastCone_projects",
+           "GovernanceIntervention.policy_pass_does_not_discharge_lawfulness"],
+         reading :=
+          "restrictive support transformation preserves projected cone membership but not lawfulness",
+         status := "proved accessors" }]
+  | stableRegionReachability =>
+      [{ schematic := "MayReach / MustReach / StableRegion / ReachablePreimage",
+         leanDeclarations :=
+          ["MayReach.of_forecastCone",
+           "MustReach.mayReach",
+           "StableRegion.forecastCone_target",
+           "ReachablePreimage.iff_mayReach"],
+         reading :=
+          "selected finite-cone reachability and stable-region closure vocabulary",
+         status := "defined only / proved accessors" }]
+  | supportSafety =>
+      [{ schematic := "supported accepted trajectory stays in selected safe region",
+         leanDeclarations :=
+          ["SFTSupportSafetyPackage.AcceptedSupportedTrajectory.mem_forecastCone",
+           "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.supportSafety_preserves_forecastTrajectory",
+           "SFTSupportSafetyPackage.AcceptedSupportedTrajectory.forecastCone_and_supportSafety"],
+         reading :=
+          "support-preservation premise yields selected trajectory safety and cone membership",
+         status := "proved under package assumptions" }]
+  | fieldUpdate =>
+      [{ schematic := "observed feedback is preserved into posterior field record",
+         leanDeclarations :=
+          ["FieldUpdate.UpdateSound.fieldUpdate_preserves_forecastError_and_missingEvidence",
+           "FieldUpdate.UpdateSound.fieldUpdate_preserves_unexpectedWitness_and_policyDrift",
+           "FieldUpdate.UpdateSound.fieldUpdate_records_calibrationBoundary"],
+         reading :=
+          "selected update soundness preserves recorded feedback without claiming accuracy improvement",
+         status := "proved accessors" }]
+  | consequenceEnvelope =>
+      [{ schematic := "cone family projects to consequence envelope",
+         leanDeclarations :=
+          ["EnvelopeProjection.envelope_records_selectedConeCount",
+           "EnvelopeProjection.envelope_preserves_missingBoundary",
+           "EnvelopeProjection.envelope_preserves_theoremBoundary",
+           "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim"],
+         reading :=
+          "loss-aware report projection preserving missing/theorem/forecast boundaries",
+         status := "proved accessors" }]
+  | aatInterfaceBoundary =>
+      [{ schematic := "AAT theorem status is only an SFT local premise",
+         leanDeclarations :=
+          ["AATToSFTInterfaceBoundary.aat_theorem_status_as_local_premise",
+           "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary",
+           "AATToSFTInterfaceBoundary.measured_zero_does_not_discharge_unmeasured_axis_safety_boundary"],
+         reading :=
+          "AAT theorem evidence does not automatically promote to forecast safety",
+         status := "proved accessors" }]
+  | archSigReportBoundary =>
+      [{ schematic := "ArchSig report reads as SFT estimate/status boundary",
+         leanDeclarations :=
+          ["ArchSigSFTReportEstimateBoundary.estimate_eq_report_estimate",
+           "ArchSigSFTReportEstimateBoundary.report_preserves_theoremBoundary",
+           "ArchSigSFTReportEstimateBoundary.report_preserves_forecastBoundary",
+           "ArchSigSFTReportEstimateBoundary.report_preserves_nonConclusions"],
+         reading :=
+          "tool report output preserves selected SFT boundaries without promoting claims",
+         status := "proved accessors" }]
+  | counterexamplePackage =>
+      [{ schematic := "SFT forbidden readings have canonical counterexample entrypoints",
+         leanDeclarations :=
+          ["SFTCounterexamples.endpoint_safe_zero_delta_not_path_safe",
+           "SFTCounterexamples.accepted_preservation_not_support_preservation",
+           "SFTCounterexamples.same_observed_signature_different_future_trajectory",
+           "SFTCounterexamples.coarse_safe_not_refined_hidden_axis_safe"],
+         reading :=
+          "existing finite counterexamples indexed as SFT-native non-conclusion witnesses",
+         status := "proved wrappers" }]
+
+/-- Boundary reminder for reading each SFT candidate as a bounded package. -/
+def nonConclusionBoundary : Candidate -> String
+  | softwareFieldProjection =>
+      "selected projection only; no full field model, reconstruction completeness, or extractor completeness"
+  | forecastConeCore =>
+      "bounded finite path membership only; no probability, calibration, causal proof, or global safety"
+  | coneProjection =>
+      "same-field support inclusion projection only; no risk-reduction or transition-kernel theorem"
+  | artifactAction =>
+      "candidate updates and after-action cones only; no unique future, market success, or intention model"
+  | operationPolicyGovernance =>
+      "selected support/policy transformation only; no lawfulness, governance effectiveness, or risk reduction"
+  | stableRegionReachability =>
+      "selected finite-cone reachability only; no global basin, convergence, recurrence, or calibrated prediction"
+  | supportSafety =>
+      "selected supported trajectory safety only; accepted evidence is not support preservation"
+  | fieldUpdate =>
+      "record preservation only; no posterior accuracy improvement or empirical calibration theorem"
+  | consequenceEnvelope =>
+      "loss-aware report projection only; no invertible cone reconstruction or forecast correctness"
+  | aatInterfaceBoundary =>
+      "AAT theorem status is a local premise only; no automatic SFT trajectory-safety promotion"
+  | archSigReportBoundary =>
+      "report-to-estimate boundary only; no ground-truth architecture, theorem package, or calibrated forecast"
+  | counterexamplePackage =>
+      "finite non-conclusion witnesses only; no empirical degradation, incident risk, or global forecast claim"
+
+end Candidate
+
+end SFTTheoremPackages
+
+end Formal.Arch
