@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT 2-7: ConsequenceEnvelope as a loss-aware report projection from ForecastCone families.">
+    <title>SFT 2-7: ConsequenceEnvelope</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/computation/consequence-envelope/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 2-7: ConsequenceEnvelope">
+    <meta property="og:description" content="ConsequenceEnvelope maps selected ForecastCone families into reviewer-readable path classes, axes, witnesses, missing invariants, and unknown remainder.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/computation/consequence-envelope/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 2-7: ConsequenceEnvelope">
+    <meta name="twitter:description" content="Reviewer-facing projection from forecast cones.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
+      rel="stylesheet"
+    >
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../../">Home</a>
+          <a href="../../../aat/">AAT</a>
+          <a class="is-active" href="../../">SFT</a>
+          <a href="../../../archsig/">ArchSig</a>
+          <a href="../../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Computation</a>
+            <span>ConsequenceEnvelope</span>
+          </nav>
+          <p class="eyebrow">SFT 2-7</p>
+          <h1>ConsequenceEnvelope</h1>
+          <p class="lede">
+            A ConsequenceEnvelope is the reviewer-facing projection of one or
+            more forecast cones. It turns path families into readable affected
+            axes, obstruction candidates, missing invariants, governance
+            questions, and unknown remainder.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#map">From cone to map</a></li>
+                <li><a href="#projection">Report projection</a></li>
+                <li><a href="#loss">Loss-aware reading</a></li>
+                <li><a href="#review">What reviewers can do with it</a></li>
+                <li><a href="#boundary">Boundary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>Part 2 routes</h2>
+              <ul>
+                <li><a href="../../">SFT overview</a></li>
+                <li><a href="../../field/">Part 1. Field</a></li>
+                <li><a href="../">Part 2. Computation</a></li>
+                <li><a href="../computable-slice/">2-1. Computable Slice</a></li>
+                <li><a href="../aat-interface/">2-2. AAT / SFT Interface</a></li>
+                <li><a href="../observation/">2-3. Observation Layer</a></li>
+                <li><a href="../operation-support/">2-4. Operation Support</a></li>
+                <li><a href="../step-relation/">2-5. StepRelation</a></li>
+                <li><a href="../forecast-cone/">2-6. ForecastCone</a></li>
+                <li><a href="./" aria-current="page">2-7. ConsequenceEnvelope</a></li>
+                <li><a href="../support-safety/">2-8. Support Safety</a></li>
+                <li><a href="../proposal-accounting/">2-9. Proposal Accounting</a></li>
+                <li><a href="../computational-problems/">2-10. Computational Problems</a></li>
+                <li><a href="../archsig-pipeline/">2-11. ArchSig-SFT Pipeline</a></li>
+                <li><a href="../simulator-calibration/">2-12. Simulator and Calibration</a></li>
+                <li><a href="../../intervention/">Part 3. Intervention</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <aside class="question-card" aria-label="Guiding question">
+              <span class="question-card-label">Question</span>
+              <p>How should a bounded forecast become something a reviewer can actually read?</p>
+            </aside>
+
+            <section id="map" class="article-section">
+              <h2>From cone to map</h2>
+              <p>
+                A ForecastCone is a theoretical object. It may contain many
+                bounded path families, support witnesses, unknowns, and
+                boundary-relative assumptions. A reviewer cannot work directly
+                with the whole cone. They need a map: what kinds of paths are
+                open, what architecture axes may move, what obstructions may
+                appear, and what is still outside the model.
+              </p>
+              <p>
+                That map is the ConsequenceEnvelope. It is not a summary in the
+                casual sense. It is a loss-aware projection. It deliberately
+                throws away detail while preserving the references and warnings
+                needed to keep the projection honest.
+              </p>
+              <p>
+                This makes the envelope one of the most practical objects in
+                SFT. The cone is how the theory thinks. The envelope is how a
+                developer, reviewer, or architect can decide what to ask next.
+              </p>
+            </section>
+
+            <section id="projection" class="article-section">
+              <h2>Report projection</h2>
+              <p>
+                The formal object is the cone. The practical object is the
+                envelope. A reviewer rarely needs every path in a cone family.
+                They need to know what path classes matter, which axes may move,
+                which obstruction candidates appear, which invariants are
+                missing, and what question governance must answer before
+                accepting the work.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Envelope fields</figcaption>
+                <pre><code>ConsequenceEnvelope
+  = selected ForecastCones
+  + path classes
+  + affected signature axes
+  + obstruction candidates
+  + missing invariants
+  + governance questions
+  + unknown remainder</code></pre>
+              </figure>
+              <p>
+                Each field in the envelope exists to prevent a common failure.
+                Path classes keep reviewers from seeing only one implementation
+                story. Affected axes keep architecture movement visible.
+                Obstruction candidates prevent "looks fine" from replacing
+                evidence. Missing invariants name what the artifact did not say.
+                Unknown remainder keeps unobserved evidence from being silently
+                treated as safe.
+              </p>
+              <p id="definition-2-13" class="statement">
+                <a class="statement-anchor" href="#definition-2-13">Definition 2.13.</a>
+                A <code>ConsequenceEnvelope</code> is a loss-aware report
+                projection from selected forecast-cone evidence to a developer
+                and reviewer readable artifact.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 2.13">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">report projection</span>
+                <span>Source: SFT section 12 and ArchSig SFT artifact boundary.</span>
+              </p>
+            </section>
+
+            <section id="loss" class="article-section">
+              <h2>Loss-aware reading</h2>
+              <p>
+                The projection is intentionally one-way. An envelope summarizes
+                selected cone evidence, but a reader cannot reconstruct the
+                unique cone family from the report. That is why the report must
+                preserve references, boundaries, and unknowns rather than
+                compressing everything into a pass/fail label.
+              </p>
+              <p>
+                This loss is not a defect. It is what makes the object usable.
+                A perfect cone dump would be unreadable. A one-line conclusion
+                would be dishonest. The envelope lives between those extremes:
+                small enough for review, explicit enough to preserve the
+                boundary of the computation.
+              </p>
+              <p class="plain-reading">
+                <strong>Review habit.</strong> Read an envelope as a map of
+                modeled consequences, not as proof that unlisted consequences
+                are absent.
+              </p>
+            </section>
+
+            <section id="review" class="article-section">
+              <h2>What reviewers can do with it</h2>
+              <p>
+                A good ConsequenceEnvelope changes review from taste to inquiry.
+                Instead of asking only whether the proposed diff looks reasonable,
+                a reviewer can ask whether a path class is missing, whether the
+                affected axes match the artifact, whether an obstruction witness
+                needs a test, whether governance should split the issue, or
+                whether an unknown remainder is too large for the claim being
+                made.
+              </p>
+              <p>
+                The envelope also gives AI governance a surface. If an agent
+                proposes a locally plausible shortcut, the envelope can record
+                the shortcut path family, the missing invariant, the policy
+                question, and the calibration hook for the eventual outcome.
+                That turns review from isolated judgment into field update.
+              </p>
+            </section>
+
+            <section id="boundary" class="article-section">
+              <h2>Boundary</h2>
+              <p id="non-conclusion-2-14" class="statement">
+                <a class="statement-anchor" href="#non-conclusion-2-14">Non-conclusion 2.14.</a>
+                A <code>ConsequenceEnvelope</code> cannot be inverted into a
+                unique <code>ForecastCone</code> family and does not prove that
+                the reported path classes will occur.
+              </p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../forecast-cone/"><span>Previous</span><strong>2-6. ForecastCone</strong></a>
+              <a class="page-nav-next" href="../support-safety/"><span>Next</span><strong>2-8. Support Safety</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>

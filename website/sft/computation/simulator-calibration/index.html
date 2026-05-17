@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT 2-12: simulator maturity and calibration conditions for PRD-to-ConsequenceEnvelope artifacts.">
+    <title>SFT 2-12: Simulator and Calibration</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/computation/simulator-calibration/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SFT 2-12: Simulator and Calibration">
+<meta property="og:description" content="A PRD-to-ConsequenceEnvelope simulator becomes stronger only when forecast item refs are linked to observed PR, review, CI, incident, and outcome refs.">
+<meta property="og:url" content="https://iroha1203.dev/sft/computation/simulator-calibration/">
+<meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SFT 2-12: Simulator and Calibration">
+<meta name="twitter:description" content="Simulator maturity, review artifacts, and calibration protocol.">
+<meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="alternate" hreflang="en" href="./">
+<link rel="alternate" hreflang="x-default" href="./">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../../assets/site.css">
+<script defer src="../../../assets/site.js">
+</script>
+  </head>
+  <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header" data-site-header>
+<div class="site-shell header-inner">
+<a class="brand" href="../../../" aria-label="AAT SFT home">
+<img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+<span class="brand-mark">AAT/SFT</span>
+<span class="brand-text">Research Notes</span>
+</a>
+<nav class="site-nav" aria-label="Primary navigation">
+<a href="../../../">Home</a>
+<a href="../../../aat/">AAT</a>
+<a class="is-active" href="../../">SFT</a>
+<a href="../../../archsig/">ArchSig</a>
+<a href="../../../outreach/">Outreach</a>
+</nav>
+</div>
+</header>
+    <main id="main">
+<section class="article-hero section-band">
+<div class="site-shell">
+<nav class="breadcrumb" aria-label="Breadcrumb">
+<a href="../../../">Home</a>
+<a href="../../">SFT</a>
+<a href="../">Computation</a>
+<span>Simulator and Calibration</span>
+</nav>
+<p class="eyebrow">SFT 2-12</p>
+<h1>Simulator and Calibration</h1>
+<p class="lede">A PRD-to-ConsequenceEnvelope simulator is one realization of computable SFT. Before calibration, its output is a bounded review artifact. Calibration requires observed outcome links and benchmark discipline.</p>
+</div>
+</section>
+    <section class="section-band">
+<div class="site-shell article-layout">
+<aside class="article-sidebar" aria-label="Local navigation">
+<nav class="toc-panel" aria-labelledby="toc-title">
+<h2 id="toc-title">On this page</h2>
+<ol>
+<li>
+<a href="#maturity">Maturity levels</a>
+</li>
+<li>
+<a href="#calibration">Calibration</a>
+</li>
+<li>
+<a href="#boundary">Boundary</a>
+</li>
+</ol>
+</nav>
+<div class="source-panel" data-sidebar-open="true">
+<h2>Part 2 routes</h2>
+<ul>
+<li>
+<a href="../../">SFT overview</a>
+</li>
+<li>
+<a href="../../field/">Part 1. Field</a>
+</li>
+<li>
+<a href="../">Part 2. Computation</a>
+</li>
+<li>
+<a href="../computable-slice/">2-1. Computable Slice</a>
+</li>
+<li>
+<a href="../aat-interface/">2-2. AAT / SFT Interface</a>
+</li>
+<li>
+<a href="../observation/">2-3. Observation Layer</a>
+</li>
+<li>
+<a href="../operation-support/">2-4. Operation Support</a>
+</li>
+<li>
+<a href="../step-relation/">2-5. StepRelation</a>
+</li>
+<li>
+<a href="../forecast-cone/">2-6. ForecastCone</a>
+</li>
+<li>
+<a href="../consequence-envelope/">2-7. ConsequenceEnvelope</a>
+</li>
+<li>
+<a href="../support-safety/">2-8. Support Safety</a>
+</li>
+<li>
+<a href="../proposal-accounting/">2-9. Proposal Accounting</a>
+</li>
+<li>
+<a href="../computational-problems/">2-10. Computational Problems</a>
+</li>
+<li>
+<a href="../archsig-pipeline/">2-11. ArchSig-SFT Pipeline</a>
+</li>
+<li>
+<a href="./" aria-current="page">2-12. Simulator and Calibration</a>
+</li>
+<li>
+<a href="../../intervention/">Part 3. Intervention</a>
+</li>
+</ul>
+</div>
+</aside>
+      <div class="article-main">
+<aside class="question-card" aria-label="Guiding question">
+<span class="question-card-label">Question</span>
+<p>When does a bounded review report become calibrated empirical evidence?</p>
+</aside>
+        <section id="maturity" class="article-section">
+<h2>Maturity levels</h2>
+<p>
+The simulator is not born as a scientific instrument. It begins as a way to
+turn an artifact into a bounded review surface. Calibration is the process that
+slowly teaches the system which forecast items were useful, which were missed,
+which were too vague, and which were outside the observation boundary.
+</p>
+<ul class="status-list">
+<li>
+<strong>Level 0</strong>
+<span>Input artifact only.</span>
+</li>
+<li>
+<strong>Level 1</strong>
+<span>ArtifactDescriptor identifies kind, scope, refs, and missing evidence.</span>
+</li>
+<li>
+<strong>Level 2</strong>
+<span>OperationSupportEstimate records candidate operation families and policy constraints.</span>
+</li>
+<li>
+<strong>Level 3</strong>
+<span>ForecastConeSkeleton gives bounded path classes and support refs.</span>
+</li>
+<li>
+<strong>Level 4</strong>
+<span>ConsequenceEnvelope reports axes, obstructions, missing invariants, and questions.</span>
+</li>
+<li>
+<strong>Level 5</strong>
+<span>ForecastCalibrationHook links forecast item refs to expected observed refs.</span>
+</li>
+<li>
+<strong>Level 6</strong>
+<span>Observed PR, review, CI, incident, and outcome refs are compared under a benchmark protocol.</span>
+</li>
+</ul>
+<p>
+The maturity ladder prevents a common category error. A Level 4
+ConsequenceEnvelope can be valuable in review even before it is calibrated. It
+is not yet evidence that SFT predicts outcomes well. It is a structured map of
+what should be watched.
+</p>
+<p>
+At Level 5, the report begins to prepare for science. Forecast items receive
+references that can later be matched against PRs, reviews, CI failures,
+incidents, or explicit non-events. The report is still not calibrated, but it
+has become testable.
+</p>
+<p>
+The ladder also explains why early SFT tools can be useful before they are
+empirically mature. A Level 2 support estimate can improve review vocabulary. A
+Level 3 cone skeleton can reveal path classes. A Level 4 envelope can expose
+missing invariants. These are not final scientific claims, but they are better
+than an unstructured argument about future risk.
+</p>
+</section>
+        <section id="calibration" class="article-section">
+<h2>Calibration</h2>
+<p>Calibration is not a flag inside one report. It is the practice of linking forecast item refs to observed outcome refs, classifying matched and unmatched evidence, preserving unavailable or private data boundaries, and comparing results over a held-out or prospective dataset.</p>
+<p>
+This is the closed-loop ambition of SFT. A forecast artifact should not vanish
+after review. It should meet the later PR, the review thread, the CI result, the
+incident record, or the absence of expected evidence. The mismatch is not a
+failure to hide. It is how the field model improves.
+</p>
+<p>
+Calibration also protects the reader from overclaiming. A simulator can be
+useful as a review assistant before it is empirically validated, but only if the
+page says so. Once observed outcomes are compared under a protocol, SFT can
+start asking which forecast surfaces were reliable, which were noisy, and which
+field evidence was missing.
+</p>
+<p>
+In the long run, calibration is what makes SFT a closed-loop research program.
+The theory proposes a bounded future shape. The organization acts. The actual
+trace returns. The field estimate changes. The next forecast should be better
+because the model now remembers where it was wrong.
+</p>
+<p id="definition-2-23" class="statement">
+<a class="statement-anchor" href="#definition-2-23">Definition 2.23.</a> SFT calibration is the empirical linkage between bounded forecast artifacts and later observed PR, review, CI, incident, and outcome references under an explicit benchmark protocol.</p>
+<p class="statement-status" aria-label="SFT status for Definition 2.23">
+<span class="statement-status-label">SFT status</span>
+<span class="status-badge status-badge-defined">empirical protocol</span>
+<span>Source: docs/tool/sft_calibration_benchmark.md.</span>
+</p>
+</section>
+        <section id="boundary" class="article-section">
+<h2>Boundary</h2>
+<p id="non-conclusion-2-24" class="statement">
+<a class="statement-anchor" href="#non-conclusion-2-24">Non-conclusion 2.24.</a> Without calibration, a <code>ConsequenceEnvelope</code> is a bounded review artifact. With calibration, it can become empirical evidence relative to a dataset and protocol, not a Lean theorem or causal proof.</p>
+</section>
+        <nav class="page-nav" aria-label="Reading sequence">
+<a class="page-nav-previous" href="../archsig-pipeline/">
+<span>Previous</span>
+<strong>2-11. ArchSig-SFT Pipeline</strong>
+</a>
+<a class="page-nav-next" href="../../intervention/">
+<span>Next</span>
+<strong>Part 3. Field Intervention and Control</strong>
+</a>
+</nav>
+      </div>
+</div>
+</section>
+</main>
+    <footer class="site-footer">
+<div class="site-shell footer-inner">
+<p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+<a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+</div>
+</footer>
+  </body>
+</html>
