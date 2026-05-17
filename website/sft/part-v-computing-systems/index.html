@@ -210,7 +210,7 @@
                 non-conclusions rather than claiming a future outcome.
               </p>
               <figure class="code-panel">
-                <figcaption>B13 implemented pipeline</figcaption>
+                <figcaption>Forecast artifact pipeline</figcaption>
                 <pre><code>real PRD / Spec / Issue / AI proposal
   -> ArtifactDescriptor builder
   -> OperationSupportEstimate generator
@@ -261,7 +261,7 @@
                 The public ArchSig pages describe the same surface from the
                 tooling side: see the <a href="../../archsig/workflows/">workflow
                 overview</a>, <a href="../../archsig/artifacts/">artifact
-                catalog</a>, and <a href="../../archsig/roadmap/">B12/B13
+                catalog</a>, and <a href="../../archsig/roadmap/">tooling
                 roadmap</a>.
               </p>
             </section>
@@ -294,9 +294,9 @@
               </p>
               <div class="claim-strip">
                 <p>
-                  Current B12/B13 artifacts support bounded descriptor,
-                  support, cone, envelope, and calibration-hook records. They
-                  do not support probability weighting, causal forecast,
+                  The current artifact pipeline supports bounded descriptor,
+                  support, cone, envelope, and calibration-hook records. It
+                  does not support probability weighting, causal forecast,
                   extractor completeness, or framework-specific semantic
                   completeness without additional adapters and datasets.
                 </p>
@@ -366,7 +366,7 @@
               </div>
               <div class="article-table">
                 <table>
-                  <caption>Current capability and remaining gaps</caption>
+                  <caption>Capability and remaining boundary</caption>
                   <thead>
                     <tr>
                       <th scope="col">Surface</th>
@@ -377,13 +377,13 @@
                   <tbody>
                     <tr>
                       <th scope="row">Markdown PRD / Spec</th>
-                      <td>Can be converted through the B13 pipeline into forecast artifacts and a report.</td>
+                      <td>Can be converted through the forecast pipeline into forecast artifacts and a report.</td>
                       <td>Real dataset calibration and held-out outcome validation remain future work.</td>
                     </tr>
                     <tr>
                       <th scope="row">GitHub Issue / AI proposal</th>
                       <td>Representable as artifact text under the same boundary vocabulary.</td>
-                      <td>Native GitHub Issue JSON and AI proposal JSON adapters remain planned gaps.</td>
+                      <td>Native JSON adapters remain outside the current evidence claim.</td>
                     </tr>
                     <tr>
                       <th scope="row">Review / CI recommendation</th>

@@ -529,27 +529,27 @@
                   </thead>
                   <tbody>
                     <tr>
-                      <th scope="row">W0 artifact inventory</th>
-                      <td>List existing operational, forecast, governance, and missing adapter artifacts.</td>
-                      <td>Workbench run manifest design.</td>
+                      <th scope="row">Artifact inventory</th>
+                      <td>List operational, forecast, governance, and unavailable adapter artifacts.</td>
+                      <td>Workbench run description.</td>
                     </tr>
                     <tr>
-                      <th scope="row">W1 offline bundle</th>
+                      <th scope="row">Offline bundle</th>
                       <td>Manually bundle one PRD, Issue, or AI proposal with available trace refs.</td>
                       <td>Manifest for artifact refs, excluded inputs, and non-conclusions.</td>
                     </tr>
                     <tr>
-                      <th scope="row">W2 review-loop dry run</th>
+                      <th scope="row">Review-loop rehearsal</th>
                       <td>Connect generated envelopes and governance projections to review / CI checklists.</td>
                       <td>Reviewer decision and CI outcome refs.</td>
                     </tr>
                     <tr>
-                      <th scope="row">W3 calibration join</th>
+                      <th scope="row">Calibration join</th>
                       <td>Join forecast items with observed refs through calibration hooks and operational artifacts.</td>
                       <td>Held-out or prospective benchmark set.</td>
                     </tr>
                     <tr>
-                      <th scope="row">W4 deployed pilot</th>
+                      <th scope="row">Deployed pilot</th>
                       <td>Run scheduler and policy thresholds on a selected repository.</td>
                       <td>Organization-specific calibration against incidents, rollback, and MTTR.</td>
                     </tr>
@@ -558,7 +558,7 @@
               </div>
               <ul class="term-list">
                 <li>
-                  <strong>B12 / B13 forecasting</strong>
+                  <strong>Forecast artifact pipeline</strong>
                   <span>Creates bounded forecast artifacts through <code>ConsequenceEnvelope</code>; it does not prove forecast correctness.</span>
                 </li>
                 <li>
@@ -566,7 +566,7 @@
                   <span>Normalize GitHub Issue JSON, AI proposal JSON, framework semantics, and runtime / incident traces as supplied evidence.</span>
                 </li>
                 <li>
-                  <strong>B10 operational feedback</strong>
+                  <strong>Operational feedback</strong>
                   <span>Stores observed outcome, calibration review, threshold, ownership, repair adoption, incident correlation, and hypothesis refresh.</span>
                 </li>
                 <li>

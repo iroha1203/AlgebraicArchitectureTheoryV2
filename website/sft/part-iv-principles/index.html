@@ -205,7 +205,20 @@
               </p>
               <figure class="code-panel">
                 <figcaption>Set-valued schema</figcaption>
-                <pre><code>PointwiseSupportInclusion(U2, U1)
+                <pre><code>sound constraint addition
+  + intended feature direction is preserved
+  + selected witness family is excluded
+  -> ForecastCone narrows for that witness family
+
+PointwiseSupportInclusion(U2, U1)
+  = for every reachable related field F2 relation F1,
+    U2(F2) subset U1(F1)
+
+StepSimulation(U2, U1, relation)
+  = every U2-step from F2 is simulated by a U1-step from F1
+    and the successor fields remain related
+
+PointwiseSupportInclusion(U2, U1)
   + StepSimulation(U2, U1, relation)
   + F2 relation F1
   -> ForecastCone(F2, U2, h)
@@ -264,7 +277,11 @@
               </ul>
               <figure class="code-panel">
                 <figcaption>Support safety schema</figcaption>
-                <pre><code>StateInSafeRegion(O, R, F)
+                <pre><code>SupportOperationsPreserveSafeRegion(U, O, R)
+  = every selected operation from U realizes only steps
+    that preserve safe region R under observation O
+
+StateInSafeRegion(O, R, F)
   + accepted steps are selected from U
   + SupportOperationsPreserveSafeRegion(U, O, R)
   -> accepted trajectory remains in R</code></pre>
@@ -308,7 +325,8 @@
               <figure class="code-panel">
                 <figcaption>ProposalAccounting</figcaption>
                 <pre><code>ProposalAccounting(raw_proposal_universe)
-  classifies proposal pressure as:
+  classifies proposal pressure under an explicit
+  coverage / overlap policy as:
     accepted
     rejected
     delayed
@@ -375,8 +393,8 @@
               <div class="claim-strip">
                 <p>
                   See the <a href="../theorem-candidates/#counterexample-anchors">Theorem Candidates counterexample index</a>
-                  and the <a href="../status/#lean-roadmap">SFT Lean Roadmap</a>
-                  for the source-of-truth status vocabulary.
+                  and the <a href="../status/#lean-status">SFT Lean status</a>
+                  for the status vocabulary.
                 </p>
               </div>
             </section>
@@ -441,9 +459,16 @@
               <figure class="code-panel">
                 <figcaption>Minimal vocabulary</figcaption>
                 <pre><code>MayReach_h(F, U, A)
+  = some U-accepted path from F reaches region A within h steps
+
 MustReach_h(F, U, A)
+  = every U-accepted path from F reaches region A within h steps
+
 StableRegion(U, A)
-ReachablePreimage_h(U, A)</code></pre>
+  = every U-accepted step from a field in A stays in A
+
+ReachablePreimage_h(U, A)
+  = { F | MayReach_h(F, U, A) }</code></pre>
               </figure>
               <p>
                 Attractor language is allowed only after the semantics needed
