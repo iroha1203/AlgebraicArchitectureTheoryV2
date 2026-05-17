@@ -45,6 +45,12 @@ a proof system.
 - SFT Part 1, Field: https://iroha1203.dev/sft/field/
 - SFT Part 2, Computation: https://iroha1203.dev/sft/computation/
 - SFT Part 3, Intervention: https://iroha1203.dev/sft/intervention/
+- SFT Formal Core: https://iroha1203.dev/sft/formal-core/
+- SFT Theorem Candidates: https://iroha1203.dev/sft/theorem-candidates/
+- SFT Research Program: https://iroha1203.dev/sft/research-program/
+- SFT Positioning: https://iroha1203.dev/sft/positioning/
+- SFT Status: https://iroha1203.dev/sft/status/
+- SFT Glossary: https://iroha1203.dev/sft/glossary/
 - ArchSig manual: https://iroha1203.dev/archsig/
 - Outreach: https://iroha1203.dev/outreach/
 
