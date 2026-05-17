@@ -93,7 +93,7 @@
                 <li><a href="../part-i-new-object/">Part I. The New Object</a></li>
                 <li><a href="../part-ii-basis/">Part II. AAT / SFT Interface</a></li>
                 <li><a href="../part-iii-core/">Part III. SFT Core</a></li>
-                <li><a href="../part-iv-principles/">Part IV. Principles</a></li>
+                <li><a href="../part-iv-principles/">Part IV. Attractor Engineering and Principles</a></li>
                 <li><a href="../part-v-computing-systems/" aria-current="page">Part V. Computing Systems</a></li>
                 <li><a href="../part-vi-case-studies/">Part VI. Case Studies</a></li>
                 <li><a href="../part-vii-research-program/">Part VII. Research Program</a></li>
@@ -126,6 +126,18 @@
                   <span>Translate PRDs, specs, issues, or AI proposals into reachable path classes and boundary reports.</span>
                 </li>
                 <li>
+                  <a href="../part-iv-principles/#cone-narrowing">Cone narrowing</a>
+                  <span>Synthesize specification, issue, or review constraints that exclude a selected witness family while preserving the intended feature direction.</span>
+                </li>
+                <li>
+                  <a href="../part-iv-principles/#support-safety">Support safety checking</a>
+                  <span>Check whether operation support or governance intervention preserves a selected safe region.</span>
+                </li>
+                <li>
+                  <a href="../part-iii-core/#feedback">Feedback update</a>
+                  <span>Update a posterior field model from forecast differences and observed PR, review, CI, incident, or runtime outcomes.</span>
+                </li>
+                <li>
                   <a href="#ai-governance">AI proposal governance</a>
                   <span>Keep generated proposal support inside a bounded field model and record shortcut witnesses.</span>
                 </li>
@@ -147,6 +159,45 @@
                 falsifiable. A result that cannot name its boundary is only an
                 explanatory heuristic, not a mature SFT computation.
               </p>
+              <div class="article-table">
+                <table>
+                  <caption>Representative problem contracts</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Problem</th>
+                      <th scope="col">Input</th>
+                      <th scope="col">Output</th>
+                      <th scope="col">Claim level</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Field reconstruction</th>
+                      <td><code>DevelopmentField</code>, modeling boundary, artifact / review / CI / incident traces.</td>
+                      <td><code>SoftwareFieldEstimate</code> with evidence categories and unknown remainder.</td>
+                      <td>L1 trace-grounded; L4 only after held-out validation.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">ConsequenceEnvelope generation</th>
+                      <td>Field estimate, artifact, observation boundary, support extractor, and horizon.</td>
+                      <td><code>ConsequenceEnvelope</code> with reachable path classes, affected axes, witness candidates, and missing invariants.</td>
+                      <td>L2 if set-valued reachability is defined; L4 after calibrated path and axis validation.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Cone narrowing</th>
+                      <td>Target artifact direction, selected witness family, support extractors, and step simulation relation.</td>
+                      <td>Constraint, specification, or review intervention that preserves the intended direction while excluding the selected witness family.</td>
+                      <td>L2 under support inclusion and step simulation; L4 only with calibration.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AI proposal governance</th>
+                      <td>AI proposal stream, prompt / policy boundary, field estimate, theorem boundary, and review / CI traces.</td>
+                      <td>Bounded proposal support, shortcut witness report, review / CI intervention, and posterior field update.</td>
+                      <td>L1 when trace-grounded; L2 for formal support restriction; L4 for calibrated shortcut detection.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
 
             <section id="archsig-sft-pipeline" class="article-section">
@@ -159,7 +210,7 @@
                 non-conclusions rather than claiming a future outcome.
               </p>
               <figure class="code-panel">
-                <figcaption>B13 implemented pipeline</figcaption>
+                <figcaption>Forecast artifact pipeline</figcaption>
                 <pre><code>real PRD / Spec / Issue / AI proposal
   -> ArtifactDescriptor builder
   -> OperationSupportEstimate generator
@@ -210,7 +261,7 @@
                 The public ArchSig pages describe the same surface from the
                 tooling side: see the <a href="../../archsig/workflows/">workflow
                 overview</a>, <a href="../../archsig/artifacts/">artifact
-                catalog</a>, and <a href="../../archsig/roadmap/">B12/B13
+                catalog</a>, and <a href="../../archsig/roadmap/">tooling
                 roadmap</a>.
               </p>
             </section>
@@ -243,9 +294,9 @@
               </p>
               <div class="claim-strip">
                 <p>
-                  Current B12/B13 artifacts support bounded descriptor,
-                  support, cone, envelope, and calibration-hook records. They
-                  do not support probability weighting, causal forecast,
+                  The current artifact pipeline supports bounded descriptor,
+                  support, cone, envelope, and calibration-hook records. It
+                  does not support probability weighting, causal forecast,
                   extractor completeness, or framework-specific semantic
                   completeness without additional adapters and datasets.
                 </p>
@@ -266,7 +317,56 @@
               </ul>
               <div class="article-table">
                 <table>
-                  <caption>Current capability and remaining gaps</caption>
+                  <caption>Simulator maturity ladder</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Level</th>
+                      <th scope="col">Reading</th>
+                      <th scope="col">Minimal output</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">0</th>
+                      <td>Explanatory metaphor.</td>
+                      <td>Field / force language only.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">1</th>
+                      <td>Action classification.</td>
+                      <td>PRD action class or descriptor.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">2</th>
+                      <td>Support generation.</td>
+                      <td>Candidate operation support.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">3</th>
+                      <td>Cone generation.</td>
+                      <td>Bounded <code>ForecastCone</code> or path classes.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">4</th>
+                      <td><code>ConsequenceEnvelope</code>.</td>
+                      <td>Signature axes, obstruction witnesses, and missing boundaries.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">5</th>
+                      <td>Weighting.</td>
+                      <td>Path class weight, probability, and unknown remainder.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">6</th>
+                      <td>Calibration.</td>
+                      <td>Observed issue, PR, review, CI, or outcome comparison with field update.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="article-table">
+                <table>
+                  <caption>Capability and remaining boundary</caption>
                   <thead>
                     <tr>
                       <th scope="col">Surface</th>
@@ -277,13 +377,13 @@
                   <tbody>
                     <tr>
                       <th scope="row">Markdown PRD / Spec</th>
-                      <td>Can be converted through the B13 pipeline into forecast artifacts and a report.</td>
+                      <td>Can be converted through the forecast pipeline into forecast artifacts and a report.</td>
                       <td>Real dataset calibration and held-out outcome validation remain future work.</td>
                     </tr>
                     <tr>
                       <th scope="row">GitHub Issue / AI proposal</th>
                       <td>Representable as artifact text under the same boundary vocabulary.</td>
-                      <td>Native GitHub Issue JSON and AI proposal JSON adapters remain planned gaps.</td>
+                      <td>Native JSON adapters remain outside the current evidence claim.</td>
                     </tr>
                     <tr>
                       <th scope="row">Review / CI recommendation</th>
@@ -311,12 +411,40 @@
                 </p>
               </div>
               <figure class="code-panel">
+                <figcaption>AI agent as field participant</figcaption>
+                <pre><code>AI agent
+  = artifact interpreter
+  + code proposal generator
+  + local pattern amplifier
+  + shortcut generator
+  + review load shifter
+  + hidden assumption reproducer
+  + field participant</code></pre>
+              </figure>
+              <figure class="code-panel">
+                <figcaption>AI Proposal Governance</figcaption>
+                <pre><code>AI Proposal Governance
+  = prompt / policy boundary
+  + allowed operation support
+  + theorem boundary
+  + review / CI feedback
+  + observed shortcut / witness report
+  + field update</code></pre>
+              </figure>
+              <figure class="code-panel">
                 <figcaption>AI proposal governance output</figcaption>
                 <pre><code>bounded proposal support
   + shortcut witness report
   + review / CI intervention
   + posterior field update</code></pre>
               </figure>
+              <p>
+                Allowed operation support is a bounded candidate set for
+                review. Shortcut witness reports name forbidden edges, missing
+                invariants, runtime boundaries, theorem boundaries, and review
+                load without turning AI capability evaluation into forecast
+                correctness.
+              </p>
             </section>
 
             <section id="review-systems" class="article-section">
@@ -341,6 +469,21 @@
                   <span>Add observation axes, tests, runtime checks, or evidence records.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>GovernanceSystem</figcaption>
+                <pre><code>GovernanceSystem
+  = review rule
+  + CI / test / type checker
+  + architecture rule
+  + ownership boundary
+  + runtime guard
+  + feedback update rule</code></pre>
+              </figure>
+              <p>
+                Good governance does more than reject unsafe shortcuts: it
+                lowers the cost of lawful paths, finds missing invariants, and
+                writes the result back into field memory.
+              </p>
             </section>
 
             <section id="lifecycle" class="article-section">
@@ -358,7 +501,8 @@
               </p>
               <figure class="code-panel">
                 <figcaption>Lifecycle trajectory</figcaption>
-                <pre><code>birth
+                <pre><code>LifecycleTrajectory
+  = birth
   + growth
   + stabilization
   + drift
@@ -366,6 +510,80 @@
   + contraction
   + end-of-life</code></pre>
               </figure>
+              <figure class="code-panel">
+                <figcaption>LifecycleDecisionModel</figcaption>
+                <pre><code>LifecycleDecisionModel
+  = current LifecycleTrajectory
+  + ArchitectureSignature trajectory
+  + ConsequenceEnvelope family
+  + runtime / incident risk boundary
+  + ownership / staffing boundary
+  + selected intervention set
+  + non-conclusions
+
+SelectedIntervention
+  = repair | migration | contraction | deletion</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <caption>Lifecycle intervention comparison</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Intervention</th>
+                      <th scope="col">Reading</th>
+                      <th scope="col">Main comparison axes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Repair</th>
+                      <td>Keep the existing field and add local support or invariants.</td>
+                      <td>Repair adoption, missing invariant, runtime regression risk, ownership capacity.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Migration</th>
+                      <td>Move support and field memory from an old field into a new field.</td>
+                      <td>Projection mismatch, dual-run cost, consumer compatibility, rollback path.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Contraction</th>
+                      <td>Reduce an unsupported surface and reallocate field capacity.</td>
+                      <td>Removed operation families, affected user or runtime boundary, simplified signature axes.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Deletion</th>
+                      <td>Remove a field component or subsystem from the lifecycle.</td>
+                      <td>Dependent operation loss, data or API retirement boundary, incident avoidance, unknown remainder.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <ul class="status-list">
+                <li>
+                  <strong>PRD-to-Issue Benchmark</strong>
+                  <span>Checks whether artifact decomposition preserves feature direction, missing evidence, and reviewable boundaries.</span>
+                </li>
+                <li>
+                  <strong>Issue-to-PR Signature Benchmark</strong>
+                  <span>Compares forecast items with later signature deltas and affected architecture regions.</span>
+                </li>
+                <li>
+                  <strong>Review Mediation Benchmark</strong>
+                  <span>Tests whether envelope items become useful review comments, CI requests, or issue splits.</span>
+                </li>
+                <li>
+                  <strong>Incident Feedback Benchmark</strong>
+                  <span>Connects runtime or incident outcomes back to calibration hooks and field update records.</span>
+                </li>
+                <li>
+                  <strong>AI Shortcut Benchmark</strong>
+                  <span>Evaluates whether shortcut witnesses and governance constraints catch risky generated paths.</span>
+                </li>
+                <li>
+                  <strong>Lifecycle Decision Benchmark</strong>
+                  <span>Compares repair, migration, contraction, and deletion recommendations against later evidence.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="systems-boundary" class="article-section">
@@ -396,7 +614,7 @@
             <nav class="page-nav" aria-label="Reading sequence">
               <a href="../part-iv-principles/">
                 <span>Previous</span>
-                <strong>Part IV. Principles</strong>
+                <strong>Part IV. Attractor Engineering and Principles</strong>
               </a>
               <a href="../part-vi-case-studies/">
                 <span>Next</span>

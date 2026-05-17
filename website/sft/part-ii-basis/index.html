@@ -85,7 +85,6 @@
                 <li><a href="#archsig-bridge">ArchSig bridge</a></li>
                 <li><a href="#claim-levels">Claim levels</a></li>
                 <li><a href="#basis-boundary">Boundary</a></li>
-                <li><a href="#canonical-sources">Canonical sources</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -95,7 +94,7 @@
                 <li><a href="../part-i-new-object/">Part I. The New Object</a></li>
                 <li><a href="../part-ii-basis/" aria-current="page">Part II. AAT / SFT Interface</a></li>
                 <li><a href="../part-iii-core/">Part III. SFT Core</a></li>
-                <li><a href="../part-iv-principles/">Part IV. Principles</a></li>
+                <li><a href="../part-iv-principles/">Part IV. Attractor Engineering and Principles</a></li>
                 <li><a href="../part-v-computing-systems/">Part V. Computing Systems</a></li>
                 <li><a href="../part-vi-case-studies/">Part VI. Case Studies</a></li>
                 <li><a href="../part-vii-research-program/">Part VII. Research Program</a></li>
@@ -180,20 +179,6 @@
                   <span>AAT theorem boundaries and non-conclusions become SFT forecast boundaries.</span>
                 </li>
               </ul>
-              <figure class="code-panel">
-                <figcaption>Direction of dependency</figcaption>
-                <pre><code>AAT does not depend on SFT.
-SFT depends on AAT.</code></pre>
-              </figure>
-              <div class="claim-strip">
-                <p>
-                  The dependency arrow is one-way: <a href="../../aat/">AAT</a>
-                  remains an independent local algebra of architecture, while
-                  <a href="../">SFT</a> uses selected AAT objects as premises,
-                  coordinates, and boundaries for bounded software-evolution
-                  models.
-                </p>
-              </div>
             </section>
 
             <section id="borrowed-from-aat" class="article-section">
@@ -252,16 +237,6 @@ SFT depends on AAT.</code></pre>
                   </tbody>
                 </table>
               </div>
-              <figure class="code-panel">
-                <figcaption>Minimal interface map</figcaption>
-                <pre><code>architecture projection   -> ArchitectureObject
-local transition law     -> ArchitectureOperation
-protected constraint     -> InvariantFamily
-defect / repair target   -> ObstructionWitness
-observable coordinate    -> ArchitectureSignature
-admissibility boundary   -> theorem boundary / non-conclusions
-local path skeleton      -> ArchitecturePath</code></pre>
-              </figure>
             </section>
 
             <section id="sft-side-concepts" class="article-section">
@@ -392,32 +367,6 @@ local path skeleton      -> ArchitecturePath</code></pre>
                   </tbody>
                 </table>
               </div>
-              <ul class="term-list">
-                <li>
-                  <strong><code>ArchitectureObject</code></strong>
-                  <span>Read in SFT as the architecture projection of a field state.</span>
-                </li>
-                <li>
-                  <strong><code>ArchitectureOperation</code></strong>
-                  <span>Read as a local law premise for an accepted or proposed transition.</span>
-                </li>
-                <li>
-                  <strong><code>InvariantFamily</code></strong>
-                  <span>Read as a constraint family the field attempts to preserve.</span>
-                </li>
-                <li>
-                  <strong><code>ObstructionWitness</code></strong>
-                  <span>Read as a selected unsafe, costly, or blocked trajectory coordinate.</span>
-                </li>
-                <li>
-                  <strong><code>ArchitectureSignature</code></strong>
-                  <span>Read as a partial coordinate system for observing trajectories.</span>
-                </li>
-                <li>
-                  <strong>Theorem boundary / non-conclusions</strong>
-                  <span>Read as the claim boundary that SFT forecasts and governance reports must not cross.</span>
-                </li>
-              </ul>
             </section>
 
             <section id="forbidden-readings" class="article-section">
@@ -507,32 +456,6 @@ local path skeleton      -> ArchitecturePath</code></pre>
                   </dl>
                 </article>
               </div>
-              <ul class="term-list">
-                <li>
-                  <strong>AAT lawfulness</strong>
-                  <span>Do not read it as future trajectory safety.</span>
-                </li>
-                <li>
-                  <strong>AAT measured zero</strong>
-                  <span>Do not read it as safety for unmeasured axes.</span>
-                </li>
-                <li>
-                  <strong>AAT operation preservation</strong>
-                  <span>Do not read it as global policy safety.</span>
-                </li>
-                <li>
-                  <strong>SFT <code>ForecastCone</code> narrowing</strong>
-                  <span>Do not read it as global risk reduction.</span>
-                </li>
-                <li>
-                  <strong>ArchSig extraction</strong>
-                  <span>Do not read it as a ground-truth architecture object.</span>
-                </li>
-                <li>
-                  <strong>SFT forecast</strong>
-                  <span>Do not read it as a Lean theorem.</span>
-                </li>
-              </ul>
             </section>
 
             <section id="archsig-bridge" class="article-section">
@@ -585,6 +508,18 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 zero, and tool output is not a theorem.
               </p>
               <figure class="code-panel">
+                <figcaption>ObservedSignatureRecord and SignatureDelta</figcaption>
+                <pre><code>ObservedSignatureRecord
+  = measured ArchitectureSignature axes
+  + unmeasured axes
+  + out-of-scope axes
+  + evidence boundary
+  + measurement non-conclusions
+
+SignatureDelta(S_before, S_after)
+  is defined only for comparable measured axes</code></pre>
+              </figure>
+              <figure class="code-panel">
                 <figcaption>ArchSigSFTReport</figcaption>
                 <pre><code>ArchSigSFTReport
   = action_class_candidates
@@ -623,8 +558,16 @@ local path skeleton      -> ArchitecturePath</code></pre>
                   <span>Set-valued formal theorem schema.</span>
                 </li>
                 <li>
-                  <strong>Level 3 and above</strong>
-                  <span>Transition-kernel models, calibrated forecasts, or deployed closed-loop governance systems.</span>
+                  <strong>Level 3</strong>
+                  <span>Probabilistic or transition-kernel model.</span>
+                </li>
+                <li>
+                  <strong>Level 4</strong>
+                  <span>Dataset-calibrated empirical forecast.</span>
+                </li>
+                <li>
+                  <strong>Level 5</strong>
+                  <span>Deployed closed-loop governance system.</span>
                 </li>
               </ul>
               <p>
@@ -682,62 +625,6 @@ local path skeleton      -> ArchitecturePath</code></pre>
                 local premise, but it is not automatically software evolution
                 forecast status.
               </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Formal claim</strong>
-                  <span>Lives in AAT or in a set-valued SFT schema with stated support and step semantics.</span>
-                </li>
-                <li>
-                  <strong>Tooling estimate</strong>
-                  <span>Records measured axes, missing axes, evidence boundaries, and non-conclusions.</span>
-                </li>
-                <li>
-                  <strong>Empirical forecast</strong>
-                  <span>Requires trace or dataset calibration; it is not obtained by renaming a theorem.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="canonical-sources" class="article-section">
-              <h2>Canonical sources</h2>
-              <p>
-                This page is the website-level home for the AAT / SFT
-                interface. The repository document remains the authoritative
-                statement of mapping tables, claim levels, and non-confusion
-                rules.
-              </p>
-              <ul class="chapter-list">
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d7f18097bca0f71edb08b8ab0a33b009e68cd33d/docs/sft/aat_interface.md">
-                    AAT / SFT interface source
-                  </a>
-                  <span>Full dependency, translation, non-confusion, and ArchSig bridge rules.</span>
-                </li>
-                <li>
-                  <a href="../../aat/status/">
-                    AAT Lean Status
-                  </a>
-                  <span>How to read proved declarations, defined-only surfaces, and proof obligations.</span>
-                </li>
-                <li>
-                  <a href="../../archsig/">
-                    ArchSig website
-                  </a>
-                  <span>Tooling layer overview for measured axes, review artifacts, SFT forecasts, and operational feedback.</span>
-                </li>
-                <li>
-                  <a href="../">
-                    Software Field Theory
-                  </a>
-                  <span>Computable software evolution after the interface boundary is explicit.</span>
-                </li>
-                <li>
-                  <a href="../status/">
-                    SFT status and claim boundary
-                  </a>
-                  <span>Claim level vocabulary for conceptual, trace-grounded, set-valued, calibrated, and deployed statements.</span>
-                </li>
-              </ul>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

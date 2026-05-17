@@ -91,7 +91,7 @@
                 <li><a href="../part-i-new-object/">Part I. The New Object</a></li>
                 <li><a href="../part-ii-basis/">Part II. AAT / SFT Interface</a></li>
                 <li><a href="../part-iii-core/">Part III. SFT Core</a></li>
-                <li><a href="../part-iv-principles/">Part IV. Principles</a></li>
+                <li><a href="../part-iv-principles/">Part IV. Attractor Engineering and Principles</a></li>
                 <li><a href="../part-v-computing-systems/">Part V. Computing Systems</a></li>
                 <li><a href="../part-vi-case-studies/">Part VI. Case Studies</a></li>
                 <li><a href="../part-vii-research-program/" aria-current="page">Part VII. Research Program</a></li>
@@ -184,6 +184,40 @@
                     <div>
                       <dt>Blocked reading</dt>
                       <dd>Process maturity is not field lawfulness.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>DevOps maturity model</h3>
+                  <dl>
+                    <div>
+                      <dt>Usual emphasis</dt>
+                      <dd>Operational capability, automation, deployment, and team practice maturity.</dd>
+                    </div>
+                    <div>
+                      <dt>What SFT adds</dt>
+                      <dd>How governance and feedback change operation support, policy, and reachable architecture futures.</dd>
+                    </div>
+                    <div>
+                      <dt>Blocked reading</dt>
+                      <dd>Delivery maturity is not a theorem about field safety.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="comparison-card">
+                  <h3>Socio-technical metaphor</h3>
+                  <dl>
+                    <div>
+                      <dt>Usual emphasis</dt>
+                      <dd>Useful language for people, teams, incentives, and systems.</dd>
+                    </div>
+                    <div>
+                      <dt>What SFT adds</dt>
+                      <dd>A bounded computational object: support, policy, observation boundary, cone, envelope, and field update.</dd>
+                    </div>
+                    <div>
+                      <dt>Blocked reading</dt>
+                      <dd>A metaphor alone is not a computation or claim level.</dd>
                     </div>
                   </dl>
                 </article>
@@ -350,6 +384,10 @@
               </div>
               <ul class="term-list">
                 <li>
+                  <strong>Canonical open-problem list</strong>
+                  <span>ForecastCone and support simulation; ConsequenceEnvelope-to-cone relation; trace-grounded field reconstruction; PRD-to-envelope calibration; review mediation and AI shortcut benchmarks; theorem-boundary integration; codebase field-memory studies; AI-mediated governance; lifecycle and end-of-life models; deployed closed-loop workbench.</span>
+                </li>
+                <li>
                   <strong>Next formal step</strong>
                   <span>Define the minimal core for reachable field paths, support inclusion, horizon, step simulation, and cone projection.</span>
                 </li>
@@ -418,6 +456,128 @@
                   <span>Observed PR, review, CI, incident, and runtime traces must feed calibration hooks and posterior field updates.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Closed-loop workbench flow</figcaption>
+                <pre><code>PRD / design memo / issue plan / AI proposal
+  + existing codebase / ArchitectureSignature snapshot
+  + review / CI / PR / incident / ownership trace
+  + AI agent policy
+  -> ArtifactDescriptor
+  -> OperationSupportEstimate
+  -> ForecastConeSkeleton family
+  -> ConsequenceEnvelope report
+  -> AI proposal governance / lifecycle decision surface
+  -> review / CI / issue decomposition intervention
+  -> observed PR / review / CI / outcome refs
+  -> ForecastCalibrationHook + operational feedback
+  -> field update note / hypothesis refresh input</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <caption>Minimal artifact flow</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Layer</th>
+                      <th scope="col">Input</th>
+                      <th scope="col">Output</th>
+                      <th scope="col">Boundary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Input normalization</th>
+                      <td>PRD, Issue, AI proposal, and source refs.</td>
+                      <td><code>ArtifactDescriptor</code>.</td>
+                      <td>Source refs and missing evidence are preserved.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Forecast construction</th>
+                      <td>Descriptor, policy constraints, and bounded horizon.</td>
+                      <td><code>OperationSupportEstimate</code> and <code>ForecastConeSkeleton</code>.</td>
+                      <td>Finite support and unknown remainder are preserved.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Review projection</th>
+                      <td>Cone family, signature axes, and theorem boundary.</td>
+                      <td><code>ConsequenceEnvelope</code>.</td>
+                      <td>Reviewer-facing report, not causal forecast.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Governance projection</th>
+                      <td>AI policy and review / CI mediation refs.</td>
+                      <td>AI proposal governance or lifecycle decision surface.</td>
+                      <td>Allowed, forbidden, and unknown support stay separate.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Feedback join</th>
+                      <td>Observed PR, review, CI, outcome refs, and operational artifacts.</td>
+                      <td><code>ForecastCalibrationHook</code>, calibration review, and hypothesis refresh input.</td>
+                      <td>Observation linkage, not proof of forecast correctness.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="article-table">
+                <table>
+                  <caption>Workbench phase plan</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Phase</th>
+                      <th scope="col">Purpose</th>
+                      <th scope="col">Next required artifact</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Artifact inventory</th>
+                      <td>List operational, forecast, governance, and unavailable adapter artifacts.</td>
+                      <td>Workbench run description.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Offline bundle</th>
+                      <td>Manually bundle one PRD, Issue, or AI proposal with available trace refs.</td>
+                      <td>Manifest for artifact refs, excluded inputs, and non-conclusions.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Review-loop rehearsal</th>
+                      <td>Connect generated envelopes and governance projections to review / CI checklists.</td>
+                      <td>Reviewer decision and CI outcome refs.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Calibration join</th>
+                      <td>Join forecast items with observed refs through calibration hooks and operational artifacts.</td>
+                      <td>Held-out or prospective benchmark set.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Deployed pilot</th>
+                      <td>Run scheduler and policy thresholds on a selected repository.</td>
+                      <td>Organization-specific calibration against incidents, rollback, and MTTR.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <ul class="term-list">
+                <li>
+                  <strong>Forecast artifact pipeline</strong>
+                  <span>Creates bounded forecast artifacts through <code>ConsequenceEnvelope</code>; it does not prove forecast correctness.</span>
+                </li>
+                <li>
+                  <strong>Future adapters</strong>
+                  <span>Normalize GitHub Issue JSON, AI proposal JSON, framework semantics, and runtime / incident traces as supplied evidence.</span>
+                </li>
+                <li>
+                  <strong>Operational feedback</strong>
+                  <span>Stores observed outcome, calibration review, threshold, ownership, repair adoption, incident correlation, and hypothesis refresh.</span>
+                </li>
+                <li>
+                  <strong>Calibration hook</strong>
+                  <span>Connects forecast item refs with observed refs and passes them to the benchmark protocol.</span>
+                </li>
+                <li>
+                  <strong>Deployed workbench boundary</strong>
+                  <span>Bundles artifacts into one review cycle, without adding deployment correctness, automatic governance correctness, or causal theorem status.</span>
+                </li>
+              </ul>
               <div class="claim-strip">
                 <p>
                   SFT does not replace developers. It makes software evolution
@@ -451,9 +611,9 @@
                 <span>Previous</span>
                 <strong>Part VI. Case Studies</strong>
               </a>
-              <a href="../status/">
-                <span>Appendix</span>
-                <strong>Status and Claim Boundary</strong>
+              <a href="../glossary/">
+                <span>Next</span>
+                <strong>Glossary</strong>
               </a>
             </nav>
           </div>

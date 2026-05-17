@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="SFT Part III: SoftwareField, artifact-mediated change, operation support, policy, ForecastCone, and FieldUpdate."
+      content="SFT Part III: SoftwareField, artifact-mediated change, operation support, policy, attractor engineering, ForecastCone, and FieldUpdate."
     >
     <title>SFT Part III: SFT Core</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/part-iii-core/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="SFT Part III: SFT Core">
-    <meta property="og:description" content="SFT Part III: SoftwareField, artifact-mediated change, operation support, policy, ForecastCone, and FieldUpdate.">
+    <meta property="og:description" content="SFT Part III: SoftwareField, artifact-mediated change, operation support, policy, attractor engineering, ForecastCone, and FieldUpdate.">
     <meta property="og:url" content="https://iroha1203.dev/sft/part-iii-core/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SFT Part III: SFT Core">
-    <meta name="twitter:description" content="SFT Part III: SoftwareField, artifact-mediated change, operation support, policy, ForecastCone, and FieldUpdate.">
+    <meta name="twitter:description" content="SFT Part III: SoftwareField, artifact-mediated change, operation support, policy, attractor engineering, ForecastCone, and FieldUpdate.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -64,9 +64,9 @@
           <h1>The SFT Core</h1>
           <p class="lede">
             Part III defines the theorem-bearing fragment: `SoftwareField`,
-            artifact-mediated change, operation support, policy, governance
-            interventions, `ForecastCone`, `ConsequenceEnvelope`, and
-            closed-loop field update.
+            artifact-mediated change, operation support, policy, attractor
+            engineering, governance interventions, `ForecastCone`,
+            `ConsequenceEnvelope`, and closed-loop field update.
           </p>
         </div>
       </section>
@@ -77,10 +77,11 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reading-model">Reading model</a></li>
+                <li><a href="#reader-model">Reader model</a></li>
                 <li><a href="#software-field">SoftwareField</a></li>
                 <li><a href="#artifact-action">Artifact action</a></li>
                 <li><a href="#support-policy">Support and policy</a></li>
+                <li><a href="#attractor-engineering">Attractor engineering</a></li>
                 <li><a href="#forecast-envelope">Forecast and envelope</a></li>
                 <li><a href="#feedback">Feedback update</a></li>
                 <li><a href="#core-anchors">Anchors</a></li>
@@ -94,7 +95,7 @@
                 <li><a href="../part-i-new-object/">Part I. The New Object</a></li>
                 <li><a href="../part-ii-basis/">Part II. AAT / SFT Interface</a></li>
                 <li><a href="../part-iii-core/" aria-current="page">Part III. SFT Core</a></li>
-                <li><a href="../part-iv-principles/">Part IV. Principles</a></li>
+                <li><a href="../part-iv-principles/">Part IV. Attractor Engineering and Principles</a></li>
                 <li><a href="../part-v-computing-systems/">Part V. Computing Systems</a></li>
                 <li><a href="../part-vi-case-studies/">Part VI. Case Studies</a></li>
                 <li><a href="../part-vii-research-program/">Part VII. Research Program</a></li>
@@ -106,8 +107,8 @@
           </aside>
 
           <div class="article-main">
-            <section id="reading-model" class="article-section">
-              <h2>Reading model</h2>
+            <section id="reader-model" class="article-section">
+              <h2>Reader model</h2>
               <div class="reader-model">
                 <div>
                   <h3>SFT does not say</h3>
@@ -137,7 +138,7 @@
               <p class="statement-status" aria-label="Claim status for Non-conclusion III.0">
                 <span class="statement-status-label">Claim status</span>
                 <span class="status-badge status-badge-future">boundary statement</span>
-                <span>Website exposition of the SFT source boundary; checked Lean anchors are listed where available.</span>
+                <span>Checked Lean anchors are listed where available; empirical prediction quality remains outside this claim.</span>
               </p>
             </section>
 
@@ -159,7 +160,7 @@
               <p class="statement-status" aria-label="Claim status for Definition III.1">
                 <span class="statement-status-label">Claim status</span>
                 <span class="status-badge status-badge-defined">conceptual schema</span>
-                <span>Defined in the SFT source document; not a Lean structure in this PR.</span>
+                <span>Defined as SFT vocabulary; Lean formalization currently exposes selected supporting records and theorem boundaries.</span>
               </p>
               <figure class="code-panel">
                 <figcaption>Field projection</figcaption>
@@ -257,6 +258,35 @@
                 <span class="status-badge status-badge-defined">computational schema</span>
                 <span>Probability semantics are not assumed unless a distribution is part of the model.</span>
               </p>
+              <figure class="code-panel">
+                <figcaption>Supported operation and policy forms</figcaption>
+                <pre><code>SupportedOperation
+  = operation
+  + applicable theorem boundary
+  + precondition evidence
+  + expected witness mapping
+  + non-conclusions
+
+OperationSupport(F)
+  = admissible operation set after constraints / governance interventions
+
+OperationPolicy(F)
+  = preorder, cost, or selection relation on that support
+
+PolicyAsPreorder:
+  op1 <=_F op2 means op1 is no harder / no less natural than op2
+
+PolicyAsCost:
+  cost_F(op) : OrderedCost
+
+PolicyAsSelection:
+  Selected(F, op)</code></pre>
+              </figure>
+              <p>
+                A probability distribution
+                <code>mu_F : Distribution SupportedOperation</code> is added
+                only when the selected semantics explicitly includes one.
+              </p>
               <ul class="status-list">
                 <li>
                   <strong>OperationSupport</strong>
@@ -269,6 +299,65 @@
                 <li>
                   <strong>Attractor engineering</strong>
                   <span>Support and policy shaping, not a hidden physical force or automatic stability theorem.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="attractor-engineering" class="article-section">
+              <h2>Attractor engineering</h2>
+              <p>
+                SFT reads attractor engineering as support and policy shaping.
+                The goal is not to assert a hidden physical force; it is to
+                design a field in which desirable operation families become
+                natural, cheap, visible, reviewable, and repeatable.
+              </p>
+              <p id="definition-iii-3a" class="statement">
+                <a class="statement-anchor" href="#definition-iii-3a">Definition III.3a.</a>
+                <code>AttractorEngineering</code> is the deliberate shaping of
+                operation support, operation policy, observation, and
+                governance so that selected paths are easier to take and
+                selected shortcuts become unsupported, costly, visible, or
+                review-mediated.
+              </p>
+              <p class="statement-status" aria-label="Claim status for Definition III.3a">
+                <span class="statement-status-label">Claim status</span>
+                <span class="status-badge status-badge-defined">computational reading</span>
+                <span>Stable-region or probabilistic attractor claims require additional semantics.</span>
+              </p>
+              <figure class="code-panel">
+                <figcaption>Attractor engineering as field design</figcaption>
+                <pre><code>AttractorEngineering(F, R)
+  = target region R
+  + support shaping
+  + policy shaping
+  + governance intervention
+  + observation boundary
+  + feedback update rule
+
+support shaping:
+  future operation support changes
+
+policy shaping:
+  lawful paths become lower cost or more reviewable
+
+observation shaping:
+  shortcut paths become visible to review / CI / runtime checks
+
+feedback shaping:
+  review / CI / incident outcome is saved in posterior field memory</code></pre>
+              </figure>
+              <ul class="status-list">
+                <li>
+                  <strong>Positive target</strong>
+                  <span>Make intended feature paths supported, low cost, observable, and easy to review.</span>
+                </li>
+                <li>
+                  <strong>Negative target</strong>
+                  <span>Make shortcut paths unsupported, high cost, visible, or subject to explicit governance.</span>
+                </li>
+                <li>
+                  <strong>Formal boundary</strong>
+                  <span>Attractor and basin become stronger claims only after stability, recurrence, policy, or probability semantics are supplied.</span>
                 </li>
               </ul>
             </section>
@@ -293,6 +382,23 @@
                 <span class="status-badge status-badge-defined">formal object schema</span>
                 <span>The cone is set-valued reachability, not a point prediction.</span>
               </p>
+              <figure class="code-panel">
+                <figcaption>Reachability vocabulary</figcaption>
+                <pre><code>FieldPath
+  = finite sequence in FieldSpace
+
+ReachableFieldPath(F, U, h, p)
+  = p starts at F
+  + length(p) <= h
+  + every adjacent pair is witnessed by a supported step
+
+StepRelation(F, op, F')
+  = operation op realizes a transition from F to F'
+    under the selected theorem boundary and field model
+
+ForecastCone(F, U, h)
+  = { p : FieldPath | ReachableFieldPath(F, U, h, p) }</code></pre>
+              </figure>
               <figure class="code-panel">
                 <figcaption>ConsequenceEnvelope</figcaption>
                 <pre><code>ConsequenceEnvelope
@@ -326,6 +432,26 @@ ForecastConeFamilyAfterAction(F, a, h)
                 <span class="statement-status-label">Claim status</span>
                 <span class="status-badge status-badge-defined">report schema</span>
                 <span>The envelope interprets one or more cones for diagnosis and tooling.</span>
+              </p>
+              <figure class="code-panel">
+                <figcaption>Envelope projection</figcaption>
+                <pre><code>ConeFamily
+  = nonempty selected set of ForecastCone(F_i, U_i, h_i)
+
+EnvelopeProjection(ConeFamily, ObservationBoundary)
+  = visible path classes
+  + affected region refs
+  + comparable signature axes
+  + expected axis delta ranges
+  + obstruction candidates
+  + missing boundary / theorem boundary items
+  + inherited non-conclusions
+  + unknown remainder</code></pre>
+              </figure>
+              <p>
+                The projection is one-way: a consequence envelope does not
+                uniquely recover the cone family and does not supply causal
+                correctness, probability, or calibrated point prediction.
               </p>
             </section>
 
@@ -368,10 +494,33 @@ ForecastConeFamilyAfterAction(F, a, h)
                   <span>Adds observation axes, tests, runtime checks, or evidence records.</span>
                 </li>
                 <li>
+                  <strong>Escalating intervention</strong>
+                  <span>Converts a proposal into a review, design, deferral, or incident record.</span>
+                </li>
+                <li>
                   <strong>Learning intervention</strong>
                   <span>Preserves observed outcomes and forecast error in posterior field memory.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Observation and governance schemas</figcaption>
+                <pre><code>Observation
+  = obs : FieldSpace -> ObservedSignatureRecord
+
+ObservationBoundary
+  = measured axes
+  + unavailable evidence
+  + private evidence
+  + extractor version
+  + non-conclusions
+
+GovernanceIntervention
+  = support transformation
+  + policy transformation
+  + observation enrichment
+  + feedback update
+  + escalation / deferral rule</code></pre>
+              </figure>
               <div class="claim-strip">
                 <p>
                   Field update preserves forecast error and boundary evidence.
@@ -392,13 +541,28 @@ ForecastConeFamilyAfterAction(F, a, h)
                 <span class="status-badge status-badge-proved">Lean record package</span>
                 <span><code>Formal/Arch/Evolution/SFTFieldUpdate.lean</code> proves record-preservation accessors; forecast-quality calibration remains separate.</span>
               </p>
+              <figure class="code-panel">
+                <figcaption>FieldUpdate and UpdateSound</figcaption>
+                <pre><code>FieldUpdate
+  = prior field
+  + ForecastCone / ConsequenceEnvelope
+  + observed PR signature delta
+  + unexpected obstruction witnesses
+  + review / CI outcome
+  + runtime feedback
+  -> posterior field
+
+UpdateSound(update)
+  = observed delta / unexpected witness / review outcome
+    are recorded in the posterior field</code></pre>
+              </figure>
             </section>
 
             <section id="core-anchors" class="article-section">
               <h2>Formal and computational anchors</h2>
               <p>
-                Part III combines source-document schemas with checked Lean
-                anchors for bounded fragments. These anchors prevent the public
+                Part III combines theory schemas with checked Lean anchors for
+                bounded fragments. These anchors prevent the public
                 text from reading SFT as an unqualified empirical prediction
                 theory.
               </p>
@@ -409,7 +573,7 @@ ForecastConeFamilyAfterAction(F, a, h)
                       <span class="formal-anchor-card-label">Field core</span>
                       <h3>State, projection, and support</h3>
                     </div>
-                    <span class="status-badge status-badge-defined">source schema</span>
+                    <span class="status-badge status-badge-defined">theory schema</span>
                   </header>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -468,7 +632,7 @@ ForecastConeFamilyAfterAction(F, a, h)
               </a>
               <a href="../part-iv-principles/">
                 <span>Next</span>
-                <strong>Part IV. Principles</strong>
+                <strong>Part IV. Attractor Engineering and Principles</strong>
               </a>
             </nav>
           </div>

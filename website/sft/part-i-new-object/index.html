@@ -93,7 +93,7 @@
                 <li><a href="../part-i-new-object/" aria-current="page">Part I. The New Object</a></li>
                 <li><a href="../part-ii-basis/">Part II. AAT / SFT Interface</a></li>
                 <li><a href="../part-iii-core/">Part III. SFT Core</a></li>
-                <li><a href="../part-iv-principles/">Part IV. Principles</a></li>
+                <li><a href="../part-iv-principles/">Part IV. Attractor Engineering and Principles</a></li>
                 <li><a href="../part-v-computing-systems/">Part V. Computing Systems</a></li>
                 <li><a href="../part-vi-case-studies/">Part VI. Case Studies</a></li>
                 <li><a href="../part-vii-research-program/">Part VII. Research Program</a></li>
@@ -180,6 +180,24 @@
                 supplies observation, and SFT asks how future operation space
                 changes under artifacts and feedback.
               </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Theory</strong>
+                  <span>Define software evolution as field-shaped computation.</span>
+                </li>
+                <li>
+                  <strong>Measurement</strong>
+                  <span>Use AAT / ArchSig to observe architecture objects, signatures, obstructions, theorem boundaries, and field estimates.</span>
+                </li>
+                <li>
+                  <strong>Computation</strong>
+                  <span>Make operation support, policy, ForecastCone, ConsequenceEnvelope, support safety, and feedback update calculable.</span>
+                </li>
+                <li>
+                  <strong>Governance</strong>
+                  <span>Read review, CI, type checking, AI policy, and runtime feedback as interventions that reshape codebase futures.</span>
+                </li>
+              </ul>
               <figure class="code-panel">
                 <figcaption>Computable in SFT</figcaption>
                 <pre><code>computable :=
@@ -244,6 +262,19 @@
                   <span>Past incidents, review rules, and migrations change the support and policy visible to new proposals.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Codebase as Field Memory</figcaption>
+                <pre><code>Codebase as Field Memory
+  = implementation state
+  + sedimented requirements
+  + design decisions
+  + review and CI history
+  + incidents and repairs
+  + migrations and workarounds
+  + ownership boundaries
+  + tooling practices
+  + latent default paths</code></pre>
+              </figure>
               <div class="claim-strip">
                 <p>
                   Concrete reading: two checkout systems can share the same
@@ -292,8 +323,30 @@
                 <span class="status-badge status-badge-future">definition vocabulary</span>
               </p>
               <figure class="code-panel">
-                <figcaption>Boundary-aware estimate</figcaption>
-                <pre><code>model_B : DevelopmentField -> Partial SoftwareFieldEstimate
+                <figcaption>DevelopmentField and boundary-aware estimate</figcaption>
+                <pre><code>DevelopmentField
+  = codebase
+  + requirements and specs
+  + issues and planning artifacts
+  + design practices
+  + developers and AI agents
+  + review systems
+  + CI / type / test systems
+  + runtime observations
+  + incident and postmortem records
+  + lifecycle and migration pressure
+
+model_B : DevelopmentField -> Partial SoftwareFieldEstimate
+
+ModelingBoundary B
+  = selected artifacts
+  + selected codebase region
+  + selected architecture universe
+  + selected observation axes
+  + selected governance records
+  + selected time horizon
+  + unavailable evidence
+  + non-conclusions
 
 SoftwareFieldEstimate
   = modeling boundary
@@ -397,7 +450,7 @@ SoftwareFieldEstimate
               <p class="statement-status" aria-label="Claim status for Counterexample I.7">
                 <span class="statement-status-label">Claim status</span>
                 <span class="status-badge status-badge-proved">Lean proved wrapper</span>
-                <span>Finite witness packaged by #920; see the <a href="../theorem-candidates/#counterexample-anchors">counterexample anchors</a>.</span>
+                <span>Finite witness exposed through the <a href="../theorem-candidates/#counterexample-anchors">counterexample anchors</a>.</span>
               </p>
               <ul class="status-list">
                 <li>
