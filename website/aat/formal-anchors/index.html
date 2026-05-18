@@ -120,14 +120,6 @@
 
             <section id="foundations" class="article-section">
               <h2>Foundations</h2>
-              <p>
-                The chapter page is the mathematical reading. These cards are
-                the audit trail: each one records the representative
-                Lean declarations, current status, and boundary for one claim
-                group. Full declaration lists stay folded by default, so this
-                section remains an index rather than a substitute for the
-                theorem index.
-              </p>
               <div class="formal-anchor-cards" aria-label="Foundations formal-anchor audit trail">
                 <article class="formal-anchor-card">
                   <header class="formal-anchor-card-header">
@@ -311,16 +303,6 @@
                   </details>
                 </article>
               </div>
-              <div class="claim-strip">
-                <p>
-                  Read the current QED core through the
-                  <a href="../status/">AAT Status page</a>: selected
-                  presentation boundaries and static structural bridge
-                  theorems are proved under explicit assumptions, while
-                  real-code extraction completeness remains outside the
-                  theorem claim.
-                </p>
-              </div>
             </section>
 
 
@@ -400,12 +382,6 @@
 
             <section id="signature-and-boundary" class="article-section">
               <h2>Signature and Theorem Boundary</h2>
-              <p>
-                The cards below are the audit trail for the chapter. They do
-                not replace the theorem index; they show which Lean
-                declarations support the numbered statements and where the
-                current claim boundary stops.
-              </p>
               <div class="formal-anchor-cards" aria-label="Signature and Theorem Boundary formal-anchor audit trail">
                 <article class="formal-anchor-card">
                   <header class="formal-anchor-card-header">
@@ -861,13 +837,6 @@
 
             <section id="calculus-and-extensions" class="article-section">
               <h2>Calculus and Extensions</h2>
-              <p>
-                These anchors are the audit trail for theorem-grade claims on
-                this page. Entries marked "defined only" are stable vocabulary
-                or schema carriers; entries marked "proved" are bounded
-                theorems or accessor theorems under the assumptions named by
-                the package.
-              </p>
               <div class="formal-anchor-cards">
                 <article class="formal-anchor-card">
                   <div class="formal-anchor-card-header">
@@ -1016,12 +985,6 @@
 
             <section id="repair-and-dynamics" class="article-section">
               <h2>Repair and Dynamics</h2>
-              <p>
-                The page is an audit trail over existing Lean entries. It adds
-                no theorem, and every theorem-grade statement above points to a
-                docs source, Lean anchor, status, assumptions, and
-                non-conclusion boundary.
-              </p>
               <div class="formal-anchor-cards">
                 <article class="formal-anchor-card">
                   <div class="formal-anchor-card-header">
@@ -1124,12 +1087,6 @@
 
             <section id="representations-and-effects" class="article-section">
               <h2>Representations and Effects</h2>
-              <p>
-                The page is an audit trail over existing Lean entries. It adds
-                no theorem, and every theorem-grade statement above points to
-                a docs source, Lean anchor, status, assumptions, and
-                non-conclusion boundary.
-              </p>
               <div class="formal-anchor-cards" aria-label="Representations and Effects formal-anchor audit trail">
                 <article class="formal-anchor-card">
                   <div class="formal-anchor-card-header">
@@ -1232,12 +1189,6 @@
 
             <section id="examples-and-boundaries" class="article-section">
               <h2>Examples and Boundaries</h2>
-              <p>
-                These cards are the audit trail for the chapter. They connect
-                the citable statements above to representative Lean names,
-                proof-obligation rows, and source boundaries without turning
-                the website prose into a new theorem source.
-              </p>
               <div class="formal-anchor-cards" aria-label="Examples and Boundaries formal-anchor audit trail">
                 <article class="formal-anchor-card">
                   <header class="formal-anchor-card-header">
@@ -1430,21 +1381,12 @@
             </section>
 
             <section id="lean-status" class="article-section">
-              <h2>Lean status</h2>
+              <h2>Counterexample status</h2>
               <p>
-                The theorem index records proved SOLID-style counterexamples,
-                static / semantic counterexamples, flatness packages, and
-                coupon-oriented bridge APIs. Their purpose on this page is to
-                fix non-implications, not to claim that every real repository
-                example has been extracted completely.
+                The theorem index records representative counterexamples,
+                flatness packages, and worked-example bridge APIs used by the
+                public examples.
               </p>
-              <div class="claim-strip">
-                <p>
-                  Counterexamples are positive theory content. They identify
-                  which slogan-like implications are invalid and keep public
-                  explanations aligned with the bounded Lean status.
-                </p>
-              </div>
               <div class="article-table">
                 <table>
                   <thead>
@@ -1452,7 +1394,7 @@
                       <th>Claim</th>
                       <th>Current Lean status</th>
                       <th>Boundary</th>
-                      <th>Non-conclusion</th>
+                      <th>Scope</th>
                       <th>Source</th>
                     </tr>
                   </thead>
@@ -1461,21 +1403,21 @@
                       <td>SOLID-style local contracts do not imply decomposability</td>
                       <td>`proved` for representative finite counterexamples</td>
                       <td>Selected abstract / concrete graph examples and local compatibility predicates.</td>
-                      <td>Does not classify every natural-language SOLID usage.</td>
+                      <td>Representative finite counterexamples for the local-contract / global-structure distinction.</td>
                       <td>Lean theorem index, SOLID counterexamples.</td>
                     </tr>
                     <tr>
                       <td>Static flatness does not imply semantic flatness</td>
                       <td>`defined only` / `proved` for selected bridge and counterexample packages</td>
                       <td>Selected static graph and selected semantic diagram universe.</td>
-                      <td>Does not prove all semantic failures are static failures.</td>
+                      <td>Selected semantic obstruction against a static-only reading.</td>
                       <td>Lean theorem index and proof obligations.</td>
                     </tr>
                     <tr>
                       <td>Coupon worked example</td>
                       <td>Mixed: theorem-backed finite packages plus tooling / example-level readings</td>
                       <td>Selected component universe, selected witnesses, selected observation contexts.</td>
-                      <td>Not complete extraction from every real coupon repository.</td>
+                      <td>Worked finite skeleton for static, semantic, repair, and signature readings.</td>
                       <td>AAT mathematical theory and ArchSig example docs.</td>
                     </tr>
                   </tbody>
@@ -1486,11 +1428,6 @@
 
             <section id="related-work" class="article-section">
               <h2>Related Work and Novelty</h2>
-              <p>
-                These cards keep the related-work claims tied to the current
-                source of truth. They are an audit trail for the page, not a
-                new theorem index and not a replacement for the canonical docs.
-              </p>
               <div class="formal-anchor-cards" aria-label="Related Work and Novelty formal-anchor audit trail">
                 <article class="formal-anchor-card">
                   <header class="formal-anchor-card-header">

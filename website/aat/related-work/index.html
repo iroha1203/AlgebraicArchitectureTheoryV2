@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT related work and novelty boundary: ISO 42010, ATAM, architecture metrics, graph analysis, formal methods, category models, and non-replacement claims."
+      content="AAT related work and novelty: how AAT combines architecture description, review, metrics, graph analysis, formal methods, and category models into bounded claim grammar."
     >
     <title>AAT Related Work and Novelty</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/related-work/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Related Work and Novelty">
-    <meta property="og:description" content="AAT related work and novelty boundary: ISO 42010, ATAM, architecture metrics, graph analysis, formal methods, category models, and non-replacement claims.">
+    <meta property="og:description" content="AAT related work and novelty: how AAT combines architecture description, review, metrics, graph analysis, formal methods, and category models into bounded claim grammar.">
     <meta property="og:url" content="https://iroha1203.dev/aat/related-work/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Related Work and Novelty">
-    <meta name="twitter:description" content="AAT related work and novelty boundary: ISO 42010, ATAM, architecture metrics, graph analysis, formal methods, category models, and non-replacement claims.">
+    <meta name="twitter:description" content="AAT related work and novelty: how AAT combines architecture description, review, metrics, graph analysis, formal methods, and category models into bounded claim grammar.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -63,11 +63,11 @@
           <p class="eyebrow">Appendix</p>
           <h1>Related Work<br>and Novelty</h1>
           <p class="lede">
-            Related work is the boundary map for AAT. It shows which
+            Related work is the positioning map for AAT. It shows which
             architecture-description, review, metric, graph, formal-methods,
-            and categorical ideas AAT reuses, and where AAT adds a bounded
-            claim grammar for invariants, obstruction witnesses, signatures,
-            theorem boundaries, and non-conclusions.
+            and categorical ideas AAT reuses, then states the bounded claim
+            grammar AAT adds: invariants, obstruction witnesses, signatures,
+            theorem boundaries, and explicit scope.
           </p>
         </div>
       </section>
@@ -79,7 +79,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#novelty-boundary">Novelty boundary</a></li>
-                <li><a href="#comparison-contract">Comparison contract</a></li>
+                <li><a href="#comparison-contract">Contribution pattern</a></li>
                 <li><a href="#iso-42010">ISO 42010</a></li>
                 <li><a href="#atam">ATAM</a></li>
                 <li><a href="#metrics">Architecture metrics</a></li>
@@ -160,9 +160,10 @@
             <section id="novelty-boundary" class="article-section">
               <h2>Novelty boundary</h2>
               <p>
-                This page is a novelty boundary for adjacent literature. It
-                keeps replacement claims, empirical superiority claims, and
-                formal theorem claims separated.
+                AAT is built from familiar neighboring tools, but it organizes
+                them around a specific architecture question: which operation
+                preserves which invariant, under which evidence boundary, and
+                with which obstruction signature?
               </p>
               <figure class="code-panel">
                 <figcaption>Novelty boundary</figcaption>
@@ -173,21 +174,21 @@
   + obstruction witness universe
   + multi-axis ArchitectureSignature
   + theorem boundary
-  + recorded non-conclusions</code></pre>
+  + explicit scope</code></pre>
               </figure>
               <p id="positioning-a-1" class="statement">
                 <a class="statement-anchor" href="#positioning-a-1">Positioning A.1.</a>
                 AAT's novelty is the bounded claim grammar that ties an
                 architecture operation to invariant families, obstruction
                 witnesses, signature axes, theorem boundaries, and
-                non-conclusions. The novelty is not a replacement of adjacent
-                description, review, metric, graph, model-checking, or
-                category-theoretic methods.
+                explicit scope. The neighboring methods supply inputs,
+                representations, or proof techniques; AAT supplies the
+                architecture-specific package that reads them together.
               </p>
             </section>
 
             <section id="comparison-contract" class="article-section">
-              <h2>Comparison contract</h2>
+              <h2>Contribution pattern</h2>
               <div class="article-table">
                 <table>
                   <caption>How to read an adjacent-work comparison</caption>
@@ -195,14 +196,14 @@
                     <tr>
                       <th>Question</th>
                       <th>AAT reading</th>
-                      <th>Guardrail</th>
+                      <th>Contribution</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>What does the neighbor supply?</td>
                       <td>A notation, review process, metric, graph fact, model, or proof technique.</td>
-                      <td>Do not restate the neighbor as if AAT invented it.</td>
+                      <td>AAT keeps the source concept visible and imports it with an explicit role.</td>
                     </tr>
                     <tr>
                       <td>What does AAT import?</td>
@@ -211,20 +212,19 @@
                     </tr>
                     <tr>
                       <td>What does AAT add?</td>
-                      <td>The theorem boundary, obstruction reading, signature status, and explicit non-conclusion.</td>
-                      <td>The added package is not an empirical superiority result by itself.</td>
+                      <td>The theorem boundary, obstruction reading, signature status, and explicit scope.</td>
+                      <td>The result is a citable architecture claim package.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <p id="non-replacement-a-2" class="statement">
-                <a class="statement-anchor" href="#non-replacement-a-2">Non-replacement A.2.</a>
-                AAT is a boundary discipline for architecture claims. It can
-                use architecture descriptions, ATAM-style scenarios, metrics,
-                graph analyses, theorem proving, and categorical vocabulary as
-                inputs or representations, but it does not replace those
-                methods as documentation standards, review practices,
-                empirical protocols, or verification engines.
+                <a class="statement-anchor" href="#non-replacement-a-2">Positioning A.2.</a>
+                AAT is a boundary discipline for architecture claims. It uses
+                architecture descriptions, ATAM-style scenarios, metrics, graph
+                analyses, theorem proving, and categorical vocabulary as inputs
+                for bounded invariant, witness, signature, and theorem-boundary
+                packages.
               </p>
             </section>
 
@@ -234,15 +234,15 @@
                 ISO/IEC/IEEE 42010 is the natural neighbor for architecture
                 description: stakeholders, concerns, viewpoints, views, and
                 model kinds organize how an architecture is documented. AAT
-                uses that kind of boundary discipline, but its object is not
-                primarily an architecture description package.
+                takes that boundary discipline and turns it into a reasoning
+                surface for selected architecture claims.
               </p>
               <p>
                 AAT asks a different question. Given a selected architecture
                 object and observation boundary, which invariant family is
                 required, which witness universe can expose a violation, which
                 signature coordinates were measured, and which theorem boundary
-                prevents over-reading the result?
+                licenses the result?
               </p>
               <div class="article-table">
                 <table>
@@ -250,14 +250,14 @@
                     <tr>
                       <th>Neighbor concept</th>
                       <th>AAT reading</th>
-                      <th>Boundary</th>
+                      <th>AAT contribution</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>Viewpoint / view</td>
                       <td>Selected observation context and evidence boundary.</td>
-                      <td>A view does not by itself prove invariant preservation.</td>
+                      <td>A theorem or report states the invariant reading for that selected view.</td>
                     </tr>
                     <tr>
                       <td>Model kind</td>
@@ -267,7 +267,7 @@
                     <tr>
                       <td>Concern</td>
                       <td>Invariant family, required law, or signature axis.</td>
-                      <td>A concern is not automatically a measured zero axis.</td>
+                      <td>The concern becomes measurable when paired with an axis and evidence boundary.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -290,11 +290,11 @@
                 </li>
                 <li>
                   <strong>Risk and tradeoff</strong>
-                  <span>AAT represents selected risks as obstruction witnesses or nonzero signature axes; tradeoffs are axis-local movements, not a global score.</span>
+                  <span>AAT represents selected risks as obstruction witnesses or nonzero signature axes; tradeoffs become axis-local movements across a signature.</span>
                 </li>
                 <li>
                   <strong>Review conclusion</strong>
-                  <span>AAT requires the theorem boundary or artifact boundary to say what the conclusion does not cover.</span>
+                  <span>AAT attaches a theorem boundary or artifact boundary to the conclusion.</span>
                 </li>
               </ul>
               <p>
@@ -302,7 +302,9 @@
                 a risk, sensitivity point, or tradeoff; AAT asks whether that
                 risk has a selected witness, whether the corresponding
                 signature axis was measured, and whether a theorem package or
-                report boundary licenses the proposed conclusion.
+                report boundary licenses the proposed conclusion. The result
+                is a review finding that can be read as a bounded architecture
+                claim.
               </p>
             </section>
 
@@ -313,7 +315,7 @@
                 complexity, volatility, or risk. <code>ArchitectureSignature</code>
                 reads quality as a multi-axis diagnostic whose coordinates
                 carry measurement status, evidence, universe, and
-                non-conclusions.
+                scope.
               </p>
               <figure class="code-panel">
                 <figcaption>Measurement status boundary</figcaption>
@@ -327,21 +329,12 @@
               </figure>
               <p id="signature-boundary-a-3" class="statement">
                 <a class="statement-anchor" href="#signature-boundary-a-3">Signature boundary A.3.</a>
-                A measured-zero coordinate is not a global quality certificate,
-                and an unmeasured coordinate is not a zero coordinate.
-                Signature comparison is meaningful only on selected axes where
-                both sides are measured and an axis-local order has been
-                declared.
+                Signature comparison is meaningful on selected axes where both
+                sides are measured and an axis-local order has been declared.
+                The signature keeps static split, semantic commutativity,
+                runtime exposure, projection exactness, and empirical outcomes
+                available as separate coordinates.
               </p>
-              <div class="claim-strip">
-                <p>
-                  A lower value on one measured axis is not a total ordering of
-                  architectures. Static split, semantic commutativity, runtime
-                  exposure, projection exactness, and empirical outcomes remain
-                  separate axes unless a theorem or empirical protocol connects
-                  them.
-                </p>
-              </div>
             </section>
 
             <section id="graph-analysis" class="article-section">
@@ -350,9 +343,9 @@
                 AAT reuses graph-level dependency analysis for selected static
                 and runtime relations: reachability, layering, acyclicity,
                 paths, adjacency-style representations, and finite metric
-                calculations. The distinctive move is to prevent those graph
-                facts from becoming stronger architecture claims without a
-                bridge.
+                calculations. The distinctive move is the bridge from graph
+                fact to architecture claim: a selected graph fact becomes
+                evidence for a named invariant, witness, or signature axis.
               </p>
               <ul class="term-list">
                 <li>
@@ -364,8 +357,8 @@
                   <span>Law families, obstruction witnesses, signature status, and theorem boundaries that state which graph fact supports which architecture claim.</span>
                 </li>
                 <li>
-                  <strong>Non-conclusion</strong>
-                  <span>A clean selected graph does not imply complete extraction, semantic flatness, runtime safety, or empirical cost improvement.</span>
+                  <strong>Result</strong>
+                  <span>Graph analysis becomes theorem-bound evidence for selected architecture readings.</span>
                 </li>
               </ul>
               <p class="formal-audit-link">
@@ -380,16 +373,15 @@
                 Formal methods, model checking, type systems, theorem proving,
                 and refinement techniques provide ways to verify precise
                 specifications. AAT uses theorem proving as an anchor for
-                selected architecture statements, but the whole theory is not
-                reduced to a single model-checking problem.
+                selected architecture statements and connects checked
+                declarations to public theorem boundaries.
               </p>
               <p>
                 The current Lean role is inspectable formal anchoring:
                 selected finite static lawfulness, selected required witnesses,
                 and selected required signature axes under explicit coverage
-                and exactness assumptions. Runtime extraction completeness,
-                semantic coverage, and empirical outcome claims remain outside
-                that anchor unless separate theorem packages are supplied.
+                and exactness assumptions. Runtime, semantic, and empirical
+                readings use separate packages when those axes enter the claim.
               </p>
               <p id="formal-anchor-a-4" class="statement">
                 <a class="statement-anchor" href="#formal-anchor-a-4">Formal anchor A.4.</a>
@@ -425,24 +417,24 @@
                     <tr>
                       <th>Concept</th>
                       <th>Current AAT use</th>
-                      <th>Not concluded</th>
+                      <th>AAT separation</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td><code>ComponentCategory</code></td>
                       <td>Thin reachability category over selected components.</td>
-                      <td>Path count, walk length, or weighted propagation.</td>
+                      <td>Path count, walk length, and weighted propagation live in metric or path representations.</td>
                     </tr>
                     <tr>
                       <td>Projection / lifting</td>
                       <td>Explicit bridge between concrete and abstract architecture objects or operations.</td>
-                      <td>Automatic exactness for every model kind.</td>
+                      <td>Exactness is supplied by the selected bridge package.</td>
                     </tr>
                     <tr>
                       <td>Analytic representation</td>
                       <td>Structure-preserving and reflecting directions under coverage and completeness premises.</td>
-                      <td>Semantic completeness from a representation name alone.</td>
+                      <td>Semantic completeness is stated as a separate premise or theorem.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -466,8 +458,8 @@
                 AAT contributes an architecture-specific packaging of
                 operation, invariant, obstruction witness, signature axis, and
                 theorem boundary. Its novelty is the disciplined composition of
-                these pieces and the refusal to promote missing evidence into
-                stronger conclusions.
+                these pieces into a reusable reading discipline for software
+                architecture.
               </p>
               <div class="article-table">
                 <table>
@@ -487,12 +479,12 @@
                     <tr>
                       <td>Architecture evaluation</td>
                       <td>Scenario, risk, and tradeoff vocabulary.</td>
-                      <td>Bounded law and obstruction readings that prevent over-generalized review conclusions.</td>
+                      <td>Bounded law and obstruction readings for review conclusions.</td>
                     </tr>
                     <tr>
                       <td>Metrics</td>
                       <td>Finite measurements and axis-specific readings.</td>
-                      <td>Multi-axis ArchitectureSignature with measured, unmeasured, out-of-scope, and non-conclusion states.</td>
+                      <td>Multi-axis ArchitectureSignature with measured, unmeasured, out-of-scope, and scoped readings.</td>
                     </tr>
                     <tr>
                       <td>Graphs and formal methods</td>
@@ -503,12 +495,13 @@
                 </table>
               </div>
               <p id="non-conclusion-a-6" class="statement">
-                <a class="statement-anchor" href="#non-conclusion-a-6">Non-conclusion A.6.</a>
-                This related-work map does not prove that AAT is empirically
-                superior to adjacent methods, that AAT can fully extract real
-                codebases, that static split implies runtime or semantic
-                flatness, or that architecture quality can be reduced to a
-                scalar score.
+                <a class="statement-anchor" href="#non-conclusion-a-6">Research program A.6.</a>
+                AAT turns adjacent architecture methods into a common algebraic
+                reading surface. Description supplies selected views, review
+                supplies scenarios and risks, metrics supply measured axes,
+                graph analysis supplies finite structural evidence, formal
+                methods supply checked anchors, and categorical models supply
+                composition and lifting vocabulary.
               </p>
             </section>
 

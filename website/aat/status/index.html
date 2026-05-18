@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="How to audit AAT Lean formalization status, theorem boundaries, build evidence, scans, and empirical non-conclusions."
+      content="AAT Lean status dashboard: current snapshot, checked surface, claim status, formal core, and audit links."
     >
     <title>AAT Lean Status</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/status/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Lean Status">
-    <meta property="og:description" content="How to audit AAT Lean formalization status, theorem boundaries, build evidence, scans, and empirical non-conclusions.">
+    <meta property="og:description" content="AAT Lean status dashboard: current snapshot, checked surface, claim status, formal core, and audit links.">
     <meta property="og:url" content="https://iroha1203.dev/aat/status/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Lean Status">
-    <meta name="twitter:description" content="How to audit AAT Lean formalization status, theorem boundaries, build evidence, scans, and empirical non-conclusions.">
+    <meta name="twitter:description" content="AAT Lean status dashboard: current snapshot, checked surface, claim status, formal core, and audit links.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -63,10 +63,9 @@
           <p class="eyebrow">Appendix</p>
           <h1>AAT Lean Status</h1>
           <p class="lede">
-            This page is the public audit surface for AAT's Lean
-            formalization. It explains what the current Lean files prove, what
-            the repository checks verify, how to read version and commit
-            evidence, and where the formal boundary stops.
+            This page is the compact status dashboard for AAT's Lean
+            formalization. It names the checked snapshot, the public source
+            maps, the status vocabulary, and the current formal core.
           </p>
         </div>
       </section>
@@ -77,15 +76,11 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#source-map">Source map</a></li>
-                <li><a href="#release-snapshot">Release snapshot</a></li>
-                <li><a href="#audit-snapshot">Audit snapshot</a></li>
-                <li><a href="#formal-claim-map">Formal claim map</a></li>
-                <li><a href="#formal-anchor-package">Formal anchor package</a></li>
-                <li><a href="#reader-anchors">Reader anchors</a></li>
-                <li><a href="#status-vocabulary">Status vocabulary</a></li>
-                <li><a href="#promotion-rule">Promotion rule</a></li>
-                <li><a href="#qed-boundary">Current QED boundary</a></li>
+                <li><a href="#current-snapshot">Current snapshot</a></li>
+                <li><a href="#checked-surface">Checked surface</a></li>
+                <li><a href="#claim-status">Claim status</a></li>
+                <li><a href="#formal-core">Current formal core</a></li>
+                <li><a href="#audit-links">Audit links</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -156,55 +151,19 @@
           </aside>
 
           <div class="article-main">
-            <section id="source-map" class="article-section">
-              <h2>Source map</h2>
+            <section id="current-snapshot" class="article-section">
+              <h2>Current snapshot</h2>
               <p>
-                The AAT mathematical text stays focused on definitions,
-                theorem candidates, non-goals, and design boundaries. Lean
-                status and issue progress are managed elsewhere so a public
-                exposition cannot accidentally promote a future theorem into a
-                proved claim.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Mathematical definitions</strong>
-                  <span>`docs/aat/mathematical_theory.md` is the first-class theory text.</span>
-                </li>
-                <li>
-                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md">Implemented Lean API</a></strong>
-                  <span>The theorem index lists declarations, file paths, meanings, and status.</span>
-                </li>
-                <li>
-                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/proof_obligations.md">Future work and empirical hypotheses</a></strong>
-                  <span>The proof-obligation ledger tracks future proof work and empirical boundaries.</span>
-                </li>
-                <li>
-                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">Selected presentation boundary</a></strong>
-                  <span>Records the formal boundary between selected presentation-level reading and ambient complete extraction.</span>
-                </li>
-                <li>
-                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">Architecture core claim boundary</a></strong>
-                  <span>Records the current formal boundary for architecture core and certified architecture claims.</span>
-                </li>
-                <li>
-                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">Formal anchor theorem package</a></strong>
-                  <span>Maps the finite static structural anchor to Lean declarations, derived diagnostics, and non-conclusions.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="release-snapshot" class="article-section">
-              <h2>Release snapshot</h2>
-              <p>
-                This status page is tied to a named repository snapshot and
-                toolchain. Read build and audit evidence at that boundary.
+                The status record is read at a repository snapshot. The
+                snapshot fixes the Lean toolchain, the source tree, and the
+                public theorem-index links used by the audit pages.
               </p>
               <div class="article-table">
                 <table>
                   <tbody>
                     <tr>
                       <th>Updated</th>
-                      <td>2026-05-16</td>
+                      <td>2026-05-18</td>
                     </tr>
                     <tr>
                       <th>Lean toolchain</th>
@@ -215,267 +174,94 @@
                       <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/tree/6709857b5cf840218f3a88a3a776c184dbf825d4">6709857</a></td>
                     </tr>
                     <tr>
-                      <th>Build evidence</th>
-                      <td><code>lake build</code> is the whole-repository check used for Lean PRs and release snapshots.</td>
+                      <th>Main Lean check</th>
+                      <td><code>lake build</code></td>
                     </tr>
                     <tr>
-                      <th>Audit scans</th>
-                      <td>Placeholder, unsafe Lean keyword, and hidden Unicode scans are separate checks; a passing build is not a substitute for them.</td>
+                      <th>Public audit page</th>
+                      <td><a href="../formal-anchors/">AAT Formal Anchors Audit</a></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </section>
 
-            <section id="audit-snapshot" class="article-section">
-              <h2>Audit snapshot</h2>
+            <section id="checked-surface" class="article-section">
+              <h2>Checked surface</h2>
               <p>
-                AAT separates three kinds of evidence: the Lean source files,
-                the repository revision that was checked, and the command
-                output that confirms the checked revision. A public statement
-                should name all three when it relies on formalization.
+                AAT keeps the mathematical exposition, the Lean declaration
+                map, and future work ledger in separate files. This page gives
+                the public reading order for those surfaces.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Mathematical theory</strong>
+                  <span><code>docs/aat/mathematical_theory.md</code> is the research text for definitions, theorem candidates, examples, and design boundaries.</span>
+                </li>
+                <li>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md">Lean theorem index</a></strong>
+                  <span>Declaration names, file paths, current meanings, and status labels for the implemented Lean surface.</span>
+                </li>
+                <li>
+                  <strong><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/proof_obligations.md">Proof obligations</a></strong>
+                  <span>Future theorem work, empirical hypotheses, and open boundaries that sit outside the current proved core.</span>
+                </li>
+                <li>
+                  <strong><a href="../formal-anchors/">Formal Anchors Audit</a></strong>
+                  <span>Chapter-by-chapter public bridge from website claims to Lean declarations, theorem-index links, and boundary notes.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="claim-status" class="article-section">
+              <h2>Claim status</h2>
+              <p>
+                The website uses four status labels. They keep Lean proof,
+                formal carriers, planned mathematics, and empirical work in
+                separate lanes.
               </p>
               <div class="article-table">
                 <table>
                   <thead>
                     <tr>
-                      <th>Audit item</th>
-                      <th>What it tells a reader</th>
-                      <th>What it does not tell a reader</th>
+                      <th>Status</th>
+                      <th>Reading</th>
+                      <th>Typical artifact</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>Lean version</td>
-                      <td>The theorem checker version pinned by <code>lean-toolchain</code>, currently <code>leanprover/lean4:v4.28.0</code>.</td>
-                      <td>It does not say a theorem exists; it only fixes the checker environment.</td>
+                      <td><code>proved</code></td>
+                      <td>A Lean declaration establishes the claim under its recorded assumptions.</td>
+                      <td>Theorem, lemma, bridge theorem, or checked example.</td>
                     </tr>
                     <tr>
-                      <td>Commit / snapshot</td>
-                      <td>The exact repository tree whose files, docs links, and CI logs should be read together.</td>
-                      <td>It is not a mathematical claim by itself; later commits may change names, files, or assumptions.</td>
+                      <td><code>defined only</code></td>
+                      <td>A Lean carrier exists for precise later statements.</td>
+                      <td>Structure, predicate, executable metric, or schema.</td>
                     </tr>
                     <tr>
-                      <td><code>lake build</code> / CI</td>
-                      <td>The Lean project type-checks under the pinned toolchain and imported declarations are available.</td>
-                      <td>It does not prove every website sentence, empirical claim, or future proof obligation.</td>
+                      <td><code>future proof obligation</code></td>
+                      <td>A mathematical claim is part of the planned proof program.</td>
+                      <td>Proof-obligation entry and theorem candidate.</td>
                     </tr>
                     <tr>
-                      <td>Placeholder scan</td>
-                      <td>The reviewed files do not contain unresolved placeholder markers that were part of the release gate.</td>
-                      <td>It does not show theorem completeness; it only guards against unfinished marker text leaking into the checked surface.</td>
-                    </tr>
-                    <tr>
-                      <td><code>axiom</code> / <code>admit</code> / <code>sorry</code> / <code>unsafe</code> scan</td>
-                      <td>The reviewed Lean sources are checked for proof escapes or unsafe declarations that would weaken the audit reading.</td>
-                      <td>It does not replace reading the theorem assumptions or non-conclusions.</td>
-                    </tr>
-                    <tr>
-                      <td>Hidden / bidirectional Unicode scan</td>
-                      <td>The reviewed text is checked for zero-width and bidi control characters that can make source display misleading.</td>
-                      <td>It is a source-integrity check, not evidence of architecture correctness.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="claim-strip">
-                <p>
-                  A clean audit means the stated Lean artifacts can be
-                  inspected at the named snapshot. It does not turn extractor
-                  output, website exposition, or empirical validation into a
-                  Lean theorem.
-                </p>
-              </div>
-            </section>
-
-            <section id="formal-claim-map" class="article-section">
-              <h2>Formal claim map</h2>
-              <p>
-                The website states AAT as a systematic theory exposition, but
-                only some parts are current Lean-proved claims. Lean does not
-                replace the whole exposition; it supplies inspectable anchors
-                that keep public claims tied to explicit theorem boundaries.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Current proved core</strong>
-                  <span>Static structural theorem packages, finite witness-count bridges, selected required-axis exactness bridges, projection / LSP bridges, graph / matrix finite-universe bridges, and representative counterexamples tracked in the theorem index.</span>
-                </li>
-                <li>
-                  <strong>Defined-only surfaces</strong>
-                  <span>Operation schemas, extension schemas, analytic representation records, valuation records, repair and synthesis records, and tooling-facing metadata where the carrier exists but full correctness or completeness theorem packages are not universal.</span>
-                </li>
-                <li>
-                  <strong>Future proof obligations</strong>
-                  <span>Broader semantic completeness, global filling completeness, universe-wide obstruction coverage, and stronger operation laws that require additional theorem work.</span>
-                </li>
-                <li>
-                  <strong>Empirical hypotheses</strong>
-                  <span>Real-code extraction completeness, cost correlation, operational outcome improvement, and repository-wide calibration claims.</span>
-                </li>
-              </ul>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Status phrase</th>
-                      <th>Meaning in this website</th>
-                      <th>Reader rule</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>`proved theorem`</td>
-                      <td>A Lean theorem, lemma, or example theorem establishes the claim under its stated assumptions.</td>
-                      <td>Read only within the universe, coverage, exactness, and observation assumptions of that theorem.</td>
-                    </tr>
-                    <tr>
-                      <td>`schema accessor theorem`</td>
-                      <td>Lean proves that a record or package exposes the intended field, boundary, or non-conclusion data.</td>
-                      <td>Do not promote this to the full correctness theorem for every instance of the schema.</td>
-                    </tr>
-                    <tr>
-                      <td>`defined-only carrier`</td>
-                      <td>A structure, predicate, executable metric, or representation exists as a formal carrier.</td>
-                      <td>It supports precise statement of future theorems, but does not by itself prove the intended semantic claim.</td>
+                      <td><code>empirical hypothesis</code></td>
+                      <td>A repository, operation, dataset, or outcome claim belongs to empirical evaluation.</td>
+                      <td>Protocol, dataset, telemetry artifact, or calibration study.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </section>
 
-            <section id="formal-anchor-package" class="article-section">
-              <h2>Formal anchor package</h2>
+            <section id="formal-core" class="article-section">
+              <h2>Current formal core</h2>
               <p>
-                The finite static structural core is the current paper-facing
-                formal anchor theorem package. It is a checked anchor for
-                claim discipline inside AAT, not a claim that the whole theory
-                has been reduced to a single static structural theorem.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Boundary</strong>
-                  <span>The package is relative to an <code>ArchitectureLawModel</code> with finite universe coverage, selected required law family, selected required witnesses, required signature axes, and coverage / exactness assumptions.</span>
-                </li>
-                <li>
-                  <strong>Core equivalence</strong>
-                  <span><code>architectureLawful_iff_requiredSignatureAxesZero</code> and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code> connect selected required lawfulness with required signature axes being zero and with the bundled theorem package.</span>
-                </li>
-                <li>
-                  <strong>Theorem index entry</strong>
-                  <span><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">Finite Static Structural Core Formal Anchor</a> is the public map from this website text to the Lean declarations, derived diagnostics, and non-conclusions.</span>
-                </li>
-              </ul>
-              <div class="claim-strip">
-                <p>
-                  In this package, zero-curvature is terminology for required
-                  obstruction valuation zero inside the selected law universe.
-                  It is not a numerical curvature axis, a differential
-                  geometric curvature theorem, or a runtime completeness
-                  statement.
-                </p>
-              </div>
-            </section>
-
-            <section id="reader-anchors" class="article-section">
-              <h2>Reader anchors</h2>
-              <p>
-                The website names only representative Lean anchors. They are
-                included so a reader can locate the formal boundary; the
-                theorem index remains the complete public map of declarations.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Foundations presentation boundary</strong>
-                  <span><code>SelectedPresentation</code>, <code>AATJudgement</code>, <code>CompleteForRelation</code>, <code>CompleteForGraph</code>, <code>ArchitectureCore.selectedClaimBoundary</code>, and <code>CompleteExtractionCounterexample.selectedRestriction_same_but_completeExtraction_differs</code> anchor the distinction between selected presentation-level reading and ambient complete extraction; the theorem index records the <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#selected-presentation--complete-extraction-boundary">selected-presentation boundary</a> and the <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">core claim boundary</a>.</span>
-                </li>
-                <li>
-                  <strong>Static structural core</strong>
-                  <span><code>ArchitectureZeroCurvatureTheoremPackage</code> and <code>ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code> state the current static core under explicit boundary assumptions; the theorem index records the <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">formal anchor boundary</a>.</span>
-                </li>
-                <li>
-                  <strong>Required-axis exactness bridges</strong>
-                  <span>Required signature axis theorems connect selected obstruction-free evidence to measured-zero readings only where coverage and exactness assumptions are present.</span>
-                </li>
-                <li>
-                  <strong>Coupon static example</strong>
-                  <span><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code>, <code>CouponStaticDependencyExample.bad_not_selectedStaticSplitFeatureExtension</code>, and repaired static split declarations anchor the public coupon example as selected static evidence.</span>
-                </li>
-                <li>
-                  <strong>What remains outside these anchors</strong>
-                  <span>Runtime flatness, semantic flatness, extractor completeness, cost correlation, and repository-wide quality claims remain non-conclusions unless a separate theorem or empirical protocol states them.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="status-vocabulary" class="article-section">
-              <h2>Status vocabulary</h2>
-              <p>
-                AAT uses a small status vocabulary to avoid mixing proof,
-                schema, tooling, and empirical claims.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>proved</strong>
-                  <span>A Lean declaration has been proved, including main theorems, accessors, bridge theorems, bounded completeness results, or examples.</span>
-                </li>
-                <li>
-                  <strong>defined only</strong>
-                  <span>A Lean schema, structure, predicate, or executable metric exists, but the corresponding correctness theorem is not complete.</span>
-                </li>
-                <li>
-                  <strong>future proof obligation</strong>
-                  <span>A mathematical claim intended for Lean proof later.</span>
-                </li>
-                <li>
-                  <strong>empirical hypothesis</strong>
-                  <span>A claim to test against repositories, operations, datasets, or case studies; it is not a Lean proof blocker.</span>
-                </li>
-              </ul>
-              <div class="claim-strip">
-                <p>
-                  Tool output, extractor output, generated patches, author
-                  provenance, and unmeasured axes do not become `proved` merely
-                  by appearing in a report.
-                </p>
-              </div>
-            </section>
-
-            <section id="promotion-rule" class="article-section">
-              <h2>Promotion rule</h2>
-              <p>
-                AAT promotes a claim only when the artifact that states it also
-                carries the boundary needed to read it. A theorem candidate in
-                the mathematical text, a Lean definition, a tool report, and a
-                proved theorem are different objects.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Claim promotion path</figcaption>
-                <pre><code>mathematical candidate
-  -&gt; defined Lean schema
-  -&gt; proved theorem under boundary B
-  -&gt; public claim with non-conclusions recorded</code></pre>
-              </figure>
-              <p>
-                Tooling evidence can support a claim, but it does not replace
-                the theorem boundary. Empirical validation can motivate or
-                calibrate a hypothesis, but it is not promoted to `proved`.
-              </p>
-            </section>
-
-            <section id="qed-boundary" class="article-section">
-              <h2>Current QED boundary</h2>
-              <p>
-                The current Lean-proved core is the static structural theorem
-                package. It functions as a formal anchor for AAT's claim
-                discipline, while the website remains the broader systematic
-                exposition of operations, invariants, witnesses, signatures,
-                theorem boundaries, examples, and non-conclusions.
-              </p>
-              <p>
-                The package connects lawfulness with required signature axes
-                zero under explicit law-family, witness-coverage, axis
-                exactness, universe, coverage, and observation assumptions.
+                The current paper-facing Lean core is the finite static
+                structural theorem package. It connects selected lawfulness,
+                required signature axes, and zero-curvature terminology inside
+                an explicit law model.
               </p>
               <figure class="code-panel">
                 <figcaption>Static structural core</figcaption>
@@ -487,12 +273,51 @@ ArchitectureLawful X
 ArchitectureLawful X
   &lt;-&gt; ArchitectureZeroCurvatureTheoremPackage X</code></pre>
               </figure>
+              <ul class="status-list">
+                <li>
+                  <strong>Boundary</strong>
+                  <span><code>ArchitectureLawModel</code>, finite universe coverage, selected law family, selected witnesses, required axes, coverage, and exactness assumptions.</span>
+                </li>
+                <li>
+                  <strong>Representative declarations</strong>
+                  <span><code>architectureLawful_iff_requiredSignatureAxesZero</code> and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code>.</span>
+                </li>
+                <li>
+                  <strong>Index entry</strong>
+                  <span><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/6709857b5cf840218f3a88a3a776c184dbf825d4/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">Finite Static Structural Core Formal Anchor</a>.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="audit-links" class="article-section">
+              <h2>Audit links</h2>
               <p>
-                This boundary excludes runtime metric completeness, general
-                numerical curvature as a signature axis, empirical cost
-                correlation, and any claim that a real-code extractor produces
-                a complete `ComponentUniverse`.
+                Detailed anchor cards live on the audit page. The links below
+                are the shortest path from this status dashboard to the
+                formal material.
               </p>
+              <ul class="status-list">
+                <li>
+                  <strong><a href="../formal-anchors/#foundations">Foundations anchors</a></strong>
+                  <span>Selected presentation, architecture core, and complete-extraction boundary.</span>
+                </li>
+                <li>
+                  <strong><a href="../formal-anchors/#signature-and-boundary">Signature anchors</a></strong>
+                  <span>Required axes, measured-zero readings, available evidence, and signature boundary.</span>
+                </li>
+                <li>
+                  <strong><a href="../formal-anchors/#local-law-packages">Local law anchors</a></strong>
+                  <span>SOLID-style local contract packages, projection, LSP, DIP, and structural decomposition boundary.</span>
+                </li>
+                <li>
+                  <strong><a href="../formal-anchors/#calculus-and-extensions">Extension anchors</a></strong>
+                  <span>Operation schemas, feature extension evidence, split packages, and obstruction classification.</span>
+                </li>
+                <li>
+                  <strong><a href="../formal-anchors/#examples-and-boundaries">Example anchors</a></strong>
+                  <span>Coupon static evidence, semantic counterexample, repair transfer, and worked example boundaries.</span>
+                </li>
+              </ul>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
