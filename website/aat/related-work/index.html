@@ -88,7 +88,6 @@
                 <li><a href="#formal-methods">Formal methods</a></li>
                 <li><a href="#category-models">Category-theoretic models</a></li>
                 <li><a href="#novelty-claim">Novelty claim</a></li>
-                <li><a href="#formal-anchors">Formal anchors</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -147,6 +146,11 @@
                 <li>
                   <a href="../status/">
                     Status
+                  </a>
+                </li>
+                <li>
+                  <a href="../formal-anchors/">
+                    Formal Anchors Audit
                   </a>
                 </li>
               </ul>
@@ -623,142 +627,6 @@
                 <span class="status-badge status-badge-proved">recorded boundary</span>
                 <span>Matches the non-conclusions in the AAT mathematical theory, proof obligations, and examples boundary page.</span>
               </p>
-            </section>
-
-            <section id="formal-anchors" class="article-section">
-              <h2>Formal anchors</h2>
-              <p>
-                These cards keep the related-work claims tied to the current
-                source of truth. They are an audit trail for the page, not a
-                new theorem index and not a replacement for the canonical docs.
-              </p>
-              <div class="formal-anchor-cards" aria-label="Related work formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Architecture signature is multi-axis</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="#signature-boundary-a-3">Signature boundary A.3</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ArchitectureSignatureV1</code>, <code>ArchitectureSignatureV1Axis</code>, <code>AxisMeasurementClass</code>, <code>axisMeasuredZero</code>, and <code>axisAvailableAndZero</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Signature schema and axis classifiers are <code>defined only</code>; selected axis-value and optional-axis boundary lemmas are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Multi-axis diagnostic, not a scalar ranking or empirical outcome predictor.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#signature-v0">Signature v0 / v1 index</a></dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Finite graph and metric bridge</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits the graph-analysis comparison and selected metric
-                    boundary.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ComponentUniverse</code>, <code>FiniteArchGraph</code>, <code>reachableConeSizeOfFinite_eq_max_reachableConeSize_under_universe</code>, and <code>hasCycleBool_correct_under_finite_universe</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Finite-universe bridge theorems and selected metric correctness lemmas are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Finite selected universe, explicit coverage, and selected relation. No complete extractor claim.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#finite-universe--bridge-theorems">Finite Universe / Bridge Theorems</a></dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Finite static structural core</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchor</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="#formal-anchor-a-4">Formal anchor A.4</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ArchitectureLawModel</code>, <code>RequiredSignatureAxesZero</code>, <code>architectureLawful_iff_requiredSignatureAxesZero</code>, and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>The finite static structural core theorem package is <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Selected static lawfulness only; runtime, semantic, empirical, and extractor-completeness claims stay outside the package.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">Finite Static Structural Core Formal Anchor</a></dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Category and representation boundary</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits the category-theoretic comparison and analytic
-                    representation boundary.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ComponentCategory</code>, <code>Decomposable</code>, <code>AnalyticRepresentation</code>, and <code>Chapter11AnalyticRepresentation.architectureSignatureAnalyticRepresentation_nonConclusions</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd>Vocabulary and representations are <code>defined only</code>; selected bridge and non-conclusion lemmas are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Thin reachability category and explicit preserving / reflecting premises; no path-count semantics or automatic semantic completeness.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/44d6266ec321ef19f0c00da53f60bde92ea7a18b/docs/aat/lean_theorem_index.md#analytic-representation">Analytic Representation</a></dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

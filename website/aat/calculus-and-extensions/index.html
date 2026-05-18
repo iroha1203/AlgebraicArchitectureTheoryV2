@@ -86,7 +86,6 @@
                 <li><a href="#extension-evidence">Extension evidence</a></li>
                 <li><a href="#extension-obstruction">Extension obstruction</a></li>
                 <li><a href="#example-counterexample">Example and counterexample</a></li>
-                <li><a href="#formal-anchors">Formal anchors</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -145,6 +144,11 @@
                 <li>
                   <a href="../status/">
                     Status
+                  </a>
+                </li>
+                <li>
+                  <a href="../formal-anchors/">
+                    Formal Anchors Audit
                   </a>
                 </li>
               </ul>
@@ -546,160 +550,6 @@
                   and a repaired static split package; it does not promote the
                   coupon model into a universal extension theorem.
                 </p>
-              </div>
-            </section>
-
-            <section id="formal-anchors" class="article-section">
-              <h2>Formal anchors</h2>
-              <p>
-                These anchors are the audit trail for theorem-grade claims on
-                this page. Entries marked "defined only" are stable vocabulary
-                or schema carriers; entries marked "proved" are bounded
-                theorems or accessor theorems under the assumptions named by
-                the package.
-              </p>
-              <div class="formal-anchor-cards">
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Operation schema</span>
-                      <h3>ArchitectureOperation / OperationRoleSchema</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">defined / proved</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Operation tags, generated obligations, role packages, and
-                    one-way witness mapping accessors.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Files</dt>
-                      <dd><code>Formal/Arch/Operation/Operation.lean</code></dd>
-                    </div>
-                    <div>
-                      <dt>Index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L453">Architecture Operation</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Representative declarations</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureOperation</code></li>
-                      <li><code>OperationProofObligation</code></li>
-                      <li><code>ArchitectureOperation.generatedObligation_kind</code></li>
-                      <li><code>ArchitectureOperation.exists_sourceWitness_of_targetWitness</code></li>
-                      <li><code>OperationRoleSchema.discharged_of_conclusion</code></li>
-                      <li><code>OperationRoleSchema.generatedObligation_kind</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Calculus laws</span>
-                      <h3>Bounded law packages</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Law packages expose conclusions only after their bounded
-                    assumptions are supplied.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Files</dt>
-                      <dd><code>Formal/Arch/Operation/OperationLaws.lean</code></dd>
-                    </div>
-                    <div>
-                      <dt>Index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L599">Architecture Calculus Laws</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Representative declarations</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureCalculusLaw</code></li>
-                      <li><code>ArchitectureCalculusLaw.conclusion_of_assumptions</code></li>
-                      <li><code>finiteComposeEdgeUnionLaw_conclusion</code></li>
-                      <li><code>finiteReplaceEdgeEquivalenceLaw_conclusion</code></li>
-                      <li><code>protectRuntimeProtectionLaw_conclusion</code></li>
-                      <li><code>noSolutionCertificateSoundnessLaw_conclusion</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Feature extension</span>
-                      <h3>Static split, lifting, and bounded flatness</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Base extension, selected static split evidence, feature
-                    observation laws, selected lifting, and bounded flatness
-                    entrypoints.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Files</dt>
-                      <dd><code>Formal/Arch/Extension/FeatureExtension.lean</code>, <code>SplitExtensionLifting.lean</code>, <code>Flatness.lean</code></dd>
-                    </div>
-                    <div>
-                      <dt>Index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L280">Feature Extension</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Representative declarations</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>FeatureExtension</code></li>
-                      <li><code>StaticSplitFeatureExtension</code></li>
-                      <li><code>SelectedStaticSplitExtension</code></li>
-                      <li><code>FeatureViewSectionPackage</code></li>
-                      <li><code>SplitExtensionLifting_preservationPackage</code></li>
-                      <li><code>architectureFlatWithin_of_splitFeatureExtensionWithin</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Extension formula</span>
-                      <h3>Structural obstruction classification</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Single-label and multi-label obstruction witnesses, plus
-                    bounded bridges for filling, lifting, complexity transfer,
-                    and residual coverage gaps.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Files</dt>
-                      <dd><code>Formal/Arch/Extension/ArchitectureExtensionFormula.lean</code>, <code>Formal/Arch/Evolution/Chapter10ArchitectureExtensionFormula.lean</code></dd>
-                    </div>
-                    <div>
-                      <dt>Index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/5a90d46853ae2ee6ad014438ea0ad242869bdb37/docs/aat/lean_theorem_index.md#L1161">Architecture Extension Formula</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Representative declarations</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ExtensionObstructionWitness</code></li>
-                      <li><code>MultiLabelExtensionObstructionWitness</code></li>
-                      <li><code>ArchitectureExtensionFormula_structural</code></li>
-                      <li><code>liftingFailureExtensionObstructionWitness_classified</code></li>
-                      <li><code>complexityTransferExtensionObstructionWitness_classified</code></li>
-                      <li><code>residualCoverageGapExtensionObstructionWitness_classified</code></li>
-                    </ul>
-                  </details>
-                </article>
               </div>
             </section>
 

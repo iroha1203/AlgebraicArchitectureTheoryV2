@@ -84,7 +84,6 @@
                 <li><a href="#claim-levels">Claim levels</a></li>
                 <li><a href="#comparison-rules">Comparison rules</a></li>
                 <li><a href="#non-conclusions">Non-conclusions</a></li>
-                <li><a href="#status-index">Formal anchors</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -143,6 +142,11 @@
                 <li>
                   <a href="../status/">
                     Status
+                  </a>
+                </li>
+                <li>
+                  <a href="../formal-anchors/">
+                    Formal Anchors Audit
                   </a>
                 </li>
               </ul>
@@ -598,207 +602,6 @@
                   theorem boundary and the artifact boundary that produced the
                   coordinate.
                 </p>
-              </div>
-            </section>
-
-            <section id="status-index" class="article-section">
-              <h2>Formal anchors</h2>
-              <p>
-                The cards below are the audit trail for the chapter. They do
-                not replace the theorem index; they show which Lean
-                declarations support the numbered statements and where the
-                current claim boundary stops.
-              </p>
-              <div class="formal-anchor-cards" aria-label="Signature and Boundary formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Signature schema and selected axes</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="#definition-5-1">Definition 5.1</a> and
-                    <a href="#proposition-5-2">Proposition 5.2</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ArchitectureSignatureV1</code>, <code>ArchitectureSignatureV1Axis</code>, <code>selectedRequiredLawAxes</code>, <code>mem_selectedRequiredLawAxes_iff</code>, and <code>axisMeasurementClass</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for schema and axis classifiers; selected-axis membership and bridge facts are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>The concrete schema is a bounded v1 signature surface. It does not define a scalar quality score or make optional axes required.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#signature-integrated-lawfulness">Signature-integrated lawfulness</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1Core</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1Axis</code></li>
-                      <li><code>ArchitectureSignature.selectedRequiredLawAxes</code></li>
-                      <li><code>ArchitectureSignature.IsSelectedRequiredLawAxis</code></li>
-                      <li><code>ArchitectureSignature.mem_selectedRequiredLawAxes_iff</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisValue</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisMeasurementClass</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Required zero-axis theorem package</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchor</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="#proposition-5-2">Proposition 5.2</a> and
-                    the finite static theorem boundary.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>RequiredSignatureAxesZero</code>, <code>architectureLawful_iff_requiredSignatureAxesZero</code>, <code>ArchitectureZeroCurvatureTheoremPackage</code>, and <code>architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>proved</code> for the selected finite static structural bridge and its matrix diagnostic corollaries.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Finite law universe, complete witness coverage, required-axis exactness, and selected static structural laws. Matrix diagnostics are derived corollaries, not required zero axes.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/proof_obligations.md#L107">Current QED boundary</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ArchitectureSignature.ArchitectureLawModel</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureLawModel.signatureOf</code></li>
-                      <li><code>ArchitectureSignature.RequiredSignatureAxesAvailableAndZero</code></li>
-                      <li><code>ArchitectureSignature.RequiredSignatureAxesZero</code></li>
-                      <li><code>ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesAvailableAndZero</code></li>
-                      <li><code>ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero</code></li>
-                      <li><code>ArchitectureSignature.MatrixDiagnosticCorollaries</code></li>
-                      <li><code>ArchitectureSignature.matrixDiagnosticCorollaries_of_requiredSignatureAxesZero</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage</code></li>
-                      <li><code>ArchitectureSignature.architectureLawful_iff_architectureZeroCurvatureTheoremPackage</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Measurement boundary and unmeasured axes</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="#definition-5-3">Definition 5.3</a>,
-                    <a href="#proposition-5-4">Proposition 5.4</a>, and
-                    <a href="#definition-5-5">Definition 5.5</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>MeasurementBoundary</code>, <code>ArchitectureClaim.unmeasured_not_measuredZero</code>, <code>ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code>, and <code>AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for boundary records; unmeasured-not-zero accessors and optional-axis boundary theorems are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd><code>none</code>, missing, private, out-of-scope, and unmeasured evidence are not available measured-zero certificates.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#chapter-11-analytic-axis-boundary-api">Chapter 11 analytic axis boundary API</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>MeasurementBoundary</code></li>
-                      <li><code>MeasurementBoundary.IsMeasuredZero</code></li>
-                      <li><code>MeasurementBoundary.IsUnmeasured</code></li>
-                      <li><code>MeasurementBoundary.unmeasured_not_measuredZero</code></li>
-                      <li><code>ArchitectureClaim.unmeasured_not_measuredZero</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.axisMeasuredZero_of_axisValue_none</code></li>
-                      <li><code>ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.AnalyticAxisBoundary.unmeasured_not_availableAndZero</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured</code></li>
-                    </ul>
-                  </details>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <header class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Claim group</span>
-                      <h3>Claim level and theorem-boundary metadata</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">defined / proved</span>
-                  </header>
-                  <p class="formal-anchor-audits">
-                    Audits <a href="#definition-6-1">Definition 6.1</a>,
-                    <a href="#proposition-6-2">Proposition 6.2</a>,
-                    <a href="#definition-6-3">Definition 6.3</a>, and
-                    <a href="#non-conclusion-6-5">Non-conclusion 6.5</a>.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Representative anchors</dt>
-                      <dd><code>ClaimLevel</code>, <code>ArchitectureClaim</code>, <code>ArchitectureTheoremPackage</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, and <code>ToolingTheoremPackageMetadata</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Current Lean status</dt>
-                      <dd><code>defined only</code> for schemas; non-conclusion accessors, tooling-vs-formal separation, and missing-precondition blockers are <code>proved</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Formal, tooling, empirical, and hypothesis claims remain distinct. Tooling evidence and measured witnesses are not promoted to formal proved claims without theorem references and discharged assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Primary index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#architecture-core--certified-architecture">Architecture Core / Certified Architecture</a></dd>
-                    </div>
-                  </dl>
-                  <details class="formal-anchor-details">
-                    <summary>Full Lean anchor set</summary>
-                    <ul class="formal-anchor-code-list">
-                      <li><code>ClaimLevel</code></li>
-                      <li><code>ArchitectureClaim</code></li>
-                      <li><code>ArchitectureClaim.records_nonConclusions_iff</code></li>
-                      <li><code>ArchitectureClaim.toolingOnly_no_formalPackage</code></li>
-                      <li><code>ArchitectureClaim.unmeasured_not_measuredZero</code></li>
-                      <li><code>ArchitectureTheoremPackage</code></li>
-                      <li><code>ArchitectureCore.SelectedClaimBoundary</code></li>
-                      <li><code>ArchitectureCore.selectedClaimBoundary</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.measuredWitness_not_formalProvedClaim</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.not_formalProvedClaim_of_missingPreconditions</code></li>
-                      <li><code>Chapter11AnalyticRepresentation.ToolingTheoremPackageMetadata.records_nonConclusions_iff</code></li>
-                    </ul>
-                  </details>
-                </article>
               </div>
             </section>
 

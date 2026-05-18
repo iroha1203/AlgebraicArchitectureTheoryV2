@@ -85,7 +85,6 @@
                 <li><a href="#paths-homotopy">Paths and homotopy</a></li>
                 <li><a href="#diagram-filling">Diagram filling</a></li>
                 <li><a href="#coupon-example">Coupon path example</a></li>
-                <li><a href="#status-index">Formal anchors</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -144,6 +143,11 @@
                 <li>
                   <a href="../status/">
                     Status
+                  </a>
+                </li>
+                <li>
+                  <a href="../formal-anchors/">
+                    Formal Anchors Audit
                   </a>
                 </li>
               </ul>
@@ -568,113 +572,6 @@ Obs(D.lhs) != Obs(D.rhs)
                 also does not prove runtime flatness or repository extraction
                 completeness for any real codebase.
               </p>
-            </section>
-
-            <section id="status-index" class="article-section">
-              <h2>Formal anchors</h2>
-              <p>
-                The page is an audit trail over existing Lean entries. It adds
-                no theorem, and every theorem-grade statement above points to a
-                docs source, Lean anchor, status, assumptions, and
-                non-conclusion boundary.
-              </p>
-              <div class="formal-anchor-cards">
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Repair</span>
-                      <h3>Selected decrease and finite repair</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: Chapters 11-12 and the proof-obligation rows for
-                    Repair, Repair Synthesis, and Architecture Calculus laws.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair">Repair</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair-synthesis">Repair Synthesis</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>defined only</code> records for schemas; <code>proved</code> accessor and soundness anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Selected witness universe, admissible rule, finite plan, coverage / exactness, or valid certificate.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No solver completeness, extractor completeness, all obstruction removal, or empirical cost improvement.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Transfer</span>
-                      <h3>Repair transfer counterexample</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: the dedicated counterexample package showing why
-                    selected repair decrease is not all-axis improvement.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair-transfer-counterexample">Repair Transfer Counterexample</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd>Concrete finite counterexample with proved selected decrease, runtime increase, transfer, and non-conclusion anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Two-state skeleton, selected static universe, runtime diagnostic universe, and selected transfer schema.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No global complexity conservation and no repository-wide quality statement.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Dynamics</span>
-                      <h3>Path, trajectory, homotopy, and filling</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: Architecture Path, Signature Dynamics, Chapter 8,
-                    Chapter 9, and Diagram Filler index entries.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#architecture-path">Architecture Path</a>, <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#signature-dynamics">Signature Dynamics</a>, and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#diagram-filler">Diagram Filler</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd>Finite path schemas are defined; append, preservation, observation, filler refutation, and trajectory facts have proved anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Selected generators, selected observation, finite diagram, witness universe, and stepwise preservation premises.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No global semantic completeness, HoTT completeness, all observation-axis preservation, or finite-universe completeness outside stated premises.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

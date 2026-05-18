@@ -84,7 +84,6 @@
                 <li><a href="#valuation-boundary">Valuation boundary</a></li>
                 <li><a href="#state-effects">State transitions and effects</a></li>
                 <li><a href="#effect-examples">Effect examples</a></li>
-                <li><a href="#status-index">Formal anchors</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -143,6 +142,11 @@
                 <li>
                   <a href="../status/">
                     Status
+                  </a>
+                </li>
+                <li>
+                  <a href="../formal-anchors/">
+                    Formal Anchors Audit
                   </a>
                 </li>
               </ul>
@@ -674,113 +678,6 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                     <div>
                       <dt>Non-conclusion</dt>
                       <dd>No event-log completeness, projection completeness, operational cost improvement, or global runtime flatness follows.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
-            </section>
-
-            <section id="status-index" class="article-section">
-              <h2>Formal anchors</h2>
-              <p>
-                The page is an audit trail over existing Lean entries. It adds
-                no theorem, and every theorem-grade statement above points to
-                a docs source, Lean anchor, status, assumptions, and
-                non-conclusion boundary.
-              </p>
-              <div class="formal-anchor-cards" aria-label="Representations and effects formal-anchor audit trail">
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Matrix</span>
-                      <h3>Finite structural matrix bridge</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: AAT Chapter 13, proof-obligation Matrix row, and
-                    the Matrix Bridge theorem index.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#matrix-bridge">Matrix Bridge</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>proved</code> for finite structural bridge and spectral-radius diagnostics.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Finite selected universe, unweighted graph relation, matrix representation, and coverage / closure premises.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No runtime propagation, cost interpretation, latency interpretation, or redefinition of <code>Decomposable</code>.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Analytic</span>
-                      <h3>Representation strength and valuation boundary</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved accessors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: AAT Chapter 13, proof-obligation Analytic
-                    Representation rows, and the Chapter 11 analytic entrypoint.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#analytic-representation">Analytic Representation</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#chapter-11-analytic-representation-entrypoint">Chapter 11 Analytic Representation Entrypoint</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>defined only</code> for schemas; <code>proved</code> for preserving / reflecting accessor theorems and unmeasured-axis guards.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Representation map, selected witness universe, coverage, witness completeness, semantic contract coverage, and non-conclusion fields.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No analytic-value-only flatness, global witness completeness, runtime completeness, semantic universe completeness, or extractor completeness.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">State / Effect</span>
-                      <h3>Selected lawfulness and obstruction absence</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved bridges</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: AAT Chapter 14, design-pattern proof obligations,
-                    and the State Transition / Effect Boundary Laws index.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/d1431f766df424332617ed84cb88dd17a11e9c0c/docs/aat/lean_theorem_index.md#state-transition--effect-boundary-laws">State Transition / Effect Boundary Laws</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>defined only</code> for law family schemas; <code>proved</code> for selected lawfulness / obstruction-absence bridges.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Selected carrier, selected finite law cases, replay / roundtrip / compensation semantics, and effect-boundary observation semantics.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No event-log completeness, all failure-mode coverage, runtime telemetry completeness, CRUD general theorem, or operational cost improvement.</dd>
                     </div>
                   </dl>
                 </article>
