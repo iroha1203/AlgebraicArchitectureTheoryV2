@@ -65,7 +65,7 @@
           <p class="lede">
             Architecture Signature is a multi-axis diagnostic of selected
             obstruction families. Theorem boundaries state what a package can
-            conclude and, just as importantly, what it does not conclude.
+            conclude and where each conclusion stops.
           </p>
         </div>
       </section>
@@ -159,8 +159,8 @@
                 <code>ArchitectureSignature</code> records coordinates of
                 selected obstruction families. Static, boundary, abstraction,
                 projection or LSP, runtime, semantic, operation, extension, and
-                analytic axes may all appear, but they do not collapse into one
-                score or one total order.
+                analytic axes may all appear as separate coordinates in a
+                multi-axis diagnostic.
               </p>
               <figure class="code-panel">
                 <figcaption>Signature reading</figcaption>
@@ -179,8 +179,8 @@
                 In the current finite static theorem package, selected
                 required signature axes are exactly the axes that participate
                 in the required zero-law bridge. Runtime, empirical, matrix,
-                and analytic axes may be useful diagnostics, but they are not
-                silently added to <code>RequiredSignatureAxesZero</code>.
+                and analytic axes may be useful diagnostics. The required-zero
+                bridge names the axes that participate in that reading.
               </p>
               <p id="proof-5-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-5-2">Proof idea.</a>
@@ -204,9 +204,7 @@
                 <code>measured_nonzero(value)</code>, <code>unmeasured</code>,
                 <code>out_of_scope</code>, <code>private_unavailable</code>,
                 and <code>not_applicable</code> are different claim states.
-                <code>unmeasured</code> is not simply a worse numeric value
-                than <code>measured_zero</code>; it is a boundary on what can
-                be compared.
+                <code>unmeasured</code> is a boundary on what can be compared.
               </p>
               <figure class="code-panel">
                 <figcaption>Status vocabulary</figcaption>
@@ -264,11 +262,10 @@
             <section id="signature-record" class="article-section">
               <h2>Signature record</h2>
               <p>
-                A signature coordinate is a typed claim, not just a number in a
-                dashboard. The coordinate records the axis, the measured or
-                unmeasured status, the claim level, the universe in which it was
-                produced, the evidence that supports it, and the claims that are
-                explicitly not being made.
+                A signature coordinate is a typed claim. The coordinate
+                records the axis, the measured or unmeasured status, the claim
+                level, the universe in which it was produced, the evidence that
+                supports it, and the conclusion attached to it.
               </p>
               <figure class="code-panel">
                 <figcaption>Coordinate shape</figcaption>
@@ -289,9 +286,9 @@
                 recorded non-conclusions.
               </p>
               <p>
-                This is why two reports cannot be compared merely because they
-                both contain a value. The coordinate must be read together with
-                its boundary and its axis-specific order.
+                Report comparison reads the coordinate together with its
+                boundary and axis-specific order; the value alone is only one
+                part of the coordinate.
               </p>
             </section>
 
@@ -419,29 +416,19 @@
             <section id="non-conclusions" class="article-section">
               <h2>Non-conclusions</h2>
               <p>
-                <code>ArchitectureSignature</code> does not rank architectures by one
-                scalar quality value. It does not make unmeasured axes safe,
-                turn private evidence into measured zero, infer runtime or
-                semantic flatness from a static split, or claim empirical cost
-                reduction from a formal zero-axis theorem.
+                <code>ArchitectureSignature</code> fixes the reach of each
+                coordinate. A static coordinate, runtime coordinate, semantic
+                coordinate, empirical coordinate, and product coordinate each
+                keep their own evidence boundary and comparison rule.
               </p>
               <p id="non-conclusion-6-5" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-6-5">Non-conclusion 6.5.</a>
-                A signature report, theorem package, or website summary does
-                not by itself prove repository-wide quality, complete
-                extraction, complete telemetry, global semantic flatness,
-                runtime safety, product outcome improvement, or a single
-                quality ranking. Those require separate evidence and separate
-                theorem or empirical boundaries.
+                Repository-wide quality, complete extraction, complete
+                telemetry, global semantic flatness, runtime safety, product
+                outcome improvement, and single-score ranking are separate
+                readings. Each one needs its own evidence and theorem or
+                empirical boundary.
               </p>
-              <div class="claim-strip">
-                <p>
-                  The public site treats Signature as a multi-axis diagnostic.
-                  Any product, cost, or workflow reading must preserve the
-                  theorem boundary and the artifact boundary that produced the
-                  coordinate.
-                </p>
-              </div>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

@@ -265,19 +265,20 @@
               </p>
               <p>
                 The base extension and the evidence packages are intentionally
-                separated so a page, proof, or report can say exactly which
-                layer failed. A static hidden dependency is not the same object
-                as a semantic filling failure, and an unmeasured runtime axis is
-                not measured zero.
+                separated so a page, proof, or report can name the layer where
+                the obstruction appears. Static hidden dependencies, semantic
+                filling failures, and runtime axes each carry their own
+                evidence.
               </p>
             </section>
 
             <section id="extension-evidence" class="article-section">
               <h2>Extension evidence</h2>
               <p>
-                Extension proofs accumulate evidence. The useful question is
-                not whether an extension exists, but which selected evidence is
-                available and what conclusion it can discharge.
+                Extension proofs accumulate evidence. A base extension becomes
+                informative through the selected evidence available for static
+                split, feature view, lifting, bounded flatness, runtime, and
+                semantic readings.
               </p>
               <ul class="status-list">
                 <li>
@@ -320,8 +321,7 @@
                 The structural extension formula classifies selected
                 obstruction witnesses. The classification is explanatory: it
                 records where a witness can be read, and it allows the same
-                payload to be embedded into a multi-label layer. It is not a
-                disjoint sum theorem.
+                payload to be embedded into a multi-label layer.
               </p>
               <figure class="code-panel">
                 <figcaption>Structural extension formula</figcaption>
@@ -352,24 +352,34 @@
             <section id="example-counterexample" class="article-section">
               <h2>Example and counterexample</h2>
               <p>
-                The coupon feature extension is the canonical small example.
-                A good extension routes the feature interaction through a
-                declared payment port. A bad extension introduces a direct
-                dependency from the feature service to the payment adapter's
-                internal cache. Repair restores the declared interface route.
+                A feature extension adds a feature component to a selected core
+                and chooses how the feature crosses the core boundary. The
+                structured case routes the interaction through a declared port;
+                the obstruction case introduces a direct dependency from the
+                feature component to an internal implementation component.
+                Repair restores the declared interface route.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Split extension shape</figcaption>
+                <pre><code>structured extension:
+  Feature -&gt; DeclaredPort -&gt; CoreService
+
+obstructed extension:
+  Feature -&gt; InternalComponent
+
+repair:
+  replace direct internal dependency
+  with declared interface route</code></pre>
+              </figure>
+              <p>
+                This example shows the calculus-level shape: selected static
+                split evidence, a selected hidden-dependency witness, and a
+                repaired static split package.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
                 <a href="../formal-anchors/#calculus-and-extensions">Formal Anchors Audit</a>
               </p>
-              <div class="claim-strip">
-                <p>
-                  The example is deliberately narrow. It demonstrates selected
-                  static split evidence, a selected hidden-dependency witness,
-                  and a repaired static split package; it does not promote the
-                  coupon model into a universal extension theorem.
-                </p>
-              </div>
             </section>
 
             <section id="operation-summary" class="article-section">

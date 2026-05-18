@@ -281,11 +281,12 @@ ProjectionExact + RepresentativeStable</code></pre>
             <section id="local-contract-packages" class="article-section">
               <h2>Local contract packages</h2>
               <p>
-                SOLID-style laws are useful because they are local enough to
-                state with explicit theorem boundaries. In AAT, local contract
-                replacement packages preserve selected projection soundness,
-                LSP compatibility, and DIP compatibility. The package also
-                records the global layering claim that it does not prove.
+                AAT reads SOLID as a local-contract layer: selected projection
+                soundness, LSP compatibility, and DIP compatibility travel with
+                the local replacement package. Layered and Clean Architecture
+                are global structural layers; state-transition patterns are
+                algebraic layers; runtime protection and distributed
+                convergence use their own evidence models.
               </p>
               <p id="proposition-7-7" class="statement">
                 <a class="statement-anchor" href="#proposition-7-7">Proposition 7.7.</a>
@@ -305,15 +306,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 closure schema. The non-conclusion is a field of the pattern,
                 so the global layering boundary travels with the package.
               </p>
-              <div class="claim-strip">
-                <p>
-                  SOLID belongs to the local contract layer in this taxonomy;
-                  Layered and Clean Architecture are global structural layers,
-                  state-transition patterns are algebraic layers, and runtime
-                  protection or distributed convergence require their own
-                  evidence.
-                </p>
-              </div>
             </section>
 
             <section id="three-layer-flatness" class="article-section">
@@ -371,8 +363,8 @@ ProjectionExact + RepresentativeStable</code></pre>
                 A package can satisfy strong DIP-style projection conditions
                 and selected LSP compatibility while the abstract graph remains
                 cyclic and therefore not <code>Decomposable</code>. This is
-                the precise failure mode that prevents SOLID from being treated
-                as a universal architecture theorem.
+                the precise failure mode separating local contract
+                compatibility from global structural decomposition.
               </p>
               <div class="article-table">
                 <table>
