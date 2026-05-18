@@ -445,63 +445,10 @@
                 dependency from the feature service to the payment adapter's
                 internal cache. Repair restores the declared interface route.
               </p>
-              <div class="theorem-card-list">
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Positive example</span>
-                      <h3>Declared interface route carries selected static split evidence</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchors</dt>
-                      <dd><code>CouponStaticDependencyExample.good_selectedStaticSplitFeatureExtension</code>, <code>extensionOf_featureViewSound</code>, <code>good_featureObservationCoverage</code></dd>
-                    </div>
-                    <div>
-                      <dt>Claim boundary</dt>
-                      <dd>Selected static split and selected feature observation coverage for the coupon example.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>No runtime flatness, semantic flatness, or extractor completeness theorem follows from this static example alone.</dd>
-                    </div>
-                    <div>
-                      <dt>Use</dt>
-                      <dd>Shows what evidence a feature extension needs before it can be read as a bounded theorem package.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="theorem-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Counterexample</span>
-                      <h3>Hidden dependency refutes the selected static split predicate</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchors</dt>
-                      <dd><code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code>, <code>bad_not_selectedStaticSplitFeatureExtension</code></dd>
-                    </div>
-                    <div>
-                      <dt>Claim boundary</dt>
-                      <dd>The witness is a selected static hidden dependency inside the coupon extension family.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>The witness does not classify every possible runtime or semantic failure and does not imply solver or extractor completeness.</dd>
-                    </div>
-                    <div>
-                      <dt>Repair reading</dt>
-                      <dd><code>repaired_selectedStaticSplitFeatureExtension</code> shows the selected static split predicate can be recovered for the repaired route.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#calculus-and-extensions">Formal Anchors Audit</a>
+              </p>
               <div class="claim-strip">
                 <p>
                   The example is deliberately narrow. It demonstrates selected

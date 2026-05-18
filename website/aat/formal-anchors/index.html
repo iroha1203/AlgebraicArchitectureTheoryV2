@@ -77,6 +77,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#foundations">Foundations</a></li>
+                <li><a href="#laws-and-witnesses">Laws and Witnesses</a></li>
                 <li><a href="#signature-and-boundary">Signature and Theorem Boundary</a></li>
                 <li><a href="#local-law-packages">Local Law Packages</a></li>
                 <li><a href="#calculus-and-extensions">Calculus and Extensions</a></li>
@@ -322,6 +323,80 @@
               </div>
             </section>
 
+
+            <section id="laws-and-witnesses" class="article-section">
+              <h2>Laws and Witnesses</h2>
+              <p>
+                This chapter connects selected law universes, measured witness
+                absence, required obstruction coverage, and required signature
+                axes. The public chapter keeps the theorem narrative compact;
+                this audit entry records the representative Lean anchors and
+                theorem-boundary assumptions.
+              </p>
+              <div class="formal-anchor-cards" aria-label="Laws and Witnesses formal-anchor audit trail">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Measured absence, lawfulness, and required axes</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../laws-and-witnesses/#lemma-sequence">Lemma sequence</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>lawViolationCount_eq_zero_iff_lawful</code>, <code>noRequiredObstruction_of_requiredWitnessCoverage_and_noMeasuredObstruction</code>, and <code>requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_requiredAxisExact</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd><code>proved</code> bridge anchors for finite measured witness lists, required witness coverage, and required-axis exactness.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Zero counts and required-axis conclusions are scoped to the selected finite witness family and supplied exactness assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>No global witness absence, semantic lawfulness outside the selected observation, or repository-wide quality certificate follows.</dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Required obstruction vanishing theorem schema</h3>
+                    </div>
+                    <span class="status-badge status-badge-future">schema</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../laws-and-witnesses/#main-theorem">Required theorem schema</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd>Static instances are tracked by signature-integrated lawfulness and the finite static structural core formal anchor.</dd>
+                    </div>
+                    <div>
+                      <dt>Assumptions</dt>
+                      <dd><code>WitnessComplete</code>, <code>AxisExact</code>, <code>CoverageComplete</code>, and <code>ObservationExact</code> for the selected law universe.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>The equivalence is read only inside the theorem boundary that supplies those assumptions.</dd>
+                    </div>
+                    <div>
+                      <dt>Non-conclusion</dt>
+                      <dd>The schema is not a proof that every architecture principle, metric axis, runtime trace, or semantic behavior is globally satisfied.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
 
             <section id="signature-and-boundary" class="article-section">
               <h2>Signature and Theorem Boundary</h2>

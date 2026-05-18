@@ -340,63 +340,10 @@ safe endpoints
   do not imply
 safe trajectory</code></pre>
               </figure>
-              <div class="theorem-card-list">
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Trajectory theorem</span>
-                      <h3>Stepwise safe-region preservation gives a safe observed trajectory</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchors</dt>
-                      <dd><code>SignatureTrajectory</code>, <code>signatureTrajectory_length</code>, <code>signatureTrajectory_append</code>, <code>trajectory_preserves_safeRegion</code></dd>
-                    </div>
-                    <div>
-                      <dt>Claim boundary</dt>
-                      <dd>Selected observation, selected safe region, finite path, and stepwise preservation assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>No global architecture field completeness, future distribution completeness, or all-axis safety follows.</dd>
-                    </div>
-                    <div>
-                      <dt>Use</dt>
-                      <dd>Reads repair as a path property instead of collapsing the analysis to endpoints.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="theorem-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Endpoint counterexample</span>
-                      <h3>Zero endpoint delta does not force path safety</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchors</dt>
-                      <dd><code>ZeroNetForceNonZeroExcursion.endpointSafe_and_zeroDelta_but_not_pathSafe</code>, <code>excursion_signature_mem</code>, <code>not_signatureTrajectoryInSafeRegion</code></dd>
-                    </div>
-                    <div>
-                      <dt>Claim boundary</dt>
-                      <dd>A small finite trajectory has safe endpoints and zero selected endpoint delta but visits an unsafe intermediate signature.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>Endpoint-only reports do not certify safe repair dynamics.</dd>
-                    </div>
-                    <div>
-                      <dt>Use</dt>
-                      <dd>Explains why signature trajectories are retained in repair and dynamics artifacts.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#repair-and-dynamics">Formal Anchors Audit</a>
+              </p>
             </section>
 
             <section id="paths-homotopy" class="article-section">
