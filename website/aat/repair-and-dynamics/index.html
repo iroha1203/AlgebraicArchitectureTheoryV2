@@ -180,22 +180,12 @@
                 records the operation skeleton; selected-measure decrease is a
                 separate theorem boundary supplied by an admissible repair rule.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 11.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only / proved accessors</span>
-                <span>Anchored by <code>SelectedObstructionUniverse</code>, <code>RepairStep</code>, <code>RepairStepDecreases</code>, and <code>AdmissibleRepairRule</code>.</span>
-              </p>
               <p id="proposition-11-2" class="statement">
                 <a class="statement-anchor" href="#proposition-11-2">Proposition 11.2.</a>
                 If a selected witness is in the selected universe, a rule is
                 admissible for that witness, and the recorded step applies that
                 rule, then the selected obstruction measure decreases from the
                 source to the target.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 11.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>repairStepDecreases_of_admissible</code>, <code>extensionObstructionMeasure_decreases_of_admissible</code>, and <code>repairStepDecreasesLaw_conclusion</code>.</span>
               </p>
               <p id="proof-11-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-11-2">Proof idea.</a>
@@ -229,11 +219,6 @@
                 selected satisfying architecture. None of these packages proves
                 solver completeness outside its recorded universe.
               </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 11.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>FiniteRepairPackage.selectedObstructionsCleared</code>, <code>SynthesisSoundnessPackage.candidate_satisfies</code>, <code>NoSolutionCertificate.sound_of_valid</code>, <code>synthesisCandidateSoundnessLaw_conclusion</code>, and <code>noSolutionCertificateSoundnessLaw_conclusion</code>.</span>
-              </p>
               <p id="proof-11-3" class="statement-proof">
                 <a class="statement-anchor" href="#proof-11-3">Proof idea.</a>
                 Each package stores its own soundness field and boundary
@@ -241,39 +226,6 @@
                 conclusion; it does not manufacture completeness for an
                 unrecorded search space or an unsupported constraint language.
               </p>
-              <div class="article-table">
-                <table>
-                  <caption>Repair and synthesis theorem boundaries</caption>
-                  <thead>
-                    <tr>
-                      <th>Package</th>
-                      <th>Lean anchors</th>
-                      <th>Theorem-grade reading</th>
-                      <th>Non-conclusion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th>Bounded finite repair</th>
-                      <td><code>BoundedRepairPlan</code>, <code>FiniteRepairPackage</code></td>
-                      <td>Selected obstruction universe is cleared at the target under explicit plan and coverage assumptions.</td>
-                      <td>No all-obstruction removal, repair optimality, or global flatness preservation.</td>
-                    </tr>
-                    <tr>
-                      <th>Candidate synthesis</th>
-                      <td><code>SynthesisConstraintSystem</code>, <code>SynthesisSoundnessPackage.candidate_satisfies</code></td>
-                      <td>The produced candidate satisfies every selected required constraint.</td>
-                      <td>No completeness of generated candidates and no empirical success claim.</td>
-                    </tr>
-                    <tr>
-                      <th>No-solution certificate</th>
-                      <td><code>ValidNoSolutionCertificate</code>, <code>NoSolutionCertificate.sound_of_valid</code></td>
-                      <td>A valid certificate implies no selected architecture satisfies the selected constraint system.</td>
-                      <td>Solver failure, timeout, unsupported syntax, and incomplete search are not certificates.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
             </section>
 
             <section id="complexity-transfer" class="article-section">
@@ -300,11 +252,6 @@ therefore:
                 appears after repair. Therefore selected repair decrease does
                 not imply all-axis nonincrease.
               </p>
-              <p class="statement-status" aria-label="Lean status for Counterexample 11.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>RepairTransferCounterexample.selectedRepairStep_decreases</code>, <code>runtimeAxisMeasure_increases</code>, <code>selectedRepairStep_not_all_axes_nonincreasing</code>, and <code>staticSplitRepair_transfers_runtime</code>.</span>
-              </p>
               <p id="proof-11-4" class="statement-proof">
                 <a class="statement-anchor" href="#proof-11-4">Proof idea.</a>
                 The example has two states. The selected static universe reads
@@ -315,10 +262,9 @@ therefore:
               </p>
               <p id="non-conclusion-11-5" class="statement-note">
                 <a class="statement-anchor" href="#non-conclusion-11-5">Non-conclusion 11.5.</a>
-                A repair report, repair suggestion, or adoption record does not
-                certify repair correctness, empirical cost improvement, or
-                absence of side effects unless a separate package states those
-                premises and conclusions.
+                A repair report, repair suggestion, and adoption record each
+                live in a selected evidence context. Correctness, empirical
+                cost, and side-effect claims are recorded as separate readings.
               </p>
             </section>
 
@@ -362,22 +308,12 @@ safe trajectory</code></pre>
                 relation produced by selected independent-square,
                 same-contract, repair-fill, and context-closure generators.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 12.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only / proved accessors</span>
-                <span>Anchored by <code>ArchitecturePath</code>, <code>ArchitecturePath.append</code>, <code>ArchitecturePath.length_append</code>, and <code>ArchitecturePath.PathHomotopy</code>.</span>
-              </p>
               <p id="proposition-12-2" class="statement">
                 <a class="statement-anchor" href="#proposition-12-2">Proposition 12.2.</a>
                 If every primitive step of a finite path preserves a selected
                 invariant, then the path preserves that invariant. If the
                 selected homotopy generators preserve a selected observation,
                 then homotopic paths have the same selected observation.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 12.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>ArchitecturePath.pathPreservesInvariant</code>, <code>PathHomotopy.observation_eq_append</code>, <code>PathHomotopy.observation_eq</code>, and <code>architectureHomotopyInvariance</code>.</span>
               </p>
               <p id="proof-12-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-12-2">Proof idea.</a>
@@ -414,11 +350,6 @@ Obs(D.lhs) != Obs(D.rhs)
                 refutes the filler and can be packaged as a sound
                 non-fillability witness.
               </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 12.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>diagramFiller_observation_eq</code>, <code>observationDifference_refutesDiagramFiller</code>, <code>observationDifference_nonFillabilityWitnessFor</code>, and <code>obstructionAsNonFillability_sound</code>.</span>
-              </p>
               <p id="proof-12-3" class="statement-proof">
                 <a class="statement-anchor" href="#proof-12-3">Proof idea.</a>
                 The filler is a path homotopy. The observation theorem for
@@ -428,9 +359,8 @@ Obs(D.lhs) != Obs(D.rhs)
               </p>
               <p id="non-conclusion-12-4" class="statement-note">
                 <a class="statement-anchor" href="#non-conclusion-12-4">Non-conclusion 12.4.</a>
-                Diagram non-fillability is not a theorem that every split
-                failure is semantic, that every semantic obstruction has been
-                extracted, or that the observation model is complete.
+                Diagram non-fillability records an obstruction for the selected
+                finite path calculus and observation model.
               </p>
             </section>
 
@@ -449,11 +379,6 @@ Obs(D.lhs) != Obs(D.rhs)
                 coupon-then-discount path has one rounding trace, the
                 discount-then-coupon path has another, and the rounding-order
                 witness refutes fillability for the selected diagram.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Example 12.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>CouponDiscountExample.couponDiscountDiagram</code>, <code>couponThenDiscount_roundingTrace</code>, <code>discountThenCoupon_roundingTrace</code>, <code>roundingOrder_refutes_selectedDiagramFiller</code>, and <code>roundingOrder_nonFillabilityWitnessFor</code>.</span>
               </p>
               <p>
                 The example should be read as a bounded semantic obstruction,

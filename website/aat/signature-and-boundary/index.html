@@ -76,7 +76,6 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#boundary-discipline">Boundary discipline</a></li>
                 <li><a href="#signature">Architecture Signature</a></li>
                 <li><a href="#measurement-status">Measurement status</a></li>
                 <li><a href="#signature-record">Signature record</a></li>
@@ -154,16 +153,6 @@
           </aside>
 
           <div class="article-main">
-            <section id="boundary-discipline" class="article-section">
-              <h2>Boundary discipline</h2>
-              <p class="statement-note">
-                The chapter is a boundary discipline for reading reports and
-                theorem packages. It separates the general mathematical
-                vocabulary from the concrete Lean anchors that currently carry
-                proved finite static structural claims.
-              </p>
-            </section>
-
             <section id="signature" class="article-section">
               <h2>Architecture Signature</h2>
               <p class="plain-reading">
@@ -190,11 +179,6 @@
                 is meaningful only together with its measurement status,
                 evidence universe, claim level, and non-conclusions.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 5.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined / proved bridge</span>
-                <span>General vocabulary is documented in Chapter 5. The current concrete Lean schema is <code>ArchitectureSignatureV1</code>, <code>ArchitectureSignatureV1Axis</code>, <code>axisValue</code>, and <code>axisMeasurementClass</code>; selected required-law bridges are proved where listed below.</span>
-              </p>
               <p id="proposition-5-2" class="statement">
                 <a class="statement-anchor" href="#proposition-5-2">Proposition 5.2.</a>
                 In the current finite static theorem package, selected
@@ -202,11 +186,6 @@
                 in the required zero-law bridge. Runtime, empirical, matrix,
                 and analytic axes may be useful diagnostics, but they are not
                 silently added to <code>RequiredSignatureAxesZero</code>.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 5.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchor</span>
-                <span>Anchored by <code>selectedRequiredLawAxes</code>, <code>mem_selectedRequiredLawAxes_iff</code>, <code>RequiredSignatureAxesZero</code>, and <code>architectureLawful_iff_requiredSignatureAxesZero</code>.</span>
               </p>
               <p id="proof-5-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-5-2">Proof idea.</a>
@@ -255,11 +234,6 @@
                 measured zero, measured nonzero, unmeasured, out of scope,
                 private or unavailable, or not applicable.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 5.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>MeasurementBoundary</code>, <code>ArchitectureClaim</code>, <code>ArchitectureSignatureV1.axisMeasurementClass</code>, and Chapter 11 analytic-axis boundary vocabulary.</span>
-              </p>
               <p id="proposition-5-4" class="statement">
                 <a class="statement-anchor" href="#proposition-5-4">Proposition 5.4.</a>
                 An unmeasured boundary is not measured-zero evidence. In
@@ -267,11 +241,6 @@
                 <code>none</code> may satisfy a weak no-nonzero predicate, but
                 it does not discharge an available-and-zero theorem
                 precondition.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 5.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>MeasurementBoundary.unmeasured_not_measuredZero</code>, <code>ArchitectureClaim.unmeasured_not_measuredZero</code>, <code>ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code>, and <code>AnalyticAxisBoundary.not_canDischargeZeroReflectingClaim_of_unmeasured</code>.</span>
               </p>
               <p id="proof-5-4" class="statement-proof">
                 <a class="statement-anchor" href="#proof-5-4">Proof.</a>
@@ -329,52 +298,11 @@
                 universe or coverage boundary, evidence references, and
                 recorded non-conclusions.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 5.5">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined / tooling boundary</span>
-                <span>Concrete Lean anchors include <code>ArchitectureSignatureV1.axisValue</code>, <code>ArchitectureClaim</code>, <code>ToolingTheoremPackageMetadata</code>, and <code>AnalyticAxisBoundary</code>. Tool artifacts mirror this shape in <code>docs/tool/signature_artifacts.md</code>.</span>
-              </p>
               <p>
                 This is why two reports cannot be compared merely because they
                 both contain a value. The coordinate must be read together with
                 its boundary and its axis-specific order.
               </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Claim</th>
-                      <th>Current Lean status</th>
-                      <th>Boundary</th>
-                      <th>Non-conclusion</th>
-                      <th>Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Architecture Signature as multi-axis diagnostic</td>
-                      <td><code>defined only</code> / <code>proved</code> for required-axis bridge packages</td>
-                      <td>Selected axes, measurement status, and explicit theorem boundary.</td>
-                      <td>Does not rank architectures by one scalar quality value.</td>
-                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#signature-integrated-lawfulness">Lean theorem index, signature entries.</a></td>
-                    </tr>
-                    <tr>
-                      <td>Measured zero versus unmeasured status</td>
-                      <td><code>proved</code> for current boundary distinction theorems</td>
-                      <td>Axis availability and exactness assumptions must be recorded.</td>
-                      <td><code>none</code>, missing, private, or out-of-scope evidence is not zero.</td>
-                      <td><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/3bf99081cf64d10ca230ed89d13ec734cf15cae6/docs/aat/lean_theorem_index.md#chapter-11-analytic-axis-boundary-api">Chapter 11 boundary index.</a></td>
-                    </tr>
-                    <tr>
-                      <td>Empirical cost or product outcome reading</td>
-                      <td><code>empirical hypothesis</code></td>
-                      <td>Requires separate dataset, calibration protocol, and artifact boundary.</td>
-                      <td>Not a Lean theorem and not a required zero-axis claim.</td>
-                      <td>Proof-obligation ledger.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
             </section>
 
             <section id="theorem-boundary" class="article-section">
@@ -412,21 +340,11 @@
                 preconditions, conclusion, and non-conclusions that licenses a
                 formal or report-side claim.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 6.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>The exact schematic name is docs vocabulary. Lean encodes this boundary through <code>ProofObligation</code>, <code>ArchitectureTheoremPackage</code>, <code>ArchitectureClaim</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, and <code>ToolingTheoremPackageMetadata</code>.</span>
-              </p>
               <p id="proposition-6-2" class="statement">
                 <a class="statement-anchor" href="#proposition-6-2">Proposition 6.2.</a>
                 A theorem-boundary-backed claim does not automatically become
                 a global architecture claim. The non-conclusion field is part
                 of the package, not commentary after the fact.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 6.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved accessors</span>
-                <span>Anchored by <code>ArchitectureClaim.records_nonConclusions_iff</code>, <code>ToolingTheoremPackageMetadata.records_nonConclusions_iff</code>, <code>measuredWitness_not_formalProvedClaim</code>, and <code>not_formalProvedClaim_of_missingPreconditions</code>.</span>
               </p>
               <p id="proof-6-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-6-2">Proof idea.</a>
@@ -460,11 +378,6 @@
                 A claim level classifies the evidence basis for a coordinate or
                 report claim as <code>formal</code>, <code>tooling</code>,
                 <code>empirical</code>, or <code>hypothesis</code>.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Definition 6.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>ClaimLevel</code>, <code>ArchitectureClaim</code>, <code>ClaimClassification</code>, and <code>ToolingTheoremPackageMetadata</code>.</span>
               </p>
               <ul class="term-list">
                 <li>
@@ -512,11 +425,6 @@
                 private evidence, or a changed measurement universe breaks the
                 comparison for that axis.
               </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 6.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">design boundary</span>
-                <span>The status and claim-boundary vocabulary is defined and partially proved; AAT does not currently expose a general total-order theorem over full signatures.</span>
-              </p>
               <p id="proof-6-4" class="statement-proof">
                 <a class="statement-anchor" href="#proof-6-4">Proof idea.</a>
                 The rule follows from the boundary vocabulary rather than from
@@ -545,11 +453,6 @@
                 runtime safety, product outcome improvement, or a single
                 quality ranking. Those require separate evidence and separate
                 theorem or empirical boundaries.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Non-conclusion 6.5">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">boundary anchors</span>
-                <span>Tracked by non-conclusion fields in <code>ArchitectureClaim</code>, <code>ArchitectureCore.SelectedClaimBoundary</code>, <code>ToolingTheoremPackageMetadata</code>, and related theorem-package records.</span>
               </p>
               <div class="claim-strip">
                 <p>

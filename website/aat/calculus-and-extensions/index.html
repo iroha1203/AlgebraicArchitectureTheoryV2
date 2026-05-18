@@ -184,21 +184,11 @@
                 invariant family, bounded conclusion, and non-conclusions have
                 been supplied.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 9.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>ArchitectureOperation</code>, <code>OperationProofObligation</code>, <code>ArchitectureOperationKind</code>, and <code>OperationRoleSchema</code>.</span>
-              </p>
               <p id="proposition-9-2" class="statement">
                 <a class="statement-anchor" href="#proposition-9-2">Proposition 9.2.</a>
                 The operation schema preserves its generated operation kind and
                 exposes a one-way witness bridge from post-operation witnesses
                 back to pre-operation witnesses.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 9.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>ArchitectureOperation.generatedObligation_kind</code>, <code>ArchitectureOperation.witnessMapping_sound</code>, and <code>ArchitectureOperation.exists_sourceWitness_of_targetWitness</code>.</span>
               </p>
               <p id="proof-9-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-9-2">Proof idea.</a>
@@ -234,50 +224,6 @@
                 conclusion from its recorded assumptions, but it does not yield
                 an unconditional algebraic law for every operation.
               </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 9.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>ArchitectureCalculusLaw.conclusion_of_assumptions</code> and the concrete law entrypoints in <code>OperationLaws.lean</code>.</span>
-              </p>
-              <div class="article-table">
-                <table>
-                  <caption>Representative operation-law boundaries</caption>
-                  <thead>
-                    <tr>
-                      <th>Law family</th>
-                      <th>Lean anchors</th>
-                      <th>Theorem-grade reading</th>
-                      <th>Non-conclusion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th>Finite graph compose / replace</th>
-                      <td><code>finiteComposeEdgeUnionLaw_conclusion</code>, <code>finiteReplaceEdgeEquivalenceLaw_conclusion</code></td>
-                      <td>Finite edge-union and edge-equivalence facts under explicit graph assumptions.</td>
-                      <td>No global acyclicity, flatness, runtime, or semantic preservation.</td>
-                    </tr>
-                    <tr>
-                      <th>Refine / abstract / merge / contract</th>
-                      <td><code>refinementObservationEquivalenceLaw_conclusion</code>, <code>abstractionObservationEquivalenceLaw_conclusion</code>, <code>mergeExternalContractPreservationLaw_conclusion</code>, <code>contractExplicitizationLaw_conclusion</code></td>
-                      <td>Selected projection, exactness, representative stability, and observation-preservation claims.</td>
-                      <td>No completeness of all abstraction choices or all client semantics.</td>
-                    </tr>
-                    <tr>
-                      <th>Protect / isolate / migrate</th>
-                      <td><code>protectRuntimeProtectionLaw_conclusion</code>, <code>isolateRuntimeLocalizationLaw_conclusion</code>, <code>migrateObservationEquivalenceLaw_conclusion</code></td>
-                      <td>Selected runtime localization, runtime flatness, and staged migration compatibility.</td>
-                      <td>No telemetry completeness, incident reduction theorem, or semantic completeness.</td>
-                    </tr>
-                    <tr>
-                      <th>Repair / synthesize</th>
-                      <td><code>repairStepDecreasesLaw_conclusion</code>, <code>synthesisCandidateSoundnessLaw_conclusion</code>, <code>noSolutionCertificateSoundnessLaw_conclusion</code></td>
-                      <td>Selected obstruction decrease, candidate soundness, or valid no-solution certificate soundness.</td>
-                      <td>No solver completeness and no guarantee that all obstructions are removed.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
             </section>
 
             <section id="invariant-correspondence" class="article-section">
@@ -299,11 +245,6 @@
                 slogans. It is intentionally weak: it does not classify all
                 operations, prove a lattice isomorphism, or promote local
                 contracts into global decomposability.
-              </p>
-              <p class="statement-status" aria-label="Lean status for invariant correspondence">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>operationInvariant_galois</code>, <code>Ops_antitone</code>, <code>Inv_antitone</code>, and the <code>DesignPattern</code> closure-law accessors.</span>
               </p>
             </section>
 
@@ -334,11 +275,6 @@
                 declared interface factorization, lifting evidence, runtime
                 preservation, semantic preservation, and coverage are separate
                 packages that may or may not accompany the base extension.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Definition 10.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only / proved accessors</span>
-                <span>Anchored by <code>FeatureExtension</code>, <code>StaticSplitFeatureExtension</code>, <code>FeatureViewSectionPackage</code>, <code>SplitExtensionLiftingData</code>, and <code>SplitFeatureExtensionWithin</code>.</span>
               </p>
               <p>
                 The base extension and the evidence packages are intentionally
@@ -381,11 +317,6 @@
                 semantic, coverage, and non-conclusion evidence carried by the
                 package.
               </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 10.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>architectureFlatWithin_of_splitFeatureExtensionWithin</code>, <code>LawfulExtensionPreservesFlatness</code>, and <code>ThreeLayerFlatnessPositiveExample.architectureFlatWithin</code>.</span>
-              </p>
               <p id="proof-10-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-10-2">Proof idea.</a>
                 The theorem reads the supplied split package as coverage-aware
@@ -421,11 +352,6 @@
                 Under the selected extension-obstruction universe, a selected
                 single-label witness is covered by at least one of the seven
                 structural obstruction predicates.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 10.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>ArchitectureExtensionFormula_structural</code>, <code>ExtensionObstructionWitness.toMultiLabel_label_iff</code>, and the filling / lifting / complexity / residual-coverage bridge theorems.</span>
               </p>
               <p id="non-conclusion-10-4" class="statement-note">
                 <a class="statement-anchor" href="#non-conclusion-10-4">Non-conclusion 10.4.</a>

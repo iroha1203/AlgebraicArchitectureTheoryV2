@@ -77,7 +77,6 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#example-scope">Example scope</a></li>
                 <li><a href="#canonical-examples">Canonical examples</a></li>
                 <li><a href="#example-template">Example template</a></li>
                 <li><a href="#coupon-case-study">Coupon case study</a></li>
@@ -157,16 +156,6 @@
           </aside>
 
           <div class="article-main">
-            <section id="example-scope" class="article-section">
-              <h2>Example scope</h2>
-              <p class="statement-note">
-                This page is an audit chapter for examples and
-                counterexamples. It keeps the coupon story, semantic
-                obstruction, repair transfer, and SOLID counterexamples close
-                to their source links, Lean names, and non-conclusions.
-              </p>
-            </section>
-
             <section id="canonical-examples" class="article-section">
               <h2>Canonical examples</h2>
               <p class="plain-reading">
@@ -189,11 +178,6 @@
                 extension, an invariant family under test, a witness universe,
                 measured signature axes, a theorem boundary, and recorded
                 counterexamples or non-conclusions.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Definition 15.0">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined / indexed</span>
-                <span>Anchored by the Chapter 15 text, <code>FeatureExtension</code>, <code>StaticSplitFeatureExtension</code>, <code>ObstructionValuation</code>, and the formal-anchor cards below.</span>
               </p>
               <ul class="term-list">
                 <li>
@@ -250,11 +234,6 @@
                 The repaired extension routes the selected static interaction
                 through the declared payment port and restores the selected
                 static split for that finite skeleton.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Example 15.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved</span>
-                <span>Anchored by <code>CouponStaticDependencyExample.hiddenDependencyWitnessExists</code>, <code>bad_not_selectedStaticSplitFeatureExtension</code>, and <code>repaired_selectedStaticSplitFeatureExtension</code>.</span>
               </p>
               <p id="proof-15-1" class="statement-proof">
                 <a class="statement-anchor" href="#proof-15-1">Proof idea.</a>
@@ -405,11 +384,6 @@ global repository completeness:
                 unmeasured or measured nonzero, and while runtime exposure
                 remains outside the static-only report.
               </p>
-              <p class="statement-status" aria-label="Lean status for Signature reading 15.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">defined / proved</span>
-                <span>Anchored by <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge</code>, <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.semanticCurvature_unmeasured_not_zeroReflectingClaim</code>, <code>Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repairedWithMeasuredSemanticCurvature_roundingOrderValuation_positive</code>, and <code>ArchitectureSignature.ArchitectureSignatureV1.not_axisAvailableAndZero_of_axisValue_none</code>.</span>
-              </p>
               <div class="article-table">
                 <table>
                   <thead>
@@ -531,11 +505,6 @@ all axes are non-increasing</code></pre>
                 therefore does not imply semantic flatness or global
                 architecture flatness.
               </p>
-              <p class="statement-status" aria-label="Lean status for Counterexample 15.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved</span>
-                <span>Anchored by <code>StaticSemanticCounterexample.canonical_staticFlatWithin</code>, <code>canonical_not_semanticFlatWithin</code>, <code>canonical_not_architectureFlat</code>, <code>staticFlat_with_semanticObstruction</code>, and <code>staticFlat_not_architectureFlat</code>.</span>
-              </p>
               <p id="proof-15-3" class="statement-proof">
                 <a class="statement-anchor" href="#proof-15-3">Proof idea.</a>
                 Lean reuses the repaired coupon static skeleton for the static
@@ -549,14 +518,8 @@ all axes are non-increasing</code></pre>
                 <a class="statement-anchor" href="#counterexample-15-4">Counterexample 15.4.</a>
                 A repair step can decrease the selected static obstruction
                 measure while increasing a runtime or transferred-complexity
-                axis. Repair monotonicity is therefore a theorem about the
-                selected measure, not a theorem that every architecture axis is
-                non-increasing.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Counterexample 15.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved</span>
-                <span>Anchored by <code>RepairTransferCounterexample.selectedRepairStep_decreases</code>, <code>runtimeAxisMeasure_increases</code>, <code>selectedRepairStep_not_all_axes_nonincreasing</code>, and <code>staticSplitRepair_transfers_runtime</code>.</span>
+                axis. Repair monotonicity is therefore read at the selected
+                measure; other architecture axes are read separately.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -581,11 +544,6 @@ all axes are non-increasing</code></pre>
                 completeness, empirical superiority of a design method, or a
                 scalar architecture quality score. They prove or illustrate
                 selected boundaries under selected evidence.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Non-conclusion 16.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">recorded boundary</span>
-                <span>Anchored by proof-obligation non-conclusions for coupon static evidence, coupon analytic snapshots, static / semantic counterexamples, repair transfer, and SOLID counterexamples.</span>
               </p>
               <div class="claim-strip">
                 <p>
@@ -635,13 +593,8 @@ retry leaks across boundary
                 There are representative finite components whose selected DIP
                 or strong DIP compatibility and LSP-style observations hold,
                 while the abstract dependency graph is not
-                <code>Decomposable</code>. Local SOLID-style compatibility is
-                therefore not a theorem of global strict layering.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Counterexample 15.5">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved</span>
-                <span>Anchored by <code>StrongAbstractCycleComponent.dipCompatible_and_not_decomposable</code>, <code>strongDIPCompatible_and_not_decomposable</code>, <code>abstractGraph_not_decomposable</code>, and <code>projectionExact</code>.</span>
+                <code>Decomposable</code>. Local SOLID-style compatibility
+                and global strict layering are different readings.
               </p>
               <ul class="term-list">
                 <li>

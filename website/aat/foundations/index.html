@@ -173,12 +173,6 @@
   + ArchitectureSignature
   + theorem boundary / non-conclusions</code></pre>
               </figure>
-              <p class="statement-note">
-                This is a decomposition of the theory surface, not a theorem
-                whose proof is carried by the current Lean package. The
-                theorem-grade claims in this chapter begin with the numbered
-                definitions and propositions below.
-              </p>
             </section>
 
             <section id="object-definition" class="article-section">
@@ -238,22 +232,12 @@ P |-AAT phi
                 operational observations, but it is not the unbounded real
                 codebase itself.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 1.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>ArchitectureObject</code>, <code>ArchitectureFlatnessModel.selectedPresentation</code>, and <code>ArchitectureCore.selectedPresentation</code>; no standalone complete-codebase object is claimed.</span>
-              </p>
               <p id="proposition-1-2" class="statement">
                 <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
                 Object claims are relativized
                 claims. A sentence about an architecture object is licensed
                 only inside the carrier, policy, and observation context that
                 present it.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 1.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchor</span>
-                <span>Anchored by <code>AATJudgement</code>, <code>aatJudgement_iff</code>, and <code>ArchitectureCore.selectedPresentationJudgement_iff</code>: the judgement is evaluation at the supplied <code>SelectedPresentation</code>.</span>
               </p>
               <p id="proof-1-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-1-2">Proof.</a>
@@ -311,11 +295,6 @@ P |-AAT phi
                 <code>CompleteForRelation</code>; it is an explicit premise,
                 not a field automatically supplied by <code>ArchitectureCore</code>.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 2.0">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>CompleteForRelation</code> and <code>CompleteForGraph</code>.</span>
-              </p>
               <p id="proposition-2-1" class="statement">
                 <a class="statement-anchor" href="#proposition-2-1">Proposition 2.1.</a>
                 Core presentations do not imply
@@ -323,11 +302,6 @@ P |-AAT phi
                 a theorem package while still omitting relations outside its
                 declared coverage boundary. Presentation equivalence is
                 therefore relative to the selected observation model.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 2.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved counterexample</span>
-                <span>Lean proves the selected-presentation counterexample and packages the core-side boundary as <code>ArchitectureCore.selectedClaimBoundary</code>.</span>
               </p>
               <p id="proof-2-1" class="statement-proof">
                 <a class="statement-anchor" href="#proof-2-1">Proof.</a>
@@ -355,11 +329,6 @@ P |-AAT phi
                 empty relation is complete for the selected presentation; the
                 relation with the out-of-scope edge is not. Therefore selected
                 presentation equality does not imply complete extraction.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Counterexample 2.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved</span>
-                <span>See <code>CompleteExtractionCounterexample.same_selectedRestriction</code>, <code>complete_base</code>, <code>not_complete_withOutOfScopeEdge</code>, and <code>selectedRestriction_same_but_completeExtraction_differs</code>.</span>
               </p>
               <p id="non-conclusion-2-3" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-2-3">Non-conclusion 2.3.</a>
@@ -396,22 +365,12 @@ P |-AAT phi
                 supplies the bounded component list and the proof obligations
                 needed to read graph-level evidence as in-scope evidence.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 3.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>ComponentUniverse</code>, the finite measurement universe with proof-carrying fields.</span>
-              </p>
               <p id="proposition-3-2" class="statement">
                 <a class="statement-anchor" href="#proposition-3-2">Proposition 3.2.</a>
                 Finite bridges are
                 coverage-relative. Executable or graph-level facts become
                 proposition-level facts only under their supplied universe and
                 closure assumptions.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 3.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>ComponentUniverse.edgeClosed_of_covers</code>, <code>FiniteArchGraph.edgeClosed_components</code>, and bounded reachability facts.</span>
               </p>
               <p id="proof-3-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-3-2">Proof idea.</a>
@@ -433,11 +392,6 @@ P |-AAT phi
                 carries the only violating edge. Without edge closure, an
                 in-scope source can point to an out-of-scope target, so a zero
                 result on the list is not a graph-level zero claim.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Counterexample 3.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-future">theorem candidate</span>
-                <span>Boundary example for missing coverage or closure; the proved bridge theorems require those premises explicitly.</span>
               </p>
               <p id="remark-3-4" class="statement">
                 <a class="statement-anchor" href="#remark-3-4">Remark 3.4.</a>

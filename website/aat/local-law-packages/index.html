@@ -163,10 +163,9 @@
                 says which selected behavior is visible for the claim.
               </p>
               <p>
-                Local law packages become theorem-grade only after the
-                projection, observation, equality, and selected context universe
-                have been named. The schematic kernel inclusion below is useful
-                only relative to that boundary.
+                Local law packages name the projection, observation, equality,
+                and selected context universe used by a claim. The schematic
+                kernel inclusion below is read relative to that chosen boundary.
               </p>
               <figure class="code-panel">
                 <figcaption>Projection / observation kernel</figcaption>
@@ -185,11 +184,6 @@ ker(F) &lt;= ker(Obs)</code></pre>
                 concrete objects or client contexts to which the claim is
                 allowed to apply.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 7.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>InterfaceProjection</code>, <code>Observation</code>, <code>ObservationallyEquivalent</code>, <code>lspCandidatePairs</code>, and <code>ComponentUniverse</code>. Source: Chapter 7 and the Projection / Observation entries in the Lean theorem index.</span>
-              </p>
               <p id="proposition-7-2" class="statement">
                 <a class="statement-anchor" href="#proposition-7-2">Proposition 7.2.</a>
                 If a selected observation factors through the selected
@@ -197,11 +191,6 @@ ker(F) &lt;= ker(Obs)</code></pre>
                 selected observations. In finite measured universes, this
                 supports zero LSP violation-count bridges under the stated
                 closure assumptions.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 7.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>lspCompatible_of_observationFactorsThrough</code>, <code>lspViolationCount_eq_zero_of_observationFactorsThrough</code>, <code>mem_lspViolationPairs_iff</code>, and <code>lspCompatible_of_lspViolationCount_eq_zero</code>.</span>
               </p>
               <p id="proof-7-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-7-2">Proof idea.</a>
@@ -243,22 +232,12 @@ ProjectionExact + RepresentativeStable</code></pre>
                 soundness and completeness. <code>RepresentativeStable</code>
                 states the stability needed for quotient-style readings.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 7.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>ProjectionSound</code>, <code>ProjectionComplete</code>, <code>ProjectionExact</code>, <code>RepresentativeStable</code>, <code>DIPCompatible</code>, and <code>StrongDIPCompatible</code>.</span>
-              </p>
               <p id="proposition-7-4" class="statement">
                 <a class="statement-anchor" href="#proposition-7-4">Proposition 7.4.</a>
                 Exact projection together with representative stability yields
                 strong DIP compatibility; strong DIP compatibility exposes
                 exact projection, representative stability, quotient
                 well-definedness, and ordinary DIP compatibility.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 7.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>strongDIPCompatible_of_projectionExact_representativeStable</code>, <code>projectionExact_of_strongDIPCompatible</code>, <code>representativeStable_of_strongDIPCompatible</code>, <code>quotientWellDefined_of_strongDIPCompatible</code>, and <code>dipCompatible_of_strongDIPCompatible</code>.</span>
               </p>
               <p id="proof-7-4" class="statement-proof">
                 <a class="statement-anchor" href="#proof-7-4">Proof idea.</a>
@@ -301,11 +280,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 abstract fiber. Its finite measurement form counts selected
                 same-abstraction pairs whose observations diverge.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 7.5">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>LSPCompatibleAt</code>, <code>LSPCompatible</code>, <code>LSPObstruction</code>, <code>lspViolationPairs</code>, and <code>lspViolationCount</code>.</span>
-              </p>
               <p id="proposition-7-6" class="statement">
                 <a class="statement-anchor" href="#proposition-7-6">Proposition 7.6.</a>
                 In the current finite theorem package, LSP compatibility is
@@ -313,11 +287,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 when the finite measurement universe closes the relevant
                 same-abstraction pairs, zero violation count yields
                 <code>LSPCompatible</code>.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 7.6">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>lspCompatible_iff_noLSPObstruction</code>, <code>lspViolationCount_eq_zero_of_lspCompatible</code>, <code>lspViolationCount_eq_zero_of_observationFactorsThrough</code>, and <code>lspCompatible_of_lspViolationCount_eq_zero</code>.</span>
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -343,11 +312,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 package records that unconditional <code>Decomposable</code>
                 or <code>StrictLayered</code> does not follow.
               </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 7.7">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>projectionSound_of_localReplacementContract</code>, <code>localReplacementOperation_preserves_lspCompatible</code>, <code>localReplacementOperation_preserves_dipCompatible</code>, <code>localContractDesignPattern_closure_law</code>, and <code>localContractDesignPattern_records_nonConclusion</code>.</span>
-              </p>
               <p id="proof-7-7" class="statement-proof">
                 <a class="statement-anchor" href="#proof-7-7">Proof idea.</a>
                 The local replacement operation carries the target-side
@@ -357,42 +321,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 closure schema. The non-conclusion is a field of the pattern,
                 so the global layering boundary travels with the package.
               </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Principle reading</th>
-                      <th>Status</th>
-                      <th>Assumptions</th>
-                      <th>Boundary</th>
-                      <th>Non-conclusion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>LSP</td>
-                      <td><code>proved</code> for selected observation bridges</td>
-                      <td>Selected abstraction fiber, client contexts, observation equivalence, and finite pair coverage when measured.</td>
-                      <td>Local substitutability for the named observation universe.</td>
-                      <td>Not all behavioral semantics or all clients.</td>
-                    </tr>
-                    <tr>
-                      <td>DIP</td>
-                      <td><code>proved</code> for projection / local contract bridges</td>
-                      <td>Selected concrete graph, interface projection, abstract graph, and representative stability where strong readings are used.</td>
-                      <td>Local dependency abstraction soundness or exactness.</td>
-                      <td>Not global acyclicity, layering, or runtime dependency completeness.</td>
-                    </tr>
-                    <tr>
-                      <td>SOLID as a family</td>
-                      <td><code>defined only</code> / <code>proved</code> for bounded representative packages</td>
-                      <td>Each principle is read through its selected local invariant family.</td>
-                      <td>Local contract layer; other design layers require separate packages.</td>
-                      <td>SOLID is not a universal architecture theorem.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
               <div class="claim-strip">
                 <p>
                   SOLID belongs to the local contract layer in this taxonomy;
@@ -409,7 +337,8 @@ ProjectionExact + RepresentativeStable</code></pre>
               <p class="plain-reading">
                 <strong>Plain reading.</strong> Static flatness, runtime
                 flatness, and semantic flatness are different axes. A static
-                split is not a proof of runtime or semantic flatness.
+                split belongs to the static reading; runtime and semantic
+                flatness are separate readings.
               </p>
               <figure class="code-panel">
                 <figcaption>Bounded flatness</figcaption>
@@ -427,11 +356,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 runtime, and semantic flatness with required-axis coverage and
                 exactness boundaries.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 8.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only</span>
-                <span>Anchored by <code>ArchitectureFlatnessModel</code>, <code>StaticFlatWithin</code>, <code>RuntimeFlatWithin</code>, <code>SemanticFlatWithin</code>, <code>NoUnmeasuredRequiredAxis</code>, and <code>ArchitectureFlatWithin</code>.</span>
-              </p>
               <p id="proposition-8-2" class="statement">
                 <a class="statement-anchor" href="#proposition-8-2">Proposition 8.2.</a>
                 A lawful split-feature or extension package yields bounded
@@ -440,11 +364,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 semantic coverage / flatness, and recorded non-conclusions are
                 supplied.
               </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 8.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>LawfulExtensionPreservesFlatness</code>, <code>LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation</code>, <code>architectureFlatWithin_of_splitFeatureExtensionWithin</code>, and <code>splitFeatureExtensionWithin_recordsNonConclusions</code>.</span>
-              </p>
               <p id="non-conclusion-8-3" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-8-3">Non-conclusion 8.3.</a>
                 Static split, static flatness, projection soundness, or local
@@ -452,11 +371,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 flatness, semantic flatness, global <code>ArchitectureFlat</code>,
                 extractor completeness, telemetry completeness, or semantic
                 universe completeness.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Non-conclusion 8.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved / recorded boundary</span>
-                <span>Anchored by <code>SplitFeatureExtensionWithinNonConclusions</code>, <code>splitFeatureExtensionWithin_recordsNonConclusions</code>, <code>GlobalFlatCertificate.nonConclusions_recorded</code>, and the static / semantic counterexample package.</span>
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -474,11 +388,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 That local theorem still needs separate static, runtime, and
                 semantic packages before it can be read as bounded flatness.
               </p>
-              <p class="statement-status" aria-label="Lean status for Example 8.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved representative package</span>
-                <span>Related anchors include the coupon / discount semantic examples, <code>ThreeLayerFlatnessPositiveExample.architectureFlatWithin</code>, <code>ThreeLayerFlatnessPositiveExample.noUnmeasuredRequiredAxis</code>, and <code>ThreeLayerFlatnessPositiveExample.recordsNonConclusions</code>.</span>
-              </p>
               <p id="counterexample-8-5" class="statement">
                 <a class="statement-anchor" href="#counterexample-8-5">Counterexample 8.5.</a>
                 A package can satisfy strong DIP-style projection conditions
@@ -486,11 +395,6 @@ ProjectionExact + RepresentativeStable</code></pre>
                 cyclic and therefore not <code>Decomposable</code>. This is
                 the precise failure mode that prevents SOLID from being treated
                 as a universal architecture theorem.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Counterexample 8.5">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved counterexample</span>
-                <span>Anchored by <code>StrongAbstractCycleComponent.strongDIPCompatible</code>, <code>StrongAbstractCycleComponent.lspCompatible</code>, <code>StrongAbstractCycleComponent.abstractGraph_not_decomposable</code>, and <code>StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable</code>.</span>
               </p>
               <div class="article-table">
                 <table>

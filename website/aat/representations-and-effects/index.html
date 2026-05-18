@@ -158,9 +158,8 @@
               <h2>Graph and matrix</h2>
               <p class="plain-reading">
                 <strong>Plain reading.</strong> The matrix bridge is a finite
-                structural representation theorem. It is not the definition of
-                <code>Decomposable</code>, and it is not a theorem about
-                runtime propagation, latency, or cost.
+                structural representation of selected graph evidence. Runtime
+                propagation, latency, and cost use separate representations.
               </p>
               <p>
                 On a finite unweighted universe, acyclicity, absence of closed
@@ -196,11 +195,6 @@ runtime propagation
                 proof-carrying finite component universe, not an ambient
                 repository.
               </p>
-              <p class="statement-status" aria-label="Lean status for Definition 13.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only / proved bridges</span>
-                <span>Anchored by <code>ComponentUniverse</code>, <code>adjacencyMatrix</code>, <code>indexedAdjacencyMatrix</code>, and finite matrix bridge theorems.</span>
-              </p>
               <p id="proposition-13-2" class="statement">
                 <a class="statement-anchor" href="#proposition-13-2">Proposition 13.2.</a>
                 For a finite selected unweighted structural universe, the
@@ -208,11 +202,6 @@ runtime propagation
                 absence of nonempty closed walks, and adjacency nilpotence are
                 the same structural zero package, with the spectral-radius
                 reading living on the corresponding finite complex matrix.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 13.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See the Matrix Bridge index entries for adjacency powers, nilpotence, closed-walk obstruction, and spectral-radius zero / positivity.</span>
               </p>
               <p id="proof-13-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-13-2">Proof idea.</a>
@@ -225,49 +214,12 @@ runtime propagation
                 adjacency matrix; it does not attach cost or runtime meaning
                 to the radius.
               </p>
-              <div class="article-table">
-                <table>
-                  <caption>Representation strength and boundary</caption>
-                  <thead>
-                    <tr>
-                      <th>Claim</th>
-                      <th>Current Lean status</th>
-                      <th>Boundary</th>
-                      <th>Non-conclusion</th>
-                      <th>Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Finite graph / matrix bridge</td>
-                      <td><code>proved</code></td>
-                      <td>Finite unweighted static universe with coverage assumptions.</td>
-                      <td>Not the definition of <code>Decomposable</code> and not a runtime theorem.</td>
-                      <td>Lean theorem index, matrix bridge entries.</td>
-                    </tr>
-                    <tr>
-                      <td>Spectral bridge</td>
-                      <td><code>proved</code> for finite complex adjacency matrices</td>
-                      <td>mathlib-backed finite matrix representation.</td>
-                      <td>Does not turn cost, risk, or latency into theorem-level signature axes.</td>
-                      <td>Lean theorem index, spectral radius entries.</td>
-                    </tr>
-                    <tr>
-                      <td>Runtime propagation bridge</td>
-                      <td><code>defined only</code> / <code>proved</code> for selected 0/1 runtime graph zero bridges</td>
-                      <td>Separate runtime universe and propagation model.</td>
-                      <td>Does not follow from static acyclicity alone.</td>
-                      <td>Lean theorem index and proof obligations.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
               <p id="non-conclusion-13-3" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-13-3">Non-conclusion 13.3.</a>
                 <code>Decomposable</code> remains <code>StrictLayered</code>.
                 Acyclicity, finite propagation, nilpotence, and spectral
-                conditions stay outside that definition and enter only through
-                separate bridge theorems or future proof obligations.
+                conditions are separate structural or analytic readings rather
+                than part of that base definition.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -292,11 +244,6 @@ runtime propagation
                 preserving and reflecting selected zeros and obstructions. The
                 reflecting predicates carry coverage, witness completeness,
                 semantic contract coverage, and non-conclusion fields.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Definition 13.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only / proved accessors</span>
-                <span>Anchored by <code>AnalyticRepresentation</code>, <code>ZeroPreserving</code>, <code>ZeroReflecting</code>, <code>ObstructionPreserving</code>, <code>ObstructionReflecting</code>, and <code>RecordsNonConclusions</code>.</span>
               </p>
               <ul class="term-list">
                 <li>
@@ -368,11 +315,6 @@ structural zero</code></pre>
                 the recorded assumptions that authorize reading the analytic
                 result back as a selected structural claim.
               </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 13.5">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved accessor anchors</span>
-                <span>See <code>AnalyticRepresentation.analyticZero_of_structuralZero</code>, <code>structuralZero_of_analyticZero</code>, <code>analyticObstruction_of_structuralObstruction</code>, and <code>structuralObstruction_of_analyticObstruction</code>.</span>
-              </p>
               <p id="proof-13-5" class="statement-proof">
                 <a class="statement-anchor" href="#proof-13-5">Proof idea.</a>
                 The Lean API does not identify the four predicates. The
@@ -417,12 +359,7 @@ aggregate = 0
                 A zero valuation discharges only selected witness absence when
                 its zero-reflecting premise is available. An optional missing
                 value, an unavailable axis, or an unmeasured report field is
-                not a theorem-level zero.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 13.6">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved accessor anchors</span>
-                <span>Anchored by <code>ObstructionValuation.no_obstruction_of_value_zero</code>, <code>noSelectedObstruction_of_zeroReflectingSum</code>, <code>AnalyticAxisBoundary.some_zero_ne_unmeasured</code>, and <code>not_canDischargeZeroReflectingClaim_of_unmeasured</code>.</span>
+                a different kind of zero.
               </p>
               <figure class="code-panel">
                 <figcaption>Measured zero versus unmeasured</figcaption>
@@ -471,11 +408,6 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                 carrier and observation semantics. Lawfulness is a selected
                 package claim, not a statement about all implementation
                 behavior.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Definition 14.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only / proved law bridges</span>
-                <span>Anchored by <code>StateTransitionCarrier</code>, <code>StateTransitionLawFamilyLawful</code>, <code>EffectBoundaryLawFamilyLawful</code>, and their obstruction-absence bridge theorems.</span>
               </p>
               <ul class="term-list">
                 <li>
@@ -534,11 +466,6 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                 State-transition and effect-boundary lawfulness can be
                 connected to selected obstruction absence, but only for the
                 law family and observation semantics supplied to the package.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 14.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved bridges</span>
-                <span>See <code>stateTransitionLawFamilyLawful_iff_noStateTransitionLawFamilyObstruction</code> and <code>effectBoundaryLawFamilyLawful_iff_noEffectBoundaryLawFamilyObstruction</code>.</span>
               </p>
               <p id="proof-14-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-14-2">Proof idea.</a>
