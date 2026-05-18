@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="Algebraic Architecture Theory reading path, chapter clusters, and claim boundaries."
+      content="Algebraic Architecture Theory abstract and chapter index."
     >
     <title>Algebraic Architecture Theory</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="Algebraic Architecture Theory">
-    <meta property="og:description" content="Algebraic Architecture Theory reading path, chapter clusters, and claim boundaries.">
+    <meta property="og:description" content="Algebraic Architecture Theory abstract and chapter index.">
     <meta property="og:url" content="https://iroha1203.dev/aat/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Algebraic Architecture Theory">
-    <meta name="twitter:description" content="Algebraic Architecture Theory reading path, chapter clusters, and claim boundaries.">
+    <meta name="twitter:description" content="Algebraic Architecture Theory abstract and chapter index.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -74,10 +74,10 @@
           <p class="eyebrow">Algebraic Architecture Theory</p>
           <h1>Algebraic Architecture Theory.</h1>
           <p class="lede">
-            AAT treats architecture as a bounded object of reasoning: operations
-            preserve or break invariant families, obstruction witnesses explain
-            the breakage, and Architecture Signature records the result as a
-            multi-axis diagnostic rather than a single quality score.
+            AAT turns architecture into a bounded algebra of change:
+            operations act on invariant families, obstruction witnesses expose
+            architectural obstructions, and Architecture Signature records the
+            result as a multi-axis diagnostic.
           </p>
         </div>
       </section>
@@ -88,13 +88,8 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reading-order">Chapters</a></li>
                 <li><a href="#abstract">Abstract</a></li>
-                <li><a href="#division-of-work">AAT / ArchSig / SFT</a></li>
-                <li><a href="#main-contributions">Main contributions</a></li>
-                <li><a href="#formal-anchor">Formal anchor</a></li>
-                <li><a href="#worked-example">Worked example</a></li>
-                <li><a href="#related-work">Related work</a></li>
+                <li><a href="#chapters">Chapters</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -165,190 +160,73 @@
           </aside>
 
           <div class="article-main">
-            <section id="reading-order" class="article-section">
-              <h2>Chapters</h2>
-              <p>
-                Start with Foundations for the main line. Use the coupon
-                example when you want a concrete pass first, and use Status
-                when you need the Lean and audit evidence behind a claim.
-              </p>
-              <ul class="chapter-list">
-                <li>
-                  <a href="foundations/">Foundations</a>
-                  <span>Central proposition, ArchitectureObject, ArchitectureCore, ComponentUniverse.</span>
-                </li>
-                <li>
-                  <a href="laws-and-witnesses/">Laws and Witnesses</a>
-                  <span>Invariant families, LawUniverse, ObstructionWitness, zero-curvature reading.</span>
-                </li>
-                <li>
-                  <a href="signature-and-boundary/">Signature and Theorem Boundary</a>
-                  <span>ArchitectureSignature, MeasurementStatus, theorem boundary, non-conclusions.</span>
-                </li>
-                <li>
-                  <a href="local-law-packages/">Local Law Packages</a>
-                  <span>Projection, observation, LSP, DIP, and three-layer flatness.</span>
-                </li>
-                <li>
-                  <a href="calculus-and-extensions/">Calculus and Extensions</a>
-                  <span>ArchitectureOperation, operation laws, FeatureExtension, extension obstruction.</span>
-                </li>
-                <li>
-                  <a href="repair-and-dynamics/">Repair and Dynamics</a>
-                  <span>Repair, synthesis, complexity transfer, paths, homotopy, diagram filling.</span>
-                </li>
-                <li>
-                  <a href="representations-and-effects/">Representations and Effects</a>
-                  <span>Graph, matrix, analytic representation, state-transition algebra, effect boundary.</span>
-                </li>
-                <li>
-                  <a href="examples-and-boundaries/">Examples and Boundaries</a>
-                  <span>Five-minute coupon worked example, semantic counterexample, repair transfer, SOLID boundaries.</span>
-                </li>
-                <li>
-                  <a href="related-work/">Related Work and Novelty</a>
-                  <span>ISO 42010, ATAM, metrics, graph analysis, formal methods, category-theoretic models, and AAT contribution boundaries.</span>
-                </li>
-                <li>
-                  <a href="status/">Status</a>
-                  <span>How to read Lean status, theorem anchors, version / commit snapshots, build evidence, audit scans, and non-conclusions.</span>
-                </li>
-                <li>
-                  <a href="formal-anchors/">Formal Anchors Audit</a>
-                  <span>Chapter-level Lean anchors, theorem-index links, status phrases, and boundary notes gathered in one audit page.</span>
-                </li>
-              </ul>
-            </section>
-
             <section id="abstract" class="article-section">
               <h2>Abstract</h2>
               <p>
                 Algebraic Architecture Theory formalizes software architecture
                 as a bounded mathematical object equipped with operations,
                 invariant families, obstruction witnesses, signature axes, and
-                theorem boundaries. Its basic claim is that architectural
-                quality should be read through preserved invariants and
-                explicit witnesses of failure, not through slogans, framework
-                names, or a single scalar score.
+                theorem boundaries. It gives architecture review a mathematical
+                grammar: design principles become operations on invariants,
+                failures become explicit witnesses, and quality becomes a
+                multi-axis signature.
               </p>
               <p>
                 The theory is local by design. Every claim is relative to a
                 selected universe, observation context, coverage boundary, and
-                exactness assumption. This makes AAT useful for precise design
-                review: it can say what is preserved, what is broken, what was
-                measured, what was not measured, and which theorem package
-                licenses the conclusion.
+                exactness assumption. This locality makes architectural claims
+                composable: a review can state which invariant is preserved,
+                which obstruction is witnessed, which axes are measured, and
+                which theorem package licenses the conclusion.
               </p>
             </section>
 
-            <section id="division-of-work" class="article-section">
-              <h2>AAT / ArchSig / SFT</h2>
-              <p>
-                AAT is the local algebra of architectural change. ArchSig is
-                the observation layer for signatures and witnesses. SFT uses
-                those bounded observations and AAT premises for field-shaped
-                computation over future architectural trajectories.
-              </p>
-              <ul class="term-list">
+            <section id="chapters" class="article-section">
+              <h2>Chapters</h2>
+              <ul class="chapter-list">
                 <li>
-                  <strong>AAT</strong>
-                  <span>Local algebra of architectural change under selected universe, assumptions, coverage, exactness, and non-conclusions.</span>
+                  <a href="foundations/">Foundations</a>
+                  <span>ArchitectureObject, ArchitectureCore, selected universes, and bounded judgement.</span>
                 </li>
                 <li>
-                  <strong>ArchSig</strong>
-                  <span>Observation layer for signatures and witnesses, not a Lean proof engine or complete extractor.</span>
+                  <a href="laws-and-witnesses/">Laws and Witnesses</a>
+                  <span>Invariant families, law universes, obstruction witnesses, and zero-curvature reading.</span>
                 </li>
                 <li>
-                  <strong>SFT</strong>
-                  <span>Field-shaped computation over future architectural trajectories, not an empirical prediction theorem by itself.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="main-contributions" class="article-section">
-              <h2>Main contributions</h2>
-              <ul class="status-list">
-                <li>
-                  <strong>Architecture as bounded algebra</strong>
-                  <span>AAT treats architecture objects and operations as typed, evidence-bounded mathematical data rather than as informal descriptions of whole codebases.</span>
+                  <a href="signature-and-boundary/">Signature and Theorem Boundary</a>
+                  <span>ArchitectureSignature, measurement status, available evidence, and theorem boundary.</span>
                 </li>
                 <li>
-                  <strong>Obstruction-first quality</strong>
-                  <span>Quality failure is represented by selected obstruction witnesses: forbidden edges, boundary violations, projection failures, semantic non-commutativity, runtime exposure, lifting failure, and residual coverage gaps.</span>
+                  <a href="local-law-packages/">Local Law Packages</a>
+                  <span>Projection, observation, LSP, DIP, local contracts, and bounded flatness.</span>
                 </li>
                 <li>
-                  <strong>Multi-axis signature</strong>
-                  <span>Architecture Signature records measured coordinates and measurement status per axis, keeping unmeasured, out-of-scope, private, and zero evidence distinct.</span>
+                  <a href="calculus-and-extensions/">Calculus and Extensions</a>
+                  <span>ArchitectureOperation, operation laws, feature extension, and extension obstruction.</span>
                 </li>
                 <li>
-                  <strong>Theorem-boundary discipline</strong>
-                  <span>Every theorem candidate records assumptions, coverage, exactness, conclusion, and non-conclusions so static, runtime, semantic, tooling, and empirical readings are not collapsed.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="formal-anchor" class="article-section">
-              <h2>Formal anchor</h2>
-              <p>
-                Lean formalization is not a replacement for the whole AAT
-                exposition. Its role is to provide inspectable anchor theorem
-                packages inside the broader theory, so claims can be read with
-                explicit universe, coverage, exactness, and non-conclusion
-                boundaries.
-              </p>
-              <p>
-                The current paper-facing anchor is the finite static
-                structural core. It is a proved Lean package for selected
-                static lawfulness, required obstruction witnesses, and required
-                signature axes under stated assumptions, not the only main
-                theorem of AAT and not a substitute for the operation,
-                invariant, witness, signature, calculus, repair, and empirical
-                parts of the theory.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Inspectable package</strong>
-                  <span><a href="formal-anchors/">Formal Anchors Audit</a> lists the boundary, Lean declarations, derived diagnostics, and non-conclusions.</span>
+                  <a href="repair-and-dynamics/">Repair and Dynamics</a>
+                  <span>Repair, synthesis, complexity transfer, paths, homotopy, and diagram filling.</span>
                 </li>
                 <li>
-                  <strong>Zero-curvature terminology</strong>
-                  <span>Within this anchor, zero-curvature means the required obstruction valuation is zero for the selected law universe. It is not a numerical or differential-geometric curvature claim.</span>
+                  <a href="representations-and-effects/">Representations and Effects</a>
+                  <span>Graph, matrix, analytic representation, state-transition algebra, and effect boundary.</span>
                 </li>
-              </ul>
-            </section>
-
-            <section id="worked-example" class="article-section">
-              <h2>Worked example</h2>
-              <p>
-                Readers who want the shortest complete pass through AAT should
-                start with the coupon worked example. It keeps the finite
-                component universe, selected static edges, semantic mismatch,
-                runtime exposure, witness list, signature coordinates, theorem
-                references, and non-conclusions on one page.
-              </p>
-              <ul class="status-list">
                 <li>
-                  <strong><a href="examples-and-boundaries/#coupon-case-study">Five-minute coupon example</a></strong>
-                  <span>Shows how a direct `CouponService -> PaymentAdapter.internalCache` edge becomes a measured nonzero static witness while repaired static split, semantic ordering, and runtime exposure remain separate axes.</span>
+                  <a href="examples-and-boundaries/">Examples and Boundaries</a>
+                  <span>Finite skeletons, signature readings, counterexamples, and claim levels.</span>
                 </li>
-              </ul>
-            </section>
-
-            <section id="related-work" class="article-section">
-              <h2>Related work</h2>
-              <p>
-                AAT sits next to architecture description standards,
-                scenario-based evaluation, dependency analysis, architecture
-                metrics, formal methods, and category-theoretic software
-                models. Its novelty claim is not that those areas are replaced,
-                but that their evidence can be read through invariant
-                families, obstruction witnesses, multi-axis signatures, and
-                explicit theorem boundaries.
-              </p>
-              <ul class="status-list">
                 <li>
-                  <strong><a href="related-work/">Related Work and Novelty</a></strong>
-                  <span>Compares AAT with ISO 42010, ATAM, architecture metrics, graph dependency analysis, formal methods, and category-theoretic modeling.</span>
+                  <a href="related-work/">Related Work and Novelty</a>
+                  <span>Adjacent methods and the bounded claim grammar AAT adds.</span>
+                </li>
+                <li>
+                  <a href="status/">Status</a>
+                  <span>Current snapshot, checked surface, claim status, and formal core.</span>
+                </li>
+                <li>
+                  <a href="formal-anchors/">Formal Anchors Audit</a>
+                  <span>Chapter-level Lean anchors and theorem-index links.</span>
                 </li>
               </ul>
             </section>
