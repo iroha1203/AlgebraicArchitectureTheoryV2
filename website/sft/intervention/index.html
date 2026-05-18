@@ -61,10 +61,10 @@
           <p class="eyebrow">SFT Part 3</p>
           <h1>Field Intervention and Control</h1>
           <p class="lede">
-            Part 2 made reachable futures computable inside a bounded field
-            model. Part 3 asks how to change the field itself: support,
-            policy, observation, feedback, and lifecycle pressure can be shaped
-            so better architecture futures become easier to reach.
+            Once reachable futures become visible, SFT turns from forecast to
+            design. Review, CI, type systems, AI policy, runtime feedback,
+            ownership, and lifecycle choices can reshape the field so better
+            architecture futures become easier to reach and easier to repeat.
           </p>
         </div>
       </section>
@@ -74,58 +74,67 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#intervention">Intervention</a></li>
-                <li><a href="#control-surface">Control surface</a></li>
-                <li><a href="#chapter-index">Chapter index</a></li>
-                <li><a href="#boundary">Boundary</a></li>
+                <li><a href="#design">Designing the field</a></li>
+                <li><a href="#governance">Governance dynamics</a></li>
+                <li><a href="#attractor">Attractor engineering</a></li>
+                <li><a href="#ai-lifecycle">AI and lifecycle</a></li>
+                <li><a href="#closed-loop">Closed loop</a></li>
+                <li><a href="#reference-notes">Reference notes</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
-              <h2>Part 3 routes</h2>
+              <h2>SFT pages</h2>
               <ul>
-                <li><a href="../">SFT overview</a></li>
-                <li><a href="../field/">Part 1. Field</a></li>
-                <li><a href="../computation/">Part 2. Computation</a></li>
-                <li><a href="./" aria-current="page">Part 3. Intervention</a></li>
-                <li><a href="governance/">3-1. Governance</a></li>
-                <li><a href="attractor-engineering/">3-2. Attractor Engineering</a></li>
-                <li><a href="stable-regions/">3-3. Stable Regions</a></li>
-                <li><a href="ai-governance/">3-4. AI Governance</a></li>
-                <li><a href="lifecycle/">3-5. Lifecycle Decisions</a></li>
-                <li><a href="closed-loop/">3-6. Closed-Loop Update</a></li>
+                <li><a href="../">SFT Overview</a></li>
+                <li><a href="../field/">1. The Field</a></li>
+                <li><a href="../field/codebase-memory-artifact-force/">1-1. Memory and Force</a></li>
+                <li><a href="../field/agents-organization-recurrent-paths/">1-2. Agents and Organization</a></li>
+                <li><a href="../field/governance-feedback-futures/">1-3. Feedback and Futures</a></li>
+                <li><a href="../computation/">2. The Computation</a></li>
+                <li><a href="../computation/slice-observation/">2-1. Slice and Observation</a></li>
+                <li><a href="../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
+                <li><a href="../computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
+                <li><a href="../intervention/" aria-current="page">3. The Intervention</a></li>
+                <li><a href="../intervention/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
+                <li><a href="../intervention/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
+                <li><a href="../intervention/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../references/">References</a></li>
+                <li><a href="../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../references/glossary/">Glossary</a></li>
               </ul>
             </div>
           </aside>
           <div class="article-main">
-            <aside class="question-card" aria-label="Guiding question">
-              <span class="question-card-label">Question</span>
-              <p>Once reachable futures are visible, which field changes make the desired futures natural, observable, and reviewable?</p>
-            </aside>
-
-            <section id="intervention" class="article-section">
-              <h2>Intervention</h2>
+            <section id="design" class="article-section">
+              <p class="research-question">
+                How do we build a field where good changes are the natural next move?
+              </p>
+              <h2>Designing the field</h2>
               <p>
-                SFT intervention is not only a mechanism for rejecting bad
-                changes. A restrictive gate can remove unsafe support, but the
-                deeper control problem is to reshape what the field makes
-                visible, cheap, selected, and remembered.
+                SFT intervention is the design side of the theory. Part 2 asks
+                which futures are reachable under a selected field model. Part
+                3 asks what a team can change when that reachable shape is not
+                the one it wants to inhabit.
               </p>
               <p>
-                This is the turn from forecast to design. Part 2 asks which
-                futures are reachable under a selected model. Part 3 asks what
-                a team can change when that reachable shape is no longer
-                acceptable. The answer is rarely one lever. A review rule may
-                narrow a cone, but a missing invariant may require a type
-                boundary; a shortcut may require runtime observation; a
-                fragile surface may require migration or retirement.
+                The answer is rarely a single gate. A review rule may remove a
+                shortcut from support. A type boundary may make an invariant
+                cheap to preserve. A runtime check may make a hidden path
+                observable. A lifecycle decision may retire a surface the field
+                can no longer support. These are not after-the-fact quality
+                controls. They are changes to the future shape of the system.
               </p>
               <p>
-                Review, CI, type checking, architecture rules, runtime guards,
-                AI policy, and lifecycle decisions all affect future operation
-                support. They can lower the cost of lawful paths, raise the
-                cost of shortcuts, add observation axes, redirect proposals
-                into design work, and preserve observed outcomes as field
-                memory.
+                This is the practical promise of SFT: once software evolution
+                is visible as a field-shaped computation, engineering can move
+                upstream. We can design the conditions under which the next
+                good change becomes obvious.
               </p>
               <p id="definition-3-0" class="statement">
                 <a class="statement-anchor" href="#definition-3-0">Definition 3.0.</a>
@@ -141,8 +150,22 @@
               </p>
             </section>
 
-            <section id="control-surface" class="article-section">
-              <h2>Control surface</h2>
+            <section id="governance" class="article-section">
+              <h2>Governance dynamics</h2>
+              <p>
+                Governance is often read as a final checkpoint: approve,
+                reject, request changes. SFT reads it as part of the dynamical
+                object. Review, CI, type checking, ownership rules, architecture
+                constraints, runtime guards, and AI policy all change future
+                operation support.
+              </p>
+              <p>
+                A good governance system does not only block bad changes. It
+                lowers the cost of lawful paths, makes missing invariants
+                visible, routes ambiguous proposals into design work, preserves
+                observed failures as field memory, and gives AI agents better
+                local structure to imitate.
+              </p>
               <figure class="code-panel">
                 <figcaption>Part 3 control surface</figcaption>
                 <pre><code>ForecastCone / ConsequenceEnvelope
@@ -153,52 +176,82 @@
 -&gt; review / CI / runtime intervention
 -&gt; posterior field update</code></pre>
               </figure>
+            </section>
+
+            <section id="attractor" class="article-section">
+              <h2>Attractor engineering</h2>
               <p>
-                Attractor Engineering is the most vivid application of this
-                surface: design the field so desirable futures are natural,
-                cheap, visible, and repeatable, while shortcut paths become
-                costly, observable, and review-mediated. It is an application
-                of SFT, not a synonym for the whole theory.
+                Attractor engineering is the most vivid application of SFT:
+                design the field so desirable futures are natural, cheap,
+                visible, reviewable, and repeatable, while shortcut paths become
+                costly, observable, and mediated by review.
               </p>
               <p>
-                The important shift is that governance stops being read as a
-                moral afterthought. In SFT, governance is part of the dynamical
-                object. It changes what developers and AI agents see as the
-                next plausible move, what CI can notice, what reviewers can
-                name, and what the organization remembers after the decision.
+                This reframes "good design" as field design. We do not only ask
+                whether the current architecture looks clean. We ask whether
+                the field makes the next boundary-preserving operation easy to
+                find, easy to implement, easy to review, and easy to reinforce
+                with feedback.
               </p>
-              <p>
-                The same surface also supports AI proposal governance,
-                lifecycle decisions, and closed-loop updates. The common habit
-                is to keep the intervention attached to a bounded field model
-                and to preserve non-conclusions when evidence is missing.
+              <p class="plain-reading">
+                <strong>Intervention habit.</strong> Do not only add guardrails
+                around a bad default path. Change the field so the better path
+                becomes the default path.
               </p>
             </section>
 
-            <section id="chapter-index" class="article-section">
-              <h2>Chapter index</h2>
-              <ul class="chapter-list">
-                <li><a href="governance/">3-1. Governance as Field Shaping</a><span>Review, CI, type checking, runtime guards, and AI policy as support and observation interventions.</span></li>
-                <li><a href="attractor-engineering/">3-2. Attractor Engineering</a><span>Making desirable futures natural, cheap, visible, and reviewable while exposing shortcut paths.</span></li>
-                <li><a href="stable-regions/">3-3. Stable Regions and Recurrent Paths</a><span>Default paths, recurrent patterns, stable regions, and reachable preimages under bounded semantics.</span></li>
-                <li><a href="ai-governance/">3-4. AI Proposal Governance</a><span>Controlling AI-generated proposal support through theorem boundaries, review, and CI feedback.</span></li>
-                <li><a href="lifecycle/">3-5. Lifecycle Decisions</a><span>Repair, migration, contraction, deletion, and end-of-life as field-capacity choices.</span></li>
-                <li><a href="closed-loop/">3-6. Closed-Loop Field Update</a><span>Using PR, review, CI, runtime feedback, and incident outcomes to revise field estimates.</span></li>
-              </ul>
-            </section>
-            <section id="boundary" class="article-section">
-              <h2>Boundary</h2>
-              <p id="non-conclusion-3-0" class="statement">
-                <a class="statement-anchor" href="#non-conclusion-3-0">Non-conclusion 3.0.</a>
-                Field intervention does not prove deterministic control,
-                calibrated prediction, or general AI safety. It names bounded
-                ways to change support, policy, observation, feedback, and
-                capacity, then asks whether later evidence supports the update.
+            <section id="ai-lifecycle" class="article-section">
+              <h2>AI and lifecycle</h2>
+              <p>
+                AI coding agents make this problem urgent. An agent tends to
+                follow the path made visible by the existing codebase and
+                surrounding artifacts. If the field teaches shortcut patterns,
+                the agent can amplify them quickly. If the field teaches
+                explicit boundaries and preserved invariants, the agent can also
+                amplify those structures.
+              </p>
+              <p>
+                Lifecycle decisions belong to the same surface. Repair,
+                migration, contraction, and deletion all reshape support and
+                capacity. End-of-life is not a failure of growth; it can be a
+                field intervention that closes unsupported futures and frees
+                capacity for better ones.
               </p>
             </section>
+
+            <section id="closed-loop" class="article-section">
+              <h2>Closed loop</h2>
+              <p>
+                SFT becomes most powerful when forecast and outcome meet.
+                A ConsequenceEnvelope names expected affected regions, path
+                classes, signature axes, obstruction candidates, and missing
+                boundaries. Later PRs, reviews, CI outcomes, runtime incidents,
+                and repairs can be joined back to those forecast items.
+              </p>
+              <p>
+                The field then learns in a disciplined way. It records where
+                the forecast was too narrow, where support was wrong, where a
+                missing invariant appeared, where a review rule helped, and
+                where unknown remainder should become visible next time.
+              </p>
+            </section>
+
+            <section id="reference-notes" class="article-section">
+              <h2>Part 3 chapters</h2>
+              <p>
+                The intervention material now reads as three medium chapters:
+                governance shaping, AI proposal governance, and lifecycle /
+                closed-loop evolution.
+              </p>
+              <ul class="chapter-list">
+                <li><a href="governance-attractor-engineering/">3-1. Governance and Attractor Engineering</a><span>Review, CI, type systems, stable regions, and field shaping that make desirable futures natural.</span></li>
+                <li><a href="ai-proposal-governance/">3-2. AI Proposal Governance</a><span>Controlling AI-generated proposal support through theorem boundaries, shortcut witnesses, review, CI, and feedback.</span></li>
+                <li><a href="lifecycle-closed-loop/">3-3. Lifecycle and Closed-Loop Evolution</a><span>Repair, migration, contraction, deletion, end-of-life, and posterior field updates as lifecycle interventions.</span></li>
+              </ul>
+            </section>
             <nav class="page-nav" aria-label="Reading sequence">
-              <a class="page-nav-previous" href="../computation/"><span>Previous</span><strong>Part 2. Computation</strong></a>
-              <a class="page-nav-next" href="governance/"><span>Next</span><strong>3-1. Governance as Field Shaping</strong></a>
+              <a class="page-nav-previous" href="../computation/envelope-calibration/"><span>Previous</span><strong>2-3. Envelope and Calibration</strong></a>
+              <a class="page-nav-next" href="governance-attractor-engineering/"><span>Next</span><strong>3-1. Governance and Attractor</strong></a>
             </nav>
           </div>
         </div>

@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT Part 3-1: governance, attractor engineering, stable regions, and field shaping.">
+    <title>SFT 3-1: Governance and Attractor Engineering</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/intervention/governance-attractor-engineering/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 3-1: Governance and Attractor Engineering">
+    <meta property="og:description" content="How review, CI, type systems, and attractor engineering shape reachable architecture futures.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/intervention/governance-attractor-engineering/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 3-1: Governance and Attractor Engineering">
+    <meta name="twitter:description" content="How review, CI, type systems, and attractor engineering shape reachable architecture futures.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../../">Home</a>
+          <a href="../../../aat/">AAT</a>
+          <a class="is-active" href="../../">SFT</a>
+          <a href="../../../archsig/">ArchSig</a>
+          <a href="../../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Intervention</a>
+            <span>3-1</span>
+          </nav>
+          <p class="eyebrow">SFT Part 3-1</p>
+          <h1>Governance and Attractor Engineering</h1>
+          <p class="lede">
+            Governance is not only a gate. It is a way to reshape support,
+            policy, observation, and feedback so desirable architecture futures
+            become natural, visible, reviewable, and repeatable.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#governance">Governance as field shaping</a></li>
+                <li><a href="#attractor">Attractor engineering</a></li>
+                <li><a href="#stable">Stable regions</a></li>
+                <li><a href="#moves">Shaping moves</a></li>
+                <li><a href="#chapter-summary">Chapter summary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../../field/">1. The Field</a></li>
+                <li><a href="../../field/codebase-memory-artifact-force/">1-1. Memory and Force</a></li>
+                <li><a href="../../field/agents-organization-recurrent-paths/">1-2. Agents and Organization</a></li>
+                <li><a href="../../field/governance-feedback-futures/">1-3. Feedback and Futures</a></li>
+                <li><a href="../../computation/">2. The Computation</a></li>
+                <li><a href="../../computation/slice-observation/">2-1. Slice and Observation</a></li>
+                <li><a href="../../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
+                <li><a href="../../computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
+                <li><a href="../../intervention/">3. The Intervention</a></li>
+                <li><a href="../../intervention/governance-attractor-engineering/" aria-current="page">3-1. Governance and Attractor</a></li>
+                <li><a href="../../intervention/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
+                <li><a href="../../intervention/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="governance" class="article-section">
+              <p class="research-question">
+                Can governance be designed as a transformation of future operation support?
+              </p>
+              <h2>Governance as field shaping</h2>
+              <p>
+                Review, CI, type checking, architecture rules, runtime guards,
+                and ownership boundaries change what the field supports. They
+                can remove unsafe support, redirect ambiguous proposals, add
+                observation axes, and store outcomes as field memory.
+              </p>
+            </section>
+            <section id="attractor" class="article-section">
+              <h2>Attractor engineering</h2>
+              <p>
+                Attractor engineering designs the field so desirable futures are
+                natural to find and repeat. The goal is not only to reject bad
+                paths. It is to lower the cost of lawful paths and make shortcut
+                paths costly, visible, and review-mediated.
+              </p>
+              <p class="plain-reading">
+                <strong>Intervention habit.</strong> The strongest governance
+                is not a longer checklist. It is a field where the checklist
+                and the codebase point toward the same lawful move.
+              </p>
+            </section>
+            <section id="stable" class="article-section">
+              <h2>Stable regions</h2>
+              <p>
+                Stable-region language gives the intuition a computable shape.
+                A region is stable when supported steps remain inside it. A
+                recurrent path is a repeated development pattern under the
+                selected support and policy. Stronger readings require stronger
+                semantics, but the field-design question already becomes clear.
+              </p>
+            </section>
+            <section id="moves" class="article-section">
+              <h2>Shaping moves</h2>
+              <figure class="code-panel">
+                <figcaption>Attractor engineering surface</figcaption>
+                <pre><code>support shaping
+  + policy shaping
+  + observation enrichment
+  + review / CI mediation
+  + feedback update
+  -> better reachable futures become natural</code></pre>
+              </figure>
+              <p id="proposition-3-1" class="statement">
+                <a class="statement-anchor" href="#proposition-3-1">Proposition 3-1.</a>
+                A governance intervention changes reachable architecture
+                futures by transforming support, policy, observation, feedback
+                update, or lifecycle capacity in the selected field model.
+              </p>
+              <p id="proof-3-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-3-1">Proof idea.</a>
+                The ForecastCone is generated from the starting field, support,
+                step relation, and horizon. A governance intervention changes
+                one of those inputs or changes the observation boundary through
+                which the cone is projected. Therefore it changes either the
+                reachable path set, the policy ordering over paths, or the
+                envelope visible to reviewers.
+              </p>
+              <p id="example-3-1" class="statement">
+                <a class="statement-anchor" href="#example-3-1">Example 3-1.</a>
+                A coupon review rule that requires discount composition and
+                refund semantics lowers the cost of the DiscountPolicy path
+                and raises the cost of UI-only drift. This is attractor
+                engineering: the better path becomes easier to select.
+              </p>
+            </section>
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                SFT makes governance an engineering surface. Review rules,
+                CI, type systems, ownership, documentation, and runtime guards
+                are field interventions because they change support, policy,
+                observation, feedback, and capacity.
+              </p>
+              <p>
+                Attractor engineering is the positive claim: make desirable
+                futures natural. The mathematical guard is that each
+                intervention must be read as a bounded transformation of the
+                selected field model, and its effect on cones, envelopes, or
+                stable regions must be stated under explicit assumptions.
+              </p>
+              <h3>Chapter glossary</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>governance intervention</dt>
+                  <dd>A bounded transformation of support, policy, observation, feedback, or capacity.</dd>
+                </div>
+                <div>
+                  <dt>attractor engineering</dt>
+                  <dd>Designing support and policy so desirable futures become natural and repeatable.</dd>
+                </div>
+                <div>
+                  <dt>stable region</dt>
+                  <dd>A selected region where supported steps remain inside the region under the chosen semantics.</dd>
+                </div>
+              </dl>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 3. The Intervention</strong></a>
+              <a class="page-nav-next" href="../ai-proposal-governance/"><span>Next</span><strong>3-2. AI Proposal Governance</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>

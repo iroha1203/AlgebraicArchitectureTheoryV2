@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT Part 2-1: computable slices, AAT projection, ArchSig observation, and field estimates.">
+    <title>SFT 2-1: Computable Slice and Observation</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/computation/slice-observation/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 2-1: Computable Slice and Observation">
+    <meta property="og:description" content="How SFT cuts a computable slice from a development field and connects it to AAT and ArchSig.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/computation/slice-observation/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 2-1: Computable Slice and Observation">
+    <meta name="twitter:description" content="How SFT cuts a computable slice from a development field and connects it to AAT and ArchSig.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../../">Home</a>
+          <a href="../../../aat/">AAT</a>
+          <a class="is-active" href="../../">SFT</a>
+          <a href="../../../archsig/">ArchSig</a>
+          <a href="../../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Computation</a>
+            <span>2-1</span>
+          </nav>
+          <p class="eyebrow">SFT Part 2-1</p>
+          <h1>Computable Slice and Observation</h1>
+          <p class="lede">
+            The development field is too large to know completely. SFT becomes
+            computable by cutting a selected slice, projecting architecture
+            through AAT, and preserving observation boundaries through ArchSig.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#slice">Slice</a></li>
+                <li><a href="#aat">AAT projection</a></li>
+                <li><a href="#archsig">ArchSig observation</a></li>
+                <li><a href="#estimate">Field estimate</a></li>
+                <li><a href="#chapter-summary">Chapter summary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../../field/">1. The Field</a></li>
+                <li><a href="../../field/codebase-memory-artifact-force/">1-1. Memory and Force</a></li>
+                <li><a href="../../field/agents-organization-recurrent-paths/">1-2. Agents and Organization</a></li>
+                <li><a href="../../field/governance-feedback-futures/">1-3. Feedback and Futures</a></li>
+                <li><a href="../../computation/">2. The Computation</a></li>
+                <li><a href="../../computation/slice-observation/" aria-current="page">2-1. Slice and Observation</a></li>
+                <li><a href="../../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
+                <li><a href="../../computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
+                <li><a href="../../intervention/">3. The Intervention</a></li>
+                <li><a href="../../intervention/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
+                <li><a href="../../intervention/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
+                <li><a href="../../intervention/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="slice" class="article-section">
+              <p class="research-question">
+                How can a field too large to know become a bounded object of computation?
+              </p>
+              <h2>Slice</h2>
+              <p>
+                SFT does not compute by pretending to know the whole
+                organization. It computes by choosing a modeling boundary:
+                selected artifacts, selected codebase region, selected
+                architecture universe, selected observation axes, selected
+                governance records, selected horizon, and explicit unknown
+                remainder.
+              </p>
+            </section>
+            <section id="aat" class="article-section">
+              <h2>AAT projection</h2>
+              <p>
+                A <code>SoftwareField</code> is not an AAT
+                <code>ArchitectureObject</code>. The AAT object appears as an
+                architecture projection of the field. AAT supplies the local
+                algebra: operations, invariants, witnesses, signatures, and
+                theorem boundaries that SFT can use as local premises.
+              </p>
+              <figure class="code-panel">
+                <figcaption>One-way interface</figcaption>
+                <pre><code>SoftwareField
+  -> arch projection
+  -> ArchitectureObject
+  -> AAT observables
+  -> SFT computation premise</code></pre>
+              </figure>
+            </section>
+            <section id="archsig" class="article-section">
+              <h2>ArchSig observation</h2>
+              <p>
+                ArchSig is the tooling layer that turns real artifacts into
+                bounded observations: measured signature axes, obstruction
+                witnesses, theorem-boundary notes, unavailable evidence, and
+                unknown remainder. It is what lets the theory remain connected
+                to repositories without claiming complete extraction.
+              </p>
+            </section>
+            <section id="estimate" class="article-section">
+              <h2>Field estimate</h2>
+              <p id="definition-2-1" class="statement">
+                <a class="statement-anchor" href="#definition-2-1">Definition 2-1.</a>
+                A computable slice is a modeling boundary together with the
+                evidence categories and architecture projection used to assemble
+                a partial <code>SoftwareFieldEstimate</code>.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 2-1">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">formal-facing definition</span>
+                <span>Feeds the support, step, and cone objects in Part 2-2.</span>
+              </p>
+              <p id="proposition-2-1" class="statement">
+                <a class="statement-anchor" href="#proposition-2-1">Proposition 2-1.</a>
+                A <code>SoftwareFieldEstimate</code> is sufficient for bounded
+                SFT computation when it records selected evidence, selected
+                architecture projection, observation axes, and unknown
+                remainder.
+              </p>
+              <p id="proof-2-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-1">Proof idea.</a>
+                The later objects only require the selected field state,
+                support relation, policy or selection assumptions, step
+                relation, observation boundary, and horizon. Evidence outside
+                the estimate is not erased; it is carried as unavailable or
+                unknown remainder. Therefore the computation can proceed
+                without claiming complete field reconstruction.
+              </p>
+              <p id="counterexample-2-1" class="statement">
+                <a class="statement-anchor" href="#counterexample-2-1">Counterexample 2-1.</a>
+                If a repository scan omits private incident evidence but treats
+                the omission as absence, it can make an unsafe coupon path look
+                unsupported by any warning. The estimate must preserve
+                unavailable evidence as a boundary item, not as zero.
+              </p>
+              <p class="formal-audit-link">
+                <span>Formal direction</span>
+                <a href="../../references/formal-anchors/">SFT Formal Core and Anchors</a>
+              </p>
+            </section>
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                SFT becomes computable by cutting a slice from a larger
+                development field. The slice is not a confession that the field
+                metaphor failed; it is the mathematical move that makes field
+                dynamics inspectable: selected evidence, selected axes,
+                selected architecture projection, and explicit unknown
+                remainder.
+              </p>
+              <p>
+                AAT and ArchSig protect the slice. AAT supplies the local
+                algebra of architecture objects, operations, invariants,
+                signatures, and witnesses. ArchSig supplies bounded
+                observation. Lean-facing SFT then reasons about the selected
+                <code>SoftwareFieldEstimate</code> without pretending to have
+                extracted the whole organization.
+              </p>
+              <h3>Chapter glossary</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>modeling boundary</dt>
+                  <dd>The selected artifacts, code region, architecture universe, axes, governance records, horizon, and unknown remainder.</dd>
+                </div>
+                <div>
+                  <dt>architecture projection</dt>
+                  <dd>The AAT-readable object extracted from a SoftwareField for local algebra and theorem premises.</dd>
+                </div>
+                <div>
+                  <dt>observation boundary</dt>
+                  <dd>The measured, unavailable, private, out-of-scope, and unknown evidence status for later computation.</dd>
+                </div>
+              </dl>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 2. The Computation</strong></a>
+              <a class="page-nav-next" href="../support-step-forecast-cone/"><span>Next</span><strong>2-2. Support and Cone</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>

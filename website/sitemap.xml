@@ -79,99 +79,48 @@
     <loc>https://iroha1203.dev/sft/field/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/field/codebase-memory/</loc>
+    <loc>https://iroha1203.dev/sft/field/codebase-memory-artifact-force/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/field/artifacts/</loc>
+    <loc>https://iroha1203.dev/sft/field/agents-organization-recurrent-paths/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/field/agents/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/field/organization-structure/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/field/governance-feedback/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/field/architecture-futures/</loc>
+    <loc>https://iroha1203.dev/sft/field/governance-feedback-futures/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/sft/computation/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/computation/computable-slice/</loc>
+    <loc>https://iroha1203.dev/sft/computation/slice-observation/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/computation/aat-interface/</loc>
+    <loc>https://iroha1203.dev/sft/computation/support-step-forecast-cone/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/computation/observation/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/operation-support/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/step-relation/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/forecast-cone/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/consequence-envelope/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/support-safety/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/proposal-accounting/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/computational-problems/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/archsig-pipeline/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/computation/simulator-calibration/</loc>
+    <loc>https://iroha1203.dev/sft/computation/envelope-calibration/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/sft/intervention/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/intervention/governance/</loc>
+    <loc>https://iroha1203.dev/sft/intervention/governance-attractor-engineering/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/intervention/attractor-engineering/</loc>
+    <loc>https://iroha1203.dev/sft/intervention/ai-proposal-governance/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/intervention/stable-regions/</loc>
+    <loc>https://iroha1203.dev/sft/intervention/lifecycle-closed-loop/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/intervention/ai-governance/</loc>
+    <loc>https://iroha1203.dev/sft/references/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/intervention/lifecycle/</loc>
+    <loc>https://iroha1203.dev/sft/references/formal-anchors/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/intervention/closed-loop/</loc>
+    <loc>https://iroha1203.dev/sft/references/research-program/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/formal-core/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/theorem-candidates/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/research-program/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/positioning/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/status/</loc>
-  </url>
-  <url>
-    <loc>https://iroha1203.dev/sft/glossary/</loc>
+    <loc>https://iroha1203.dev/sft/references/glossary/</loc>
   </url>
 </urlset>

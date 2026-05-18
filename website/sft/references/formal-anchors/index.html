@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="SFT Formal Anchors Audit: Lean declarations, proved theorem packages, boundaries, and non-conclusions for Software Field Theory."
+    >
+    <title>SFT Formal Core and Anchors</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/references/formal-anchors/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT Formal Core and Anchors">
+    <meta property="og:description" content="Lean declarations, proved theorem packages, boundaries, and non-conclusions for Software Field Theory.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/references/formal-anchors/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT Formal Core and Anchors">
+    <meta name="twitter:description" content="Lean declarations, proved theorem packages, boundaries, and non-conclusions for Software Field Theory.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../../">Home</a>
+          <a href="../../../aat/">AAT</a>
+          <a class="is-active" href="../../">SFT</a>
+          <a href="../../../archsig/">ArchSig</a>
+          <a href="../../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">References</a>
+            <span>Formal Core and Anchors</span>
+          </nav>
+          <p class="eyebrow">SFT audit trail</p>
+          <h1>Formal Core and Anchors</h1>
+          <p class="lede">
+            SFT speaks about fields, forces, cones, envelopes, and
+            interventions. This page gathers the Lean declarations that keep
+            those words tied to typed objects, proved boundaries, and explicit
+            non-conclusions.
+          </p>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Formal anchor navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#audit-scope">Audit scope</a></li>
+                <li><a href="#formal-core">Formal core</a></li>
+                <li><a href="#field-projection">Field and projection</a></li>
+                <li><a href="#support-cone">Support and cone</a></li>
+                <li><a href="#projection-safety">Projection and safety</a></li>
+                <li><a href="#envelope-archsig">Envelope and ArchSig</a></li>
+                <li><a href="#policy-update">Policy and update</a></li>
+                <li><a href="#theorem-candidates">Theorem candidates</a></li>
+                <li><a href="#counterexamples">Counterexamples</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../../field/">1. The Field</a></li>
+                <li><a href="../../field/codebase-memory-artifact-force/">1-1. Memory and Force</a></li>
+                <li><a href="../../field/agents-organization-recurrent-paths/">1-2. Agents and Organization</a></li>
+                <li><a href="../../field/governance-feedback-futures/">1-3. Feedback and Futures</a></li>
+                <li><a href="../../computation/">2. The Computation</a></li>
+                <li><a href="../../computation/slice-observation/">2-1. Slice and Observation</a></li>
+                <li><a href="../../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
+                <li><a href="../../computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
+                <li><a href="../../intervention/">3. The Intervention</a></li>
+                <li><a href="../../intervention/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
+                <li><a href="../../intervention/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
+                <li><a href="../../intervention/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/" aria-current="page">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+
+          <div class="article-main">
+            <section id="audit-scope" class="article-section">
+              <h2>Audit scope</h2>
+              <p>
+                This is the Lean-facing audit surface for SFT. It does not
+                replace the main SFT reading path. It gathers the old Formal
+                Core, Formal Anchors, and Theorem Candidates material into one
+                Lean-facing reference page.
+              </p>
+              <p>
+                The pattern is the same as AAT: prose carries the theory's
+                force, while Lean keeps the claim grammar bounded. A field is
+                represented by selected state and projection data. A force is
+                represented by support, policy, action, update, or observation
+                boundary. A forecast is represented by finite path membership,
+                not by point prediction.
+              </p>
+            </section>
+
+            <section id="formal-core" class="article-section">
+              <h2>Formal core</h2>
+              <p>
+                The theorem-bearing fragment of SFT is the part that can be
+                stated as bounded mathematical structure: selected field
+                states, supported operations, step relations, finite horizons,
+                cone projections, envelope projections, and safety relations
+                between supports.
+              </p>
+              <p>
+                This fragment does not assert complete organizational
+                extraction, forecast correctness, or empirical calibration.
+                It gives the typed surface on which those later claims must
+                depend.
+              </p>
+              <ul class="chapter-list">
+                <li><a href="../../computation/slice-observation/#slice">SoftwareField</a><span>A bounded slice of the development field with architecture projection and modeling boundary.</span></li>
+                <li><a href="../../computation/support-step-forecast-cone/#support">OperationSupport</a><span>The field-relative family of operations that are visible, plausible, cheap, reviewable, or otherwise supported.</span></li>
+                <li><a href="../../computation/support-step-forecast-cone/#cone">ForecastCone</a><span>A finite reachable path set under selected support, step relation, source field, and horizon.</span></li>
+                <li><a href="../../computation/envelope-calibration/#envelope">ConsequenceEnvelope</a><span>A loss-aware projection of cone families into reviewer-facing regions, axes, witnesses, and boundary items.</span></li>
+              </ul>
+            </section>
+
+            <section id="field-projection" class="article-section">
+              <h2>Field and projection</h2>
+              <div class="formal-anchor-cards" aria-label="SFT field and projection formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>SoftwareField and field estimate</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../../computation/slice-observation/#slice">Part 2-1 Slice</a>
+                    and the SFT overview claim that a field is not a loose
+                    metaphor but a selected computation object.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>SoftwareField</code>, <code>SoftwareFieldEstimate</code>, <code>SoftwareField.arch</code>, and <code>ArchitectureProjectionBoundary</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Core structures and boundary accessors are defined; projection equalities and preservation lemmas are proved.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>A <code>SoftwareField</code> projects to an AAT <code>ArchitectureObject</code>, but the whole field is not identified with architecture.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTField.lean">Formal/Arch/Evolution/SFTField.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>SoftwareField</code></li>
+                      <li><code>SoftwareField.arch_eq_architectureProjection</code></li>
+                      <li><code>SoftwareFieldEstimate</code></li>
+                      <li><code>SoftwareFieldEstimate.arch_eq_field_arch</code></li>
+                      <li><code>ArchitectureProjectionBoundary</code></li>
+                      <li><code>ArchitectureProjectionBoundary.projection_eq_selected_arch</code></li>
+                      <li><code>ArchitectureProjectionBoundary.projection_preserves_observationBoundary</code></li>
+                      <li><code>ArchitectureProjectionBoundary.projection_records_fieldNotArchitectureObjectBoundary</code></li>
+                      <li><code>ArchitectureProjectionBoundary.projection_records_nonConclusions</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+            </section>
+
+            <section id="support-cone" class="article-section">
+              <h2>Support and cone</h2>
+              <div class="formal-anchor-cards" aria-label="SFT support and cone formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Operation support, steps, and ForecastCone</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../../computation/support-step-forecast-cone/#support">Operation support</a>,
+                    <a href="../../computation/support-step-forecast-cone/#step">Step relation</a>,
+                    and <a href="../../computation/support-step-forecast-cone/#cone">ForecastCone</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>OperationSupport</code>, <code>StepRelation</code>, <code>SupportedFieldStep</code>, <code>ReachableFieldPath</code>, and <code>ForecastCone</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>The finite path core is defined; horizon membership, zero-path membership, and horizon monotonicity are proved.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Cone membership is a finite supported-path statement, not probability, calibration, causal proof, global safety, or extractor completeness.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTForecastCone.lean">Formal/Arch/Evolution/SFTForecastCone.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>OperationSupport</code></li>
+                      <li><code>StepRelation</code></li>
+                      <li><code>SupportedFieldStep</code></li>
+                      <li><code>FieldPath</code></li>
+                      <li><code>ReachableFieldPath</code></li>
+                      <li><code>ForecastCone</code></li>
+                      <li><code>ForecastCone.length_le_horizon</code></li>
+                      <li><code>ForecastCone.nil_mem</code></li>
+                      <li><code>ForecastCone.monotone_horizon</code></li>
+                      <li><code>ForecastCone.RecordsNonConclusions</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+            </section>
+
+            <section id="projection-safety" class="article-section">
+              <h2>Projection and safety</h2>
+              <div class="formal-anchor-cards" aria-label="SFT projection and safety formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Cone projection and support safety</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved packages</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../../computation/support-step-forecast-cone/#safety">Support safety</a>
+                    and the theorem-candidate family for cone inclusion from
+                    support inclusion.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>PointwiseSupportInclusion</code>, <code>StepSimulation</code>, <code>forecastCone_projects_of_supportInclusion_and_stepSimulation</code>, and <code>SFTSupportSafetyPackage</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Projection theorems and support-safety conversion theorems are proved for selected supports, steps, trajectories, and horizons.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>These theorems protect selected cone and safe-region claims. They do not prove empirical forecast correctness or unmeasured-axis safety.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean sources</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTConeProjection.lean">SFTConeProjection.lean</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTSupportSafety.lean">SFTSupportSafety.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ForecastConeProjection.projectFieldPath</code></li>
+                      <li><code>ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_stepSimulation</code></li>
+                      <li><code>ForecastConeProjection.exists_projected_forecastCone</code></li>
+                      <li><code>ForecastConeProjection.forecastCone_projects_of_supportInclusion</code></li>
+                      <li><code>SFTSupportSafetyPackage.operationSupport</code></li>
+                      <li><code>SFTSupportSafetyPackage.stepRelation</code></li>
+                      <li><code>AcceptedSupportedTrajectory.mem_forecastCone</code></li>
+                      <li><code>AcceptedSupportedTrajectory.supportSafety_preserves_forecastTrajectory</code></li>
+                      <li><code>AcceptedSupportedTrajectory.forecastCone_and_supportSafety</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+            </section>
+
+            <section id="envelope-archsig" class="article-section">
+              <h2>Envelope and ArchSig</h2>
+              <div class="formal-anchor-cards" aria-label="SFT envelope and ArchSig formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>ConsequenceEnvelope and report boundaries</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../../computation/envelope-calibration/#envelope">ConsequenceEnvelope</a>,
+                    <a href="../../computation/envelope-calibration/#pipeline">ArchSig pipeline</a>,
+                    and the AAT / SFT interface boundary.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>ConsequenceEnvelope</code>, <code>EnvelopeProjection</code>, <code>ArchSigSFTReport</code>, and <code>AATToSFTInterfaceBoundary</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Envelope preservation and report-boundary theorems are proved; report existence is kept separate from theorem promotion and calibrated forecast claims.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Tool output can preserve missing evidence, theorem boundary, forecast boundary, unknown remainder, and non-conclusions without becoming a Lean proof of real-world correctness.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean sources</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTEnvelope.lean">SFTEnvelope.lean</a>, <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTArchSigBoundary.lean">SFTArchSigBoundary.lean</a>, and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTInterfaceBoundary.lean">SFTInterfaceBoundary.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>ConeFamily</code></li>
+                      <li><code>ObservationBoundary</code></li>
+                      <li><code>ConsequenceEnvelope</code></li>
+                      <li><code>EnvelopeProjection.envelope_preserves_missingBoundary</code></li>
+                      <li><code>EnvelopeProjection.envelope_preserves_theoremBoundary</code></li>
+                      <li><code>EnvelopeProjection.envelope_does_not_strengthen_forecast_claim</code></li>
+                      <li><code>ArchSigSFTReport</code></li>
+                      <li><code>ArchSigSFTReportEstimateBoundary.report_preserves_forecastBoundary</code></li>
+                      <li><code>ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_calibrated_forecast</code></li>
+                      <li><code>AATToSFTInterfaceBoundary.aat_theorem_status_as_local_premise</code></li>
+                      <li><code>AATToSFTInterfaceBoundary.interface_preserves_nonConclusions</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+            </section>
+
+            <section id="policy-update" class="article-section">
+              <h2>Policy and update</h2>
+              <div class="formal-anchor-cards" aria-label="SFT policy and update formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Governance intervention and closed-loop update</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../../intervention/governance-attractor-engineering/#governance">Governance as field shaping</a>
+                    and <a href="../../intervention/lifecycle-closed-loop/#closed-loop">Closed loop</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>OperationPolicy</code>, <code>SupportTransformation</code>, <code>GovernanceIntervention</code>, <code>ForecastRecord</code>, <code>PosteriorFieldRecord</code>, and <code>FieldUpdate</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Policy/intervention boundaries and posterior update preservation theorems are defined and proved at the selected-record level.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Policy pass, governance compliance, and posterior record preservation do not automatically discharge architecture lawfulness or empirical calibration.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean sources</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTPolicy.lean">SFTPolicy.lean</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTFieldUpdate.lean">SFTFieldUpdate.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>OperationPolicy</code></li>
+                      <li><code>SupportTransformation</code></li>
+                      <li><code>GovernanceIntervention</code></li>
+                      <li><code>GovernanceIntervention.restrictive_forecastCone_projects</code></li>
+                      <li><code>GovernanceIntervention.policy_pass_does_not_discharge_lawfulness</code></li>
+                      <li><code>ForecastRecord</code></li>
+                      <li><code>ObservedOutcome</code></li>
+                      <li><code>PosteriorFieldRecord</code></li>
+                      <li><code>FieldUpdate</code></li>
+                      <li><code>UpdateSound.fieldUpdate_preserves_nonConclusions</code></li>
+                      <li><code>UpdateSound.fieldUpdate_records_calibrationBoundary</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+            </section>
+
+            <section id="theorem-candidates" class="article-section">
+              <h2>Theorem candidates</h2>
+              <p>
+                The old theorem-candidates page is folded into this audit
+                surface. Candidate statements are useful when they are close to
+                the Lean anchors that would support them and the counterexamples
+                that prevent overclaiming.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <h3>Cone inclusion from support inclusion</h3>
+                  <p>If every step supported by policy A is simulated by policy B under the same bounded field and horizon, the forecast cone for A projects into the forecast cone for B.</p>
+                  <dl>
+                    <dt>Status</dt><dd><span class="status-badge status-badge-proved">proved schema</span></dd>
+                    <dt>Anchors</dt><dd><code>ForecastConeProjection.forecastCone_projects_of_supportInclusion_and_stepSimulation</code> and related projection theorems.</dd>
+                  </dl>
+                </article>
+                <article class="theorem-card lean-status-card">
+                  <h3>Safe-region preservation under guarded support</h3>
+                  <p>When all selected steps preserve a safe region, every bounded path generated by those steps stays inside that region.</p>
+                  <dl>
+                    <dt>Status</dt><dd><span class="status-badge status-badge-proved">proved schema</span></dd>
+                    <dt>Anchors</dt><dd><code>StableRegion.forecastCone_target</code>, <code>SFTSupportSafetyPackage.supportSafety_preserves_forecastTrajectory</code>, and <code>forecastCone_and_supportSafety</code>.</dd>
+                  </dl>
+                </article>
+                <article class="theorem-card lean-status-card">
+                  <h3>Envelope projection preserves boundaries</h3>
+                  <p>A projection that forgets path detail can preserve affected-axis, missing-boundary, theorem-boundary, unknown-remainder, and non-conclusion information.</p>
+                  <dl>
+                    <dt>Status</dt><dd><span class="status-badge status-badge-proved">proved schema</span></dd>
+                    <dt>Anchors</dt><dd><code>EnvelopeProjection.envelope_preserves_missingBoundary</code>, <code>envelope_preserves_theoremBoundary</code>, and <code>envelope_does_not_strengthen_forecast_claim</code>.</dd>
+                  </dl>
+                </article>
+              </div>
+            </section>
+
+            <section id="counterexamples" class="article-section">
+              <h2>Counterexamples</h2>
+              <div class="formal-anchor-cards" aria-label="SFT counterexample formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>Counterexample registry and non-conclusions</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">proved anchors</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits the theorem-candidate counterexample anchors
+                    and the SFT status rule that forecasts, signatures, and
+                    reports do not silently promote into stronger claims.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>SFTCounterexamples.Package</code>, <code>canonicalPackage</code>, and the selected theorem names for endpoint, support, trajectory, and hidden-axis failures.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>The registry is backed by existing finite counterexample proofs and exposes an explicit non-conclusion list.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Counterexamples are not defects in SFT. They are part of the claim grammar that keeps field language mathematically honest.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTCounterexamples.lean">Formal/Arch/Evolution/SFTCounterexamples.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>SFTCounterexampleKind</code></li>
+                      <li><code>SFTCounterexamples.Package</code></li>
+                      <li><code>SFTCounterexamples.canonicalPackage</code></li>
+                      <li><code>SFTCounterexamples.endpoint_safe_zero_delta_not_path_safe</code></li>
+                      <li><code>SFTCounterexamples.accepted_preservation_not_support_preservation</code></li>
+                      <li><code>SFTCounterexamples.same_observed_signature_different_future_support</code></li>
+                      <li><code>SFTCounterexamples.same_observed_signature_different_future_trajectory</code></li>
+                      <li><code>SFTCounterexamples.coarse_safe_not_refined_hidden_axis_safe</code></li>
+                      <li><code>SFTCounterexamples.records_nonConclusions</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+            </section>
+
+            <nav class="page-nav" aria-label="Reference sequence">
+              <a class="page-nav-previous" href="../"><span>Previous reference</span><strong>References</strong></a>
+              <a class="page-nav-next" href="../research-program/"><span>Next reference</span><strong>Research Program and Boundaries</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>

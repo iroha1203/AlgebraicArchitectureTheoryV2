@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT Part 2-3: ConsequenceEnvelope, proposal accounting, ArchSig pipeline, simulator maturity, and calibration.">
+    <title>SFT 2-3: ConsequenceEnvelope and Calibration</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/computation/envelope-calibration/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 2-3: ConsequenceEnvelope and Calibration">
+    <meta property="og:description" content="How ForecastCones become reviewer-facing ConsequenceEnvelopes and later calibration artifacts.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/computation/envelope-calibration/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 2-3: ConsequenceEnvelope and Calibration">
+    <meta name="twitter:description" content="How ForecastCones become reviewer-facing ConsequenceEnvelopes and later calibration artifacts.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../../">Home</a>
+          <a href="../../../aat/">AAT</a>
+          <a class="is-active" href="../../">SFT</a>
+          <a href="../../../archsig/">ArchSig</a>
+          <a href="../../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Computation</a>
+            <span>2-3</span>
+          </nav>
+          <p class="eyebrow">SFT Part 2-3</p>
+          <h1>Envelope and Calibration</h1>
+          <p class="lede">
+            A ForecastCone is a mathematical path set. A ConsequenceEnvelope is
+            the readable projection that carries affected regions, signature
+            axes, obstruction candidates, missing invariants, and review
+            questions into engineering work.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#envelope">Envelope</a></li>
+                <li><a href="#accounting">Proposal accounting</a></li>
+                <li><a href="#pipeline">ArchSig pipeline</a></li>
+                <li><a href="#calibration">Calibration</a></li>
+                <li><a href="#chapter-summary">Chapter summary</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../../field/">1. The Field</a></li>
+                <li><a href="../../field/codebase-memory-artifact-force/">1-1. Memory and Force</a></li>
+                <li><a href="../../field/agents-organization-recurrent-paths/">1-2. Agents and Organization</a></li>
+                <li><a href="../../field/governance-feedback-futures/">1-3. Feedback and Futures</a></li>
+                <li><a href="../../computation/">2. The Computation</a></li>
+                <li><a href="../../computation/slice-observation/">2-1. Slice and Observation</a></li>
+                <li><a href="../../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
+                <li><a href="../../computation/envelope-calibration/" aria-current="page">2-3. Envelope and Calibration</a></li>
+                <li><a href="../../intervention/">3. The Intervention</a></li>
+                <li><a href="../../intervention/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
+                <li><a href="../../intervention/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
+                <li><a href="../../intervention/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="envelope" class="article-section">
+              <p class="research-question">
+                How does a formal cone become a useful review artifact without losing its evidence boundary?
+              </p>
+              <h2>Envelope</h2>
+              <p>
+                The envelope is a loss-aware projection. It does not preserve
+                every path detail. It preserves the facts reviewers need:
+                reachable path classes, affected architecture regions,
+                comparable signature axes, expected axis delta ranges,
+                obstruction candidates, missing boundaries, and unknown
+                remainder.
+              </p>
+            </section>
+            <section id="accounting" class="article-section">
+              <h2>Proposal accounting</h2>
+              <p>
+                A proposal is not yet a transition. SFT separates raw proposal
+                pressure from accepted, rejected, delayed, unresolved, and
+                review-mediated outcomes. That accounting matters because
+                rejected and delayed paths still teach the field.
+              </p>
+            </section>
+            <section id="pipeline" class="article-section">
+              <h2>ArchSig pipeline</h2>
+              <figure class="code-panel">
+                <figcaption>Tooling flow</figcaption>
+                <pre><code>PRD / Issue / AI proposal
+  -> ArtifactDescriptor
+  -> OperationSupportEstimate
+  -> ForecastConeSkeleton
+  -> ConsequenceEnvelope
+  -> review / CI / outcome refs
+  -> calibration hook</code></pre>
+              </figure>
+            </section>
+            <section id="calibration" class="article-section">
+              <h2>Calibration</h2>
+              <p id="definition-2-3" class="statement">
+                <a class="statement-anchor" href="#definition-2-3">Definition 2-3.</a>
+                Calibration is the empirical linkage between bounded forecast
+                artifacts and later observed PR, review, CI, incident, and
+                outcome references under an explicit benchmark protocol.
+              </p>
+              <p class="plain-reading">
+                <strong>Workbench habit.</strong> The envelope is useful before
+                calibration as a review artifact. Calibration begins when the
+                same forecast items are joined to observed outcomes.
+              </p>
+              <p id="proposition-2-3" class="statement">
+                <a class="statement-anchor" href="#proposition-2-3">Proposition 2-3.</a>
+                A <code>ConsequenceEnvelope</code> is a loss-aware projection
+                from one or more ForecastCones into reviewer-facing regions,
+                axes, witnesses, missing boundaries, and recommendations.
+              </p>
+              <p id="proof-2-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-3">Proof idea.</a>
+                The projection selects visible path classes, affected regions,
+                comparable axes, obstruction candidates, and boundary items
+                from the cone family under the observation boundary. It does
+                not invert the projection, preserve path counts, assign
+                probability, or prove causal correctness. The preserved object
+                is the review surface plus its unknown remainder.
+              </p>
+              <p id="example-2-3" class="statement">
+                <a class="statement-anchor" href="#example-2-3">Example 2-3.</a>
+                A coupon envelope can report a lawful policy insertion path, a
+                hidden PaymentAdapter dependency path, a rounding semantic
+                obstruction path, and an unknown remainder. Reviewers can turn
+                that report into issue decomposition and invariant questions
+                before the PR is written.
+              </p>
+            </section>
+            <section id="chapter-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                A ConsequenceEnvelope is how a cone becomes useful to review.
+                It projects field paths into affected regions, signature axes,
+                obstruction candidates, missing invariants, unknown remainder,
+                and proposal accounting. It turns force-shaped futures into a
+                concrete review surface.
+              </p>
+              <p>
+                The mathematical guard is loss-aware projection. The envelope
+                does not claim to recover every path, assign probability, or
+                prove causal correctness. It preserves enough structure to make
+                review, CI, issue decomposition, and later calibration attach
+                to the same bounded forecast artifact.
+              </p>
+              <h3>Chapter glossary</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>consequence envelope</dt>
+                  <dd>A reviewer-facing projection of cone families into path classes, signature axes, witnesses, and boundaries.</dd>
+                </div>
+                <div>
+                  <dt>proposal accounting</dt>
+                  <dd>The bookkeeping that separates generated proposal pressure from accepted, rejected, delayed, and unresolved transitions.</dd>
+                </div>
+                <div>
+                  <dt>calibration hook</dt>
+                  <dd>The link between forecast item references and later observed PR, review, CI, incident, or outcome references.</dd>
+                </div>
+              </dl>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../support-step-forecast-cone/"><span>Previous</span><strong>2-2. Support and Cone</strong></a>
+              <a class="page-nav-next" href="../../intervention/"><span>Next</span><strong>Part 3. The Intervention</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>
