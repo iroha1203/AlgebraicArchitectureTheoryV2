@@ -1929,7 +1929,6 @@ p {
 
 .site-footer {
   background: var(--ink);
-  box-shadow: 0 100vh 0 100vh var(--ink);
   color: #d9e3df;
   font-family: var(--font-sans);
   font-size: 0.86rem;
