@@ -78,13 +78,13 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reading-model">Reading model</a></li>
                 <li><a href="#projection-observation">Projection and observation</a></li>
                 <li><a href="#projection-dip">Projection and DIP</a></li>
                 <li><a href="#observation-lsp">Observation and LSP</a></li>
                 <li><a href="#local-contract-packages">Local contract packages</a></li>
                 <li><a href="#three-layer-flatness">Three-layer flatness</a></li>
                 <li><a href="#example-counterexample">Example and counterexample</a></li>
+                <li><a href="#local-summary">Local concept summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -155,48 +155,6 @@
           </aside>
 
           <div class="article-main">
-            <section id="reading-model" class="article-section">
-              <h2>Reading model</h2>
-              <div class="reader-model">
-                <div>
-                  <h3>AAT does not say</h3>
-                  <p>
-                    "SOLID proves the architecture is clean." A local contract
-                    law is not a global layering theorem, a runtime telemetry
-                    completeness theorem, or a semantic equivalence theorem for
-                    all possible clients.
-                  </p>
-                </div>
-                <div>
-                  <h3>AAT says</h3>
-                  <p>
-                    Under this selected projection, observation, client
-                    context universe, measurement boundary, and proof-carrying
-                    contract, these local projection, LSP, and DIP obligations
-                    hold. Stronger claims need their own theorem boundary.
-                  </p>
-                </div>
-              </div>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>projection</dt>
-                  <dd>A map from concrete components or dependencies into a selected abstract graph.</dd>
-                </div>
-                <div>
-                  <dt>observation</dt>
-                  <dd>The selected output, behavior, trace, or diagnostic read from a concrete implementation.</dd>
-                </div>
-                <div>
-                  <dt>local contract</dt>
-                  <dd>A proof-carrying package that preserves selected local invariants such as projection soundness, LSP compatibility, and DIP compatibility.</dd>
-                </div>
-                <div>
-                  <dt>non-conclusion</dt>
-                  <dd>The global property that remains outside the theorem, even when the local package is proved.</dd>
-                </div>
-              </dl>
-            </section>
-
             <section id="projection-observation" class="article-section">
               <h2>Projection and observation</h2>
               <p class="plain-reading">
@@ -657,6 +615,28 @@ ProjectionExact + RepresentativeStable</code></pre>
                   </tbody>
                 </table>
               </div>
+            </section>
+
+            <section id="local-summary" class="article-section">
+              <h2>Local concept summary</h2>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>projection</dt>
+                  <dd>A map from concrete components or dependencies into a selected abstract graph.</dd>
+                </div>
+                <div>
+                  <dt>observation</dt>
+                  <dd>The selected output, behavior, trace, or diagnostic read from a concrete implementation.</dd>
+                </div>
+                <div>
+                  <dt>local contract</dt>
+                  <dd>A proof-carrying package that preserves selected local invariants such as projection soundness, LSP compatibility, and DIP compatibility.</dd>
+                </div>
+                <div>
+                  <dt>non-conclusion</dt>
+                  <dd>The global property that remains outside the theorem, even when the local package is proved.</dd>
+                </div>
+              </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

@@ -78,7 +78,6 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reading-model">Reading model</a></li>
                 <li><a href="#architecture-operation">Architecture operation</a></li>
                 <li><a href="#operation-laws">Operation laws</a></li>
                 <li><a href="#invariant-correspondence">Invariant correspondence</a></li>
@@ -86,6 +85,7 @@
                 <li><a href="#extension-evidence">Extension evidence</a></li>
                 <li><a href="#extension-obstruction">Extension obstruction</a></li>
                 <li><a href="#example-counterexample">Example and counterexample</a></li>
+                <li><a href="#operation-summary">Operation summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -156,47 +156,6 @@
           </aside>
 
           <div class="article-main">
-            <section id="reading-model" class="article-section">
-              <h2>Reading model</h2>
-              <div class="reader-model">
-                <div>
-                  <h3>AAT does not say</h3>
-                  <p>
-                    "This refactoring is an architecture operation, therefore
-                    every invariant is preserved." The family name is not a
-                    theorem, and neither is the existence of an extension.
-                  </p>
-                </div>
-                <div>
-                  <h3>AAT says</h3>
-                  <p>
-                    Under this operation boundary, selected observation model,
-                    witness universe, coverage or exactness assumption, and
-                    non-conclusion clause, a bounded conclusion can be read as
-                    theorem-grade.
-                  </p>
-                </div>
-              </div>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>operation boundary</dt>
-                  <dd>The source, target, support, precondition, transition, invariant family, witness map, conclusion, and non-conclusion record for an architecture move.</dd>
-                </div>
-                <div>
-                  <dt>law package</dt>
-                  <dd>A bounded theorem wrapper that carries an operation kind, a law kind, explicit assumptions, and a conclusion. The law tag alone is only metadata.</dd>
-                </div>
-                <div>
-                  <dt>feature extension</dt>
-                  <dd>A first-class addition schema with core and feature embeddings plus a selected feature view. Static split, lifting, runtime, and semantic evidence are separate.</dd>
-                </div>
-                <div>
-                  <dt>extension obstruction</dt>
-                  <dd>A selected witness classified as inherited core, feature-local, interaction, lifting failure, filling failure, complexity transfer, or residual coverage gap.</dd>
-                </div>
-              </dl>
-            </section>
-
             <section id="architecture-operation" class="article-section">
               <h2>Architecture operation</h2>
               <p class="plain-reading">
@@ -551,6 +510,28 @@
                   coupon model into a universal extension theorem.
                 </p>
               </div>
+            </section>
+
+            <section id="operation-summary" class="article-section">
+              <h2>Operation summary</h2>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>operation boundary</dt>
+                  <dd>The source, target, support, precondition, transition, invariant family, witness map, conclusion, and non-conclusion record for an architecture move.</dd>
+                </div>
+                <div>
+                  <dt>law package</dt>
+                  <dd>A bounded theorem wrapper that carries an operation kind, a law kind, explicit assumptions, and a conclusion. The law tag alone is only metadata.</dd>
+                </div>
+                <div>
+                  <dt>feature extension</dt>
+                  <dd>A first-class addition schema with core and feature embeddings plus a selected feature view. Static split, lifting, runtime, and semantic evidence are separate.</dd>
+                </div>
+                <div>
+                  <dt>extension obstruction</dt>
+                  <dd>A selected witness classified as inherited core, feature-local, interaction, lifting failure, filling failure, complexity transfer, or residual coverage gap.</dd>
+                </div>
+              </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

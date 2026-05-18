@@ -77,7 +77,6 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reader-model">Reader model</a></li>
                 <li><a href="#repair-step">Repair step</a></li>
                 <li><a href="#finite-synthesis">Finite repair and synthesis</a></li>
                 <li><a href="#complexity-transfer">Complexity transfer</a></li>
@@ -85,6 +84,7 @@
                 <li><a href="#paths-homotopy">Paths and homotopy</a></li>
                 <li><a href="#diagram-filling">Diagram filling</a></li>
                 <li><a href="#coupon-example">Coupon path example</a></li>
+                <li><a href="#repair-summary">Repair summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -155,64 +155,6 @@
           </aside>
 
           <div class="article-main">
-            <section id="reader-model" class="article-section">
-              <h2>Reader model</h2>
-              <div class="reader-model">
-                <div>
-                  <h3>AAT does not say</h3>
-                  <p>
-                    "The architecture was repaired." A repair suggestion, a
-                    successful patch, a solver timeout, or a smaller metric is
-                    not automatically a theorem about all axes of a real
-                    repository.
-                  </p>
-                </div>
-                <div>
-                  <h3>AAT says</h3>
-                  <p>
-                    Within this selected universe, this repair step or path
-                    package discharges this recorded conclusion, while these
-                    axes, witnesses, and completeness claims remain outside the
-                    theorem.
-                  </p>
-                </div>
-              </div>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>selected obstruction universe</dt>
-                  <dd>The witness family and measure that a repair theorem is allowed to decrease or clear.</dd>
-                </div>
-                <div>
-                  <dt>repair step</dt>
-                  <dd>A source-to-target operation tagged by a selected rule; its effect is theorem-bearing only through an admissible package.</dd>
-                </div>
-                <div>
-                  <dt>finite repair package</dt>
-                  <dd>A bounded plan, target clearing claim, coverage assumptions, and non-conclusions for selected witnesses.</dd>
-                </div>
-                <div>
-                  <dt>no-solution certificate</dt>
-                  <dd>A checked certificate whose validity implies no architecture satisfies the selected constraint system.</dd>
-                </div>
-                <div>
-                  <dt>complexity transfer</dt>
-                  <dd>The case where a selected obstruction decreases while residual risk or obstruction moves to another measured axis.</dd>
-                </div>
-                <div>
-                  <dt>signature trajectory</dt>
-                  <dd>The finite sequence of selected signature observations visited by an architecture evolution path.</dd>
-                </div>
-                <div>
-                  <dt>diagram filler</dt>
-                  <dd>Evidence that two operation paths are homotopic under selected generators and observation-preservation assumptions.</dd>
-                </div>
-                <div>
-                  <dt>non-fillability witness</dt>
-                  <dd>A selected witness value whose soundness refutes the existence of a filler for the selected diagram.</dd>
-                </div>
-              </dl>
-            </section>
-
             <section id="repair-step" class="article-section">
               <h2>Repair step</h2>
               <p class="plain-reading">
@@ -572,6 +514,44 @@ Obs(D.lhs) != Obs(D.rhs)
                 also does not prove runtime flatness or repository extraction
                 completeness for any real codebase.
               </p>
+            </section>
+
+            <section id="repair-summary" class="article-section">
+              <h2>Repair summary</h2>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>selected obstruction universe</dt>
+                  <dd>The witness family and measure that a repair theorem is allowed to decrease or clear.</dd>
+                </div>
+                <div>
+                  <dt>repair step</dt>
+                  <dd>A source-to-target operation tagged by a selected rule; its effect is theorem-bearing only through an admissible package.</dd>
+                </div>
+                <div>
+                  <dt>finite repair package</dt>
+                  <dd>A bounded plan, target clearing claim, coverage assumptions, and non-conclusions for selected witnesses.</dd>
+                </div>
+                <div>
+                  <dt>no-solution certificate</dt>
+                  <dd>A checked certificate whose validity implies no architecture satisfies the selected constraint system.</dd>
+                </div>
+                <div>
+                  <dt>complexity transfer</dt>
+                  <dd>The case where a selected obstruction decreases while residual risk or obstruction moves to another measured axis.</dd>
+                </div>
+                <div>
+                  <dt>signature trajectory</dt>
+                  <dd>The finite sequence of selected signature observations visited by an architecture evolution path.</dd>
+                </div>
+                <div>
+                  <dt>diagram filler</dt>
+                  <dd>Evidence that two operation paths are homotopic under selected generators and observation-preservation assumptions.</dd>
+                </div>
+                <div>
+                  <dt>non-fillability witness</dt>
+                  <dd>A selected witness value whose soundness refutes the existence of a filler for the selected diagram.</dd>
+                </div>
+              </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

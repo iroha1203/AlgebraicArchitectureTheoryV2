@@ -77,13 +77,13 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reader-model">Reader model</a></li>
                 <li><a href="#graph-matrix">Graph and matrix</a></li>
                 <li><a href="#analytic-representation">Analytic representation</a></li>
                 <li><a href="#representation-pattern">Representation pattern</a></li>
                 <li><a href="#valuation-boundary">Valuation boundary</a></li>
                 <li><a href="#state-effects">State transitions and effects</a></li>
                 <li><a href="#effect-examples">Effect examples</a></li>
+                <li><a href="#representation-summary">Representation summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -154,60 +154,6 @@
           </aside>
 
           <div class="article-main">
-            <section id="reader-model" class="article-section">
-              <h2>Reader model</h2>
-              <div class="reader-model">
-                <div>
-                  <h3>AAT does not say</h3>
-                  <p>
-                    "The metric is zero, therefore the architecture is flat."
-                    A matrix, spectral value, dashboard axis, or event log is
-                    a representation of selected evidence, not the whole
-                    structure by itself.
-                  </p>
-                </div>
-                <div>
-                  <h3>AAT says</h3>
-                  <p>
-                    This representation preserves or reflects this selected
-                    zero or obstruction under these coverage, completeness,
-                    and semantic-contract assumptions; everything else stays
-                    outside the theorem boundary.
-                  </p>
-                </div>
-              </div>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>representation</dt>
-                  <dd>A map from selected structural evidence into another domain such as a graph, matrix, signature axis, or state-transition law family.</dd>
-                </div>
-                <div>
-                  <dt>preserving direction</dt>
-                  <dd>A structural zero or obstruction is sent into a represented zero or obstruction.</dd>
-                </div>
-                <div>
-                  <dt>reflecting direction</dt>
-                  <dd>A represented zero or obstruction is read back as structural only with explicit assumptions.</dd>
-                </div>
-                <div>
-                  <dt>measured zero</dt>
-                  <dd>The selected axis was measured and its in-scope value is zero.</dd>
-                </div>
-                <div>
-                  <dt>unmeasured axis</dt>
-                  <dd>The axis is not available in the selected evidence; it is not a zero.</dd>
-                </div>
-                <div>
-                  <dt>state-transition algebra</dt>
-                  <dd>The command, event, replay, compensation, projection, and migration laws read as selected finite law cases.</dd>
-                </div>
-                <div>
-                  <dt>effect boundary</dt>
-                  <dd>The selected law surface for effects that a static dependency graph may not see.</dd>
-                </div>
-              </dl>
-            </section>
-
             <section id="graph-matrix" class="article-section">
               <h2>Graph and matrix</h2>
               <p class="plain-reading">
@@ -682,6 +628,40 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                   </dl>
                 </article>
               </div>
+            </section>
+
+            <section id="representation-summary" class="article-section">
+              <h2>Representation summary</h2>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>representation</dt>
+                  <dd>A map from selected structural evidence into another domain such as a graph, matrix, signature axis, or state-transition law family.</dd>
+                </div>
+                <div>
+                  <dt>preserving direction</dt>
+                  <dd>A structural zero or obstruction is sent into a represented zero or obstruction.</dd>
+                </div>
+                <div>
+                  <dt>reflecting direction</dt>
+                  <dd>A represented zero or obstruction is read back as structural only with explicit assumptions.</dd>
+                </div>
+                <div>
+                  <dt>measured zero</dt>
+                  <dd>The selected axis was measured and its in-scope value is zero.</dd>
+                </div>
+                <div>
+                  <dt>unmeasured axis</dt>
+                  <dd>The axis is not available in the selected evidence; it is not a zero.</dd>
+                </div>
+                <div>
+                  <dt>state-transition algebra</dt>
+                  <dd>The command, event, replay, compensation, projection, and migration laws read as selected finite law cases.</dd>
+                </div>
+                <div>
+                  <dt>effect boundary</dt>
+                  <dd>The selected law surface for effects that a static dependency graph may not see.</dd>
+                </div>
+              </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
