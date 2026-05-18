@@ -76,6 +76,7 @@ const sftPages = [
 
 const sftReferences = [
   { href: "formal-core/", label: "Formal Core" },
+  { href: "formal-anchors/", label: "Formal Anchors" },
   { href: "theorem-candidates/", label: "Theorem Candidates" },
   { href: "research-program/", label: "Research Program" },
   { href: "positioning/", label: "Positioning" },
