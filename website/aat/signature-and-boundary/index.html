@@ -83,7 +83,7 @@
                 <li><a href="#theorem-boundary">Theorem boundary</a></li>
                 <li><a href="#claim-levels">Claim levels</a></li>
                 <li><a href="#comparison-rules">Comparison rules</a></li>
-                <li><a href="#non-conclusions">Non-conclusions</a></li>
+                <li><a href="#signature-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -418,22 +418,42 @@
               </p>
             </section>
 
-            <section id="non-conclusions" class="article-section">
-              <h2>Non-conclusions</h2>
+            <section id="signature-summary" class="article-section">
+              <h2>Chapter summary</h2>
               <p>
-                <code>ArchitectureSignature</code> fixes the reach of each
-                coordinate. A static coordinate, runtime coordinate, semantic
-                coordinate, empirical coordinate, and product coordinate each
-                keep their own evidence boundary and comparison rule.
+                <code>ArchitectureSignature</code> gives AAT a multi-axis way
+                to read architecture quality. Each coordinate carries its
+                measurement status, evidence boundary, theorem boundary, and
+                comparison rule, so a report can combine static, runtime,
+                semantic, empirical, and product readings without collapsing
+                them into a single score.
               </p>
-              <p id="non-conclusion-6-5" class="statement">
-                <a class="statement-anchor" href="#non-conclusion-6-5">Non-conclusion 6.5.</a>
-                Repository-wide quality, complete extraction, complete
-                telemetry, global semantic flatness, runtime safety, product
-                outcome improvement, and single-score ranking are separate
-                readings. Each one needs its own evidence and theorem or
-                empirical boundary.
+              <p>
+                The chapter's main contribution is a disciplined reading of
+                architectural evidence. A signature records what is measured,
+                how a coordinate can be compared, and which theorem or
+                empirical boundary supports the reading; later chapters use
+                that record to track repairs, examples, and representations.
               </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>signature axis</dt>
+                  <dd>A selected coordinate of architecture evidence, such as a static, semantic, runtime, empirical, or product reading.</dd>
+                </div>
+                <div>
+                  <dt>measurement status</dt>
+                  <dd>The record that distinguishes measured zero, measured obstruction, unmeasured evidence, and out-of-scope evidence.</dd>
+                </div>
+                <div>
+                  <dt>theorem boundary</dt>
+                  <dd>The assumptions and proof scope under which a signature coordinate supports a mathematical claim.</dd>
+                </div>
+                <div>
+                  <dt>axis-local comparison</dt>
+                  <dd>A comparison made only where the same axis is measured under compatible assumptions and has a meaningful order.</dd>
+                </div>
+              </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

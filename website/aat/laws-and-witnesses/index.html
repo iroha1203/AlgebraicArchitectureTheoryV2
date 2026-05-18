@@ -83,6 +83,7 @@
                 <li><a href="#lemma-sequence">Lemma sequence</a></li>
                 <li><a href="#main-theorem">Required theorem schema</a></li>
                 <li><a href="#examples">Examples</a></li>
+                <li><a href="#law-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -389,6 +390,44 @@ Then, within B:
                   <span>A propagation, exposure, retry, or protection failure in a separate runtime observation layer.</span>
                 </li>
               </ul>
+            </section>
+
+            <section id="law-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Laws and witnesses turn design principles into families of
+                invariants, observations, and obstruction predicates. A
+                principle becomes mathematically useful when it supplies the
+                selected law universe, the evidence that can witness failure,
+                and the bridge theorem that connects witness absence to
+                lawfulness inside the chosen boundary.
+              </p>
+              <p>
+                This chapter gives AAT its working grammar for architecture
+                principles. Local contracts, global structure, state
+                transitions, runtime protection, and distributed convergence
+                can all be read as invariant families, while their failures
+                become explicit witnesses instead of loose review language.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>invariant family</dt>
+                  <dd>A selected property family that an architecture object, operation, or law package is expected to preserve.</dd>
+                </div>
+                <div>
+                  <dt>law universe</dt>
+                  <dd>The selected collection of laws, observations, and assumptions used to read a design principle.</dd>
+                </div>
+                <div>
+                  <dt>obstruction witness</dt>
+                  <dd>A finite selected value that records where an invariant, law, or observation condition fails.</dd>
+                </div>
+                <div>
+                  <dt>semantic lawfulness</dt>
+                  <dd>The selected law universe is satisfied under the selected observation and theorem boundary.</dd>
+                </div>
+              </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

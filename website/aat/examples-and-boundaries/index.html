@@ -86,6 +86,7 @@
                 <li><a href="#aat-boundary">AAT boundary</a></li>
                 <li><a href="#coupon-reading">Layered reading</a></li>
                 <li><a href="#solid-boundary">SOLID boundary</a></li>
+                <li><a href="#example-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -588,6 +589,43 @@ retry leaks across boundary
                 <span>Audit trail</span>
                 <a href="../formal-anchors/#examples-and-boundaries">Formal Anchors Audit</a>
               </p>
+            </section>
+
+            <section id="example-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                The examples show how AAT makes finite architecture skeletons
+                readable. A static witness, semantic diagram, runtime
+                observation, repair measure, or signature coordinate can be
+                placed in its own bounded record and then related to the other
+                readings through explicit bridges.
+              </p>
+              <p>
+                This is the practical role of examples in the theory. They
+                demonstrate how selected evidence becomes a theorem-facing
+                object, how counterexamples separate local and global claims,
+                and how architecture quality can be read across several axes
+                without flattening them.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>finite skeleton</dt>
+                  <dd>A small selected architecture object used to expose the claim boundary, witness family, or counterexample shape.</dd>
+                </div>
+                <div>
+                  <dt>layered reading</dt>
+                  <dd>A reading that separates static, semantic, runtime, repair, and signature evidence into distinct axes.</dd>
+                </div>
+                <div>
+                  <dt>local success</dt>
+                  <dd>A selected contract, client context, or interface law satisfies its own observation condition.</dd>
+                </div>
+                <div>
+                  <dt>global structure</dt>
+                  <dd>The selected dependency, layering, decomposition, or boundary-preservation reading of the architecture object.</dd>
+                </div>
+              </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
