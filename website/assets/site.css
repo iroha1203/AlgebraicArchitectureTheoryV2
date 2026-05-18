@@ -1156,6 +1156,11 @@ p {
   min-width: 0;
 }
 
+.article-main > .article-section:first-child:has(.research-question) {
+  border-top: 0;
+  padding-top: 0;
+}
+
 .article-section h2 {
   font-size: clamp(1.65rem, 3vw, 2.45rem);
 }
@@ -1172,6 +1177,35 @@ p {
 
 .article-section p {
   margin-top: 16px;
+}
+
+.article-section .research-question {
+  position: relative;
+  margin: 0 0 24px;
+  border-top: 1px solid #c7ad82;
+  border-bottom: 1px solid #c7ad82;
+  background: #f3ead9;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: clamp(1.18rem, 2vw, 1.42rem);
+  font-style: italic;
+  line-height: 1.5;
+  padding: 26px 24px 20px;
+}
+
+.article-section .research-question::before {
+  content: "Research question";
+  position: absolute;
+  top: 8px;
+  left: 24px;
+  color: #7f6039;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .article-section ul,
