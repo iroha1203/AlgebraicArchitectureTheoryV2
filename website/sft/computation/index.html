@@ -61,10 +61,11 @@
           <p class="eyebrow">SFT Part 2</p>
           <h1>Making Software Evolution Computable</h1>
           <p class="lede">
-            Computable does not mean prophetic. SFT makes software evolution
-            calculable by selecting a modeling boundary, observation axes,
-            operation support, policy, and horizon, then asking what future
-            paths remain reachable under that bounded problem.
+            Part 1 makes the field visible. Part 2 cuts a mathematical core
+            from it: selected field estimates, architecture projections,
+            operation support, step relations, horizons, ForecastCones, and
+            ConsequenceEnvelopes that let us compute the shape of reachable
+            software futures.
           </p>
         </div>
       </section>
@@ -74,69 +75,59 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#bounded">Bounded computation</a></li>
-                <li><a href="#pipeline">Computation pipeline</a></li>
-                <li><a href="#chapter-index">Chapter index</a></li>
-                <li><a href="#boundary">Boundary</a></li>
+                <li><a href="#move">The move</a></li>
+                <li><a href="#machine">The SFT machine</a></li>
+                <li><a href="#cone-envelope">Cone and envelope</a></li>
+                <li><a href="#lean">Lean-backed discipline</a></li>
+                <li><a href="#reference-notes">Reference notes</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
-              <h2>Part 2 routes</h2>
+              <h2>Main path</h2>
               <ul>
                 <li><a href="../">SFT overview</a></li>
-                <li><a href="../field/">Part 1. Field</a></li>
-                <li><a href="./" aria-current="page">Part 2. Computation</a></li>
-                <li><a href="computable-slice/">2-1. Computable Slice</a></li>
-                <li><a href="aat-interface/">2-2. AAT / SFT Interface</a></li>
-                <li><a href="observation/">2-3. Observation Layer</a></li>
-                <li><a href="operation-support/">2-4. Operation Support</a></li>
-                <li><a href="step-relation/">2-5. StepRelation</a></li>
-                <li><a href="forecast-cone/">2-6. ForecastCone</a></li>
-                <li><a href="consequence-envelope/">2-7. ConsequenceEnvelope</a></li>
-                <li><a href="support-safety/">2-8. Support Safety</a></li>
-                <li><a href="proposal-accounting/">2-9. Proposal Accounting</a></li>
-                <li><a href="computational-problems/">2-10. Computational Problems</a></li>
-                <li><a href="archsig-pipeline/">2-11. ArchSig-SFT Pipeline</a></li>
-                <li><a href="simulator-calibration/">2-12. Simulator and Calibration</a></li>
-                <li><a href="../intervention/">Part 3. Intervention</a></li>
+                <li><a href="../field/">1. The Field</a></li>
+                <li><a href="./" aria-current="page">2. The Computation</a></li>
+                <li><a href="../intervention/">3. The Intervention</a></li>
+                <li><a href="../formal-core/">Formal Core</a></li>
+              </ul>
+            </div>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>Part 2 chapters</h2>
+              <ul>
+                <li><a href="slice-observation/">2-1. Slice and Observation</a></li>
+                <li><a href="support-step-forecast-cone/">2-2. Support and Cone</a></li>
+                <li><a href="envelope-calibration/">2-3. Envelope and Calibration</a></li>
               </ul>
             </div>
           </aside>
           <div class="article-main">
-            <aside class="question-card" aria-label="Guiding question">
-              <span class="question-card-label">Question</span>
-              <p>How can a field too large to know completely still support useful computation about reachable architecture futures?</p>
-            </aside>
-
-            <section id="bounded" class="article-section">
-              <h2>Bounded computation</h2>
+            <section id="move" class="article-section">
+              <p class="research-question">
+                How can a large, living development field become a mathematical object without losing its force?
+              </p>
+              <h2>The move</h2>
               <p>
-                Part 1 described the development organization as a field. That
-                object is intentionally larger than a repository graph. Part 2
-                asks how to cut a finite, explicit, reviewable slice from that
-                field without pretending that the slice is the whole system.
+                The computational move in SFT is not to shrink the theory until
+                it becomes a static metric. It is to keep the large object in
+                view, then choose a bounded slice that can be inspected. The
+                field remains rich; the computation states exactly which part
+                of that richness has been selected.
               </p>
               <p>
-                This is the move that turns the dangerous question into an
-                engineering object. SFT does not compute because it knows
-                everything. It computes because it names what it knows, names
-                what it does not know, and then asks reachability questions
-                inside that boundary.
+                A <code>SoftwareFieldEstimate</code> records selected evidence,
+                unavailable evidence, and unknown remainder. AAT then supplies
+                the local algebra for the architecture projection. ArchSig
+                supplies bounded observations. SFT adds support, policy, step
+                semantics, horizons, path sets, envelope projections, and
+                feedback hooks.
               </p>
               <p>
-                The result is a bounded computation problem. A selected field
-                estimate records observed evidence and unknown remainder. AAT
-                supplies local architecture algebra for the projected
-                architecture state. ArchSig supplies observation artifacts.
-                SFT adds operation support, policy, path semantics, forecast
-                cones, reviewer-facing envelopes, and calibration hooks.
-              </p>
-              <p>
-                The word "computable" is doing real work here. It means that the
-                theory names its inputs, records its boundary, preserves unknown
-                remainder, and produces objects that can be compared across
-                interventions. It does not mean the next PR is determined in
-                advance.
+                This is how "software evolution" becomes a computable object.
+                We do not compute the future as a point. We compute a bounded
+                space of paths: which architecture futures remain reachable
+                when this field, this support relation, this policy, this
+                observation boundary, and this horizon are selected.
               </p>
               <p id="definition-2-0" class="statement">
                 <a class="statement-anchor" href="#definition-2-0">Definition 2.0.</a>
@@ -152,8 +143,14 @@
               </p>
             </section>
 
-            <section id="pipeline" class="article-section">
-              <h2>Computation pipeline</h2>
+            <section id="machine" class="article-section">
+              <h2>The SFT machine</h2>
+              <p>
+                The machinery is best read as a sequence of translations. Each
+                stage turns a living development situation into a more precise
+                object while keeping enough context to remain useful for
+                engineering judgment.
+              </p>
               <figure class="code-panel">
                 <figcaption>Part 2 pipeline</figcaption>
                 <pre><code>DevelopmentField
@@ -167,63 +164,106 @@
   -&gt; calibration hook and feedback update</code></pre>
               </figure>
               <p>
-                Each arrow loses information. That loss is part of the design.
-                A report that preserves unknown remainder is more useful than a
-                confident artifact that silently treats missing evidence as
-                zero.
+                The decisive concept is <code>OperationSupport</code>. It asks
+                what the field makes available, natural, cheap, reviewable, or
+                selected. A supported operation is not automatically safe, but
+                it is part of the future shape of the system. Once support is
+                explicit, <code>StepRelation</code> turns supported operations
+                into field transitions, and bounded paths become mathematical
+                objects.
               </p>
               <p>
-                Part 2 should be read as the machinery of the theory. The
-                computable slice gives the boundary. AAT gives local algebra.
-                ArchSig gives observations. Operation support tells us what the
-                field makes natural. StepRelation turns natural operations into
-                paths. ForecastCone collects the reachable paths.
-                ConsequenceEnvelope turns them into a reviewable map.
-              </p>
-              <p>
-                That sequence is the answer to the danger raised in Part 1. If
-                the development organization is a field, then computation cannot
-                begin with a clean global state. It must begin with a selected
-                estimate and keep every later claim attached to that estimate.
+                This is where SFT becomes stronger than a metaphor. "The PRD
+                pushes the system toward shortcut paths" can be sharpened into
+                a question about candidate operation families, affected
+                architecture regions, comparable signature axes, obstruction
+                witnesses, and bounded reachable paths.
               </p>
               <p class="plain-reading">
-                <strong>Computation habit.</strong> A bounded computation is not
-                a smaller theory. It is the only way the large theory becomes
-                inspectable.
+                <strong>Computation habit.</strong> Do not ask whether the
+                future is known. Ask which reachable paths are supported under
+                the stated field model, and what evidence would change that
+                support.
               </p>
             </section>
 
-            <section id="chapter-index" class="article-section">
-              <h2>Chapter index</h2>
+            <section id="cone-envelope" class="article-section">
+              <h2>Cone and envelope</h2>
+              <p>
+                The theoretical object is the <code>ForecastCone</code>: the
+                bounded set of reachable field paths from a selected starting
+                field under selected support and horizon. The practical object
+                is the <code>ConsequenceEnvelope</code>: a readable projection
+                of one or more cones into affected regions, path classes,
+                signature axes, obstruction candidates, missing invariants, and
+                review questions.
+              </p>
+              <p>
+                This distinction is what gives SFT its engineering shape. A
+                theorist can reason about cones and simulations. A reviewer can
+                reason about envelopes. A tool can generate skeleton artifacts.
+                A later calibration protocol can compare forecast items to
+                observed PR, review, CI, incident, and outcome references.
+              </p>
+            </section>
+
+            <section id="lean" class="article-section">
+              <h2>Lean-backed discipline</h2>
+              <p>
+                The formal core protects the ambitious language. Lean-facing
+                SFT does not need to formalize every organization, PRD, or
+                human judgment. It isolates the theorem-bearing fragment:
+                fields, supported operations, step relations, bounded paths,
+                cone projection, envelope projection, support safety, and
+                update records.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Formal surface</span>
+                      <h3>From field prose to theorem packages</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">Lean anchors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Core path</dt>
+                      <dd><code>SoftwareField</code>, <code>OperationSupport</code>, <code>StepRelation</code>, <code>ReachableFieldPath</code>, and <code>ForecastCone</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Projection</dt>
+                      <dd><code>ConsequenceEnvelope</code> is a loss-aware report projection from cone families and observation boundaries.</dd>
+                    </div>
+                    <div>
+                      <dt>Safety</dt>
+                      <dd>Support inclusion, step simulation, and selected safe-region preservation provide theorem-shaped guardrails.</dd>
+                    </div>
+                    <div>
+                      <dt>Feedback</dt>
+                      <dd>Update records preserve observed deltas, unexpected witnesses, review outcomes, and missing evidence.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+
+            <section id="reference-notes" class="article-section">
+              <h2>Part 2 chapters</h2>
+              <p>
+                The computation material now reads as three medium chapters:
+                how the field is sliced, how paths are generated, and how
+                results become review and calibration artifacts.
+              </p>
               <ul class="chapter-list">
-                <li><a href="computable-slice/">2-1. Computable Slice</a><span>How a large DevelopmentField becomes a bounded SoftwareFieldEstimate and architecture projection.</span></li>
-                <li><a href="aat-interface/">2-2. AAT / SFT Interface</a><span>How AAT local algebra is read by SFT without turning AAT theorems into forecasts.</span></li>
-                <li><a href="observation/">2-3. Observation Layer</a><span>ArchSig as a tooling layer for observable signatures, obstructions, theorem boundaries, and unknown remainder.</span></li>
-                <li><a href="operation-support/">2-4. Operation Support and Policy</a><span>Why SFT computes what changes are natural, cheap, selected, or blocked.</span></li>
-                <li><a href="step-relation/">2-5. StepRelation and Field Paths</a><span>Supported operations produce bounded field transitions and path families.</span></li>
-                <li><a href="forecast-cone/">2-6. ForecastCone</a><span>Reachable futures as a cone, not a single predicted endpoint.</span></li>
-                <li><a href="consequence-envelope/">2-7. ConsequenceEnvelope</a><span>A loss-aware report projection for reviewers and developers.</span></li>
-                <li><a href="support-safety/">2-8. Support Safety and Cone Narrowing</a><span>Selected support inclusion, safe regions, and projection boundaries.</span></li>
-                <li><a href="proposal-accounting/">2-9. Proposal Accounting and Review Mediation</a><span>Separate raw proposal pressure, accepted changes, rejected proposals, and review-mediated transitions.</span></li>
-                <li><a href="computational-problems/">2-10. SFT Computational Problems</a><span>The named problem family behind reconstruction, support inference, envelopes, cone narrowing, and lifecycle decisions.</span></li>
-                <li><a href="archsig-pipeline/">2-11. ArchSig-SFT Pipeline</a><span>How Markdown artifacts become bounded forecast and envelope artifacts.</span></li>
-                <li><a href="simulator-calibration/">2-12. Simulator and Calibration</a><span>When a simulator output is only a review artifact, and what calibration would add.</span></li>
+                <li><a href="slice-observation/">2-1. Computable Slice and Observation</a><span>How a large DevelopmentField becomes a bounded SoftwareFieldEstimate, AAT projection, and ArchSig observation surface.</span></li>
+                <li><a href="support-step-forecast-cone/">2-2. Support, Step, and ForecastCone</a><span>How operation support generates field steps, bounded paths, ForecastCones, support safety, and cone narrowing questions.</span></li>
+                <li><a href="envelope-calibration/">2-3. ConsequenceEnvelope and Calibration</a><span>How cones become reviewer-facing envelopes, proposal accounting records, ArchSig artifacts, and calibration hooks.</span></li>
               </ul>
             </section>
-
-            <section id="boundary" class="article-section">
-              <h2>Boundary</h2>
-              <p id="non-conclusion-2-0" class="statement">
-                <a class="statement-anchor" href="#non-conclusion-2-0">Non-conclusion 2.0.</a>
-                A computable slice is not complete reconstruction, a
-                ForecastCone is not deterministic prediction, an ArchSig report
-                is not a Lean theorem, and calibration is not obtained from a
-                report format alone.
-              </p>
-            </section>
             <nav class="page-nav" aria-label="Reading sequence">
-              <a class="page-nav-previous" href="../field/architecture-futures/"><span>Previous</span><strong>1-6. Architecture Futures</strong></a>
-              <a class="page-nav-next" href="computable-slice/"><span>Next</span><strong>2-1. Computable Slice</strong></a>
+              <a class="page-nav-previous" href="../field/governance-feedback-futures/"><span>Previous</span><strong>1-3. Feedback and Futures</strong></a>
+              <a class="page-nav-next" href="slice-observation/"><span>Next</span><strong>2-1. Slice and Observation</strong></a>
             </nav>
           </div>
         </div>
