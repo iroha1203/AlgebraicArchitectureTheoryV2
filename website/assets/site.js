@@ -75,13 +75,10 @@ const sftPages = [
 ];
 
 const sftReferences = [
-  { href: "formal-core/", label: "Formal Core" },
-  { href: "formal-anchors/", label: "Formal Anchors" },
-  { href: "theorem-candidates/", label: "Theorem Candidates" },
-  { href: "research-program/", label: "Research Program" },
-  { href: "positioning/", label: "Positioning" },
-  { href: "status/", label: "Status" },
-  { href: "glossary/", label: "Glossary" },
+  { href: "references/", label: "References" },
+  { href: "references/formal-anchors/", label: "Formal Core and Anchors" },
+  { href: "references/research-program/", label: "Research Program and Boundaries" },
+  { href: "references/glossary/", label: "Glossary" },
 ];
 
 const currentSftPath = (() => {

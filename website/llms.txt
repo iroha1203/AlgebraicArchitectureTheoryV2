@@ -54,13 +54,10 @@ a proof system.
 - SFT 3-1, Governance and Attractor Engineering: https://iroha1203.dev/sft/intervention/governance-attractor-engineering/
 - SFT 3-2, AI Proposal Governance: https://iroha1203.dev/sft/intervention/ai-proposal-governance/
 - SFT 3-3, Lifecycle and Closed-Loop Evolution: https://iroha1203.dev/sft/intervention/lifecycle-closed-loop/
-- SFT Formal Core: https://iroha1203.dev/sft/formal-core/
-- SFT Formal Anchors: https://iroha1203.dev/sft/formal-anchors/
-- SFT Theorem Candidates: https://iroha1203.dev/sft/theorem-candidates/
-- SFT Research Program: https://iroha1203.dev/sft/research-program/
-- SFT Positioning: https://iroha1203.dev/sft/positioning/
-- SFT Status: https://iroha1203.dev/sft/status/
-- SFT Glossary: https://iroha1203.dev/sft/glossary/
+- SFT References: https://iroha1203.dev/sft/references/
+- SFT Formal Core and Anchors: https://iroha1203.dev/sft/references/formal-anchors/
+- SFT Research Program and Boundaries: https://iroha1203.dev/sft/references/research-program/
+- SFT Glossary: https://iroha1203.dev/sft/references/glossary/
 - ArchSig manual: https://iroha1203.dev/archsig/
 - Outreach: https://iroha1203.dev/outreach/
 
