@@ -63,10 +63,10 @@
           <p class="eyebrow">AAT Part VI</p>
           <h1>Repair and Dynamics</h1>
           <p class="lede">
-            Repair is a bounded operation on selected obstruction evidence, not
-            a total quality certificate. Dynamics records how repair, synthesis,
-            paths, homotopies, and diagram fillers move through selected
-            theorem and measurement boundaries.
+            Repair transforms selected obstruction evidence through bounded
+            operations. Dynamics tracks how repair, synthesis, paths,
+            homotopies, and diagram fillers move across theorem packages and
+            measured signature trajectories.
           </p>
         </div>
       </section>
@@ -77,15 +77,14 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reader-model">Reader model</a></li>
                 <li><a href="#repair-step">Repair step</a></li>
                 <li><a href="#finite-synthesis">Finite repair and synthesis</a></li>
                 <li><a href="#complexity-transfer">Complexity transfer</a></li>
                 <li><a href="#signature-trajectory">Signature trajectory</a></li>
                 <li><a href="#paths-homotopy">Paths and homotopy</a></li>
                 <li><a href="#diagram-filling">Diagram filling</a></li>
-                <li><a href="#coupon-example">Coupon path example</a></li>
-                <li><a href="#status-index">Formal anchors</a></li>
+                <li><a href="#coupon-example">Finite semantic diagram</a></li>
+                <li><a href="#repair-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -146,33 +145,281 @@
                     Status
                   </a>
                 </li>
+                <li>
+                  <a href="../formal-anchors/">
+                    Formal Anchors Audit
+                  </a>
+                </li>
               </ul>
             </div>
           </aside>
 
           <div class="article-main">
-            <section id="reader-model" class="article-section">
-              <h2>Reader model</h2>
-              <div class="reader-model">
-                <div>
-                  <h3>AAT does not say</h3>
-                  <p>
-                    "The architecture was repaired." A repair suggestion, a
-                    successful patch, a solver timeout, or a smaller metric is
-                    not automatically a theorem about all axes of a real
-                    repository.
-                  </p>
-                </div>
-                <div>
-                  <h3>AAT says</h3>
-                  <p>
-                    Within this selected universe, this repair step or path
-                    package discharges this recorded conclusion, while these
-                    axes, witnesses, and completeness claims remain outside the
-                    theorem.
-                  </p>
-                </div>
-              </div>
+            <section id="repair-step" class="article-section">
+              <p class="research-question">
+                Can repair be tracked as movement through obstruction evidence
+                and signature trajectories?
+              </p>
+              <h2>Repair step</h2>
+              <figure class="code-panel">
+                <figcaption>Repair schema</figcaption>
+                <pre><code>RepairStep
+  = source state
+  + target state
+  + selected repair rule
+  + selected obstruction universe
+  + admissible decrease package
+  + recorded non-conclusions</code></pre>
+              </figure>
+              <p id="definition-11-1" class="statement">
+                <a class="statement-anchor" href="#definition-11-1">Definition 11.1.</a>
+                A repair step is a source-to-target architecture operation read
+                against a selected obstruction universe. The base step only
+                records the operation skeleton; selected-measure decrease is a
+                separate theorem boundary supplied by an admissible repair rule.
+              </p>
+              <p id="proposition-11-2" class="statement">
+                <a class="statement-anchor" href="#proposition-11-2">Proposition 11.2.</a>
+                If a selected witness is in the selected universe, a rule is
+                admissible for that witness, and the recorded step applies that
+                rule, then the selected obstruction measure decreases from the
+                source to the target.
+              </p>
+              <p id="proof-11-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-11-2">Proof idea.</a>
+                The admissible rule carries exactly the decrease theorem needed
+                by the selected step. The conclusion is a measure comparison in
+                the selected universe, so no unselected axis is folded into the
+                theorem.
+              </p>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#repair-and-dynamics">Formal Anchors Audit</a>
+              </p>
+            </section>
+
+            <section id="finite-synthesis" class="article-section">
+              <h2>Finite repair and synthesis</h2>
+              <p>
+                Bounded repair packages lift a single step into a finite plan.
+                The plan exposes a finite step bound and target clearing of the
+                selected obstruction universe. Coverage, exactness, and the
+                selected conclusion travel with the plan.
+              </p>
+              <p>
+                Synthesis has a different obligation. A produced candidate
+                needs satisfaction evidence for the selected constraints; a
+                no-solution claim uses a valid certificate.
+              </p>
+              <p id="proposition-11-3" class="statement">
+                <a class="statement-anchor" href="#proposition-11-3">Proposition 11.3.</a>
+                A finite repair package exposes selected-obstruction clearing,
+                a synthesis soundness package exposes candidate satisfaction,
+                and a valid no-solution certificate exposes absence of a
+                selected satisfying architecture. None of these packages proves
+                solver completeness outside its recorded universe.
+              </p>
+              <p id="proof-11-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-11-3">Proof idea.</a>
+                Each package stores its own soundness field and boundary
+                assumptions. The accessor theorem returns that stored
+                conclusion; it does not manufacture completeness for an
+                unrecorded search space or an unsupported constraint language.
+              </p>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#repair-and-dynamics">Formal Anchors Audit</a>
+              </p>
+            </section>
+
+            <section id="complexity-transfer" class="article-section">
+              <h2>Complexity transfer</h2>
+              <p>
+                A repair can reduce a selected static witness while making a
+                different measured axis worse. AAT treats this as a first-class
+                boundary because "removed here" and "improved everywhere" are
+                different claims.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Transfer-aware reading</figcaption>
+                <pre><code>selected static witness: 1 -&gt; 0
+runtime diagnostic axis: 0 -&gt; 1
+
+therefore:
+  selected repair decrease proved
+  all-axis nonincrease refuted</code></pre>
+              </figure>
+              <p id="counterexample-11-4" class="statement">
+                <a class="statement-anchor" href="#counterexample-11-4">Counterexample 11.4.</a>
+                There is a bounded repair skeleton in which the selected static
+                obstruction measure decreases, while a runtime-axis witness
+                appears after repair. Therefore selected repair decrease does
+                not imply all-axis nonincrease.
+              </p>
+              <p id="proof-11-4" class="statement-proof">
+                <a class="statement-anchor" href="#proof-11-4">Proof idea.</a>
+                The example has two states. The selected static universe reads
+                the target as zero, while the runtime diagnostic universe reads
+                the same target as carrying a measured witness. The repair
+                theorem remains true because it was scoped to the selected
+                static universe.
+              </p>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#repair-and-dynamics">Formal Anchors Audit</a>
+              </p>
+              <p id="non-conclusion-11-5" class="statement-note">
+                <a class="statement-anchor" href="#non-conclusion-11-5">Non-conclusion 11.5.</a>
+                A repair report, repair suggestion, and adoption record each
+                live in a selected evidence context. Correctness, empirical
+                cost, and side-effect claims are recorded as separate readings.
+              </p>
+            </section>
+
+            <section id="signature-trajectory" class="article-section">
+              <h2>Signature trajectory</h2>
+              <p>
+                Dynamics reads a repair or migration path as a sequence of
+                selected observations. Endpoint equality, endpoint delta zero,
+                or a safer final state can miss excursions and transfer events
+                that occur along the path.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Observed trajectory</figcaption>
+                <pre><code>ArchitecturePath X0 Xn
+  + selected SignatureObservation
+  -&gt; SignatureTrajectory [sig(X0), ..., sig(Xn)]
+
+safe endpoints
+  do not imply
+safe trajectory</code></pre>
+              </figure>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#repair-and-dynamics">Formal Anchors Audit</a>
+              </p>
+            </section>
+
+            <section id="paths-homotopy" class="article-section">
+              <h2>Paths and homotopy</h2>
+              <p>
+                <code>ArchitecturePath</code> is a finite operation sequence
+                indexed by its endpoints. It can be appended, measured by step
+                length, and checked for stepwise invariant preservation.
+                <code>PathHomotopy</code> is generated by selected path rewrite
+                contracts and context closure.
+              </p>
+              <p id="definition-12-1" class="statement">
+                <a class="statement-anchor" href="#definition-12-1">Definition 12.1.</a>
+                An architecture path is an endpoint-indexed finite sequence of
+                primitive architecture steps. A path homotopy is the generated
+                relation produced by selected independent-square,
+                same-contract, repair-fill, and context-closure generators.
+              </p>
+              <p id="proposition-12-2" class="statement">
+                <a class="statement-anchor" href="#proposition-12-2">Proposition 12.2.</a>
+                If every primitive step of a finite path preserves a selected
+                invariant, then the path preserves that invariant. If the
+                selected homotopy generators preserve a selected observation,
+                then homotopic paths have the same selected observation.
+              </p>
+              <p id="proof-12-2" class="statement-proof">
+                <a class="statement-anchor" href="#proof-12-2">Proof idea.</a>
+                Path preservation proceeds by induction over the finite path.
+                Observation preservation for homotopy is also generator-relative:
+                every generator must carry the observation-preservation premise
+                supplied to the theorem.
+              </p>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#repair-and-dynamics">Formal Anchors Audit</a>
+              </p>
+            </section>
+
+            <section id="diagram-filling" class="article-section">
+              <h2>Diagram filling</h2>
+              <p>
+                A semantic diagram compares two endpoint-matched operation
+                paths. A filler says the paths are homotopic under the selected
+                finite path calculus. A non-fillability witness says that, for
+                the selected observation and witness value, no such filler can
+                exist.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Filling boundary</figcaption>
+                <pre><code>DiagramFiller D
+  -&gt; Obs(D.lhs) = Obs(D.rhs)
+
+Obs(D.lhs) != Obs(D.rhs)
+  -&gt; no selected DiagramFiller D
+  -&gt; NonFillabilityWitnessFor D w</code></pre>
+              </figure>
+              <p id="proposition-12-3" class="statement">
+                <a class="statement-anchor" href="#proposition-12-3">Proposition 12.3.</a>
+                Under selected observation-preservation assumptions for the
+                path generators, a diagram filler implies equality of selected
+                observations. Conversely, a selected observation difference
+                refutes the filler and can be packaged as a sound
+                non-fillability witness.
+              </p>
+              <p id="proof-12-3" class="statement-proof">
+                <a class="statement-anchor" href="#proof-12-3">Proof idea.</a>
+                The filler is a path homotopy. The observation theorem for
+                path homotopy turns it into selected observation equality.
+                A supplied inequality contradicts that equality and becomes a
+                refutation package for the selected witness value.
+              </p>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#repair-and-dynamics">Formal Anchors Audit</a>
+              </p>
+              <p id="non-conclusion-12-4" class="statement-note">
+                <a class="statement-anchor" href="#non-conclusion-12-4">Non-conclusion 12.4.</a>
+                Diagram non-fillability records an obstruction for the selected
+                finite path calculus and observation model.
+              </p>
+            </section>
+
+            <section id="coupon-example" class="article-section">
+              <h2>Finite semantic diagram</h2>
+              <p>
+                A finite semantic diagram compares two endpoint-matched paths
+                through the same feature interaction. The selected observation
+                records path order. When the two observations differ, the
+                difference refutes the selected diagram filler and produces a
+                non-fillability witness.
+              </p>
+              <p id="example-12-4" class="statement">
+                <a class="statement-anchor" href="#example-12-4">Example 12.4.</a>
+                In the selected two-path diagram, the first operation order
+                has one observation trace and the reversed order has another.
+                The path-order witness refutes fillability for the selected
+                diagram.
+              </p>
+              <p>
+                The finite diagram records a bounded semantic obstruction.
+                Static repair, runtime exposure, repository extraction, and
+                empirical frequency are separate evidence packages.
+              </p>
+            </section>
+
+            <section id="repair-summary" class="article-section">
+              <h2>Chapter summary</h2>
+              <p>
+                Repair and dynamics read architecture evolution as movement
+                through selected obstruction evidence. A repair step is useful
+                when it is carried by an admissible package that states which
+                witness family is cleared, decreased, transferred, or left for
+                another axis.
+              </p>
+              <p>
+                This gives AAT a finite language for improvement. Repair plans,
+                no-solution certificates, complexity transfer, signature
+                trajectories, and finite semantic diagrams all become bounded
+                records that can be compared and composed without losing their
+                evidence boundaries.
+              </p>
+              <h3>Terms</h3>
               <dl class="term-list definition-list">
                 <div>
                   <dt>selected obstruction universe</dt>
@@ -207,474 +454,6 @@
                   <dd>A selected witness value whose soundness refutes the existence of a filler for the selected diagram.</dd>
                 </div>
               </dl>
-            </section>
-
-            <section id="repair-step" class="article-section">
-              <h2>Repair step</h2>
-              <p class="plain-reading">
-                <strong>Plain reading.</strong> A repair theorem is local to the
-                witness universe it names. The same operation can be a valid
-                selected repair and still leave runtime, semantic, policy, or
-                coverage questions open.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Repair schema</figcaption>
-                <pre><code>RepairStep
-  = source state
-  + target state
-  + selected repair rule
-  + selected obstruction universe
-  + admissible decrease package
-  + recorded non-conclusions</code></pre>
-              </figure>
-              <p id="definition-11-1" class="statement">
-                <a class="statement-anchor" href="#definition-11-1">Definition 11.1.</a>
-                A repair step is a source-to-target architecture operation read
-                against a selected obstruction universe. The base step only
-                records the operation skeleton; selected-measure decrease is a
-                separate theorem boundary supplied by an admissible repair rule.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Definition 11.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only / proved accessors</span>
-                <span>Anchored by <code>SelectedObstructionUniverse</code>, <code>RepairStep</code>, <code>RepairStepDecreases</code>, and <code>AdmissibleRepairRule</code>.</span>
-              </p>
-              <p id="proposition-11-2" class="statement">
-                <a class="statement-anchor" href="#proposition-11-2">Proposition 11.2.</a>
-                If a selected witness is in the selected universe, a rule is
-                admissible for that witness, and the recorded step applies that
-                rule, then the selected obstruction measure decreases from the
-                source to the target.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 11.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>repairStepDecreases_of_admissible</code>, <code>extensionObstructionMeasure_decreases_of_admissible</code>, and <code>repairStepDecreasesLaw_conclusion</code>.</span>
-              </p>
-              <p id="proof-11-2" class="statement-proof">
-                <a class="statement-anchor" href="#proof-11-2">Proof idea.</a>
-                The admissible rule carries exactly the decrease theorem needed
-                by the selected step. The conclusion is a measure comparison in
-                the selected universe, so no unselected axis is folded into the
-                theorem.
-              </p>
-            </section>
-
-            <section id="finite-synthesis" class="article-section">
-              <h2>Finite repair and synthesis</h2>
-              <p>
-                Bounded repair packages lift a single step into a finite plan.
-                The plan exposes a finite step bound and target clearing of the
-                selected obstruction universe. It still depends on coverage and
-                exactness assumptions, and it records what the plan does not
-                conclude.
-              </p>
-              <p>
-                Synthesis has a different obligation. A produced candidate
-                needs satisfaction evidence for the selected constraints; a
-                no-solution claim needs a valid certificate, not just a failed
-                search.
-              </p>
-              <p id="proposition-11-3" class="statement">
-                <a class="statement-anchor" href="#proposition-11-3">Proposition 11.3.</a>
-                A finite repair package exposes selected-obstruction clearing,
-                a synthesis soundness package exposes candidate satisfaction,
-                and a valid no-solution certificate exposes absence of a
-                selected satisfying architecture. None of these packages proves
-                solver completeness outside its recorded universe.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 11.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>FiniteRepairPackage.selectedObstructionsCleared</code>, <code>SynthesisSoundnessPackage.candidate_satisfies</code>, <code>NoSolutionCertificate.sound_of_valid</code>, <code>synthesisCandidateSoundnessLaw_conclusion</code>, and <code>noSolutionCertificateSoundnessLaw_conclusion</code>.</span>
-              </p>
-              <p id="proof-11-3" class="statement-proof">
-                <a class="statement-anchor" href="#proof-11-3">Proof idea.</a>
-                Each package stores its own soundness field and boundary
-                assumptions. The accessor theorem returns that stored
-                conclusion; it does not manufacture completeness for an
-                unrecorded search space or an unsupported constraint language.
-              </p>
-              <div class="article-table">
-                <table>
-                  <caption>Repair and synthesis theorem boundaries</caption>
-                  <thead>
-                    <tr>
-                      <th>Package</th>
-                      <th>Lean anchors</th>
-                      <th>Theorem-grade reading</th>
-                      <th>Non-conclusion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th>Bounded finite repair</th>
-                      <td><code>BoundedRepairPlan</code>, <code>FiniteRepairPackage</code></td>
-                      <td>Selected obstruction universe is cleared at the target under explicit plan and coverage assumptions.</td>
-                      <td>No all-obstruction removal, repair optimality, or global flatness preservation.</td>
-                    </tr>
-                    <tr>
-                      <th>Candidate synthesis</th>
-                      <td><code>SynthesisConstraintSystem</code>, <code>SynthesisSoundnessPackage.candidate_satisfies</code></td>
-                      <td>The produced candidate satisfies every selected required constraint.</td>
-                      <td>No completeness of generated candidates and no empirical success claim.</td>
-                    </tr>
-                    <tr>
-                      <th>No-solution certificate</th>
-                      <td><code>ValidNoSolutionCertificate</code>, <code>NoSolutionCertificate.sound_of_valid</code></td>
-                      <td>A valid certificate implies no selected architecture satisfies the selected constraint system.</td>
-                      <td>Solver failure, timeout, unsupported syntax, and incomplete search are not certificates.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <section id="complexity-transfer" class="article-section">
-              <h2>Complexity transfer</h2>
-              <p>
-                A repair can reduce a selected static witness while making a
-                different measured axis worse. AAT treats this as a first-class
-                boundary because "removed here" and "improved everywhere" are
-                different claims.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Transfer-aware reading</figcaption>
-                <pre><code>selected static witness: 1 -&gt; 0
-runtime diagnostic axis: 0 -&gt; 1
-
-therefore:
-  selected repair decrease proved
-  all-axis nonincrease refuted</code></pre>
-              </figure>
-              <p id="counterexample-11-4" class="statement">
-                <a class="statement-anchor" href="#counterexample-11-4">Counterexample 11.4.</a>
-                There is a bounded repair skeleton in which the selected static
-                obstruction measure decreases, while a runtime-axis witness
-                appears after repair. Therefore selected repair decrease does
-                not imply all-axis nonincrease.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Counterexample 11.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>RepairTransferCounterexample.selectedRepairStep_decreases</code>, <code>runtimeAxisMeasure_increases</code>, <code>selectedRepairStep_not_all_axes_nonincreasing</code>, and <code>staticSplitRepair_transfers_runtime</code>.</span>
-              </p>
-              <p id="proof-11-4" class="statement-proof">
-                <a class="statement-anchor" href="#proof-11-4">Proof idea.</a>
-                The example has two states. The selected static universe reads
-                the target as zero, while the runtime diagnostic universe reads
-                the same target as carrying a measured witness. The repair
-                theorem remains true because it was scoped to the selected
-                static universe.
-              </p>
-              <p id="non-conclusion-11-5" class="statement-note">
-                <a class="statement-anchor" href="#non-conclusion-11-5">Non-conclusion 11.5.</a>
-                A repair report, repair suggestion, or adoption record does not
-                certify repair correctness, empirical cost improvement, or
-                absence of side effects unless a separate package states those
-                premises and conclusions.
-              </p>
-            </section>
-
-            <section id="signature-trajectory" class="article-section">
-              <h2>Signature trajectory</h2>
-              <p>
-                Dynamics reads a repair or migration path as a sequence of
-                selected observations. Endpoint equality, endpoint delta zero,
-                or a safer final state can miss excursions and transfer events
-                that occur along the path.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Observed trajectory</figcaption>
-                <pre><code>ArchitecturePath X0 Xn
-  + selected SignatureObservation
-  -&gt; SignatureTrajectory [sig(X0), ..., sig(Xn)]
-
-safe endpoints
-  do not imply
-safe trajectory</code></pre>
-              </figure>
-              <div class="theorem-card-list">
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Trajectory theorem</span>
-                      <h3>Stepwise safe-region preservation gives a safe observed trajectory</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchors</dt>
-                      <dd><code>SignatureTrajectory</code>, <code>signatureTrajectory_length</code>, <code>signatureTrajectory_append</code>, <code>trajectory_preserves_safeRegion</code></dd>
-                    </div>
-                    <div>
-                      <dt>Claim boundary</dt>
-                      <dd>Selected observation, selected safe region, finite path, and stepwise preservation assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>No global architecture field completeness, future distribution completeness, or all-axis safety follows.</dd>
-                    </div>
-                    <div>
-                      <dt>Use</dt>
-                      <dd>Reads repair as a path property instead of collapsing the analysis to endpoints.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="theorem-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Endpoint counterexample</span>
-                      <h3>Zero endpoint delta does not force path safety</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchors</dt>
-                      <dd><code>ZeroNetForceNonZeroExcursion.endpointSafe_and_zeroDelta_but_not_pathSafe</code>, <code>excursion_signature_mem</code>, <code>not_signatureTrajectoryInSafeRegion</code></dd>
-                    </div>
-                    <div>
-                      <dt>Claim boundary</dt>
-                      <dd>A small finite trajectory has safe endpoints and zero selected endpoint delta but visits an unsafe intermediate signature.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>Endpoint-only reports do not certify safe repair dynamics.</dd>
-                    </div>
-                    <div>
-                      <dt>Use</dt>
-                      <dd>Explains why signature trajectories are retained in repair and dynamics artifacts.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
-            </section>
-
-            <section id="paths-homotopy" class="article-section">
-              <h2>Paths and homotopy</h2>
-              <p>
-                <code>ArchitecturePath</code> is a finite operation sequence
-                indexed by its endpoints. It can be appended, measured by step
-                length, and checked for stepwise invariant preservation.
-                <code>PathHomotopy</code> is generated by selected path rewrite
-                contracts and context closure.
-              </p>
-              <p id="definition-12-1" class="statement">
-                <a class="statement-anchor" href="#definition-12-1">Definition 12.1.</a>
-                An architecture path is an endpoint-indexed finite sequence of
-                primitive architecture steps. A path homotopy is the generated
-                relation produced by selected independent-square,
-                same-contract, repair-fill, and context-closure generators.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Definition 12.1">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-defined">defined only / proved accessors</span>
-                <span>Anchored by <code>ArchitecturePath</code>, <code>ArchitecturePath.append</code>, <code>ArchitecturePath.length_append</code>, and <code>ArchitecturePath.PathHomotopy</code>.</span>
-              </p>
-              <p id="proposition-12-2" class="statement">
-                <a class="statement-anchor" href="#proposition-12-2">Proposition 12.2.</a>
-                If every primitive step of a finite path preserves a selected
-                invariant, then the path preserves that invariant. If the
-                selected homotopy generators preserve a selected observation,
-                then homotopic paths have the same selected observation.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 12.2">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>ArchitecturePath.pathPreservesInvariant</code>, <code>PathHomotopy.observation_eq_append</code>, <code>PathHomotopy.observation_eq</code>, and <code>architectureHomotopyInvariance</code>.</span>
-              </p>
-              <p id="proof-12-2" class="statement-proof">
-                <a class="statement-anchor" href="#proof-12-2">Proof idea.</a>
-                Path preservation proceeds by induction over the finite path.
-                Observation preservation for homotopy is also generator-relative:
-                every generator must carry the observation-preservation premise
-                supplied to the theorem.
-              </p>
-            </section>
-
-            <section id="diagram-filling" class="article-section">
-              <h2>Diagram filling</h2>
-              <p>
-                A semantic diagram compares two endpoint-matched operation
-                paths. A filler says the paths are homotopic under the selected
-                finite path calculus. A non-fillability witness says that, for
-                the selected observation and witness value, no such filler can
-                exist.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Filling boundary</figcaption>
-                <pre><code>DiagramFiller D
-  -&gt; Obs(D.lhs) = Obs(D.rhs)
-
-Obs(D.lhs) != Obs(D.rhs)
-  -&gt; no selected DiagramFiller D
-  -&gt; NonFillabilityWitnessFor D w</code></pre>
-              </figure>
-              <p id="proposition-12-3" class="statement">
-                <a class="statement-anchor" href="#proposition-12-3">Proposition 12.3.</a>
-                Under selected observation-preservation assumptions for the
-                path generators, a diagram filler implies equality of selected
-                observations. Conversely, a selected observation difference
-                refutes the filler and can be packaged as a sound
-                non-fillability witness.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Proposition 12.3">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>diagramFiller_observation_eq</code>, <code>observationDifference_refutesDiagramFiller</code>, <code>observationDifference_nonFillabilityWitnessFor</code>, and <code>obstructionAsNonFillability_sound</code>.</span>
-              </p>
-              <p id="proof-12-3" class="statement-proof">
-                <a class="statement-anchor" href="#proof-12-3">Proof idea.</a>
-                The filler is a path homotopy. The observation theorem for
-                path homotopy turns it into selected observation equality.
-                A supplied inequality contradicts that equality and becomes a
-                refutation package for the selected witness value.
-              </p>
-              <p id="non-conclusion-12-4" class="statement-note">
-                <a class="statement-anchor" href="#non-conclusion-12-4">Non-conclusion 12.4.</a>
-                Diagram non-fillability is not a theorem that every split
-                failure is semantic, that every semantic obstruction has been
-                extracted, or that the observation model is complete.
-              </p>
-            </section>
-
-            <section id="coupon-example" class="article-section">
-              <h2>Coupon path example</h2>
-              <p>
-                The coupon and discount example is the small concrete model for
-                path order. Coupon-first and discount-first paths reach the
-                same endpoint shape, but their selected rounding traces differ.
-                That difference refutes the selected diagram filler and
-                produces a non-fillability witness.
-              </p>
-              <p id="example-12-4" class="statement">
-                <a class="statement-anchor" href="#example-12-4">Example 12.4.</a>
-                In the selected coupon / discount diagram, the
-                coupon-then-discount path has one rounding trace, the
-                discount-then-coupon path has another, and the rounding-order
-                witness refutes fillability for the selected diagram.
-              </p>
-              <p class="statement-status" aria-label="Lean status for Example 12.4">
-                <span class="statement-status-label">Lean status</span>
-                <span class="status-badge status-badge-proved">proved anchors</span>
-                <span>See <code>CouponDiscountExample.couponDiscountDiagram</code>, <code>couponThenDiscount_roundingTrace</code>, <code>discountThenCoupon_roundingTrace</code>, <code>roundingOrder_refutes_selectedDiagramFiller</code>, and <code>roundingOrder_nonFillabilityWitnessFor</code>.</span>
-              </p>
-              <p>
-                The example should be read as a bounded semantic obstruction,
-                not as an empirical frequency claim about coupon systems. It
-                also does not prove runtime flatness or repository extraction
-                completeness for any real codebase.
-              </p>
-            </section>
-
-            <section id="status-index" class="article-section">
-              <h2>Formal anchors</h2>
-              <p>
-                The page is an audit trail over existing Lean entries. It adds
-                no theorem, and every theorem-grade statement above points to a
-                docs source, Lean anchor, status, assumptions, and
-                non-conclusion boundary.
-              </p>
-              <div class="formal-anchor-cards">
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Repair</span>
-                      <h3>Selected decrease and finite repair</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: Chapters 11-12 and the proof-obligation rows for
-                    Repair, Repair Synthesis, and Architecture Calculus laws.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair">Repair</a> and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair-synthesis">Repair Synthesis</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd><code>defined only</code> records for schemas; <code>proved</code> accessor and soundness anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Selected witness universe, admissible rule, finite plan, coverage / exactness, or valid certificate.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No solver completeness, extractor completeness, all obstruction removal, or empirical cost improvement.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Transfer</span>
-                      <h3>Repair transfer counterexample</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: the dedicated counterexample package showing why
-                    selected repair decrease is not all-axis improvement.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#repair-transfer-counterexample">Repair Transfer Counterexample</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd>Concrete finite counterexample with proved selected decrease, runtime increase, transfer, and non-conclusion anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Two-state skeleton, selected static universe, runtime diagnostic universe, and selected transfer schema.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No global complexity conservation and no repository-wide quality statement.</dd>
-                    </div>
-                  </dl>
-                </article>
-
-                <article class="formal-anchor-card">
-                  <div class="formal-anchor-card-header">
-                    <div>
-                      <span class="formal-anchor-card-label">Dynamics</span>
-                      <h3>Path, trajectory, homotopy, and filling</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved anchors</span>
-                  </div>
-                  <p class="formal-anchor-audits">
-                    Source: Architecture Path, Signature Dynamics, Chapter 8,
-                    Chapter 9, and Diagram Filler index entries.
-                  </p>
-                  <dl class="formal-anchor-grid">
-                    <div>
-                      <dt>Lean index</dt>
-                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#architecture-path">Architecture Path</a>, <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#signature-dynamics">Signature Dynamics</a>, and <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b697cff13ab629d5bcb173ac6db8bd8d124f873b/docs/aat/lean_theorem_index.md#diagram-filler">Diagram Filler</a>.</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd>Finite path schemas are defined; append, preservation, observation, filler refutation, and trajectory facts have proved anchors.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Selected generators, selected observation, finite diagram, witness universe, and stepwise preservation premises.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusions</dt>
-                      <dd>No global semantic completeness, HoTT completeness, all observation-axis preservation, or finite-universe completeness outside stated premises.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">

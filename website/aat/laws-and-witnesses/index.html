@@ -63,9 +63,10 @@
           <p class="eyebrow">AAT Part II</p>
           <h1>Laws and Witnesses</h1>
           <p class="lede">
-            This cluster explains how design principles become invariant
-            families and how architecture breakage is represented by selected
-            obstruction witnesses rather than by a vague failure label.
+            Design principles become invariant families, and architecture
+            constraints become inspectable through selected obstruction
+            witnesses. This cluster turns lawfulness into a theorem-bearing
+            relation between required invariants and measured evidence.
           </p>
         </div>
       </section>
@@ -81,9 +82,8 @@
                 <li><a href="#obstruction-witnesses">Obstruction witnesses</a></li>
                 <li><a href="#lemma-sequence">Lemma sequence</a></li>
                 <li><a href="#main-theorem">Required theorem schema</a></li>
-                <li><a href="#static-anchor">Static formal anchor</a></li>
                 <li><a href="#examples">Examples</a></li>
-                <li><a href="#lean-status">Lean status</a></li>
+                <li><a href="#law-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -144,19 +144,27 @@
                     Status
                   </a>
                 </li>
+                <li>
+                  <a href="../formal-anchors/#laws-and-witnesses">
+                    Formal Anchors Audit
+                  </a>
+                </li>
               </ul>
             </div>
           </aside>
 
           <div class="article-main">
             <section id="invariant-families" class="article-section">
+              <p class="research-question">
+                Can design principles be expressed as invariant families with
+                observable witnesses?
+              </p>
               <h2>Invariant families</h2>
               <p>
                 An `Invariant` is a property an architecture object or operation
                 is expected to preserve. Design principles induce families of
                 operations that preserve, reflect, improve, localize, translate,
-                or transfer invariants; the principle itself is not treated as
-                one universal mathematical operation.
+                or transfer invariants.
               </p>
               <ul class="term-list">
                 <li>
@@ -198,9 +206,8 @@ RequiredSignatureAxesZero X S
                 The first line is the semantic predicate. The second and third
                 lines are measured presentations of the same claim only after a
                 theorem boundary supplies coverage, exactness, and observation
-                assumptions. This is why the website keeps the law universe
-                close to each theorem-grade claim instead of treating a report
-                table as a proof.
+                assumptions. The law universe stays close to the claim it
+                organizes.
               </p>
               <ul class="status-list">
                 <li>
@@ -299,100 +306,10 @@ CompleteWitnessCoverage + RequiredAxisExact
   Lawful X
     &lt;-&gt; RequiredAxesAvailableAndZero X</code></pre>
               </figure>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Step</th>
-                      <th>Lean anchor</th>
-                      <th>Status</th>
-                      <th>Boundary</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Measured zero to measured absence</td>
-                      <td><code>lawViolationCount_eq_zero_iff_lawful</code>, generic witness-count kernel</td>
-                      <td><code>proved</code></td>
-                      <td>Selected measured witness list and law-family bridge.</td>
-                    </tr>
-                    <tr>
-                      <td>Measured absence to required absence</td>
-                      <td><code>noRequiredObstruction_of_requiredWitnessCoverage_and_noMeasuredObstruction</code></td>
-                      <td><code>proved</code></td>
-                      <td>Required witness coverage; no global witness completeness.</td>
-                    </tr>
-                    <tr>
-                      <td>Required absence to lawfulness</td>
-                      <td><code>lawful_iff_noRequiredObstruction_of_completeCoverage</code></td>
-                      <td><code>proved</code></td>
-                      <td>Complete coverage for the selected law family.</td>
-                    </tr>
-                    <tr>
-                      <td>Required axes to required absence</td>
-                      <td><code>requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_requiredAxisExact</code></td>
-                      <td><code>proved</code></td>
-                      <td>Axis exactness for required axes; unavailable axes are not counted as available zero.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="theorem-card-list">
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Lemma tracking</span>
-                      <h3>Measured zero is only measured witness absence</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchor</dt>
-                      <dd><code>lawViolationCount_eq_zero_iff_lawful</code> and the generic witness-count kernel.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>A selected finite witness list, a bad-witness predicate, and the local law-family bridge.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>The zero count speaks about the measured finite list.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>It does not prove global witness absence or semantic lawfulness outside the measured list.</dd>
-                    </div>
-                  </dl>
-                </article>
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Bridge tracking</span>
-                      <h3>Coverage and axis exactness promote witness absence to required-axis zero</h3>
-                    </div>
-                    <span class="status-badge status-badge-proved">proved</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchor</dt>
-                      <dd><code>noRequiredObstruction_of_requiredWitnessCoverage_and_noMeasuredObstruction</code> and <code>requiredAxesAvailableAndZero_iff_noRequiredObstruction_of_requiredAxisExact</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd>Required witness coverage plus exact correspondence between required witnesses and required signature axes.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Unavailable axes and optional diagnostics are not treated as available zero required axes.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>No runtime, semantic, empirical, or extractor-completeness claim is added by the bridge.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#laws-and-witnesses">Formal Anchors Audit</a>
+              </p>
             </section>
 
             <section id="main-theorem" class="article-section">
@@ -443,120 +360,9 @@ Then, within B:
                   <span>`RequiredSignatureAxesZero X S` says the required measured axes are zero, not that every possible axis is safe.</span>
                 </li>
               </ul>
-              <div class="claim-strip">
-                <p>
-                  SOLID is not treated as a universal architecture principle.
-                  It is one local-contract family among distinct global,
-                  state-transition, runtime, and distributed invariant families.
-                </p>
-              </div>
-              <div class="theorem-card-list">
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Theorem schema tracking</span>
-                      <h3>Required obstruction vanishing is a bounded theorem schema</h3>
-                    </div>
-                    <span class="status-badge status-badge-future">schema</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Lean anchor</dt>
-                      <dd>Static instances are tracked under signature-integrated lawfulness and the finite static structural core formal anchor.</dd>
-                    </div>
-                    <div>
-                      <dt>Assumptions</dt>
-                      <dd><code>WitnessComplete</code>, <code>AxisExact</code>, <code>CoverageComplete</code>, and <code>ObservationExact</code> for the selected law universe.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>The equivalence is read inside the theorem boundary that supplies those assumptions.</dd>
-                    </div>
-                    <div>
-                      <dt>Non-conclusion</dt>
-                      <dd>Witness absence is not global semantic lawfulness without the required coverage and exactness package.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
-            </section>
-
-            <section id="static-anchor" class="article-section">
-              <h2>Static formal anchor</h2>
-              <p>
-                The current proved anchor is the finite static structural core
-                in <code>Formal/Arch/Signature/SignatureLawfulness.lean</code>.
-                It instantiates the schema with selected required laws:
-                <code>WalkAcyclic</code>, <code>ProjectionSound</code>,
-                <code>LSPCompatible</code>, boundary policy soundness, and
-                abstraction policy soundness.
-              </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Claim</th>
-                      <th>Current Lean status</th>
-                      <th>Boundary</th>
-                      <th>Non-conclusion</th>
-                      <th>Source</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Finite witness-count zero kernel</td>
-                      <td><code>proved</code></td>
-                      <td>Selected finite witness list and bad predicate.</td>
-                      <td>Does not prove global absence outside the selected list.</td>
-                      <td>
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#flatness">
-                          witness-count entries
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Required law / required axis exactness bridge</td>
-                      <td><code>proved</code> for current static structural core</td>
-                      <td>Explicit law-family, witness-coverage, axis-exactness, universe, coverage, and observation assumptions.</td>
-                      <td>Does not automatically include runtime, semantic, empirical, or extractor-completeness claims.</td>
-                      <td>
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#signature-integrated-lawfulness">
-                          signature-integrated lawfulness
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>Static zero-curvature theorem package</td>
-                      <td><code>proved</code></td>
-                      <td><code>ArchitectureLawModel</code>, finite universe coverage, LSP pair closure, and selected required axes.</td>
-                      <td>Does not include numerical diagram curvature, runtime metrics, empirical cost, or extractor completeness.</td>
-                      <td>
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/lean_theorem_index.md#finite-static-structural-core-formal-anchor">
-                          finite static structural core formal anchor
-                        </a>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>General zero-curvature schema across all law families</td>
-                      <td><code>future proof obligation</code> / theorem schema</td>
-                      <td>Requires a law-specific witness family, axis exactness, and observation exactness.</td>
-                      <td>Not a universal theorem for every design principle or repository.</td>
-                      <td>
-                        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/89b4502b6fc01937bfafa409155a7b4a194a80fe/docs/aat/mathematical_theory.md#4-obstruction-witness-%E3%81%A8%E9%9B%B6%E6%9B%B2%E7%8E%87">
-                          mathematical theory, Chapter 4
-                        </a>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p>
-                The anchor theorem reads
-                <code>ArchitectureLawful X</code> as equivalent to
-                <code>RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X)</code>
-                for the selected static law model. Matrix nilpotence and
-                spectral zero are derived diagnostics from this package, not
-                additional required zero axes.
+              <p class="formal-audit-link">
+                <span>Audit trail</span>
+                <a href="../formal-anchors/#laws-and-witnesses">Formal Anchors Audit</a>
               </p>
             </section>
 
@@ -586,23 +392,42 @@ Then, within B:
               </ul>
             </section>
 
-            <section id="lean-status" class="article-section">
-              <h2>Lean status</h2>
+            <section id="law-summary" class="article-section">
+              <h2>Chapter summary</h2>
               <p>
-                The generic witness-count kernel and required law / axis
-                exactness bridge are part of the current proved static core.
-                The broader design-principle classification remains a boundary
-                discipline: SOLID, Layered, Clean Architecture, Event Sourcing,
-                Saga, CRUD, Circuit Breaker, and Replicated Log are organized as
-                different invariant families, not one Lean theorem scheme.
+                Laws and witnesses turn design principles into families of
+                invariants, observations, and obstruction predicates. A
+                principle becomes mathematically useful when it supplies the
+                selected law universe, the evidence that can witness failure,
+                and the bridge theorem that connects witness absence to
+                lawfulness inside the chosen boundary.
               </p>
-              <div class="claim-strip">
-                <p>
-                  A zero witness count means zero selected bad witnesses in the
-                  measured finite universe. It does not erase unmeasured axes,
-                  optional laws, runtime evidence gaps, or empirical risk.
-                </p>
-              </div>
+              <p>
+                This chapter gives AAT its working grammar for architecture
+                principles. Local contracts, global structure, state
+                transitions, runtime protection, and distributed convergence
+                can all be read as invariant families, while their failures
+                become explicit witnesses instead of loose review language.
+              </p>
+              <h3>Terms</h3>
+              <dl class="term-list definition-list">
+                <div>
+                  <dt>invariant family</dt>
+                  <dd>A selected property family that an architecture object, operation, or law package is expected to preserve.</dd>
+                </div>
+                <div>
+                  <dt>law universe</dt>
+                  <dd>The selected collection of laws, observations, and assumptions used to read a design principle.</dd>
+                </div>
+                <div>
+                  <dt>obstruction witness</dt>
+                  <dd>A finite selected value that records where an invariant, law, or observation condition fails.</dd>
+                </div>
+                <div>
+                  <dt>semantic lawfulness</dt>
+                  <dd>The selected law universe is satisfied under the selected observation and theorem boundary.</dd>
+                </div>
+              </dl>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
