@@ -83,7 +83,7 @@
                 <li><a href="#signature-trajectory">Signature trajectory</a></li>
                 <li><a href="#paths-homotopy">Paths and homotopy</a></li>
                 <li><a href="#diagram-filling">Diagram filling</a></li>
-                <li><a href="#coupon-example">Coupon path example</a></li>
+                <li><a href="#coupon-example">Finite semantic diagram</a></li>
                 <li><a href="#repair-summary">Repair summary</a></li>
               </ol>
             </nav>
@@ -357,26 +357,25 @@ Obs(D.lhs) != Obs(D.rhs)
             </section>
 
             <section id="coupon-example" class="article-section">
-              <h2>Coupon path example</h2>
+              <h2>Finite semantic diagram</h2>
               <p>
-                The coupon and discount example is the small concrete model for
-                path order. Coupon-first and discount-first paths reach the
-                same endpoint shape, but their selected rounding traces differ.
-                That difference refutes the selected diagram filler and
-                produces a non-fillability witness.
+                A finite semantic diagram compares two endpoint-matched paths
+                through the same feature interaction. The selected observation
+                records path order. When the two observations differ, the
+                difference refutes the selected diagram filler and produces a
+                non-fillability witness.
               </p>
               <p id="example-12-4" class="statement">
                 <a class="statement-anchor" href="#example-12-4">Example 12.4.</a>
-                In the selected coupon / discount diagram, the
-                coupon-then-discount path has one rounding trace, the
-                discount-then-coupon path has another, and the rounding-order
-                witness refutes fillability for the selected diagram.
+                In the selected two-path diagram, the first operation order
+                has one observation trace and the reversed order has another.
+                The path-order witness refutes fillability for the selected
+                diagram.
               </p>
               <p>
-                The example records a bounded semantic obstruction for the
-                selected diagram. Runtime flatness, repository extraction
-                completeness, and empirical frequency belong to separate
-                evidence packages.
+                The finite diagram records a bounded semantic obstruction.
+                Static repair, runtime exposure, repository extraction, and
+                empirical frequency are separate evidence packages.
               </p>
             </section>
 

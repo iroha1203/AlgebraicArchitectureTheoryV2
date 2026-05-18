@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT examples and boundaries: coupon extension, semantic obstruction, repair transfer, SOLID counterexamples, and non-claims."
+      content="AAT examples and boundaries: finite feature-extension skeletons, signature readings, semantic obstruction, repair transfer, and SOLID counterexamples."
     >
     <title>AAT Examples and Boundaries</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/examples-and-boundaries/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Examples and Boundaries">
-    <meta property="og:description" content="AAT examples and boundaries: coupon extension, semantic obstruction, repair transfer, SOLID counterexamples, and non-claims.">
+    <meta property="og:description" content="AAT examples and boundaries: finite feature-extension skeletons, signature readings, semantic obstruction, repair transfer, and SOLID counterexamples.">
     <meta property="og:url" content="https://iroha1203.dev/aat/examples-and-boundaries/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Examples and Boundaries">
-    <meta name="twitter:description" content="AAT examples and boundaries: coupon extension, semantic obstruction, repair transfer, SOLID counterexamples, and non-claims.">
+    <meta name="twitter:description" content="AAT examples and boundaries: finite feature-extension skeletons, signature readings, semantic obstruction, repair transfer, and SOLID counterexamples.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -78,12 +78,12 @@
               <ol>
                 <li><a href="#canonical-examples">Canonical examples</a></li>
                 <li><a href="#example-template">Example template</a></li>
-                <li><a href="#coupon-case-study">Coupon case study</a></li>
-                <li><a href="#coupon-signature">Coupon signature</a></li>
-                <li><a href="#coupon-claim-boundary">Coupon claim boundary</a></li>
+                <li><a href="#coupon-case-study">Finite extension skeleton</a></li>
+                <li><a href="#coupon-signature">Signature reading</a></li>
+                <li><a href="#coupon-claim-boundary">Claim levels</a></li>
                 <li><a href="#counterexamples">Counterexamples</a></li>
                 <li><a href="#aat-boundary">AAT boundary</a></li>
-                <li><a href="#coupon-reading">Coupon reading</a></li>
+                <li><a href="#coupon-reading">Layered reading</a></li>
                 <li><a href="#solid-boundary">SOLID boundary</a></li>
               </ol>
             </nav>
@@ -158,12 +158,11 @@
             <section id="canonical-examples" class="article-section">
               <h2>Canonical examples</h2>
               <p>
-                The coupon feature extension is the running minimal example. A
-                good extension routes coupon calculation through the declared
-                interface and keeps interaction with the payment core inside an
-                explicit boundary. A bad extension bypasses that boundary by
-                reaching into payment adapters, hidden caches, or implicit
-                rounding order.
+                A canonical AAT example is a finite architecture presentation
+                that exposes one operation, one selected evidence boundary,
+                and the witnesses read through that boundary. The concrete
+                names are small; the object being displayed is the proof
+                shape.
               </p>
               <p id="definition-15-0" class="statement">
                 <a class="statement-anchor" href="#definition-15-0">Definition 15.0.</a>
@@ -176,11 +175,11 @@
               <ul class="term-list">
                 <li>
                   <strong>Static witness</strong>
-                  <span>A hidden direct dependency from the coupon service into payment internals.</span>
+                  <span>A selected direct dependency that bypasses the declared interface route.</span>
                 </li>
                 <li>
                   <strong>Semantic witness</strong>
-                  <span>An observation difference caused by rounding or discount application order.</span>
+                  <span>A selected observation difference between two paths through the feature.</span>
                 </li>
               </ul>
             </section>
@@ -205,43 +204,40 @@
   + counterexample or non-conclusion</code></pre>
               </figure>
               <p>
-                This template is why the coupon example can carry static,
-                semantic, and runtime readings without collapsing them into a
-                single quality judgment.
+                The same template can carry static, semantic, and runtime
+                readings while keeping each axis attached to its own evidence.
               </p>
             </section>
 
             <section id="coupon-case-study" class="article-section">
-              <h2>Coupon case study</h2>
+              <h2>Finite extension skeleton</h2>
               <p>
-                The coupon example is the five-minute worked example for AAT.
-                It is small enough to display the whole claim discipline, but
-                rich enough to separate static structure, semantic behavior,
-                runtime behavior, and measurement boundary.
+                The running finite skeleton uses a feature component, a
+                declared interface, a core service, and an internal adapter
+                endpoint. It displays the claim discipline without making the
+                domain vocabulary carry the argument.
               </p>
               <p id="example-15-1" class="statement">
                 <a class="statement-anchor" href="#example-15-1">Example 15.1.</a>
-                The bad coupon extension contains the selected hidden static
+                The obstructed extension contains the selected hidden static
                 dependency witness
                 <code>CouponService -&gt; PaymentAdapter.internalCache</code>.
-                The repaired extension routes the selected static interaction
-                through the declared payment port and restores the selected
-                static split for that finite skeleton.
+                The repaired extension routes the selected interaction through
+                the declared port and restores the selected static split for
+                that finite skeleton.
               </p>
               <p id="proof-15-1" class="statement-proof">
                 <a class="statement-anchor" href="#proof-15-1">Proof idea.</a>
-                The finite coupon skeleton names the core components, the
-                coupon feature component, the declared payment port, and the
-                hidden cache endpoint. Lean exhibits the hidden edge as a
-                selected witness for the bad extension and proves that this
-                witness refutes the selected static split predicate. The
-                repaired extension removes that selected direct edge and
-                supplies the static split package again. The proof does not
-                mention runtime traces, semantic commutation, or repository
-                extraction completeness.
+                The finite skeleton names the core components, the feature
+                component, the declared port, and the internal endpoint. Lean
+                exhibits the hidden edge as a selected witness for the
+                obstructed extension and proves that this witness refutes the
+                selected static split predicate. The repaired extension removes
+                that selected direct edge and supplies the static split package
+                again.
               </p>
               <figure class="code-panel">
-                <figcaption>Finite coupon universe</figcaption>
+                <figcaption>Finite extension universe</figcaption>
                 <pre><code>components:
   CheckoutService
   CouponService
@@ -249,38 +245,38 @@
   PaymentAdapter
   PaymentAdapter.internalCache
 
-selected good static edges:
+declared static route:
   CheckoutService -&gt; CouponService
   CouponService -&gt; PaymentPort
   PaymentPort -&gt; PaymentAdapter
 
-selected bad static edge:
+obstructing static edge:
   CouponService -&gt; PaymentAdapter.internalCache</code></pre>
               </figure>
               <ul class="status-list">
                 <li>
                   <strong>Object</strong>
-                  <span>A selected checkout universe containing coupon code, a declared payment interface, payment core components, and selected relations among them.</span>
+                  <span>A selected finite universe containing a feature component, a declared interface, core components, and selected relations among them.</span>
                 </li>
                 <li>
-                  <strong>Good extension</strong>
-                  <span>Coupon computation is added through the declared interface, with a feature view and selected section laws recording how the feature is observed.</span>
+                  <strong>Declared route</strong>
+                  <span>The feature interaction passes through the declared interface, with a feature view and selected section laws recording how the feature is observed.</span>
                 </li>
                 <li>
                   <strong>Static obstruction</strong>
-                  <span>A direct dependency from coupon code into payment adapters, caches, or private payment internals violates the selected static split or boundary policy.</span>
+                  <span>A direct dependency from the feature component into an internal adapter endpoint violates the selected static split or boundary policy.</span>
                 </li>
                 <li>
                   <strong>Semantic obstruction</strong>
-                  <span>Two implementation paths produce different totals, rounding traces, error observations, or discount ordering observations under the selected client context.</span>
+                  <span>Two implementation paths produce different observations under the selected client context.</span>
                 </li>
                 <li>
                   <strong>Runtime obstruction</strong>
-                  <span>A retry, callback, cache invalidation, or protection failure crosses a runtime boundary not represented by the static dependency graph.</span>
+                  <span>A retry, callback, invalidation, or protection failure crosses a selected runtime boundary.</span>
                 </li>
                 <li>
-                  <strong>Non-conclusion</strong>
-                  <span>A static split report does not prove semantic commutativity, runtime protection, product outcome improvement, or complete extraction of the real repository.</span>
+                  <strong>Scope</strong>
+                  <span>Static, semantic, runtime, and repository-extraction readings are separate evidence axes.</span>
                 </li>
               </ul>
               <figure class="code-panel">
@@ -309,9 +305,9 @@ global repository completeness:
                   <thead>
                     <tr>
                       <th>Example field</th>
-                      <th>Coupon instantiation</th>
+                      <th>Finite instantiation</th>
                       <th>Claim level</th>
-                      <th>Boundary / non-conclusion</th>
+                      <th>Scope</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -319,25 +315,25 @@ global repository completeness:
                       <td>`ComponentUniverse`</td>
                       <td>`CheckoutService`, `CouponService`, `PaymentPort`, selected payment core / adapter components, and selected static / runtime relations.</td>
                       <td>Tooling / formal when backed by proof-carrying finite universe data.</td>
-                      <td>Does not claim complete repository extraction.</td>
+                      <td>Selected finite universe and selected relations.</td>
                     </tr>
                     <tr>
-                      <td>Selected good static edges</td>
+                      <td>Declared static route</td>
                       <td>`CheckoutService -> CouponService`, `CouponService -> PaymentPort`, `PaymentPort -> PaymentAdapter` under declared interface policy.</td>
                       <td>Formal or tooling depending on evidence source.</td>
                       <td>Only selected static relations are covered.</td>
                     </tr>
                     <tr>
-                      <td>Bad static witness set</td>
+                      <td>Obstructing static witness set</td>
                       <td>Direct `CouponService -> PaymentAdapter` or `CouponService -> PaymentCache` edge bypassing the declared boundary.</td>
-                      <td>`proved` only after finite witness list and bad predicate are connected by the theorem package.</td>
-                      <td>Absence in one report is not global absence.</td>
+                      <td>`proved` only after finite witness list and obstruction predicate are connected by the theorem package.</td>
+                      <td>Selected witness universe.</td>
                     </tr>
                     <tr>
                       <td>Semantic observation mismatch</td>
                       <td>Different total, rounding trace, error result, or discount ordering under selected checkout contexts.</td>
                       <td>Defined / proved only for selected observation bridges; otherwise tooling or empirical evidence.</td>
-                      <td>Static split does not imply semantic commutativity.</td>
+                      <td>Selected semantic diagram.</td>
                     </tr>
                     <tr>
                       <td>Runtime exposure witness</td>
@@ -349,7 +345,7 @@ global repository completeness:
                       <td>Signature coordinates</td>
                       <td>Static obstruction count, semantic witness status, runtime exposure status, residual coverage gap.</td>
                       <td>Multi-axis diagnostic.</td>
-                      <td>Coordinates do not collapse into one quality score.</td>
+                      <td>Axis-local readings.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -361,16 +357,16 @@ global repository completeness:
             </section>
 
             <section id="coupon-signature" class="article-section">
-              <h2>Coupon signature</h2>
+              <h2>Signature reading</h2>
               <p>
-                The worked example is read as a multi-axis diagnostic. The
+                The finite skeleton is read as a multi-axis diagnostic. The
                 static axis can be measured zero or measured nonzero inside the
-                finite witness universe, while semantic and runtime axes must
-                carry their own measurement status.
+                finite witness universe, while semantic and runtime axes carry
+                their own measurement status.
               </p>
               <p id="signature-reading-15-2" class="statement">
                 <a class="statement-anchor" href="#signature-reading-15-2">Signature reading 15.2.</a>
-                The coupon snapshot separates
+                The snapshot separates
                 <code>some 0</code>, <code>some n</code>, and unmeasured
                 <code>none</code> axes. A repaired selected static axis can be
                 available-and-zero while a semantic rounding-order axis is
@@ -382,7 +378,7 @@ global repository completeness:
                   <thead>
                     <tr>
                       <th>Axis</th>
-                      <th>Bad extension</th>
+                      <th>Obstructed extension</th>
                       <th>Repaired extension</th>
                       <th>How to read it</th>
                     </tr>
@@ -396,9 +392,9 @@ global repository completeness:
                     </tr>
                     <tr>
                       <td>`semantic_curvature`</td>
-                      <td>`unmeasured` unless a selected coupon / discount diagram is supplied.</td>
+                      <td>`unmeasured` unless a selected semantic diagram is supplied.</td>
                       <td>`measured_nonzero(delta)` when the selected rounding-order diagram is measured.</td>
-                      <td>Static repair does not make this axis zero.</td>
+                      <td>Semantic evidence supplies this axis.</td>
                     </tr>
                     <tr>
                       <td>`runtime_exposure`</td>
@@ -410,7 +406,7 @@ global repository completeness:
                       <td>Repository completeness</td>
                       <td>`out_of_scope`</td>
                       <td>`out_of_scope`</td>
-                      <td>The example does not claim a complete real-code extractor.</td>
+                      <td>Repository extraction is a separate evidence problem.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -418,12 +414,11 @@ global repository completeness:
             </section>
 
             <section id="coupon-claim-boundary" class="article-section">
-              <h2>Coupon claim boundary</h2>
+              <h2>Claim levels</h2>
               <p>
-                The same story contains formal claims, tooling claims,
-                empirical readings, and narrative explanation. AAT keeps them
-                separate instead of promoting every useful observation into a
-                Lean theorem.
+                The same finite skeleton supports formal claims, tooling
+                claims, empirical readings, and exposition. AAT keeps those
+                claim levels visible.
               </p>
               <div class="article-table">
                 <table>
@@ -432,39 +427,33 @@ global repository completeness:
                       <th>Claim</th>
                       <th>Lean / evidence reference</th>
                       <th>Claim level</th>
-                      <th>Non-conclusion</th>
+                      <th>Scope</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td>Bad coupon extension has the selected static hidden dependency witness.</td>
+                      <td>The obstructed extension has the selected static hidden dependency witness.</td>
                       <td>`CouponStaticDependencyExample.hiddenDependencyWitnessExists` and `bad_not_selectedStaticSplitFeatureExtension`.</td>
                       <td>`proved` for the selected finite static skeleton.</td>
-                      <td>No runtime, semantic, or extractor completeness claim follows.</td>
+                      <td>Selected static witness universe.</td>
                     </tr>
                     <tr>
-                      <td>Repaired coupon extension restores selected static split.</td>
+                      <td>The repaired extension restores selected static split.</td>
                       <td>`CouponStaticDependencyExample.repaired_selectedStaticSplitFeatureExtension` and `Chapter11AnalyticRepresentation.CouponAnalyticSnapshot.repaired_staticHiddenInteraction_bridge`.</td>
                       <td>`proved` / report-facing bridge for selected static axis.</td>
-                      <td>Static repair does not imply semantic flatness.</td>
+                      <td>Selected static axis.</td>
                     </tr>
                     <tr>
                       <td>Coupon / discount ordering can have measured semantic residual.</td>
                       <td>`CouponDiscountExample.roundingOrderValuation_positive` and `StaticSemanticCounterexample.canonical_not_semanticFlatWithin`.</td>
                       <td>`proved` for selected diagram and counterexample packages.</td>
-                      <td>Does not measure every semantic behavior of the product.</td>
+                      <td>Selected semantic diagram.</td>
                     </tr>
                     <tr>
                       <td>Runtime retries, callbacks, or caches may expose a boundary crossing.</td>
                       <td>Runtime report, telemetry, or incident evidence.</td>
                       <td>Tooling / empirical unless a specific runtime theorem package is supplied.</td>
-                      <td>Static theorem references do not discharge runtime exposure.</td>
-                    </tr>
-                    <tr>
-                      <td>Coupon example is easy for readers to understand.</td>
-                      <td>Expository choice on this website.</td>
-                      <td>Narrative explanation.</td>
-                      <td>Not a theorem and not empirical validation.</td>
+                      <td>Selected runtime evidence.</td>
                     </tr>
                   </tbody>
                 </table>
@@ -493,19 +482,19 @@ all axes are non-increasing</code></pre>
               <p id="counterexample-15-3" class="statement">
                 <a class="statement-anchor" href="#counterexample-15-3">Counterexample 15.3.</a>
                 There is a selected repaired static skeleton that satisfies
-                bounded static flatness while the selected coupon / discount
-                semantic diagram still does not commute. Static flatness
-                therefore does not imply semantic flatness or global
+                bounded static flatness while the selected semantic diagram
+                still does not commute. Static flatness therefore does not
+                imply semantic flatness or global
                 architecture flatness.
               </p>
               <p id="proof-15-3" class="statement-proof">
                 <a class="statement-anchor" href="#proof-15-3">Proof idea.</a>
-                Lean reuses the repaired coupon static skeleton for the static
+                Lean reuses the repaired finite static skeleton for the static
                 side and supplies a selected semantic diagram whose two paths
-                differ under the chosen observation. The static package and the
-                semantic obstruction coexist, so the implication from selected
-                static flatness to semantic flatness is refuted under the
-                selected diagram universe.
+                differ under the chosen observation. The static package and
+                the semantic obstruction coexist, so the implication from
+                selected static flatness to semantic flatness is refuted under
+                the selected diagram universe.
               </p>
               <p id="counterexample-15-4" class="statement">
                 <a class="statement-anchor" href="#counterexample-15-4">Counterexample 15.4.</a>
@@ -529,31 +518,22 @@ all axes are non-increasing</code></pre>
               </p>
               <p id="non-conclusion-16-1" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-16-1">Non-conclusion 16.1.</a>
-                The examples on this page do not prove complete real-code
-                extraction, runtime telemetry completeness, semantic universe
-                completeness, empirical superiority of a design method, or a
-                scalar architecture quality score. They prove or illustrate
-                selected boundaries under selected evidence.
+                The examples on this page prove or illustrate selected
+                boundaries under selected evidence: finite static witnesses,
+                semantic diagrams, runtime observations, repair transfers, and
+                multi-axis signature readings.
               </p>
-              <div class="claim-strip">
-                <p>
-                  Architecture Signature remains a multi-axis diagnostic.
-                  Empirical cost and product outcome readings belong to
-                  separate empirical protocols, not to the required zero-axis
-                  theorem package.
-                </p>
-              </div>
             </section>
 
             <section id="coupon-reading" class="article-section">
-              <h2>Coupon reading</h2>
+              <h2>Layered reading</h2>
               <p>
-                The coupon example is intentionally small enough to expose the
-                theorem boundary. A static report can measure whether coupon
-                code bypasses a declared payment interface. A semantic report
-                can measure whether discount and rounding observations commute.
-                A runtime report can measure retry, cache, or callback
-                exposure. These are connected readings, not one measurement.
+                The finite skeleton exposes the theorem boundary. A static
+                report measures whether a feature bypasses a declared
+                interface. A semantic report measures whether selected
+                observations commute. A runtime report measures retry, cache,
+                or callback exposure. These are connected readings over
+                separate axes.
               </p>
               <figure class="code-panel">
                 <figcaption>Layered example reading</figcaption>
@@ -571,12 +551,11 @@ retry leaks across boundary
             <section id="solid-boundary" class="article-section">
               <h2>SOLID boundary</h2>
               <p>
-                SOLID-style contracts are useful local law packages, but they
-                are not a complete architecture theory. A component can satisfy
-                selected substitution tests and interface separation checks
-                while the abstract dependency layer is cyclic. Conversely, a
-                layered graph can be acyclic while selected LSP observations
-                still fail.
+                SOLID-style contracts are local law packages. A component can
+                satisfy selected substitution tests and interface separation
+                checks while the abstract dependency layer is cyclic.
+                Conversely, a layered graph can be acyclic while selected LSP
+                observations still fail.
               </p>
               <p id="counterexample-15-5" class="statement">
                 <a class="statement-anchor" href="#counterexample-15-5">Counterexample 15.5.</a>
@@ -597,7 +576,7 @@ retry leaks across boundary
                 </li>
                 <li>
                   <strong>Cross-layer caution</strong>
-                  <span>One law family cannot be promoted into another without a theorem boundary.</span>
+                  <span>A theorem boundary connects one law family to another when such a bridge is available.</span>
                 </li>
               </ul>
               <p class="formal-audit-link">
