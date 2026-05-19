@@ -72,8 +72,8 @@
                 <li><a href="#participant">Field participant</a></li>
                 <li><a href="#support">Bounded support</a></li>
                 <li><a href="#witnesses">Shortcut witnesses</a></li>
+                <li><a href="#mediation">Proposal mediation</a></li>
                 <li><a href="#feedback">Feedback</a></li>
-                <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -116,6 +116,35 @@
                 load shifter, and field participant. Its behavior depends on
                 the codebase and artifacts that surround it.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-ai-agent">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-ai-agent">AI agent as field participant</h3>
+                <p>
+                  A proposal generator whose output is shaped by field memory,
+                  visible patterns, artifacts, prompt policy, and governance.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Amplifies</dt>
+                    <dd>Local patterns, default paths, hidden assumptions, and review load shifts.</dd>
+                  </div>
+                  <div>
+                    <dt>Requires</dt>
+                    <dd>Bounded support, shortcut witnesses, mediation records, and posterior field update.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>AI agent in SFT</figcaption>
+                <pre><code>AI agent
+  = artifact interpreter
+  + code proposal generator
+  + local pattern amplifier
+  + shortcut generator
+  + review load shifter
+  + hidden assumption reproducer
+  + field participant</code></pre>
+              </figure>
             </section>
             <section id="support" class="article-section">
               <h2>Bounded support</h2>
@@ -126,6 +155,35 @@
                 unknown, and which theorem or forecast boundaries should
                 reviewers see?
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-allowed-support">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-allowed-support">Allowed operation support</h3>
+                <p>
+                  The bounded candidate operation family an AI proposal may
+                  explore under prompt, policy, theorem, review, and field
+                  boundaries.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Contains</dt>
+                    <dd>Allowed operation families, forbidden support, theorem boundaries, review requirements, and unknown remainder.</dd>
+                  </div>
+                  <div>
+                    <dt>Does not prove</dt>
+                    <dd>General AI safety, model reliability, or architecture lawfulness.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>AI proposal governance</figcaption>
+                <pre><code>AI Proposal Governance
+  = prompt / policy boundary
+  + allowed operation support
+  + theorem boundary
+  + review / CI feedback
+  + observed shortcut / witness report
+  + field update</code></pre>
+              </figure>
             </section>
             <section id="witnesses" class="article-section">
               <h2>Shortcut witnesses</h2>
@@ -135,15 +193,75 @@
                 missing invariants, runtime boundary crossings, theorem
                 boundary gaps, or review load transfers.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-shortcut-witness">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-shortcut-witness">Shortcut witness</h3>
+                <p>
+                  Evidence that a low-cost generated path crosses a forbidden
+                  edge, misses an invariant, hides runtime risk, or shifts work
+                  into review.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Reports</dt>
+                    <dd>Forbidden edge, missing invariant, runtime boundary, theorem boundary, or review load.</dd>
+                  </div>
+                  <div>
+                    <dt>Feeds</dt>
+                    <dd>Review mediation, CI instrumentation, issue decomposition, and posterior field update.</dd>
+                  </div>
+                </dl>
+              </aside>
+            </section>
+            <section id="mediation" class="article-section">
+              <h2>Proposal mediation</h2>
+              <p>
+                AI governance is not only pre-generation policy. It is proposal
+                accounting after generation. Accepted, rejected, delayed,
+                reworked, unresolved, and incident-linked proposals all become
+                evidence about the field.
+              </p>
               <figure class="code-panel">
                 <figcaption>AI governance record</figcaption>
                 <pre><code>AI proposal stream
   -> allowed operation support
   -> shortcut witness report
   -> review / CI mediation
-  -> observed outcome
+  -> accepted / rejected / delayed / reworked / incident-linked
   -> posterior field update</code></pre>
               </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Mediation record</th>
+                      <th scope="col">Field meaning</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Accepted</th>
+                      <td>The generated operation became part of the realized field path.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Rejected</th>
+                      <td>The field exposed unsupported or unsafe proposal pressure.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Delayed</th>
+                      <td>The proposal found a path whose support needs design, ownership, or missing invariant work.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Reworked</th>
+                      <td>Governance redirected the proposal into a different supported path.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Incident-linked</th>
+                      <td>The proposal becomes runtime feedback and shortcut evidence.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
             <section id="feedback" class="article-section">
               <h2>Feedback</h2>
@@ -177,39 +295,6 @@
                 path was visible, the invariant was hidden, and governance did
                 not yet make the lawful path easier.
               </p>
-            </section>
-            <section id="chapter-summary" class="article-section">
-              <h2>Chapter summary</h2>
-              <p>
-                AI agents are field participants. They do not merely emit code;
-                they amplify whatever the field makes cheap, visible, and
-                accepted. SFT therefore governs AI proposal streams by shaping
-                allowed support, shortcut witnesses, review mediation, CI
-                feedback, and posterior field memory.
-              </p>
-              <p>
-                The mathematical guard is proposal accounting. Generated
-                pressure, accepted transitions, rejected shortcuts, delayed
-                work, and incidents remain distinct records. Lean-facing SFT
-                can then reason about supported operations and mediated steps
-                without confusing policy compliance with architecture
-                lawfulness.
-              </p>
-              <h3>Chapter glossary</h3>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>allowed support</dt>
-                  <dd>The operation family an AI proposal is allowed to explore under prompt, policy, theorem, and review boundaries.</dd>
-                </div>
-                <div>
-                  <dt>shortcut witness</dt>
-                  <dd>Evidence that a low-cost generated path crosses a forbidden edge, misses an invariant, or shifts review burden.</dd>
-                </div>
-                <div>
-                  <dt>mediation outcome</dt>
-                  <dd>The accepted, rejected, reworked, delayed, or incident-linked result recorded for posterior field update.</dd>
-                </div>
-              </dl>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../governance-attractor-engineering/"><span>Previous</span><strong>3-1. Governance and Attractor</strong></a>
