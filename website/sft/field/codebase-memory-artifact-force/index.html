@@ -69,6 +69,7 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#development-field">Development field</a></li>
                 <li><a href="#memory">Memory</a></li>
                 <li><a href="#artifact-force">Artifact force</a></li>
                 <li><a href="#mathematical-spine">Mathematical spine</a></li>
@@ -105,10 +106,44 @@
             </div>
           </aside>
           <div class="article-main">
-            <section id="memory" class="article-section">
+            <section id="development-field" class="article-section">
               <p class="research-question">
                 Can a codebase be read as memory that changes the next operation support?
               </p>
+              <h2>Development field</h2>
+              <p>
+                A <em>field</em> is the development situation that makes some
+                architecture operations natural: codebase memory, PRDs, issues,
+                developers, AI agents, ownership, review, CI, incidents, and
+                lifecycle pressure acting together.
+              </p>
+              <p>
+                A <em>force</em> is the action of an artifact on that field. A
+                PRD, issue, spec, review comment, incident report, or AI
+                proposal can change what is named, what is hidden, which path is
+                cheap, and which invariant becomes visible enough to protect.
+              </p>
+              <p>
+                In this sense, SFT is not a theory of the codebase alone. It is
+                a theory of software evolution as shaped by artifacts,
+                organization, tooling, feedback, and agents. AAT supplies the
+                local algebra of architecture; SFT asks how the surrounding
+                field makes future paths easier or harder to reach.
+              </p>
+              <p id="definition-1-0" class="statement">
+                <a class="statement-anchor" href="#definition-1-0">Definition 1.0.</a>
+                A development field is the selected organizational and technical
+                state from which SFT reads supported software-evolution paths.
+                AAT appears inside it as the local algebra of the architecture
+                projection.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1.0">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual core</span>
+                <span>Part 2 turns selected field readings into bounded computable objects.</span>
+              </p>
+            </section>
+            <section id="memory" class="article-section">
               <h2>Memory</h2>
               <p>
                 A repository remembers more than syntax. It remembers old

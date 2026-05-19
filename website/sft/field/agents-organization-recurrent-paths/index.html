@@ -159,10 +159,27 @@
             <section id="conway" class="article-section">
               <h2>Conway through SFT</h2>
               <p>
-                Conway's Law says system design reflects communication
-                structure. SFT reads this as field pressure. Communication
+                Conway's Law is the observation that organizations tend to
+                produce systems whose structure resembles their communication
+                structure. If four groups must coordinate through four
+                communication channels, the system often grows four visible
+                seams. If a feature requires three teams to negotiate, the
+                resulting architecture often carries that negotiation cost.
+              </p>
+              <p>
+                The usual reading is descriptive: look at the org chart and you
+                can often recognize its shadow in the software. SFT turns that
+                into a mechanism. The organization does not directly command an
+                architecture. It changes which work is easy to formulate, who
+                must approve it, where handoffs occur, which reviews are cheap,
+                and which changes are repeatedly selected.
+              </p>
+              <p>
+                In SFT terms, Conway's Law is field pressure. Communication
                 paths, ownership boundaries, approval flows, and review routes
-                alter which changes are low-cost and repeatedly selected.
+                reshape operation support and policy. Over time, repeated
+                low-friction operations become recurrent PR shapes, and those
+                recurrent PR shapes settle into architecture.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-organization-field">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -192,6 +209,34 @@
   -> recurrent PR shape
   -> architecture operation pattern</code></pre>
               </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Organization pressure</th>
+                      <th scope="col">SFT reading</th>
+                      <th scope="col">Architectural effect</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">A team owns checkout and another owns payment.</th>
+                      <td>Cross-boundary changes have higher coordination cost.</td>
+                      <td>Checkout/payment boundaries become stable, or shortcuts appear at the seam.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Reviewers are assigned by technical layer.</th>
+                      <td>Layer-local patches become cheaper than capability-wide changes.</td>
+                      <td>The architecture tends to preserve layer-shaped PRs.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AI agents implement from local examples.</th>
+                      <td>Visible local patterns become low-cost operation support.</td>
+                      <td>Good examples or shortcuts are amplified faster.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <p>
                 The important move is to replace a static resemblance story
                 with a dynamic one. The organization does not stamp the org
