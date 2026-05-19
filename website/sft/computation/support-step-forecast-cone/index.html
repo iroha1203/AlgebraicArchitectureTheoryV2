@@ -68,7 +68,10 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#artifact-action">Artifact action</a></li>
+                <li><a href="#core-pipeline">Computational core</a></li>
                 <li><a href="#support">Operation support</a></li>
+                <li><a href="#policy">Policy and selection</a></li>
                 <li><a href="#step">Step relation</a></li>
                 <li><a href="#cone">ForecastCone</a></li>
                 <li><a href="#safety">Support safety</a></li>
@@ -103,6 +106,106 @@
             </div>
           </aside>
           <div class="article-main">
+            <section id="artifact-action" class="article-section">
+              <h2>Artifact action</h2>
+              <p>
+                Part 2 begins before code changes. A PRD, spec, issue, design
+                note, or AI proposal acts on the field by opening candidate
+                update paths. It changes what developers consider natural,
+                reviewable, cheap, forbidden, or urgent. SFT calls this an
+                artifact-mediated change.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-artifact-action">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-artifact-action">ArtifactAction</h3>
+                <p>
+                  A set-valued action from a current field to candidate update
+                  descriptors under an explicit interpretation boundary.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Source</dt>
+                    <dd>PRD, issue, spec, review request, incident report, or AI-generated proposal.</dd>
+                  </div>
+                  <div>
+                    <dt>Effect</dt>
+                    <dd>Changes candidate support, policy, constraints, observation, and forecast boundary.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Set-valued action</figcaption>
+                <pre><code>ArtifactAction a
+  = alpha_a : FieldSpace -> Set FieldSpaceUpdateHypothesis
+
+ForecastConeFamilyAfterAction(F, a, h)
+  = { ForecastCone(F_u, U_u, h)
+      | u in alpha_a(F) }</code></pre>
+              </figure>
+              <p>
+                This is why SFT is not a PRD-to-PR predictor. The artifact does
+                not contain a single future diff. It creates a family of
+                possible field updates, each with its own support and forecast
+                boundary.
+              </p>
+            </section>
+            <section id="core-pipeline" class="article-section">
+              <h2>Computational core</h2>
+              <p>
+                The machinery is best read as a sequence of translations. Each
+                stage turns a living development situation into a more precise
+                object while keeping enough context to remain useful for
+                engineering judgment.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Part 2 pipeline</figcaption>
+                <pre><code>DevelopmentField
+  -> SoftwareFieldEstimate
+  -> architecture projection and AAT observables
+  -> ArchSig observation boundary
+  -> OperationSupport and OperationPolicy
+  -> StepRelation and bounded paths
+  -> ForecastCone family
+  -> ConsequenceEnvelope report
+  -> calibration hook and feedback update</code></pre>
+              </figure>
+              <p>
+                Lean-facing SFT isolates the theorem-bearing fragment: fields,
+                supported operations, step relations, bounded paths, cone
+                projection, envelope projection, support safety, and update
+                records. The rest of the organization remains in the field
+                model and observation boundary.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Formal surface</span>
+                      <h3>From field prose to theorem packages</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">Lean anchors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Core path</dt>
+                      <dd><code>SoftwareField</code>, <code>OperationSupport</code>, <code>StepRelation</code>, <code>ReachableFieldPath</code>, and <code>ForecastCone</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Projection</dt>
+                      <dd><code>ConsequenceEnvelope</code> is a loss-aware report projection from cone families and observation boundaries.</dd>
+                    </div>
+                    <div>
+                      <dt>Safety</dt>
+                      <dd>Support inclusion, step simulation, and selected safe-region preservation provide theorem-shaped guardrails.</dd>
+                    </div>
+                    <div>
+                      <dt>Feedback</dt>
+                      <dd>Update records preserve observed deltas, unexpected witnesses, review outcomes, and missing evidence.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
             <section id="support" class="article-section">
               <p class="research-question">
                 Can future software evolution be represented as supported paths rather than predicted endpoints?
@@ -140,9 +243,51 @@
   + applicable theorem boundary
   + precondition evidence
   + expected witness mapping
+  + non-conclusions
 
 OperationSupport(F)
   = admissible operation set in field F</code></pre>
+              </figure>
+            </section>
+            <section id="policy" class="article-section">
+              <h2>Policy and selection</h2>
+              <p>
+                Support says what is available. Policy says what is easy,
+                preferred, cheaper, or likely to be selected inside that support.
+                This distinction is the computational version of field force:
+                two operations can both be possible while one is much more
+                natural for the current organization, tooling, review culture,
+                and codebase memory.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-operation-policy">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-operation-policy">OperationPolicy</h3>
+                <p>
+                  A preorder, cost model, selection relation, or distribution
+                  over supported operations in a selected field.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Minimal core</dt>
+                    <dd>Preorder, cost, or selected-operation predicate.</dd>
+                  </div>
+                  <div>
+                    <dt>Extended semantics</dt>
+                    <dd>Probability distribution only when a stochastic model is explicitly chosen.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Policy readings</figcaption>
+                <pre><code>PolicyAsPreorder:
+  op1 <=_F op2
+    := op1 is no harder than op2 in field F
+
+PolicyAsCost:
+  cost_F(op) : OrderedCost
+
+PolicyAsSelection:
+  Selected(F, op)</code></pre>
               </figure>
             </section>
             <section id="step" class="article-section">
@@ -213,6 +358,22 @@ OperationSupport(F)
                 point prediction. It is the bounded shape of reachable futures
                 under stated support, step semantics, and horizon.
               </p>
+              <p>
+                Cone narrowing is the first theorem-shaped promise of this
+                machinery. If a new constraint preserves the intended feature
+                direction while removing a selected witness family, and if the
+                narrower support simulates into the wider support, then the
+                narrower cone projects into the wider cone over the same
+                horizon.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Cone narrowing schema</figcaption>
+                <pre><code>PointwiseSupportInclusion(U2, U1)
+  + StepSimulation(U2, U1, relation)
+  + matching start fields
+  -> ForecastCone(F2, U2, h)
+     projects into ForecastCone(F1, U1, h)</code></pre>
+              </figure>
             </section>
             <section id="safety" class="article-section">
               <h2>Support safety</h2>

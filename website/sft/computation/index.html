@@ -73,7 +73,6 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#introduction">Introduction</a></li>
-                <li><a href="#core">Computational core</a></li>
                 <li><a href="#reference-notes">Chapters</a></li>
               </ol>
             </nav>
@@ -130,86 +129,6 @@
                 when this field, this support relation, this policy, this
                 observation boundary, and this horizon are selected.
               </p>
-              <p id="definition-2-0" class="statement">
-                <a class="statement-anchor" href="#definition-2-0">Definition 2.0.</a>
-                A computable SFT problem is a selected field estimate together
-                with observation axes, admissible operation families, support
-                and policy assumptions, a horizon, and an explicit boundary for
-                unknown or unmodeled evidence.
-              </p>
-              <p class="statement-status" aria-label="SFT status for Definition 2.0">
-                <span class="statement-status-label">SFT status</span>
-                <span class="status-badge status-badge-defined">conceptual definition</span>
-                <span>Website explanation of SFT Parts II-V; no Lean theorem is added by this page.</span>
-              </p>
-            </section>
-
-            <section id="core" class="article-section">
-              <h2>Computational core</h2>
-              <p>
-                The machinery is best read as a sequence of translations. Each
-                stage turns a living development situation into a more precise
-                object while keeping enough context to remain useful for
-                engineering judgment.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Part 2 pipeline</figcaption>
-                <pre><code>DevelopmentField
-  -&gt; SoftwareFieldEstimate
-  -&gt; architecture projection and AAT observables
-  -&gt; ArchSig observation boundary
-  -&gt; OperationSupport and OperationPolicy
-  -&gt; StepRelation and bounded paths
-  -&gt; ForecastCone family
-  -&gt; ConsequenceEnvelope report
-  -&gt; calibration hook and feedback update</code></pre>
-              </figure>
-              <p>
-                The decisive concept is <code>OperationSupport</code>. It asks
-                what the field makes available, natural, cheap, reviewable, or
-                selected. A supported operation is not automatically safe, but
-                it is part of the future shape of the system. Once support is
-                explicit, <code>StepRelation</code> turns supported operations
-                into field transitions, and bounded paths become mathematical
-                objects.
-              </p>
-              <p>
-                The formal core protects the ambitious language. Lean-facing
-                SFT does not need to formalize every organization, PRD, or
-                human judgment. It isolates the theorem-bearing fragment:
-                fields, supported operations, step relations, bounded paths,
-                cone projection, envelope projection, support safety, and
-                update records.
-              </p>
-              <div class="theorem-card-list">
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Formal surface</span>
-                      <h3>From field prose to theorem packages</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">Lean anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Core path</dt>
-                      <dd><code>SoftwareField</code>, <code>OperationSupport</code>, <code>StepRelation</code>, <code>ReachableFieldPath</code>, and <code>ForecastCone</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Projection</dt>
-                      <dd><code>ConsequenceEnvelope</code> is a loss-aware report projection from cone families and observation boundaries.</dd>
-                    </div>
-                    <div>
-                      <dt>Safety</dt>
-                      <dd>Support inclusion, step simulation, and selected safe-region preservation provide theorem-shaped guardrails.</dd>
-                    </div>
-                    <div>
-                      <dt>Feedback</dt>
-                      <dd>Update records preserve observed deltas, unexpected witnesses, review outcomes, and missing evidence.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
             </section>
 
             <section id="reference-notes" class="article-section">
