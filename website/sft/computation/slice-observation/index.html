@@ -70,6 +70,7 @@
               <ol>
                 <li><a href="#slice">Slice</a></li>
                 <li><a href="#aat">AAT projection</a></li>
+                <li><a href="#translation">Claim translation</a></li>
                 <li><a href="#bridge">ArchSig bridge</a></li>
                 <li><a href="#archsig">ArchSig observation</a></li>
                 <li><a href="#estimate">Field estimate</a></li>
@@ -262,6 +263,81 @@
                 SFT premises and forecast boundaries. They do not become
                 empirical prediction theorems by crossing the interface.
               </p>
+            </section>
+            <section id="translation" class="article-section">
+              <h2>Claim translation</h2>
+              <p>
+                The interface is not only a dependency arrow. It is a translation
+                discipline. SFT reads AAT statements as local premises inside a
+                field computation. The claim level is preserved when it crosses
+                the boundary: a local theorem becomes a local law premise, a
+                tooling report becomes a field estimate, and an empirical
+                hypothesis becomes a calibrated forecast only after data enters.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">AAT side</th>
+                      <th scope="col">SFT reading</th>
+                      <th scope="col">Not this</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">selected witness absence</th>
+                      <td>selected local defect is not observed</td>
+                      <td>future trajectory is safe</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">signature axis zero</th>
+                      <td>selected measured coordinate is zero</td>
+                      <td>unmeasured axes are safe</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">operation preserves invariant</th>
+                      <td>one accepted transition is locally admissible</td>
+                      <td>the whole policy is globally safe</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">theorem boundary</th>
+                      <td>forecast boundary condition</td>
+                      <td>empirical prediction theorem</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">observed signature delta</th>
+                      <td>trajectory observation</td>
+                      <td>unique causal action identification</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">obstruction witness</th>
+                      <td>repair target or forecast boundary axis</td>
+                      <td>physical resistance or future certainty</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>
+                This is why SFT can be ambitious without smuggling in stronger
+                claims. AAT lawfulness can constrain a local transition.
+                It cannot, by itself, certify trajectory-level safety. A
+                measured signature coordinate can support comparison. It cannot,
+                by itself, become empirical prediction.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Claim-level handoff</figcaption>
+                <pre><code>AAT theorem level
+  -> SFT theorem schema local premise
+
+AAT tooling claim
+  -> SFT field estimate
+
+AAT empirical hypothesis
+  -> SFT calibrated forecast
+
+AAT non-conclusion
+  -> SFT forecast boundary item</code></pre>
+              </figure>
             </section>
             <section id="bridge" class="article-section">
               <h2>ArchSig bridge</h2>

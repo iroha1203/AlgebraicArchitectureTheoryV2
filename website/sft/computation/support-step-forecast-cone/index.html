@@ -74,7 +74,9 @@
                 <li><a href="#policy">Policy and selection</a></li>
                 <li><a href="#step">Step relation</a></li>
                 <li><a href="#cone">ForecastCone</a></li>
+                <li><a href="#reachability">Reachability regions</a></li>
                 <li><a href="#safety">Support safety</a></li>
+                <li><a href="#governance">Governance intervention</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -147,6 +149,39 @@ ForecastConeFamilyAfterAction(F, a, h)
                 not contain a single future diff. It creates a family of
                 possible field updates, each with its own support and forecast
                 boundary.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Object</th>
+                      <th scope="col">What it carries</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">RawArtifactAction</th>
+                      <td>source artifact, target field components, interpretation boundary, candidate updates, action boundary, composition boundary, observable boundary, and non-conclusions.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">ForceDescriptor</th>
+                      <td>action class, target architecture regions, candidate operation support, affected policy, constraints, governance, observation, and uncertainty boundary.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">ForecastedEffect</th>
+                      <td>forecast boundary, expected comparable axes, expected delta ranges, obstruction witness families, and unknown remainder.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">ObservedEffect</th>
+                      <td>observed transition, before/after signatures, comparable measured delta, unexpected witnesses, review, CI, and runtime outcome.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="plain-reading">
+                <strong>No circular forecast.</strong> The raw action does not
+                contain the forecast. The action supplies candidate pressure;
+                the forecast is computed from that pressure under a field model.
               </p>
             </section>
             <section id="core-pipeline" class="article-section">
@@ -375,6 +410,52 @@ PolicyAsSelection:
      projects into ForecastCone(F1, U1, h)</code></pre>
               </figure>
             </section>
+            <section id="reachability" class="article-section">
+              <h2>Reachability regions</h2>
+              <p>
+                Once the cone is explicit, SFT can ask several different
+                reachability questions instead of compressing them into one
+                risk score. May-reach, must-reach, stable-region, and reachable
+                preimage are different computational objects.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-stable-region">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-stable-region">StableRegion</h3>
+                <p>
+                  A region of field states closed under selected accepted steps.
+                </p>
+                <dl>
+                  <div>
+                    <dt>May reach</dt>
+                    <dd>At least one supported path reaches the target region within horizon.</dd>
+                  </div>
+                  <div>
+                    <dt>Must reach</dt>
+                    <dd>Every selected supported path reaches the target region within horizon.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Reachability vocabulary</figcaption>
+                <pre><code>MayReach_h(F, U, A)
+  = exists U-accepted path from F reaching A within h
+
+MustReach_h(F, U, A)
+  = every U-accepted path from F reaches A within h
+
+StableRegion(U, A)
+  = every U-accepted step from A stays inside A
+
+ReachablePreimage_h(U, A)
+  = { F | MayReach_h(F, U, A) }</code></pre>
+              </figure>
+              <p>
+                This is the careful version of attractor language. If a team
+                wants to say a field has an attractor, SFT asks which formal
+                structure supports that word: stability, recurrence, policy
+                preference, probability, or only a visible default path.
+              </p>
+            </section>
             <section id="safety" class="article-section">
               <h2>Support safety</h2>
               <p id="definition-2-2" class="statement">
@@ -383,6 +464,17 @@ PolicyAsSelection:
                 selected safe region or simulate a safer transition system over
                 a bounded horizon.
               </p>
+              <figure class="code-panel">
+                <figcaption>Safe-region preservation</figcaption>
+                <pre><code>SupportOperationsPreserveSafeRegion(U, O, R)
+  = selected operations in U realize only steps
+    that preserve region R under observation O
+
+StateInSafeRegion(O, R, F)
+  + accepted steps are selected from U
+  + SupportOperationsPreserveSafeRegion(U, O, R)
+  -> accepted trajectory remains in R</code></pre>
+              </figure>
               <p class="plain-reading">
                 <strong>Computation habit.</strong> First compute supported
                 paths. Then ask which selected constraints narrow or preserve
@@ -432,6 +524,57 @@ PolicyAsSelection:
                   </dl>
                 </article>
               </div>
+            </section>
+            <section id="governance" class="article-section">
+              <h2>Governance intervention</h2>
+              <p>
+                Review, CI, type checking, architecture rules, runtime guards,
+                and AI policy are not only gates at the end of development. In
+                SFT they are transformations of support, policy, observation,
+                and feedback. A governance system changes which future paths are
+                easy, visible, expensive, escalated, or remembered.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Intervention</th>
+                      <th scope="col">Computational effect</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Restrictive</th>
+                      <td>Removes unsafe or unsupported operation families.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Redirective</th>
+                      <td>Raises shortcut cost and lowers lawful path cost.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Instrumenting</th>
+                      <td>Adds observation axes, tests, traces, or runtime checks.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Escalating</th>
+                      <td>Turns proposal pressure into review, design, or incident records.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Learning</th>
+                      <td>Writes observed outcomes back into field memory.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <figure class="code-panel">
+                <figcaption>Governance as field transformation</figcaption>
+                <pre><code>GovernanceIntervention
+  = support transformation
+  + policy transformation
+  + observation enrichment
+  + feedback update
+  + escalation / deferral rule</code></pre>
+              </figure>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../slice-observation/"><span>Previous</span><strong>2-1. Slice and Observation</strong></a>

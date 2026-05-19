@@ -72,8 +72,10 @@
                 <li><a href="#envelope">Envelope</a></li>
                 <li><a href="#accounting">Proposal accounting</a></li>
                 <li><a href="#problems">Computational problems</a></li>
+                <li><a href="#problem-specs">Problem specs</a></li>
                 <li><a href="#pipeline">ArchSig pipeline</a></li>
                 <li><a href="#maturity">Simulator maturity</a></li>
+                <li><a href="#lifecycle">Lifecycle decisions</a></li>
                 <li><a href="#calibration">Calibration</a></li>
               </ol>
             </nav>
@@ -266,6 +268,110 @@
                 can be generated, reviewed, narrowed, and calibrated.
               </p>
             </section>
+            <section id="problem-specs" class="article-section">
+              <h2>Problem specs</h2>
+              <p>
+                A computational problem in SFT is not just a named task. It has
+                a field estimate, artifact or trace inputs, an expected output,
+                and a boundary saying what the output does not claim. This is
+                what lets SFT move from theory prose into tooling, review, and
+                benchmark design.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Problem</span>
+                      <h3>Field Reconstruction</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">trace-bound</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Input</dt>
+                      <dd>Development field boundary, artifact traces, codebase region, review, CI, and incident records.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd><code>SoftwareFieldEstimate</code> with selected evidence, unavailable evidence, and unknown remainder.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Field estimate, not complete reconstruction of the organization.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Problem</span>
+                      <h3>ConsequenceEnvelope Generation</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">reachability-bound</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Input</dt>
+                      <dd>Field estimate, artifact, observation boundary, support extractor, and horizon.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Envelope with path classes, regions, axes, witness candidates, missing boundaries, and recommendations.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Each reported path class needs support under the selected model or must be labeled heuristic.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Problem</span>
+                      <h3>Cone Narrowing</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">witness-relative</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Input</dt>
+                      <dd>Target artifact direction, selected witness family, support extractors, and step simulation relation.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Constraint, spec, or review intervention that removes selected witness paths while preserving direction.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Narrowing is relative to witness family, support, and horizon; it is not global risk reduction.</dd>
+                    </div>
+                  </dl>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Problem</span>
+                      <h3>AI Proposal Governance</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">proposal-bound</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Input</dt>
+                      <dd>AI proposal stream, prompt and policy boundary, field estimate, theorem boundary, review and CI traces.</dd>
+                    </div>
+                    <div>
+                      <dt>Output</dt>
+                      <dd>Bounded proposal support, shortcut witness report, review or CI intervention, and posterior field update.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Governance of selected proposals, not proof of general AI safety or architecture lawfulness.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
             <section id="pipeline" class="article-section">
               <h2>ArchSig pipeline</h2>
               <p>
@@ -368,6 +474,71 @@
                 linked to held-out traces and calibration records.
               </p>
             </section>
+            <section id="lifecycle" class="article-section">
+              <h2>Lifecycle decisions</h2>
+              <p>
+                A software field does not only grow. It stabilizes, drifts,
+                repairs, migrates, contracts, and sometimes exits. In SFT, an
+                end-of-life decision is not a management afterthought. It is a
+                field reconfiguration problem over architecture signatures,
+                operation cost, runtime risk, ownership capacity, and envelope
+                width.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Lifecycle decision model</figcaption>
+                <pre><code>LifecycleDecisionModel
+  = current LifecycleTrajectory
+  + ArchitectureSignature trajectory
+  + ConsequenceEnvelope family
+  + runtime / incident risk boundary
+  + ownership / staffing boundary
+  + selected intervention set
+  + non-conclusions
+
+SelectedIntervention
+  = repair | migration | contraction | deletion</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Intervention</th>
+                      <th scope="col">Reading</th>
+                      <th scope="col">Main comparison axes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Repair</th>
+                      <td>Keep the current field and add local support or invariants.</td>
+                      <td>repair adoption, missing invariant, runtime regression risk, ownership capacity.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Migration</th>
+                      <td>Move support and memory from an old field into a new field.</td>
+                      <td>projection mismatch, dual-run cost, consumer compatibility, rollback path.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Contraction</th>
+                      <td>Reduce unsupported surface and reallocate field capacity.</td>
+                      <td>removed operation family, affected runtime boundary, simplified signature axes.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Deletion</th>
+                      <td>Remove a field component or subsystem from the lifecycle.</td>
+                      <td>dependent operation loss, data or API retirement boundary, incident avoidance, unknown remainder.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>
+                The envelope gives these choices a common comparison surface. A
+                wide envelope does not automatically mean deletion, and a cheap
+                repair does not automatically mean future safety. The decision
+                remains relative to selected field capacity and observation
+                boundary.
+              </p>
+            </section>
             <section id="calibration" class="article-section">
               <h2>Calibration</h2>
               <p id="definition-2-3" class="statement">
@@ -407,6 +578,24 @@
   + review / CI refs
   + incident / rollback / runtime outcome refs
   -> matched / unmatched / unavailable / private / inconclusive</code></pre>
+              </figure>
+              <p>
+                Calibration is also where SFT becomes an empirical research
+                program. PRD-to-issue, issue-to-PR signature, review mediation,
+                incident feedback, AI shortcut, and lifecycle decision
+                benchmarks all ask the same core question: did the bounded
+                forecast artifact preserve enough structure to be compared with
+                later traces?
+              </p>
+              <figure class="code-panel">
+                <figcaption>Benchmark family</figcaption>
+                <pre><code>SFT Benchmark Suite
+  = PRD-to-Issue Benchmark
+  + Issue-to-PR Signature Benchmark
+  + Review Mediation Benchmark
+  + Incident Feedback Benchmark
+  + AI Shortcut Benchmark
+  + Lifecycle Decision Benchmark</code></pre>
               </figure>
               <p id="proposition-2-3" class="statement">
                 <a class="statement-anchor" href="#proposition-2-3">Proposition 2-3.</a>
