@@ -64,9 +64,9 @@
           <h1>Representations and Effects</h1>
           <p class="lede">
             Graph, matrix, analytic, and state-transition views are different
-            representations of selected architecture structure. AAT uses them
-            to transport zeros, obstructions, valuations, and effect laws
-            across explicit preserving and reflecting assumptions.
+            representations of architecture structure. AAT uses them to
+            transport zeros, obstructions, valuations, and effect laws across
+            explicit preserving and reflecting assumptions.
           </p>
         </div>
       </section>
@@ -105,8 +105,8 @@
                   </a>
                 </li>
                 <li>
-                  <a href="../signature-and-boundary/">
-                    Signature and Theorem Boundary
+                  <a href="../architecture-signature/">
+                    Architecture Signature
                   </a>
                 </li>
                 <li>
@@ -233,8 +233,8 @@ runtime propagation
                 architecture object into an analytic domain. The representation
                 can be zero-preserving, zero-reflecting,
                 obstruction-preserving, or obstruction-reflecting. These are
-                different strengths, and the reflecting directions are the ones
-                that need stronger evidence.
+                different strengths; reflecting directions carry stronger
+                evidence obligations.
               </p>
               <p id="definition-13-4" class="statement">
                 <a class="statement-anchor" href="#definition-13-4">Definition 13.4.</a>
@@ -259,7 +259,7 @@ runtime propagation
                 </li>
                 <li>
                   <strong>ObstructionReflecting</strong>
-                  <span>An analytic obstruction can be read back as structural only with explicit assumptions.</span>
+                  <span>An analytic obstruction can be read back as structural through explicit assumptions.</span>
                 </li>
               </ul>
               <figure class="code-panel">
@@ -282,11 +282,11 @@ structural zero</code></pre>
             <section id="representation-pattern" class="article-section">
               <h2>Representation pattern</h2>
               <p>
-                A representation theorem has two directions that must not be
-                conflated. Preserving sends a structural zero or witness into
+                A representation theorem has two directions with different
+                obligations. Preserving sends a structural zero or witness into
                 the representation. Reflecting reads a represented zero or
-                obstruction back into the structural world, and therefore needs
-                stronger assumptions.
+                obstruction back into the structural world through stronger
+                assumptions.
               </p>
               <figure class="code-panel">
                 <figcaption>Preserve versus reflect</figcaption>
@@ -316,12 +316,11 @@ structural zero</code></pre>
               </p>
               <p id="proof-13-5" class="statement-proof">
                 <a class="statement-anchor" href="#proof-13-5">Proof idea.</a>
-                The Lean API does not identify the four predicates. The
-                preserving theorems apply only when the corresponding
-                preserving field is supplied. The reflecting theorems require
-                the reflecting field and its assumptions. Therefore a report
-                that has only a represented value has not discharged the
-                structural theorem package.
+                The Lean API keeps the four predicates separate. The preserving
+                theorems use the corresponding preserving field; the reflecting
+                theorems use the reflecting field and its assumptions. A report
+                with a represented value still needs the reflecting package to
+                discharge the structural theorem.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -334,9 +333,9 @@ structural zero</code></pre>
               <p>
                 <code>ObstructionValuation</code> maps selected witnesses to
                 numeric or ordered values. Aggregates can be useful for
-                dashboards, but an aggregate zero reflects witness-level zero
-                only when the value domain and aggregation are zero-reflecting
-                under the selected assumptions.
+                dashboards; an aggregate zero reflects witness-level zero
+                through a zero-reflecting value domain and aggregation under
+                the selected assumptions.
               </p>
               <figure class="code-panel">
                 <figcaption>Zero reflection guard</figcaption>
@@ -355,10 +354,10 @@ aggregate = 0
               </p>
               <p id="proposition-13-6" class="statement">
                 <a class="statement-anchor" href="#proposition-13-6">Proposition 13.6.</a>
-                A zero valuation discharges only selected witness absence when
-                its zero-reflecting premise is available. An optional missing
-                value, an unavailable axis, or an unmeasured report field is
-                a different kind of zero.
+                A zero valuation discharges selected witness absence when its
+                zero-reflecting premise is available. An optional missing value,
+                an unavailable axis, or an unmeasured report field is a
+                different kind of zero.
               </p>
               <figure class="code-panel">
                 <figcaption>Measured zero versus unmeasured</figcaption>
@@ -395,25 +394,24 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
               </figure>
               <p id="definition-14-1" class="statement">
                 <a class="statement-anchor" href="#definition-14-1">Definition 14.1.</a>
-                A state-transition or effect-boundary law package is a
-                selected finite family of replay, roundtrip, compensation,
-                projection, migration, or effect relations read against a
-                carrier and observation semantics. Lawfulness is a selected
-                package claim, not a statement about all implementation
-                behavior.
+                A state-transition or effect-boundary law package is a selected
+                finite family of replay, roundtrip, compensation, projection,
+                migration, or effect relations read against a carrier and
+                observation semantics. Lawfulness is a package claim over those
+                selected relations.
               </p>
               <ul class="term-list">
                 <li>
                   <strong>Event Sourcing</strong>
-                  <span>Replay and projection laws are selected finite law cases, not proof of complete real-code event logs.</span>
+                  <span>Replay and projection laws are selected finite law cases; complete real-code event logs require separate evidence.</span>
                 </li>
                 <li>
                   <strong>Saga</strong>
-                  <span>Compensation and weak recovery are selected law packages, not a general inverse for every failure mode.</span>
+                  <span>Compensation and weak recovery are selected law packages; general inverses for failure modes require separate assumptions.</span>
                 </li>
                 <li>
                   <strong>CRUD</strong>
-                  <span>Overwrite behavior is read against the selected state and observation relation; it is not a universal theorem that CRUD is simple or bad.</span>
+                  <span>Overwrite behavior is read against the selected state and observation relation, separate from broad claims about CRUD.</span>
                 </li>
                 <li>
                   <strong>Circuit Breaker</strong>
@@ -457,17 +455,17 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
               <p id="proposition-14-2" class="statement">
                 <a class="statement-anchor" href="#proposition-14-2">Proposition 14.2.</a>
                 State-transition and effect-boundary lawfulness can be
-                connected to selected obstruction absence, but only for the
-                law family and observation semantics supplied to the package.
+                connected to selected obstruction absence for the law family and
+                observation semantics supplied to the package.
               </p>
               <p id="proof-14-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-14-2">Proof idea.</a>
                 The law family packages expose the selected laws and their
-                obstruction predicates in the same bounded universe. The bridge
-                theorem states that selected family lawfulness is equivalent
-                to absence of the selected family obstruction. It does not add
-                missing runtime traces, hidden effects, or real-code extractor
-                completeness.
+                obstruction predicates in the same universe. The bridge theorem
+                states that selected family lawfulness is equivalent to absence
+                of the selected family obstruction. Runtime traces, hidden
+                effects, and real-code extractor completeness require their own
+                evidence packages.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -482,7 +480,7 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                 objects into graphs, matrices, signature axes, and
                 state-transition law families. Preservation carries selected
                 structure forward; reflection reads represented evidence back
-                only when the needed assumptions are available.
+                through the needed assumptions.
               </p>
               <p>
                 The effect layer extends the same discipline to commands,
@@ -503,7 +501,7 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                 </div>
                 <div>
                   <dt>reflecting direction</dt>
-                  <dd>A represented zero or obstruction is read back as structural only with explicit assumptions.</dd>
+                  <dd>A represented zero or obstruction is read back as structural through explicit assumptions.</dd>
                 </div>
                 <div>
                   <dt>measured zero</dt>

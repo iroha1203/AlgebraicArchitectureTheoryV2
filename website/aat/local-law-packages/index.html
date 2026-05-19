@@ -66,7 +66,7 @@
             Projection, observation, substitutability, abstraction, and
             flatness become local theorem packages with explicit assumptions.
             AAT uses them to express local contract soundness and to compose
-            selected projection, LSP, DIP, runtime, and semantic evidence.
+            projection, LSP, DIP, runtime, and semantic evidence.
           </p>
         </div>
       </section>
@@ -105,8 +105,8 @@
                   </a>
                 </li>
                 <li>
-                  <a href="../signature-and-boundary/">
-                    Signature and Theorem Boundary
+                  <a href="../architecture-signature/">
+                    Architecture Signature
                   </a>
                 </li>
                 <li>
@@ -161,8 +161,8 @@
               <h2>Projection and observation</h2>
               <p>
                 Local law packages name the projection, observation, equality,
-                and selected context universe used by a claim. The schematic
-                kernel inclusion below is read relative to that chosen boundary.
+                and context universe used by a claim. The schematic kernel
+                inclusion below is read relative to that chosen boundary.
               </p>
               <figure class="code-panel">
                 <figcaption>Projection / observation kernel</figcaption>
@@ -234,9 +234,8 @@ ProjectionExact + RepresentativeStable</code></pre>
                 <a class="statement-anchor" href="#proof-7-4">Proof idea.</a>
                 Lean keeps the strength assumptions as separate fields and
                 proves accessor theorems from the bundled strong-DIP package.
-                The accessors prevent a soundness-only projection from being
-                silently read as an exact quotient or as an exhaustive
-                abstraction.
+                The accessors keep soundness, exact quotient structure, and
+                exhaustive abstraction as separate projection strengths.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -249,9 +248,9 @@ ProjectionExact + RepresentativeStable</code></pre>
               <p>
                 AAT reads LSP-style claims through observation. Two concrete
                 implementations may be substitutable for checkout totals,
-                rounding traces, and selected errors without being
-                substitutable for every client, timing property, or hidden
-                effect.
+                rounding traces, and selected errors while timing properties,
+                hidden effects, and other client contexts remain separate
+                observations.
               </p>
               <figure class="code-panel">
                 <figcaption>Selected client contexts</figcaption>
@@ -317,7 +316,7 @@ ProjectionExact + RepresentativeStable</code></pre>
             <section id="three-layer-flatness" class="article-section">
               <h2>Three-layer flatness</h2>
               <figure class="code-panel">
-                <figcaption>Bounded flatness</figcaption>
+                <figcaption>Three-layer flatness</figcaption>
                 <pre><code>ArchitectureFlatWithin
   = StaticFlatWithin
   + RuntimeFlatWithin
@@ -327,18 +326,17 @@ ProjectionExact + RepresentativeStable</code></pre>
               </figure>
               <p id="definition-8-1" class="statement">
                 <a class="statement-anchor" href="#definition-8-1">Definition 8.1.</a>
-                <code>ArchitectureFlatWithin</code> is the bounded,
-                coverage-aware flatness predicate that bundles selected static,
-                runtime, and semantic flatness with required-axis coverage and
-                exactness boundaries.
+                <code>ArchitectureFlatWithin</code> is the coverage-aware
+                flatness predicate that bundles selected static, runtime, and
+                semantic flatness with required-axis coverage and exactness
+                boundaries.
               </p>
               <p id="proposition-8-2" class="statement">
                 <a class="statement-anchor" href="#proposition-8-2">Proposition 8.2.</a>
-                A lawful split-feature or extension package yields bounded
-                <code>ArchitectureFlatWithin</code> only when extension
-                coverage, static side conditions, runtime coverage / flatness,
-                semantic coverage / flatness, and recorded non-conclusions are
-                supplied.
+                A lawful split-feature or extension package yields
+                <code>ArchitectureFlatWithin</code> through extension coverage,
+                static side conditions, runtime coverage / flatness, semantic
+                coverage / flatness, and recorded non-conclusions.
               </p>
               <p id="non-conclusion-8-3" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-8-3">Non-conclusion 8.3.</a>
@@ -360,8 +358,8 @@ ProjectionExact + RepresentativeStable</code></pre>
                 <a class="statement-anchor" href="#example-8-4">Example 8.4.</a>
                 A selected replacement can be LSP-sound for selected client
                 contexts when the chosen observations remain equivalent. That
-                local theorem still needs separate static, runtime, and
-                semantic packages before it can be read as bounded flatness.
+                local theorem composes with separate static, runtime, and
+                semantic packages to support <code>ArchitectureFlatWithin</code>.
               </p>
               <p id="counterexample-8-5" class="statement">
                 <a class="statement-anchor" href="#counterexample-8-5">Counterexample 8.5.</a>
@@ -401,8 +399,8 @@ ProjectionExact + RepresentativeStable</code></pre>
               <p>
                 Local law packages make principle-level claims composable.
                 Projection, DIP compatibility, LSP compatibility, and
-                observation equivalence can be bundled into bounded theorem
-                packages that preserve selected local invariants.
+                observation equivalence can be bundled into theorem packages
+                that preserve selected local invariants.
               </p>
               <p>
                 The key reading is layered rather than slogan-based. SOLID
@@ -433,9 +431,9 @@ ProjectionExact + RepresentativeStable</code></pre>
             </section>
 
             <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../signature-and-boundary/">
+              <a href="../architecture-signature/">
                 <span>Previous</span>
-                <strong>Signature and Boundary</strong>
+                <strong>Architecture Signature</strong>
               </a>
               <a href="../calculus-and-extensions/">
                 <span>Next</span>
