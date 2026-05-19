@@ -73,7 +73,6 @@
                 <li><a href="#accounting">Proposal accounting</a></li>
                 <li><a href="#pipeline">ArchSig pipeline</a></li>
                 <li><a href="#calibration">Calibration</a></li>
-                <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -118,6 +117,38 @@
                 obstruction candidates, missing boundaries, and unknown
                 remainder.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-consequence-envelope">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-consequence-envelope">ConsequenceEnvelope</h3>
+                <p>
+                  A reviewer-facing projection of one or more ForecastCones
+                  into path classes, affected regions, signature axes,
+                  obstruction candidates, missing boundaries, and unknown
+                  remainder.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Audience</dt>
+                    <dd>Reviewers, issue authors, CI designers, and tool reports.</dd>
+                  </div>
+                  <div>
+                    <dt>Shape</dt>
+                    <dd>Loss-aware report projection, not a reconstruction of the full cone family.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Envelope projection</figcaption>
+                <pre><code>ConsequenceEnvelope
+  = selected cone family
+  + reachable path classes
+  + affected architecture regions
+  + comparable signature axes
+  + obstruction witness candidates
+  + missing invariants / boundaries
+  + review / CI recommendations
+  + unknown remainder</code></pre>
+              </figure>
             </section>
             <section id="accounting" class="article-section">
               <h2>Proposal accounting</h2>
@@ -127,6 +158,25 @@
                 review-mediated outcomes. That accounting matters because
                 rejected and delayed paths still teach the field.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-proposal-accounting">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-proposal-accounting">Proposal accounting</h3>
+                <p>
+                  The bookkeeping that separates generated proposal pressure
+                  from accepted, rejected, delayed, unresolved, and
+                  review-mediated transitions.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Why</dt>
+                    <dd>Rejected and delayed proposals still reveal support, policy, and governance pressure.</dd>
+                  </div>
+                  <div>
+                    <dt>Use</dt>
+                    <dd>Feeds review mediation, feedback update, and later calibration records.</dd>
+                  </div>
+                </dl>
+              </aside>
             </section>
             <section id="pipeline" class="article-section">
               <h2>ArchSig pipeline</h2>
@@ -140,6 +190,34 @@
   -> review / CI / outcome refs
   -> calibration hook</code></pre>
               </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Artifact</th>
+                      <th scope="col">Role</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row"><code>artifact-descriptor-v0</code></th>
+                      <td>Captures source artifact, action class, scope, refs, and missing evidence.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>operation-support-estimate-v0</code></th>
+                      <td>Records candidate operation families, constraints, forbidden support, and unknown remainder.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>forecast-cone-skeleton-v0</code></th>
+                      <td>Stores finite support refs, bounded horizon, path class candidates, and forecast boundary.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>consequence-envelope-report-v0</code></th>
+                      <td>Projects cone skeletons into reviewer-facing regions, axes, witnesses, and recommendations.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
             <section id="calibration" class="article-section">
               <h2>Calibration</h2>
@@ -149,6 +227,25 @@
                 artifacts and later observed PR, review, CI, incident, and
                 outcome references under an explicit benchmark protocol.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-calibration">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-calibration">Calibration</h3>
+                <p>
+                  The empirical linkage between forecast items and later
+                  observed PR, review, CI, incident, rollback, or outcome
+                  records.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Categories</dt>
+                    <dd>Matched, unmatched, unavailable, private, not comparable, inconclusive.</dd>
+                  </div>
+                  <div>
+                    <dt>Purpose</dt>
+                    <dd>Turns SFT from review artifact generation into an empirically testable research program.</dd>
+                  </div>
+                </dl>
+              </aside>
               <p class="plain-reading">
                 <strong>Workbench habit.</strong> The envelope is useful before
                 calibration as a review artifact. Calibration begins when the
@@ -177,38 +274,6 @@
                 that report into issue decomposition and invariant questions
                 before the PR is written.
               </p>
-            </section>
-            <section id="chapter-summary" class="article-section">
-              <h2>Chapter summary</h2>
-              <p>
-                A ConsequenceEnvelope is how a cone becomes useful to review.
-                It projects field paths into affected regions, signature axes,
-                obstruction candidates, missing invariants, unknown remainder,
-                and proposal accounting. It turns force-shaped futures into a
-                concrete review surface.
-              </p>
-              <p>
-                The mathematical guard is loss-aware projection. The envelope
-                does not claim to recover every path, assign probability, or
-                prove causal correctness. It preserves enough structure to make
-                review, CI, issue decomposition, and later calibration attach
-                to the same bounded forecast artifact.
-              </p>
-              <h3>Chapter glossary</h3>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>consequence envelope</dt>
-                  <dd>A reviewer-facing projection of cone families into path classes, signature axes, witnesses, and boundaries.</dd>
-                </div>
-                <div>
-                  <dt>proposal accounting</dt>
-                  <dd>The bookkeeping that separates generated proposal pressure from accepted, rejected, delayed, and unresolved transitions.</dd>
-                </div>
-                <div>
-                  <dt>calibration hook</dt>
-                  <dd>The link between forecast item references and later observed PR, review, CI, incident, or outcome references.</dd>
-                </div>
-              </dl>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../support-step-forecast-cone/"><span>Previous</span><strong>2-2. Support and Cone</strong></a>

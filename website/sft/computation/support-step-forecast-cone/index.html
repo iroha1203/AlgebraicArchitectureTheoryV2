@@ -72,7 +72,6 @@
                 <li><a href="#step">Step relation</a></li>
                 <li><a href="#cone">ForecastCone</a></li>
                 <li><a href="#safety">Support safety</a></li>
-                <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -115,6 +114,36 @@
                 selected. It is not yet safety. It is the shape of what can
                 plausibly happen next under the selected field model.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-operation-support">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-operation-support">OperationSupport</h3>
+                <p>
+                  The operation family available at a field state after
+                  selected constraints, governance, evidence, and policy are
+                  taken into account.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Question</dt>
+                    <dd>Which changes are available, natural, low-cost, reviewable, or selected?</dd>
+                  </div>
+                  <div>
+                    <dt>Boundary</dt>
+                    <dd>Support is not safety; it is the field-relative space of plausible next operations.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Support object</figcaption>
+                <pre><code>SupportedOperation
+  = operation
+  + applicable theorem boundary
+  + precondition evidence
+  + expected witness mapping
+
+OperationSupport(F)
+  = admissible operation set in field F</code></pre>
+              </figure>
             </section>
             <section id="step" class="article-section">
               <h2>Step relation</h2>
@@ -124,9 +153,53 @@
                 software evolution is no longer only a sequence of commits; it
                 is a path object with witnesses, support, and observation.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-step-relation">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-step-relation">StepRelation</h3>
+                <p>
+                  The relation that says a supported operation can move one
+                  selected field estimate to another.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Input</dt>
+                    <dd>Field <code>F</code>, operation <code>op</code>, candidate next field <code>F'</code>.</dd>
+                  </div>
+                  <div>
+                    <dt>Output</dt>
+                    <dd>A witnessed step that can be composed into bounded field paths.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Step relation</figcaption>
+                <pre><code>StepRelation(F, op, F')
+  = op is supported in F
+  + op can realize a transition from F to F'
+  + selected observation boundary records the step evidence</code></pre>
+              </figure>
             </section>
             <section id="cone" class="article-section">
               <h2>ForecastCone</h2>
+              <aside class="vocabulary-card" aria-labelledby="vocab-forecast-cone-2">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-forecast-cone-2">ForecastCone</h3>
+                <p>
+                  The bounded set of reachable field paths generated from a
+                  starting field, a support relation, step semantics, and a
+                  finite horizon.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Shape</dt>
+                    <dd>Path set, not point prediction.</dd>
+                  </div>
+                  <div>
+                    <dt>Use</dt>
+                    <dd>Lets support inclusion, step simulation, and cone narrowing become theorem-shaped questions.</dd>
+                  </div>
+                </dl>
+              </aside>
               <figure class="code-panel">
                 <figcaption>Bounded cone core</figcaption>
                 <pre><code>ForecastCone(F, U, h)
@@ -198,38 +271,6 @@
                   </dl>
                 </article>
               </div>
-            </section>
-            <section id="chapter-summary" class="article-section">
-              <h2>Chapter summary</h2>
-              <p>
-                The ForecastCone is the central mathematical image of SFT. A
-                field exerts force by changing support; support generates
-                steps; steps generate bounded paths; bounded paths form the
-                cone of reachable architecture futures.
-              </p>
-              <p>
-                Lean protects that image by keeping each layer typed:
-                <code>SoftwareField</code>, operation support,
-                <code>StepRelation</code>, bounded horizon, reachable path,
-                cone, and safe-region predicate. This lets SFT speak boldly
-                about future shape while proving only the inclusion,
-                simulation, and preservation claims its assumptions justify.
-              </p>
-              <h3>Chapter glossary</h3>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>operation support</dt>
-                  <dd>The supported operation family at a field state under selected constraints and governance.</dd>
-                </div>
-                <div>
-                  <dt>step relation</dt>
-                  <dd>The relation saying a supported operation can move one field estimate to another.</dd>
-                </div>
-                <div>
-                  <dt>forecast cone</dt>
-                  <dd>The bounded set of reachable field paths under a support relation and horizon.</dd>
-                </div>
-              </dl>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../slice-observation/"><span>Previous</span><strong>2-1. Slice and Observation</strong></a>

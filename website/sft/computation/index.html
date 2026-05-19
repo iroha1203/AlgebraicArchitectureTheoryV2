@@ -61,11 +61,8 @@
           <p class="eyebrow">SFT Part 2</p>
           <h1>Making Software Evolution Computable</h1>
           <p class="lede">
-            Part 1 makes the field visible. Part 2 cuts a mathematical core
-            from it: selected field estimates, architecture projections,
-            operation support, step relations, horizons, ForecastCones, and
-            ConsequenceEnvelopes that let us compute the shape of reachable
-            software futures.
+            Part 2 turns the field into bounded objects: slices, observations,
+            supported steps, forecast cones, and reviewer-facing envelopes.
           </p>
         </div>
       </section>
@@ -75,11 +72,9 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#move">The move</a></li>
-                <li><a href="#machine">The SFT machine</a></li>
-                <li><a href="#cone-envelope">Cone and envelope</a></li>
-                <li><a href="#lean">Lean-backed discipline</a></li>
-                <li><a href="#reference-notes">Reference notes</a></li>
+                <li><a href="#introduction">Introduction</a></li>
+                <li><a href="#core">Computational core</a></li>
+                <li><a href="#reference-notes">Chapters</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -111,11 +106,8 @@
             </div>
           </aside>
           <div class="article-main">
-            <section id="move" class="article-section">
-              <p class="research-question">
-                How can a large, living development field become a mathematical object without losing its force?
-              </p>
-              <h2>The move</h2>
+            <section id="introduction" class="article-section">
+              <h2>Introduction</h2>
               <p>
                 The computational move in SFT is not to shrink the theory until
                 it becomes a static metric. It is to keep the large object in
@@ -152,8 +144,8 @@
               </p>
             </section>
 
-            <section id="machine" class="article-section">
-              <h2>The SFT machine</h2>
+            <section id="core" class="article-section">
+              <h2>Computational core</h2>
               <p>
                 The machinery is best read as a sequence of translations. Each
                 stage turns a living development situation into a more precise
@@ -181,43 +173,6 @@
                 into field transitions, and bounded paths become mathematical
                 objects.
               </p>
-              <p>
-                This is where SFT becomes stronger than a metaphor. "The PRD
-                pushes the system toward shortcut paths" can be sharpened into
-                a question about candidate operation families, affected
-                architecture regions, comparable signature axes, obstruction
-                witnesses, and bounded reachable paths.
-              </p>
-              <p class="plain-reading">
-                <strong>Computation habit.</strong> Do not ask whether the
-                future is known. Ask which reachable paths are supported under
-                the stated field model, and what evidence would change that
-                support.
-              </p>
-            </section>
-
-            <section id="cone-envelope" class="article-section">
-              <h2>Cone and envelope</h2>
-              <p>
-                The theoretical object is the <code>ForecastCone</code>: the
-                bounded set of reachable field paths from a selected starting
-                field under selected support and horizon. The practical object
-                is the <code>ConsequenceEnvelope</code>: a readable projection
-                of one or more cones into affected regions, path classes,
-                signature axes, obstruction candidates, missing invariants, and
-                review questions.
-              </p>
-              <p>
-                This distinction is what gives SFT its engineering shape. A
-                theorist can reason about cones and simulations. A reviewer can
-                reason about envelopes. A tool can generate skeleton artifacts.
-                A later calibration protocol can compare forecast items to
-                observed PR, review, CI, incident, and outcome references.
-              </p>
-            </section>
-
-            <section id="lean" class="article-section">
-              <h2>Lean-backed discipline</h2>
               <p>
                 The formal core protects the ambitious language. Lean-facing
                 SFT does not need to formalize every organization, PRD, or
@@ -258,11 +213,11 @@
             </section>
 
             <section id="reference-notes" class="article-section">
-              <h2>Part 2 chapters</h2>
+              <h2>Chapters</h2>
               <p>
-                The computation material now reads as three medium chapters:
-                how the field is sliced, how paths are generated, and how
-                results become review and calibration artifacts.
+                Part 2 develops the computation in three steps: slicing and
+                observation, support and cone generation, and envelope
+                projection with calibration hooks.
               </p>
               <ul class="chapter-list">
                 <li><a href="slice-observation/">2-1. Computable Slice and Observation</a><span>How a large DevelopmentField becomes a bounded SoftwareFieldEstimate, AAT projection, and ArchSig observation surface.</span></li>

@@ -72,7 +72,6 @@
                 <li><a href="#aat">AAT projection</a></li>
                 <li><a href="#archsig">ArchSig observation</a></li>
                 <li><a href="#estimate">Field estimate</a></li>
-                <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -117,6 +116,35 @@
                 governance records, selected horizon, and explicit unknown
                 remainder.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-modeling-boundary">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-modeling-boundary">Modeling boundary</h3>
+                <p>
+                  The selected slice of a development field that a computation
+                  is allowed to use.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Includes</dt>
+                    <dd>Artifacts, code region, architecture universe, axes, governance records, horizon, and unknown remainder.</dd>
+                  </div>
+                  <div>
+                    <dt>Purpose</dt>
+                    <dd>Makes the field computable without pretending to reconstruct the whole organization.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Computable slice</figcaption>
+                <pre><code>SoftwareFieldEstimate
+  = modeling boundary
+  + selected evidence
+  + architecture projection
+  + observation axes
+  + governance records
+  + unavailable / private evidence
+  + unknown remainder</code></pre>
+              </figure>
             </section>
             <section id="aat" class="article-section">
               <h2>AAT projection</h2>
@@ -127,6 +155,24 @@
                 algebra: operations, invariants, witnesses, signatures, and
                 theorem boundaries that SFT can use as local premises.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-architecture-projection">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-architecture-projection">Architecture projection</h3>
+                <p>
+                  The AAT-readable architecture object extracted from a selected
+                  field estimate.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Direction</dt>
+                    <dd><code>SoftwareField -> ArchitectureObject</code></dd>
+                  </div>
+                  <div>
+                    <dt>Use</dt>
+                    <dd>Supplies local operations, invariants, signatures, and witnesses for SFT computation.</dd>
+                  </div>
+                </dl>
+              </aside>
               <figure class="code-panel">
                 <figcaption>One-way interface</figcaption>
                 <pre><code>SoftwareField
@@ -145,6 +191,24 @@
                 unknown remainder. It is what lets the theory remain connected
                 to repositories without claiming complete extraction.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-observation-boundary">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-observation-boundary">Observation boundary</h3>
+                <p>
+                  The record of what was measured, unavailable, private,
+                  unsupported, or still unknown in the selected slice.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Measured</dt>
+                    <dd>Comparable signature axes, witnesses, theorem-boundary notes.</dd>
+                  </div>
+                  <div>
+                    <dt>Not measured</dt>
+                    <dd>Unavailable and private evidence remain boundary items, not zeros.</dd>
+                  </div>
+                </dl>
+              </aside>
             </section>
             <section id="estimate" class="article-section">
               <h2>Field estimate</h2>
@@ -186,40 +250,6 @@
                 <span>Formal direction</span>
                 <a href="../../references/formal-anchors/">SFT Formal Core and Anchors</a>
               </p>
-            </section>
-            <section id="chapter-summary" class="article-section">
-              <h2>Chapter summary</h2>
-              <p>
-                SFT becomes computable by cutting a slice from a larger
-                development field. The slice is not a confession that the field
-                metaphor failed; it is the mathematical move that makes field
-                dynamics inspectable: selected evidence, selected axes,
-                selected architecture projection, and explicit unknown
-                remainder.
-              </p>
-              <p>
-                AAT and ArchSig protect the slice. AAT supplies the local
-                algebra of architecture objects, operations, invariants,
-                signatures, and witnesses. ArchSig supplies bounded
-                observation. Lean-facing SFT then reasons about the selected
-                <code>SoftwareFieldEstimate</code> without pretending to have
-                extracted the whole organization.
-              </p>
-              <h3>Chapter glossary</h3>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>modeling boundary</dt>
-                  <dd>The selected artifacts, code region, architecture universe, axes, governance records, horizon, and unknown remainder.</dd>
-                </div>
-                <div>
-                  <dt>architecture projection</dt>
-                  <dd>The AAT-readable object extracted from a SoftwareField for local algebra and theorem premises.</dd>
-                </div>
-                <div>
-                  <dt>observation boundary</dt>
-                  <dd>The measured, unavailable, private, out-of-scope, and unknown evidence status for later computation.</dd>
-                </div>
-              </dl>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 2. The Computation</strong></a>
