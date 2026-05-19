@@ -58,8 +58,8 @@
           <p class="lede">
             A codebase is field memory. A PRD, issue, spec, design note,
             review comment, or incident report is field action. Together they
-            explain why software futures begin to take shape before the next
-            pull request exists.
+            explain why the next pull request is never born from an empty
+            present.
           </p>
         </div>
       </section>
@@ -123,6 +123,32 @@
                 invariants are easy to preserve, and which shortcuts can be
                 copied without being named.
               </p>
+              <p>
+                This is one reason architectural debt can feel stubborn even
+                when everyone agrees with the desired design. The problem is not
+                only that the code has the wrong shape. The field has learned a
+                path. It has examples, review habits, missing tests, owner
+                expectations, and short-term success stories that make the old
+                path cheap to repeat.
+              </p>
+              <ul class="concept-grid">
+                <li>
+                  <strong>Sediment</strong>
+                  <span>Past decisions become local examples that future changes reuse.</span>
+                </li>
+                <li>
+                  <strong>Default path</strong>
+                  <span>The field makes one operation family feel easier than its alternatives.</span>
+                </li>
+                <li>
+                  <strong>Hidden invariant</strong>
+                  <span>A rule exists in practice but has not been made visible to artifacts, tests, or review.</span>
+                </li>
+                <li>
+                  <strong>Agent prompt</strong>
+                  <span>The codebase and its documents become the context from which AI agents infer what to do next.</span>
+                </li>
+              </ul>
             </section>
             <section id="artifact-force" class="article-section">
               <h2>Artifact force</h2>
@@ -146,6 +172,15 @@
                 The word force is useful here because the artifact need not
                 determine a single change. It changes the shape of the possible
                 next changes.
+              </p>
+              <p>
+                In ordinary process language, artifacts are often treated as
+                coordination aids: a PRD explains the feature, an issue tracks
+                work, a review comment asks for a revision, and an incident
+                report records what happened. SFT gives them a stronger role.
+                Each artifact can change the support of the field. It can make
+                a lawful path easier to discover, a shortcut harder to justify,
+                or a missing invariant visible enough to become a future test.
               </p>
               <ul class="status-list">
                 <li>
@@ -171,6 +206,34 @@
                 semantic obstruction. The PRD has not changed the code, but it
                 has changed the field of plausible implementations.
               </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Artifact wording</th>
+                      <th scope="col">Field effect</th>
+                      <th scope="col">Likely PR shape</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">"Allow coupons at checkout."</th>
+                      <td>Feature is named, but ownership and invariants are left implicit.</td>
+                      <td>Nearby patch, adapter modification, or UI-only state.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">"Coupons are discount policies composed before tax and payment authorization."</th>
+                      <td>Boundary, order, and semantic responsibility become visible.</td>
+                      <td>Policy insertion with tests for composition and rounding.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">"Refunds and cancellations must preserve the original discount semantics."</th>
+                      <td>Runtime and lifecycle observations enter the field before implementation.</td>
+                      <td>Checkout, payment, refund, and accounting paths are reviewed together.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <p class="plain-reading">
                 <strong>Reading habit.</strong> Do not ask only what the
                 artifact says. Ask which operation families it makes visible,
@@ -237,6 +300,12 @@
                 operation support, observation boundary, and architecture
                 projection separate enough that equal code graphs can still
                 have different reachable futures.
+              </p>
+              <p>
+                For a reader of the website, the practical lesson is simpler:
+                write artifacts as if they are part of the architecture. They
+                are. They change what the next engineer or AI agent can see,
+                justify, preserve, and accidentally erase.
               </p>
               <h3>Chapter glossary</h3>
               <dl class="term-list definition-list">

@@ -57,8 +57,9 @@
           <h1>Governance Feedback and Architecture Futures</h1>
           <p class="lede">
             Review, CI, type checking, incidents, postmortems, and runtime
-            observations do more than judge finished work. They update field
-            memory and change which architecture futures become visible next.
+            observations do more than judge finished work. They teach the field
+            what to notice next, what to forbid next, and what kind of future
+            should become easier to reach.
           </p>
         </div>
       </section>
@@ -116,6 +117,32 @@
                 expensive. A postmortem can turn runtime pain into future
                 support, tests, ownership, or review rules.
               </p>
+              <p>
+                This is the closed-loop heart of SFT. A field proposes futures,
+                governance selects among them, observation reveals what the
+                field failed to see, and the result becomes memory for the next
+                proposal. A healthy architecture process is not merely a gate.
+                It is a learning system that changes the support of future
+                changes.
+              </p>
+              <ul class="concept-grid">
+                <li>
+                  <strong>Restrict</strong>
+                  <span>Remove unsafe support when a path should not be available.</span>
+                </li>
+                <li>
+                  <strong>Redirect</strong>
+                  <span>Raise shortcut cost and lower the cost of the lawful path.</span>
+                </li>
+                <li>
+                  <strong>Instrument</strong>
+                  <span>Add tests, checks, telemetry, or runtime observations that make drift visible.</span>
+                </li>
+                <li>
+                  <strong>Learn</strong>
+                  <span>Record review, CI, and incident outcomes as memory for the next field state.</span>
+                </li>
+              </ul>
             </section>
             <section id="futures" class="article-section">
               <h2>Architecture futures</h2>
@@ -134,6 +161,14 @@
   + obstruction witness candidates
   + forecast boundary</code></pre>
               </figure>
+              <p>
+                This language is intentionally different from prediction as a
+                single answer. SFT is interested in a cone of reachable paths:
+                which future changes are now closer, which have moved farther
+                away, which regions of architecture are likely to be touched,
+                and which obstructions are likely to matter if the path
+                continues.
+              </p>
             </section>
             <section id="trajectory" class="article-section">
               <h2>Signature trajectory</h2>
@@ -143,6 +178,36 @@
                 therefore keeps trajectory language: what changed, in which
                 order, on which axes, and with which evidence boundary.
               </p>
+              <p>
+                This is where ArchSig becomes useful as an observation lens.
+                The point is not to compress architecture into one score. The
+                point is to keep a multi-axis record of movement: dependency
+                direction, boundary preservation, semantic obstruction,
+                runtime exposure, review evidence, and the places where the
+                field still cannot see.
+              </p>
+              <div class="path-matrix" role="list" aria-label="Trajectory questions">
+                <article role="listitem">
+                  <span>before</span>
+                  <h3>What did the field support?</h3>
+                  <p>Which operations were cheap, visible, reviewable, or hidden before the artifact arrived?</p>
+                </article>
+                <article role="listitem">
+                  <span>during</span>
+                  <h3>Which path was selected?</h3>
+                  <p>Which PR shape appeared, which invariants were preserved, and where did obstructions surface?</p>
+                </article>
+                <article role="listitem">
+                  <span>after</span>
+                  <h3>What did the field learn?</h3>
+                  <p>Which tests, review rules, owner routes, incident memories, or agent policies changed future support?</p>
+                </article>
+                <article role="listitem">
+                  <span>next</span>
+                  <h3>Which futures moved?</h3>
+                  <p>Which good paths became easier, which shortcuts became expensive, and which unknowns remain active?</p>
+                </article>
+              </div>
             </section>
             <section id="bridge" class="article-section">
               <h2>Bridge to computation</h2>
@@ -197,6 +262,13 @@
                 movement, obstruction candidates, and forecast boundaries
                 visible so Lean-facing theorem schemas can state exactly which
                 path properties are preserved.
+              </p>
+              <p>
+                The practical ambition is bigger than inspection. SFT points
+                toward attractor engineering: designing PRDs, reviews, tests,
+                AI policies, ownership routes, and operational feedback so that
+                good changes become easier to find and bad shortcuts become
+                visible before they become the obvious path.
               </p>
               <h3>Chapter glossary</h3>
               <dl class="term-list definition-list">
