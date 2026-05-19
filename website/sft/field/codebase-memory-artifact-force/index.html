@@ -71,6 +71,7 @@
               <ol>
                 <li><a href="#memory">Memory</a></li>
                 <li><a href="#artifact-force">Artifact force</a></li>
+                <li><a href="#mathematical-spine">Mathematical spine</a></li>
                 <li><a href="#coupon">Coupon PRD</a></li>
                 <li><a href="#field-reading">Field reading</a></li>
                 <li><a href="#chapter-summary">Chapter summary</a></li>
@@ -123,6 +124,25 @@
                 invariants are easy to preserve, and which shortcuts can be
                 copied without being named.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-field-memory">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-field-memory">Field memory</h3>
+                <p>
+                  The remembered development state that makes later operations
+                  feel natural: code examples, review precedents, incidents,
+                  ownership routes, migrations, tests, and missing tests.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Role</dt>
+                    <dd>Turns past changes into present operation support.</dd>
+                  </div>
+                  <div>
+                    <dt>Reading</dt>
+                    <dd>Ask what the codebase teaches the next engineer or AI agent to copy.</dd>
+                  </div>
+                </dl>
+              </aside>
               <p>
                 This is one reason architectural debt can feel stubborn even
                 when everyone agrees with the desired design. The problem is not
@@ -173,6 +193,24 @@
                 determine a single change. It changes the shape of the possible
                 next changes.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-artifact-force">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-artifact-force">Artifact force</h3>
+                <p>
+                  The field-level action by which an artifact changes what can
+                  be proposed, seen, reviewed, selected, or remembered.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Carrier</dt>
+                    <dd>PRD, issue, spec, review comment, incident report, AI proposal.</dd>
+                  </div>
+                  <div>
+                    <dt>Effect</dt>
+                    <dd>Candidate field updates, support shifts, policy shifts, and observation changes.</dd>
+                  </div>
+                </dl>
+              </aside>
               <p>
                 In ordinary process language, artifacts are often treated as
                 coordination aids: a PRD explains the feature, an issue tracks
@@ -196,6 +234,76 @@
                   <span>The shift in which operations become visible, cheap, justified, risky, or hidden.</span>
                 </li>
               </ul>
+            </section>
+            <section id="mathematical-spine" class="article-section">
+              <h2>Mathematical spine</h2>
+              <p>
+                The field language is meant to carry mathematics, not remain a
+                metaphor. The first move is to separate the broad development
+                field from the computable slice that SFT can reason about.
+                That slice keeps architecture projection, observed signature,
+                support, policy, constraints, governance, history, and
+                incoming artifacts in one state.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-software-field">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-software-field">SoftwareField</h3>
+                <p>
+                  The computable slice of a broader development field. It is the
+                  state from which SFT reads supported operations and reachable
+                  architecture futures.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Projection</dt>
+                    <dd><code>arch : SoftwareField -> ArchitectureObject</code></dd>
+                  </div>
+                  <div>
+                    <dt>Contents</dt>
+                    <dd>History, signature record, support, policy, constraints, observation, governance, and artifact inputs.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Computable field state</figcaption>
+                <pre><code>SoftwareField
+  = contextual dynamic state
+  + arch : SoftwareField -> ArchitectureObject
+  + observed signature record
+  + history
+  + operation support
+  + operation policy
+  + constraint environment
+  + observation model
+  + governance intervention model
+  + exogenous artifact inputs</code></pre>
+              </figure>
+              <p>
+                Force then becomes a set-valued action. An artifact does not
+                have to choose a single future. It can produce candidate field
+                updates, and each update changes the support and policy from
+                which future paths are drawn.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Force as artifact action</figcaption>
+                <pre><code>ArtifactAction(a)
+  alpha_a : FieldSpace -> Set FieldSpaceUpdateHypothesis
+
+applyUpdate
+  : FieldSpace -> FieldSpaceUpdateHypothesis -> FieldSpace
+
+OperationSupport(F)
+  = admissible operations after constraints and governance
+
+OperationPolicy(F)
+  = cost, preorder, or selection relation on that support</code></pre>
+              </figure>
+              <p>
+                This gives SFT its first computational question. Given a field
+                and an artifact, which supported operation families become
+                closer, which become harder, and which architecture projection
+                will those families touch?
+              </p>
             </section>
             <section id="coupon" class="article-section">
               <h2>Coupon PRD</h2>

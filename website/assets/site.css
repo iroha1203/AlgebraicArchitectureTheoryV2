@@ -1297,6 +1297,71 @@ p {
   padding: 20px 0;
 }
 
+.vocabulary-card {
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--accent);
+  background: var(--surface);
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 16px 18px 18px;
+}
+
+.vocabulary-card-label {
+  color: var(--accent-warm);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.vocabulary-card h3 {
+  font-size: clamp(1.18rem, 2vw, 1.42rem);
+  line-height: 1.14;
+}
+
+.vocabulary-card p {
+  color: var(--ink-muted);
+  font-size: 0.98rem;
+  line-height: 1.5;
+  margin-top: 0;
+}
+
+.vocabulary-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.vocabulary-card div {
+  display: grid;
+  grid-template-columns: minmax(108px, 0.32fr) minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.vocabulary-card dt {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.vocabulary-card dd {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  min-width: 0;
+}
+
+.vocabulary-card code {
+  overflow-wrap: anywhere;
+}
+
 .chapter-list,
 .term-list,
 .status-list {
@@ -2290,6 +2355,15 @@ p {
 
   .status-badge {
     justify-self: start;
+  }
+
+  .vocabulary-card {
+    padding: 15px 14px 16px;
+  }
+
+  .vocabulary-card div {
+    grid-template-columns: 1fr;
+    gap: 3px;
   }
 
   .math-block {

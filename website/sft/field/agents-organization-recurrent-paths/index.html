@@ -72,6 +72,7 @@
                 <li><a href="#agents">Field participants</a></li>
                 <li><a href="#conway">Conway through SFT</a></li>
                 <li><a href="#recurrent">Recurrent path shape</a></li>
+                <li><a href="#support-policy">Support and policy</a></li>
                 <li><a href="#implication">Design implication</a></li>
                 <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
@@ -117,6 +118,25 @@
                 plausible. Their choices are creative, but they are not made in
                 a vacuum.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-field-participant">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-field-participant">Field participant</h3>
+                <p>
+                  A human or AI agent that acts inside the selected field by
+                  reading artifacts, estimating cost, generating proposals, or
+                  reviewing paths.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Human</dt>
+                    <dd>Brings judgement, ownership memory, review context, and operational fear.</dd>
+                  </div>
+                  <div>
+                    <dt>AI agent</dt>
+                    <dd>Amplifies the patterns and instructions made visible by code and artifacts.</dd>
+                  </div>
+                </dl>
+              </aside>
               <p>
                 AI makes this especially visible. A codebase is also a prompt.
                 If the field makes shortcuts local and invariants implicit, an
@@ -145,6 +165,25 @@
                 paths, ownership boundaries, approval flows, and review routes
                 alter which changes are low-cost and repeatedly selected.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-organization-field">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-organization-field">Organization field</h3>
+                <p>
+                  The ownership, communication, approval, review, and agent
+                  context that changes which operation families are repeatedly
+                  selected.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Mechanism</dt>
+                    <dd>Changes issue decomposition, review cost, coordination cost, and recurrent PR shape.</dd>
+                  </div>
+                  <div>
+                    <dt>Conway reading</dt>
+                    <dd>Architecture reflects repeated low-friction operations, not a one-time copy of an org chart.</dd>
+                  </div>
+                </dl>
+              </aside>
               <figure class="code-panel">
                 <figcaption>Organization field</figcaption>
                 <pre><code>organization structure
@@ -197,6 +236,65 @@
                 </article>
               </div>
             </section>
+            <section id="support-policy" class="article-section">
+              <h2>Support and policy</h2>
+              <p>
+                The mathematical object behind organization pressure is not an
+                org chart. It is a support and policy structure over operations.
+                Support says which operations are available in the current
+                field. Policy says which of those operations are cheaper,
+                easier, more reviewable, or more likely to be selected.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-support-policy">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-support-policy">Support and policy</h3>
+                <p>
+                  Support is the set of operations available in a field. Policy
+                  is the ordering, cost, or selection relation that makes some
+                  supported operations more natural than others.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Support</dt>
+                    <dd><code>OperationSupport(F)</code>: admissible operations in field <code>F</code>.</dd>
+                  </div>
+                  <div>
+                    <dt>Policy</dt>
+                    <dd><code>op1 <=_F op2</code>: <code>op1</code> is no harder or no less natural than <code>op2</code>.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Organization as operation pressure</figcaption>
+                <pre><code>SupportedOperation
+  = operation
+  + applicable theorem boundary
+  + precondition evidence
+  + expected witness mapping
+
+OperationSupport(F)
+  = admissible operation set in field F
+
+PolicyAsPreorder
+  op1 <=_F op2
+  means op1 is no harder or no less natural than op2 in F</code></pre>
+              </figure>
+              <p>
+                Recurrent architecture pressure appears when the same low-cost
+                region of this support is selected again and again. A field
+                does not need to force a single operation. It only needs to make
+                one family of operations repeatedly easier than its rivals.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Recurrent path schema</figcaption>
+                <pre><code>organization field F
+  -> OperationSupport(F)
+  -> OperationPolicy(F)
+  -> repeatedly selected operation family
+  -> recurrent PR shape
+  -> recurrent architecture operation</code></pre>
+              </figure>
+            </section>
             <section id="implication" class="article-section">
               <h2>Design implication</h2>
               <p id="definition-1-2" class="statement">
@@ -235,6 +333,10 @@
                 org chart. It is a field reading: the organization changes the
                 support and policy through which architecture is repeatedly
                 modified.
+              </p>
+              <p class="formal-audit-link">
+                <span>Formal direction</span>
+                <a href="../../references/formal-anchors/">SFT Formal Core and Anchors</a>
               </p>
             </section>
             <section id="chapter-summary" class="article-section">
