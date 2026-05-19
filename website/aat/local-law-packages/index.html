@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT local law packages as theorem-boundary-backed statements for projection, observation, LSP, DIP, and three-layer flatness."
+      content="AAT local law packages: projection, observation, LSP, DIP, and flatness as composable proof-carrying laws."
     >
     <title>AAT Local Law Packages</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/local-law-packages/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Local Law Packages">
-    <meta property="og:description" content="AAT local law packages as theorem-boundary-backed statements for projection, observation, LSP, DIP, and three-layer flatness.">
+    <meta property="og:description" content="AAT local law packages: projection, observation, LSP, DIP, and flatness as composable proof-carrying laws.">
     <meta property="og:url" content="https://iroha1203.dev/aat/local-law-packages/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Local Law Packages">
-    <meta name="twitter:description" content="AAT local law packages as theorem-boundary-backed statements for projection, observation, LSP, DIP, and three-layer flatness.">
+    <meta name="twitter:description" content="AAT local law packages: projection, observation, LSP, DIP, and flatness as composable proof-carrying laws.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -63,10 +63,11 @@
           <p class="eyebrow">AAT Part IV</p>
           <h1>Local Law Packages</h1>
           <p class="lede">
-            Projection, observation, substitutability, abstraction, and
-            flatness become local theorem packages with explicit assumptions.
-            AAT uses them to express local contract soundness and to compose
-            projection, LSP, DIP, runtime, and semantic evidence.
+            Local Law Packages turn familiar design principles into
+            proof-carrying algebra. Projection, observation, substitutability,
+            abstraction, runtime behavior, and semantic evidence travel as
+            selected laws that can be assembled into larger architecture
+            readings.
           </p>
         </div>
       </section>
@@ -130,8 +131,8 @@
                   </a>
                 </li>
                 <li>
-                  <a href="../examples-and-boundaries/">
-                    Examples and Boundaries
+                  <a href="../canonical-examples-and-readings/">
+                    Canonical Examples and Readings
                   </a>
                 </li>
                 <li>
@@ -158,11 +159,43 @@
               <p class="research-question">
                 Can local design principles become composable theorem packages?
               </p>
+              <p>
+                SOLID is the familiar acronym for Single Responsibility, Open
+                / Closed, Liskov Substitution, Interface Segregation, and
+                Dependency Inversion. In this page, <code>DIP</code> means the
+                Dependency Inversion Principle, and AAT reads each SOLID
+                principle as a local law package with selected projections,
+                observations, invariants, and witnesses.
+              </p>
+              <ul class="term-list intro-term-list">
+                <li>
+                  <strong>SRP</strong>
+                  <span>Single Responsibility selects the responsibility axis carried by the local package.</span>
+                </li>
+                <li>
+                  <strong>OCP</strong>
+                  <span>Open / Closed reads extension as growth that preserves selected observations.</span>
+                </li>
+                <li>
+                  <strong>LSP</strong>
+                  <span>Liskov Substitution compares selected client observations under replacement.</span>
+                </li>
+                <li>
+                  <strong>ISP</strong>
+                  <span>Interface Segregation refines the projection visible to a client context.</span>
+                </li>
+                <li>
+                  <strong>DIP</strong>
+                  <span>Dependency Inversion records how concrete dependency evidence travels through abstraction.</span>
+                </li>
+              </ul>
               <h2>Projection and observation</h2>
               <p>
-                Local law packages name the projection, observation, equality,
-                and context universe used by a claim. The schematic kernel
-                inclusion below is read relative to that chosen boundary.
+                A local law package gives a design statement its projection,
+                observation, equality, and context universe. The kernel
+                inclusion below is the algebraic shape: sameness through an
+                abstraction map carries sameness through the observation that
+                the package selects.
               </p>
               <figure class="code-panel">
                 <figcaption>Projection / observation kernel</figcaption>
@@ -175,11 +208,11 @@ ker(F) &lt;= ker(Obs)</code></pre>
               </figure>
               <p id="definition-7-1" class="statement">
                 <a class="statement-anchor" href="#definition-7-1">Definition 7.1.</a>
-                A local projection-observation boundary consists of an
+                A local projection-observation package consists of an
                 <code>InterfaceProjection</code>, an <code>Observation</code>,
                 an observation equivalence relation, and a selected universe of
-                concrete objects or client contexts to which the claim is
-                allowed to apply.
+                concrete objects or client contexts over which the statement is
+                interpreted.
               </p>
               <p id="proposition-7-2" class="statement">
                 <a class="statement-anchor" href="#proposition-7-2">Proposition 7.2.</a>
@@ -209,10 +242,13 @@ ker(F) &lt;= ker(Obs)</code></pre>
               <figure class="code-panel">
                 <figcaption>Strength ladder</figcaption>
                 <pre><code>ProjectionSound
-  does not imply
+  carries concrete evidence into the abstract graph
+
 ProjectionComplete
-  does not imply
-ProjectionExact + RepresentativeStable</code></pre>
+  supplies concrete representatives for abstract edges
+
+ProjectionExact + RepresentativeStable
+  supports quotient-style DIP readings</code></pre>
               </figure>
               <p id="definition-7-3" class="statement">
                 <a class="statement-anchor" href="#definition-7-3">Definition 7.3.</a>
@@ -246,11 +282,11 @@ ProjectionExact + RepresentativeStable</code></pre>
             <section id="observation-lsp" class="article-section">
               <h2>Observation and LSP</h2>
               <p>
-                AAT reads LSP-style claims through observation. Two concrete
-                implementations may be substitutable for checkout totals,
-                rounding traces, and selected errors while timing properties,
-                hidden effects, and other client contexts remain separate
-                observations.
+                AAT reads LSP-style statements through selected observation
+                equivalence. Two concrete implementations can be substitutable
+                for checkout totals, rounding traces, and selected errors, and
+                the same framework can name timing properties, effects, and
+                client contexts as additional observation packages.
               </p>
               <figure class="code-panel">
                 <figcaption>Selected client contexts</figcaption>
@@ -268,9 +304,9 @@ ProjectionExact + RepresentativeStable</code></pre>
               <p id="proposition-7-6" class="statement">
                 <a class="statement-anchor" href="#proposition-7-6">Proposition 7.6.</a>
                 In the current finite theorem package, LSP compatibility is
-                equivalent to absence of selected LSP obstruction witnesses;
-                when the finite measurement universe closes the relevant
-                same-abstraction pairs, zero violation count yields
+                equivalent to a selected universe with zero LSP obstruction
+                witnesses. When that finite measurement universe closes the
+                relevant same-abstraction pairs, zero violation count yields
                 <code>LSPCompatible</code>.
               </p>
               <p class="formal-audit-link">
@@ -282,21 +318,34 @@ ProjectionExact + RepresentativeStable</code></pre>
             <section id="local-contract-packages" class="article-section">
               <h2>Local contract packages</h2>
               <p>
-                AAT reads SOLID as a local-contract layer: selected projection
-                soundness, LSP compatibility, and DIP compatibility travel with
-                the local replacement package. Layered and Clean Architecture
-                are global structural layers; state-transition patterns are
-                algebraic layers; runtime protection and distributed
-                convergence use their own evidence models.
+                The SOLID names now become a local-contract layer in AAT.
+                Projection soundness, selected observation equivalence, and
+                dependency-inversion evidence travel together as proof data
+                attached to the replacement package.
               </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Local contract</strong>
+                  <span>Projection soundness, LSP compatibility, and DIP compatibility travel with the replacement package.</span>
+                </li>
+                <li>
+                  <strong>Structural layer</strong>
+                  <span>Layered and Clean Architecture contribute global shape readings through their own invariants.</span>
+                </li>
+                <li>
+                  <strong>State and runtime layers</strong>
+                  <span>State-transition patterns, protection, and distributed convergence receive dedicated law packages and evidence models.</span>
+                </li>
+              </ul>
               <p id="proposition-7-7" class="statement">
                 <a class="statement-anchor" href="#proposition-7-7">Proposition 7.7.</a>
                 A proof-carrying <code>LocalReplacementContract</code> gives
                 the target state projection soundness, LSP compatibility, and
                 DIP compatibility selected by the local contract invariant
                 family. As a <code>DesignPattern</code>, the local contract
-                package records that unconditional <code>Decomposable</code>
-                or <code>StrictLayered</code> does not follow.
+                package records local contract evidence separately from
+                unconditional <code>Decomposable</code> or
+                <code>StrictLayered</code> evidence.
               </p>
               <p id="proof-7-7" class="statement-proof">
                 <a class="statement-anchor" href="#proof-7-7">Proof idea.</a>
@@ -305,7 +354,7 @@ ProjectionExact + RepresentativeStable</code></pre>
                 from that evidence, then places the operation family and
                 invariant family into the general <code>DesignPattern</code>
                 closure schema. The non-conclusion is a field of the pattern,
-                so the global layering boundary travels with the package.
+                so the global layering clause travels with the package.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -321,15 +370,15 @@ ProjectionExact + RepresentativeStable</code></pre>
   = StaticFlatWithin
   + RuntimeFlatWithin
   + SemanticFlatWithin
-  + no unmeasured required axis
-  + coverage / exactness boundary</code></pre>
+  + required-axis coverage
+  + coverage / exactness support</code></pre>
               </figure>
               <p id="definition-8-1" class="statement">
                 <a class="statement-anchor" href="#definition-8-1">Definition 8.1.</a>
                 <code>ArchitectureFlatWithin</code> is the coverage-aware
                 flatness predicate that bundles selected static, runtime, and
                 semantic flatness with required-axis coverage and exactness
-                boundaries.
+                support.
               </p>
               <p id="proposition-8-2" class="statement">
                 <a class="statement-anchor" href="#proposition-8-2">Proposition 8.2.</a>
@@ -366,8 +415,8 @@ ProjectionExact + RepresentativeStable</code></pre>
                 A package can satisfy strong DIP-style projection conditions
                 and selected LSP compatibility while the abstract graph remains
                 cyclic and therefore not <code>Decomposable</code>. This is
-                the precise failure mode separating local contract
-                compatibility from global structural decomposition.
+                the precise witness separating local contract compatibility
+                from global structural decomposition.
               </p>
               <div class="article-table">
                 <table>
@@ -375,14 +424,14 @@ ProjectionExact + RepresentativeStable</code></pre>
                     <tr>
                       <th>Scenario</th>
                       <th>What is proved or measured</th>
-                      <th>What remains outside</th>
+                      <th>Next package reading</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <td>Selected replacement</td>
                       <td>Selected client observations can remain equivalent under the named context universe.</td>
-                      <td>Background jobs, caches, callbacks, hidden runtime dependencies, and unmeasured semantic diagrams.</td>
+                      <td>Runtime packages for background jobs, caches, callbacks, dependency exposure, and semantic diagrams.</td>
                     </tr>
                     <tr>
                       <td>Strong abstract cycle</td>
@@ -397,17 +446,17 @@ ProjectionExact + RepresentativeStable</code></pre>
             <section id="local-summary" class="article-section">
               <h2>Chapter summary</h2>
               <p>
-                Local law packages make principle-level claims composable.
+                Local law packages make principle-level statements composable.
                 Projection, DIP compatibility, LSP compatibility, and
                 observation equivalence can be bundled into theorem packages
                 that preserve selected local invariants.
               </p>
               <p>
-                The key reading is layered rather than slogan-based. SOLID
-                contributes local contract structure; layered and clean
-                architectures contribute global structural readings; state,
-                runtime, and distributed properties require their own law
-                packages and bridges.
+                The key reading is layered and algebraic. SOLID contributes
+                local contract structure; layered and clean architectures
+                contribute global structural readings; state, runtime, and
+                distributed properties receive their own law packages and
+                bridges.
               </p>
               <h3>Terms</h3>
               <dl class="term-list definition-list">
@@ -425,7 +474,7 @@ ProjectionExact + RepresentativeStable</code></pre>
                 </div>
                 <div>
                   <dt>non-conclusion</dt>
-                  <dd>The global property that remains outside the theorem, even when the local package is proved.</dd>
+                  <dd>A recorded theorem-package clause naming global properties reserved for another law package.</dd>
                 </div>
               </dl>
             </section>

@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT laws and witnesses: invariant families, LawUniverse, obstruction witnesses, and zero-curvature reading."
+      content="AAT laws and witnesses: design principles become invariant families, obstruction witnesses, and theorem-bearing zero readings."
     >
     <title>AAT Laws and Witnesses</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/laws-and-witnesses/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Laws and Witnesses">
-    <meta property="og:description" content="AAT laws and witnesses: invariant families, LawUniverse, obstruction witnesses, and zero-curvature reading.">
+    <meta property="og:description" content="AAT laws and witnesses: design principles become invariant families, obstruction witnesses, and theorem-bearing zero readings.">
     <meta property="og:url" content="https://iroha1203.dev/aat/laws-and-witnesses/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Laws and Witnesses">
-    <meta name="twitter:description" content="AAT laws and witnesses: invariant families, LawUniverse, obstruction witnesses, and zero-curvature reading.">
+    <meta name="twitter:description" content="AAT laws and witnesses: design principles become invariant families, obstruction witnesses, and theorem-bearing zero readings.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -63,10 +63,9 @@
           <p class="eyebrow">AAT Part II</p>
           <h1>Laws and Witnesses</h1>
           <p class="lede">
-            Design principles become invariant families, and architecture
-            failures become inspectable through obstruction witnesses. This
-            chapter turns lawfulness into a theorem-bearing relation between
-            required invariants, witness families, and measured evidence.
+            Design principles become algebraic material here: invariants to
+            preserve, obstruction witnesses to inspect, and theorem bridges
+            that make zero readings carry lawfulness.
           </p>
         </div>
       </section>
@@ -81,7 +80,7 @@
                 <li><a href="#law-universe">Law universe</a></li>
                 <li><a href="#obstruction-witnesses">Obstruction witnesses</a></li>
                 <li><a href="#lemma-sequence">Lemma sequence</a></li>
-                <li><a href="#main-theorem">Required theorem schema</a></li>
+                <li><a href="#main-theorem">Architecture zero-curvature theorem</a></li>
                 <li><a href="#examples">Examples</a></li>
                 <li><a href="#law-summary">Chapter summary</a></li>
               </ol>
@@ -130,8 +129,8 @@
                   </a>
                 </li>
                 <li>
-                  <a href="../examples-and-boundaries/">
-                    Examples and Boundaries
+                  <a href="../canonical-examples-and-readings/">
+                    Canonical Examples and Readings
                   </a>
                 </li>
                 <li>
@@ -161,15 +160,16 @@
               </p>
               <h2>Invariant families</h2>
               <p>
-                An `Invariant` is a property an architecture object or operation
-                is expected to preserve. Design principles induce families of
-                operations that preserve, reflect, improve, localize, translate,
-                or transfer invariants.
+                An <code>Invariant</code> is a property carried by an
+                architecture object, operation, or law package. Design
+                principles become families of transformations that preserve,
+                reflect, improve, localize, translate, or transfer those
+                invariants.
               </p>
               <ul class="term-list">
                 <li>
                   <strong>Local contract layer</strong>
-                  <span>SRP, OCP, LSP, ISP, and DIP organize contracts, abstraction, substitutability, and interface separation.</span>
+                  <span>SOLID-style laws organize local contracts, abstraction, substitutability, interface projections, and dependency inversion.</span>
                 </li>
                 <li>
                   <strong>Global structure layer</strong>
@@ -186,37 +186,36 @@
               <h2>Law universe</h2>
               <p>
                 A <code>LawUniverse</code> is the setting in which a principle
-                can be checked. It collects required laws, optional laws,
-                derived laws, the witness family used to observe breakage, and
-                the observation context under which those witnesses are
-                meaningful.
+                becomes readable. It collects required laws, optional laws,
+                derived laws, the witness family used to observe obstructions,
+                and the observation context that gives those witnesses their
+                meaning.
               </p>
               <figure class="code-panel">
-                <figcaption>Lawfulness is not defined as witness absence</figcaption>
+                <figcaption>Lawfulness, witnesses, and axes</figcaption>
                 <pre><code>SemanticLawful X L
   = X satisfies the selected law universe L
 
 NoRequiredWitness X W
-  = no required bad witness appears in W
+  = required obstruction predicate is zero over W
 
 RequiredSignatureAxesZero X S
   = selected required signature axes are available and zero</code></pre>
               </figure>
               <p>
                 The first line is the semantic predicate. The second and third
-                lines are measured presentations of the same claim when a
-                theorem boundary supplies coverage, exactness, and observation
-                assumptions. The law universe stays close to the claim it
-                organizes.
+                lines are measured readings of that predicate. Coverage,
+                exactness, and observation assumptions provide the bridge, so
+                the law universe remains attached to the claim it organizes.
               </p>
               <ul class="status-list">
                 <li>
                   <strong>Required laws</strong>
-                  <span>The laws whose absence or violation is allowed to affect the theorem conclusion.</span>
+                  <span>The law family that carries the theorem conclusion.</span>
                 </li>
                 <li>
                   <strong>Optional and derived laws</strong>
-                  <span>Useful diagnostics or corollaries that are not silently promoted to required axes.</span>
+                  <span>Diagnostics and corollaries that enrich the selected reading.</span>
                 </li>
                 <li>
                   <strong>Observation boundary</strong>
@@ -228,12 +227,12 @@ RequiredSignatureAxesZero X S
             <section id="obstruction-witnesses" class="article-section">
               <h2>Obstruction witnesses</h2>
               <p>
-                An `ObstructionWitness` structurally explains why a desired law
-                does not hold. A forbidden static edge, hidden interaction,
-                boundary policy violation, projection failure, LSP mismatch,
+                An <code>ObstructionWitness</code> records the concrete place
+                where a law bends. A forbidden static edge, hidden interaction,
+                boundary policy violation, projection obstruction, LSP mismatch,
                 non-commuting semantic diagram, runtime exposure, lifting
-                failure, or residual coverage gap can all be witnesses when
-                they belong to the relevant universe.
+                obstruction, or residual coverage gap can all become witnesses
+                when they belong to the relevant universe.
               </p>
               <figure class="code-panel">
                 <figcaption>Finite witness kernel</figcaption>
@@ -241,27 +240,27 @@ RequiredSignatureAxesZero X S
   = xs filtered by bad
 
 violationCount bad xs = 0
-  &lt;-&gt; every measured witness is not bad</code></pre>
+  &lt;-&gt; violatingWitnesses bad xs is empty</code></pre>
               </figure>
               <p>
-                In Lean, the generic law-family layer separates measured
-                witness absence from required witness absence. The bridge from
-                measured zero to required absence uses witness coverage, and the
-                bridge from required absence to semantic lawfulness uses
-                complete coverage for the selected law family.
+                In Lean, the generic law-family layer gives each reading its
+                own type. A measured zero lives over the finite list; required
+                zero lives over the selected witness predicate; semantic
+                lawfulness lives over the law family. Coverage theorems connect
+                those readings.
               </p>
               <ul class="status-list">
                 <li>
                   <strong><code>NoMeasuredObstruction</code></strong>
-                  <span>There is no bad witness in the measured finite list. This is a finite report claim.</span>
+                  <span>The finite measured list supports a zero obstruction reading.</span>
                 </li>
                 <li>
                   <strong><code>NoRequiredObstruction</code></strong>
-                  <span>There is no bad witness among the required witness predicate. This needs coverage to follow from the measured list.</span>
+                  <span>The selected required witness predicate supports the same zero reading.</span>
                 </li>
                 <li>
                   <strong><code>Lawful</code></strong>
-                  <span>The independent lawfulness predicate supplied by the law family. It is connected to witness absence by bridge theorems, not by definition.</span>
+                  <span>The semantic lawfulness predicate supplied by the selected law family and connected by bridge theorems.</span>
                 </li>
               </ul>
             </section>
@@ -270,9 +269,9 @@ violationCount bad xs = 0
               <h2>Lemma sequence</h2>
               <p>
                 The center of the chapter is a sequence of small bridges. Each
-                step changes the type of claim, so the assumptions are shown
-                before the conclusion rather than being hidden in the word
-                "zero."
+                step changes the type of claim, and each bridge displays the
+                assumptions that let a zero reading move from measurement to
+                required witnesses to semantic lawfulness.
               </p>
               <figure class="code-panel">
                 <figcaption>Witness-to-lawfulness bridge</figcaption>
@@ -290,7 +289,8 @@ CompleteWitnessCoverage
                 Axis exactness adds the signature side of the statement. A
                 required axis must be available and zero, and the axis must
                 exactly represent the corresponding required witness subfamily.
-                Missing axis values remain measurement gaps, not theorem claims.
+                Available exact axes become theorem-bearing coordinates of the
+                selected law reading.
               </p>
               <figure class="code-panel">
                 <figcaption>Axis exactness bridge</figcaption>
@@ -311,13 +311,15 @@ CompleteWitnessCoverage + RequiredAxisExact
             </section>
 
             <section id="main-theorem" class="article-section">
-              <h2>Required theorem schema</h2>
+              <h2>Architecture zero-curvature theorem</h2>
               <p>
                 The zero-curvature theorem is the lawfulness bridge read at the
                 theorem boundary. It is stated as a schema because the law
                 universe, witness family, signature axes, and observation model
                 vary across structural, projection, semantic, runtime, and
-                extension readings.
+                extension readings. In the mathematical theory this is the
+                required obstruction vanishing theorem; in AAT language it is
+                the architecture zero-curvature theorem.
               </p>
               <figure class="code-panel">
                 <figcaption>Required obstruction vanishing theorem</figcaption>
@@ -339,23 +341,23 @@ Then, within B:
     &lt;-&gt; RequiredSignatureAxesZero X S</code></pre>
               </figure>
               <p>
-                This theorem shape is also the readability guardrail. A
-                dashboard zero, a passing local contract, or a missing witness
-                list becomes a lawfulness statement through the stated
-                completeness and exactness assumptions.
+                This theorem shape is the translation rule. A dashboard zero,
+                a passing local contract, or a witness list becomes a
+                lawfulness statement through the stated completeness and
+                exactness assumptions.
               </p>
               <ul class="status-list">
                 <li>
                   <strong>Semantic predicate</strong>
-                  <span>`SemanticLawful X L` says the selected law universe is satisfied under the selected observation.</span>
+                  <span><code>SemanticLawful X L</code> says the selected law universe is satisfied under the selected observation.</span>
                 </li>
                 <li>
                   <strong>Witness predicate</strong>
-                  <span>`NoRequiredWitness X W` says no required bad witness appears in the selected finite witness family.</span>
+                  <span><code>NoRequiredWitness X W</code> states the required zero reading over the selected finite witness family.</span>
                 </li>
                 <li>
                   <strong>Signature predicate</strong>
-                  <span>`RequiredSignatureAxesZero X S` says the required measured axes are zero, not that every possible axis is safe.</span>
+                  <span><code>RequiredSignatureAxesZero X S</code> states the required zero reading over the selected measured axes.</span>
                 </li>
               </ul>
               <p class="formal-audit-link">
@@ -367,12 +369,12 @@ Then, within B:
             <section id="examples" class="article-section">
               <h2>Examples</h2>
               <p>
-                An LSP contract can be lawful for selected client contexts
-                while the overall dependency graph remains cyclic. A layered
-                ranking can be lawful for static dependencies while a runtime
-                callback still crosses a protected boundary. A Saga law can hold
-                for a compensation relation while distributed convergence is
-                handled by a separate law family.
+                An LSP contract can be lawful for selected client contexts;
+                global cyclicity is read by a global structure family. A
+                layered ranking can govern static dependencies; runtime
+                callbacks are read by a runtime observation layer. A Saga law
+                can hold for a compensation relation; distributed convergence
+                is handled by its own law family.
               </p>
               <ul class="term-list">
                 <li>
@@ -385,7 +387,7 @@ Then, within B:
                 </li>
                 <li>
                   <strong>Runtime witness</strong>
-                  <span>A propagation, exposure, retry, or protection failure in a separate runtime observation layer.</span>
+                  <span>A propagation, exposure, retry, or protection obstruction in a separate runtime observation layer.</span>
                 </li>
               </ul>
             </section>
@@ -395,17 +397,17 @@ Then, within B:
               <p>
                 Laws and witnesses turn design principles into families of
                 invariants, observations, and obstruction predicates. A
-                principle becomes mathematically useful when it supplies the
-                selected law universe, the evidence that can witness failure,
-                and the bridge theorem that connects witness absence to
-                lawfulness under the stated assumptions.
+                principle becomes a reusable theorem package when it supplies
+                the selected law universe, the witness family, and the bridge
+                theorem that carries zero readings into lawfulness under the
+                stated assumptions.
               </p>
               <p>
                 This chapter gives AAT its working grammar for architecture
                 principles. Local contracts, global structure, state
                 transitions, runtime protection, and distributed convergence
-                can all be read as invariant families, while their failures
-                become explicit witnesses instead of loose review language.
+                can all be read as invariant families, and their obstructions
+                become reusable mathematical data.
               </p>
               <h3>Terms</h3>
               <dl class="term-list definition-list">
@@ -419,7 +421,7 @@ Then, within B:
                 </div>
                 <div>
                   <dt>obstruction witness</dt>
-                  <dd>A finite selected value that records where an invariant, law, or observation condition fails.</dd>
+                  <dd>A finite selected value that records an obstruction site for an invariant, law, or observation condition.</dd>
                 </div>
                 <div>
                   <dt>semantic lawfulness</dt>

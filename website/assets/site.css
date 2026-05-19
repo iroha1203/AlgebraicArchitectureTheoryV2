@@ -1231,6 +1231,10 @@ p {
   padding: 18px 0;
 }
 
+.article-section .intro-term-list + h2 {
+  margin-top: 36px;
+}
+
 .chapter-list a,
 .term-list strong,
 .status-list strong {
@@ -1259,7 +1263,8 @@ p {
 }
 
 .article-main p code,
-.article-main li code {
+.article-main li code,
+.article-main dd code {
   overflow-wrap: anywhere;
 }
 

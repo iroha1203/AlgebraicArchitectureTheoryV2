@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT calculus and extensions as theorem-boundary-backed operation packages, feature-extension evidence, and structural obstruction classifications."
+      content="AAT calculus and extensions as composable architecture operations, feature-extension evidence, and structural obstruction classifications."
     >
     <title>AAT Calculus and Extensions</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/calculus-and-extensions/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Calculus and Extensions">
-    <meta property="og:description" content="AAT calculus and extensions as theorem-boundary-backed operation packages, feature-extension evidence, and structural obstruction classifications.">
+    <meta property="og:description" content="AAT calculus and extensions as composable architecture operations, feature-extension evidence, and structural obstruction classifications.">
     <meta property="og:url" content="https://iroha1203.dev/aat/calculus-and-extensions/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Calculus and Extensions">
-    <meta name="twitter:description" content="AAT calculus and extensions as theorem-boundary-backed operation packages, feature-extension evidence, and structural obstruction classifications.">
+    <meta name="twitter:description" content="AAT calculus and extensions as composable architecture operations, feature-extension evidence, and structural obstruction classifications.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -63,10 +63,11 @@
           <p class="eyebrow">AAT Part V</p>
           <h1>Calculus and Extensions</h1>
           <p class="lede">
-            Architecture moves become partial operations with explicit proof
-            boundaries. Feature extension supplies a compact calculus for
-            embedding a core, lifting feature behavior, recording coverage, and
-            classifying extension obstructions.
+            Architecture moves become composable operations. Feature extension
+            is AAT's local model of software evolution: a compact calculus for
+            embedding a core, lifting feature behavior through declared
+            interfaces, gathering coverage, and classifying extension
+            obstructions.
           </p>
         </div>
       </section>
@@ -131,8 +132,8 @@
                   </a>
                 </li>
                 <li>
-                  <a href="../examples-and-boundaries/">
-                    Examples and Boundaries
+                  <a href="../canonical-examples-and-readings/">
+                    Canonical Examples and Readings
                   </a>
                 </li>
                 <li>
@@ -161,6 +162,13 @@
                 operations?
               </p>
               <h2>Architecture operation</h2>
+              <p>
+                AAT treats architectural change as algebraic action. An
+                operation has a source, a target, a precondition, a transition,
+                an invariant family, and a map that carries witnesses across
+                the move. This turns change language into objects that can be
+                composed, compared, audited, and repaired.
+              </p>
               <figure class="code-panel">
                 <figcaption>Operation carrier</figcaption>
                 <pre><code>ArchitectureOperation X Y
@@ -175,11 +183,11 @@
               </figure>
               <p id="definition-9-1" class="statement">
                 <a class="statement-anchor" href="#definition-9-1">Definition 9.1.</a>
-                An architecture operation is a boundary-indexed partial
+                An architecture operation is an evidence-indexed partial
                 morphism between selected architecture states. It becomes a
                 theorem package when its preconditions, witness mapping,
-                invariant family, conclusion, and non-conclusions have been
-                supplied.
+                invariant family, conclusion, and recorded non-conclusions have
+                been supplied.
               </p>
               <p id="proposition-9-2" class="statement">
                 <a class="statement-anchor" href="#proposition-9-2">Proposition 9.2.</a>
@@ -191,8 +199,7 @@
                 <a class="statement-anchor" href="#proof-9-2">Proof idea.</a>
                 The schema stores the generated obligation and witness mapping
                 as fields. The accessor theorems recover those fields and the
-                existential witness bridge without adding any new preservation
-                claim.
+                existential witness bridge as reusable proof data.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -208,15 +215,17 @@
                 <code>abstract</code>, <code>split</code>, <code>merge</code>,
                 <code>isolate</code>, <code>protect</code>, <code>migrate</code>,
                 <code>reverse</code>, <code>contract</code>, <code>repair</code>,
-                and <code>synthesize</code>. A name makes the operation
-                auditable; it does not discharge the law.
+                and <code>synthesize</code>. The name gives the operation a
+                stable algebraic handle; the law package supplies the
+                assumptions, conclusion, and proof data.
               </p>
               <p>
                 Law packages state exactly which observation, interface,
                 coverage, exactness, finite universe, obstruction universe, or
                 certificate makes a law readable as proved. The same surface
-                phrase can therefore have different proof boundaries in graph,
-                runtime, migration, repair, and synthesis settings.
+                phrase can then become graph law, runtime law, migration law,
+                repair law, or synthesis law according to the evidence it
+                carries.
               </p>
               <p id="proposition-9-3" class="statement">
                 <a class="statement-anchor" href="#proposition-9-3">Proposition 9.3.</a>
@@ -240,16 +249,25 @@
                 <pre><code>T subset Ops(S)  &lt;-&gt;  S subset Inv(T)</code></pre>
               </figure>
               <p>
-                This correspondence is useful because it makes design
-                principles compare as operation/invariant packages instead of
-                slogans. It is a weak Galois-style reading: classifying all
-                operations, proving a lattice isomorphism, and promoting local
-                contracts into global decomposability remain separate claims.
+                This correspondence gives design principles an algebraic form:
+                they can be compared as operation/invariant packages. It is a
+                weak Galois-style reading: stronger invariant families select
+                a smaller operation space, while richer operation families
+                reveal the invariants they preserve.
               </p>
             </section>
 
             <section id="feature-extension" class="article-section">
               <h2>Feature extension</h2>
+              <p>
+                Feature extension is one of AAT's original moves: software
+                evolution read as a local operation. A system grows by
+                embedding an existing core into a larger architecture, adding a
+                feature view, and carrying evidence for the interface route,
+                runtime behavior, semantic preservation, and coverage. This
+                gives SFT one of the AAT-side algebraic handles it later uses
+                to compute with software evolution.
+              </p>
               <figure class="code-panel">
                 <figcaption>Extension schema</figcaption>
                 <pre><code>FeatureExtension
@@ -266,15 +284,14 @@
                 A feature extension is a local operation from a selected core
                 into a selected extended architecture. Static split evidence,
                 declared interface factorization, lifting evidence, runtime
-                preservation, semantic preservation, and coverage are separate
-                packages that may or may not accompany the base extension.
+                preservation, semantic preservation, and coverage travel as
+                focused packages around the base extension.
               </p>
               <p>
-                The base extension and the evidence packages are intentionally
-                separated so a page, proof, or report can name the layer where
-                the obstruction appears. Static hidden dependencies, semantic
-                filling failures, and runtime axes each carry their own
-                evidence.
+                This layered presentation lets a page, proof, or report name
+                the layer that carries the relevant witness. Static hidden
+                dependencies, semantic filling obstructions, and runtime axes
+                each carry their own evidence.
               </p>
             </section>
 
@@ -289,7 +306,7 @@
               <ul class="status-list">
                 <li>
                   <strong>Static split</strong>
-                  <span><code>StaticSplitFeatureExtension</code> records core edge preservation, declared interface factorization, absence of forbidden static edges, and embedding policy preservation.</span>
+                  <span><code>StaticSplitFeatureExtension</code> records core edge preservation, declared interface factorization, static edge discipline, and embedding policy preservation.</span>
                 </li>
                 <li>
                   <strong>Feature view</strong>
@@ -314,9 +331,9 @@
               <p id="proof-10-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-10-2">Proof idea.</a>
                 The theorem reads the supplied split package as coverage-aware
-                flatness evidence. Static, runtime, and semantic axes are
-                separate inputs, so <code>ArchitectureFlatWithin</code> and
-                global <code>ArchitectureFlat</code> remain distinct claims.
+                flatness evidence. Static, runtime, and semantic axes assemble
+                <code>ArchitectureFlatWithin</code> and prepare any stronger
+                global flatness reading.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -362,8 +379,8 @@
               <h2>Example and counterexample</h2>
               <p>
                 A feature extension adds a feature component to a selected core
-                and chooses how the feature crosses the core boundary. The
-                structured case routes the interaction through a declared port;
+                and chooses how the feature reaches the core. The structured
+                case routes the interaction through a declared port;
                 the obstruction case introduces a direct dependency from the
                 feature component to an internal implementation component.
                 Repair restores the declared interface route.
@@ -394,31 +411,31 @@ repair:
             <section id="operation-summary" class="article-section">
               <h2>Chapter summary</h2>
               <p>
-                The calculus page treats architecture change as a
-                boundary-indexed operation. Each move records its source,
-                target, support, preconditions, transition, invariant family,
-                witness map, conclusion, and evidence boundary.
+                The calculus treats architecture change as a selected
+                operation. Each move records its source, target, support,
+                preconditions, transition, invariant family, witness map,
+                conclusion, and evidence record.
               </p>
               <p>
-                Feature extension becomes a first-class operation rather than
-                an informal growth story. AAT can describe structured
-                extensions, classify selected obstruction witnesses, and read
-                repairs as operations that restore the intended interface
-                route under explicit assumptions.
+                Feature extension is the chapter's software-evolution move.
+                AAT can describe structured extensions, classify selected
+                obstruction witnesses, and read repairs as operations that
+                restore the intended interface route under explicit
+                assumptions.
               </p>
               <h3>Terms</h3>
               <dl class="term-list definition-list">
                 <div>
-                  <dt>operation boundary</dt>
+                  <dt>operation package</dt>
                   <dd>The source, target, support, precondition, transition, invariant family, witness map, conclusion, and non-conclusion record for an architecture move.</dd>
                 </div>
                 <div>
                   <dt>law package</dt>
-                  <dd>A theorem wrapper that carries an operation kind, a law kind, explicit assumptions, and a conclusion. The law tag alone is only metadata.</dd>
+                  <dd>A theorem wrapper that carries an operation kind, a law kind, explicit assumptions, a conclusion, and reusable proof data.</dd>
                 </div>
                 <div>
                   <dt>feature extension</dt>
-                  <dd>A first-class addition schema with core and feature embeddings plus a selected feature view. Static split, lifting, runtime, and semantic evidence are separate.</dd>
+                  <dd>A first-class addition schema with core and feature embeddings plus a selected feature view, together with static split, lifting, runtime, and semantic evidence packages.</dd>
                 </div>
                 <div>
                   <dt>extension obstruction</dt>

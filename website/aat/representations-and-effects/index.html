@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT representations and effects: graph, matrix, analytic representation, state transition algebra, and effect boundary."
+      content="AAT representations and effects: graph, matrix, analytic representation, state-transition algebra, and effect law surfaces."
     >
     <title>AAT Representations and Effects</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/representations-and-effects/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Representations and Effects">
-    <meta property="og:description" content="AAT representations and effects: graph, matrix, analytic representation, state transition algebra, and effect boundary.">
+    <meta property="og:description" content="AAT representations and effects: graph, matrix, analytic representation, state-transition algebra, and effect law surfaces.">
     <meta property="og:url" content="https://iroha1203.dev/aat/representations-and-effects/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Representations and Effects">
-    <meta name="twitter:description" content="AAT representations and effects: graph, matrix, analytic representation, state transition algebra, and effect boundary.">
+    <meta name="twitter:description" content="AAT representations and effects: graph, matrix, analytic representation, state-transition algebra, and effect law surfaces.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -63,10 +63,10 @@
           <p class="eyebrow">AAT Part VII</p>
           <h1>Representations and Effects</h1>
           <p class="lede">
-            Graph, matrix, analytic, and state-transition views are different
-            representations of architecture structure. AAT uses them to
-            transport zeros, obstructions, valuations, and effect laws across
-            explicit preserving and reflecting assumptions.
+            Graphs, matrices, analytic values, state transitions, and effects
+            are representation surfaces for the same architecture object. AAT
+            uses them to transport zeros, obstructions, valuations, and effect
+            laws through preserving and reflecting packages.
           </p>
         </div>
       </section>
@@ -80,7 +80,7 @@
                 <li><a href="#graph-matrix">Graph and matrix</a></li>
                 <li><a href="#analytic-representation">Analytic representation</a></li>
                 <li><a href="#representation-pattern">Representation pattern</a></li>
-                <li><a href="#valuation-boundary">Valuation boundary</a></li>
+                <li><a href="#valuation-surface">Valuation surface</a></li>
                 <li><a href="#state-effects">State transitions and effects</a></li>
                 <li><a href="#effect-examples">Effect examples</a></li>
                 <li><a href="#representation-summary">Chapter summary</a></li>
@@ -130,8 +130,8 @@
                   </a>
                 </li>
                 <li>
-                  <a href="../examples-and-boundaries/">
-                    Examples and Boundaries
+                  <a href="../canonical-examples-and-readings/">
+                    Canonical Examples and Readings
                   </a>
                 </li>
                 <li>
@@ -161,11 +161,10 @@
               </p>
               <h2>Graph and matrix</h2>
               <p>
-                On a finite unweighted universe, acyclicity, absence of closed
-                walks, and nilpotence of the adjacency matrix can express the
-                same static structure. Finite propagation is not baked into
-                that structural theorem; it depends on a walk universe and a
-                propagation model.
+                On a finite unweighted universe, acyclicity, closed-walk zero,
+                and nilpotence of the adjacency matrix can express the same
+                static structure. Finite propagation becomes a further reading
+                once a walk universe and propagation model are selected.
               </p>
               <figure class="code-panel">
                 <figcaption>Finite structural bridge</figcaption>
@@ -174,7 +173,7 @@
   &lt;-&gt; nilpotent adjacency matrix</code></pre>
               </figure>
               <figure class="code-panel">
-                <figcaption>Claim boundary</figcaption>
+                <figcaption>Representation package</figcaption>
                 <pre><code>finite selected static universe
   + coverage assumptions
   -&gt;
@@ -183,42 +182,40 @@
     &lt;-&gt; adjacency nilpotence
 
 runtime propagation
-  requires runtime graph / propagation model
-  and is not built into Decomposable</code></pre>
+  = runtime graph + propagation model
+  + selected reachability reading</code></pre>
               </figure>
               <p id="definition-13-1" class="statement">
                 <a class="statement-anchor" href="#definition-13-1">Definition 13.1.</a>
                 The graph / matrix bridge is the selected finite structural
                 reading that compares an unweighted dependency graph, its
                 finite walk evidence, and its adjacency matrix. Its input is a
-                proof-carrying finite component universe, not an ambient
-                repository.
+                proof-carrying finite component universe.
               </p>
               <p id="proposition-13-2" class="statement">
                 <a class="statement-anchor" href="#proposition-13-2">Proposition 13.2.</a>
                 For a finite selected unweighted structural universe, the
                 graph and matrix readings are theorem-connected: acyclicity,
-                absence of nonempty closed walks, and adjacency nilpotence are
-                the same structural zero package, with the spectral-radius
+                closed-walk zero, and adjacency nilpotence are the same
+                structural zero package, with the spectral-radius
                 reading living on the corresponding finite complex matrix.
               </p>
               <p id="proof-13-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-13-2">Proof idea.</a>
                 Powers of the finite adjacency matrix enumerate selected
                 finite walks. If the graph is acyclic, sufficiently long
-                selected walks cannot exist, so a positive matrix power is
-                zero. Conversely, a nonempty closed walk can be repeated past
-                any nilpotence cutoff and refutes matrix nilpotence. The
-                spectral statement is then read through the finite complex
-                adjacency matrix; it does not attach cost or runtime meaning
-                to the radius.
+                selected walks have zero count, so a positive matrix power is
+                zero. Conversely, a nonempty closed walk repeats past any
+                nilpotence cutoff and refutes matrix nilpotence. The spectral
+                statement is then read through the finite complex adjacency
+                matrix.
               </p>
               <p id="non-conclusion-13-3" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-13-3">Non-conclusion 13.3.</a>
                 <code>Decomposable</code> remains <code>StrictLayered</code>.
                 Acyclicity, finite propagation, nilpotence, and spectral
-                conditions are separate structural or analytic readings rather
-                than part of that base definition.
+                conditions appear as structural or analytic representation
+                readings connected to that base definition by theorem packages.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -233,13 +230,13 @@ runtime propagation
                 architecture object into an analytic domain. The representation
                 can be zero-preserving, zero-reflecting,
                 obstruction-preserving, or obstruction-reflecting. These are
-                different strengths; reflecting directions carry stronger
-                evidence obligations.
+                different strengths; reflecting directions carry richer
+                evidence packages.
               </p>
               <p id="definition-13-4" class="statement">
                 <a class="statement-anchor" href="#definition-13-4">Definition 13.4.</a>
                 An <code>AnalyticRepresentation</code> consists of a
-                representation map together with separate predicates for
+                representation map together with focused predicates for
                 preserving and reflecting selected zeros and obstructions. The
                 reflecting predicates carry coverage, witness completeness,
                 semantic contract coverage, and non-conclusion fields.
@@ -302,21 +299,22 @@ analytic zero
 structural zero</code></pre>
               </figure>
               <p>
-                This pattern also explains why dashboards and numerical
-                summaries are useful but insufficient: an aggregate can guide
-                attention without by itself proving structural flatness.
+                This pattern gives dashboards and numerical summaries their
+                theorem shape: an aggregate can guide attention, and a
+                reflecting package turns the represented value into structural
+                evidence.
               </p>
               <p id="proposition-13-5" class="statement">
                 <a class="statement-anchor" href="#proposition-13-5">Proposition 13.5.</a>
-                Preserving and reflecting are independent theorem boundaries.
+                Preserving and reflecting are independent theorem packages.
                 A preserving representation can transport a structural zero
-                into an analytic zero; a reflecting claim additionally needs
-                the recorded assumptions that authorize reading the analytic
-                result back as a selected structural claim.
+                into an analytic zero; a reflecting package additionally
+                carries the recorded assumptions that authorize reading the
+                analytic result back as a selected structural statement.
               </p>
               <p id="proof-13-5" class="statement-proof">
                 <a class="statement-anchor" href="#proof-13-5">Proof idea.</a>
-                The Lean API keeps the four predicates separate. The preserving
+                The Lean API keeps the four predicates distinct. The preserving
                 theorems use the corresponding preserving field; the reflecting
                 theorems use the reflecting field and its assumptions. A report
                 with a represented value still needs the reflecting package to
@@ -328,8 +326,8 @@ structural zero</code></pre>
               </p>
             </section>
 
-            <section id="valuation-boundary" class="article-section">
-              <h2>Valuation boundary</h2>
+            <section id="valuation-surface" class="article-section">
+              <h2>Valuation surface</h2>
               <p>
                 <code>ObstructionValuation</code> maps selected witnesses to
                 numeric or ordered values. Aggregates can be useful for
@@ -347,17 +345,17 @@ aggregate = 0
   -&gt; selected witnesses are zero</code></pre>
               </figure>
               <p>
-                This is the same boundary discipline as matrix and analytic
-                representations: preserving zero is weaker than reflecting
-                zero, and reflecting an obstruction requires coverage and
-                semantic contract assumptions.
+                This is the same representation discipline as matrix and
+                analytic readings: preserving zero transports evidence
+                forward, while reflecting zero carries coverage and semantic
+                contract assumptions back into the structural world.
               </p>
               <p id="proposition-13-6" class="statement">
                 <a class="statement-anchor" href="#proposition-13-6">Proposition 13.6.</a>
-                A zero valuation discharges selected witness absence when its
-                zero-reflecting premise is available. An optional missing value,
-                an unavailable axis, or an unmeasured report field is a
-                different kind of zero.
+                A zero valuation discharges selected witness zero when its
+                zero-reflecting premise is available. Optional omitted values,
+                unavailable axes, and unmeasured report fields have their own
+                measurement status.
               </p>
               <figure class="code-panel">
                 <figcaption>Measured zero versus unmeasured</figcaption>
@@ -380,9 +378,9 @@ none
                 naturality are projections of this algebra.
               </p>
               <p>
-                The effect boundary captures obstruction that a dependency
-                graph alone may miss: cross-boundary effects, implicit
-                authority, missing handlers, and non-commuting effect pairs.
+                The effect law surface captures obstruction visible through
+                behavior: cross-surface effects, implicit authority, handler
+                gaps, and non-commuting effect pairs.
               </p>
               <figure class="code-panel">
                 <figcaption>Example relations</figcaption>
@@ -394,32 +392,32 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
               </figure>
               <p id="definition-14-1" class="statement">
                 <a class="statement-anchor" href="#definition-14-1">Definition 14.1.</a>
-                A state-transition or effect-boundary law package is a selected
+                A state-transition or effect law package is a selected
                 finite family of replay, roundtrip, compensation, projection,
                 migration, or effect relations read against a carrier and
-                observation semantics. Lawfulness is a package claim over those
-                selected relations.
+                observation semantics. Lawfulness is a package statement over
+                those selected relations.
               </p>
               <ul class="term-list">
                 <li>
                   <strong>Event Sourcing</strong>
-                  <span>Replay and projection laws are selected finite law cases; complete real-code event logs require separate evidence.</span>
+                  <span>Replay and projection laws are selected finite law cases that read event histories through observation.</span>
                 </li>
                 <li>
                   <strong>Saga</strong>
-                  <span>Compensation and weak recovery are selected law packages; general inverses for failure modes require separate assumptions.</span>
+                  <span>Compensation and weak recovery are selected law packages with explicit recovery relations.</span>
                 </li>
                 <li>
                   <strong>CRUD</strong>
-                  <span>Overwrite behavior is read against the selected state and observation relation, separate from broad claims about CRUD.</span>
+                  <span>Overwrite behavior is read against the selected state and observation relation.</span>
                 </li>
                 <li>
                   <strong>Circuit Breaker</strong>
-                  <span>Runtime protection is relative to selected localization and failure-model assumptions.</span>
+                  <span>Runtime protection is read through selected localization and fault-model assumptions.</span>
                 </li>
                 <li>
                   <strong>Replicated Log</strong>
-                  <span>Convergence is conditional on selected quorum, ordering, failure model, and entries.</span>
+                  <span>Convergence travels with selected quorum, ordering, fault model, and entries.</span>
                 </li>
               </ul>
             </section>
@@ -427,12 +425,11 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
             <section id="effect-examples" class="article-section">
               <h2>Effect examples</h2>
               <p>
-                A dependency graph may show that checkout depends only on a
-                payment interface, while the effect layer reveals a hidden
-                authority boundary: a retry command is not idempotent, a
-                compensation does not undo the action, a snapshot omits a
-                required event, or a migration fails to commute with the old
-                projection.
+                A dependency graph may show checkout through a payment
+                interface, while the effect layer reveals a hidden authority
+                surface: a non-idempotent retry command, a compensation gap, a
+                snapshot with an omitted required event, or a non-commuting
+                migration against the old projection.
               </p>
               <ul class="term-list">
                 <li>
@@ -449,23 +446,23 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                 </li>
                 <li>
                   <strong>Effect obstruction</strong>
-                  <span>Missing handlers, implicit authority, or non-commuting effect pairs can be selected obstruction witnesses.</span>
+                  <span>Handler gaps, implicit authority, or non-commuting effect pairs can be selected obstruction witnesses.</span>
                 </li>
               </ul>
               <p id="proposition-14-2" class="statement">
                 <a class="statement-anchor" href="#proposition-14-2">Proposition 14.2.</a>
-                State-transition and effect-boundary lawfulness can be
-                connected to selected obstruction absence for the law family and
-                observation semantics supplied to the package.
+                State-transition and effect lawfulness can be connected to
+                selected obstruction zero for the law family and observation
+                semantics supplied to the package.
               </p>
               <p id="proof-14-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-14-2">Proof idea.</a>
                 The law family packages expose the selected laws and their
                 obstruction predicates in the same universe. The bridge theorem
-                states that selected family lawfulness is equivalent to absence
-                of the selected family obstruction. Runtime traces, hidden
-                effects, and real-code extractor completeness require their own
-                evidence packages.
+                states that selected family lawfulness is equivalent to zero
+                selected family obstruction. Runtime traces, hidden effects,
+                and real-code extraction travel through their own evidence
+                packages.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -509,15 +506,15 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                 </div>
                 <div>
                   <dt>unmeasured axis</dt>
-                  <dd>The axis is not available in the selected evidence; it is not a zero.</dd>
+                  <dd>The axis has its own measurement status and is distinct from measured zero.</dd>
                 </div>
                 <div>
                   <dt>state-transition algebra</dt>
                   <dd>The command, event, replay, compensation, projection, and migration laws read as selected finite law cases.</dd>
                 </div>
                 <div>
-                  <dt>effect boundary</dt>
-                  <dd>The selected law surface for effects that a static dependency graph may not see.</dd>
+                  <dt>effect law surface</dt>
+                  <dd>The selected law surface for effects that enrich the static dependency graph.</dd>
                 </div>
               </dl>
             </section>
@@ -527,9 +524,9 @@ migrate ; project_old = project_new ; migrateEvents</code></pre>
                 <span>Previous</span>
                 <strong>Repair and Dynamics</strong>
               </a>
-              <a href="../examples-and-boundaries/">
+              <a href="../canonical-examples-and-readings/">
                 <span>Next</span>
-                <strong>Examples and Boundaries</strong>
+                <strong>Canonical Examples and Readings</strong>
               </a>
             </nav>
           </div>

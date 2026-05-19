@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT Architecture Signature, theorem boundaries, measurement status, and non-conclusions."
+      content="AAT Architecture Signature: a multi-axis coordinate system for obstruction evidence, proof support, and comparable readings."
     >
     <title>AAT Architecture Signature</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/architecture-signature/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Architecture Signature">
-    <meta property="og:description" content="AAT Architecture Signature, theorem boundaries, measurement status, and non-conclusions.">
+    <meta property="og:description" content="AAT Architecture Signature: a multi-axis coordinate system for obstruction evidence, proof support, and comparable readings.">
     <meta property="og:url" content="https://iroha1203.dev/aat/architecture-signature/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Architecture Signature">
-    <meta name="twitter:description" content="AAT Architecture Signature, theorem boundaries, measurement status, and non-conclusions.">
+    <meta name="twitter:description" content="AAT Architecture Signature: a multi-axis coordinate system for obstruction evidence, proof support, and comparable readings.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -63,9 +63,9 @@
           <p class="eyebrow">AAT Part III</p>
           <h1>Architecture Signature</h1>
           <p class="lede">
-            Architecture Signature turns obstruction evidence into a multi-axis
-            diagnostic. Theorem boundaries package the universe, evidence,
-            assumptions, and conclusion that make each coordinate readable.
+            This chapter gives AAT a coordinate system for architectural
+            evidence. Obstructions, measurements, theorem support, and
+            comparison rules become typed axes that can be read together.
           </p>
         </div>
       </section>
@@ -129,8 +129,8 @@
                   </a>
                 </li>
                 <li>
-                  <a href="../examples-and-boundaries/">
-                    Examples and Boundaries
+                  <a href="../canonical-examples-and-readings/">
+                    Canonical Examples and Readings
                   </a>
                 </li>
                 <li>
@@ -156,15 +156,15 @@
             <section id="signature" class="article-section">
               <p class="research-question">
                 Can architectural quality be read as a multi-axis signature
-                under theorem boundaries?
+                with explicit proof support?
               </p>
               <h2>Architecture Signature</h2>
               <p>
-                <code>ArchitectureSignature</code> records coordinates of
-                obstruction families. Static, boundary, abstraction,
-                projection or LSP, runtime, semantic, operation, extension, and
-                analytic axes may all appear as separate coordinates in a
-                multi-axis diagnostic.
+                The signature records coordinates of obstruction families.
+                Static structure, boundary policy, abstraction, projection,
+                LSP, runtime behavior, semantic observation, operation,
+                extension, and analytic readings can each become a typed axis
+                in the diagnostic.
               </p>
               <figure class="code-panel">
                 <figcaption>Signature reading</figcaption>
@@ -176,7 +176,7 @@
                 An <code>ArchitectureSignature</code> is a family of typed
                 coordinates indexed by obstruction axes. A coordinate is read
                 together with its measurement status, evidence universe, claim
-                level, and non-conclusions.
+                level, proof support, and recorded non-conclusions.
               </p>
               <p id="proposition-5-2" class="statement">
                 <a class="statement-anchor" href="#proposition-5-2">Proposition 5.2.</a>
@@ -207,8 +207,10 @@
                 Every axis carries a status. <code>measured_zero</code>,
                 <code>measured_nonzero(value)</code>, <code>unmeasured</code>,
                 <code>out_of_scope</code>, <code>private_unavailable</code>,
-                and <code>not_applicable</code> are different claim states.
-                <code>unmeasured</code> is a boundary on what can be compared.
+                and <code>not_applicable</code> are different claim states. The
+                status is part of the coordinate: it tells a reader how the
+                evidence can participate in theorem use, reports, and
+                comparison.
               </p>
               <figure class="code-panel">
                 <figcaption>Status vocabulary</figcaption>
@@ -228,7 +230,7 @@
               </p>
               <p id="proposition-5-4" class="statement">
                 <a class="statement-anchor" href="#proposition-5-4">Proposition 5.4.</a>
-                An unmeasured boundary is not measured-zero evidence. In
+                An unmeasured status is not measured-zero evidence. In
                 particular, an optional signature axis with value
                 <code>none</code> may satisfy a weak no-nonzero predicate, but
                 it does not discharge an available-and-zero theorem
@@ -243,7 +245,7 @@
                 an available <code>some 0</code> value, and
                 <code>not_axisAvailableAndZero_of_axisValue_none</code> proves
                 that <code>none</code> does not satisfy it. The report-facing
-                claim boundary mirrors this separation through
+                report-facing claim support mirrors this separation through
                 <code>MeasurementBoundary.unmeasured_not_measuredZero</code>
                 and <code>ArchitectureClaim.unmeasured_not_measuredZero</code>.
               </p>
@@ -262,7 +264,7 @@
                 </li>
                 <li>
                   <strong>Empirical readings</strong>
-                  <span>Cost and product outcomes are not required zero axes inside AAT.</span>
+                  <span>Cost and product outcomes live as empirical coordinates with their own evidence basis.</span>
                 </li>
               </ul>
             </section>
@@ -271,9 +273,9 @@
               <h2>Signature record</h2>
               <p>
                 A signature coordinate is a typed claim. The coordinate
-                records the axis, the measured or unmeasured status, the claim
-                level, the universe in which it was produced, the evidence that
-                supports it, and the conclusion attached to it.
+                records the axis, measurement status, claim level, universe,
+                evidence references, proof support, and conclusion. This
+                turns a report value into a reusable mathematical object.
               </p>
               <figure class="code-panel">
                 <figcaption>Coordinate shape</figcaption>
@@ -282,32 +284,34 @@
   + measurement status
   + value when measured
   + claim level
-  + universe / coverage boundary
+  + universe / coverage support
   + evidence references
+  + theorem support / claim support
   + non-conclusions</code></pre>
               </figure>
               <p id="definition-5-5" class="statement">
                 <a class="statement-anchor" href="#definition-5-5">Definition 5.5.</a>
                 A signature coordinate is the tuple consisting of an axis, a
                 measurement status, a value when measured, a claim level, a
-                universe or coverage boundary, evidence references, and
-                recorded non-conclusions.
+                universe or coverage support, evidence references, theorem
+                support or claim support, and recorded non-conclusions.
               </p>
               <p>
                 Report comparison reads the coordinate together with its
-                boundary and axis-specific order; the value alone is only one
-                part of the coordinate.
+                support and axis-specific order. The coordinate supplies the
+                value together with the assumptions that make comparison
+                meaningful.
               </p>
             </section>
 
             <section id="theorem-boundary" class="article-section">
               <h2>Theorem boundary</h2>
               <p>
-                A theorem boundary packages selected universe, required laws,
+                A <code>TheoremBoundary</code> packages selected universe, required laws,
                 invariant family, witness universe, coverage assumptions,
                 exactness assumptions, operation preconditions, conclusion, and
-                non-conclusions. It states the inference licensed by a formal
-                or report-side result.
+                non-conclusions. It is the proof-carrying envelope around a
+                formal or report-side result.
               </p>
               <figure class="code-panel">
                 <figcaption>Boundary record</figcaption>
@@ -334,7 +338,7 @@
                 <a class="statement-anchor" href="#proposition-6-2">Proposition 6.2.</a>
                 A theorem-boundary-backed claim carries its conclusion and its
                 non-conclusions together. The non-conclusion field is part of
-                the package, not commentary after the fact.
+                the package and travels with the conclusion.
               </p>
               <p id="proof-6-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-6-2">Proof idea.</a>
@@ -342,8 +346,8 @@
                 and prove accessor theorems showing that the predicate read by
                 clients is exactly that field. Tooling metadata also proves
                 that a measured witness is not a formal proved claim and that
-                missing preconditions block formal proved status. The boundary
-                therefore travels with the claim object.
+                missing preconditions block formal proved status. The proof
+                support therefore travels with the claim object.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -351,9 +355,9 @@
               </p>
               <div class="claim-strip">
                 <p>
-                  The theorem boundary makes the inference levels explicit:
+                  The theorem package makes the inference levels explicit:
                   static split, runtime flatness, semantic flatness, selected
-                  witness absence, and global absence are distinct claims.
+                  witness zero, and global ambient claims are distinct claims.
                 </p>
               </div>
             </section>
@@ -362,8 +366,8 @@
               <h2>Claim levels</h2>
               <p>
                 A signature coordinate is more than a number. It also carries a
-                claim level and a measurement boundary. A formal coordinate is
-                backed by a theorem boundary; a tooling coordinate is produced
+                claim level and measurement status. A formal coordinate is
+                backed by theorem support; a tooling coordinate is produced
                 by an extractor or validator; an empirical coordinate belongs
                 to a dataset or calibration protocol; a hypothesis is a future
                 research claim.
@@ -377,15 +381,15 @@
               <ul class="term-list">
                 <li>
                   <strong>formal</strong>
-                  <span>A Lean-backed or theorem-boundary-backed statement under explicit assumptions.</span>
+                  <span>A Lean-backed statement under explicit assumptions.</span>
                 </li>
                 <li>
                   <strong>tooling</strong>
-                  <span>An artifact produced by a scanner, validator, report, or workflow with its own evidence boundary.</span>
+                  <span>An artifact produced by a scanner, validator, report, or workflow with its own evidence basis.</span>
                 </li>
                 <li>
                   <strong>empirical / hypothesis</strong>
-                  <span>A repository, operation, or outcome claim that is not promoted to theorem status.</span>
+                  <span>A repository, operation, or outcome claim read through a dataset, calibration protocol, or future research program.</span>
                 </li>
               </ul>
             </section>
@@ -396,16 +400,16 @@
                 Signature comparison is axis-local. Two reports are comparable
                 where the same axis is present on both sides, measured under
                 compatible assumptions, and equipped with a meaningful order.
-                Missing evidence, private evidence, or a changed measurement
-                universe breaks that comparison rather than contributing a
-                numeric zero.
+                Unmeasured evidence, private evidence, and changed measurement
+                universes are recorded as coordinate status, so comparison
+                stays attached to the selected axes.
               </p>
               <figure class="code-panel">
                 <figcaption>Comparable-axis guard</figcaption>
                 <pre><code>ComparableAxes(S1, S2)
   + MeasuredOnBoth(axis)
   + AxisOrder(axis)
-  + compatible boundary
+  + compatible support
   -&gt; compare selected measured axes</code></pre>
               </figure>
               <p id="proposition-6-4" class="statement">
@@ -417,7 +421,7 @@
               </p>
               <p id="proof-6-4" class="statement-proof">
                 <a class="statement-anchor" href="#proof-6-4">Proof idea.</a>
-                The rule follows from the boundary vocabulary rather than from
+                The rule follows from the coordinate vocabulary rather than from
                 a global ordering theorem. Because <code>unmeasured</code> is
                 not <code>measured_zero</code>, and because each coordinate is
                 read relative to a selected universe and axis order, a full
@@ -435,16 +439,15 @@
               <p>
                 <code>ArchitectureSignature</code> gives AAT a multi-axis way
                 to read architecture quality. Each coordinate carries its
-                measurement status, evidence boundary, theorem boundary, and
-                comparison rule, so a report can combine static, runtime,
-                semantic, empirical, and product readings without collapsing
-                them into a single score.
+                measurement status, evidence basis, proof support, and
+                comparison rule. A report can place static, runtime, semantic,
+                empirical, and product readings in one structured diagnostic.
               </p>
               <p>
                 The chapter's main contribution is a disciplined reading of
                 architectural evidence. A signature records what is measured,
                 how a coordinate can be compared, and which theorem or
-                empirical boundary supports the reading; later chapters use
+                empirical support carries the reading. Later chapters use
                 that record to track repairs, examples, and representations.
               </p>
               <h3>Terms</h3>

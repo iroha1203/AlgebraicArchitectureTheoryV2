@@ -63,10 +63,10 @@
           <p class="eyebrow">AAT Part VI</p>
           <h1>Repair and Dynamics</h1>
           <p class="lede">
-            Repair transforms obstruction evidence through admissible
-            operations. Dynamics tracks how repair, synthesis, paths,
-            homotopies, and diagram fillers move across theorem packages and
-            measured signature trajectories.
+            Repair turns obstruction evidence into controlled architectural
+            movement. Dynamics then follows repair plans, synthesis
+            certificates, paths, homotopies, diagram fillers, and signature
+            trajectories as first-class architecture data.
           </p>
         </div>
       </section>
@@ -131,8 +131,8 @@
                   </a>
                 </li>
                 <li>
-                  <a href="../examples-and-boundaries/">
-                    Examples and Boundaries
+                  <a href="../canonical-examples-and-readings/">
+                    Canonical Examples and Readings
                   </a>
                 </li>
                 <li>
@@ -161,6 +161,12 @@
                 and signature trajectories?
               </p>
               <h2>Repair step</h2>
+              <p>
+                A repair step is an operation that acts on a selected witness
+                universe. It carries a source, a target, a repair rule, and an
+                admissible decrease package, so improvement can be read as a
+                theorem-bearing movement through obstruction evidence.
+              </p>
               <figure class="code-panel">
                 <figcaption>Repair schema</figcaption>
                 <pre><code>RepairStep
@@ -175,8 +181,8 @@
                 <a class="statement-anchor" href="#definition-11-1">Definition 11.1.</a>
                 A repair step is a source-to-target architecture operation read
                 against a selected obstruction universe. The base step records
-                the operation skeleton; selected-measure decrease is a separate
-                theorem boundary supplied by an admissible repair rule.
+                the operation skeleton; selected-measure decrease is carried by
+                an admissible repair rule.
               </p>
               <p id="proposition-11-2" class="statement">
                 <a class="statement-anchor" href="#proposition-11-2">Proposition 11.2.</a>
@@ -189,8 +195,7 @@
                 <a class="statement-anchor" href="#proof-11-2">Proof idea.</a>
                 The admissible rule carries exactly the decrease theorem needed
                 by the selected step. The conclusion is a measure comparison in
-                the selected universe, so no unselected axis is folded into the
-                theorem.
+                the selected universe.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -207,24 +212,24 @@
                 selected conclusion travel with the plan.
               </p>
               <p>
-                Synthesis has a different obligation. A produced candidate
-                needs satisfaction evidence for the selected constraints; a
-                no-solution claim uses a valid certificate.
+                Synthesis turns constraints into architecture candidates. A
+                produced candidate carries satisfaction evidence for the
+                selected constraints; a no-solution reading uses a valid
+                certificate for the finite search universe.
               </p>
               <p id="proposition-11-3" class="statement">
                 <a class="statement-anchor" href="#proposition-11-3">Proposition 11.3.</a>
                 A finite repair package exposes selected-obstruction clearing,
                 a synthesis soundness package exposes candidate satisfaction,
-                and a valid no-solution certificate exposes absence of a
-                selected satisfying architecture. Solver completeness outside
-                the recorded universe is a separate claim.
+                and a valid no-solution certificate exposes selected
+                no-solution soundness for the finite search universe.
               </p>
               <p id="proof-11-3" class="statement-proof">
                 <a class="statement-anchor" href="#proof-11-3">Proof idea.</a>
-                Each package stores its own soundness field and boundary
-                assumptions. The accessor theorem returns that stored
-                conclusion; completeness for an unrecorded search space or an
-                unsupported constraint language requires a separate package.
+                Each package stores its own soundness field and assumptions.
+                The accessor theorem returns that stored conclusion; a larger
+                search space or a richer constraint language receives its own
+                certificate package.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -235,10 +240,10 @@
             <section id="complexity-transfer" class="article-section">
               <h2>Complexity transfer</h2>
               <p>
-                A repair can reduce a selected static witness while making a
-                different measured axis worse. AAT treats this as a first-class
-                boundary because "removed here" and "improved everywhere" are
-                different claims.
+                A repair can reduce a selected static witness while moving
+                complexity into another measured axis. AAT treats that transfer
+                as first-class evidence, so repair histories can show where
+                complexity moved as well as where an obstruction decreased.
               </p>
               <figure class="code-panel">
                 <figcaption>Transfer-aware reading</figcaption>
@@ -247,14 +252,14 @@ runtime diagnostic axis: 0 -&gt; 1
 
 therefore:
   selected repair decrease proved
-  all-axis nonincrease refuted</code></pre>
+  complexity transfer recorded</code></pre>
               </figure>
               <p id="counterexample-11-4" class="statement">
                 <a class="statement-anchor" href="#counterexample-11-4">Counterexample 11.4.</a>
                 There is a finite repair skeleton in which the selected static
                 obstruction measure decreases, while a runtime-axis witness
-                appears after repair. Therefore selected repair decrease does
-                not imply all-axis nonincrease.
+                appears after repair. This records complexity transfer from
+                the selected static axis to a runtime diagnostic axis.
               </p>
               <p id="proof-11-4" class="statement-proof">
                 <a class="statement-anchor" href="#proof-11-4">Proof idea.</a>
@@ -271,7 +276,8 @@ therefore:
                 <a class="statement-anchor" href="#non-conclusion-11-5">Non-conclusion 11.5.</a>
                 A repair report, repair suggestion, and adoption record each
                 live in a selected evidence context. Correctness, empirical
-                cost, and side-effect claims are recorded as separate readings.
+                cost, and side-effect readings travel as distinct evidence
+                packages.
               </p>
             </section>
 
@@ -280,8 +286,8 @@ therefore:
               <p>
                 Dynamics reads a repair or migration path as a sequence of
                 selected observations. Endpoint equality, endpoint delta zero,
-                or a safer final state can miss excursions and transfer events
-                that occur along the path.
+                and a stronger final state become trajectory data together
+                with excursions and transfer events along the path.
               </p>
               <figure class="code-panel">
                 <figcaption>Observed trajectory</figcaption>
@@ -289,9 +295,9 @@ therefore:
   + selected SignatureObservation
   -&gt; SignatureTrajectory [sig(X0), ..., sig(Xn)]
 
-safe endpoints
-  do not imply
-safe trajectory</code></pre>
+endpoint reading
+  + trajectory reading
+  + transfer events</code></pre>
               </figure>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -341,16 +347,15 @@ safe trajectory</code></pre>
                 A semantic diagram compares two endpoint-matched operation
                 paths. A filler says the paths are homotopic under the selected
                 finite path calculus. A non-fillability witness says that, for
-                the selected observation and witness value, no such filler can
-                exist.
+                the selected observation and witness value, the diagram carries
+                a certified obstruction to filling.
               </p>
               <figure class="code-panel">
-                <figcaption>Filling boundary</figcaption>
+                <figcaption>Filling package</figcaption>
                 <pre><code>DiagramFiller D
   -&gt; Obs(D.lhs) = Obs(D.rhs)
 
 Obs(D.lhs) != Obs(D.rhs)
-  -&gt; no selected DiagramFiller D
   -&gt; NonFillabilityWitnessFor D w</code></pre>
               </figure>
               <p id="proposition-12-3" class="statement">
@@ -399,7 +404,7 @@ Obs(D.lhs) != Obs(D.rhs)
                 The finite diagram records a semantic obstruction for the
                 selected observation.
                 Static repair, runtime exposure, repository extraction, and
-                empirical frequency are separate evidence packages.
+                empirical frequency travel as their own evidence packages.
               </p>
             </section>
 
@@ -409,21 +414,21 @@ Obs(D.lhs) != Obs(D.rhs)
                 Repair and dynamics read architecture evolution as movement
                 through obstruction evidence. A repair step becomes
                 theorem-bearing when an admissible package states which witness
-                family is cleared, decreased, transferred, or left for another
-                axis.
+                family is cleared, decreased, transferred, or carried into
+                another axis.
               </p>
               <p>
                 This gives AAT a finite language for improvement. Repair plans,
                 no-solution certificates, complexity transfer, signature
                 trajectories, and finite semantic diagrams all become evidence
                 records that can be compared and composed while preserving their
-                theorem boundaries.
+                theorem packages.
               </p>
               <h3>Terms</h3>
               <dl class="term-list definition-list">
                 <div>
                   <dt>selected obstruction universe</dt>
-                  <dd>The witness family and measure that a repair theorem is allowed to decrease or clear.</dd>
+                  <dd>The witness family and measure that a repair theorem decreases or clears.</dd>
                 </div>
                 <div>
                   <dt>repair step</dt>
@@ -431,7 +436,7 @@ Obs(D.lhs) != Obs(D.rhs)
                 </div>
                 <div>
                   <dt>finite repair package</dt>
-                  <dd>A finite plan, target clearing claim, coverage assumptions, and non-conclusions for selected witnesses.</dd>
+                  <dd>A finite plan, target clearing statement, coverage assumptions, and non-conclusions for selected witnesses.</dd>
                 </div>
                 <div>
                   <dt>no-solution certificate</dt>
