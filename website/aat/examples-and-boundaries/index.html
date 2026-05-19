@@ -63,10 +63,10 @@
           <p class="eyebrow">AAT Part VIII</p>
           <h1>Examples and Boundaries</h1>
           <p class="lede">
-            Examples instantiate AAT as finite skeletons, selected witnesses,
+            Examples instantiate AAT through finite skeletons, witnesses,
             signature readings, and claim levels. Counterexamples become
             constructive tests that separate local contracts, static split,
-            selected repair, and measured-zero readings.
+            repair, and measured-zero readings.
           </p>
         </div>
       </section>
@@ -172,11 +172,11 @@
               </p>
               <p id="definition-15-0" class="statement">
                 <a class="statement-anchor" href="#definition-15-0">Definition 15.0.</a>
-                A canonical AAT example is a bounded presentation consisting of
-                a selected architecture object, a selected operation or
-                extension, an invariant family under test, a witness universe,
-                measured signature axes, a theorem boundary, and recorded
-                counterexamples or non-conclusions.
+                A canonical AAT example is a finite presentation consisting of
+                an architecture object, an operation or extension, an invariant
+                family under test, a witness universe, measured signature axes,
+                a theorem boundary, and recorded counterexamples or
+                non-conclusions.
               </p>
               <ul class="term-list">
                 <li>
@@ -194,7 +194,7 @@
               <h2>Example template</h2>
               <p>
                 Each canonical example should expose the same proof-relevant
-                structure: a bounded object, a selected operation, a witness
+                structure: an architecture object, an operation, a witness
                 universe, a signature reading, and the conclusions attached to
                 that reading.
               </p>
@@ -327,18 +327,18 @@ global repository completeness:
                       <td>Declared static route</td>
                       <td>`CheckoutService -> CouponService`, `CouponService -> PaymentPort`, `PaymentPort -> PaymentAdapter` under declared interface policy.</td>
                       <td>Formal or tooling depending on evidence source.</td>
-                      <td>Only selected static relations are covered.</td>
+                      <td>Selected static relations are covered.</td>
                     </tr>
                     <tr>
                       <td>Obstructing static witness set</td>
                       <td>Direct `CouponService -> PaymentAdapter` or `CouponService -> PaymentCache` edge bypassing the declared boundary.</td>
-                      <td>`proved` only after finite witness list and obstruction predicate are connected by the theorem package.</td>
+                      <td>`proved` when the finite witness list and obstruction predicate are connected by the theorem package.</td>
                       <td>Selected witness universe.</td>
                     </tr>
                     <tr>
                       <td>Semantic observation mismatch</td>
                       <td>Different total, rounding trace, error result, or discount ordering under selected checkout contexts.</td>
-                      <td>Defined / proved only for selected observation bridges; otherwise tooling or empirical evidence.</td>
+                      <td>Defined / proved for selected observation bridges; otherwise tooling or empirical evidence.</td>
                       <td>Selected semantic diagram.</td>
                     </tr>
                     <tr>
@@ -488,10 +488,9 @@ all axes are non-increasing</code></pre>
               <p id="counterexample-15-3" class="statement">
                 <a class="statement-anchor" href="#counterexample-15-3">Counterexample 15.3.</a>
                 There is a selected repaired static skeleton that satisfies
-                bounded static flatness while the selected semantic diagram
-                still does not commute. Static flatness therefore does not
-                imply semantic flatness or global
-                architecture flatness.
+                selected static flatness while the selected semantic diagram
+                still does not commute. Static flatness therefore does not imply
+                semantic flatness or global architecture flatness.
               </p>
               <p id="proof-15-3" class="statement-proof">
                 <a class="statement-anchor" href="#proof-15-3">Proof idea.</a>
@@ -518,14 +517,14 @@ all axes are non-increasing</code></pre>
             <section id="aat-boundary" class="article-section">
               <h2>AAT boundary</h2>
               <p>
-                AAT is a local algebra for software architecture. The examples
-                on this page show selected static, semantic, repair, and
+                AAT is an algebraic framework for software architecture. The
+                examples on this page show static, semantic, repair, and
                 signature readings under explicit evidence boundaries.
               </p>
               <p id="non-conclusion-16-1" class="statement">
                 <a class="statement-anchor" href="#non-conclusion-16-1">Non-conclusion 16.1.</a>
-                The examples on this page prove or illustrate selected
-                boundaries under selected evidence: finite static witnesses,
+                The examples on this page prove or illustrate boundary-aware
+                readings under selected evidence: finite static witnesses,
                 semantic diagrams, runtime observations, repair transfers, and
                 multi-axis signature readings.
               </p>
@@ -597,7 +596,7 @@ retry leaks across boundary
                 The examples show how AAT makes finite architecture skeletons
                 readable. A static witness, semantic diagram, runtime
                 observation, repair measure, or signature coordinate can be
-                placed in its own bounded record and then related to the other
+                placed in its own evidence record and then related to the other
                 readings through explicit bridges.
               </p>
               <p>

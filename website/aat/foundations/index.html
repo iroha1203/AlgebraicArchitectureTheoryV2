@@ -63,9 +63,9 @@
           <p class="eyebrow">AAT Part I</p>
           <h1>Foundations</h1>
           <p class="lede">
-            Foundations builds the object language of AAT: bounded
-            architecture objects, selected universes, observation models, and
-            evidence boundaries. These carriers make zero, lawfulness, and
+            Foundations builds the object language of AAT: architecture
+            objects, observation models, evidence boundaries, and the universes
+            in which they are read. These carriers make zero, lawfulness, and
             obstruction claims precise enough to reason about.
           </p>
         </div>
@@ -159,11 +159,11 @@
               </p>
               <h2>Central decomposition</h2>
               <p>
-                AAT formalizes software architecture as a local algebra of
+                AAT formalizes software architecture as an algebraic language of
                 objects, operations, invariant families, obstruction witnesses,
                 signatures, and theorem boundaries. Its review question asks
-                which invariant is being required, under which observation
-                boundary, and which witness or theorem package supports the
+                which invariant is being required, through which observation
+                context, and which witness or theorem package supports the
                 claim.
               </p>
               <figure class="code-panel">
@@ -208,9 +208,9 @@ ArchitectureObject
   + ArchitectureObservationContext</code></pre>
               </figure>
               <p>
-                This schema is the first theorem-boundary guard. A claim about
-                the object is never stronger than the carrier, policy, and
-                observation context that presented it.
+                This schema is the first scope discipline. A claim about the
+                object is evaluated together with the carrier, policy, and
+                observation context that present it.
               </p>
               <figure class="code-panel">
                 <figcaption>Judgement form</figcaption>
@@ -223,18 +223,17 @@ P |-AAT phi
               </figure>
               <p id="definition-1-1" class="statement">
                 <a class="statement-anchor" href="#definition-1-1">Definition 1.1.</a>
-                A bounded
-                <code>ArchitectureObject</code> is the mathematical object
-                selected by a carrier, a policy, and an observation context.
-                It is cut from code, specifications, review evidence, or
-                operational observations into a bounded object of reasoning.
+                An <code>ArchitectureObject</code> is the mathematical object
+                presented by a carrier, a policy, and an observation context.
+                It can be assembled from code, specifications, review evidence,
+                or operational observations, and its claims are read through
+                that presentation.
               </p>
               <p id="proposition-1-2" class="statement">
                 <a class="statement-anchor" href="#proposition-1-2">Proposition 1.2.</a>
-                Object claims are relativized
-                claims. A sentence about an architecture object is licensed
-                only inside the carrier, policy, and observation context that
-                present it.
+                Object claims are presentation-indexed claims. A sentence about
+                an architecture object is evaluated inside the carrier, policy,
+                and observation context that present it.
               </p>
               <p id="proof-1-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-1-2">Proof.</a>
@@ -265,9 +264,9 @@ P |-AAT phi
               <h2>Core proposition</h2>
               <p>
                 <code>ArchitectureCore</code> is the proof-carrying
-                presentation of the bounded object. It bundles static and runtime evidence,
-                boundary and abstraction policy, selected semantic diagrams,
-                decidability assumptions, and a finite
+                presentation of an architecture object. It bundles static and
+                runtime evidence, boundary and abstraction policy, selected
+                semantic diagrams, decidability assumptions, and a finite
                 <code>ComponentUniverse</code>.
               </p>
               <figure class="code-panel">
@@ -342,15 +341,15 @@ P |-AAT phi
               <p>
                 <code>ComponentUniverse</code> is the measurement scope used
                 by finite bridge theorems. It records selected components,
-                selected relations, coverage boundary, and exactness boundary.
-                Outside that universe, AAT does not infer zero, absence,
-                flatness, split, or lawfulness.
+                selected relations, coverage conditions, and exactness
+                conditions. Zero, absence, flatness, split, and lawfulness are
+                read through that universe.
               </p>
               <p id="definition-3-1" class="statement">
                 <a class="statement-anchor" href="#definition-3-1">Definition 3.1.</a>
-                A finite measurement universe
-                supplies the bounded component list and the proof obligations
-                needed to read graph-level evidence as in-scope evidence.
+                A finite measurement universe supplies the component list and
+                proof obligations needed to read graph-level evidence as
+                in-scope evidence.
               </p>
               <p id="proposition-3-2" class="statement">
                 <a class="statement-anchor" href="#proposition-3-2">Proposition 3.2.</a>
@@ -369,13 +368,12 @@ P |-AAT phi
                 list can be read as a statement about the selected graph,
                 because every component and every selected edge needed by the
                 claim has already been accounted for. Reachability is likewise
-                bounded: once the universe is finite, a reachability assertion
-                can be witnessed by a finite path inside the supplied universe,
-                rather than by an unbounded search over an unspecified system.
+                finite: inside the supplied universe, a reachability assertion
+                is witnessed by a finite path in the selected graph.
               </p>
               <p id="counterexample-3-3" class="statement">
                 <a class="statement-anchor" href="#counterexample-3-3">Counterexample 3.3.</a>
-                Without coverage, a bounded search can miss a component that
+                Without coverage, the measured list may omit a component that
                 carries the only violating edge. Without edge closure, an
                 in-scope source can point to an out-of-scope target, so a zero
                 result on the list is not a graph-level zero claim.
@@ -410,7 +408,7 @@ P |-AAT phi
                 The selected restriction is the object being judged.
               </p>
               <figure class="code-panel">
-                <figcaption>Minimal bounded universe</figcaption>
+                <figcaption>Minimal selected universe</figcaption>
                 <pre><code>ambient components:
   A
   C
@@ -426,7 +424,7 @@ ambient alternatives:
 same selected reading:
   EdgeRestriction P R0 = EdgeRestriction P R1
 
-bounded claim:
+selected claim:
   P licenses only the selected-restriction statement
 
 not selected:
@@ -450,7 +448,7 @@ not selected:
                 </li>
               </ul>
               <p id="bounded-reading-4-2" class="statement">
-                <a class="statement-anchor" href="#bounded-reading-4-2">Bounded reading 4.2.</a>
+                <a class="statement-anchor" href="#bounded-reading-4-2">Selected reading 4.2.</a>
                 In this presentation, <code>R0</code> and <code>R1</code>
                 have the same selected restriction. A theorem or report may
                 therefore license a statement about the selected edge relation
@@ -476,7 +474,7 @@ not selected:
                 AAT begins by selecting the universe, observation model,
                 coverage assumptions, and exactness assumptions under which an
                 architecture claim is read. This turns architecture discussion
-                into a bounded algebraic record: claims quantify over selected
+                into an algebraic record: claims quantify over selected
                 carriers, witnesses, and relations, and every conclusion stays
                 attached to the presentation that supports it.
               </p>
@@ -519,7 +517,7 @@ not selected:
                 </div>
                 <div>
                   <dt>non-conclusion</dt>
-                  <dd>A statement that does not follow, even when the bounded claim has been proved or measured.</dd>
+                  <dd>A statement that does not follow, even when the selected claim has been proved or measured.</dd>
                 </div>
               </dl>
             </section>

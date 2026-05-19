@@ -65,8 +65,8 @@
           <p class="lede">
             Architecture moves become partial operations with explicit proof
             boundaries. Feature extension supplies a compact calculus for
-            embedding a selected core, lifting feature behavior, recording
-            coverage, and classifying extension obstructions.
+            embedding a core, lifting feature behavior, recording coverage, and
+            classifying extension obstructions.
           </p>
         </div>
       </section>
@@ -157,7 +157,7 @@
           <div class="article-main">
             <section id="architecture-operation" class="article-section">
               <p class="research-question">
-                Can architectural change be treated as a calculus of bounded
+                Can architectural change be treated as a calculus of
                 operations?
               </p>
               <h2>Architecture operation</h2>
@@ -177,9 +177,9 @@
                 <a class="statement-anchor" href="#definition-9-1">Definition 9.1.</a>
                 An architecture operation is a boundary-indexed partial
                 morphism between selected architecture states. It becomes a
-                theorem package only after its preconditions, witness mapping,
-                invariant family, bounded conclusion, and non-conclusions have
-                been supplied.
+                theorem package when its preconditions, witness mapping,
+                invariant family, conclusion, and non-conclusions have been
+                supplied.
               </p>
               <p id="proposition-9-2" class="statement">
                 <a class="statement-anchor" href="#proposition-9-2">Proposition 9.2.</a>
@@ -212,18 +212,17 @@
                 auditable; it does not discharge the law.
               </p>
               <p>
-                Bounded law packages state exactly which observation,
-                interface, coverage, exactness, finite universe, obstruction
-                universe, or certificate makes a law readable as proved. The
-                same surface phrase can therefore have different proof
-                boundaries in graph, runtime, migration, repair, and synthesis
-                settings.
+                Law packages state exactly which observation, interface,
+                coverage, exactness, finite universe, obstruction universe, or
+                certificate makes a law readable as proved. The same surface
+                phrase can therefore have different proof boundaries in graph,
+                runtime, migration, repair, and synthesis settings.
               </p>
               <p id="proposition-9-3" class="statement">
                 <a class="statement-anchor" href="#proposition-9-3">Proposition 9.3.</a>
-                A bounded architecture calculus law yields its recorded
-                conclusion from its recorded assumptions, but it does not yield
-                an unconditional algebraic law for every operation.
+                An architecture calculus law yields its recorded conclusion
+                from its recorded assumptions, while unconditional algebraic
+                laws require their own theorem packages.
               </p>
             </section>
 
@@ -243,9 +242,9 @@
               <p>
                 This correspondence is useful because it makes design
                 principles compare as operation/invariant packages instead of
-                slogans. It is intentionally weak: it does not classify all
-                operations, prove a lattice isomorphism, or promote local
-                contracts into global decomposability.
+                slogans. It is a weak Galois-style reading: classifying all
+                operations, proving a lattice isomorphism, and promoting local
+                contracts into global decomposability remain separate claims.
               </p>
             </section>
 
@@ -283,8 +282,8 @@
               <h2>Extension evidence</h2>
               <p>
                 Extension proofs accumulate evidence. A base extension becomes
-                informative through the selected evidence available for static
-                split, feature view, lifting, bounded flatness, runtime, and
+                informative through evidence for static split, feature view,
+                lifting, <code>ArchitectureFlatWithin</code>, runtime, and
                 semantic readings.
               </p>
               <ul class="status-list">
@@ -301,24 +300,23 @@
                   <span><code>SplitExtensionLiftingData</code> and <code>SplitExtensionLiftingPreservationPackage</code> make selected feature steps lift through declared interfaces while preserving selected core and feature invariants.</span>
                 </li>
                 <li>
-                  <strong>Bounded flatness</strong>
-                  <span><code>SplitFeatureExtensionWithin</code> and <code>architectureFlatWithin_of_splitFeatureExtensionWithin</code> produce bounded <code>ArchitectureFlatWithin</code> only when coverage, static side conditions, runtime evidence, and semantic evidence are supplied.</span>
+                  <strong>ArchitectureFlatWithin</strong>
+                  <span><code>SplitFeatureExtensionWithin</code> and <code>architectureFlatWithin_of_splitFeatureExtensionWithin</code> produce <code>ArchitectureFlatWithin</code> through coverage, static side conditions, runtime evidence, and semantic evidence.</span>
                 </li>
               </ul>
               <p id="proposition-10-2" class="statement">
                 <a class="statement-anchor" href="#proposition-10-2">Proposition 10.2.</a>
-                A split feature extension yields bounded flatness only inside
-                the selected universe and only with the static, runtime,
-                semantic, coverage, and non-conclusion evidence carried by the
-                package.
+                A split feature extension yields
+                <code>ArchitectureFlatWithin</code> through the selected
+                universe and the static, runtime, semantic, coverage, and
+                non-conclusion evidence carried by the package.
               </p>
               <p id="proof-10-2" class="statement-proof">
                 <a class="statement-anchor" href="#proof-10-2">Proof idea.</a>
                 The theorem reads the supplied split package as coverage-aware
                 flatness evidence. Static, runtime, and semantic axes are
-                separate inputs, so the conclusion remains bounded to the
-                selected universe and does not become global
-                <code>ArchitectureFlat</code>.
+                separate inputs, so <code>ArchitectureFlatWithin</code> and
+                global <code>ArchitectureFlat</code> remain distinct claims.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -396,10 +394,10 @@ repair:
             <section id="operation-summary" class="article-section">
               <h2>Chapter summary</h2>
               <p>
-                The calculus page treats architecture change as a bounded
-                operation. Each move records its source, target, support,
-                preconditions, transition, invariant family, witness map,
-                conclusion, and evidence boundary.
+                The calculus page treats architecture change as a
+                boundary-indexed operation. Each move records its source,
+                target, support, preconditions, transition, invariant family,
+                witness map, conclusion, and evidence boundary.
               </p>
               <p>
                 Feature extension becomes a first-class operation rather than
@@ -416,7 +414,7 @@ repair:
                 </div>
                 <div>
                   <dt>law package</dt>
-                  <dd>A bounded theorem wrapper that carries an operation kind, a law kind, explicit assumptions, and a conclusion. The law tag alone is only metadata.</dd>
+                  <dd>A theorem wrapper that carries an operation kind, a law kind, explicit assumptions, and a conclusion. The law tag alone is only metadata.</dd>
                 </div>
                 <div>
                   <dt>feature extension</dt>

@@ -64,9 +64,9 @@
           <h1>Laws and Witnesses</h1>
           <p class="lede">
             Design principles become invariant families, and architecture
-            constraints become inspectable through selected obstruction
-            witnesses. This cluster turns lawfulness into a theorem-bearing
-            relation between required invariants and measured evidence.
+            failures become inspectable through obstruction witnesses. This
+            chapter turns lawfulness into a theorem-bearing relation between
+            required invariants, witness families, and measured evidence.
           </p>
         </div>
       </section>
@@ -185,11 +185,11 @@
             <section id="law-universe" class="article-section">
               <h2>Law universe</h2>
               <p>
-                A <code>LawUniverse</code> is the local world in which a
-                principle can be checked. It collects required laws, optional
-                laws, derived laws, the witness family used to observe
-                breakage, and the observation boundary under which those
-                witnesses are meaningful.
+                A <code>LawUniverse</code> is the setting in which a principle
+                can be checked. It collects required laws, optional laws,
+                derived laws, the witness family used to observe breakage, and
+                the observation context under which those witnesses are
+                meaningful.
               </p>
               <figure class="code-panel">
                 <figcaption>Lawfulness is not defined as witness absence</figcaption>
@@ -204,7 +204,7 @@ RequiredSignatureAxesZero X S
               </figure>
               <p>
                 The first line is the semantic predicate. The second and third
-                lines are measured presentations of the same claim only after a
+                lines are measured presentations of the same claim when a
                 theorem boundary supplies coverage, exactness, and observation
                 assumptions. The law universe stays close to the claim it
                 organizes.
@@ -233,7 +233,7 @@ RequiredSignatureAxesZero X S
                 boundary policy violation, projection failure, LSP mismatch,
                 non-commuting semantic diagram, runtime exposure, lifting
                 failure, or residual coverage gap can all be witnesses when
-                they live in the selected universe.
+                they belong to the relevant universe.
               </p>
               <figure class="code-panel">
                 <figcaption>Finite witness kernel</figcaption>
@@ -246,10 +246,9 @@ violationCount bad xs = 0
               <p>
                 In Lean, the generic law-family layer separates measured
                 witness absence from required witness absence. The bridge from
-                measured zero to required absence is proved only under witness
-                coverage, and the bridge from required absence to semantic
-                lawfulness is proved only under complete coverage for the
-                selected law family.
+                measured zero to required absence uses witness coverage, and the
+                bridge from required absence to semantic lawfulness uses
+                complete coverage for the selected law family.
               </p>
               <ul class="status-list">
                 <li>
@@ -291,8 +290,7 @@ CompleteWitnessCoverage
                 Axis exactness adds the signature side of the statement. A
                 required axis must be available and zero, and the axis must
                 exactly represent the corresponding required witness subfamily.
-                A missing axis value is therefore not promoted to a theorem
-                claim.
+                Missing axis values remain measurement gaps, not theorem claims.
               </p>
               <figure class="code-panel">
                 <figcaption>Axis exactness bridge</figcaption>
@@ -343,8 +341,8 @@ Then, within B:
               <p>
                 This theorem shape is also the readability guardrail. A
                 dashboard zero, a passing local contract, or a missing witness
-                list becomes a lawfulness statement only when the stated
-                completeness and exactness assumptions are available.
+                list becomes a lawfulness statement through the stated
+                completeness and exactness assumptions.
               </p>
               <ul class="status-list">
                 <li>
@@ -369,12 +367,12 @@ Then, within B:
             <section id="examples" class="article-section">
               <h2>Examples</h2>
               <p>
-                A local LSP contract can be lawful for selected client
-                contexts while the overall dependency graph remains cyclic. A
-                layered ranking can be lawful for static dependencies while a
-                runtime callback still crosses a protected boundary. A Saga law
-                can hold for a compensation relation without proving anything
-                about distributed convergence.
+                An LSP contract can be lawful for selected client contexts
+                while the overall dependency graph remains cyclic. A layered
+                ranking can be lawful for static dependencies while a runtime
+                callback still crosses a protected boundary. A Saga law can hold
+                for a compensation relation while distributed convergence is
+                handled by a separate law family.
               </p>
               <ul class="term-list">
                 <li>
@@ -400,7 +398,7 @@ Then, within B:
                 principle becomes mathematically useful when it supplies the
                 selected law universe, the evidence that can witness failure,
                 and the bridge theorem that connects witness absence to
-                lawfulness inside the chosen boundary.
+                lawfulness under the stated assumptions.
               </p>
               <p>
                 This chapter gives AAT its working grammar for architecture

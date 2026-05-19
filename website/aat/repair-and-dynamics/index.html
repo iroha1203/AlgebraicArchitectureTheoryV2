@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="AAT repair and dynamics: bounded repair steps, synthesis soundness, complexity transfer, signature trajectories, paths, homotopy, and diagram filling."
+      content="AAT repair and dynamics: repair steps, synthesis soundness, complexity transfer, signature trajectories, paths, homotopy, and diagram filling."
     >
     <title>AAT Repair and Dynamics</title>
     <link rel="canonical" href="https://iroha1203.dev/aat/repair-and-dynamics/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="AAT Repair and Dynamics">
-    <meta property="og:description" content="AAT repair and dynamics: bounded repair steps, synthesis soundness, complexity transfer, signature trajectories, paths, homotopy, and diagram filling.">
+    <meta property="og:description" content="AAT repair and dynamics: repair steps, synthesis soundness, complexity transfer, signature trajectories, paths, homotopy, and diagram filling.">
     <meta property="og:url" content="https://iroha1203.dev/aat/repair-and-dynamics/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AAT Repair and Dynamics">
-    <meta name="twitter:description" content="AAT repair and dynamics: bounded repair steps, synthesis soundness, complexity transfer, signature trajectories, paths, homotopy, and diagram filling.">
+    <meta name="twitter:description" content="AAT repair and dynamics: repair steps, synthesis soundness, complexity transfer, signature trajectories, paths, homotopy, and diagram filling.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -63,7 +63,7 @@
           <p class="eyebrow">AAT Part VI</p>
           <h1>Repair and Dynamics</h1>
           <p class="lede">
-            Repair transforms selected obstruction evidence through bounded
+            Repair transforms obstruction evidence through admissible
             operations. Dynamics tracks how repair, synthesis, paths,
             homotopies, and diagram fillers move across theorem packages and
             measured signature trajectories.
@@ -174,9 +174,9 @@
               <p id="definition-11-1" class="statement">
                 <a class="statement-anchor" href="#definition-11-1">Definition 11.1.</a>
                 A repair step is a source-to-target architecture operation read
-                against a selected obstruction universe. The base step only
-                records the operation skeleton; selected-measure decrease is a
-                separate theorem boundary supplied by an admissible repair rule.
+                against a selected obstruction universe. The base step records
+                the operation skeleton; selected-measure decrease is a separate
+                theorem boundary supplied by an admissible repair rule.
               </p>
               <p id="proposition-11-2" class="statement">
                 <a class="statement-anchor" href="#proposition-11-2">Proposition 11.2.</a>
@@ -201,7 +201,7 @@
             <section id="finite-synthesis" class="article-section">
               <h2>Finite repair and synthesis</h2>
               <p>
-                Bounded repair packages lift a single step into a finite plan.
+                Finite repair packages lift a single step into a finite plan.
                 The plan exposes a finite step bound and target clearing of the
                 selected obstruction universe. Coverage, exactness, and the
                 selected conclusion travel with the plan.
@@ -216,15 +216,15 @@
                 A finite repair package exposes selected-obstruction clearing,
                 a synthesis soundness package exposes candidate satisfaction,
                 and a valid no-solution certificate exposes absence of a
-                selected satisfying architecture. None of these packages proves
-                solver completeness outside its recorded universe.
+                selected satisfying architecture. Solver completeness outside
+                the recorded universe is a separate claim.
               </p>
               <p id="proof-11-3" class="statement-proof">
                 <a class="statement-anchor" href="#proof-11-3">Proof idea.</a>
                 Each package stores its own soundness field and boundary
                 assumptions. The accessor theorem returns that stored
-                conclusion; it does not manufacture completeness for an
-                unrecorded search space or an unsupported constraint language.
+                conclusion; completeness for an unrecorded search space or an
+                unsupported constraint language requires a separate package.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -251,7 +251,7 @@ therefore:
               </figure>
               <p id="counterexample-11-4" class="statement">
                 <a class="statement-anchor" href="#counterexample-11-4">Counterexample 11.4.</a>
-                There is a bounded repair skeleton in which the selected static
+                There is a finite repair skeleton in which the selected static
                 obstruction measure decreases, while a runtime-axis witness
                 appears after repair. Therefore selected repair decrease does
                 not imply all-axis nonincrease.
@@ -261,8 +261,7 @@ therefore:
                 The example has two states. The selected static universe reads
                 the target as zero, while the runtime diagnostic universe reads
                 the same target as carrying a measured witness. The repair
-                theorem remains true because it was scoped to the selected
-                static universe.
+                theorem remains true for the selected static universe.
               </p>
               <p class="formal-audit-link">
                 <span>Audit trail</span>
@@ -397,7 +396,8 @@ Obs(D.lhs) != Obs(D.rhs)
                 diagram.
               </p>
               <p>
-                The finite diagram records a bounded semantic obstruction.
+                The finite diagram records a semantic obstruction for the
+                selected observation.
                 Static repair, runtime exposure, repository extraction, and
                 empirical frequency are separate evidence packages.
               </p>
@@ -407,17 +407,17 @@ Obs(D.lhs) != Obs(D.rhs)
               <h2>Chapter summary</h2>
               <p>
                 Repair and dynamics read architecture evolution as movement
-                through selected obstruction evidence. A repair step is useful
-                when it is carried by an admissible package that states which
-                witness family is cleared, decreased, transferred, or left for
-                another axis.
+                through obstruction evidence. A repair step becomes
+                theorem-bearing when an admissible package states which witness
+                family is cleared, decreased, transferred, or left for another
+                axis.
               </p>
               <p>
                 This gives AAT a finite language for improvement. Repair plans,
                 no-solution certificates, complexity transfer, signature
-                trajectories, and finite semantic diagrams all become bounded
-                records that can be compared and composed without losing their
-                evidence boundaries.
+                trajectories, and finite semantic diagrams all become evidence
+                records that can be compared and composed while preserving their
+                theorem boundaries.
               </p>
               <h3>Terms</h3>
               <dl class="term-list definition-list">
@@ -427,11 +427,11 @@ Obs(D.lhs) != Obs(D.rhs)
                 </div>
                 <div>
                   <dt>repair step</dt>
-                  <dd>A source-to-target operation tagged by a selected rule; its effect is theorem-bearing only through an admissible package.</dd>
+                  <dd>A source-to-target operation tagged by a selected rule; its effect is theorem-bearing through an admissible package.</dd>
                 </div>
                 <div>
                   <dt>finite repair package</dt>
-                  <dd>A bounded plan, target clearing claim, coverage assumptions, and non-conclusions for selected witnesses.</dd>
+                  <dd>A finite plan, target clearing claim, coverage assumptions, and non-conclusions for selected witnesses.</dd>
                 </div>
                 <div>
                   <dt>no-solution certificate</dt>
