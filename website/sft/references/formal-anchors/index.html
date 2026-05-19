@@ -77,10 +77,13 @@
                 <li><a href="#audit-scope">Audit scope</a></li>
                 <li><a href="#formal-core">Formal core</a></li>
                 <li><a href="#field-projection">Field and projection</a></li>
+                <li><a href="#artifact-action">Artifact action</a></li>
                 <li><a href="#support-cone">Support and cone</a></li>
                 <li><a href="#projection-safety">Projection and safety</a></li>
+                <li><a href="#reachability-attractor">Reachability and attractor</a></li>
                 <li><a href="#envelope-archsig">Envelope and ArchSig</a></li>
                 <li><a href="#policy-update">Policy and update</a></li>
+                <li><a href="#package-entrypoint">Package entrypoint</a></li>
                 <li><a href="#theorem-candidates">Theorem candidates</a></li>
                 <li><a href="#counterexamples">Counterexamples</a></li>
               </ol>
@@ -150,9 +153,12 @@
               </p>
               <ul class="chapter-list">
                 <li><a href="../../computation/slice-observation/#slice">SoftwareField</a><span>A bounded slice of the development field with architecture projection and modeling boundary.</span></li>
+                <li><a href="../../computation/support-step-forecast-cone/#artifact-action">ArtifactAction</a><span>A set-valued artifact-mediated change relation with explicit interpretation and non-conclusion boundaries.</span></li>
                 <li><a href="../../computation/support-step-forecast-cone/#support">OperationSupport</a><span>The field-relative family of operations that are visible, plausible, cheap, reviewable, or otherwise supported.</span></li>
                 <li><a href="../../computation/support-step-forecast-cone/#cone">ForecastCone</a><span>A finite reachable path set under selected support, step relation, source field, and horizon.</span></li>
                 <li><a href="../../computation/envelope-calibration/#envelope">ConsequenceEnvelope</a><span>A loss-aware projection of cone families into reviewer-facing regions, axes, witnesses, and boundary items.</span></li>
+                <li><a href="../../intervention/governance-attractor-engineering/#stable">Reachability and StableRegion</a><span>May / must reachability, stable regions, and reachable preimages separated from strong attractor claims.</span></li>
+                <li><a href="../../intervention/governance-attractor-engineering/#attractor">AttractorEngineering</a><span>A bounded support-shaping package for selected target regions, measurement boundaries, and bad-region avoidance.</span></li>
               </ul>
             </section>
 
@@ -202,6 +208,73 @@
                       <li><code>ArchitectureProjectionBoundary.projection_preserves_observationBoundary</code></li>
                       <li><code>ArchitectureProjectionBoundary.projection_records_fieldNotArchitectureObjectBoundary</code></li>
                       <li><code>ArchitectureProjectionBoundary.projection_records_nonConclusions</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+            </section>
+
+            <section id="artifact-action" class="article-section">
+              <h2>Artifact action</h2>
+              <div class="formal-anchor-cards" aria-label="SFT artifact action formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>ArtifactAction and candidate updates</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../../computation/support-step-forecast-cone/#artifact-action">Part 2-2 Artifact action</a>
+                    and the claim that PRDs, specs, issues, incidents, and AI
+                    proposals induce candidate update families rather than a
+                    unique future diff.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>CandidateUpdateRelation</code>, <code>ArtifactAction</code>, <code>DeterministicArtifactAction</code>, and <code>ForecastConeFamilyAfterAction</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Set-valued candidate update relations, deterministic special-case accessors, and action-after-cone family membership are defined; deterministic uniqueness and selected-candidate accessors are proved.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Artifact action does not imply candidate completeness, a unique future, causal correctness, human intention, market success, or extractor completeness.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTArtifactAction.lean">Formal/Arch/Evolution/SFTArtifactAction.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>CandidateUpdateRelation</code></li>
+                      <li><code>CandidateUpdateRelation.Candidate</code></li>
+                      <li><code>CandidateUpdateRelation.AppliesTo</code></li>
+                      <li><code>CandidateUpdateRelation.RecordsInterpretationBoundary</code></li>
+                      <li><code>CandidateUpdateRelation.RecordsUpdateBoundary</code></li>
+                      <li><code>CandidateUpdateRelation.RecordsNonConclusions</code></li>
+                      <li><code>ArtifactAction</code></li>
+                      <li><code>ArtifactAction.CandidateUpdate</code></li>
+                      <li><code>ArtifactAction.AppliesTo</code></li>
+                      <li><code>ArtifactAction.RecordsTargetFieldComponents</code></li>
+                      <li><code>ArtifactAction.RecordsInterpretationBoundary</code></li>
+                      <li><code>ArtifactAction.RecordsActionBoundary</code></li>
+                      <li><code>ArtifactAction.RecordsCompositionBoundary</code></li>
+                      <li><code>ArtifactAction.RecordsObservableBoundary</code></li>
+                      <li><code>ArtifactAction.RecordsNonConclusions</code></li>
+                      <li><code>DeterministicArtifactAction</code></li>
+                      <li><code>DeterministicArtifactAction.selected_candidate</code></li>
+                      <li><code>DeterministicArtifactAction.candidate_eq_selected</code></li>
+                      <li><code>DeterministicArtifactAction.target_eq_selected</code></li>
+                      <li><code>ForecastConeFamilyAfterAction</code></li>
+                      <li><code>ForecastConeFamilyAfterAction.candidate_member</code></li>
+                      <li><code>ForecastConeFamilyAfterAction.applies_to_updatedField</code></li>
+                      <li><code>ForecastConeFamilyAfterAction.length_le_horizon</code></li>
                     </ul>
                   </details>
                 </article>
@@ -313,6 +386,128 @@
               </div>
             </section>
 
+            <section id="reachability-attractor" class="article-section">
+              <h2>Reachability and attractor</h2>
+              <div class="formal-anchor-cards" aria-label="SFT reachability and attractor formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>MayReach, MustReach, StableRegion, and ReachablePreimage</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../../computation/support-step-forecast-cone/#reachability">Part 2-2 Reachability regions</a>
+                    and <a href="../../intervention/governance-attractor-engineering/#stable">Part 3-1 Stable regions</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>MayReach</code>, <code>MustReach</code>, <code>StableRegion</code>, <code>ReachablePreimage</code>, and <code>SFTReachabilityBoundary</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Finite-cone reachability accessors, nil reachability, must-to-may conversion, stable-region closure, and reachable-preimage equivalence are proved.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Reachability vocabulary is relative to selected support, relation, source, and horizon. It does not add probability, recurrence, global basin, strong attractor, convergence, or calibrated prediction.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTReachability.lean">Formal/Arch/Evolution/SFTReachability.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>FieldRegion</code></li>
+                      <li><code>MayReach</code></li>
+                      <li><code>MayReach.of_forecastCone</code></li>
+                      <li><code>MayReach.nil</code></li>
+                      <li><code>MayReach.witness</code></li>
+                      <li><code>MustReach</code></li>
+                      <li><code>MustReach.target</code></li>
+                      <li><code>MustReach.source_mem</code></li>
+                      <li><code>MustReach.mayReach</code></li>
+                      <li><code>StableRegion</code></li>
+                      <li><code>StableRegion.supportedStep</code></li>
+                      <li><code>StableRegion.fieldPath_target</code></li>
+                      <li><code>StableRegion.forecastCone_target</code></li>
+                      <li><code>StableRegion.mustReach</code></li>
+                      <li><code>ReachablePreimage</code></li>
+                      <li><code>ReachablePreimage.iff_mayReach</code></li>
+                      <li><code>ReachablePreimage.of_mem</code></li>
+                      <li><code>SFTReachabilityBoundary</code></li>
+                      <li><code>SFTReachabilityBoundary.RecordsProbabilityBoundary</code></li>
+                      <li><code>SFTReachabilityBoundary.RecordsAttractorBoundary</code></li>
+                      <li><code>SFTReachabilityBoundary.RecordsBasinBoundary</code></li>
+                      <li><code>SFTReachabilityBoundary.RecordsRecurrenceBoundary</code></li>
+                      <li><code>SFTReachabilityBoundary.RecordsNonConclusions</code></li>
+                    </ul>
+                  </details>
+                </article>
+
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>AttractorEngineering support package</h3>
+                    </div>
+                    <span class="status-badge status-badge-proved">defined / proved</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits <a href="../../intervention/governance-attractor-engineering/#attractor">Attractor engineering</a>,
+                    <a href="../../intervention/governance-attractor-engineering/#levers">Design levers</a>,
+                    and <a href="../../intervention/governance-attractor-engineering/#measurement">Measurement surface</a>.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>AttractorEngineeringSupportPackage</code>, <code>AvoidsBadRegion</code>, <code>supportPackage_preserves_targetTrajectory</code>, and <code>supportShaping_avoids_badRegion</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Selected observation, finite operation support, bounded transition semantics, target region, coverage assumptions, measurement boundary, and non-conclusion boundary are bundled; bounded target-trajectory preservation and bad-region avoidance wrappers are proved.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>This is bounded support shaping over selected observations and finite scripts. It is not a global attractor theorem, empirical AI behavior theorem, basin-completeness theorem, or incident-reduction theorem.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/AttractorEngineering.lean">Formal/Arch/Evolution/AttractorEngineering.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>AvoidsBadRegion</code></li>
+                      <li><code>AttractorEngineeringSupportPackage</code></li>
+                      <li><code>AttractorEngineeringSupportPackage.RecordsCoverageAssumptions</code></li>
+                      <li><code>AttractorEngineeringSupportPackage.RecordsMeasurementBoundary</code></li>
+                      <li><code>AttractorEngineeringSupportPackage.RecordsNonConclusions</code></li>
+                      <li><code>AttractorEngineeringSupportPackage.TargetTrajectory</code></li>
+                      <li><code>AttractorEngineeringSupportPackage.supportPreserves_targetRegion</code></li>
+                      <li><code>AttractorEngineeringSupportPackage.supportPackage_preserves_targetTrajectory</code></li>
+                      <li><code>AttractorEngineeringSupportPackage.supportPackage_avoids_badRegion</code></li>
+                      <li><code>AttractorEngineeringSupportPackage.supportShaping_avoids_badRegion</code></li>
+                      <li><code>AttractorCandidate</code></li>
+                      <li><code>AttractorCandidate.observedSuffix</code></li>
+                      <li><code>AttractorCandidate.RecurrentRegion</code></li>
+                      <li><code>AttractorCandidate.IsSafeAttractor</code></li>
+                      <li><code>AttractorCandidate.IsBadAttractor</code></li>
+                      <li><code>AttractorCandidate.observedSuffix_in_region</code></li>
+                      <li><code>AttractorCandidate.isSafeAttractor_region</code></li>
+                      <li><code>AttractorCandidate.isSafeAttractor_of_region_subset</code></li>
+                      <li><code>BasinCandidate.selectedInitialStates_reach_safeSuffix_of_safeAttractor</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+            </section>
+
             <section id="envelope-archsig" class="article-section">
               <h2>Envelope and ArchSig</h2>
               <div class="formal-anchor-cards" aria-label="SFT envelope and ArchSig formal anchors">
@@ -417,6 +612,120 @@
                     </ul>
                   </details>
                 </article>
+              </div>
+            </section>
+
+            <section id="package-entrypoint" class="article-section">
+              <h2>Package entrypoint</h2>
+              <p>
+                The complete Lean-facing guide should also expose the docs-facing
+                package entrypoint. <code>SFTTheoremPackages</code> is intentionally
+                thin: it imports the SFT formal surface and provides stable
+                metadata that maps website statements to representative Lean
+                declarations and non-conclusion boundaries.
+              </p>
+              <div class="formal-anchor-cards" aria-label="SFT theorem package entrypoint formal anchors">
+                <article class="formal-anchor-card">
+                  <header class="formal-anchor-card-header">
+                    <div>
+                      <span class="formal-anchor-card-label">Claim group</span>
+                      <h3>SFT theorem package registry</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">metadata entrypoint</span>
+                  </header>
+                  <p class="formal-anchor-audits">
+                    Audits the whole SFT website path: field, computation,
+                    intervention, AAT interface, ArchSig boundary, and
+                    counterexample registry.
+                  </p>
+                  <dl class="formal-anchor-grid">
+                    <div>
+                      <dt>Representative anchors</dt>
+                      <dd><code>SFTTheoremPackages.Candidate</code>, <code>representativeDeclarations</code>, <code>schematicCorrespondences</code>, and <code>nonConclusionBoundary</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Current Lean status</dt>
+                      <dd>Docs-facing metadata enumerates the implemented SFT formal packages and stabilizes schematic-to-Lean correspondence rows.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>This entrypoint is a registry and import surface. It does not itself prove calibration, extractor completeness, global future trajectory safety, market prediction, or human-intention prediction.</dd>
+                    </div>
+                    <div>
+                      <dt>Lean source</dt>
+                      <dd><a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/2cb4b5eeaa7307b7cdb8dd0577695fa06d8173a4/Formal/Arch/Evolution/SFTTheoremPackages.lean">Formal/Arch/Evolution/SFTTheoremPackages.lean</a></dd>
+                    </div>
+                  </dl>
+                  <details class="formal-anchor-details">
+                    <summary>Full Lean anchor set</summary>
+                    <ul class="formal-anchor-code-list">
+                      <li><code>SFTTheoremPackages.SchematicCorrespondence</code></li>
+                      <li><code>SFTTheoremPackages.Candidate</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.softwareFieldProjection</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.forecastConeCore</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.coneProjection</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.artifactAction</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.operationPolicyGovernance</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.stableRegionReachability</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.supportSafety</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.fieldUpdate</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.consequenceEnvelope</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.aatInterfaceBoundary</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.archSigReportBoundary</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.counterexamplePackage</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.sftSection</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.schematicName</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.representativeDeclarations</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.schematicCorrespondences</code></li>
+                      <li><code>SFTTheoremPackages.Candidate.nonConclusionBoundary</code></li>
+                    </ul>
+                  </details>
+                </article>
+              </div>
+
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Website claim surface</th>
+                      <th scope="col">Lean package family</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Field and architecture projection</th>
+                      <td><code>softwareFieldProjection</code></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Artifact force and candidate updates</th>
+                      <td><code>artifactAction</code></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Support, steps, and cones</th>
+                      <td><code>forecastConeCore</code>, <code>coneProjection</code></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Governance and intervention</th>
+                      <td><code>operationPolicyGovernance</code>, <code>fieldUpdate</code></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Attractor language</th>
+                      <td><code>stableRegionReachability</code>, <code>supportSafety</code>, and <code>AttractorEngineeringSupportPackage</code></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Envelope and tooling report</th>
+                      <td><code>consequenceEnvelope</code>, <code>archSigReportBoundary</code></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AAT/SFT interface</th>
+                      <td><code>aatInterfaceBoundary</code></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Forbidden readings</th>
+                      <td><code>counterexamplePackage</code></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
 

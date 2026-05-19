@@ -70,9 +70,11 @@
               <ol>
                 <li><a href="#governance">Governance as field shaping</a></li>
                 <li><a href="#attractor">Attractor engineering</a></li>
+                <li><a href="#guardrails">Beyond guardrails</a></li>
+                <li><a href="#levers">Design levers</a></li>
                 <li><a href="#stable">Stable regions</a></li>
+                <li><a href="#measurement">Measurement surface</a></li>
                 <li><a href="#moves">Shaping moves</a></li>
-                <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -115,6 +117,65 @@
                 can remove unsafe support, redirect ambiguous proposals, add
                 observation axes, and store outcomes as field memory.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-governance-intervention-3">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-governance-intervention-3">GovernanceIntervention</h3>
+                <p>
+                  A bounded transformation of support, policy, observation, and
+                  feedback update in a selected field model.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Examples</dt>
+                    <dd>Review, CI, type systems, architecture rules, runtime guards, ownership boundaries, and AI policy.</dd>
+                  </div>
+                  <div>
+                    <dt>Effect</dt>
+                    <dd>Changes which future paths are available, cheap, visible, escalated, or remembered.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Governance transformation</figcaption>
+                <pre><code>GovernanceIntervention
+  = support transformation
+  + policy transformation
+  + observation enrichment
+  + feedback update
+  + escalation / deferral rule</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Intervention</th>
+                      <th scope="col">Field effect</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Restrictive</th>
+                      <td>Removes unsafe support.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Redirective</th>
+                      <td>Raises shortcut cost and lowers lawful path cost.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Instrumenting</th>
+                      <td>Adds observation axes, tests, traces, or runtime checks.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Escalating</th>
+                      <td>Converts proposal pressure into review, design, or incident records.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Learning</th>
+                      <td>Updates field memory after observed outcome.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
             <section id="attractor" class="article-section">
               <h2>Attractor engineering</h2>
@@ -124,11 +185,157 @@
                 paths. It is to lower the cost of lawful paths and make shortcut
                 paths costly, visible, and review-mediated.
               </p>
+              <p>
+                This is Part 3's central idea. A codebase is not only an
+                implementation; it is a prompt, a training surface, a review
+                memory, and a local grammar for future work. The next human or
+                AI proposal will tend to follow what the field makes obvious.
+                Attractor engineering means designing that tendency.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-attractor-engineering">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-attractor-engineering">AttractorEngineering</h3>
+                <p>
+                  Designing support and policy so desired architecture futures
+                  become natural, low-cost, observable, and repeatable.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Formal reading</dt>
+                    <dd>Support shaping, policy shaping, governance intervention, observation boundary, and feedback update rule.</dd>
+                  </div>
+                  <div>
+                    <dt>Not assumed</dt>
+                    <dd>A physical attractor, probability model, or global convergence theorem.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Attractor engineering object</figcaption>
+                <pre><code>AttractorEngineering(F, R)
+  = target region R
+  + support shaping
+  + policy shaping
+  + governance intervention
+  + observation boundary
+  + feedback update rule</code></pre>
+              </figure>
               <p class="plain-reading">
                 <strong>Intervention habit.</strong> The strongest governance
                 is not a longer checklist. It is a field where the checklist
                 and the codebase point toward the same lawful move.
               </p>
+            </section>
+            <section id="guardrails" class="article-section">
+              <h2>Beyond guardrails</h2>
+              <p>
+                Guardrails matter, but attractor engineering is not just a
+                stronger fence. A guardrail reacts to a proposed path. Attractor
+                engineering changes the field before the proposal exists: the
+                examples developers copy, the APIs that feel natural, the tests
+                that encode invariants, the review questions that become
+                routine, and the ownership paths that make lawful work easier.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Mechanism</th>
+                      <th scope="col">Main action</th>
+                      <th scope="col">Attractor-engineering reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Guardrail</th>
+                      <td>Stops forbidden output or operation.</td>
+                      <td>Needed, but downstream of proposal generation.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Harness</th>
+                      <td>Wraps an agent with evaluation and limits.</td>
+                      <td>External control around the field, not field design by itself.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Policy enforcement</th>
+                      <td>Defines and rejects forbidden sets.</td>
+                      <td>Shapes support only if it also changes cost, visibility, and feedback.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Review gate</th>
+                      <td>Accepts, rejects, or requests changes before merge.</td>
+                      <td>Becomes attractor engineering when review changes future proposal support.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Field design</th>
+                      <td>Changes examples, boundaries, invariants, tests, ownership, and feedback memory.</td>
+                      <td>Makes good paths naturally selected before review has to rescue them.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section id="levers" class="article-section">
+              <h2>Design levers</h2>
+              <p>
+                The practical work is to change the support and policy landscape.
+                A good field makes boundary-preserving operations local,
+                discoverable, low-friction, observable, and easy to reinforce.
+                A bad field makes shortcuts local, cheap, and hard to observe.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Support shaping</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Change the operation families that are easy to construct:
+                    APIs, templates, examples, module boundaries, ownership
+                    routes, and issue decomposition.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Policy shaping</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Lower the cost of lawful paths and raise the cost of shortcut
+                    paths through review defaults, CI requirements, typing,
+                    architecture rules, and migration scaffolds.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Observation shaping</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Make drift visible by adding tests, traces, signature axes,
+                    witness checks, runtime guards, and missing-boundary reports.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Feedback shaping</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Preserve review outcomes, incidents, rejected shortcuts,
+                    and successful lawful paths as field memory for the next
+                    proposal.
+                  </p>
+                </article>
+              </div>
             </section>
             <section id="stable" class="article-section">
               <h2>Stable regions</h2>
@@ -138,6 +345,82 @@
                 recurrent path is a repeated development pattern under the
                 selected support and policy. Stronger readings require stronger
                 semantics, but the field-design question already becomes clear.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-stable-region-3">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-stable-region-3">StableRegion</h3>
+                <p>
+                  A selected region where accepted supported steps remain inside
+                  the region under the chosen semantics.
+                </p>
+                <dl>
+                  <div>
+                    <dt>May reach</dt>
+                    <dd>Some supported path reaches the region within the horizon.</dd>
+                  </div>
+                  <div>
+                    <dt>Must reach</dt>
+                    <dd>Every selected supported path reaches the region within the horizon.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Attractor vocabulary without overclaiming</figcaption>
+                <pre><code>MayReach_h(F, U, A)
+MustReach_h(F, U, A)
+StableRegion(U, A)
+ReachablePreimage_h(U, A)</code></pre>
+              </figure>
+            </section>
+            <section id="measurement" class="article-section">
+              <h2>Measurement surface</h2>
+              <p>
+                To engineer an attractor, the field has to expose signals. SFT
+                does not need a single architecture score. It needs a bounded
+                measurement surface that can compare support risk, basin
+                movement, shortcut visibility, return time, and feedback update
+                across selected regions.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Signal</th>
+                      <th scope="col">Question it asks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">DefaultPath</th>
+                      <td>Which path does the field make easiest before anyone argues?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">RecurrentPattern</th>
+                      <td>Which development path repeats across issues, PRs, or AI proposals?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Good basin mass</th>
+                      <td>How much selected initial-state mass reaches the desired region?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Bad basin visibility</th>
+                      <td>How quickly does drift toward an unsafe region become observable?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Escape cost</th>
+                      <td>How expensive is it to repair or refactor out of a bad region?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Field shaping delta</th>
+                      <td>What changed after the intervention: support, policy, observation, or feedback?</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="plain-reading">
+                <strong>Measurement habit.</strong> Unmeasured basin risk is not
+                zero. If a field cannot observe a bad basin, attractor
+                engineering starts by instrumenting the boundary.
               </p>
             </section>
             <section id="moves" class="article-section">
@@ -173,37 +456,6 @@
                 and raises the cost of UI-only drift. This is attractor
                 engineering: the better path becomes easier to select.
               </p>
-            </section>
-            <section id="chapter-summary" class="article-section">
-              <h2>Chapter summary</h2>
-              <p>
-                SFT makes governance an engineering surface. Review rules,
-                CI, type systems, ownership, documentation, and runtime guards
-                are field interventions because they change support, policy,
-                observation, feedback, and capacity.
-              </p>
-              <p>
-                Attractor engineering is the positive claim: make desirable
-                futures natural. The mathematical guard is that each
-                intervention must be read as a bounded transformation of the
-                selected field model, and its effect on cones, envelopes, or
-                stable regions must be stated under explicit assumptions.
-              </p>
-              <h3>Chapter glossary</h3>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>governance intervention</dt>
-                  <dd>A bounded transformation of support, policy, observation, feedback, or capacity.</dd>
-                </div>
-                <div>
-                  <dt>attractor engineering</dt>
-                  <dd>Designing support and policy so desirable futures become natural and repeatable.</dd>
-                </div>
-                <div>
-                  <dt>stable region</dt>
-                  <dd>A selected region where supported steps remain inside the region under the chosen semantics.</dd>
-                </div>
-              </dl>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 3. The Intervention</strong></a>

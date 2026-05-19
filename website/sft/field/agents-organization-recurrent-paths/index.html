@@ -57,9 +57,9 @@
           <h1>Agents, Organization, and Recurrent Paths</h1>
           <p class="lede">
             Developers, AI agents, ownership routes, and communication paths
-            are not outside architecture. They shape recurrent proposal forms,
-            review paths, and operation families that eventually settle into
-            software structure.
+            are not outside architecture. They are part of the field that makes
+            some proposal forms repeat until they settle into software
+            structure.
           </p>
         </div>
       </section>
@@ -72,8 +72,8 @@
                 <li><a href="#agents">Field participants</a></li>
                 <li><a href="#conway">Conway through SFT</a></li>
                 <li><a href="#recurrent">Recurrent path shape</a></li>
+                <li><a href="#support-policy">Support and policy</a></li>
                 <li><a href="#implication">Design implication</a></li>
-                <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -117,6 +117,25 @@
                 plausible. Their choices are creative, but they are not made in
                 a vacuum.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-field-participant">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-field-participant">Field participant</h3>
+                <p>
+                  A human or AI agent that acts inside the selected field by
+                  reading artifacts, estimating cost, generating proposals, or
+                  reviewing paths.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Human</dt>
+                    <dd>Brings judgement, ownership memory, review context, and operational fear.</dd>
+                  </div>
+                  <div>
+                    <dt>AI agent</dt>
+                    <dd>Amplifies the patterns and instructions made visible by code and artifacts.</dd>
+                  </div>
+                </dl>
+              </aside>
               <p>
                 AI makes this especially visible. A codebase is also a prompt.
                 If the field makes shortcuts local and invariants implicit, an
@@ -124,15 +143,63 @@
                 boundaries and examples of lawful extension, the same agent can
                 amplify better structure.
               </p>
+              <p>
+                This is why SFT treats AI governance as more than permission
+                control. A policy can forbid a class of changes, but the field
+                still teaches the agent what looks normal. The deeper question
+                is whether the codebase, PRD, issue, tests, review examples,
+                and architecture notes make the good path the easiest path to
+                propose.
+              </p>
+              <p class="pull-quote">
+                A codebase is not only an implementation. In the AI era, it is
+                also a training surface and a prompt for the next change.
+              </p>
             </section>
             <section id="conway" class="article-section">
               <h2>Conway through SFT</h2>
               <p>
-                Conway's Law says system design reflects communication
-                structure. SFT reads this as field pressure. Communication
-                paths, ownership boundaries, approval flows, and review routes
-                alter which changes are low-cost and repeatedly selected.
+                Conway's Law is the observation that organizations tend to
+                produce systems whose structure resembles their communication
+                structure. If four groups must coordinate through four
+                communication channels, the system often grows four visible
+                seams. If a feature requires three teams to negotiate, the
+                resulting architecture often carries that negotiation cost.
               </p>
+              <p>
+                The usual reading is descriptive: look at the org chart and you
+                can often recognize its shadow in the software. SFT turns that
+                into a mechanism. The organization does not directly command an
+                architecture. It changes which work is easy to formulate, who
+                must approve it, where handoffs occur, which reviews are cheap,
+                and which changes are repeatedly selected.
+              </p>
+              <p>
+                In SFT terms, Conway's Law is field pressure. Communication
+                paths, ownership boundaries, approval flows, and review routes
+                reshape operation support and policy. Over time, repeated
+                low-friction operations become recurrent PR shapes, and those
+                recurrent PR shapes settle into architecture.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-organization-field">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-organization-field">Organization field</h3>
+                <p>
+                  The ownership, communication, approval, review, and agent
+                  context that changes which operation families are repeatedly
+                  selected.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Mechanism</dt>
+                    <dd>Changes issue decomposition, review cost, coordination cost, and recurrent PR shape.</dd>
+                  </div>
+                  <div>
+                    <dt>Conway reading</dt>
+                    <dd>Architecture reflects repeated low-friction operations, not a one-time copy of an org chart.</dd>
+                  </div>
+                </dl>
+              </aside>
               <figure class="code-panel">
                 <figcaption>Organization field</figcaption>
                 <pre><code>organization structure
@@ -142,17 +209,131 @@
   -> recurrent PR shape
   -> architecture operation pattern</code></pre>
               </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Organization pressure</th>
+                      <th scope="col">SFT reading</th>
+                      <th scope="col">Architectural effect</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">A team owns checkout and another owns payment.</th>
+                      <td>Cross-boundary changes have higher coordination cost.</td>
+                      <td>Checkout/payment boundaries become stable, or shortcuts appear at the seam.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Reviewers are assigned by technical layer.</th>
+                      <td>Layer-local patches become cheaper than capability-wide changes.</td>
+                      <td>The architecture tends to preserve layer-shaped PRs.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AI agents implement from local examples.</th>
+                      <td>Visible local patterns become low-cost operation support.</td>
+                      <td>Good examples or shortcuts are amplified faster.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>
+                This turns Conway's Law from a resemblance story into a theory
+                of repeated change. Architecture absorbs the issue boundaries,
+                review paths, handoffs, and coordination costs that ordinary
+                work selects again and again.
+              </p>
             </section>
             <section id="recurrent" class="article-section">
               <h2>Recurrent path shape</h2>
               <p>
-                SFT does not need to claim that organization determines
-                architecture. It is enough to observe that repeated operation
-                shapes matter. A team boundary can make certain cross-cutting
-                changes expensive. A review route can make boundary-preserving
-                work easier to justify. A product-capability organization can
-                make capability-preserving changes more natural.
+                SFT models this repetition as recurrent path shape. A team
+                boundary can make certain cross-cutting changes expensive. A
+                review route can make boundary-preserving work easier to
+                justify. A product-capability organization can make
+                capability-preserving changes more natural.
               </p>
+              <div class="path-matrix" role="list" aria-label="Organization field examples">
+                <article role="listitem">
+                  <span>layer split</span>
+                  <h3>Frontend / Backend / Data / Infra</h3>
+                  <p>Issues and approvals tend to follow technical layers, so cross-cutting capability work can become coordination-heavy.</p>
+                </article>
+                <article role="listitem">
+                  <span>capability split</span>
+                  <h3>Search / Checkout / Billing</h3>
+                  <p>Feature work can preserve product boundaries more naturally, while shared platform changes need explicit governance.</p>
+                </article>
+                <article role="listitem">
+                  <span>agent split</span>
+                  <h3>Human review / AI implementation</h3>
+                  <p>The proposal stream becomes faster, so artifacts and tests must carry more of the architectural memory.</p>
+                </article>
+                <article role="listitem">
+                  <span>incident split</span>
+                  <h3>On-call / Product / Platform</h3>
+                  <p>Operational pain changes which invariants become visible and which regions receive future protection.</p>
+                </article>
+              </div>
+            </section>
+            <section id="support-policy" class="article-section">
+              <h2>Support and policy</h2>
+              <p>
+                The mathematical object behind organization pressure is a
+                support and policy structure over operations. Support says
+                which operations are available in the current field. Policy
+                says which of those operations are cheaper, easier, more
+                reviewable, or more likely to be selected.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-support-policy">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-support-policy">Support and policy</h3>
+                <p>
+                  Support is the set of operations available in a field. Policy
+                  is the ordering, cost, or selection relation that makes some
+                  supported operations more natural than others.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Support</dt>
+                    <dd><code>OperationSupport(F)</code>: admissible operations in field <code>F</code>.</dd>
+                  </div>
+                  <div>
+                    <dt>Policy</dt>
+                    <dd><code>op1 <=_F op2</code>: <code>op1</code> is no harder or no less natural than <code>op2</code>.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Organization as operation pressure</figcaption>
+                <pre><code>SupportedOperation
+  = operation
+  + applicable theorem boundary
+  + precondition evidence
+  + expected witness mapping
+
+OperationSupport(F)
+  = admissible operation set in field F
+
+PolicyAsPreorder
+  op1 <=_F op2
+  means op1 is no harder or no less natural than op2 in F</code></pre>
+              </figure>
+              <p>
+                Recurrent architecture pressure appears when the same low-cost
+                region of this support is selected again and again. A field
+                does not need to force a single operation. It only needs to make
+                one family of operations repeatedly easier than its rivals.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Recurrent path schema</figcaption>
+                <pre><code>organization field F
+  -> OperationSupport(F)
+  -> OperationPolicy(F)
+  -> repeatedly selected operation family
+  -> recurrent PR shape
+  -> recurrent architecture operation</code></pre>
+              </figure>
             </section>
             <section id="implication" class="article-section">
               <h2>Design implication</h2>
@@ -161,6 +342,11 @@
                 An organization field is the ownership, communication, review,
                 and agent context that changes the recurrent operation families
                 selected by a development organization.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1-2">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual core</span>
+                <span>Part 2 treats recurrent paths as support and policy objects rather than organizational destiny.</span>
               </p>
               <p class="plain-reading">
                 <strong>Design habit.</strong> If an architecture boundary
@@ -188,38 +374,10 @@
                 support and policy through which architecture is repeatedly
                 modified.
               </p>
-            </section>
-            <section id="chapter-summary" class="article-section">
-              <h2>Chapter summary</h2>
-              <p>
-                Agents and organizations are part of the field. SFT does not
-                reduce architecture to an org chart, but it refuses to treat
-                human and AI proposal streams as external noise. Ownership,
-                communication, review routes, prompts, and local examples
-                create recurrent operation shapes.
+              <p class="formal-audit-link">
+                <span>Formal direction</span>
+                <a href="../../references/formal-anchors/">SFT Formal Core and Anchors</a>
               </p>
-              <p>
-                The mathematical point is that recurrent shape can be modeled
-                as support and policy, not as destiny. A Lean-facing statement
-                can quantify over selected fields, operation families, and path
-                generators while leaving unobserved organizational causes
-                outside the theorem boundary.
-              </p>
-              <h3>Chapter glossary</h3>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>field participant</dt>
-                  <dd>A human or AI agent that interprets artifacts and generates proposals inside the selected field.</dd>
-                </div>
-                <div>
-                  <dt>organization field</dt>
-                  <dd>Ownership, communication, approval, review, and agent context that shapes recurrent operation families.</dd>
-                </div>
-                <div>
-                  <dt>recurrent PR shape</dt>
-                  <dd>A repeated proposal form caused by low-friction support and selection policy in the field.</dd>
-                </div>
-              </dl>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../codebase-memory-artifact-force/"><span>Previous</span><strong>1-1. Memory and Force</strong></a>

@@ -61,11 +61,8 @@
           <p class="eyebrow">SFT Part 1</p>
           <h1>The Development Organization as a Field</h1>
           <p class="lede">
-            SFT begins by changing the object of study. The object is not only
-            a repository snapshot, a process chart, or an org chart. It is the
-            field that makes some future changes natural: codebase memory,
-            artifacts, developers, AI agents, ownership, review, CI, incidents,
-            and lifecycle pressure acting together before the next diff exists.
+            Starting from Lehman's question of software evolution, SFT asks
+            what shapes the next change before a pull request exists.
           </p>
         </div>
       </section>
@@ -75,12 +72,8 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#object">The object</a></li>
-                <li><a href="#memory">Codebase memory</a></li>
-                <li><a href="#artifacts">Artifacts and agents</a></li>
-                <li><a href="#coupon">Coupon PRD</a></li>
-                <li><a href="#conway">Conway as field pressure</a></li>
-                <li><a href="#reference-notes">Reference notes</a></li>
+                <li><a href="#object">Introduction</a></li>
+                <li><a href="#reference-notes">Chapters</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -113,159 +106,36 @@
           </aside>
           <div class="article-main">
             <section id="object" class="article-section">
-              <p class="research-question">
-                What is already acting on the next change before anyone opens the next pull request?
-              </p>
-              <h2>The object</h2>
+              <h2>Introduction</h2>
               <p>
-                The first move of SFT is to stop treating the repository as the
-                whole object. A repository snapshot tells us what has settled.
-                It does not tell us why a certain change will feel obvious next,
-                why another change will be expensive to justify, or why a
-                missing invariant will stay invisible until production.
+                Lehman's laws taught software engineering to stop imagining
+                useful software as a finished artifact. Software connected to
+                the real world must keep changing. Its environment changes, its
+                users change, its organization changes, and the act of changing
+                it produces new complexity that must itself be managed.
               </p>
               <p>
-                The field is that larger object. It includes the source tree,
-                but also the requirements that named the work, the issue
-                boundaries that split it, the review comments that became
-                precedent, the tests that make one path cheap, the owners who
-                must be consulted, the incident memory that changed what the
-                team fears, and the AI agent context that makes some local
-                pattern easy to reproduce.
+                SFT stands on that line of thought and moves the question into
+                the AI era. If software evolution is the life of the system
+                itself, then architecture theory cannot look only at settled
+                code. It must also look at the conditions that make the next
+                change likely, cheap, visible, reviewable, or almost
+                unthinkable.
               </p>
               <p>
-                SFT studies this field because architecture futures are born
-                there. Before a PR changes the codebase, the field has already
-                changed what can be proposed, what can be seen, what can pass
-                review, and what will be remembered afterward.
-              </p>
-              <p class="plain-reading">
-                <strong>Field habit.</strong> Begin by asking what the present
-                system makes easy, hard, visible, hidden, repeatable, and
-                nearly unthinkable.
-              </p>
-            </section>
-
-            <section id="memory" class="article-section">
-              <h2>Codebase memory</h2>
-              <p>
-                A codebase is not only implementation. It is memory. Old
-                requirements, design compromises, migration scars, ownership
-                boundaries, incident repairs, review habits, and copied local
-                patterns are sedimented into it. They remain active because
-                later developers and AI agents read them as examples of what is
-                normal.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Development field surface</figcaption>
-                <pre><code>DevelopmentField
-  = codebase memory
-  + artifacts and issue decomposition
-  + developers and AI agents
-  + ownership and communication paths
-  + review, CI, type checking, and runtime feedback
-  + governance policy and lifecycle pressure
-  + architecture projection and reachable futures</code></pre>
-              </figure>
-              <p>
-                This memory is why two codebases with the same module graph can
-                evolve differently. One codebase makes boundary-preserving
-                changes legible because its field remembers the boundary. The
-                other makes local patching cheap because its field remembers
-                shortcuts better than invariants.
-              </p>
-            </section>
-
-            <section id="artifacts" class="article-section">
-              <h2>Artifacts and agents</h2>
-              <p>
-                SFT gives artifacts a more active role than ordinary process
-                language does. A PRD, issue, design memo, review comment, or
-                incident report is not merely a description of work. It changes
-                the field by naming regions, proposing decompositions, hiding
-                or exposing invariants, and making some operation families
-                easier to select.
-              </p>
-              <p>
-                Developers and AI agents then act inside that shaped field.
-                They do not generate proposals from nowhere. They interpret the
-                artifact, look for nearby patterns, follow or resist review
-                pressure, and produce candidate changes that the field makes
-                plausible. In this sense, a codebase and its artifacts become a
-                prompt for the next change.
-              </p>
-              <p class="plain-reading">
-                <strong>Artifact action.</strong> A document can act on
-                architecture without touching code because it changes operation
-                support: which changes are named, cheap, expected, reviewable,
-                or ignored.
-              </p>
-            </section>
-
-            <section id="coupon" class="article-section">
-              <h2>Coupon PRD</h2>
-              <p>
-                The running example is a coupon PRD in a checkout and payment
-                system. The artifact may look small: "allow coupons at
-                checkout." But that sentence can open several architecture
-                futures. One path adds a lawful <code>DiscountPolicy</code>.
-                Another patches <code>PaymentAdapter</code>. Another creates a
-                UI-only discount drift. Another exposes a rounding or refund
-                semantic obstruction.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Coupon PRD as field action</figcaption>
-                <pre><code>Coupon PRD
-  -> lawful DiscountPolicy insertion path
-  -> hidden PaymentAdapter dependency path
-  -> UI-only discount drift path
-  -> rounding semantic obstruction path
-  -> unknown remainder</code></pre>
-              </figure>
-              <p>
-                This is why SFT cares about the field before the code changes.
-                A better PRD does not simply add more prose. It changes which
-                paths are easy to find by naming boundaries, invariants,
-                observation axes, and review questions before the implementation
-                collapses the future into one diff.
-              </p>
-            </section>
-
-            <section id="conway" class="article-section">
-              <h2>Conway as field pressure</h2>
-              <p>
-                Conway's Law also fits naturally here. Organization structure
-                does not command the architecture directly. It changes issue
-                decomposition, ownership routes, approval flows, review
-                friction, and the recurrent shape of PRs. Repeated operation
-                shapes then settle into architecture.
-              </p>
-              <p>
-                SFT reads that as field pressure. A team split around frontend,
-                backend, data, and infrastructure will tend to make different
-                changes natural than a team split around search, checkout, and
-                billing capabilities. The theory does not need to moralize the
-                difference. It asks which support each field creates.
-              </p>
-              <p id="definition-1-0" class="statement">
-                <a class="statement-anchor" href="#definition-1-0">Definition 1.0.</a>
-                A development field is the selected organizational and technical
-                state from which SFT reads supported software-evolution paths.
-                AAT appears inside it as the local algebra of the architecture
-                projection.
-              </p>
-              <p class="statement-status" aria-label="SFT status for Definition 1.0">
-                <span class="statement-status-label">SFT status</span>
-                <span class="status-badge status-badge-defined">conceptual core</span>
-                <span>Part 2 turns selected field readings into bounded computable objects.</span>
+                This matters because AI coding agents make proposal generation
+                cheap. When a team can produce many candidate PRs quickly, the
+                central question moves upstream: what kind of future is the
+                current development system teaching those proposals to pursue?
               </p>
             </section>
 
             <section id="reference-notes" class="article-section">
-              <h2>Part 1 chapters</h2>
+              <h2>Chapters</h2>
               <p>
-                The field material now reads as three medium chapters rather
-                than six small fragments.
+                Part 1 develops the field in three steps: codebase memory and
+                artifact force, recurrent organization pressure, and governance
+                feedback.
               </p>
               <ul class="chapter-list">
                 <li>

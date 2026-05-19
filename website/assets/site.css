@@ -1027,6 +1027,7 @@ p {
   background: transparent;
   color: inherit;
   font: inherit;
+  overflow: hidden;
   text-align: left;
   text-transform: inherit;
   cursor: pointer;
@@ -1212,6 +1213,153 @@ p {
 .article-section ol {
   margin: 16px 0 0;
   padding-left: 1.2em;
+}
+
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  list-style: none;
+  margin: 22px 0 0;
+  padding: 0;
+}
+
+.concept-grid li {
+  border-top: 2px solid var(--rule-strong);
+  background: rgba(255, 255, 255, 0.46);
+  min-width: 0;
+  padding: 14px 0 0;
+}
+
+.concept-grid strong {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.concept-grid span {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 0.98rem;
+  line-height: 1.48;
+  margin-top: 6px;
+}
+
+.path-matrix {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  border: 1px solid var(--rule-strong);
+  background: var(--rule-strong);
+  margin-top: 22px;
+}
+
+.path-matrix article {
+  background: var(--surface);
+  min-width: 0;
+  padding: clamp(18px, 2.6vw, 24px);
+}
+
+.path-matrix span {
+  display: block;
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.path-matrix h3 {
+  margin-top: 10px;
+  font-size: clamp(1.12rem, 2vw, 1.34rem);
+  line-height: 1.14;
+}
+
+.path-matrix p {
+  color: var(--ink-muted);
+  font-size: 0.98rem;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.pull-quote {
+  border-top: 2px solid var(--accent);
+  border-bottom: 1px solid var(--rule-strong);
+  color: var(--ink);
+  font-size: clamp(1.28rem, 2.4vw, 1.68rem);
+  font-style: italic;
+  line-height: 1.38;
+  margin-top: 24px;
+  padding: 20px 0;
+}
+
+.vocabulary-card {
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--accent);
+  background: var(--surface);
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 16px 18px 18px;
+}
+
+.vocabulary-card-label {
+  color: var(--accent-warm);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 850;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.vocabulary-card h3 {
+  font-size: clamp(1.18rem, 2vw, 1.42rem);
+  line-height: 1.14;
+}
+
+.vocabulary-card p {
+  color: var(--ink-muted);
+  font-size: 0.98rem;
+  line-height: 1.5;
+  margin-top: 0;
+}
+
+.vocabulary-card dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.vocabulary-card div {
+  display: grid;
+  grid-template-columns: minmax(108px, 0.32fr) minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.vocabulary-card dt {
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.vocabulary-card dd {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  min-width: 0;
+}
+
+.vocabulary-card code {
+  overflow-wrap: anywhere;
 }
 
 .chapter-list,
@@ -1783,10 +1931,15 @@ p {
   color: var(--ink-muted);
   font-size: 0.96rem;
   line-height: 1.46;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.formal-anchor-card code {
+.formal-anchor-card code,
+.formal-anchor-card a {
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .formal-anchor-details {
@@ -2009,6 +2162,11 @@ p {
     grid-template-columns: 1fr;
   }
 
+  .concept-grid,
+  .path-matrix {
+    grid-template-columns: 1fr;
+  }
+
   .featured-article {
     gap: 0;
   }
@@ -2202,6 +2360,15 @@ p {
 
   .status-badge {
     justify-self: start;
+  }
+
+  .vocabulary-card {
+    padding: 15px 14px 16px;
+  }
+
+  .vocabulary-card div {
+    grid-template-columns: 1fr;
+    gap: 3px;
   }
 
   .math-block {

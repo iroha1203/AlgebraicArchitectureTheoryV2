@@ -71,8 +71,10 @@
                 <li><a href="#lifecycle">Lifecycle trajectory</a></li>
                 <li><a href="#decision">Decision surface</a></li>
                 <li><a href="#closed-loop">Closed loop</a></li>
+                <li><a href="#update">Field update</a></li>
+                <li><a href="#workbench-loop">Workbench loop</a></li>
+                <li><a href="#calibration">Calibration boundary</a></li>
                 <li><a href="#workbench">Workbench direction</a></li>
-                <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -115,6 +117,35 @@
                 end-of-life all change future operation support. End-of-life is
                 not simply failure; it can be an explicit field reconfiguration.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-lifecycle-trajectory">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-lifecycle-trajectory">LifecycleTrajectory</h3>
+                <p>
+                  The field path through birth, growth, stabilization, drift,
+                  repair, migration, contraction, and end-of-life.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Why it matters</dt>
+                    <dd>Lifecycle phase changes available support, ownership capacity, runtime risk, and migration options.</dd>
+                  </div>
+                  <div>
+                    <dt>Intervention reading</dt>
+                    <dd>Repair, migration, contraction, and deletion are field transformations.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Lifecycle trajectory</figcaption>
+                <pre><code>LifecycleTrajectory
+  = birth
+  + growth
+  + stabilization
+  + drift
+  + repair / migration
+  + contraction
+  + end-of-life</code></pre>
+              </figure>
             </section>
             <section id="decision" class="article-section">
               <h2>Decision surface</h2>
@@ -123,6 +154,78 @@
                 looking at architecture signatures, ConsequenceEnvelopes,
                 runtime risk, ownership capacity, migration support, rollback
                 paths, and unknown remainder.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-field-capacity">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-field-capacity">Field capacity</h3>
+                <p>
+                  The support, ownership, staffing, runtime guard, and migration
+                  capacity available for future changes.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Not just</dt>
+                    <dd>Team size or project budget.</dd>
+                  </div>
+                  <div>
+                    <dt>Used for</dt>
+                    <dd>Comparing repair, migration, contraction, deletion, and end-of-life decisions.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Lifecycle decision model</figcaption>
+                <pre><code>LifecycleDecisionModel
+  = current LifecycleTrajectory
+  + ArchitectureSignature trajectory
+  + ConsequenceEnvelope family
+  + runtime / incident risk boundary
+  + ownership / staffing boundary
+  + selected intervention set
+  + non-conclusions
+
+SelectedIntervention
+  = repair | migration | contraction | deletion</code></pre>
+              </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Intervention</th>
+                      <th scope="col">Reading</th>
+                      <th scope="col">Comparison axes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Repair</th>
+                      <td>Keep the field and add local support or invariants.</td>
+                      <td>repair adoption, missing invariant, runtime regression risk, ownership capacity.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Migration</th>
+                      <td>Move support and memory from old field to new field.</td>
+                      <td>projection mismatch, dual-run cost, compatibility, rollback path.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Contraction</th>
+                      <td>Reduce unsupported surface and reallocate capacity.</td>
+                      <td>removed operation family, affected users, runtime boundary, simplified axes.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Deletion</th>
+                      <td>Remove a field component from the lifecycle.</td>
+                      <td>dependent operation loss, data or API retirement, incident avoidance, unknown remainder.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>
+                A lifecycle decision report should keep selected inputs,
+                affected regions, field capacity impact, runtime risk boundary,
+                ownership boundary, calibration refs, and non-conclusions for
+                each intervention. It is not a project-management oracle. It is
+                a comparable SFT surface for future support.
               </p>
             </section>
             <section id="closed-loop" class="article-section">
@@ -138,8 +241,135 @@
                 <pre><code>ConsequenceEnvelope
   + observed PR / review / CI / incident outcome
   -> forecast calibration hook
-  -> posterior field record
-  -> refreshed support and policy</code></pre>
+                -> posterior field record
+                -> refreshed support and policy</code></pre>
+              </figure>
+            </section>
+            <section id="update" class="article-section">
+              <h2>Field update</h2>
+              <p>
+                The loop is not a claim that forecasts automatically become
+                better. It is a record-preservation discipline. Forecast error,
+                missing evidence, unexpected witnesses, review outcomes,
+                runtime feedback, and policy drift are written into the
+                posterior field so later computation begins from a richer state.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-posterior-field-record">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-posterior-field-record">Posterior field record</h3>
+                <p>
+                  The updated field estimate that preserves observed outcome,
+                  forecast error, unexpected witnesses, missing evidence, and
+                  refreshed support.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Guarantees</dt>
+                    <dd>Record preservation under the selected update rule.</dd>
+                  </div>
+                  <div>
+                    <dt>Does not guarantee</dt>
+                    <dd>Automatic accuracy improvement, calibration, or governance effectiveness.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Field update</figcaption>
+                <pre><code>FieldUpdate
+  = prior field
+  + ForecastCone / ConsequenceEnvelope
+  + observed PR signature delta
+  + unexpected obstruction witnesses
+  + review / CI outcome
+  + runtime feedback
+  -> posterior field
+
+UpdateSound(update)
+  = observed delta / unexpected witness / review outcome
+    are recorded in the posterior field</code></pre>
+              </figure>
+            </section>
+            <section id="workbench-loop" class="article-section">
+              <h2>Workbench loop</h2>
+              <p>
+                A closed-loop SFT workbench ties forecast artifacts, governance
+                projections, operational feedback, and calibration hooks into one
+                review cycle. The point is not automatic decision making. The
+                point is to keep the same artifact graph alive from proposal to
+                forecast to intervention to observed outcome.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Closed-loop workbench</figcaption>
+                <pre><code>PRD / design memo / Issue / AI proposal
+  + codebase / ArchitectureSignature snapshot
+  + review / CI / incident / ownership trace
+  + AI agent policy
+  -> SFT forecast artifact bundle
+  -> ConsequenceEnvelope report
+  -> AI governance / lifecycle decision projection
+  -> review / CI / issue decomposition intervention
+  -> observed PR / review / CI / outcome refs
+  -> forecast calibration hook
+  -> operational feedback
+  -> hypothesis refresh / field update note</code></pre>
+              </figure>
+              <p>
+                This loop is where Part 1, Part 2, and Part 3 meet. The field
+                supplies memory and force. Computation produces cones and
+                envelopes. Intervention changes support, policy, observation,
+                and feedback. The observed result becomes the next field memory.
+              </p>
+            </section>
+            <section id="calibration" class="article-section">
+              <h2>Calibration boundary</h2>
+              <p>
+                Calibration links forecast items to later observations. It does
+                not promote forecast artifacts into correctness theorems. The
+                categories matter because missing, private, unavailable, and
+                not-comparable evidence must not be silently read as success.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Stage</th>
+                      <th scope="col">Boundary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Forecast capture</th>
+                      <td>Store bounded forecast before observing the later PR or outcome.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Observation capture</th>
+                      <td>Record PR, review, CI, incident, rollback, and private / unavailable data boundary.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Linkage</th>
+                      <td>Connect forecast item refs to observed refs as matched, unmatched, unavailable, private, or notComparable.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Review classification</th>
+                      <td>Store false positive, false negative, inconclusive, and actionability notes as policy input.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Hypothesis refresh</th>
+                      <td>Retain, revise, or reject empirical hypotheses without claiming causal proof.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <figure class="code-panel">
+                <figcaption>Trace split</figcaption>
+                <pre><code>calibration set
+  -> tune thresholds / taxonomy / axis mapping
+
+held-out validation set
+  -> test after tuning
+
+prospective set
+  -> compare future PR / review / CI / incident outcomes</code></pre>
               </figure>
             </section>
             <section id="workbench" class="article-section">
@@ -179,39 +409,6 @@
                 combinations, or deleted if the field can no longer support the
                 surface. SFT compares the future capacity each choice creates.
               </p>
-            </section>
-            <section id="chapter-summary" class="article-section">
-              <h2>Chapter summary</h2>
-              <p>
-                Software fields have lifecycle. Repair, migration, contraction,
-                deletion, and end-of-life are not only project phases; they are
-                field transformations that change future support, ownership
-                capacity, runtime risk, and the memory available to later
-                forecasts.
-              </p>
-              <p>
-                The mathematical guard is closed-loop update. A forecast is
-                valuable when it returns as evidence: observed outcome,
-                forecast error, missing invariant, unsupported shortcut,
-                calibration hook, and posterior field record. Lean protects the
-                transition structure; empirical work calibrates how well the
-                forecast artifacts matched reality.
-              </p>
-              <h3>Chapter glossary</h3>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>lifecycle trajectory</dt>
-                  <dd>The birth, growth, stabilization, drift, repair, migration, contraction, and end-of-life path of a field component.</dd>
-                </div>
-                <div>
-                  <dt>field capacity</dt>
-                  <dd>The available support, ownership, staffing, runtime guard, and migration capacity for future changes.</dd>
-                </div>
-                <div>
-                  <dt>posterior field record</dt>
-                  <dd>The updated field estimate that preserves forecast error, observed outcome, missing evidence, and refreshed support.</dd>
-                </div>
-              </dl>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../ai-proposal-governance/"><span>Previous</span><strong>3-2. AI Proposal Governance</strong></a>

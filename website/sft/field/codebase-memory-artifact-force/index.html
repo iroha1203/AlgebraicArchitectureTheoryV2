@@ -58,8 +58,8 @@
           <p class="lede">
             A codebase is field memory. A PRD, issue, spec, design note,
             review comment, or incident report is field action. Together they
-            explain why software futures begin to take shape before the next
-            pull request exists.
+            explain why the next pull request is never born from an empty
+            present.
           </p>
         </div>
       </section>
@@ -69,11 +69,12 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#development-field">Development field</a></li>
                 <li><a href="#memory">Memory</a></li>
                 <li><a href="#artifact-force">Artifact force</a></li>
+                <li><a href="#mathematical-spine">Mathematical spine</a></li>
                 <li><a href="#coupon">Coupon PRD</a></li>
                 <li><a href="#field-reading">Field reading</a></li>
-                <li><a href="#chapter-summary">Chapter summary</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -105,10 +106,44 @@
             </div>
           </aside>
           <div class="article-main">
-            <section id="memory" class="article-section">
+            <section id="development-field" class="article-section">
               <p class="research-question">
-                Can a codebase be read as memory that changes the next operation support?
+                What field is already shaping operation support before an artifact becomes a diff?
               </p>
+              <h2>Development field</h2>
+              <p>
+                A <em>field</em> is the development situation that makes some
+                architecture operations natural: codebase memory, PRDs, issues,
+                developers, AI agents, ownership, review, CI, incidents, and
+                lifecycle pressure acting together.
+              </p>
+              <p>
+                A <em>force</em> is the action of an artifact on that field. A
+                PRD, issue, spec, review comment, incident report, or AI
+                proposal can change what is named, what is hidden, which path is
+                cheap, and which invariant becomes visible enough to protect.
+              </p>
+              <p>
+                In this sense, SFT is not a theory of the codebase alone. It is
+                a theory of software evolution as shaped by artifacts,
+                organization, tooling, feedback, and agents. AAT supplies the
+                local algebra of architecture; SFT asks how the surrounding
+                field makes future paths easier or harder to reach.
+              </p>
+              <p id="definition-1-0" class="statement">
+                <a class="statement-anchor" href="#definition-1-0">Definition 1.0.</a>
+                A development field is the selected organizational and technical
+                state from which SFT reads supported software-evolution paths.
+                AAT appears inside it as the local algebra of the architecture
+                projection.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1.0">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual core</span>
+                <span>Part 2 turns selected field readings into bounded computable objects.</span>
+              </p>
+            </section>
+            <section id="memory" class="article-section">
               <h2>Memory</h2>
               <p>
                 A repository remembers more than syntax. It remembers old
@@ -123,6 +158,51 @@
                 invariants are easy to preserve, and which shortcuts can be
                 copied without being named.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-field-memory">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-field-memory">Field memory</h3>
+                <p>
+                  The remembered development state that makes later operations
+                  feel natural: code examples, review precedents, incidents,
+                  ownership routes, migrations, tests, and missing tests.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Role</dt>
+                    <dd>Turns past changes into present operation support.</dd>
+                  </div>
+                  <div>
+                    <dt>Reading</dt>
+                    <dd>Ask what the codebase teaches the next engineer or AI agent to copy.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <p>
+                This is one reason architectural debt can feel stubborn even
+                when everyone agrees with the desired design. The problem is not
+                only that the code has the wrong shape. The field has learned a
+                path. It has examples, review habits, missing tests, owner
+                expectations, and short-term success stories that make the old
+                path cheap to repeat.
+              </p>
+              <ul class="concept-grid">
+                <li>
+                  <strong>Sediment</strong>
+                  <span>Past decisions become local examples that future changes reuse.</span>
+                </li>
+                <li>
+                  <strong>Default path</strong>
+                  <span>The field makes one operation family feel easier than its alternatives.</span>
+                </li>
+                <li>
+                  <strong>Hidden invariant</strong>
+                  <span>A rule exists in practice but has not been made visible to artifacts, tests, or review.</span>
+                </li>
+                <li>
+                  <strong>Agent prompt</strong>
+                  <span>The codebase and its documents become the context from which AI agents infer what to do next.</span>
+                </li>
+              </ul>
             </section>
             <section id="artifact-force" class="article-section">
               <h2>Artifact force</h2>
@@ -147,20 +227,103 @@
                 determine a single change. It changes the shape of the possible
                 next changes.
               </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Memory carrier</strong>
-                  <span>Code, tests, reviews, incidents, workarounds, ownership, and examples that later work reads as precedent.</span>
-                </li>
-                <li>
-                  <strong>Artifact action</strong>
-                  <span>A PRD, issue, spec, review, or incident report that changes support, policy, or observation before implementation.</span>
-                </li>
-                <li>
-                  <strong>Field effect</strong>
-                  <span>The shift in which operations become visible, cheap, justified, risky, or hidden.</span>
-                </li>
-              </ul>
+              <aside class="vocabulary-card" aria-labelledby="vocab-artifact-force">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-artifact-force">Artifact force</h3>
+                <p>
+                  The field-level action by which an artifact changes what can
+                  be proposed, seen, reviewed, selected, or remembered.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Carrier</dt>
+                    <dd>PRD, issue, spec, review comment, incident report, AI proposal.</dd>
+                  </div>
+                  <div>
+                    <dt>Effect</dt>
+                    <dd>Candidate field updates, support shifts, policy shifts, and observation changes.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <p>
+                In ordinary process language, artifacts are often treated as
+                coordination aids: a PRD explains the feature, an issue tracks
+                work, a review comment asks for a revision, and an incident
+                report records what happened. SFT gives them a stronger role.
+                Each artifact can change the support of the field. It can make
+                a lawful path easier to discover, a shortcut harder to justify,
+                or a missing invariant visible enough to become a future test.
+              </p>
+            </section>
+            <section id="mathematical-spine" class="article-section">
+              <h2>Mathematical spine</h2>
+              <p>
+                The field language is meant to carry mathematics, not remain a
+                metaphor. The first move is to separate the broad development
+                field from the computable slice that SFT can reason about.
+                That slice keeps architecture projection, observed signature,
+                support, policy, constraints, governance, history, and
+                incoming artifacts in one state.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-software-field">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-software-field">SoftwareField</h3>
+                <p>
+                  The computable slice of a broader development field. It is the
+                  state from which SFT reads supported operations and reachable
+                  architecture futures.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Projection</dt>
+                    <dd><code>arch : SoftwareField -> ArchitectureObject</code></dd>
+                  </div>
+                  <div>
+                    <dt>Contents</dt>
+                    <dd>History, signature record, support, policy, constraints, observation, governance, and artifact inputs.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Computable field state</figcaption>
+                <pre><code>SoftwareField
+  = contextual dynamic state
+  + arch : SoftwareField -> ArchitectureObject
+  + observed signature record
+  + history
+  + operation support
+  + operation policy
+  + constraint environment
+  + observation model
+  + governance intervention model
+  + exogenous artifact inputs</code></pre>
+              </figure>
+              <p>
+                Force then becomes a set-valued action. An artifact does not
+                have to choose a single future. It can produce candidate field
+                updates, and each update changes the support and policy from
+                which future paths are drawn.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Force as artifact action</figcaption>
+                <pre><code>ArtifactAction(a)
+  alpha_a : FieldSpace -> Set FieldSpaceUpdateHypothesis
+
+applyUpdate
+  : FieldSpace -> FieldSpaceUpdateHypothesis -> FieldSpace
+
+OperationSupport(F)
+  = admissible operations after constraints and governance
+
+OperationPolicy(F)
+  = cost, preorder, or selection relation on that support</code></pre>
+              </figure>
+              <p>
+                This gives SFT its first computational question. Given a field
+                and an artifact, which supported operation families become
+                closer, which become harder, and which architecture projection
+                will those families touch?
+              </p>
             </section>
             <section id="coupon" class="article-section">
               <h2>Coupon PRD</h2>
@@ -171,6 +334,34 @@
                 semantic obstruction. The PRD has not changed the code, but it
                 has changed the field of plausible implementations.
               </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Artifact wording</th>
+                      <th scope="col">Field effect</th>
+                      <th scope="col">Likely PR shape</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">"Allow coupons at checkout."</th>
+                      <td>Feature is named, but ownership and invariants are left implicit.</td>
+                      <td>Nearby patch, adapter modification, or UI-only state.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">"Coupons are discount policies composed before tax and payment authorization."</th>
+                      <td>Boundary, order, and semantic responsibility become visible.</td>
+                      <td>Policy insertion with tests for composition and rounding.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">"Refunds and cancellations must preserve the original discount semantics."</th>
+                      <td>Runtime and lifecycle observations enter the field before implementation.</td>
+                      <td>Checkout, payment, refund, and accounting paths are reviewed together.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <p class="plain-reading">
                 <strong>Reading habit.</strong> Do not ask only what the
                 artifact says. Ask which operation families it makes visible,
@@ -219,40 +410,6 @@
                 <span>Formal direction</span>
                 <a href="../../references/formal-anchors/">SFT Formal Core and Anchors</a>
               </p>
-            </section>
-            <section id="chapter-summary" class="article-section">
-              <h2>Chapter summary</h2>
-              <p>
-                SFT begins by treating the codebase as field memory and
-                artifacts as force. This is not decorative language. It says
-                that the next architecture operation is shaped before a diff
-                exists: by examples, reviews, incidents, local defaults,
-                missing invariants, and the artifact that names the next
-                problem.
-              </p>
-              <p>
-                The mathematical guard is the support relation. Lean-facing
-                SFT does not need to prove that an artifact causes one future.
-                It must keep the selected field state, artifact action,
-                operation support, observation boundary, and architecture
-                projection separate enough that equal code graphs can still
-                have different reachable futures.
-              </p>
-              <h3>Chapter glossary</h3>
-              <dl class="term-list definition-list">
-                <div>
-                  <dt>field memory</dt>
-                  <dd>Past decisions and evidence preserved in the development context as active support for later changes.</dd>
-                </div>
-                <div>
-                  <dt>artifact force</dt>
-                  <dd>The candidate updates and support shifts generated by an artifact under an interpretation boundary.</dd>
-                </div>
-                <div>
-                  <dt>latent default path</dt>
-                  <dd>A path that becomes cheap because existing examples, ownership, or reviews make it look normal.</dd>
-                </div>
-              </dl>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 1. The Field</strong></a>
