@@ -1931,10 +1931,15 @@ p {
   color: var(--ink-muted);
   font-size: 0.96rem;
   line-height: 1.46;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.formal-anchor-card code {
+.formal-anchor-card code,
+.formal-anchor-card a {
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .formal-anchor-details {
