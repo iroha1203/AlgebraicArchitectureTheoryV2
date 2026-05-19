@@ -70,7 +70,10 @@
               <ol>
                 <li><a href="#governance">Governance as field shaping</a></li>
                 <li><a href="#attractor">Attractor engineering</a></li>
+                <li><a href="#guardrails">Beyond guardrails</a></li>
+                <li><a href="#levers">Design levers</a></li>
                 <li><a href="#stable">Stable regions</a></li>
+                <li><a href="#measurement">Measurement surface</a></li>
                 <li><a href="#moves">Shaping moves</a></li>
               </ol>
             </nav>
@@ -182,6 +185,13 @@
                 paths. It is to lower the cost of lawful paths and make shortcut
                 paths costly, visible, and review-mediated.
               </p>
+              <p>
+                This is Part 3's central idea. A codebase is not only an
+                implementation; it is a prompt, a training surface, a review
+                memory, and a local grammar for future work. The next human or
+                AI proposal will tend to follow what the field makes obvious.
+                Attractor engineering means designing that tendency.
+              </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-attractor-engineering">
                 <span class="vocabulary-card-label">Vocabulary</span>
                 <h3 id="vocab-attractor-engineering">AttractorEngineering</h3>
@@ -215,6 +225,117 @@
                 is not a longer checklist. It is a field where the checklist
                 and the codebase point toward the same lawful move.
               </p>
+            </section>
+            <section id="guardrails" class="article-section">
+              <h2>Beyond guardrails</h2>
+              <p>
+                Guardrails matter, but attractor engineering is not just a
+                stronger fence. A guardrail reacts to a proposed path. Attractor
+                engineering changes the field before the proposal exists: the
+                examples developers copy, the APIs that feel natural, the tests
+                that encode invariants, the review questions that become
+                routine, and the ownership paths that make lawful work easier.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Mechanism</th>
+                      <th scope="col">Main action</th>
+                      <th scope="col">Attractor-engineering reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Guardrail</th>
+                      <td>Stops forbidden output or operation.</td>
+                      <td>Needed, but downstream of proposal generation.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Harness</th>
+                      <td>Wraps an agent with evaluation and limits.</td>
+                      <td>External control around the field, not field design by itself.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Policy enforcement</th>
+                      <td>Defines and rejects forbidden sets.</td>
+                      <td>Shapes support only if it also changes cost, visibility, and feedback.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Review gate</th>
+                      <td>Accepts, rejects, or requests changes before merge.</td>
+                      <td>Becomes attractor engineering when review changes future proposal support.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Field design</th>
+                      <td>Changes examples, boundaries, invariants, tests, ownership, and feedback memory.</td>
+                      <td>Makes good paths naturally selected before review has to rescue them.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+            <section id="levers" class="article-section">
+              <h2>Design levers</h2>
+              <p>
+                The practical work is to change the support and policy landscape.
+                A good field makes boundary-preserving operations local,
+                discoverable, low-friction, observable, and easy to reinforce.
+                A bad field makes shortcuts local, cheap, and hard to observe.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Support shaping</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Change the operation families that are easy to construct:
+                    APIs, templates, examples, module boundaries, ownership
+                    routes, and issue decomposition.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Policy shaping</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Lower the cost of lawful paths and raise the cost of shortcut
+                    paths through review defaults, CI requirements, typing,
+                    architecture rules, and migration scaffolds.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Observation shaping</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Make drift visible by adding tests, traces, signature axes,
+                    witness checks, runtime guards, and missing-boundary reports.
+                  </p>
+                </article>
+                <article class="theorem-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Lever</span>
+                      <h3>Feedback shaping</h3>
+                    </div>
+                  </div>
+                  <p>
+                    Preserve review outcomes, incidents, rejected shortcuts,
+                    and successful lawful paths as field memory for the next
+                    proposal.
+                  </p>
+                </article>
+              </div>
             </section>
             <section id="stable" class="article-section">
               <h2>Stable regions</h2>
@@ -250,6 +371,57 @@ MustReach_h(F, U, A)
 StableRegion(U, A)
 ReachablePreimage_h(U, A)</code></pre>
               </figure>
+            </section>
+            <section id="measurement" class="article-section">
+              <h2>Measurement surface</h2>
+              <p>
+                To engineer an attractor, the field has to expose signals. SFT
+                does not need a single architecture score. It needs a bounded
+                measurement surface that can compare support risk, basin
+                movement, shortcut visibility, return time, and feedback update
+                across selected regions.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Signal</th>
+                      <th scope="col">Question it asks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">DefaultPath</th>
+                      <td>Which path does the field make easiest before anyone argues?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">RecurrentPattern</th>
+                      <td>Which development path repeats across issues, PRs, or AI proposals?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Good basin mass</th>
+                      <td>How much selected initial-state mass reaches the desired region?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Bad basin visibility</th>
+                      <td>How quickly does drift toward an unsafe region become observable?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Escape cost</th>
+                      <td>How expensive is it to repair or refactor out of a bad region?</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Field shaping delta</th>
+                      <td>What changed after the intervention: support, policy, observation, or feedback?</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="plain-reading">
+                <strong>Measurement habit.</strong> Unmeasured basin risk is not
+                zero. If a field cannot observe a bad basin, attractor
+                engineering starts by instrumenting the boundary.
+              </p>
             </section>
             <section id="moves" class="article-section">
               <h2>Shaping moves</h2>

@@ -70,9 +70,11 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#participant">Field participant</a></li>
+                <li><a href="#boundary">Boundary capture</a></li>
                 <li><a href="#support">Bounded support</a></li>
                 <li><a href="#witnesses">Shortcut witnesses</a></li>
                 <li><a href="#mediation">Proposal mediation</a></li>
+                <li><a href="#artifacts">Governance artifacts</a></li>
                 <li><a href="#feedback">Feedback</a></li>
               </ol>
             </nav>
@@ -143,7 +145,64 @@
   + shortcut generator
   + review load shifter
   + hidden assumption reproducer
-  + field participant</code></pre>
+                + field participant</code></pre>
+              </figure>
+            </section>
+            <section id="boundary" class="article-section">
+              <h2>Boundary capture</h2>
+              <p>
+                SFT governance begins by refusing to treat an AI patch as an
+                isolated code diff. The proposal is read with its prompt,
+                policy, source artifacts, theorem boundaries, forecast
+                artifacts, review and CI refs, and observed outcome refs. Those
+                references define the field boundary in which the proposal can
+                be evaluated.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Input</th>
+                      <th scope="col">Role</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Prompt / policy ref</th>
+                      <td>Records objective, forbidden operations, and review requirement.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Source artifact refs</th>
+                      <td>Preserves PRD, issue, spec, design memo, and code refs used as proposal context.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AI proposal refs</th>
+                      <td>Captures generated operation candidate, scope, claim, and missing evidence.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">AAT theorem boundary refs</th>
+                      <td>Separates proved local claims from undischarged preconditions.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">SFT forecast refs</th>
+                      <td>Connects artifact descriptor, support estimate, cone skeleton, and envelope.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Review / CI / outcome refs</th>
+                      <td>Preserves mediation, blocked reasons, merge, rework, rollback, incident, and follow-up issue evidence.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <figure class="code-panel">
+                <figcaption>Minimal governance protocol</figcaption>
+                <pre><code>prompt / policy boundary
+  -> proposal source normalization
+  -> allowed operation support check
+  -> shortcut witness classification
+  -> review / CI mediation
+  -> posterior field update
+  -> calibration / benchmark linkage</code></pre>
               </figure>
             </section>
             <section id="support" class="article-section">
@@ -184,6 +243,38 @@
   + observed shortcut / witness report
   + field update</code></pre>
               </figure>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Category</th>
+                      <th scope="col">Reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">allowedCandidate</th>
+                      <td>Candidate operation that does not conflict with selected policy, scope, or source refs.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">conditionallyAllowed</th>
+                      <td>Candidate requiring theorem precondition discharge, tests, owner review, issue split, or runtime guard.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">forbiddenSupport</th>
+                      <td>Candidate that conflicts with policy, architecture rule, or known invariant boundary.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">unknownSupport</th>
+                      <td>Candidate with insufficient evidence for allowed / forbidden classification.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">outOfScope</th>
+                      <td>Candidate outside the prompt, issue, or selected measurement universe.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
             <section id="witnesses" class="article-section">
               <h2>Shortcut witnesses</h2>
@@ -212,6 +303,42 @@
                   </div>
                 </dl>
               </aside>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Witness</th>
+                      <th scope="col">What it catches</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">forbidden-edge shortcut</th>
+                      <td>Layer bypass, adapter bypass, forbidden dependency direction, or ownership crossing.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">missing-invariant shortcut</th>
+                      <td>Operation that omits required invariant, type boundary, test boundary, or proof precondition.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">hidden-state shortcut</th>
+                      <td>Implicit state transition, migration, rollback, idempotency, or data lifecycle assumption.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">runtime-boundary shortcut</th>
+                      <td>Timeout, retry, incident response, ownership, or operational guard removed from view.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">theorem-boundary shortcut</th>
+                      <td>Use of theorem language while selected assumptions or preconditions remain undischarged.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">review-load shortcut</th>
+                      <td>Large patch, mixed concern, ambiguous refs, or vague source artifact that weakens mediation.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </section>
             <section id="mediation" class="article-section">
               <h2>Proposal mediation</h2>
@@ -263,6 +390,47 @@
                 </table>
               </div>
             </section>
+            <section id="artifacts" class="article-section">
+              <h2>Governance artifacts</h2>
+              <p>
+                The governance result should be an artifact graph, not a
+                private judgement hidden in a review comment. Each output keeps
+                source refs, missing evidence, boundary status, and observed
+                refs available for later calibration.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Artifact</th>
+                      <th scope="col">Governance role</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row"><code>artifact-descriptor-v0</code></th>
+                      <td>Normalizes AI proposal JSON, patch refs, prompt / policy refs, and missing evidence.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>operation-support-estimate-v0</code></th>
+                      <td>Records allowed, conditionally allowed, forbidden, unknown, and out-of-scope support.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>consequence-envelope-report-v0</code></th>
+                      <td>Projects affected axes, witnesses, theorem boundary, and review / CI recommendations.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>forecast-calibration-hook-v0</code></th>
+                      <td>Links shortcut witness refs to observed PR, review, CI, incident, rollback, and outcome refs.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row"><code>ai-proposal-governance-v0</code></th>
+                      <td>Bundles prompt boundary, support classification, shortcut witnesses, mediation, and field update.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
             <section id="feedback" class="article-section">
               <h2>Feedback</h2>
               <p id="definition-3-2" class="statement">
@@ -294,6 +462,12 @@
                 the event only as model failure. It reads the field: the cheap
                 path was visible, the invariant was hidden, and governance did
                 not yet make the lawful path easier.
+              </p>
+              <p class="plain-reading">
+                <strong>Boundary rule.</strong> Policy compliance, review pass,
+                CI pass, and schema validation are useful evidence. They are not
+                architecture lawfulness, semantic preservation, forecast
+                correctness, or general AI safety.
               </p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">

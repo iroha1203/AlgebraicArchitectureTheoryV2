@@ -72,6 +72,8 @@
                 <li><a href="#decision">Decision surface</a></li>
                 <li><a href="#closed-loop">Closed loop</a></li>
                 <li><a href="#update">Field update</a></li>
+                <li><a href="#workbench-loop">Workbench loop</a></li>
+                <li><a href="#calibration">Calibration boundary</a></li>
                 <li><a href="#workbench">Workbench direction</a></li>
               </ol>
             </nav>
@@ -218,6 +220,13 @@ SelectedIntervention
                   </tbody>
                 </table>
               </div>
+              <p>
+                A lifecycle decision report should keep selected inputs,
+                affected regions, field capacity impact, runtime risk boundary,
+                ownership boundary, calibration refs, and non-conclusions for
+                each intervention. It is not a project-management oracle. It is
+                a comparable SFT surface for future support.
+              </p>
             </section>
             <section id="closed-loop" class="article-section">
               <h2>Closed loop</h2>
@@ -278,6 +287,89 @@ SelectedIntervention
 UpdateSound(update)
   = observed delta / unexpected witness / review outcome
     are recorded in the posterior field</code></pre>
+              </figure>
+            </section>
+            <section id="workbench-loop" class="article-section">
+              <h2>Workbench loop</h2>
+              <p>
+                A closed-loop SFT workbench ties forecast artifacts, governance
+                projections, operational feedback, and calibration hooks into one
+                review cycle. The point is not automatic decision making. The
+                point is to keep the same artifact graph alive from proposal to
+                forecast to intervention to observed outcome.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Closed-loop workbench</figcaption>
+                <pre><code>PRD / design memo / Issue / AI proposal
+  + codebase / ArchitectureSignature snapshot
+  + review / CI / incident / ownership trace
+  + AI agent policy
+  -> SFT forecast artifact bundle
+  -> ConsequenceEnvelope report
+  -> AI governance / lifecycle decision projection
+  -> review / CI / issue decomposition intervention
+  -> observed PR / review / CI / outcome refs
+  -> forecast calibration hook
+  -> operational feedback
+  -> hypothesis refresh / field update note</code></pre>
+              </figure>
+              <p>
+                This loop is where Part 1, Part 2, and Part 3 meet. The field
+                supplies memory and force. Computation produces cones and
+                envelopes. Intervention changes support, policy, observation,
+                and feedback. The observed result becomes the next field memory.
+              </p>
+            </section>
+            <section id="calibration" class="article-section">
+              <h2>Calibration boundary</h2>
+              <p>
+                Calibration links forecast items to later observations. It does
+                not promote forecast artifacts into correctness theorems. The
+                categories matter because missing, private, unavailable, and
+                not-comparable evidence must not be silently read as success.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Stage</th>
+                      <th scope="col">Boundary</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Forecast capture</th>
+                      <td>Store bounded forecast before observing the later PR or outcome.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Observation capture</th>
+                      <td>Record PR, review, CI, incident, rollback, and private / unavailable data boundary.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Linkage</th>
+                      <td>Connect forecast item refs to observed refs as matched, unmatched, unavailable, private, or notComparable.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Review classification</th>
+                      <td>Store false positive, false negative, inconclusive, and actionability notes as policy input.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Hypothesis refresh</th>
+                      <td>Retain, revise, or reject empirical hypotheses without claiming causal proof.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <figure class="code-panel">
+                <figcaption>Trace split</figcaption>
+                <pre><code>calibration set
+  -> tune thresholds / taxonomy / axis mapping
+
+held-out validation set
+  -> test after tuning
+
+prospective set
+  -> compare future PR / review / CI / incident outcomes</code></pre>
               </figure>
             </section>
             <section id="workbench" class="article-section">
