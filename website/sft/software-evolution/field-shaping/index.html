@@ -56,9 +56,9 @@
           <p class="eyebrow">SFT Part 3-1</p>
           <h1>Field Shaping</h1>
           <p class="lede">
-            Field shaping turns governance into a design instrument: review,
-            CI, type systems, runtime guards, ownership, and feedback reshape
-            the support from which future changes are drawn.
+            Field shaping treats governance as a transformation of the field:
+            review, CI, type systems, runtime guards, ownership, and feedback
+            change support, policy, observation, and memory.
           </p>
         </div>
       </section>
@@ -69,8 +69,8 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#governance">Governance as field shaping</a></li>
-                <li><a href="#guardrails">Beyond gates</a></li>
-                <li><a href="#levers">Design levers</a></li>
+                <li><a href="#channels">Intervention channels</a></li>
+                <li><a href="#levers">Governance levers</a></li>
                 <li><a href="#moves">Shaping moves</a></li>
               </ol>
             </nav>
@@ -177,114 +177,111 @@
                 </table>
               </div>
             </section>
-            <section id="guardrails" class="article-section">
-              <h2>Beyond gates</h2>
+            <section id="channels" class="article-section">
+              <h2>Intervention channels</h2>
               <p>
-                Governance becomes field shaping when it changes the conditions
-                under which proposals are generated. A gate reacts to a proposed
-                path. Field shaping changes the examples developers copy, the
-                APIs that feel natural, the tests that encode invariants, the
-                review questions that become routine, and the ownership paths
-                that make lawful work easier.
+                Governance becomes field shaping when it changes more than the
+                merge decision. A gate accepts or rejects a proposed path. A
+                field intervention also changes the support, policy,
+                observation, feedback, escalation, or deferral state that later
+                proposals inherit.
               </p>
               <div class="article-table">
                 <table>
                   <thead>
                     <tr>
-                      <th scope="col">Mechanism</th>
-                      <th scope="col">Main action</th>
+                      <th scope="col">Channel</th>
+                      <th scope="col">Transformation</th>
                       <th scope="col">Field-shaping reading</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <th scope="row">Guardrail</th>
-                      <td>Stops forbidden output or operation.</td>
-                      <td>Useful downstream control over proposal generation.</td>
+                      <th scope="row">Support</th>
+                      <td>Adds, removes, or redirects operation families.</td>
+                      <td>Changes which paths can be proposed or justified.</td>
                     </tr>
                     <tr>
-                      <th scope="row">Harness</th>
-                      <td>Wraps an agent with evaluation and limits.</td>
-                      <td>External control around the field.</td>
+                      <th scope="row">Policy</th>
+                      <td>Changes cost, priority, ordering, escalation, or review burden.</td>
+                      <td>Changes which supported paths are selected or delayed.</td>
                     </tr>
                     <tr>
-                      <th scope="row">Policy enforcement</th>
-                      <td>Defines and rejects forbidden sets.</td>
-                      <td>Shapes support when it changes cost, visibility, and feedback.</td>
+                      <th scope="row">Observation</th>
+                      <td>Adds tests, traces, witnesses, runtime checks, or signature axes.</td>
+                      <td>Changes what the field can see before and after a proposal.</td>
                     </tr>
                     <tr>
-                      <th scope="row">Review gate</th>
-                      <td>Accepts, rejects, or requests changes before merge.</td>
-                      <td>Becomes field shaping when review changes future proposal support.</td>
+                      <th scope="row">Feedback</th>
+                      <td>Stores review, CI, incident, rollback, and acceptance outcomes.</td>
+                      <td>Changes what later estimates and proposals remember.</td>
                     </tr>
                     <tr>
-                      <th scope="row">Field design</th>
-                      <td>Changes examples, boundaries, invariants, tests, ownership, and feedback memory.</td>
-                      <td>Makes good paths naturally selected before review has to rescue them.</td>
+                      <th scope="row">Capacity</th>
+                      <td>Changes ownership routes, staffing boundary, migration room, or lifecycle options.</td>
+                      <td>Changes what the field can sustain over a horizon.</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </section>
             <section id="levers" class="article-section">
-              <h2>Design levers</h2>
+              <h2>Governance levers</h2>
               <p>
-                The practical work is to change the support and policy landscape.
-                A shaped field makes boundary-preserving operations local,
-                discoverable, low-friction, observable, and easy to reinforce.
-                A drifting field makes shortcuts local, cheap, and hard to
-                observe.
+                The practical work is to choose the intervention channel and
+                state its field effect. Field shaping records what changed, what
+                evidence supports the change, and which later cone or envelope
+                should see the update.
               </p>
               <div class="theorem-card-list">
                 <article class="theorem-card">
                   <div class="theorem-card-header">
                     <div>
                       <span class="theorem-card-label">Lever</span>
-                      <h3>Support shaping</h3>
+                      <h3>Support transformation</h3>
                     </div>
                   </div>
                   <p>
-                    Change the operation families that are easy to construct:
-                    APIs, templates, examples, module boundaries, ownership
-                    routes, and issue decomposition.
+                    Change the operation families available to proposal,
+                    review, or implementation by modifying boundaries,
+                    templates, ownership, or issue decomposition.
                   </p>
                 </article>
                 <article class="theorem-card">
                   <div class="theorem-card-header">
                     <div>
                       <span class="theorem-card-label">Lever</span>
-                      <h3>Policy shaping</h3>
+                      <h3>Policy transformation</h3>
                     </div>
                   </div>
                   <p>
-                    Lower the cost of lawful paths and raise the cost of shortcut
-                    paths through review defaults, CI requirements, typing,
-                    architecture rules, and migration scaffolds.
+                    Change the cost, ordering, review burden, escalation path,
+                    or deferral rule applied to supported operations.
                   </p>
                 </article>
                 <article class="theorem-card">
                   <div class="theorem-card-header">
                     <div>
                       <span class="theorem-card-label">Lever</span>
-                      <h3>Observation shaping</h3>
+                      <h3>Observation enrichment</h3>
                     </div>
                   </div>
                   <p>
-                    Make drift visible by adding tests, traces, signature axes,
-                    witness checks, runtime guards, and missing-boundary reports.
+                    Add tests, traces, signature axes, witness checks, runtime
+                    guards, or missing-boundary reports to the observation
+                    boundary.
                   </p>
                 </article>
                 <article class="theorem-card">
                   <div class="theorem-card-header">
                     <div>
                       <span class="theorem-card-label">Lever</span>
-                      <h3>Feedback shaping</h3>
+                      <h3>Feedback update</h3>
                     </div>
                   </div>
                   <p>
-                    Preserve review outcomes, incidents, rejected shortcuts,
-                    and successful lawful paths as field memory for the next
-                    proposal.
+                    Preserve review outcomes, CI results, incidents, rejected
+                    proposals, and accepted changes as field memory.
                   </p>
                 </article>
               </div>
@@ -293,12 +290,13 @@
               <h2>Shaping moves</h2>
               <figure class="code-panel">
                 <figcaption>Field shaping surface</figcaption>
-                <pre><code>support shaping
-  + policy shaping
+                <pre><code>GovernanceIntervention
+  = support transformation
+  + policy transformation
   + observation enrichment
-  + review / CI mediation
   + feedback update
-  -> better reachable futures become natural</code></pre>
+  + escalation / deferral rule
+  + lifecycle capacity change</code></pre>
               </figure>
               <p id="proposition-3-1" class="statement">
                 <a class="statement-anchor" href="#proposition-3-1">Proposition 3-1.</a>
@@ -319,8 +317,9 @@
                 <a class="statement-anchor" href="#example-3-1">Example 3-1.</a>
                 A coupon review rule that requires discount composition and
                 refund semantics lowers the cost of the DiscountPolicy path
-                and raises the cost of UI-only drift. This is field shaping:
-                the better path becomes easier to select.
+                and raises the cost of UI-only drift. Field shaping records
+                that change as a support and policy update visible to later
+                cone and envelope generation.
               </p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
