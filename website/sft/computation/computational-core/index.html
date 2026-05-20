@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT Part 2-2: the computational core of Software Field Theory, where artifact action, operation support, policy, step relation, and bounded paths become explicit.">
+    <title>SFT 2-2: Computational Core</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/computation/computational-core/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 2-2: Computational Core">
+    <meta property="og:description" content="SFT makes artifact action, operation support, policy, step relation, and bounded paths explicit as its computational core.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/computation/computational-core/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 2-2: Computational Core">
+    <meta name="twitter:description" content="Artifact action, support, policy, step relation, and bounded paths form the SFT computational core.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../../">Home</a>
+          <a href="../../../aat/">AAT</a>
+          <a class="is-active" href="../../">SFT</a>
+          <a href="../../../archsig/">ArchSig</a>
+          <a href="../../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Computation</a>
+            <span>2-2</span>
+          </nav>
+          <p class="eyebrow">SFT Part 2-2</p>
+          <h1>Computational Core</h1>
+          <p class="lede">
+            The computational core names the engine of SFT: artifacts update
+            support, policy orders supported operations, and step relations
+            turn selected operations into bounded paths.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#core-pipeline">Computational core</a></li>
+                <li><a href="#artifact-action">Artifact action</a></li>
+                <li><a href="#support">Operation support</a></li>
+                <li><a href="#policy">Policy and selection</a></li>
+                <li><a href="#step">Step relation</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../../field-and-force/">1. Field and Force</a></li>
+                <li><a href="../../field-and-force/field/">1-1. Field</a></li>
+                <li><a href="../../field-and-force/force/">1-2. Force</a></li>
+                <li><a href="../../field-and-force/organization/">1-3. Organization</a></li>
+                <li><a href="../../field-and-force/governance/">1-4. Governance</a></li>
+                <li><a href="../">2. The Computation</a></li>
+                <li><a href="../interface/">2-1. Interface</a></li>
+                <li><a href="./" aria-current="page">2-2. Computational Core</a></li>
+                <li><a href="../forecast-cone/">2-3. ForecastCone</a></li>
+                <li><a href="../workbench/">2-4. Workbench</a></li>
+                <li><a href="../../software-evolution/">3. Software Evolution</a></li>
+                <li><a href="../../software-evolution/field-shaping/">3-1. Field Shaping</a></li>
+                <li><a href="../../software-evolution/attractor-engineering/">3-2. Attractor Engineering</a></li>
+                <li><a href="../../software-evolution/ai-proposal-governance/">3-3. AI Proposal Governance</a></li>
+                <li><a href="../../software-evolution/lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="core-pipeline" class="article-section">
+              <p class="research-question">
+                Can software evolution be computed from support, policy, and
+                witnessed steps?
+              </p>
+              <h2>Computational core</h2>
+              <p>
+                SFT computes over field transitions. The core turns a living
+                development situation into artifact actions, operation support,
+                operation policy, step relations, and bounded paths while
+                preserving the selected field boundary.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Part 2 pipeline</figcaption>
+                <pre><code>DevelopmentField
+  -> SoftwareFieldEstimate
+  -> architecture projection and AAT observables
+  -> ArchSig observation boundary
+  -> ArtifactAction
+  -> OperationSupport and OperationPolicy
+  -> StepRelation and bounded paths
+  -> ForecastCone</code></pre>
+              </figure>
+              <p>
+                Lean-facing SFT isolates the theorem-bearing fragment: fields,
+                supported operations, step relations, and bounded paths. Those
+                paths become the carrier for reachable futures, review
+                projections, and feedback records.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Formal surface</span>
+                      <h3>From field prose to theorem packages</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">Lean anchors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Core path</dt>
+                      <dd><code>SoftwareField</code>, <code>OperationSupport</code>, <code>StepRelation</code>, and <code>ReachableFieldPath</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Path</dt>
+                      <dd>Supported steps compose into bounded field paths under an explicit horizon.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Forecast and report projection are later computations built on this core.</dd>
+                    </div>
+                    <div>
+                      <dt>Feedback</dt>
+                      <dd>Update records preserve observed deltas, unexpected witnesses, review outcomes, and missing evidence.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
+            <section id="artifact-action" class="article-section">
+              <h2>Artifact action</h2>
+              <p>
+                Part 2 begins before code changes. A PRD, spec, issue, design
+                note, or AI proposal acts on the field by opening candidate
+                update paths. It changes what developers consider natural,
+                reviewable, cheap, forbidden, or urgent. SFT calls this an
+                artifact-mediated change.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-artifact-action">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-artifact-action">ArtifactAction</h3>
+                <p>
+                  A set-valued action from a current field to candidate update
+                  descriptors under an explicit interpretation boundary.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Source</dt>
+                    <dd>PRD, issue, spec, review request, incident report, or AI-generated proposal.</dd>
+                  </div>
+                  <div>
+                    <dt>Effect</dt>
+                    <dd>Changes candidate support, policy, constraints, observation, and forecast boundary.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Set-valued action</figcaption>
+                <pre><code>ArtifactAction a
+  = alpha_a : FieldSpace -> Set FieldSpaceUpdateHypothesis
+
+CandidateFieldUpdate(F, a)
+  = { F_u | u in alpha_a(F) }</code></pre>
+              </figure>
+              <p>
+                The artifact supplies candidate pressure. SFT reads that
+                pressure as a family of possible field updates, each with its
+                own support, policy, and observation boundary.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Object</th>
+                      <th scope="col">What it carries</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">RawArtifactAction</th>
+                      <td>source artifact, target field components, interpretation boundary, candidate updates, action boundary, composition boundary, observable boundary, and non-conclusions.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">ForceDescriptor</th>
+                      <td>action class, target architecture regions, candidate operation support, affected policy, constraints, governance, observation, and uncertainty boundary.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">ForecastedEffect</th>
+                      <td>forecast boundary, expected comparable axes, expected delta ranges, obstruction witness families, and unknown remainder.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">ObservedEffect</th>
+                      <td>observed transition, before/after signatures, comparable measured delta, unexpected witnesses, review, CI, and runtime outcome.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="plain-reading">
+                <strong>Computation rule.</strong> The raw action supplies
+                candidate pressure; path computation is generated from that
+                pressure under a field model.
+              </p>
+            </section>
+            <section id="support" class="article-section">
+              <h2>Operation support</h2>
+              <p>
+                Operation support is the SFT object that captures what the
+                field makes possible, natural, low-cost, reviewable, or
+                selected. It is the field-relative shape of what can plausibly
+                happen next under the selected field model.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-operation-support">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-operation-support">OperationSupport</h3>
+                <p>
+                  The operation family available at a field state after
+                  selected constraints, governance, evidence, and policy are
+                  taken into account.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Question</dt>
+                    <dd>Which changes are available, natural, low-cost, reviewable, or selected?</dd>
+                  </div>
+                  <div>
+                    <dt>Boundary</dt>
+                    <dd>Support records the field-relative space of plausible next operations.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Support object</figcaption>
+                <pre><code>SupportedOperation
+  = operation
+  + applicable theorem boundary
+  + precondition evidence
+  + expected witness mapping
+  + non-conclusions
+
+OperationSupport(F)
+  = admissible operation set in field F</code></pre>
+              </figure>
+            </section>
+            <section id="policy" class="article-section">
+              <h2>Policy and selection</h2>
+              <p>
+                Support says what is available. Policy says what is easy,
+                preferred, cheaper, or likely to be selected inside that support.
+                This distinction is the computational version of field force:
+                two operations can both be possible while one is much more
+                natural for the current organization, tooling, review culture,
+                and codebase memory.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-operation-policy">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-operation-policy">OperationPolicy</h3>
+                <p>
+                  A preorder, cost model, selection relation, or distribution
+                  over supported operations in a selected field.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Minimal core</dt>
+                    <dd>Preorder, cost, or selected-operation predicate.</dd>
+                  </div>
+                  <div>
+                    <dt>Extended semantics</dt>
+                    <dd>Probability distribution only when a stochastic model is explicitly chosen.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Policy readings</figcaption>
+                <pre><code>PolicyAsPreorder:
+  op1 <=_F op2
+    := op1 is no harder than op2 in field F
+
+PolicyAsCost:
+  cost_F(op) : OrderedCost
+
+PolicyAsSelection:
+  Selected(F, op)</code></pre>
+              </figure>
+            </section>
+            <section id="step" class="article-section">
+              <h2>Step relation</h2>
+              <p>
+                A <code>StepRelation</code> says when a supported operation can
+                move one selected field estimate to another. Once steps exist,
+                software evolution becomes a path object with witnesses,
+                support, and observation.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-step-relation">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-step-relation">StepRelation</h3>
+                <p>
+                  The relation that says a supported operation can move one
+                  selected field estimate to another.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Input</dt>
+                    <dd>Field <code>F</code>, operation <code>op</code>, candidate next field <code>F'</code>.</dd>
+                  </div>
+                  <div>
+                    <dt>Output</dt>
+                    <dd>A witnessed step that can be composed into bounded field paths.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Step relation</figcaption>
+                <pre><code>StepRelation(F, op, F')
+  = op is supported in F
+  + op can realize a transition from F to F'
+  + selected observation boundary records the step evidence</code></pre>
+              </figure>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../interface/"><span>Previous</span><strong>2-1. Interface</strong></a>
+              <a class="page-nav-next" href="../forecast-cone/"><span>Next</span><strong>2-3. ForecastCone</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>

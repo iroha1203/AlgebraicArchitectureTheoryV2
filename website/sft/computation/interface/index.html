@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SFT Part 2-1: computable slices, AAT projection, ArchSig observation, and field estimates.">
-    <title>SFT 2-1: Computable Slice and Observation</title>
-    <link rel="canonical" href="https://iroha1203.dev/sft/computation/slice-observation/">
+    <meta name="description" content="SFT Part 2-1: the interface that connects field estimates to AAT projection, ArchSig observation, modeling boundaries, and computable SFT objects.">
+    <title>SFT 2-1: Interface</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/computation/interface/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="SFT 2-1: Computable Slice and Observation">
-    <meta property="og:description" content="How SFT cuts a computable slice from a development field and connects it to AAT and ArchSig.">
-    <meta property="og:url" content="https://iroha1203.dev/sft/computation/slice-observation/">
+    <meta property="og:title" content="SFT 2-1: Interface">
+    <meta property="og:description" content="SFT defines an interface from field estimates to AAT projection, ArchSig observation, and computable evolution objects.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/computation/interface/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SFT 2-1: Computable Slice and Observation">
-    <meta name="twitter:description" content="How SFT cuts a computable slice from a development field and connects it to AAT and ArchSig.">
+    <meta name="twitter:title" content="SFT 2-1: Interface">
+    <meta name="twitter:description" content="The SFT interface from field estimates to AAT, ArchSig, and computable evolution objects.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -54,11 +54,11 @@
             <span>2-1</span>
           </nav>
           <p class="eyebrow">SFT Part 2-1</p>
-          <h1>Computable Slice and Observation</h1>
+          <h1>Interface</h1>
           <p class="lede">
-            The development field is too large to know completely. SFT becomes
-            computable by cutting a selected slice, projecting architecture
-            through AAT, and preserving observation boundaries through ArchSig.
+            Interface is where field language becomes computable. SFT selects a
+            field estimate, projects architecture through AAT, and preserves
+            observation boundaries through ArchSig.
           </p>
         </div>
       </section>
@@ -68,7 +68,7 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#slice">Slice</a></li>
+                <li><a href="#interface">Interface</a></li>
                 <li><a href="#aat">AAT projection</a></li>
                 <li><a href="#translation">Claim translation</a></li>
                 <li><a href="#bridge">ArchSig bridge</a></li>
@@ -80,18 +80,21 @@
               <h2>SFT pages</h2>
               <ul>
                 <li><a href="../../">SFT Overview</a></li>
-                <li><a href="../../field/">1. The Field</a></li>
-                <li><a href="../../field/codebase-memory-artifact-force/">1-1. Memory and Force</a></li>
-                <li><a href="../../field/agents-organization-recurrent-paths/">1-2. Agents and Organization</a></li>
-                <li><a href="../../field/governance-feedback-futures/">1-3. Feedback and Futures</a></li>
-                <li><a href="../../computation/">2. The Computation</a></li>
-                <li><a href="../../computation/slice-observation/" aria-current="page">2-1. Slice and Observation</a></li>
-                <li><a href="../../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
-                <li><a href="../../computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
-                <li><a href="../../intervention/">3. The Intervention</a></li>
-                <li><a href="../../intervention/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
-                <li><a href="../../intervention/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
-                <li><a href="../../intervention/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+                <li><a href="../../field-and-force/">1. Field and Force</a></li>
+                <li><a href="../../field-and-force/field/">1-1. Field</a></li>
+                <li><a href="../../field-and-force/force/">1-2. Force</a></li>
+                <li><a href="../../field-and-force/organization/">1-3. Organization</a></li>
+                <li><a href="../../field-and-force/governance/">1-4. Governance</a></li>
+                <li><a href="../">2. The Computation</a></li>
+                <li><a href="./" aria-current="page">2-1. Interface</a></li>
+                <li><a href="../computational-core/">2-2. Computational Core</a></li>
+                <li><a href="../forecast-cone/">2-3. ForecastCone</a></li>
+                <li><a href="../workbench/">2-4. Workbench</a></li>
+                <li><a href="../../software-evolution/">3. Software Evolution</a></li>
+                <li><a href="../../software-evolution/field-shaping/">3-1. Field Shaping</a></li>
+                <li><a href="../../software-evolution/attractor-engineering/">3-2. Attractor Engineering</a></li>
+                <li><a href="../../software-evolution/ai-proposal-governance/">3-3. AI Proposal Governance</a></li>
+                <li><a href="../../software-evolution/lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a></li>
               </ul>
             </div>
             <div class="source-panel">
@@ -105,26 +108,23 @@
             </div>
           </aside>
           <div class="article-main">
-            <section id="slice" class="article-section">
+            <section id="interface" class="article-section">
               <p class="research-question">
-                How can a field too large to know become a bounded object of computation?
+                How can SFT connect a living development field to computable
+                architecture objects?
               </p>
-              <h2>Slice</h2>
+              <h2>Interface</h2>
               <p>
-                SFT does not compute by pretending to know the whole
-                organization. It computes by choosing a modeling boundary:
-                selected artifacts, selected codebase region, selected
-                architecture universe, selected observation axes, selected
-                governance records, selected horizon, and explicit unknown
-                remainder.
+                SFT computes through an interface. The interface selects the
+                artifacts, codebase region, architecture universe, observation
+                axes, governance records, horizon, and unknown remainder that
+                may enter the computation.
               </p>
               <p>
-                That boundary is not a compromise with the theory. It is the
-                move that makes the theory mathematical. Without a selected
-                boundary, "the field" is too large to inspect. With a selected
-                boundary, the field becomes a state estimate whose evidence,
-                missing evidence, private evidence, and unknown remainder can
-                travel through later computations.
+                The selected boundary makes the field mathematical. It turns a
+                broad development situation into a state estimate whose
+                evidence, missing evidence, private evidence, and unknown
+                remainder can travel through later computations.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-modeling-boundary">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -140,12 +140,12 @@
                   </div>
                   <div>
                     <dt>Purpose</dt>
-                    <dd>Makes the field computable without pretending to reconstruct the whole organization.</dd>
+                    <dd>Makes the field computable by recording the selected boundary and unknown remainder.</dd>
                   </div>
                 </dl>
               </aside>
               <figure class="code-panel">
-                <figcaption>Computable slice</figcaption>
+                <figcaption>Interface state</figcaption>
                 <pre><code>SoftwareFieldEstimate
   = modeling boundary
   + selected evidence
@@ -159,20 +159,17 @@
             <section id="aat" class="article-section">
               <h2>AAT projection</h2>
               <p>
-                A <code>SoftwareField</code> is not an AAT
-                <code>ArchitectureObject</code>. The AAT object appears as an
-                architecture projection of the field. AAT supplies the local
-                algebra: operations, invariants, witnesses, signatures, and
-                theorem boundaries that SFT can use as local premises.
+                A <code>SoftwareField</code> carries an architecture projection
+                into AAT. Through that projection, SFT receives the local
+                algebra of operations, invariants, witnesses, signatures, and
+                theorem boundaries as computation premises.
               </p>
               <p>
-                This is the main mathematical interface. SFT inherits AAT's
-                local discipline without asking AAT to become an evolution
-                theory. An AAT operation can become a local transition premise.
-                An invariant family can become a selected safe-region
-                predicate. An obstruction witness can become a forecast axis or
-                repair target. A signature can become a coordinate on a field
-                trajectory.
+                This is the main mathematical interface. An AAT operation can
+                become a local transition premise. An invariant family can
+                become a selected safe-region predicate. An obstruction witness
+                can become a forecast axis or repair target. A signature can
+                become a coordinate on a field trajectory.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-architecture-projection">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -249,30 +246,30 @@
                 </table>
               </div>
               <p>
-                SFT then introduces its own evolution-level vocabulary on top of
-                that projection: force, field state, trajectory, operation
-                policy, <code>ForecastCone</code>,
+                SFT then adds evolution-level vocabulary on top of that
+                projection: force, field state, trajectory, operation policy,
+                <code>ForecastCone</code>,
                 <code>ConsequenceEnvelope</code>, forecast boundary, proposal
                 accounting, feedback update, stable regions, AI operation
-                pressure, and lifecycle dynamics. These are not AAT concepts.
-                They are the extra field machinery that lets local architecture
-                algebra participate in software evolution.
+                pressure, and lifecycle dynamics. This is the field machinery
+                that lets local architecture algebra participate in software
+                evolution.
               </p>
               <p class="plain-reading">
                 <strong>Interface rule.</strong> AAT theorem boundaries become
-                SFT premises and forecast boundaries. They do not become
-                empirical prediction theorems by crossing the interface.
+                SFT premises and forecast boundaries. Empirical prediction
+                requires later calibration.
               </p>
             </section>
             <section id="translation" class="article-section">
               <h2>Claim translation</h2>
               <p>
-                The interface is not only a dependency arrow. It is a translation
-                discipline. SFT reads AAT statements as local premises inside a
-                field computation. The claim level is preserved when it crosses
-                the boundary: a local theorem becomes a local law premise, a
-                tooling report becomes a field estimate, and an empirical
-                hypothesis becomes a calibrated forecast only after data enters.
+                The interface is a translation discipline. SFT reads AAT
+                statements as local premises inside a field computation. The
+                claim level is preserved when it crosses the boundary: a local
+                theorem becomes a local law premise, a tooling report becomes a
+                field estimate, and an empirical hypothesis becomes a calibrated
+                forecast after data enters.
               </p>
               <div class="article-table">
                 <table>
@@ -286,7 +283,7 @@
                   <tbody>
                     <tr>
                       <th scope="row">selected witness absence</th>
-                      <td>selected local defect is not observed</td>
+                      <td>selected local defect is absent from the observation</td>
                       <td>future trajectory is safe</td>
                     </tr>
                     <tr>
@@ -318,11 +315,11 @@
                 </table>
               </div>
               <p>
-                This is why SFT can be ambitious without smuggling in stronger
-                claims. AAT lawfulness can constrain a local transition.
-                It cannot, by itself, certify trajectory-level safety. A
-                measured signature coordinate can support comparison. It cannot,
-                by itself, become empirical prediction.
+                This discipline lets SFT make ambitious computations while
+                keeping claim levels typed. AAT lawfulness can constrain a
+                local transition. Trajectory-level safety needs path and
+                governance assumptions. A measured signature coordinate can
+                support comparison. Empirical prediction needs calibration.
               </p>
               <figure class="code-panel">
                 <figcaption>Claim-level handoff</figcaption>
@@ -343,10 +340,9 @@ AAT non-conclusion
               <h2>ArchSig bridge</h2>
               <p>
                 ArchSig is the bridge between real artifacts and the projected
-                architecture object. It is neither AAT nor SFT. It is the
-                tooling layer that turns repositories, diffs, reports, reviews,
-                and runtime evidence into bounded observations that both sides
-                can read.
+                architecture object. It turns repositories, diffs, reports,
+                reviews, and runtime evidence into bounded observations that
+                AAT and SFT can both read.
               </p>
               <figure class="code-panel">
                 <figcaption>Observation bridge</figcaption>
@@ -395,22 +391,21 @@ AAT non-conclusion
                 ArchSig is the tooling layer that turns real artifacts into
                 bounded observations: measured signature axes, obstruction
                 witnesses, theorem-boundary notes, unavailable evidence, and
-                unknown remainder. It is what lets the theory remain connected
-                to repositories without claiming complete extraction.
+                unknown remainder. It keeps the theory connected to
+                repositories while preserving the limits of extraction.
               </p>
               <p>
-                The key rule is that absence and unavailability are different.
-                A measured zero means a selected coordinate was measured as
-                zero. It does not mean every unmeasured axis is safe. A private
-                incident record, an unavailable runtime trace, or an unsupported
-                extractor axis must remain visible as a boundary item.
+                The key rule separates absence from unavailability. A measured
+                zero means a selected coordinate was measured as zero. Private
+                incident records, unavailable runtime traces, and unsupported
+                extractor axes remain visible as boundary items.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-observation-boundary">
                 <span class="vocabulary-card-label">Vocabulary</span>
                 <h3 id="vocab-observation-boundary">Observation boundary</h3>
                 <p>
                   The record of what was measured, unavailable, private,
-                  unsupported, or still unknown in the selected slice.
+                  unsupported, or still unknown in the selected interface.
                 </p>
                 <dl>
                   <div>
@@ -418,7 +413,7 @@ AAT non-conclusion
                     <dd>Comparable signature axes, witnesses, theorem-boundary notes.</dd>
                   </div>
                   <div>
-                    <dt>Not measured</dt>
+                    <dt>Boundary</dt>
                     <dd>Unavailable and private evidence remain boundary items, not zeros.</dd>
                   </div>
                 </dl>
@@ -428,14 +423,15 @@ AAT non-conclusion
               <h2>Field estimate</h2>
               <p id="definition-2-1" class="statement">
                 <a class="statement-anchor" href="#definition-2-1">Definition 2-1.</a>
-                A computable slice is a modeling boundary together with the
-                evidence categories and architecture projection used to assemble
-                a partial <code>SoftwareFieldEstimate</code>.
+                An interface is a modeling boundary together with the evidence
+                categories, architecture projection, and observation boundary
+                used to assemble a partial
+                <code>SoftwareFieldEstimate</code>.
               </p>
               <p class="statement-status" aria-label="SFT status for Definition 2-1">
                 <span class="statement-status-label">SFT status</span>
                 <span class="status-badge status-badge-defined">formal-facing definition</span>
-                <span>Feeds the support, step, and cone objects in Part 2-2.</span>
+                <span>Feeds the computational core in Part 2-2.</span>
               </p>
               <p id="proposition-2-1" class="statement">
                 <a class="statement-anchor" href="#proposition-2-1">Proposition 2-1.</a>
@@ -446,19 +442,18 @@ AAT non-conclusion
               </p>
               <p id="proof-2-1" class="statement-proof">
                 <a class="statement-anchor" href="#proof-2-1">Proof idea.</a>
-                The later objects only require the selected field state,
-                support relation, policy or selection assumptions, step
-                relation, observation boundary, and horizon. Evidence outside
-                the estimate is not erased; it is carried as unavailable or
-                unknown remainder. Therefore the computation can proceed
-                without claiming complete field reconstruction.
+                The later objects require the selected field state, support
+                relation, policy or selection assumptions, step relation,
+                observation boundary, and horizon. Evidence outside the estimate
+                travels as unavailable or unknown remainder, so the computation
+                preserves the boundary it depends on.
               </p>
               <p id="counterexample-2-1" class="statement">
                 <a class="statement-anchor" href="#counterexample-2-1">Counterexample 2-1.</a>
-                If a repository scan omits private incident evidence but treats
+                If a repository scan omits private incident evidence and treats
                 the omission as absence, it can make an unsafe coupon path look
-                unsupported by any warning. The estimate must preserve
-                unavailable evidence as a boundary item, not as zero.
+                unsupported by any warning. The estimate preserves unavailable
+                evidence as a boundary item, not as zero.
               </p>
               <p class="formal-audit-link">
                 <span>Formal direction</span>
@@ -467,7 +462,7 @@ AAT non-conclusion
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 2. The Computation</strong></a>
-              <a class="page-nav-next" href="../support-step-forecast-cone/"><span>Next</span><strong>2-2. Support and Cone</strong></a>
+              <a class="page-nav-next" href="../computational-core/"><span>Next</span><strong>2-2. Computational Core</strong></a>
             </nav>
           </div>
         </div>

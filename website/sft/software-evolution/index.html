@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="SFT Part 3: field intervention and control through governance, attractor engineering, stable regions, AI proposal governance, lifecycle decisions, and closed-loop updates."
+      content="SFT Part 3: software evolution through governance, attractor engineering, stable regions, AI proposal governance, lifecycle decisions, and closed-loop updates."
     >
-    <title>SFT Part 3: Field Intervention and Control</title>
-    <link rel="canonical" href="https://iroha1203.dev/sft/intervention/">
+    <title>SFT Part 3: Software Evolution</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/software-evolution/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="SFT Part 3: Field Intervention and Control">
-    <meta property="og:description" content="How governance and feedback reshape reachable architecture futures without turning SFT into prediction or general AI safety.">
-    <meta property="og:url" content="https://iroha1203.dev/sft/intervention/">
+    <meta property="og:title" content="SFT Part 3: Software Evolution">
+    <meta property="og:description" content="How governance and feedback reshape reachable architecture futures by changing the field around a development organization.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/software-evolution/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SFT Part 3: Field Intervention and Control">
+    <meta name="twitter:title" content="SFT Part 3: Software Evolution">
     <meta name="twitter:description" content="Governance, attractor engineering, stable regions, AI proposal governance, lifecycle decisions, and closed-loop field updates.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
@@ -56,10 +56,10 @@
           <nav class="breadcrumb" aria-label="Breadcrumb">
             <a href="../../">Home</a>
             <a href="../">SFT</a>
-            <span>Intervention</span>
+            <span>Software Evolution</span>
           </nav>
           <p class="eyebrow">SFT Part 3</p>
-          <h1>Field Intervention and Control</h1>
+          <h1>Software Evolution</h1>
           <p class="lede">
             Once reachable futures become visible, SFT turns from forecast to
             design. Review, CI, type systems, AI policy, runtime feedback,
@@ -82,18 +82,21 @@
               <h2>SFT pages</h2>
               <ul>
                 <li><a href="../">SFT Overview</a></li>
-                <li><a href="../field/">1. The Field</a></li>
-                <li><a href="../field/codebase-memory-artifact-force/">1-1. Memory and Force</a></li>
-                <li><a href="../field/agents-organization-recurrent-paths/">1-2. Agents and Organization</a></li>
-                <li><a href="../field/governance-feedback-futures/">1-3. Feedback and Futures</a></li>
+                <li><a href="../field-and-force/">1. Field and Force</a></li>
+                <li><a href="../field-and-force/field/">1-1. Field</a></li>
+                <li><a href="../field-and-force/force/">1-2. Force</a></li>
+                <li><a href="../field-and-force/organization/">1-3. Organization</a></li>
+                <li><a href="../field-and-force/governance/">1-4. Governance</a></li>
                 <li><a href="../computation/">2. The Computation</a></li>
-                <li><a href="../computation/slice-observation/">2-1. Slice and Observation</a></li>
-                <li><a href="../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
-                <li><a href="../computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
-                <li><a href="../intervention/" aria-current="page">3. The Intervention</a></li>
-                <li><a href="../intervention/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
-                <li><a href="../intervention/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
-                <li><a href="../intervention/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+                <li><a href="../computation/interface/">2-1. Interface</a></li>
+                <li><a href="../computation/computational-core/">2-2. Computational Core</a></li>
+                <li><a href="../computation/forecast-cone/">2-3. ForecastCone</a></li>
+                <li><a href="../computation/workbench/">2-4. Workbench</a></li>
+                <li><a href="./" aria-current="page">3. Software Evolution</a></li>
+                <li><a href="field-shaping/">3-1. Field Shaping</a></li>
+                <li><a href="attractor-engineering/">3-2. Attractor Engineering</a></li>
+                <li><a href="ai-proposal-governance/">3-3. AI Proposal Governance</a></li>
+                <li><a href="lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a></li>
               </ul>
             </div>
             <div class="source-panel">
@@ -110,18 +113,19 @@
             <section id="introduction" class="article-section">
               <h2>Introduction</h2>
               <p>
-                SFT intervention is the design side of the theory. Part 2 asks
-                which futures are reachable under a selected field model. Part
-                3 asks what a team can change when that reachable shape is not
-                the one it wants to inhabit.
+                Part 3 is where SFT turns from reachable futures to software
+                evolution as an engineered process. Part 2 asks which futures
+                are reachable under a selected field model. Part 3 asks how a
+                team can reshape that field when the reachable shape diverges
+                from the future it wants to inhabit.
               </p>
               <p>
                 The answer is rarely a single gate. A review rule may remove a
                 shortcut from support. A type boundary may make an invariant
                 cheap to preserve. A runtime check may make a hidden path
                 observable. A lifecycle decision may retire a surface the field
-                can no longer support. These are not after-the-fact quality
-                controls. They are changes to the future shape of the system.
+                can no longer support. These interventions change the future
+                shape of the system.
               </p>
               <p>
                 This is the practical promise of SFT: once software evolution
@@ -134,19 +138,20 @@
             <section id="reference-notes" class="article-section">
               <h2>Chapters</h2>
               <p>
-                Part 3 develops intervention in three steps: governance and
-                attractor engineering, AI proposal governance, and lifecycle
-                decisions with closed-loop feedback.
+                Part 3 develops software evolution in four steps: field
+                shaping, attractor engineering, AI proposal governance, and
+                lifecycle decisions with closed-loop feedback.
               </p>
               <ul class="chapter-list">
-                <li><a href="governance-attractor-engineering/">3-1. Governance and Attractor Engineering</a><span>Review, CI, type systems, stable regions, and field shaping that make desirable futures natural.</span></li>
-                <li><a href="ai-proposal-governance/">3-2. AI Proposal Governance</a><span>Controlling AI-generated proposal support through theorem boundaries, shortcut witnesses, review, CI, and feedback.</span></li>
-                <li><a href="lifecycle-closed-loop/">3-3. Lifecycle and Closed-Loop Evolution</a><span>Repair, migration, contraction, deletion, end-of-life, and posterior field updates as lifecycle interventions.</span></li>
+                <li><a href="field-shaping/">3-1. Field Shaping</a><span>Review, CI, type systems, runtime guards, ownership, and feedback as transformations of support and observation.</span></li>
+                <li><a href="attractor-engineering/">3-2. Attractor Engineering</a><span>Stable regions, design levers, and measurement surfaces that make desirable futures natural and repeatable.</span></li>
+                <li><a href="ai-proposal-governance/">3-3. AI Proposal Governance</a><span>Controlling AI-generated proposal support through theorem boundaries, shortcut witnesses, review, CI, and feedback.</span></li>
+                <li><a href="lifecycle-closed-loop/">3-4. Lifecycle and Closed-Loop Evolution</a><span>Repair, migration, contraction, deletion, end-of-life, and posterior field updates as lifecycle interventions.</span></li>
               </ul>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
-              <a class="page-nav-previous" href="../computation/envelope-calibration/"><span>Previous</span><strong>2-3. Envelope and Calibration</strong></a>
-              <a class="page-nav-next" href="governance-attractor-engineering/"><span>Next</span><strong>3-1. Governance and Attractor</strong></a>
+              <a class="page-nav-previous" href="../computation/workbench/"><span>Previous</span><strong>2-4. Workbench</strong></a>
+              <a class="page-nav-next" href="field-shaping/"><span>Next</span><strong>3-1. Field Shaping</strong></a>
             </nav>
           </div>
         </div>

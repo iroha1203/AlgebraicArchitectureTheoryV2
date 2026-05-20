@@ -29,6 +29,24 @@
 - repository、docs、Lean status、Issue、claim boundary への言及は、公開コピーへそのまま出すための素材ではない。これらは編集時の制約として扱い、本文では読者にとって自然な研究内容、読書導線、概念説明へ翻訳する。
 - landing page や section copy では、内部の根拠管理、進捗管理、運用方針を説明しない。公開本文は「何を読めるか」「何を理解できるか」「どの概念へ進むか」を中心に書く。
 
+## Tone Guide
+
+* 防衛的な書き方を避ける。
+* 否定から入らない。
+* 以下のような表現を好む。
+
+```text
+SFT studies ...
+SFT defines ...
+SFT computes ...
+SFT systematizes ...
+SFT makes ... computable.
+SFT treats ... as ...
+```
+
+* 研究対象を堂々と宣言する。
+* 境界や注意書きは必要なら Reference / Formal Core 側に置く。
+
 ## 公開設定
 
 - 公開ドメインは `iroha1203.dev`。

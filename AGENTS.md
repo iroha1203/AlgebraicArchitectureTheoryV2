@@ -106,6 +106,9 @@
 
 - `website` は GitHub Pages 向けの公開読書面であり、`docs` の研究・実装管理文書とは責務を分ける。
 - AAT / SFT の canonical page は宣伝文ではなく、web-native preprint / monograph として、定義・仮定・定理境界・例・反例・Lean status・non-conclusion を保つ。
+- website は AAT / SFT の体系的解説として、その魅力を語り尽くす場でもある。claim boundary を守りつつ、読者が「何が見えるようになるか」「何が計算可能になるか」「どの概念が次の理解を開くか」を前面に出す。
+- website copy は `docs/website/README.md` の Tone Guide に従う。防衛的な書き方や否定から入る説明を避け、`SFT studies ...`, `SFT defines ...`, `SFT computes ...`, `SFT systematizes ...`, `SFT makes ... computable.`, `SFT treats ... as ...` のように研究対象と可能になることを堂々と宣言する。
+- Overview / landing / chapter introduction では、すべてを説明しきるよりも、読者を次の概念へ進ませる。章本文では field, force, attractor, basin, ForecastCone, ConsequenceEnvelope などの SFT 固有語彙を、危険さと魅力のある言葉として丁寧に定義し、計算可能な読みへ接続する。
 - website の説明は `docs/aat/mathematical_theory.md`, `docs/sft/software_field_theory.md`, `docs/sft/aat_interface.md`, `docs/tool` の claim boundary から逸脱しない。
 - claim boundary、Lean status、Issue 管理、repository / docs の責務分離は編集時の制約として扱い、公開コピーにそのまま出さない。読者向け本文では「何を読めるか」「何を理解できるか」「どの概念へ進むか」に翻訳する。
 - 公開ページで repository、docs、Lean status、Issue、内部運用方針に触れるのは、読者の理解や検証に必要な場合に限る。landing page や section copy では、内部の根拠管理・進捗管理を説明文として書かない。

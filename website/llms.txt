@@ -42,18 +42,21 @@ a proof system.
 - Home: https://iroha1203.dev/
 - AAT overview: https://iroha1203.dev/aat/
 - SFT overview: https://iroha1203.dev/sft/
-- SFT Part 1, Field: https://iroha1203.dev/sft/field/
-- SFT 1-1, Codebase Memory and Artifact Force: https://iroha1203.dev/sft/field/codebase-memory-artifact-force/
-- SFT 1-2, Agents, Organization, and Recurrent Paths: https://iroha1203.dev/sft/field/agents-organization-recurrent-paths/
-- SFT 1-3, Governance Feedback and Architecture Futures: https://iroha1203.dev/sft/field/governance-feedback-futures/
+- SFT Part 1, Field and Force: https://iroha1203.dev/sft/field-and-force/
+- SFT 1-1, Field: https://iroha1203.dev/sft/field-and-force/field/
+- SFT 1-2, Force: https://iroha1203.dev/sft/field-and-force/force/
+- SFT 1-3, Organization: https://iroha1203.dev/sft/field-and-force/organization/
+- SFT 1-4, Governance: https://iroha1203.dev/sft/field-and-force/governance/
 - SFT Part 2, Computation: https://iroha1203.dev/sft/computation/
-- SFT 2-1, Computable Slice and Observation: https://iroha1203.dev/sft/computation/slice-observation/
-- SFT 2-2, Support, Step, and ForecastCone: https://iroha1203.dev/sft/computation/support-step-forecast-cone/
-- SFT 2-3, ConsequenceEnvelope and Calibration: https://iroha1203.dev/sft/computation/envelope-calibration/
-- SFT Part 3, Intervention: https://iroha1203.dev/sft/intervention/
-- SFT 3-1, Governance and Attractor Engineering: https://iroha1203.dev/sft/intervention/governance-attractor-engineering/
-- SFT 3-2, AI Proposal Governance: https://iroha1203.dev/sft/intervention/ai-proposal-governance/
-- SFT 3-3, Lifecycle and Closed-Loop Evolution: https://iroha1203.dev/sft/intervention/lifecycle-closed-loop/
+- SFT 2-1, Interface: https://iroha1203.dev/sft/computation/interface/
+- SFT 2-2, Computational Core: https://iroha1203.dev/sft/computation/computational-core/
+- SFT 2-3, ForecastCone: https://iroha1203.dev/sft/computation/forecast-cone/
+- SFT 2-4, Workbench: https://iroha1203.dev/sft/computation/workbench/
+- SFT Part 3, Software Evolution: https://iroha1203.dev/sft/software-evolution/
+- SFT 3-1, Field Shaping: https://iroha1203.dev/sft/software-evolution/field-shaping/
+- SFT 3-2, Attractor Engineering: https://iroha1203.dev/sft/software-evolution/attractor-engineering/
+- SFT 3-3, AI Proposal Governance: https://iroha1203.dev/sft/software-evolution/ai-proposal-governance/
+- SFT 3-4, Lifecycle and Closed-Loop Evolution: https://iroha1203.dev/sft/software-evolution/lifecycle-closed-loop/
 - SFT References: https://iroha1203.dev/sft/references/
 - SFT Formal Core and Anchors: https://iroha1203.dev/sft/references/formal-anchors/
 - SFT Research Program and Boundaries: https://iroha1203.dev/sft/references/research-program/

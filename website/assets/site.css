@@ -1379,6 +1379,21 @@ p {
   padding: 18px 0;
 }
 
+.chapter-list .chapter-list-parent {
+  padding-left: 18px;
+  border-left: 3px solid var(--accent-warm);
+}
+
+.chapter-list .chapter-list-parent:not(:first-child) {
+  border-top: 1px solid var(--rule);
+}
+
+.chapter-list .chapter-list-child {
+  margin-left: 22px;
+  padding: 12px 0 12px 18px;
+  border-left: 1px solid var(--rule);
+}
+
 .article-section .intro-term-list + h2 {
   margin-top: 36px;
 }
@@ -1396,6 +1411,11 @@ p {
 
 .chapter-list a:hover {
   color: var(--accent-warm);
+}
+
+.chapter-list .chapter-list-child a {
+  font-size: 0.94rem;
+  font-weight: 700;
 }
 
 .chapter-list span,
