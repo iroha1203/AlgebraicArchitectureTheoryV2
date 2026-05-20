@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SFT Part 1-2: force as artifact-mediated change, where PRDs, issues, specs, reviews, incidents, and AI proposals reshape operation support.">
+    <meta name="description" content="SFT Part 1-2: force as artifact-mediated change, where PRDs, issues, pull requests, reviews, incidents, and AI proposals reshape operation support.">
     <title>SFT 1-2: Force</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/field-and-force/force/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="SFT 1-2: Force">
-    <meta property="og:description" content="SFT reads artifacts as forces that reshape what can be proposed, reviewed, selected, observed, and remembered.">
+    <meta property="og:description" content="SFT reads artifacts, including pull requests, as forces that reshape what can be proposed, reviewed, selected, observed, and remembered.">
     <meta property="og:url" content="https://iroha1203.dev/sft/field-and-force/force/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SFT 1-2: Force">
-    <meta name="twitter:description" content="SFT reads artifacts as forces that reshape what can be proposed, reviewed, selected, observed, and remembered.">
+    <meta name="twitter:description" content="SFT reads artifacts, including pull requests, as forces that reshape what can be proposed, reviewed, selected, observed, and remembered.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -56,9 +56,9 @@
           <p class="eyebrow">SFT Part 1-2</p>
           <h1>Force</h1>
           <p class="lede">
-            Force is how artifacts act on the field. A PRD, issue, review
-            comment, incident report, or AI proposal can make one future feel
-            near and another future fall out of view.
+            Force names how the field begins to move. A PRD, issue, pull
+            request, review comment, incident report, or AI proposal can pull
+            one future near while pushing another out of view.
           </p>
         </div>
       </section>
@@ -68,6 +68,7 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#force">Force</a></li>
                 <li><a href="#artifact-force">Artifact force</a></li>
                 <li><a href="#mathematical-spine">Mathematical spine</a></li>
                 <li><a href="#coupon">Coupon PRD</a></li>
@@ -104,14 +105,46 @@
             </div>
           </aside>
           <div class="article-main">
+            <section id="force" class="article-section">
+              <p class="research-question">
+                Can we interpret the change a pull request exerts on a
+                codebase as force?
+              </p>
+              <h2>Force</h2>
+              <p>
+                A force is a field-level pressure that changes how a codebase
+                is prepared to move. A pull request makes one path concrete. It
+                gives reviewers a shape to accept, reject, amend, remember, or
+                copy.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-force">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-force">Force</h3>
+                <p>
+                  The field-level pressure that changes which software
+                  evolution paths become nearby, costly, visible, reviewable,
+                  or natural.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Acts on</dt>
+                    <dd>Operation support, selection policy, observation boundaries, and field memory.</dd>
+                  </div>
+                  <div>
+                    <dt>Reading</dt>
+                    <dd>Ask how a new artifact changes the direction the codebase is prepared to move.</dd>
+                  </div>
+                </dl>
+              </aside>
+            </section>
             <section id="artifact-force" class="article-section">
               <h2>Artifact force</h2>
               <p>
-                Artifacts act on that memory. A PRD can make one decomposition
-                obvious. An issue can hide a boundary. A design memo can name a
-                missing invariant. A review comment can become precedent. An
-                incident report can add an observation axis that did not exist
-                before.
+                Other artifacts carry the same kind of pressure through
+                ordinary software work: a PRD makes one decomposition obvious,
+                an issue hides a boundary, a design memo names a missing
+                invariant, a review comment becomes precedent, and an incident
+                report adds a new observation axis.
               </p>
               <figure class="code-panel">
                 <figcaption>Artifact action</figcaption>
@@ -123,9 +156,9 @@
   -> reachable architecture futures</code></pre>
               </figure>
               <p>
-                The word force is useful here because the artifact need not
-                determine a single change. It changes the shape of the possible
-                next changes.
+                SFT uses force to describe this change while preserving many
+                possible next diffs. The artifact reshapes the space of
+                possible next changes.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-artifact-force">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -137,7 +170,7 @@
                 <dl>
                   <div>
                     <dt>Carrier</dt>
-                    <dd>PRD, issue, spec, review comment, incident report, AI proposal.</dd>
+                    <dd>PRD, issue, spec, pull request, review comment, incident report, AI proposal.</dd>
                   </div>
                   <div>
                     <dt>Effect</dt>
@@ -146,21 +179,21 @@
                 </dl>
               </aside>
               <p>
-                In ordinary process language, artifacts are often treated as
-                coordination aids: a PRD explains the feature, an issue tracks
-                work, a review comment asks for a revision, and an incident
-                report records what happened. SFT gives them a stronger role.
-                Each artifact can change the support of the field. It can make
-                a lawful path easier to discover, a shortcut harder to justify,
-                or a missing invariant visible enough to become a future test.
+                In ordinary process language, artifacts coordinate work: a PRD
+                explains the feature, an issue tracks work, a pull request
+                proposes a concrete path, a review comment asks for a revision,
+                and an incident report records what happened. SFT gives them a
+                stronger role. Each artifact can change field support. It can
+                make a lawful path easier to discover, a shortcut harder to
+                justify, or a missing invariant visible enough to become a
+                future test.
               </p>
             </section>
             <section id="mathematical-spine" class="article-section">
               <h2>Mathematical spine</h2>
               <p>
-                The field language is meant to carry mathematics, not remain a
-                metaphor. Force becomes a set-valued action. An artifact does not
-                have to choose a single future. It can produce candidate field
+                The force language carries mathematics. Force becomes a
+                set-valued action: an artifact produces candidate field
                 updates, and each update changes the support and policy from
                 which future paths are drawn.
               </p>
@@ -179,10 +212,10 @@ OperationPolicy(F)
   = cost, preorder, or selection relation on that support</code></pre>
               </figure>
               <p>
-                This gives SFT its first computational question. Given a field
-                and an artifact, which supported operation families become
-                closer, which become harder, and which architecture projection
-                will those families touch?
+                This gives SFT a computational question. Given a field and an
+                artifact, which supported operation families move closer, which
+                become harder, and which architecture projection will those
+                families touch?
               </p>
             </section>
             <section id="coupon" class="article-section">
@@ -191,8 +224,8 @@ OperationPolicy(F)
                 A coupon PRD in a checkout system is the smallest running
                 example. The request can open a lawful discount-policy path, a
                 payment-adapter shortcut, a UI-only drift, or a rounding
-                semantic obstruction. The PRD has not changed the code, but it
-                has changed the field of plausible implementations.
+                semantic obstruction. Before code changes, the PRD has already
+                changed the field of plausible implementations.
               </p>
               <div class="article-table">
                 <table>
@@ -223,9 +256,9 @@ OperationPolicy(F)
                 </table>
               </div>
               <p class="plain-reading">
-                <strong>Reading habit.</strong> Do not ask only what the
-                artifact says. Ask which operation families it makes visible,
-                cheap, hidden, or reviewable.
+                <strong>Reading habit.</strong> Read the artifact by the
+                operation families it makes visible, cheap, hidden, or
+                reviewable.
               </p>
             </section>
             <section id="force-reading" class="article-section">
