@@ -41,6 +41,7 @@ a proof system.
 
 - Home: https://iroha1203.dev/
 - AAT overview: https://iroha1203.dev/aat/
+- AAT Quantifiable Axes: https://iroha1203.dev/aat/quantifiable-axes/
 - SFT overview: https://iroha1203.dev/sft/
 - SFT Part 1, Field and Force: https://iroha1203.dev/sft/field-and-force/
 - SFT 1-1, Field: https://iroha1203.dev/sft/field-and-force/field/
