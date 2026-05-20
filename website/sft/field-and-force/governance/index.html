@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SFT Part 1-4: governance feedback, field memory updates, and architecture futures.">
+    <meta name="description" content="SFT Part 1-4: governance as field update, where review, CI, type checking, incidents, and postmortems reshape architecture futures.">
     <title>SFT 1-4: Governance</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/field-and-force/governance/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="SFT 1-4: Governance">
-    <meta property="og:description" content="How review, CI, incidents, and postmortems update field memory and shape architecture futures.">
+    <meta property="og:description" content="SFT treats governance as field update: review, CI, type checking, incidents, and postmortems reshape architecture futures.">
     <meta property="og:url" content="https://iroha1203.dev/sft/field-and-force/governance/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SFT 1-4: Governance">
-    <meta name="twitter:description" content="How review, CI, incidents, and postmortems update field memory and shape architecture futures.">
+    <meta name="twitter:description" content="SFT treats governance as field update: review, CI, type checking, incidents, and postmortems reshape architecture futures.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -57,9 +57,9 @@
           <h1>Governance</h1>
           <p class="lede">
             Review, CI, type checking, incidents, postmortems, and runtime
-            observations do more than judge finished work. They teach the field
-            what to notice next, what to forbid next, and what kind of future
-            should become easier to reach.
+            observations update the field. They teach the next proposal what
+            to notice, what to avoid, and which future should become easier to
+            reach.
           </p>
         </div>
       </section>
@@ -69,10 +69,10 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#learning">How the field learns</a></li>
+                <li><a href="#governance">Governance</a></li>
                 <li><a href="#futures">Architecture futures</a></li>
                 <li><a href="#trajectory">Signature trajectory</a></li>
-                <li><a href="#forecast-update">Forecast and update</a></li>
+                <li><a href="#process-feedback">Process feedback</a></li>
                 <li><a href="#bridge">Bridge to computation</a></li>
               </ol>
             </nav>
@@ -106,18 +106,39 @@
             </div>
           </aside>
           <div class="article-main">
-            <section id="learning" class="article-section">
+            <section id="governance" class="article-section">
               <p class="research-question">
-                Can feedback make software evolution a trajectory rather than a sequence of endpoints?
+                Can governance turn software evolution into a learning
+                trajectory?
               </p>
-              <h2>How the field learns</h2>
+              <h2>Governance</h2>
               <p>
-                Governance produces memory. A review rejection records that a
-                path was not acceptable under current evidence. A CI failure
-                names an observation axis. An incident makes a hidden invariant
-                expensive. A postmortem can turn runtime pain into future
-                support, tests, ownership, or review rules.
+                Governance is the field mechanism that turns feedback into
+                future support. A review rejection records the evidence a path
+                failed to carry. A CI failure names an observation axis. An
+                incident makes a hidden invariant expensive. A postmortem turns
+                runtime pain into tests, ownership, review rules, or new
+                constraints.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-governance">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-governance">Governance</h3>
+                <p>
+                  The field update mechanism by which review, CI, type
+                  checking, incidents, runtime observation, and postmortems
+                  change future operation support.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Acts through</dt>
+                    <dd>Rules, checks, review precedents, incident memory, owner routes, tests, and observation axes.</dd>
+                  </div>
+                  <div>
+                    <dt>Reading</dt>
+                    <dd>Ask what the next proposal can see, select, avoid, or justify because governance remembered it.</dd>
+                  </div>
+                </dl>
+              </aside>
               <aside class="vocabulary-card" aria-labelledby="vocab-governance-feedback">
                 <span class="vocabulary-card-label">Vocabulary</span>
                 <h3 id="vocab-governance-feedback">Governance feedback</h3>
@@ -128,8 +149,8 @@
                 </p>
                 <dl>
                   <div>
-                    <dt>Not just a gate</dt>
-                    <dd>It changes what the next proposal can see, select, or avoid.</dd>
+                    <dt>Role</dt>
+                    <dd>Changes what the next proposal can see, select, or avoid.</dd>
                   </div>
                   <div>
                     <dt>Field effect</dt>
@@ -141,14 +162,13 @@
                 This is the closed-loop heart of SFT. A field proposes futures,
                 governance selects among them, observation reveals what the
                 field failed to see, and the result becomes memory for the next
-                proposal. A healthy architecture process is not merely a gate.
-                It is a learning system that changes the support of future
-                changes.
+                proposal. A healthy architecture process is a learning system
+                that changes the support of future changes.
               </p>
               <ul class="concept-grid">
                 <li>
                   <strong>Restrict</strong>
-                  <span>Remove unsafe support when a path should not be available.</span>
+                  <span>Remove unsafe support and make protected paths explicit.</span>
                 </li>
                 <li>
                   <strong>Redirect</strong>
@@ -167,10 +187,10 @@
             <section id="futures" class="article-section">
               <h2>Architecture futures</h2>
               <p>
-                SFT studies futures as reachable path families, not endpoints.
-                A future includes the field path, the architecture projection
-                path, the signature movement, obstruction candidates, and the
-                boundaries of what was not observed.
+                SFT studies futures as reachable path families. A future
+                includes the field path, the architecture projection path, the
+                signature movement, obstruction candidates, and the boundaries
+                of what remains unobserved.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-architecture-future">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -183,7 +203,7 @@
                 <dl>
                   <div>
                     <dt>Object</dt>
-                    <dd>Path family, not a single predicted endpoint.</dd>
+                    <dd>Reachable path family with observed and unobserved boundaries.</dd>
                   </div>
                   <div>
                     <dt>Observation</dt>
@@ -210,17 +230,17 @@
             <section id="trajectory" class="article-section">
               <h2>Signature trajectory</h2>
               <p>
-                Endpoint safety is not enough. A path can end with an acceptable
-                signature while making unsafe excursions along the way. SFT
-                therefore keeps trajectory language: what changed, in which
-                order, on which axes, and with which evidence boundary.
+                Endpoint safety leaves path information behind. A path can end
+                with an acceptable signature while making unsafe excursions
+                along the way. SFT keeps trajectory language: what changed, in
+                which order, on which axes, and with which evidence boundary.
               </p>
               <p>
                 This is where ArchSig becomes useful as an observation lens.
                 It keeps a multi-axis record of movement: dependency direction,
                 boundary preservation, semantic obstruction, runtime exposure,
-                review evidence, and the places where the field still cannot
-                see.
+                review evidence, and the places that remain outside the current
+                observation boundary.
               </p>
               <div class="path-matrix" role="list" aria-label="Trajectory questions">
                 <article role="listitem">
@@ -245,57 +265,61 @@
                 </article>
               </div>
             </section>
-            <section id="forecast-update" class="article-section">
-              <h2>Forecast and update</h2>
+            <section id="process-feedback" class="article-section">
+              <h2>Process feedback</h2>
               <p>
-                The mathematical heart of SFT is a path object. Given a field,
-                a support function, and a finite horizon, SFT reads a forecast
-                as a bounded family of reachable field paths. The future is not
-                a point prediction. It is a cone of paths generated by supported
-                steps.
+                Waterfall and agile can be read as different feedback
+                geometries. Waterfall concentrates field updates at large
+                phase boundaries: requirements, design, implementation,
+                verification, release. Agile makes smaller field updates
+                frequent through iteration, review, tests, demos, and
+                retrospectives.
               </p>
-              <aside class="vocabulary-card" aria-labelledby="vocab-forecast-cone">
-                <span class="vocabulary-card-label">Vocabulary</span>
-                <h3 id="vocab-forecast-cone">ForecastCone</h3>
-                <p>
-                  The bounded set of reachable field paths from a starting
-                  field under selected operation support and horizon.
-                </p>
-                <dl>
-                  <div>
-                    <dt>Inputs</dt>
-                    <dd>Start field <code>F</code>, support <code>U</code>, horizon <code>h</code>.</dd>
-                  </div>
-                  <div>
-                    <dt>Reading</dt>
-                    <dd>Which path classes have become reachable or closer under the current field.</dd>
-                  </div>
-                </dl>
-              </aside>
-              <figure class="code-panel">
-                <figcaption>Forecast cone</figcaption>
-                <pre><code>FieldPath
-  = finite sequence in FieldSpace
-
-ReachableFieldPath(F, U, h, p)
-  = p starts at F
-  + length(p) <= h
-  + every adjacent step is witnessed by some op in U(F_i)
-
-ForecastCone(F, U, h)
-  = { p | ReachableFieldPath(F, U, h, p) }</code></pre>
-              </figure>
               <p>
-                Governance closes the loop. A review, CI result, type check,
-                runtime observation, rollback, or postmortem is not only a
-                verdict on one change. It is an update to the field from which
-                the next cone will be generated.
+                SFT reads both as governance designs. The question is how
+                quickly evidence returns to the field, which observations are
+                preserved as memory, and which future changes become easier
+                after each cycle.
               </p>
+              <p>
+                Vibe coding makes the pressure sharper. An improvised prompt
+                can generate a cone-like spread of possible changes, and the
+                resulting force can bend the field before the organization has
+                named the invariant it wants to protect.
+              </p>
+              <div class="article-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Process form</th>
+                      <th scope="col">Field update shape</th>
+                      <th scope="col">Governance reading</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Waterfall</th>
+                      <td>Large updates at phase boundaries.</td>
+                      <td>Strong upfront memory, slower correction when observations arrive late.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Agile</th>
+                      <td>Small updates through repeated cycles.</td>
+                      <td>Fast feedback, with architecture memory depending on tests, review, and retrospectives.</td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Vibe coding</th>
+                      <td>Large force can erupt from an ambiguous prompt or PRD.</td>
+                      <td>Governance preserves stronger memory so generated speed keeps architectural direction.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
               <figure class="code-panel">
                 <figcaption>Field update</figcaption>
                 <pre><code>FieldUpdate
   = prior field
-  + ForecastCone / ConsequenceEnvelope
+  + proposal or process evidence
   + observed PR signature delta
   + unexpected obstruction witnesses
   + review / CI outcome
