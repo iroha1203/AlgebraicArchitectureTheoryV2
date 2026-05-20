@@ -60,12 +60,12 @@
             <span>SFT</span>
           </nav>
           <p class="eyebrow">Software Field Theory</p>
-          <h1>Software evolution as field-shaped computation.</h1>
+          <h1>Software Field Theorem</h1>
           <p class="lede">
-            AAT turns architecture into a local algebra. ArchSig makes that
-            algebra observable. SFT asks the next question: how do requirements,
-            issues, reviews, CI, incidents, AI agents, and lifecycle pressure
-            shape the futures a codebase can naturally reach?
+            SFT makes software evolution computable by treating the whole
+            development organization--requirements, code, reviews, agents,
+            incidents, and governance--as a field of forces that pulls a
+            codebase toward some futures and away from others.
           </p>
         </div>
       </section>
@@ -76,11 +76,10 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#thesis">Thesis</a></li>
-                <li><a href="#field-reading">Field reading</a></li>
-                <li><a href="#three-movements">Three movements</a></li>
-                <li><a href="#formal-core">Mathematical guardrail</a></li>
-                <li><a href="#references">Reference layer</a></li>
+                <li><a href="#why-now">Why now</a></li>
+                <li><a href="#object">Object</a></li>
+                <li><a href="#construction">Construction</a></li>
+                <li><a href="#reading-path">Chapters</a></li>
               </ol>
             </nav>
             <div class="source-panel" data-sidebar-open="true">
@@ -95,10 +94,10 @@
                 <li><a href="computation/slice-observation/">2-1. Slice and Observation</a></li>
                 <li><a href="computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
                 <li><a href="computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
-                <li><a href="intervention/">3. The Intervention</a></li>
-                <li><a href="intervention/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
-                <li><a href="intervention/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
-                <li><a href="intervention/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+                <li><a href="software-evolution/">3. Software Evolution</a></li>
+                <li><a href="software-evolution/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
+                <li><a href="software-evolution/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
+                <li><a href="software-evolution/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
               </ul>
             </div>
             <div class="source-panel">
@@ -113,39 +112,53 @@
           </aside>
 
           <div class="article-main">
-            <section id="thesis" class="article-section">
-              <p class="research-question">
-                What if the object of software engineering is not only the current codebase, but the field that shapes the next changes?
-              </p>
-              <h2>Thesis</h2>
+            <section id="why-now" class="article-section">
+              <h2>Why now</h2>
               <p>
-                Software Field Theory begins from a simple observation: software
-                does not merely change. It evolves inside a field of artifacts,
-                habits, agents, review systems, operational memory, and
-                lifecycle pressure. That field does not determine one future,
-                but it changes which futures become cheap, visible, repeatable,
-                reviewable, or almost unthinkable.
+                AI has made code generation fast. A requirement, prompt, or
+                review comment can now become a patch before the organization
+                has fully understood what future that patch makes easier.
               </p>
               <p>
-                A PRD is not just text. It can make one issue decomposition
-                feel natural and another disappear. A review rule is not just a
-                gate. It can raise the cost of shortcuts and lower the cost of
-                lawful paths. A codebase is not just state. It is memory that
-                teaches developers and AI agents what kind of move looks nearby.
+                But software changes are not isolated events. Each change
+                alters tests, dependencies, ownership, review habits, examples,
+                incidents, and the paths that developers and agents will copy
+                next. The faster change becomes, the more important it becomes
+                to study the conditions under which future changes are made.
+              </p>
+            </section>
+
+            <section id="object" class="article-section">
+              <h2>Object</h2>
+              <p>
+                This brings software evolution back to the center of the
+                theory. Not only the current codebase. Not only the next diff.
+                The object is the field that shapes which futures become
+                cheap, visible, repeatable, reviewable, or nearly unthinkable.
               </p>
               <p>
-                SFT makes that moving object computable. Its target is not a
-                single predicted PR. Its target is the shape of reachable
-                architecture futures under a selected field model, operation
-                support, policy, observation boundary, and horizon.
+                SFT studies that object. It treats requirements, issues,
+                reviews, CI, incidents, prompts, ownership, and codebase memory
+                as forces that shape operation support: what changes can be
+                made, selected, justified, repeated, and observed.
+              </p>
+            </section>
+
+            <section id="construction" class="article-section">
+              <h2>Construction</h2>
+              <p>
+                SFT is built on a stack. AAT gives architecture a local algebra:
+                components, operations, invariants, and theorem boundaries.
+                ArchSig makes parts of that algebra observable as bounded
+                signatures. SFT then studies how fields move those signatures
+                through reachable architecture futures.
               </p>
               <p>
-                This is the central claim: software evolution has a field
-                structure. Requirements, incidents, ownership, tests, reviews,
-                prompts, and old code exert force by changing which operations
-                are supported and which paths are selected. SFT gives that
-                force a computational reading instead of leaving it as
-                anecdote.
+                The formal core keeps the language disciplined: state,
+                operation support, policy, path, horizon, observation, and
+                boundary. The overview gives readers enough structure to see
+                software evolution as an object that can be modeled, measured,
+                and steered.
               </p>
               <figure class="code-panel">
                 <figcaption>The AAT / ArchSig / SFT stack</figcaption>
@@ -155,129 +168,78 @@ SFT    -> software evolution as computable field dynamics</code></pre>
               </figure>
             </section>
 
-            <section id="field-reading" class="article-section">
-              <h2>Field reading</h2>
+            <section id="reading-path" class="article-section">
+              <h2>Chapters</h2>
               <p>
-                The field is the selected development reality around a codebase:
-                requirements, issues, design notes, ownership, review, CI,
-                runtime incidents, AI policy, old workarounds, and the patterns
-                everyone has learned to copy. SFT reads these as active
-                structure. They shape operation support: the set of changes
-                that are plausible, low-friction, legitimate, and likely to be
-                selected next.
-              </p>
-              <p>
-                This is why two repositories with nearly identical dependency
-                graphs can have different futures. One field records invariants
-                in review and turns incidents into tests. Another field leaves
-                hard boundaries as folklore and makes local patching the
-                cheapest move. The code may look similar, but the next possible
-                moves have changed.
-              </p>
-              <p class="plain-reading">
-                <strong>Core intuition.</strong> SFT studies the pressure that
-                exists before the next diff: what the present field is making
-                easy, hard, visible, hidden, repeatable, or costly.
-              </p>
-            </section>
-
-            <section id="three-movements" class="article-section">
-              <h2>Three movements</h2>
-              <p>
-                The public reading path is intentionally three large movements.
-                The small formal and tooling notes remain available, but the
-                main experience should read as a theory of software evolution,
-                not as a directory of fragments.
+                The main path has three movements. Read them as a progression:
+                first the field that shapes change, then the computation that
+                bounds reachable futures, then software evolution as an
+                engineered loop that steers the field.
               </p>
               <ul class="chapter-list">
-                <li>
+                <li class="chapter-list-parent">
                   <a href="field/">1. The Field</a>
-                  <span>Three chapters on codebase memory and artifact force, agents and organization, and governance feedback as the source of architecture futures.</span>
+                  <span>How codebase memory, artifacts, agents, organization, governance, and feedback shape the next possible moves.</span>
                 </li>
-                <li>
+                <li class="chapter-list-child">
+                  <a href="field/codebase-memory-artifact-force/">1-1. Memory and Force</a>
+                  <span>How old code, requirements, design notes, and incidents become memory that changes the cost of future moves.</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="field/agents-organization-recurrent-paths/">1-2. Agents and Organization</a>
+                  <span>How developers, AI agents, ownership, routines, and repeated paths make some changes natural.</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="field/governance-feedback-futures/">1-3. Feedback and Futures</a>
+                  <span>How review, CI, operational feedback, and governance shape the field before the next diff.</span>
+                </li>
+                <li class="chapter-list-parent">
                   <a href="computation/">2. The Computation</a>
-                  <span>Three chapters on computable slices and observation, support and ForecastCone semantics, and ConsequenceEnvelope calibration.</span>
+                  <span>How slices, support, ForecastCone semantics, ConsequenceEnvelope projection, and calibration make evolution computable.</span>
                 </li>
-                <li>
-                  <a href="intervention/">3. The Intervention</a>
-                  <span>Three chapters on governance and attractor engineering, AI proposal governance, and lifecycle / closed-loop evolution.</span>
+                <li class="chapter-list-child">
+                  <a href="computation/slice-observation/">2-1. Slice and Observation</a>
+                  <span>How SFT selects a bounded slice of development reality and states what can be observed.</span>
                 </li>
-              </ul>
-            </section>
-
-            <section id="formal-core" class="article-section">
-              <h2>Mathematical guardrail</h2>
-              <p>
-                SFT is allowed to speak in large language because its formal
-                core keeps the claims shaped. The prose can say that artifacts
-                apply force, that codebases remember, and that good futures can
-                be made natural. The mathematics then asks which support
-                relation, which step semantics, which horizon, which observation
-                axes, and which theorem boundary license the statement.
-              </p>
-              <p>
-                Lean is the discipline behind the rhetoric. A field is not a
-                loose metaphor; it is represented through selected states,
-                operations, support, paths, projections, and boundaries. A
-                force is not a causal theorem by itself; it becomes a change to
-                support, policy, observation, or feedback under a stated model.
-                The website can carry the intuition because the formal core
-                keeps the object typed.
-              </p>
-              <div class="theorem-card-list">
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Lean-facing core</span>
-                      <h3>Ambition in prose, discipline in the kernel</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">formal anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Field side</dt>
-                      <dd><code>SoftwareField</code>, operation support, policy, step relation, path, and horizon.</dd>
-                    </div>
-                    <div>
-                      <dt>Architecture side</dt>
-                      <dd>AAT supplies objects, operations, invariants, signatures, witnesses, and theorem boundaries.</dd>
-                    </div>
-                    <div>
-                      <dt>Reachability side</dt>
-                      <dd><code>ForecastCone</code> records bounded reachable futures; <code>ConsequenceEnvelope</code> projects them for review.</dd>
-                    </div>
-                    <div>
-                      <dt>Evidence side</dt>
-                      <dd>ArchSig and calibration artifacts keep observation, unknown remainder, and feedback linked to real traces.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
-            </section>
-
-            <section id="references" class="article-section">
-              <h2>Reference layer</h2>
-              <p>
-                The reference pages keep formal targets, theorem candidates,
-                claim levels, positioning, and vocabulary close at hand without
-                making defensive bookkeeping the first reading experience.
-              </p>
-              <ul class="chapter-list">
-                <li>
+                <li class="chapter-list-child">
+                  <a href="computation/support-step-forecast-cone/">2-2. Support and Cone</a>
+                  <span>How supported operations generate bounded reachable futures through step semantics and ForecastCone.</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="computation/envelope-calibration/">2-3. Envelope and Calibration</a>
+                  <span>How consequence envelopes, traces, unknown remainder, and feedback connect the model to evidence.</span>
+                </li>
+                <li class="chapter-list-parent">
+                  <a href="software-evolution/">3. Software Evolution</a>
+                  <span>How governance, attractor engineering, AI proposal policy, and lifecycle feedback make better futures easier to reach.</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="software-evolution/governance-attractor-engineering/">3-1. Governance and Attractor</a>
+                  <span>How review, CI, type systems, stable regions, and field shaping pull evolution toward better basins.</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="software-evolution/ai-proposal-governance/">3-2. AI Proposal Governance</a>
+                  <span>How AI-generated proposal support is bounded by theorem boundaries, shortcut witnesses, review, and CI.</span>
+                </li>
+                <li class="chapter-list-child">
+                  <a href="software-evolution/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a>
+                  <span>How repair, migration, contraction, deletion, and posterior updates close the evolution loop.</span>
+                </li>
+                <li class="chapter-list-parent">
                   <a href="references/">References</a>
-                  <span>The consolidated reference layer for formal anchors, research boundaries, and vocabulary.</span>
+                  <span>Formal anchors, research boundaries, and vocabulary for readers who want the theorem-facing layer close at hand.</span>
                 </li>
-                <li>
+                <li class="chapter-list-child">
                   <a href="references/formal-anchors/">Formal Core and Anchors</a>
-                  <span>The theorem-bearing fragment, Lean declarations, proved boundary packages, and theorem candidates.</span>
+                  <span>The Lean-facing declarations, theorem candidates, proved boundaries, and formal vocabulary.</span>
                 </li>
-                <li>
+                <li class="chapter-list-child">
                   <a href="references/research-program/">Research Program and Boundaries</a>
-                  <span>The path from formal core to workbench, calibration, positioning, claim levels, and promotion rules.</span>
+                  <span>The calibration path, claim levels, non-conclusions, positioning, and promotion rules.</span>
                 </li>
-                <li>
+                <li class="chapter-list-child">
                   <a href="references/glossary/">Glossary</a>
-                  <span>Term boundaries for field, force, attractor, basin, ForecastCone, ConsequenceEnvelope, support, policy, and calibration.</span>
+                  <span>Term boundaries for field, force, attractor, basin, ForecastCone, ConsequenceEnvelope, support, and policy.</span>
                 </li>
               </ul>
             </section>
