@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SFT Part 3-1: governance, attractor engineering, stable regions, and field shaping.">
-    <title>SFT 3-1: Governance and Attractor Engineering</title>
-    <link rel="canonical" href="https://iroha1203.dev/sft/software-evolution/governance-attractor-engineering/">
+    <meta name="description" content="SFT Part 3-1: field shaping through review, CI, type systems, architecture rules, runtime guards, ownership boundaries, and feedback update.">
+    <title>SFT 3-1: Field Shaping</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/software-evolution/field-shaping/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="SFT 3-1: Governance and Attractor Engineering">
-    <meta property="og:description" content="How review, CI, type systems, and attractor engineering shape reachable architecture futures.">
-    <meta property="og:url" content="https://iroha1203.dev/sft/software-evolution/governance-attractor-engineering/">
+    <meta property="og:title" content="SFT 3-1: Field Shaping">
+    <meta property="og:description" content="How governance interventions reshape support, policy, observation, and feedback in a software field.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/software-evolution/field-shaping/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SFT 3-1: Governance and Attractor Engineering">
-    <meta name="twitter:description" content="How review, CI, type systems, and attractor engineering shape reachable architecture futures.">
+    <meta name="twitter:title" content="SFT 3-1: Field Shaping">
+    <meta name="twitter:description" content="How governance interventions reshape support, policy, observation, and feedback.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -54,11 +54,11 @@
             <span>3-1</span>
           </nav>
           <p class="eyebrow">SFT Part 3-1</p>
-          <h1>Governance and Attractor Engineering</h1>
+          <h1>Field Shaping</h1>
           <p class="lede">
-            Governance is not only a gate. It is a way to reshape support,
-            policy, observation, and feedback so desirable architecture futures
-            become natural, visible, reviewable, and repeatable.
+            Field shaping turns governance into a design instrument: review,
+            CI, type systems, runtime guards, ownership, and feedback reshape
+            the support from which future changes are drawn.
           </p>
         </div>
       </section>
@@ -69,11 +69,8 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#governance">Governance as field shaping</a></li>
-                <li><a href="#attractor">Attractor engineering</a></li>
-                <li><a href="#guardrails">Beyond guardrails</a></li>
+                <li><a href="#guardrails">Beyond gates</a></li>
                 <li><a href="#levers">Design levers</a></li>
-                <li><a href="#stable">Stable regions</a></li>
-                <li><a href="#measurement">Measurement surface</a></li>
                 <li><a href="#moves">Shaping moves</a></li>
               </ol>
             </nav>
@@ -92,9 +89,10 @@
                 <li><a href="../../computation/forecast-cone/">2-3. ForecastCone</a></li>
                 <li><a href="../../computation/workbench/">2-4. Workbench</a></li>
                 <li><a href="../">3. Software Evolution</a></li>
-                <li><a href="./" aria-current="page">3-1. Governance and Attractor</a></li>
-                <li><a href="../ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
-                <li><a href="../lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+                <li><a href="./" aria-current="page">3-1. Field Shaping</a></li>
+                <li><a href="../attractor-engineering/">3-2. Attractor Engineering</a></li>
+                <li><a href="../ai-proposal-governance/">3-3. AI Proposal Governance</a></li>
+                <li><a href="../lifecycle-closed-loop/">3-4. Lifecycle and Closed Loop</a></li>
               </ul>
             </div>
             <div class="source-panel">
@@ -179,64 +177,15 @@
                 </table>
               </div>
             </section>
-            <section id="attractor" class="article-section">
-              <h2>Attractor engineering</h2>
-              <p>
-                Attractor engineering designs the field so desirable futures are
-                natural to find and repeat. The goal is not only to reject bad
-                paths. It is to lower the cost of lawful paths and make shortcut
-                paths costly, visible, and review-mediated.
-              </p>
-              <p>
-                This is Part 3's central idea. A codebase is not only an
-                implementation; it is a prompt, a training surface, a review
-                memory, and a local grammar for future work. The next human or
-                AI proposal will tend to follow what the field makes obvious.
-                Attractor engineering means designing that tendency.
-              </p>
-              <aside class="vocabulary-card" aria-labelledby="vocab-attractor-engineering">
-                <span class="vocabulary-card-label">Vocabulary</span>
-                <h3 id="vocab-attractor-engineering">AttractorEngineering</h3>
-                <p>
-                  Designing support and policy so desired architecture futures
-                  become natural, low-cost, observable, and repeatable.
-                </p>
-                <dl>
-                  <div>
-                    <dt>Formal reading</dt>
-                    <dd>Support shaping, policy shaping, governance intervention, observation boundary, and feedback update rule.</dd>
-                  </div>
-                  <div>
-                    <dt>Not assumed</dt>
-                    <dd>A physical attractor, probability model, or global convergence theorem.</dd>
-                  </div>
-                </dl>
-              </aside>
-              <figure class="code-panel">
-                <figcaption>Attractor engineering object</figcaption>
-                <pre><code>AttractorEngineering(F, R)
-  = target region R
-  + support shaping
-  + policy shaping
-  + governance intervention
-  + observation boundary
-  + feedback update rule</code></pre>
-              </figure>
-              <p class="plain-reading">
-                <strong>Intervention habit.</strong> The strongest governance
-                is not a longer checklist. It is a field where the checklist
-                and the codebase point toward the same lawful move.
-              </p>
-            </section>
             <section id="guardrails" class="article-section">
-              <h2>Beyond guardrails</h2>
+              <h2>Beyond gates</h2>
               <p>
-                Guardrails matter, but attractor engineering is not just a
-                stronger fence. A guardrail reacts to a proposed path. Attractor
-                engineering changes the field before the proposal exists: the
-                examples developers copy, the APIs that feel natural, the tests
-                that encode invariants, the review questions that become
-                routine, and the ownership paths that make lawful work easier.
+                Governance becomes field shaping when it changes the conditions
+                under which proposals are generated. A gate reacts to a proposed
+                path. Field shaping changes the examples developers copy, the
+                APIs that feel natural, the tests that encode invariants, the
+                review questions that become routine, and the ownership paths
+                that make lawful work easier.
               </p>
               <div class="article-table">
                 <table>
@@ -244,29 +193,29 @@
                     <tr>
                       <th scope="col">Mechanism</th>
                       <th scope="col">Main action</th>
-                      <th scope="col">Attractor-engineering reading</th>
+                      <th scope="col">Field-shaping reading</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
                       <th scope="row">Guardrail</th>
                       <td>Stops forbidden output or operation.</td>
-                      <td>Needed, but downstream of proposal generation.</td>
+                      <td>Useful downstream control over proposal generation.</td>
                     </tr>
                     <tr>
                       <th scope="row">Harness</th>
                       <td>Wraps an agent with evaluation and limits.</td>
-                      <td>External control around the field, not field design by itself.</td>
+                      <td>External control around the field.</td>
                     </tr>
                     <tr>
                       <th scope="row">Policy enforcement</th>
                       <td>Defines and rejects forbidden sets.</td>
-                      <td>Shapes support only if it also changes cost, visibility, and feedback.</td>
+                      <td>Shapes support when it changes cost, visibility, and feedback.</td>
                     </tr>
                     <tr>
                       <th scope="row">Review gate</th>
                       <td>Accepts, rejects, or requests changes before merge.</td>
-                      <td>Becomes attractor engineering when review changes future proposal support.</td>
+                      <td>Becomes field shaping when review changes future proposal support.</td>
                     </tr>
                     <tr>
                       <th scope="row">Field design</th>
@@ -281,9 +230,10 @@
               <h2>Design levers</h2>
               <p>
                 The practical work is to change the support and policy landscape.
-                A good field makes boundary-preserving operations local,
+                A shaped field makes boundary-preserving operations local,
                 discoverable, low-friction, observable, and easy to reinforce.
-                A bad field makes shortcuts local, cheap, and hard to observe.
+                A drifting field makes shortcuts local, cheap, and hard to
+                observe.
               </p>
               <div class="theorem-card-list">
                 <article class="theorem-card">
@@ -339,96 +289,10 @@
                 </article>
               </div>
             </section>
-            <section id="stable" class="article-section">
-              <h2>Stable regions</h2>
-              <p>
-                Stable-region language gives the intuition a computable shape.
-                A region is stable when supported steps remain inside it. A
-                recurrent path is a repeated development pattern under the
-                selected support and policy. Stronger readings require stronger
-                semantics, but the field-design question already becomes clear.
-              </p>
-              <aside class="vocabulary-card" aria-labelledby="vocab-stable-region-3">
-                <span class="vocabulary-card-label">Vocabulary</span>
-                <h3 id="vocab-stable-region-3">StableRegion</h3>
-                <p>
-                  A selected region where accepted supported steps remain inside
-                  the region under the chosen semantics.
-                </p>
-                <dl>
-                  <div>
-                    <dt>May reach</dt>
-                    <dd>Some supported path reaches the region within the horizon.</dd>
-                  </div>
-                  <div>
-                    <dt>Must reach</dt>
-                    <dd>Every selected supported path reaches the region within the horizon.</dd>
-                  </div>
-                </dl>
-              </aside>
-              <figure class="code-panel">
-                <figcaption>Attractor vocabulary without overclaiming</figcaption>
-                <pre><code>MayReach_h(F, U, A)
-MustReach_h(F, U, A)
-StableRegion(U, A)
-ReachablePreimage_h(U, A)</code></pre>
-              </figure>
-            </section>
-            <section id="measurement" class="article-section">
-              <h2>Measurement surface</h2>
-              <p>
-                To engineer an attractor, the field has to expose signals. SFT
-                does not need a single architecture score. It needs a bounded
-                measurement surface that can compare support risk, basin
-                movement, shortcut visibility, return time, and feedback update
-                across selected regions.
-              </p>
-              <div class="article-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th scope="col">Signal</th>
-                      <th scope="col">Question it asks</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th scope="row">DefaultPath</th>
-                      <td>Which path does the field make easiest before anyone argues?</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">RecurrentPattern</th>
-                      <td>Which development path repeats across issues, PRs, or AI proposals?</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Good basin mass</th>
-                      <td>How much selected initial-state mass reaches the desired region?</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Bad basin visibility</th>
-                      <td>How quickly does drift toward an unsafe region become observable?</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Escape cost</th>
-                      <td>How expensive is it to repair or refactor out of a bad region?</td>
-                    </tr>
-                    <tr>
-                      <th scope="row">Field shaping delta</th>
-                      <td>What changed after the intervention: support, policy, observation, or feedback?</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p class="plain-reading">
-                <strong>Measurement habit.</strong> Unmeasured basin risk is not
-                zero. If a field cannot observe a bad basin, attractor
-                engineering starts by instrumenting the boundary.
-              </p>
-            </section>
             <section id="moves" class="article-section">
               <h2>Shaping moves</h2>
               <figure class="code-panel">
-                <figcaption>Attractor engineering surface</figcaption>
+                <figcaption>Field shaping surface</figcaption>
                 <pre><code>support shaping
   + policy shaping
   + observation enrichment
@@ -455,13 +319,13 @@ ReachablePreimage_h(U, A)</code></pre>
                 <a class="statement-anchor" href="#example-3-1">Example 3-1.</a>
                 A coupon review rule that requires discount composition and
                 refund semantics lowers the cost of the DiscountPolicy path
-                and raises the cost of UI-only drift. This is attractor
-                engineering: the better path becomes easier to select.
+                and raises the cost of UI-only drift. This is field shaping:
+                the better path becomes easier to select.
               </p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 3. Software Evolution</strong></a>
-              <a class="page-nav-next" href="../ai-proposal-governance/"><span>Next</span><strong>3-2. AI Proposal Governance</strong></a>
+              <a class="page-nav-next" href="../attractor-engineering/"><span>Next</span><strong>3-2. Attractor Engineering</strong></a>
             </nav>
           </div>
         </div>

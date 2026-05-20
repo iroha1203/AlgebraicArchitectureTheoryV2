@@ -53,9 +53,10 @@ a proof system.
 - SFT 2-3, ForecastCone: https://iroha1203.dev/sft/computation/forecast-cone/
 - SFT 2-4, Workbench: https://iroha1203.dev/sft/computation/workbench/
 - SFT Part 3, Software Evolution: https://iroha1203.dev/sft/software-evolution/
-- SFT 3-1, Governance and Attractor Engineering: https://iroha1203.dev/sft/software-evolution/governance-attractor-engineering/
-- SFT 3-2, AI Proposal Governance: https://iroha1203.dev/sft/software-evolution/ai-proposal-governance/
-- SFT 3-3, Lifecycle and Closed-Loop Evolution: https://iroha1203.dev/sft/software-evolution/lifecycle-closed-loop/
+- SFT 3-1, Field Shaping: https://iroha1203.dev/sft/software-evolution/field-shaping/
+- SFT 3-2, Attractor Engineering: https://iroha1203.dev/sft/software-evolution/attractor-engineering/
+- SFT 3-3, AI Proposal Governance: https://iroha1203.dev/sft/software-evolution/ai-proposal-governance/
+- SFT 3-4, Lifecycle and Closed-Loop Evolution: https://iroha1203.dev/sft/software-evolution/lifecycle-closed-loop/
 - SFT References: https://iroha1203.dev/sft/references/
 - SFT Formal Core and Anchors: https://iroha1203.dev/sft/references/formal-anchors/
 - SFT Research Program and Boundaries: https://iroha1203.dev/sft/references/research-program/
