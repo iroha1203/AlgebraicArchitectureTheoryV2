@@ -56,9 +56,9 @@
           <p class="eyebrow">SFT Part 1-1</p>
           <h1>Field</h1>
           <p class="lede">
-            A field is the state around a codebase before the next change:
+            A field is what surrounds a codebase before the next change:
             remembered decisions, local patterns, ownership, tooling, agents,
-            and feedback already shaping what can happen next.
+            and feedback already making some moves feel nearby.
           </p>
         </div>
       </section>
@@ -106,22 +106,42 @@
           <div class="article-main">
             <section id="development-field" class="article-section">
               <p class="research-question">
-                What field is already shaping operation support before the next change begins?
+                Can we model the dynamics already acting on a codebase before
+                the next change begins?
               </p>
               <h2>Development field</h2>
               <p>
                 A <em>field</em> is the development situation that makes some
-                architecture operations natural: codebase memory, PRDs, issues,
-                developers, AI agents, ownership, review, CI, incidents, and
-                lifecycle pressure acting together.
+                architecture operations feel natural. It includes codebase
+                memory, PRDs, issues, developers, AI agents, ownership, review,
+                CI, incidents, and lifecycle pressure acting together.
               </p>
               <p>
-                In this sense, SFT is not a theory of the codebase alone. It is
-                a theory of software evolution as shaped by artifacts,
-                organization, tooling, feedback, and agents. AAT supplies the
-                local algebra of architecture; SFT asks how the surrounding
-                field makes future paths easier or harder to reach.
+                SFT treats that situation as part of software engineering
+                itself. AAT supplies the local algebra of architecture; SFT
+                reads the surrounding field that makes future paths easier to
+                find, harder to justify, cheaper to repeat, or visible enough
+                to review.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-field">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-field">Field</h3>
+                <p>
+                  The selected development situation around a codebase: the
+                  technical and organizational state from which future changes
+                  become supported, costly, visible, or natural.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Includes</dt>
+                    <dd>Codebase memory, artifacts, agents, ownership, review, CI, incidents, governance, and lifecycle pressure.</dd>
+                  </div>
+                  <div>
+                    <dt>Reading</dt>
+                    <dd>Ask what the current development situation makes easy to propose, repeat, review, or notice.</dd>
+                  </div>
+                </dl>
+              </aside>
               <p id="definition-1-0" class="statement">
                 <a class="statement-anchor" href="#definition-1-0">Definition 1.0.</a>
                 A development field is the selected organizational and technical
@@ -138,24 +158,24 @@
             <section id="memory" class="article-section">
               <h2>Memory</h2>
               <p>
-                A repository remembers more than syntax. It remembers old
+                A repository remembers more than syntax. It carries old
                 requirements, accepted compromises, abandoned migrations,
                 ownership boundaries, incident repairs, review precedents, and
-                local patterns that became easy to copy. Those memories keep
-                acting because later work reads them as available structure.
+                local patterns that became easy to copy. Later work reads that
+                memory as available structure.
               </p>
               <p>
-                SFT calls this <em>codebase as field memory</em>. The memory is
-                not passive. It shapes which operations look normal, which
-                invariants are easy to preserve, and which shortcuts can be
-                copied without being named.
+                SFT calls this <em>codebase as field memory</em>. The memory
+                shapes which operations look normal, which invariants are easy
+                to preserve, and which shortcuts can be copied without being
+                named.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-field-memory">
                 <span class="vocabulary-card-label">Vocabulary</span>
                 <h3 id="vocab-field-memory">Field memory</h3>
                 <p>
                   The remembered development state that makes later operations
-                  feel natural: code examples, review precedents, incidents,
+                  feel natural: examples, review precedents, incidents,
                   ownership routes, migrations, tests, and missing tests.
                 </p>
                 <dl>
@@ -170,10 +190,9 @@
                 </dl>
               </aside>
               <p>
-                This is one reason architectural debt can feel stubborn even
-                when everyone agrees with the desired design. The problem is not
-                only that the code has the wrong shape. The field has learned a
-                path. It has examples, review habits, missing tests, owner
+                This is why architectural debt can feel stubborn even when
+                everyone agrees with the desired design. The field has learned
+                a path. It has examples, review habits, missing tests, owner
                 expectations, and short-term success stories that make the old
                 path cheap to repeat.
               </p>
@@ -199,12 +218,11 @@
             <section id="mathematical-spine" class="article-section">
               <h2>Mathematical spine</h2>
               <p>
-                The field language is meant to carry mathematics, not remain a
-                metaphor. The first move is to separate the broad development
-                field from the computable slice that SFT can reason about.
-                That slice keeps architecture projection, observed signature,
-                support, policy, constraints, governance, history, and
-                incoming artifacts in one state.
+                The field language carries mathematics. SFT separates the broad
+                development field from the computable slice it can reason
+                about. That slice keeps architecture projection, observed
+                signature, support, policy, constraints, governance, history,
+                and incoming artifacts in one state.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-software-field">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -261,12 +279,11 @@
               </p>
               <p id="proof-1-1" class="statement-proof">
                 <a class="statement-anchor" href="#proof-1-1">Proof idea.</a>
-                Operation support is a field-relative object, not a function of
-                the module graph alone. Changing review precedents, incident
-                memory, ownership routes, or local defaults changes the input
-                to the support estimate while leaving the selected graph fixed.
-                Therefore equality of the graph does not imply equality of
-                supported operation families.
+                Operation support is field-relative. Review precedents,
+                incident memory, ownership routes, and local defaults all enter
+                the support estimate, even when the selected module graph stays
+                fixed. The same graph can therefore carry different supported
+                operation families.
               </p>
               <p id="example-1-1" class="statement">
                 <a class="statement-anchor" href="#example-1-1">Example 1-1.</a>
