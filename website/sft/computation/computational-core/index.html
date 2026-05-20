@@ -56,10 +56,9 @@
           <p class="eyebrow">SFT Part 2-2</p>
           <h1>Computational Core</h1>
           <p class="lede">
-            The core computation begins when operation support becomes
-            explicit. Artifact actions shape support and policy; supported
-            operations generate field steps; field steps compose into bounded
-            paths.
+            The computational core names the engine of SFT: artifacts update
+            support, policy orders supported operations, and step relations
+            turn selected operations into bounded paths.
           </p>
         </div>
       </section>
@@ -69,8 +68,8 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#artifact-action">Artifact action</a></li>
                 <li><a href="#core-pipeline">Computational core</a></li>
+                <li><a href="#artifact-action">Artifact action</a></li>
                 <li><a href="#support">Operation support</a></li>
                 <li><a href="#policy">Policy and selection</a></li>
                 <li><a href="#step">Step relation</a></li>
@@ -107,6 +106,65 @@
             </div>
           </aside>
           <div class="article-main">
+            <section id="core-pipeline" class="article-section">
+              <p class="research-question">
+                Can software evolution be computed from support, policy, and
+                witnessed steps?
+              </p>
+              <h2>Computational core</h2>
+              <p>
+                SFT computes over field transitions. The core turns a living
+                development situation into artifact actions, operation support,
+                operation policy, step relations, and bounded paths while
+                preserving the selected field boundary.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Part 2 pipeline</figcaption>
+                <pre><code>DevelopmentField
+  -> SoftwareFieldEstimate
+  -> architecture projection and AAT observables
+  -> ArchSig observation boundary
+  -> ArtifactAction
+  -> OperationSupport and OperationPolicy
+  -> StepRelation and bounded paths
+  -> ForecastCone</code></pre>
+              </figure>
+              <p>
+                Lean-facing SFT isolates the theorem-bearing fragment: fields,
+                supported operations, step relations, and bounded paths. Those
+                paths become the carrier for reachable futures, review
+                projections, and feedback records.
+              </p>
+              <div class="theorem-card-list">
+                <article class="theorem-card lean-status-card">
+                  <div class="theorem-card-header">
+                    <div>
+                      <span class="theorem-card-label">Formal surface</span>
+                      <h3>From field prose to theorem packages</h3>
+                    </div>
+                    <span class="status-badge status-badge-defined">Lean anchors</span>
+                  </div>
+                  <dl class="theorem-card-grid">
+                    <div>
+                      <dt>Core path</dt>
+                      <dd><code>SoftwareField</code>, <code>OperationSupport</code>, <code>StepRelation</code>, and <code>ReachableFieldPath</code>.</dd>
+                    </div>
+                    <div>
+                      <dt>Path</dt>
+                      <dd>Supported steps compose into bounded field paths under an explicit horizon.</dd>
+                    </div>
+                    <div>
+                      <dt>Boundary</dt>
+                      <dd>Forecast and report projection are later computations built on this core.</dd>
+                    </div>
+                    <div>
+                      <dt>Feedback</dt>
+                      <dd>Update records preserve observed deltas, unexpected witnesses, review outcomes, and missing evidence.</dd>
+                    </div>
+                  </dl>
+                </article>
+              </div>
+            </section>
             <section id="artifact-action" class="article-section">
               <h2>Artifact action</h2>
               <p>
@@ -143,10 +201,9 @@ CandidateFieldUpdate(F, a)
   = { F_u | u in alpha_a(F) }</code></pre>
               </figure>
               <p>
-                This is why SFT is not a PRD-to-PR predictor. The artifact does
-                not contain a single future diff. It creates a family of
-                possible field updates, each with its own support, policy, and
-                observation boundary.
+                The artifact supplies candidate pressure. SFT reads that
+                pressure as a family of possible field updates, each with its
+                own support, policy, and observation boundary.
               </p>
               <div class="article-table">
                 <table>
@@ -177,76 +234,18 @@ CandidateFieldUpdate(F, a)
                 </table>
               </div>
               <p class="plain-reading">
-                <strong>No circular forecast.</strong> The raw action does not
-                contain the forecast. The action supplies candidate pressure;
-                  the path computation is generated from that pressure under a field model.
+                <strong>Computation rule.</strong> The raw action supplies
+                candidate pressure; path computation is generated from that
+                pressure under a field model.
               </p>
-            </section>
-            <section id="core-pipeline" class="article-section">
-              <h2>Computational core</h2>
-              <p>
-                The machinery is best read as a sequence of translations. Each
-                stage turns a living development situation into a more precise
-                object while keeping enough context to remain useful for
-                engineering judgment.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Part 2 pipeline</figcaption>
-                <pre><code>DevelopmentField
-  -> SoftwareFieldEstimate
-  -> architecture projection and AAT observables
-  -> ArchSig observation boundary
-  -> OperationSupport and OperationPolicy
-  -> StepRelation and bounded paths
-  -> ForecastCone</code></pre>
-              </figure>
-              <p>
-                Lean-facing SFT isolates the theorem-bearing fragment: fields,
-                supported operations, step relations, and bounded paths. The
-                ForecastCone page turns those paths into reachable futures; the
-                Workbench page turns those futures into review artifacts.
-              </p>
-              <div class="theorem-card-list">
-                <article class="theorem-card lean-status-card">
-                  <div class="theorem-card-header">
-                    <div>
-                      <span class="theorem-card-label">Formal surface</span>
-                      <h3>From field prose to theorem packages</h3>
-                    </div>
-                    <span class="status-badge status-badge-defined">Lean anchors</span>
-                  </div>
-                  <dl class="theorem-card-grid">
-                    <div>
-                      <dt>Core path</dt>
-                      <dd><code>SoftwareField</code>, <code>OperationSupport</code>, <code>StepRelation</code>, and <code>ReachableFieldPath</code>.</dd>
-                    </div>
-                    <div>
-                      <dt>Path</dt>
-                      <dd>Supported steps compose into bounded field paths under an explicit horizon.</dd>
-                    </div>
-                    <div>
-                      <dt>Boundary</dt>
-                      <dd>Forecast and report projection are later computations built on this core.</dd>
-                    </div>
-                    <div>
-                      <dt>Feedback</dt>
-                      <dd>Update records preserve observed deltas, unexpected witnesses, review outcomes, and missing evidence.</dd>
-                    </div>
-                  </dl>
-                </article>
-              </div>
             </section>
             <section id="support" class="article-section">
-              <p class="research-question">
-                Can software evolution be computed from support, policy, and
-                witnessed steps?
-              </p>
               <h2>Operation support</h2>
               <p>
                 Operation support is the SFT object that captures what the
                 field makes possible, natural, low-cost, reviewable, or
-                selected. It is not yet safety. It is the shape of what can
-                plausibly happen next under the selected field model.
+                selected. It is the field-relative shape of what can plausibly
+                happen next under the selected field model.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-operation-support">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -263,7 +262,7 @@ CandidateFieldUpdate(F, a)
                   </div>
                   <div>
                     <dt>Boundary</dt>
-                    <dd>Support is not safety; it is the field-relative space of plausible next operations.</dd>
+                    <dd>Support records the field-relative space of plausible next operations.</dd>
                   </div>
                 </dl>
               </aside>
@@ -326,8 +325,8 @@ PolicyAsSelection:
               <p>
                 A <code>StepRelation</code> says when a supported operation can
                 move one selected field estimate to another. Once steps exist,
-                software evolution is no longer only a sequence of commits; it
-                is a path object with witnesses, support, and observation.
+                software evolution becomes a path object with witnesses,
+                support, and observation.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-step-relation">
                 <span class="vocabulary-card-label">Vocabulary</span>
