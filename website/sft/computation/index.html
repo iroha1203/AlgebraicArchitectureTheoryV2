@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="SFT Part 2: making software evolution computable through bounded slices, observations, support relations, forecast cones, consequence envelopes, and calibration."
+      content="SFT Part 2: making software evolution computable through interfaces, computational core, ForecastCones, and reviewer-facing workbench artifacts."
     >
     <title>SFT Part 2: Making Software Evolution Computable</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/computation/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="SFT Part 2: Making Software Evolution Computable">
-    <meta property="og:description" content="SFT makes software evolution computable by selecting bounded field models, observations, operation support, forecast cones, consequence envelopes, and calibration boundaries.">
+    <meta property="og:description" content="SFT makes software evolution computable by connecting field estimates to AAT and ArchSig, defining support and step semantics, computing ForecastCones, and projecting them into workbench artifacts.">
     <meta property="og:url" content="https://iroha1203.dev/sft/computation/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SFT Part 2: Making Software Evolution Computable">
-    <meta name="twitter:description" content="Bounded computation over software evolution, not deterministic prediction.">
+    <meta name="twitter:description" content="Interfaces, computational core, ForecastCones, and workbench artifacts for software evolution.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -61,9 +61,9 @@
           <p class="eyebrow">SFT Part 2</p>
           <h1>Making Software Evolution Computable</h1>
           <p class="lede">
-            Part 2 turns the field into bounded objects: interfaces,
-            computational core, ForecastCones, and reviewer-facing workbench
-            artifacts.
+            Part 2 turns field language into computation. It builds the
+            interface, core, ForecastCone, and workbench needed to compute
+            reachable software-evolution paths.
           </p>
         </div>
       </section>
@@ -111,26 +111,25 @@
             <section id="introduction" class="article-section">
               <h2>Introduction</h2>
               <p>
-                The computational move in SFT is not to shrink the theory until
-                it becomes a static metric. It is to keep the large object in
-                view, then choose a bounded slice that can be inspected. The
-                field remains rich; the computation states exactly which part
-                of that richness has been selected.
+                SFT makes software evolution computable by selecting a bounded
+                field estimate and keeping its boundary explicit. The
+                development field remains large; the computation names which
+                evidence, projection, support, policy, horizon, and observation
+                boundary have been selected.
               </p>
               <p>
                 A <code>SoftwareFieldEstimate</code> records selected evidence,
-                unavailable evidence, and unknown remainder. AAT then supplies
-                the local algebra for the architecture projection. ArchSig
-                supplies bounded observations. SFT adds support, policy, step
-                semantics, horizons, path sets, envelope projections, and
-                feedback hooks.
+                unavailable evidence, and unknown remainder. AAT supplies the
+                local algebra for the architecture projection. ArchSig supplies
+                bounded observations. SFT adds artifact action, support,
+                policy, step semantics, horizons, ForecastCones, workbench
+                projections, and feedback hooks.
               </p>
               <p>
-                This is how "software evolution" becomes a computable object.
-                We do not compute the future as a point. We compute a bounded
-                space of paths: which architecture futures remain reachable
-                when this field, this support relation, this policy, this
-                observation boundary, and this horizon are selected.
+                This is how software evolution becomes a computable object. SFT
+                computes a bounded space of paths: which architecture futures
+                remain reachable when this field estimate, support relation,
+                policy, observation boundary, and horizon are selected.
               </p>
             </section>
 
@@ -141,10 +140,10 @@
                 computational core, ForecastCone, and workbench.
               </p>
               <ul class="chapter-list">
-                <li><a href="interface/">2-1. Interface</a><span>How SFT connects a bounded field estimate to AAT projection, ArchSig observation, and explicit observation boundaries.</span></li>
-                <li><a href="computational-core/">2-2. Computational Core</a><span>How artifact action, operation support, policy, step relation, and bounded paths become the engine of SFT computation.</span></li>
-                <li><a href="forecast-cone/">2-3. ForecastCone</a><span>How supported paths form bounded reachable futures, reachability regions, support safety, and cone narrowing questions.</span></li>
-                <li><a href="workbench/">2-4. Workbench</a><span>How cones become reviewer-facing envelopes, proposal accounting records, ArchSig artifacts, computational problems, and calibration hooks.</span></li>
+                <li><a href="interface/">2-1. Interface</a><span>Connects bounded field estimates to AAT projection, ArchSig observation, and explicit observation boundaries.</span></li>
+                <li><a href="computational-core/">2-2. Computational Core</a><span>Defines artifact action, operation support, policy, step relation, and bounded paths as the engine of SFT computation.</span></li>
+                <li><a href="forecast-cone/">2-3. ForecastCone</a><span>Computes bounded reachable futures, reachability regions, support safety, and cone narrowing from supported paths.</span></li>
+                <li><a href="workbench/">2-4. Workbench</a><span>Projects cones into reviewer-facing envelopes, proposal accounting records, ArchSig artifacts, computational problems, and calibration hooks.</span></li>
               </ul>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
