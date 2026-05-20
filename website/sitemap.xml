@@ -94,13 +94,16 @@
     <loc>https://iroha1203.dev/sft/computation/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/computation/slice-observation/</loc>
+    <loc>https://iroha1203.dev/sft/computation/interface/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/computation/support-step-forecast-cone/</loc>
+    <loc>https://iroha1203.dev/sft/computation/computational-core/</loc>
   </url>
   <url>
-    <loc>https://iroha1203.dev/sft/computation/envelope-calibration/</loc>
+    <loc>https://iroha1203.dev/sft/computation/forecast-cone/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/sft/computation/workbench/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/sft/software-evolution/</loc>

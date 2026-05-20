@@ -98,9 +98,10 @@
                 <li><a href="../../field-and-force/organization/">1-3. Organization</a></li>
                 <li><a href="../../field-and-force/governance/">1-4. Governance</a></li>
                 <li><a href="../../computation/">2. The Computation</a></li>
-                <li><a href="../../computation/slice-observation/">2-1. Slice and Observation</a></li>
-                <li><a href="../../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
-                <li><a href="../../computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
+                <li><a href="../../computation/interface/">2-1. Interface</a></li>
+                <li><a href="../../computation/computational-core/">2-2. Computational Core</a></li>
+                <li><a href="../../computation/forecast-cone/">2-3. ForecastCone</a></li>
+                <li><a href="../../computation/workbench/">2-4. Workbench</a></li>
                 <li><a href="../../software-evolution/">3. Software Evolution</a></li>
                 <li><a href="../../software-evolution/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
                 <li><a href="../../software-evolution/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
@@ -153,11 +154,11 @@
                 depend.
               </p>
               <ul class="chapter-list">
-                <li><a href="../../computation/slice-observation/#slice">SoftwareField</a><span>A bounded slice of the development field with architecture projection and modeling boundary.</span></li>
-                <li><a href="../../computation/support-step-forecast-cone/#artifact-action">ArtifactAction</a><span>A set-valued artifact-mediated change relation with explicit interpretation and non-conclusion boundaries.</span></li>
-                <li><a href="../../computation/support-step-forecast-cone/#support">OperationSupport</a><span>The field-relative family of operations that are visible, plausible, cheap, reviewable, or otherwise supported.</span></li>
-                <li><a href="../../computation/support-step-forecast-cone/#cone">ForecastCone</a><span>A finite reachable path set under selected support, step relation, source field, and horizon.</span></li>
-                <li><a href="../../computation/envelope-calibration/#envelope">ConsequenceEnvelope</a><span>A loss-aware projection of cone families into reviewer-facing regions, axes, witnesses, and boundary items.</span></li>
+                <li><a href="../../computation/interface/#slice">SoftwareField</a><span>A bounded slice of the development field with architecture projection and modeling boundary.</span></li>
+                <li><a href="../../computation/computational-core/#artifact-action">ArtifactAction</a><span>A set-valued artifact-mediated change relation with explicit interpretation and non-conclusion boundaries.</span></li>
+                <li><a href="../../computation/computational-core/#support">OperationSupport</a><span>The field-relative family of operations that are visible, plausible, cheap, reviewable, or otherwise supported.</span></li>
+                <li><a href="../../computation/forecast-cone/#cone">ForecastCone</a><span>A finite reachable path set under selected support, step relation, source field, and horizon.</span></li>
+                <li><a href="../../computation/workbench/#envelope">ConsequenceEnvelope</a><span>A loss-aware projection of cone families into reviewer-facing regions, axes, witnesses, and boundary items.</span></li>
                 <li><a href="../../software-evolution/governance-attractor-engineering/#stable">Reachability and StableRegion</a><span>May / must reachability, stable regions, and reachable preimages separated from strong attractor claims.</span></li>
                 <li><a href="../../software-evolution/governance-attractor-engineering/#attractor">AttractorEngineering</a><span>A bounded support-shaping package for selected target regions, measurement boundaries, and bad-region avoidance.</span></li>
               </ul>
@@ -175,7 +176,7 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../../computation/slice-observation/#slice">Part 2-1 Slice</a>
+                    Audits <a href="../../computation/interface/#slice">Part 2-1 Slice</a>
                     and the SFT overview claim that a field is not a loose
                     metaphor but a selected computation object.
                   </p>
@@ -227,7 +228,7 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../../computation/support-step-forecast-cone/#artifact-action">Part 2-2 Artifact action</a>
+                    Audits <a href="../../computation/computational-core/#artifact-action">Part 2-2 Artifact action</a>
                     and the claim that PRDs, specs, issues, incidents, and AI
                     proposals induce candidate update families rather than a
                     unique future diff.
@@ -294,9 +295,9 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../../computation/support-step-forecast-cone/#support">Operation support</a>,
-                    <a href="../../computation/support-step-forecast-cone/#step">Step relation</a>,
-                    and <a href="../../computation/support-step-forecast-cone/#cone">ForecastCone</a>.
+                    Audits <a href="../../computation/computational-core/#support">Operation support</a>,
+                    <a href="../../computation/computational-core/#step">Step relation</a>,
+                    and <a href="../../computation/forecast-cone/#cone">ForecastCone</a>.
                   </p>
                   <dl class="formal-anchor-grid">
                     <div>
@@ -347,7 +348,7 @@
                     <span class="status-badge status-badge-proved">proved packages</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../../computation/support-step-forecast-cone/#safety">Support safety</a>
+                    Audits <a href="../../computation/forecast-cone/#safety">Support safety</a>
                     and the theorem-candidate family for cone inclusion from
                     support inclusion.
                   </p>
@@ -399,7 +400,7 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../../computation/support-step-forecast-cone/#reachability">Part 2-2 Reachability regions</a>
+                    Audits <a href="../../computation/forecast-cone/#reachability">Part 2-3 Reachability regions</a>
                     and <a href="../../software-evolution/governance-attractor-engineering/#stable">Part 3-1 Stable regions</a>.
                   </p>
                   <dl class="formal-anchor-grid">
@@ -521,8 +522,8 @@
                     <span class="status-badge status-badge-proved">defined / proved</span>
                   </header>
                   <p class="formal-anchor-audits">
-                    Audits <a href="../../computation/envelope-calibration/#envelope">ConsequenceEnvelope</a>,
-                    <a href="../../computation/envelope-calibration/#pipeline">ArchSig pipeline</a>,
+                    Audits <a href="../../computation/workbench/#envelope">ConsequenceEnvelope</a>,
+                    <a href="../../computation/workbench/#pipeline">ArchSig pipeline</a>,
                     and the AAT / SFT interface boundary.
                   </p>
                   <dl class="formal-anchor-grid">

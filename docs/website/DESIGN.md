@@ -554,18 +554,10 @@ implemented:
   /sft/field-and-force/organization/
   /sft/field-and-force/governance/
   /sft/computation/
-  /sft/computation/computable-slice/
-  /sft/computation/aat-interface/
-  /sft/computation/observation/
-  /sft/computation/operation-support/
-  /sft/computation/step-relation/
+  /sft/computation/interface/
+  /sft/computation/computational-core/
   /sft/computation/forecast-cone/
-  /sft/computation/consequence-envelope/
-  /sft/computation/support-safety/
-  /sft/computation/proposal-accounting/
-  /sft/computation/computational-problems/
-  /sft/computation/archsig-pipeline/
-  /sft/computation/simulator-calibration/
+  /sft/computation/workbench/
   /sft/software-evolution/
   /sft/software-evolution/governance-attractor-engineering/
   /sft/software-evolution/ai-proposal-governance/
