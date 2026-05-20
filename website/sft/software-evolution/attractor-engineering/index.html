@@ -68,6 +68,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#attractor">Attractor engineering</a></li>
+                <li><a href="#prompt">Codebase as prompt</a></li>
                 <li><a href="#guardrails">Beyond guardrails</a></li>
                 <li><a href="#levers">Design levers</a></li>
                 <li><a href="#stable">Stable regions</a></li>
@@ -118,12 +119,31 @@
                 and makes shortcut paths costly, visible, and review-mediated.
               </p>
               <p>
-                This is Part 3's central idea. A codebase is implementation,
-                prompt, training surface, review memory, and local grammar for
-                future work. The next human or AI proposal will tend to follow
-                what the field makes obvious. Attractor engineering means
-                designing that tendency.
+                An attractor is a future that the field keeps pulling work
+                toward. It may appear as a repeated PR shape, a default issue
+                decomposition, a copied local pattern, or an AI-generated
+                shortcut that looks natural because the surrounding code already
+                suggests it. SFT treats that pull as a field property.
               </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-attractor">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-attractor">Attractor</h3>
+                <p>
+                  A field-relative tendency for future changes to repeatedly
+                  move toward a selected region, path shape, or operation
+                  family.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Appears as</dt>
+                    <dd>Default PR shape, recurrent issue decomposition, copied local pattern, or repeated shortcut.</dd>
+                  </div>
+                  <div>
+                    <dt>SFT reading</dt>
+                    <dd>A support-and-policy phenomenon under a selected field model, observation boundary, and horizon.</dd>
+                  </div>
+                </dl>
+              </aside>
               <aside class="vocabulary-card" aria-labelledby="vocab-attractor-engineering">
                 <span class="vocabulary-card-label">Vocabulary</span>
                 <h3 id="vocab-attractor-engineering">AttractorEngineering</h3>
@@ -157,6 +177,53 @@
                 makes the checklist and the codebase point toward the same
                 lawful move.
               </p>
+            </section>
+            <section id="prompt" class="article-section">
+              <h2>Codebase as prompt</h2>
+              <p>
+                A codebase is implementation, prompt, training surface, review
+                memory, and local grammar for future work. The next human or AI
+                proposal will tend to follow the structure the field makes
+                obvious: nearby APIs, copied examples, missing tests, named
+                invariants, ownership routes, and review precedents.
+              </p>
+              <p>
+                This is why attractor engineering matters in AI-mediated
+                development. AI agents amplify the field. If shortcuts are local
+                and invisible, generated proposals will often rediscover them.
+                If lawful paths are local, tested, named, and reviewable, AI
+                proposals can amplify that structure just as quickly.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-codebase-prompt">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-codebase-prompt">Codebase prompt</h3>
+                <p>
+                  The way existing code, tests, documents, reviews, incidents,
+                  and ownership routes suggest the next change to humans and AI
+                  agents.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Pull</dt>
+                    <dd>What the current field makes obvious, cheap, and easy to copy.</dd>
+                  </div>
+                  <div>
+                    <dt>Design task</dt>
+                    <dd>Make lawful paths more prompt-like than shortcuts.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Prompt-like field surface</figcaption>
+                <pre><code>codebase as prompt
+  = local examples
+  + named invariants
+  + tests and missing tests
+  + review precedents
+  + ownership routes
+  + incident memory
+  -> proposal support</code></pre>
+              </figure>
             </section>
             <section id="guardrails" class="article-section">
               <h2>Beyond guardrails</h2>
@@ -276,9 +343,36 @@
                 Stable-region language gives the intuition a computable shape.
                 A region is stable when supported steps remain inside it. A
                 recurrent path is a repeated development pattern under the
-                selected support and policy. Stronger readings require stronger
-                semantics, but the field-design question already becomes clear.
+                selected support and policy. In ordinary engineering language,
+                this is the moment where the system begins to feel as if it
+                wants a certain kind of next change.
               </p>
+              <p>
+                Basin language names the surrounding region from which that
+                tendency becomes reachable. A bad basin is the part of the field
+                from which shortcuts, drift, or hidden coupling become easy to
+                reach. A good basin is the part of the field from which lawful
+                paths remain nearby.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-basin">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-basin">Basin</h3>
+                <p>
+                  A field-relative region of starting states from which a
+                  selected attractor, stable region, or path family becomes
+                  reachable under the chosen support, policy, and horizon.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Good basin</dt>
+                    <dd>Starting states from which lawful paths are nearby, supported, and reviewable.</dd>
+                  </div>
+                  <div>
+                    <dt>Bad basin</dt>
+                    <dd>Starting states from which shortcuts, drift, or hidden coupling become cheap and repeatable.</dd>
+                  </div>
+                </dl>
+              </aside>
               <aside class="vocabulary-card" aria-labelledby="vocab-stable-region-3">
                 <span class="vocabulary-card-label">Vocabulary</span>
                 <h3 id="vocab-stable-region-3">StableRegion</h3>
@@ -304,6 +398,13 @@ MustReach_h(F, U, A)
 StableRegion(U, A)
 ReachablePreimage_h(U, A)</code></pre>
               </figure>
+              <p class="plain-reading">
+                <strong>Semantic boundary.</strong> Strong attractor and basin
+                claims require selected stability, recurrence, policy, or
+                probability semantics. The SFT core decomposes them into
+                stable regions, reachable preimages, ForecastCones, support
+                safety, and proposal accounting.
+              </p>
             </section>
             <section id="measurement" class="article-section">
               <h2>Measurement surface</h2>
