@@ -590,6 +590,56 @@ p {
   color: var(--accent-warm);
 }
 
+.sft-chapter-map {
+  display: grid;
+  gap: 18px;
+  border-top: 1px solid rgba(152, 169, 161, 0.64);
+  padding-top: 18px;
+}
+
+.sft-chapter-group {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.38fr) minmax(0, 1fr);
+  gap: 16px 24px;
+  border-bottom: 1px solid rgba(152, 169, 161, 0.44);
+  padding-bottom: 18px;
+}
+
+.sft-chapter-group:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.sft-part-link {
+  color: #21302d;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 750;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.sft-subchapter-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+}
+
+.sft-subchapter-links a {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 650;
+  line-height: 1.35;
+  text-decoration: none;
+  text-decoration-color: rgba(49, 95, 131, 0.28);
+}
+
+.sft-part-link:hover,
+.sft-subchapter-links a:hover {
+  color: var(--accent-warm);
+}
+
 .document-table {
   border-top: 1px solid var(--rule-strong);
 }
@@ -2232,6 +2282,11 @@ p {
   .home-page .chapter-link-list {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+
+  .sft-chapter-group,
+  .sft-subchapter-links {
+    grid-template-columns: 1fr;
   }
 
   .home-page .featured-article {
