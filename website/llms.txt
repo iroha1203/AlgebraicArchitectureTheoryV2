@@ -43,9 +43,10 @@ a proof system.
 - AAT overview: https://iroha1203.dev/aat/
 - SFT overview: https://iroha1203.dev/sft/
 - SFT Part 1, Field and Force: https://iroha1203.dev/sft/field-and-force/
-- SFT 1-1, Codebase Memory and Artifact Force: https://iroha1203.dev/sft/field-and-force/codebase-memory-artifact-force/
-- SFT 1-2, Agents, Organization, and Recurrent Paths: https://iroha1203.dev/sft/field-and-force/agents-organization-recurrent-paths/
-- SFT 1-3, Governance Feedback and Architecture Futures: https://iroha1203.dev/sft/field-and-force/governance-feedback-futures/
+- SFT 1-1, Field: https://iroha1203.dev/sft/field-and-force/field/
+- SFT 1-2, Force: https://iroha1203.dev/sft/field-and-force/force/
+- SFT 1-3, Organization: https://iroha1203.dev/sft/field-and-force/organization/
+- SFT 1-4, Governance: https://iroha1203.dev/sft/field-and-force/governance/
 - SFT Part 2, Computation: https://iroha1203.dev/sft/computation/
 - SFT 2-1, Computable Slice and Observation: https://iroha1203.dev/sft/computation/slice-observation/
 - SFT 2-2, Support, Step, and ForecastCone: https://iroha1203.dev/sft/computation/support-step-forecast-cone/

@@ -103,8 +103,7 @@ route と production `sitemap.xml` の対応は [SITEMAP.md](SITEMAP.md) に置�
 
 /sft/field-and-force/
   1. Field and Force。
-  codebase memory and artifact force、agents and organization、
-  governance feedback and architecture futures への入口。
+  field、force、organization、governance への入口。
 
 /sft/computation/
   2. Making Software Evolution Computable。
@@ -550,9 +549,10 @@ implemented:
   /interface/
   /sft/
   /sft/field-and-force/
-  /sft/field-and-force/codebase-memory-artifact-force/
-  /sft/field-and-force/agents-organization-recurrent-paths/
-  /sft/field-and-force/governance-feedback-futures/
+  /sft/field-and-force/field/
+  /sft/field-and-force/force/
+  /sft/field-and-force/organization/
+  /sft/field-and-force/governance/
   /sft/computation/
   /sft/computation/computable-slice/
   /sft/computation/aat-interface/

@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="SFT Part 1-1: the development field around a codebase, where memory, artifacts, agents, governance, and feedback form the state from which change begins.">
+    <title>SFT 1-1: Field</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/field-and-force/field/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SFT 1-1: Field">
+    <meta property="og:description" content="SFT names the development field around a codebase: memory, artifacts, agents, governance, and feedback as the state from which change begins.">
+    <meta property="og:url" content="https://iroha1203.dev/sft/field-and-force/field/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="SFT 1-1: Field">
+    <meta name="twitter:description" content="SFT names the development field around a codebase: memory, artifacts, agents, governance, and feedback as the state from which change begins.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script defer src="../../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../../">Home</a>
+          <a href="../../../aat/">AAT</a>
+          <a class="is-active" href="../../">SFT</a>
+          <a href="../../../archsig/">ArchSig</a>
+          <a href="../../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="../../../">Home</a>
+            <a href="../../">SFT</a>
+            <a href="../">Field and Force</a>
+            <span>1-1</span>
+          </nav>
+          <p class="eyebrow">SFT Part 1-1</p>
+          <h1>Field</h1>
+          <p class="lede">
+            A field is the state around a codebase before the next change:
+            remembered decisions, local patterns, ownership, tooling, agents,
+            and feedback already shaping what can happen next.
+          </p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="Local navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title">
+              <h2 id="toc-title">On this page</h2>
+              <ol>
+                <li><a href="#development-field">Development field</a></li>
+                <li><a href="#memory">Memory</a></li>
+                <li><a href="#mathematical-spine">Mathematical spine</a></li>
+                <li><a href="#field-reading">Field reading</a></li>
+              </ol>
+            </nav>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>SFT pages</h2>
+              <ul>
+                <li><a href="../../">SFT Overview</a></li>
+                <li><a href="../">1. Field and Force</a></li>
+                <li><a href="./" aria-current="page">1-1. Field</a></li>
+                <li><a href="../force/">1-2. Force</a></li>
+                <li><a href="../organization/">1-3. Organization</a></li>
+                <li><a href="../governance/">1-4. Governance</a></li>
+                <li><a href="../../computation/">2. The Computation</a></li>
+                <li><a href="../../computation/slice-observation/">2-1. Slice and Observation</a></li>
+                <li><a href="../../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
+                <li><a href="../../computation/envelope-calibration/">2-3. Envelope and Calibration</a></li>
+                <li><a href="../../software-evolution/">3. Software Evolution</a></li>
+                <li><a href="../../software-evolution/governance-attractor-engineering/">3-1. Governance and Attractor</a></li>
+                <li><a href="../../software-evolution/ai-proposal-governance/">3-2. AI Proposal Governance</a></li>
+                <li><a href="../../software-evolution/lifecycle-closed-loop/">3-3. Lifecycle and Closed Loop</a></li>
+              </ul>
+            </div>
+            <div class="source-panel">
+              <h2>SFT references</h2>
+              <ul>
+                <li><a href="../../references/">References</a></li>
+                <li><a href="../../references/formal-anchors/">Formal Core and Anchors</a></li>
+                <li><a href="../../references/research-program/">Research Program and Boundaries</a></li>
+                <li><a href="../../references/glossary/">Glossary</a></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="article-main">
+            <section id="development-field" class="article-section">
+              <p class="research-question">
+                What field is already shaping operation support before the next change begins?
+              </p>
+              <h2>Development field</h2>
+              <p>
+                A <em>field</em> is the development situation that makes some
+                architecture operations natural: codebase memory, PRDs, issues,
+                developers, AI agents, ownership, review, CI, incidents, and
+                lifecycle pressure acting together.
+              </p>
+              <p>
+                In this sense, SFT is not a theory of the codebase alone. It is
+                a theory of software evolution as shaped by artifacts,
+                organization, tooling, feedback, and agents. AAT supplies the
+                local algebra of architecture; SFT asks how the surrounding
+                field makes future paths easier or harder to reach.
+              </p>
+              <p id="definition-1-0" class="statement">
+                <a class="statement-anchor" href="#definition-1-0">Definition 1.0.</a>
+                A development field is the selected organizational and technical
+                state from which SFT reads supported software-evolution paths.
+                AAT appears inside it as the local algebra of the architecture
+                projection.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1.0">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual core</span>
+                <span>Part 2 turns selected field readings into bounded computable objects.</span>
+              </p>
+            </section>
+            <section id="memory" class="article-section">
+              <h2>Memory</h2>
+              <p>
+                A repository remembers more than syntax. It remembers old
+                requirements, accepted compromises, abandoned migrations,
+                ownership boundaries, incident repairs, review precedents, and
+                local patterns that became easy to copy. Those memories keep
+                acting because later work reads them as available structure.
+              </p>
+              <p>
+                SFT calls this <em>codebase as field memory</em>. The memory is
+                not passive. It shapes which operations look normal, which
+                invariants are easy to preserve, and which shortcuts can be
+                copied without being named.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-field-memory">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-field-memory">Field memory</h3>
+                <p>
+                  The remembered development state that makes later operations
+                  feel natural: code examples, review precedents, incidents,
+                  ownership routes, migrations, tests, and missing tests.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Role</dt>
+                    <dd>Turns past changes into present operation support.</dd>
+                  </div>
+                  <div>
+                    <dt>Reading</dt>
+                    <dd>Ask what the codebase teaches the next engineer or AI agent to copy.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <p>
+                This is one reason architectural debt can feel stubborn even
+                when everyone agrees with the desired design. The problem is not
+                only that the code has the wrong shape. The field has learned a
+                path. It has examples, review habits, missing tests, owner
+                expectations, and short-term success stories that make the old
+                path cheap to repeat.
+              </p>
+              <ul class="concept-grid">
+                <li>
+                  <strong>Sediment</strong>
+                  <span>Past decisions become local examples that future changes reuse.</span>
+                </li>
+                <li>
+                  <strong>Default path</strong>
+                  <span>The field makes one operation family feel easier than its alternatives.</span>
+                </li>
+                <li>
+                  <strong>Hidden invariant</strong>
+                  <span>A rule exists in practice but has not been made visible to artifacts, tests, or review.</span>
+                </li>
+                <li>
+                  <strong>Agent prompt</strong>
+                  <span>The codebase and its documents become the context from which AI agents infer what to do next.</span>
+                </li>
+              </ul>
+            </section>
+            <section id="mathematical-spine" class="article-section">
+              <h2>Mathematical spine</h2>
+              <p>
+                The field language is meant to carry mathematics, not remain a
+                metaphor. The first move is to separate the broad development
+                field from the computable slice that SFT can reason about.
+                That slice keeps architecture projection, observed signature,
+                support, policy, constraints, governance, history, and
+                incoming artifacts in one state.
+              </p>
+              <aside class="vocabulary-card" aria-labelledby="vocab-software-field">
+                <span class="vocabulary-card-label">Vocabulary</span>
+                <h3 id="vocab-software-field">SoftwareField</h3>
+                <p>
+                  The computable slice of a broader development field. It is the
+                  state from which SFT reads supported operations and reachable
+                  architecture futures.
+                </p>
+                <dl>
+                  <div>
+                    <dt>Projection</dt>
+                    <dd><code>arch : SoftwareField -> ArchitectureObject</code></dd>
+                  </div>
+                  <div>
+                    <dt>Contents</dt>
+                    <dd>History, signature record, support, policy, constraints, observation, governance, and artifact inputs.</dd>
+                  </div>
+                </dl>
+              </aside>
+              <figure class="code-panel">
+                <figcaption>Computable field state</figcaption>
+                <pre><code>SoftwareField
+  = contextual dynamic state
+  + arch : SoftwareField -> ArchitectureObject
+  + observed signature record
+  + history
+  + operation support
+  + operation policy
+  + constraint environment
+  + observation model
+  + governance intervention model
+  + exogenous artifact inputs</code></pre>
+              </figure>
+            </section>
+            <section id="field-reading" class="article-section">
+              <h2>Field reading</h2>
+              <p id="definition-1-1" class="statement">
+                <a class="statement-anchor" href="#definition-1-1">Definition 1-1.</a>
+                A development field is the selected organizational and
+                technical state around a codebase from which SFT reads
+                supported software-evolution paths.
+              </p>
+              <p class="statement-status" aria-label="SFT status for Definition 1-1">
+                <span class="statement-status-label">SFT status</span>
+                <span class="status-badge status-badge-defined">conceptual core</span>
+                <span>Part 2 turns selected field slices into bounded computable objects.</span>
+              </p>
+              <p id="proposition-1-1" class="statement">
+                <a class="statement-anchor" href="#proposition-1-1">Proposition 1-1.</a>
+                If two codebases have the same selected module graph but
+                different field memory, SFT may assign different operation
+                support to their next changes.
+              </p>
+              <p id="proof-1-1" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-1">Proof idea.</a>
+                Operation support is a field-relative object, not a function of
+                the module graph alone. Changing review precedents, incident
+                memory, ownership routes, or local defaults changes the input
+                to the support estimate while leaving the selected graph fixed.
+                Therefore equality of the graph does not imply equality of
+                supported operation families.
+              </p>
+              <p id="example-1-1" class="statement">
+                <a class="statement-anchor" href="#example-1-1">Example 1-1.</a>
+                A checkout codebase with a recorded discount invariant and
+                review examples for policy insertion supports a different
+                coupon path than a visually similar codebase whose only local
+                examples patch payment adapters. The selected graph can match;
+                the field still makes different next moves natural.
+              </p>
+              <p class="formal-audit-link">
+                <span>Formal direction</span>
+                <a href="../../references/formal-anchors/">SFT Formal Core and Anchors</a>
+              </p>
+            </section>
+            <nav class="page-nav" aria-label="Reading sequence">
+              <a class="page-nav-previous" href="../"><span>Previous</span><strong>Part 1. Field and Force</strong></a>
+              <a class="page-nav-next" href="../force/"><span>Next</span><strong>1-2. Force</strong></a>
+            </nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>

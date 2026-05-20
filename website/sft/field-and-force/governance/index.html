@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SFT Part 1-3: governance feedback, field memory updates, and architecture futures.">
-    <title>SFT 1-3: Governance Feedback and Architecture Futures</title>
-    <link rel="canonical" href="https://iroha1203.dev/sft/field-and-force/governance-feedback-futures/">
+    <meta name="description" content="SFT Part 1-4: governance feedback, field memory updates, and architecture futures.">
+    <title>SFT 1-4: Governance</title>
+    <link rel="canonical" href="https://iroha1203.dev/sft/field-and-force/governance/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="SFT 1-3: Governance Feedback and Architecture Futures">
+    <meta property="og:title" content="SFT 1-4: Governance">
     <meta property="og:description" content="How review, CI, incidents, and postmortems update field memory and shape architecture futures.">
-    <meta property="og:url" content="https://iroha1203.dev/sft/field-and-force/governance-feedback-futures/">
+    <meta property="og:url" content="https://iroha1203.dev/sft/field-and-force/governance/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SFT 1-3: Governance Feedback and Architecture Futures">
+    <meta name="twitter:title" content="SFT 1-4: Governance">
     <meta name="twitter:description" content="How review, CI, incidents, and postmortems update field memory and shape architecture futures.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
@@ -51,10 +51,10 @@
             <a href="../../../">Home</a>
             <a href="../../">SFT</a>
             <a href="../">Field and Force</a>
-            <span>1-3</span>
+            <span>1-4</span>
           </nav>
-          <p class="eyebrow">SFT Part 1-3</p>
-          <h1>Governance Feedback and Architecture Futures</h1>
+          <p class="eyebrow">SFT Part 1-4</p>
+          <h1>Governance</h1>
           <p class="lede">
             Review, CI, type checking, incidents, postmortems, and runtime
             observations do more than judge finished work. They teach the field
@@ -80,10 +80,11 @@
               <h2>SFT pages</h2>
               <ul>
                 <li><a href="../../">SFT Overview</a></li>
-                <li><a href="../../field-and-force/">1. Field and Force</a></li>
-                <li><a href="../../field-and-force/codebase-memory-artifact-force/">1-1. Memory and Force</a></li>
-                <li><a href="../../field-and-force/agents-organization-recurrent-paths/">1-2. Agents and Organization</a></li>
-                <li><a href="../../field-and-force/governance-feedback-futures/" aria-current="page">1-3. Feedback and Futures</a></li>
+                <li><a href="../">1. Field and Force</a></li>
+                <li><a href="../field/">1-1. Field</a></li>
+                <li><a href="../force/">1-2. Force</a></li>
+                <li><a href="../organization/">1-3. Organization</a></li>
+                <li><a href="./" aria-current="page">1-4. Governance</a></li>
                 <li><a href="../../computation/">2. The Computation</a></li>
                 <li><a href="../../computation/slice-observation/">2-1. Slice and Observation</a></li>
                 <li><a href="../../computation/support-step-forecast-cone/">2-2. Support and Cone</a></li>
@@ -308,27 +309,27 @@ UpdateSound(update)
             </section>
             <section id="bridge" class="article-section">
               <h2>Bridge to computation</h2>
-              <p id="definition-1-3" class="statement">
-                <a class="statement-anchor" href="#definition-1-3">Definition 1-3.</a>
+              <p id="definition-1-4" class="statement">
+                <a class="statement-anchor" href="#definition-1-4">Definition 1-4.</a>
                 Governance feedback is the field update pressure created by
                 review, CI, runtime observation, incident response, and
                 postmortem evidence. Architecture futures are the reachable
                 field and architecture trajectories shaped by that updated
                 memory.
               </p>
-              <p class="statement-status" aria-label="SFT status for Definition 1-3">
+              <p class="statement-status" aria-label="SFT status for Definition 1-4">
                 <span class="statement-status-label">SFT status</span>
                 <span class="status-badge status-badge-defined">conceptual core</span>
                 <span>Part 2 introduces bounded path and cone objects for this reading.</span>
               </p>
-              <p id="proposition-1-3" class="statement">
-                <a class="statement-anchor" href="#proposition-1-3">Proposition 1-3.</a>
+              <p id="proposition-1-4" class="statement">
+                <a class="statement-anchor" href="#proposition-1-4">Proposition 1-4.</a>
                 A governance outcome changes future architecture possibilities
                 when it is preserved as field memory that alters support,
                 policy, or observation.
               </p>
-              <p id="proof-1-3" class="statement-proof">
-                <a class="statement-anchor" href="#proof-1-3">Proof idea.</a>
+              <p id="proof-1-4" class="statement-proof">
+                <a class="statement-anchor" href="#proof-1-4">Proof idea.</a>
                 A review, CI result, incident, or postmortem can add a missing
                 invariant, forbid a shortcut, introduce a test, change
                 ownership, or add an observation axis. Each of these changes
@@ -336,8 +337,8 @@ UpdateSound(update)
                 computation. Thus the feedback affects reachable futures by
                 changing the state from which later paths are generated.
               </p>
-              <p id="example-1-3" class="statement">
-                <a class="statement-anchor" href="#example-1-3">Example 1-3.</a>
+              <p id="example-1-4" class="statement">
+                <a class="statement-anchor" href="#example-1-4">Example 1-4.</a>
                 A rounding incident after coupon launch can become a runtime
                 observation, a missing invariant, a test, a review checklist
                 item, and a future support constraint. The next coupon-related
@@ -349,7 +350,7 @@ UpdateSound(update)
               </p>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
-              <a class="page-nav-previous" href="../agents-organization-recurrent-paths/"><span>Previous</span><strong>1-2. Agents and Organization</strong></a>
+              <a class="page-nav-previous" href="../organization/"><span>Previous</span><strong>1-3. Organization</strong></a>
               <a class="page-nav-next" href="../../computation/"><span>Next</span><strong>Part 2. The Computation</strong></a>
             </nav>
           </div>
