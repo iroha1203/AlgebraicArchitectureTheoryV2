@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SFT Part 2-4: ConsequenceEnvelope, proposal accounting, ArchSig pipeline, simulator maturity, and calibration.">
+    <meta name="description" content="SFT Part 2-4: the workbench that turns ForecastCones into ConsequenceEnvelopes, proposal accounting, review artifacts, lifecycle decisions, and calibration records.">
     <title>SFT 2-4: Workbench</title>
     <link rel="canonical" href="https://iroha1203.dev/sft/computation/workbench/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="SFT 2-4: Workbench">
-    <meta property="og:description" content="How ForecastCones become reviewer-facing ConsequenceEnvelopes and later calibration artifacts.">
+    <meta property="og:description" content="SFT turns ForecastCones into reviewer-facing envelopes, proposal accounting, lifecycle decisions, and calibration records.">
     <meta property="og:url" content="https://iroha1203.dev/sft/computation/workbench/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="SFT 2-4: Workbench">
-    <meta name="twitter:description" content="How ForecastCones become reviewer-facing ConsequenceEnvelopes and later calibration artifacts.">
+    <meta name="twitter:description" content="SFT turns ForecastCones into reviewer-facing envelopes and calibration records.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -56,10 +56,9 @@
           <p class="eyebrow">SFT Part 2-4</p>
           <h1>Workbench</h1>
           <p class="lede">
-            A ForecastCone is a mathematical path set. A ConsequenceEnvelope is
-            the readable projection that carries affected regions, signature
-            axes, obstruction candidates, missing invariants, and review
-            questions into engineering work.
+            The workbench turns ForecastCones into engineering objects:
+            ConsequenceEnvelopes, proposal accounts, review surfaces, lifecycle
+            comparisons, and calibration records.
           </p>
         </div>
       </section>
@@ -112,23 +111,22 @@
           <div class="article-main">
             <section id="envelope" class="article-section">
               <p class="research-question">
-                How does a formal cone become a useful review artifact without losing its evidence boundary?
+                How does a formal cone become reviewable engineering evidence with its boundary intact?
               </p>
               <h2>Envelope</h2>
               <p>
-                The envelope is a loss-aware projection. It does not preserve
-                every path detail. It preserves the facts reviewers need:
-                reachable path classes, affected architecture regions,
-                comparable signature axes, expected axis delta ranges,
-                obstruction candidates, missing boundaries, and unknown
-                remainder.
+                The envelope is a loss-aware projection. It preserves the facts
+                reviewers can act on: reachable path classes, affected
+                architecture regions, comparable signature axes, expected axis
+                delta ranges, obstruction candidates, missing boundaries, and
+                unknown remainder.
               </p>
               <p>
-                This projection is what makes a formal cone usable. The theorist
-                can reason about bounded reachable paths. The reviewer needs to
-                know which regions are touched, which invariants are missing,
-                which signature axes may move, and which questions should become
-                review, CI, or issue decomposition work.
+                This projection makes a formal cone usable in engineering work.
+                SFT computes bounded reachable paths, then carries the relevant
+                consequences into review: touched regions, missing invariants,
+                moving signature axes, and questions that should become review,
+                CI, or issue decomposition work.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-consequence-envelope">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -146,7 +144,7 @@
                   </div>
                   <div>
                     <dt>Shape</dt>
-                    <dd>Loss-aware report projection, not a reconstruction of the full cone family.</dd>
+                    <dd>Loss-aware report projection from a selected cone family.</dd>
                   </div>
                 </dl>
               </aside>
@@ -164,25 +162,25 @@
               </figure>
               <p class="plain-reading">
                 <strong>Projection rule.</strong> An envelope can be useful
-                without being invertible. It does not recover the unique cone
-                family, assign probability, prove causality, or certify global
-                safety.
+                before it is complete. Its job is to preserve the review surface,
+                the evidence boundary, and the unknown remainder.
               </p>
             </section>
             <section id="accounting" class="article-section">
               <h2>Proposal accounting</h2>
               <p>
-                A proposal is not yet a transition. SFT separates raw proposal
-                pressure from accepted, rejected, delayed, unresolved, and
-                review-mediated outcomes. That accounting matters because
-                rejected and delayed paths still teach the field.
+                A proposal first appears as pressure before it becomes an
+                accepted transition. SFT separates raw proposal pressure from
+                accepted, rejected, delayed, unresolved, and review-mediated
+                outcomes. That accounting matters because rejected and delayed
+                paths still teach the field.
               </p>
               <p>
                 This is especially important in AI-mediated development. A
-                generated patch that never lands can still reveal a low-cost
+                generated patch that fails to land can still reveal a low-cost
                 shortcut, a missing invariant, a review bottleneck, or a
-                dangerous default path. SFT treats those rejected or delayed
-                proposals as field evidence rather than discarding them.
+                dangerous default path. SFT treats rejected and delayed
+                proposals as field evidence.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-proposal-accounting">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -208,9 +206,9 @@
               <h2>Computational problems</h2>
               <p>
                 Once cones and envelopes exist, SFT becomes a family of
-                computable work items rather than only a way of speaking about
-                evolution. Each problem has inputs, outputs, support
-                assumptions, observation boundaries, and update records.
+                computable work items for software evolution. Each problem has
+                inputs, outputs, support assumptions, observation boundaries,
+                and update records.
               </p>
               <div class="article-table">
                 <table>
@@ -265,19 +263,18 @@
                 and feedback update.
               </p>
               <p class="plain-reading">
-                <strong>Computational reading.</strong> The goal is not a perfect
-                prediction engine. The goal is a bounded problem surface that
-                can be generated, reviewed, narrowed, and calibrated.
+                <strong>Computational reading.</strong> SFT gives software
+                evolution a bounded problem surface that can be generated,
+                reviewed, narrowed, and calibrated.
               </p>
             </section>
             <section id="problem-specs" class="article-section">
               <h2>Problem specs</h2>
               <p>
-                A computational problem in SFT is not just a named task. It has
-                a field estimate, artifact or trace inputs, an expected output,
-                and a boundary saying what the output does not claim. This is
-                what lets SFT move from theory prose into tooling, review, and
-                benchmark design.
+                A computational problem in SFT has a field estimate, artifact
+                or trace inputs, an expected output, and a boundary that states
+                how the output should be read. This lets SFT move from theory
+                prose into tooling, review, and benchmark design.
               </p>
               <div class="theorem-card-list">
                 <article class="theorem-card">
@@ -299,7 +296,7 @@
                     </div>
                     <div>
                       <dt>Boundary</dt>
-                      <dd>Field estimate, not complete reconstruction of the organization.</dd>
+                      <dd>Bounded field estimate over selected organizational and technical traces.</dd>
                     </div>
                   </dl>
                 </article>
@@ -345,7 +342,7 @@
                     </div>
                     <div>
                       <dt>Boundary</dt>
-                      <dd>Narrowing is relative to witness family, support, and horizon; it is not global risk reduction.</dd>
+                      <dd>Narrowing is relative to witness family, support, and horizon.</dd>
                     </div>
                   </dl>
                 </article>
@@ -368,7 +365,7 @@
                     </div>
                     <div>
                       <dt>Boundary</dt>
-                      <dd>Governance of selected proposals, not proof of general AI safety or architecture lawfulness.</dd>
+                      <dd>Governance of selected proposal streams under stated field and review boundaries.</dd>
                     </div>
                   </dl>
                 </article>
@@ -378,10 +375,9 @@
               <h2>ArchSig pipeline</h2>
               <p>
                 A practical SFT system is a pipeline from proposal artifact to
-                bounded review surface. The output is not a verdict. It is a
-                structured object that keeps forecast boundary, unknown
-                remainder, and later outcome references attached to the same
-                computation.
+                bounded review surface. The output is a structured object that
+                keeps forecast boundary, unknown remainder, and later outcome
+                references attached to the same computation.
               </p>
               <figure class="code-panel">
                 <figcaption>Tooling flow</figcaption>
@@ -427,9 +423,9 @@
               <p>
                 SFT can be implemented gradually. A tool may begin as an action
                 classifier, grow into support generation, then cone skeleton
-                generation, and only later become calibrated forecasting. The
-                website should make that ladder visible because it keeps the
-                ambition high while making each engineering milestone concrete.
+                generation, and later become calibrated forecasting. The ladder
+                keeps the ambition high while making each engineering milestone
+                concrete.
               </p>
               <div class="article-table">
                 <table>
@@ -462,7 +458,7 @@
                       <td>Signature axes, witnesses, missing boundaries, review recommendations.</td>
                     </tr>
                     <tr>
-                      <th scope="row">6</th>
+                      <th scope="row">5</th>
                       <td>Calibration</td>
                       <td>Forecast item refs joined to observed PR, review, CI, incident, and outcome refs.</td>
                     </tr>
@@ -479,12 +475,11 @@
             <section id="lifecycle" class="article-section">
               <h2>Lifecycle decisions</h2>
               <p>
-                A software field does not only grow. It stabilizes, drifts,
-                repairs, migrates, contracts, and sometimes exits. In SFT, an
-                end-of-life decision is not a management afterthought. It is a
-                field reconfiguration problem over architecture signatures,
-                operation cost, runtime risk, ownership capacity, and envelope
-                width.
+                A software field grows, stabilizes, drifts, repairs, migrates,
+                contracts, and sometimes exits. In SFT, an end-of-life decision
+                becomes a field reconfiguration problem over architecture
+                signatures, operation cost, runtime risk, ownership capacity,
+                and envelope width.
               </p>
               <figure class="code-panel">
                 <figcaption>Lifecycle decision model</figcaption>
@@ -535,16 +530,17 @@ SelectedIntervention
               </div>
               <p>
                 The envelope gives these choices a common comparison surface. A
-                wide envelope does not automatically mean deletion, and a cheap
-                repair does not automatically mean future safety. The decision
-                remains relative to selected field capacity and observation
-                boundary.
+                wide envelope can indicate migration pressure, repair pressure,
+                contraction pressure, or deletion pressure. A cheap repair can
+                preserve the current path or leave future safety unresolved. The
+                decision remains relative to selected field capacity and
+                observation boundary.
               </p>
             </section>
             <section id="calibration" class="article-section">
               <h2>Calibration</h2>
-              <p id="definition-2-3" class="statement">
-                <a class="statement-anchor" href="#definition-2-3">Definition 2-3.</a>
+              <p id="definition-2-4" class="statement">
+                <a class="statement-anchor" href="#definition-2-4">Definition 2-4.</a>
                 Calibration is the empirical linkage between bounded forecast
                 artifacts and later observed PR, review, CI, incident, and
                 outcome references under an explicit benchmark protocol.
@@ -560,7 +556,7 @@ SelectedIntervention
                 <dl>
                   <div>
                     <dt>Categories</dt>
-                    <dd>Matched, unmatched, unavailable, private, not comparable, inconclusive.</dd>
+                    <dd>Matched, unmatched, unavailable, private, non-comparable, inconclusive.</dd>
                   </div>
                   <div>
                     <dt>Purpose</dt>
@@ -599,23 +595,22 @@ SelectedIntervention
   + AI Shortcut Benchmark
   + Lifecycle Decision Benchmark</code></pre>
               </figure>
-              <p id="proposition-2-3" class="statement">
-                <a class="statement-anchor" href="#proposition-2-3">Proposition 2-3.</a>
+              <p id="proposition-2-4" class="statement">
+                <a class="statement-anchor" href="#proposition-2-4">Proposition 2-4.</a>
                 A <code>ConsequenceEnvelope</code> is a loss-aware projection
                 from one or more ForecastCones into reviewer-facing regions,
                 axes, witnesses, missing boundaries, and recommendations.
               </p>
-              <p id="proof-2-3" class="statement-proof">
-                <a class="statement-anchor" href="#proof-2-3">Proof idea.</a>
+              <p id="proof-2-4" class="statement-proof">
+                <a class="statement-anchor" href="#proof-2-4">Proof idea.</a>
                 The projection selects visible path classes, affected regions,
                 comparable axes, obstruction candidates, and boundary items
-                from the cone family under the observation boundary. It does
-                not invert the projection, preserve path counts, assign
-                probability, or prove causal correctness. The preserved object
-                is the review surface plus its unknown remainder.
+                from the cone family under the observation boundary. The
+                preserved object is the review surface plus its unknown
+                remainder.
               </p>
-              <p id="example-2-3" class="statement">
-                <a class="statement-anchor" href="#example-2-3">Example 2-3.</a>
+              <p id="example-2-4" class="statement">
+                <a class="statement-anchor" href="#example-2-4">Example 2-4.</a>
                 A coupon envelope can report a lawful policy insertion path, a
                 hidden PaymentAdapter dependency path, a rounding semantic
                 obstruction path, and an unknown remainder. Reviewers can turn
