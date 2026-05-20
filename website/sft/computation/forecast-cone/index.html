@@ -56,8 +56,9 @@
           <p class="eyebrow">SFT Part 2-3</p>
           <h1>ForecastCone</h1>
           <p class="lede">
-            A ForecastCone is the bounded shape of reachable futures opened by
-            a field, support relation, step semantics, and horizon.
+            A ForecastCone is the bounded reachable future opened by a field:
+            the paths supported from a starting state under selected support,
+            step semantics, and horizon.
           </p>
         </div>
       </section>
@@ -105,8 +106,8 @@
           <div class="article-main">
             <section id="cone" class="article-section">
               <p class="research-question">
-                What future does a field open when support and step semantics
-                are fixed?
+                Which futures become reachable when a field, support relation,
+                and horizon are fixed?
               </p>
               <h2>ForecastCone</h2>
               <aside class="vocabulary-card" aria-labelledby="vocab-forecast-cone-2">
@@ -120,11 +121,11 @@
                 <dl>
                   <div>
                     <dt>Shape</dt>
-                    <dd>Path set, not point prediction.</dd>
+                    <dd>Bounded path set from a selected starting field.</dd>
                   </div>
                   <div>
                     <dt>Use</dt>
-                    <dd>Lets support inclusion, step simulation, and cone narrowing become theorem-shaped questions.</dd>
+                    <dd>Turns reachability, widening, narrowing, and safety into theorem-shaped questions.</dd>
                   </div>
                 </dl>
               </aside>
@@ -137,15 +138,17 @@
       by supported operations in U }</code></pre>
               </figure>
               <p>
-                The cone is the central mathematical image of SFT. It is not a
-                point prediction. It is the bounded shape of reachable futures
-                under stated support, step semantics, and horizon.
+                The cone is the central mathematical image of SFT. It gathers
+                the futures a field can reach under stated support, step
+                semantics, and horizon. A broad prompt can widen it; a precise
+                constraint can narrow it; governance can change the support
+                from which the next cone is generated.
               </p>
               <p>
-                Cone narrowing is the first theorem-shaped promise of this
-                machinery. If a new constraint preserves the intended feature
-                direction while removing a selected witness family, and if the
-                narrower support simulates into the wider support, then the
+                Cone narrowing gives the first theorem-shaped control over this
+                object. A constraint that preserves the intended feature
+                direction and removes a selected witness family changes support.
+                When the narrower support simulates into the wider support, the
                 narrower cone projects into the wider cone over the same
                 horizon.
               </p>
@@ -161,10 +164,10 @@
             <section id="reachability" class="article-section">
               <h2>Reachability regions</h2>
               <p>
-                Once the cone is explicit, SFT can ask several different
-                reachability questions instead of compressing them into one
-                risk score. May-reach, must-reach, stable-region, and reachable
-                preimage are different computational objects.
+                Once the cone is explicit, SFT separates reachability questions
+                that ordinary review often compresses into one risk judgment.
+                May-reach, must-reach, stable-region, and reachable preimage
+                become different computational objects.
               </p>
               <aside class="vocabulary-card" aria-labelledby="vocab-stable-region">
                 <span class="vocabulary-card-label">Vocabulary</span>
@@ -198,18 +201,18 @@ ReachablePreimage_h(U, A)
   = { F | MayReach_h(F, U, A) }</code></pre>
               </figure>
               <p>
-                This is the careful version of attractor language. If a team
-                wants to say a field has an attractor, SFT asks which formal
-                structure supports that word: stability, recurrence, policy
-                preference, probability, or only a visible default path.
+                This gives attractor language a disciplined reading. A field
+                can have stability, recurrence, policy preference, probability
+                mass, or a visible default path; SFT asks which structure
+                carries the word in the selected model.
               </p>
             </section>
             <section id="safety" class="article-section">
               <h2>Support safety</h2>
               <p id="definition-2-3" class="statement">
                 <a class="statement-anchor" href="#definition-2-3">Definition 2-3.</a>
-                Support safety asks whether selected supported steps preserve a
-                selected safe region or simulate a safer transition system over
+                Support safety studies selected supported steps against a
+                selected safe region or a simulated safer transition system over
                 a bounded horizon.
               </p>
               <figure class="code-panel">
@@ -224,9 +227,9 @@ StateInSafeRegion(O, R, F)
   -> accepted trajectory remains in R</code></pre>
               </figure>
               <p class="plain-reading">
-                <strong>Computation habit.</strong> First compute supported
-                paths. Then ask which selected constraints narrow or preserve
-                the paths you care about.
+                <strong>Computation habit.</strong> Compute supported paths
+                first; then identify which constraints narrow, preserve, or
+                redirect the paths that matter.
               </p>
               <p id="proposition-2-3" class="statement">
                 <a class="statement-anchor" href="#proposition-2-3">Proposition 2-3.</a>
