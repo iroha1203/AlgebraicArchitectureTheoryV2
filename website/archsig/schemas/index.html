@@ -110,6 +110,11 @@
                 coverage / exactness boundaries, and non-conclusions.
               </p>
               <p>
+                Most readers come here when an older artifact must still be
+                understood. The practical question is not only "can this JSON
+                parse?" but "can this report still mean the same thing?"
+              </p>
+              <p>
                 Schema evolution is part of the claim boundary. Adding a field,
                 renaming an axis, or changing a unit can change what a report
                 means. ArchSig therefore treats assumptions and non-conclusions
@@ -198,6 +203,11 @@
                 A migration is not safe if it removes an older non-conclusion,
                 silently discharges a new required assumption, or loses
                 coverage and exactness metadata.
+              </p>
+              <p>
+                A useful migration report should tell the reader what was
+                copied, what was mapped, what became unavailable, and which
+                comparison or formal promotion is now blocked.
               </p>
               <div class="claim-strip">
                 <p>

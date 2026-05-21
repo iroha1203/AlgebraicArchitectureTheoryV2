@@ -112,6 +112,11 @@
                 optional evidence supplied by the team. Missing input stays
                 visible as unmeasured or unavailable evidence.
               </p>
+              <p>
+                Use this page when a report says an axis is unmeasured, when a
+                policy value looks like a surprising zero, or when a reviewer
+                needs runtime or PR context to understand a diff.
+              </p>
               <ul class="status-list">
                 <li>
                   <strong>Repository root</strong>
@@ -204,6 +209,11 @@
                 if no runtime edge file is supplied, runtime exposure remains
                 outside the scan.
               </p>
+              <p>
+                Keep runtime evidence small at first. A handful of high-value
+                service calls or queue edges is easier to review than a large
+                trace dump with unclear component ids.
+              </p>
               <figure class="code-panel">
                 <figcaption>Runtime edge evidence</figcaption>
                 <pre><code>{
@@ -236,6 +246,11 @@
                 PR metadata connects a diff report to a review event. It gives
                 attribution candidates and PR comments enough context to say
                 which change introduced or removed evidence.
+              </p>
+              <p>
+                Without PR metadata, ArchSig can still compare artifacts, but
+                reviewer-facing output becomes less specific: it can describe
+                the changed axis, not the review event that should own it.
               </p>
               <ul class="term-list">
                 <li>

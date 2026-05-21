@@ -112,6 +112,13 @@
                 existing Sig0 artifact without rescanning source files.
               </p>
               <p>
+                Do not memorize the full command set first. Learn the small
+                loop: <code>scan</code>, <code>validate</code>,
+                <code>snapshot</code>, <code>signature-diff</code>,
+                <code>air</code>, and <code>feature-report</code>. The rest of
+                the catalog becomes useful once that loop is familiar.
+              </p>
+              <p>
                 Command output should be read as an artifact boundary, not as
                 the tool's private implementation detail. The important
                 question after each command is: what universe did it select,
@@ -182,6 +189,12 @@
                 Policy decisions apply local thresholds. PR comments translate
                 all of that into review text without erasing the earlier
                 boundaries.
+              </p>
+              <p>
+                If a later command feels confusing, go one artifact back. A
+                policy decision is easier to understand after the feature
+                report is clear; a feature report is easier to understand after
+                AIR is clear.
               </p>
               <figure class="code-panel">
                 <figcaption>PR review chain</figcaption>

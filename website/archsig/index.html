@@ -75,6 +75,7 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
+                <li><a href="#how-to-read">How to read this manual</a></li>
                 <li><a href="#what-it-is">What ArchSig is</a></li>
                 <li><a href="#signature-model">Signature model</a></li>
                 <li><a href="#product-surfaces">Product surfaces</a></li>
@@ -103,6 +104,31 @@
           </aside>
 
           <div class="article-main">
+            <section id="how-to-read" class="article-section">
+              <h2>How to read this manual</h2>
+              <p>
+                Read the first four chapters in order if you are evaluating
+                ArchSig for a repository: run a small scan, prepare inputs,
+                read the output, then inspect AIR. After that, use Commands,
+                Artifacts, Boundaries, Workflows, Schemas, Operational
+                Feedback, and Examples as reference chapters.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Trying it for the first time</strong>
+                  <span>Start with Getting Started, then Reading the Output. Do not begin with the full command catalog.</span>
+                </li>
+                <li>
+                  <strong>Adding it to PR review</strong>
+                  <span>Read Inputs, AIR, Workflows, and Examples so the review path preserves evidence and coverage.</span>
+                </li>
+                <li>
+                  <strong>Debugging a report</strong>
+                  <span>Identify the artifact type, read its status fields, then follow evidence refs back through AIR or Sig0.</span>
+                </li>
+              </ul>
+            </section>
+
             <section id="what-it-is" class="article-section">
               <h2>What ArchSig is</h2>
               <p>

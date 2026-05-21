@@ -112,6 +112,11 @@
                 with unmeasured axes and unsupported constructs made explicit.
               </p>
               <p>
+                Treat this chapter as the operator's path through the manual:
+                it says which artifacts to produce, which file to read first,
+                and where human review enters the loop.
+              </p>
+              <p>
                 A good first adoption run is not a pass/fail ceremony. It is a
                 vocabulary alignment exercise: teams learn which axes ArchSig
                 can already observe, which local policies need explicit input,
@@ -161,6 +166,11 @@
                 current directory. The exact paths are local convention; the
                 important point is that each output becomes the next command's
                 input.
+              </p>
+              <p>
+                The example below is intentionally linear. In CI you may split
+                it into jobs, but the artifact dependency order should remain
+                visible in logs and retained outputs.
               </p>
               <figure class="code-panel">
                 <figcaption>Before and after signatures</figcaption>
@@ -287,6 +297,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- feature-report \
                 finite support, bounded horizon, proposal refs, unknown
                 remainder, and review recommendations apart from probability
                 or causal forecast claims.
+              </p>
+              <p>
+                Use this workflow after the review surface is already
+                understood. Forecast artifacts are more useful when teams can
+                already read ordinary signature diffs and AIR boundaries.
               </p>
               <figure class="code-panel">
                 <figcaption>Dynamics and forecast</figcaption>

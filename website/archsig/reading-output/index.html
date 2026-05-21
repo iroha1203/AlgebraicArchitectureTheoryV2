@@ -111,6 +111,11 @@
                 numeric values. This prevents the most common mistake: treating
                 missing or unmeasured evidence as if it were a safe result.
               </p>
+              <p>
+                A useful report read should end with a concrete review action:
+                inspect a changed edge, add missing evidence, adjust policy,
+                accept a known boundary, or open a follow-up task.
+              </p>
               <ol class="numbered-status-list">
                 <li>
                   <strong>Check schema and validation status</strong>
@@ -138,6 +143,12 @@
                 the place to inspect components, dependency edges, raw
                 signature values, policy violations, runtime evidence, and
                 unsupported constructs.
+              </p>
+              <p>
+                When opening Sig0 by hand, start with
+                <code>components</code> and <code>edges</code>. The signature
+                values are only meaningful after the selected universe looks
+                like the repository slice you intended to scan.
               </p>
               <ul class="status-list">
                 <li>
@@ -212,6 +223,13 @@ attribution.candidates</code></pre>
                 do not call the axis improved or worsened. Read the metric
                 delta status first.
               </p>
+              <div class="claim-strip">
+                <p>
+                  The reviewer question is not "is the number good?" It is
+                  "what changed, what evidence supports that change, and what
+                  remains outside the artifact?"
+                </p>
+              </div>
             </section>
 
             <section id="feature-report" class="article-section">

@@ -120,6 +120,12 @@
                 claim, what was not measured, and which formal preconditions
                 would be required for a stronger reading.
               </p>
+              <p>
+                Most users do not need to edit AIR by hand. They need to know
+                when to inspect it: when a Feature Extension Report looks too
+                strong, when a theorem check is blocked, or when a PR comment
+                needs a traceable evidence boundary.
+              </p>
               <figure class="code-panel">
                 <figcaption>Where AIR sits</figcaption>
                 <pre><code>Sig0 + validation + diff + PR metadata + policy
@@ -287,6 +293,13 @@
                 you can see whether the issue came from source evidence, policy
                 evidence, missing coverage, or claim promotion boundaries.
               </p>
+              <div class="claim-strip">
+                <p>
+                  If Sig0 is the observation, AIR is the review memory: it
+                  remembers why a measurement is allowed to become a claim, and
+                  why some claims must stay blocked.
+                </p>
+              </div>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
               <a href="../reading-output/">

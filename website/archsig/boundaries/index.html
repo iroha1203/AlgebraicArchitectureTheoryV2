@@ -110,6 +110,12 @@
                 the value was measured, unmeasured, or out of scope.
               </p>
               <p>
+                Use this chapter whenever a report looks too confident. Most
+                mistaken readings come from collapsing four different states:
+                measured zero, missing input, private evidence, and adapter
+                out of scope.
+              </p>
+              <p>
                 This is the central discipline of ArchSig. A dashboard can show
                 a zero; an architecture signature must say whether that zero is
                 a measured fact, a placeholder, a privacy boundary, an
@@ -199,6 +205,16 @@ advisory review recommendation</code></pre>
                 compared, migrated, calibrated, and reviewed without changing
                 its meaning.
               </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Reviewer use</strong>
+                  <span>Ask whether the missing claim matters for this PR, then request evidence or accept the boundary explicitly.</span>
+                </li>
+                <li>
+                  <strong>Automation use</strong>
+                  <span>Carry non-conclusions into policy decisions and PR comments instead of dropping them from the final surface.</span>
+                </li>
+              </ul>
               <div class="claim-strip">
                 <p>
                   Non-conclusions are part of the artifact contract. Dropping
