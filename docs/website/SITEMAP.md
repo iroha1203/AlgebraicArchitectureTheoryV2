@@ -68,7 +68,6 @@ SEO 用の公開 `sitemap.xml` は `website/sitemap.xml` であり、この文�
 | `/archsig/schemas/` | `website/archsig/schemas/index.html` | Schema and compatibility reference。 |
 | `/archsig/operational-feedback/` | `website/archsig/operational-feedback/index.html` | Operational feedback manual。 |
 | `/archsig/examples/` | `website/archsig/examples/index.html` | Examples and report reading。 |
-| `/archsig/roadmap/` | `website/archsig/roadmap/index.html` | Tooling roadmap。 |
 | `/outreach/` | `website/outreach/index.html` | Outreach article index と canonical technical pages への戻り導線。 |
 
 ## sitemap 対応ルール
