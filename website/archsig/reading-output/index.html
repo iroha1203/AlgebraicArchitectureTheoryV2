@@ -77,6 +77,7 @@
               <h2 id="toc-title">On this page</h2>
               <ol>
                 <li><a href="#reading-order">Reading order</a></li>
+                <li><a href="#field-lookup">Field lookup</a></li>
                 <li><a href="#sig0">Sig0</a></li>
                 <li><a href="#validation">Validation report</a></li>
                 <li><a href="#diff">Signature diff</a></li>
@@ -134,6 +135,42 @@
                   <span>They tell automation and reviewers what the report refuses to prove.</span>
                 </li>
               </ol>
+            </section>
+
+            <section id="field-lookup" class="article-section">
+              <h2>Field lookup</h2>
+              <p>
+                These are the fields most readers should recognize before
+                opening a full report. Field names vary by artifact family,
+                but the reading pattern stays the same: identity, evidence,
+                status, changed axes, and non-conclusions.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong><code>schemaVersion</code></strong>
+                  <span>Identifies the artifact family and compatibility rules.</span>
+                </li>
+                <li>
+                  <strong><code>components</code>, <code>edges</code>, <code>relations</code></strong>
+                  <span>Describe the selected architecture universe and dependency evidence.</span>
+                </li>
+                <li>
+                  <strong><code>signature</code>, <code>axes</code>, <code>metricStatus</code></strong>
+                  <span>Hold measured values and whether those values are measured, unmeasured, out of scope, or unavailable.</span>
+                </li>
+                <li>
+                  <strong><code>worsenedAxes</code>, <code>improvedAxes</code>, <code>metricDeltaStatus</code></strong>
+                  <span>Explain before / after movement and whether an axis is comparable.</span>
+                </li>
+                <li>
+                  <strong><code>coverage</code>, <code>coverageGaps</code>, <code>unmeasuredAxes</code></strong>
+                  <span>State what the artifact did not observe and which assumptions are needed for stronger readings.</span>
+                </li>
+                <li>
+                  <strong><code>claims</code>, <code>evidenceRefs</code>, <code>nonConclusions</code></strong>
+                  <span>Connect report statements to evidence and preserve what the artifact refuses to prove.</span>
+                </li>
+              </ul>
             </section>
 
             <section id="sig0" class="article-section">

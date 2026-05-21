@@ -78,6 +78,7 @@
               <ol>
                 <li><a href="#primary">Primary artifacts</a></li>
                 <li><a href="#surface-artifacts">Surface artifacts</a></li>
+                <li><a href="#output-index">Output index</a></li>
                 <li><a href="#policy-registry">Policy and registry</a></li>
                 <li><a href="#datasets">Datasets and feedback</a></li>
                 <li><a href="#forecasting">SFT forecasting</a></li>
@@ -175,6 +176,73 @@
                 <li>
                   <strong>Operational artifacts</strong>
                   <span>PR history datasets, feature datasets, outcome linkage, daily ledger, calibration, threshold, ownership, repair adoption, incident correlation, and hypothesis refresh records.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="output-index" class="article-section">
+              <h2>Output index</h2>
+              <p>
+                This list is the quick lookup for generated files. Read the
+                <code>schemaVersion</code> first, then use the row below to
+                decide which fields matter.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong><code>archsig-sig0-v0</code></strong>
+                  <span>Produced by <code>scan</code>. Read <code>components</code>, <code>edges</code>, <code>signature</code>, <code>metricStatus</code>, and unsupported constructs.</span>
+                </li>
+                <li>
+                  <strong><code>component-universe-validation-report-v0</code></strong>
+                  <span>Produced by <code>validate</code>. Read validation summary, duplicate components, edge closure, external targets, and policy status checks.</span>
+                </li>
+                <li>
+                  <strong><code>signature-snapshot-store-v0</code></strong>
+                  <span>Produced by <code>snapshot</code>. Read repository refs, revision refs, scan timestamp, policy version, and signature artifact refs.</span>
+                </li>
+                <li>
+                  <strong><code>signature-diff-report-v0</code></strong>
+                  <span>Produced by <code>signature-diff</code>. Read worsened axes, improved axes, metric delta status, evidence diffs, and attribution candidates.</span>
+                </li>
+                <li>
+                  <strong><code>aat-air-v0</code></strong>
+                  <span>Produced by <code>air</code>. Read artifacts, evidence, coverage, claims, operation trace, and extension summary.</span>
+                </li>
+                <li>
+                  <strong><code>aat-air-validation-report-v0</code></strong>
+                  <span>Produced by <code>validate-air</code>. Read unresolved refs, claim boundary checks, runtime metadata checks, semantic metadata checks, and measured-claim evidence checks.</span>
+                </li>
+                <li>
+                  <strong><code>feature-extension-report-v0</code></strong>
+                  <span>Produced by <code>feature-report</code>. Read split status, introduced obstruction witnesses, coverage gaps, theorem precondition summary, and repair suggestions.</span>
+                </li>
+                <li>
+                  <strong>Policy decision report</strong>
+                  <span>Produced by <code>policy-decision</code>. Read pass / warn / fail / advisory outcomes, threshold refs, evidence refs, and non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>PR comment summary</strong>
+                  <span>Produced by <code>pr-comment</code>. Read the reviewer action, changed axis, evidence, missing evidence, and retained boundary text.</span>
+                </li>
+                <li>
+                  <strong><code>artifact-descriptor-v0</code></strong>
+                  <span>Produced by <code>artifact-descriptor</code> or <code>sft-forecast</code>. Read source refs, artifact kind, action candidates, scope, missing evidence, and forecast non-conclusions.</span>
+                </li>
+                <li>
+                  <strong><code>operation-support-estimate-v0</code></strong>
+                  <span>Produced by <code>operation-support-estimate</code> or <code>sft-forecast</code>. Read candidate operation families, known forbidden support, unknown remainder, and confidence boundary.</span>
+                </li>
+                <li>
+                  <strong><code>forecast-cone-skeleton-v0</code></strong>
+                  <span>Produced by <code>forecast-cone-skeleton</code> or <code>sft-forecast</code>. Read horizon, finite support, path candidates, blockers, and unknown remainder.</span>
+                </li>
+                <li>
+                  <strong><code>consequence-envelope-report-v0</code></strong>
+                  <span>Produced by <code>consequence-envelope</code> or <code>sft-forecast</code>. Read affected regions, comparable axes, review recommendations, and forecast non-conclusions.</span>
+                </li>
+                <li>
+                  <strong>B10 operational artifacts</strong>
+                  <span>Produced by operational feedback commands. Read aggregation windows, evidence availability, threshold changes, ownership signals, repair adoption state, and incident correlation boundaries.</span>
                 </li>
               </ul>
             </section>

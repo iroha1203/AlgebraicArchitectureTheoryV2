@@ -78,6 +78,7 @@
               <ol>
                 <li><a href="#scan-validate">Scan and validate</a></li>
                 <li><a href="#surface-map">Surface map</a></li>
+                <li><a href="#command-index">Command index</a></li>
                 <li><a href="#review-reports">Review reports</a></li>
                 <li><a href="#policy-schema">Policy and schema</a></li>
                 <li><a href="#dataset-feedback">Dataset and feedback</a></li>
@@ -171,6 +172,113 @@
                 <li>
                   <strong>Operational</strong>
                   <span><code>dataset</code>, PR history / feature / outcome dataset commands, daily ledger, calibration, threshold, ownership, repair adoption, incident correlation, and hypothesis refresh commands.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="command-index" class="article-section">
+              <h2>Command index</h2>
+              <p>
+                Use this index when you know the artifact you have and need
+                the next command. The command names below are the stable
+                handles used by the CLI.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong><code>scan</code></strong>
+                  <span>Inputs: repository root, optional policy, optional runtime edges. Output: <code>archsig-sig0-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>validate</code></strong>
+                  <span>Input: Sig0. Output: <code>component-universe-validation-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>snapshot</code></strong>
+                  <span>Input: Sig0 plus revision metadata. Output: <code>signature-snapshot-store-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>signature-diff</code></strong>
+                  <span>Inputs: before / after snapshots, optional Sig0 evidence, optional PR metadata. Output: <code>signature-diff-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>air</code></strong>
+                  <span>Inputs: Sig0, optional validation, diff, PR metadata, law policy, and framework adapters. Output: <code>aat-air-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>validate-air</code></strong>
+                  <span>Input: AIR. Output: <code>aat-air-validation-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>theorem-check</code></strong>
+                  <span>Input: AIR. Output: theorem precondition check report for AIR claims.</span>
+                </li>
+                <li>
+                  <strong><code>feature-report</code></strong>
+                  <span>Input: AIR. Output: <code>feature-extension-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>policy-decision</code></strong>
+                  <span>Inputs: Feature Extension Report and optional organization policy. Output: policy decision report.</span>
+                </li>
+                <li>
+                  <strong><code>pr-comment</code></strong>
+                  <span>Inputs: Feature Extension Report and optional policy decision. Output: reviewer-facing Markdown.</span>
+                </li>
+                <li>
+                  <strong><code>baseline-suppression</code></strong>
+                  <span>Inputs: baseline and current reports, optional policy decisions, retention, suppression, and accepted-risk metadata. Output: baseline suppression report.</span>
+                </li>
+                <li>
+                  <strong><code>organization-policy</code>, <code>law-policy-templates</code>, <code>custom-rule-plugins</code></strong>
+                  <span>Inputs: optional registry or policy JSON. Output: validation reports for local review policy and adapter rule material.</span>
+                </li>
+                <li>
+                  <strong><code>repair-registry</code>, <code>synthesis-constraints</code>, <code>no-solution-certificate</code></strong>
+                  <span>Inputs: optional repair, synthesis, or impossibility artifacts. Output: validation reports for repair and synthesis boundaries.</span>
+                </li>
+                <li>
+                  <strong><code>measurement-units</code>, <code>dynamics-measurements</code>, <code>reported-axes-catalog</code></strong>
+                  <span>Inputs: optional registry or measurement contract where applicable. Output: measurement-unit, dynamics-contract, or reported-axes reference artifacts.</span>
+                </li>
+                <li>
+                  <strong><code>schema-compatibility</code></strong>
+                  <span>Inputs: baseline and current artifacts plus optional catalog. Output: schema compatibility check report.</span>
+                </li>
+                <li>
+                  <strong><code>artifact-descriptor</code></strong>
+                  <span>Inputs: Markdown PRD / Spec, GitHub Issue JSON, or AI proposal JSON. Output: <code>artifact-descriptor-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>operation-support-estimate</code></strong>
+                  <span>Input: ArtifactDescriptor. Output: <code>operation-support-estimate-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>forecast-cone-skeleton</code></strong>
+                  <span>Input: OperationSupportEstimate. Output: <code>forecast-cone-skeleton-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>consequence-envelope</code></strong>
+                  <span>Input: ForecastConeSkeleton. Output: <code>consequence-envelope-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>sft-forecast</code></strong>
+                  <span>Input: PRD / Spec / Issue / AI proposal artifact. Output: descriptor, support estimate, forecast cone, validations, and final consequence envelope in one directory.</span>
+                </li>
+                <li>
+                  <strong><code>dataset</code>, <code>pr-history-dataset</code>, <code>feature-extension-dataset</code>, <code>outcome-linkage-dataset</code></strong>
+                  <span>Inputs: PR metadata, signatures, reports, and outcome observations. Output: empirical dataset records.</span>
+                </li>
+                <li>
+                  <strong><code>report-outcome-daily-ledger</code>, <code>calibration-review-record</code>, <code>team-threshold-policy</code></strong>
+                  <span>Inputs: outcome and drift artifacts where required. Output: B10 operational feedback artifacts.</span>
+                </li>
+                <li>
+                  <strong><code>ownership-boundary-monitor</code>, <code>repair-adoption-record</code>, <code>incident-correlation-monitor</code>, <code>hypothesis-refresh-cycle</code></strong>
+                  <span>Inputs: static fixtures or operational evidence depending on command. Output: B10 monitoring, repair, incident, and hypothesis artifacts.</span>
+                </li>
+                <li>
+                  <strong><code>pr-force-report</code>, <code>signature-trajectory-report</code>, <code>architecture-dynamics-metrics</code></strong>
+                  <span>Inputs: optional report JSON to validate or <code>--fixture</code>. Output: Architecture Dynamics reports or validation reports.</span>
                 </li>
               </ul>
             </section>
