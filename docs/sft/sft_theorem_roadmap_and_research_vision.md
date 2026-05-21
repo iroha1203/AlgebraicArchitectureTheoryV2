@@ -2258,10 +2258,13 @@ local-to-global path gluing は `BinaryClockedStepGluingData` から
 finite local projection、`FiniteLocalClockedConeFamily`、`FiniteClockedGluingData`、
 `FiniteProjectionGluingLaws`、`forecastCone_descent_finite_of_laws` を追加した。finite-cover
 ForecastCone descent は、explicit finite gluing と Cech-style compatibility laws に相対化された
-selected skeleton として表現できる。definitional path equality / transport-normalized path equality、
-all finite covers satisfying descent、full Cech cohomology theorem、actual obstruction cutting と
-governance synthesis の統合、concrete finite-height refinement order 上の closed-loop calibration、
-統合 SFT model 上の Fundamental Modularity theorem はまだ無条件には主張しない。
+selected skeleton として表現できる。`SFTDescentObstruction.lean` では selected finite descent
+failure を typed obstruction witness へ分類する explicit classifier package と、selected bad
+obstruction witness を governance package で cut する checked accessor surface を追加した。
+definitional path equality / transport-normalized path equality、all finite covers satisfying descent、
+all descent failures are completely classified、full Cech cohomology theorem、operational governance
+effectiveness、concrete finite-height refinement order 上の closed-loop calibration、統合 SFT model
+上の Fundamental Modularity theorem はまだ無条件には主張しない。
 
 Phase B: Obstruction and review surface
 

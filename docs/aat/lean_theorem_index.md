@@ -2342,6 +2342,41 @@ finite cover が descent を満たすこと、Cech cohomology theorem、Fundamen
 | `FiniteCechDescentCohomologyBridge.finiteDescent_of_h1_vanishes` | `theorem` | selected bridge から H1 vanishing implies finite descent reading を取り出す。 | `proved accessor` |
 | `FiniteCechDescentCohomologyBridge.h1_vanishes_of_finiteDescent` | `theorem` | selected bridge から finite descent implies H1 vanishing reading を取り出す。 | `proved accessor` |
 
+## SFT Finite Descent Obstruction / Governance Cutting
+
+File: `Formal/Arch/Evolution/SFTDescentObstruction.lean`
+
+Finite-cover selected descent skeleton の failure を typed obstruction witness、Cech-facing bridge、
+review projection、governance cutting package へ接続する checked surface を定義する。これは selected
+classifier と selected governance law に相対化され、すべての descent failure の完全分類、full
+Cech cohomology、operational governance effectiveness、Fundamental Modularity theorem は主張しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `FiniteDescentFailureKind` | `inductive` | finite descent failure を no global lift、local identification、Cech incompatibility、governance blocked に分類する selected kind。 | `defined only` |
+| `FiniteDescentFailure` | `structure` | failure kind、optional local/global evidence payload、evidence boundary、non-conclusions を束ねる failure package。 | `defined only` |
+| `FiniteObstructionClass` | `inductive` | missing glue、overlap mismatch、hidden coupling、support mismatch、governance conflict の typed obstruction class。 | `defined only` |
+| `FiniteDescentObstructionPayload` | `structure` | failure kind、obstruction class、affected indices、classifier boundary、non-conclusions を束ねる witness payload。 | `defined only` |
+| `FiniteTypedObstructionWitness` / `FiniteDescentObstructionWitness` | `structure` / `abbrev` | finite descent failure に対する typed obstruction witness。outer failure kind と payload failure kind の equality witness を保持する。 | `defined only` |
+| `FiniteDescentObstructionClassifier` | `structure` | selected failure を optional typed witness へ写す classifier、outer / payload failure kind soundness law、completeness boundary を束ねる。 | `defined only` |
+| `FiniteDescentObstructionClassifier.classified_failureKind_eq` | `theorem` | classified witness の outer failure kind が selected failure kind と一致することを取り出す。 | `proved accessor` |
+| `FiniteDescentObstructionClassifier.classified_payload_failureKind_eq` | `theorem` | classified witness の payload failure kind が selected failure kind と一致することを取り出す。 | `proved accessor` |
+| `finite_descent_obstruction_of_classified_failure` | `theorem` | classifier が selected failure を分類しているなら obstruction witness を取り出す。 | `proved accessor` |
+| `finite_descent_obstruction_of_classified_failure_sound` | `theorem` | classified witness とともに outer / payload failure kind equality を取り出す。 | `proved accessor` |
+| `FiniteDescentObstructionPackage` | `structure` | classifier と every-selected-failure-classified assumption、obstruction boundary を束ねる。 | `defined only` |
+| `finite_descent_obstruction_of_failure` | `theorem` | package assumption の下で selected finite descent failure から typed obstruction witness を得る。 | `proved accessor` |
+| `finite_descent_obstruction_of_failure_sound` | `theorem` | package assumption の下で obstruction witness と outer / payload failure kind equality を同時に得る。 | `proved accessor` |
+| `FiniteCechObstructionBridge` | `structure` | finite Cech descent bridge、obstruction package、H1 nonzero / obstruction reflection boundary を束ねる。 | `defined only` |
+| `FiniteCechObstructionBridge.finite_descent_of_h1_vanishes` | `theorem` | obstruction bridge 経由で selected H1 vanishing から finite descent reading を取り出す。 | `proved accessor` |
+| `FiniteObstructionReviewProjection` | `structure` | obstruction witness を selected review decision へ写す projection と sound/minimal-envelope boundary を束ねる。 | `defined only` |
+| `finite_obstruction_review_records_sound_boundary` | `theorem` | review projection の sound boundary を assumption-preserving accessor として公開する。 | `proved accessor` |
+| `FiniteGovernanceCutTarget` | `structure` | selected bad obstruction predicate と desired local-family preservation predicate を束ねる governance target。 | `defined only` |
+| `FiniteGovernanceCuttingPackage` | `structure` | selected intervention、bad cutting law、desired preservation law、governance boundary を束ねる。 | `defined only` |
+| `finite_governance_cuts_bad_obstruction` | `theorem` | selected bad obstruction witness が selected intervention で cut されることを取り出す。 | `proved accessor` |
+| `finite_governance_preserves_desired_family` | `theorem` | selected desired local family が selected intervention で preserved されることを取り出す。 | `proved accessor` |
+| `FiniteObstructionGovernancePackage` | `structure` | obstruction package と governance cutting package の bridge boundary を束ねる。 | `defined only` |
+| `governance_cuts_obstruction_of_finite_failure` | `theorem` | selected finite failure が bad obstruction として分類されるなら selected governance intervention がその witness を cut する。 | `proved accessor` |
+
 ## SFT Theorem Roadmap
 
 File: `Formal/Arch/Evolution/SFTTheoremRoadmap.lean`
@@ -2364,6 +2399,7 @@ AI agent safety、lifecycle decision correctness、extractor completeness を無
 | `SFTTheoremRoadmap.binaryForecastConeDescent_of_endpoint_laws` | `theorem` | step gluing data と endpoint projection/glue laws から selected binary descent package の存在を取り出す roadmap-facing accessor。 | `proved accessor` |
 | `SFTTheoremRoadmap.binaryForecastConeDescent_of_path_laws` | `theorem` | step gluing data と selected path-level inverse laws から selected binary descent package の存在を取り出す roadmap-facing accessor。finite-cover descent や full Fundamental Modularity theorem は主張しない。 | `proved accessor` |
 | `SFTTheoremRoadmap.finiteForecastConeDescent_of_laws` | `theorem` | explicit finite gluing と Cech-style compatibility laws から finite selected descent package の存在を取り出す roadmap-facing accessor。すべての finite cover の descent や full Cech cohomology は主張しない。 | `proved accessor` |
+| `SFTTheoremRoadmap.finite_governance_cuts_obstruction_of_failure` | `theorem` | selected finite descent failure が selected bad obstruction として分類されるなら selected governance cutting package がその obstruction を cut する roadmap-facing accessor。operational governance effectiveness や full Fundamental Modularity theorem は主張しない。 | `proved accessor` |
 | `SFTTheoremRoadmap.ModularityRepresentationPackage.modularity_representation` | `theorem` | module boundary、ForecastCone descent、unique compatible representation の同値 package を展開する。 | `proved accessor` |
 | `SFTTheoremRoadmap.DescentObstructionPackage.obstruction_of_no_lift` | `theorem` | actual no-lift predicate から typed surjectivity obstruction witness を得る。 | `proved accessor` |
 | `SFTTheoremRoadmap.DescentObstructionPackage.obstruction_of_local_identification` | `theorem` | local identification failure から typed injectivity obstruction witness を得る。 | `proved accessor` |

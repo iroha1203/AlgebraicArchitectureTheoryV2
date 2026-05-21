@@ -4,6 +4,7 @@ import Formal.Arch.Evolution.SFTPolicy
 import Formal.Arch.Evolution.SFTReachability
 import Formal.Arch.Evolution.SFTDescent
 import Formal.Arch.Evolution.SFTFiniteCover
+import Formal.Arch.Evolution.SFTDescentObstruction
 
 /-!
 Lean entrypoints for `docs/sft/sft_theorem_roadmap_and_research_vision.md`.
@@ -269,6 +270,34 @@ theorem finiteForecastConeDescent_of_laws
     {source : Global} {horizon : Nat} :
     Nonempty (FiniteSelectedForecastConeDescentPackage model source horizon) :=
   finiteForecastConeDescentPackage_of_laws glueData laws
+
+/--
+Selected finite descent failure is connected to selected governance cutting.
+
+This assumes classifier completeness and selected governance cutting laws.  It
+is not operational governance effectiveness, and it is not the full Fundamental
+Modularity Theorem.
+-/
+theorem finite_governance_cuts_obstruction_of_failure
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteObstructionGovernancePackage model source horizon)
+    (failure : FiniteDescentFailure model source horizon)
+    (hBadClassified :
+      ∀ witness,
+        package.obstructionPackage.classifier.classify failure =
+          some witness ->
+        package.governancePackage.target.bad witness) :
+    ∃ witness : FiniteDescentObstructionWitness model source horizon,
+      package.obstructionPackage.classifier.classify failure = some witness ∧
+        package.governancePackage.cutsBad
+          package.governancePackage.selectedIntervention witness :=
+  governance_cuts_obstruction_of_finite_failure
+    package failure hBadClassified
 
 /-! ## 5.1 Modularity representation -/
 
