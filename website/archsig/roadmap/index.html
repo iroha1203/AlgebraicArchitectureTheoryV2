@@ -61,9 +61,11 @@
             <span>Roadmap</span>
           </nav>
           <p class="eyebrow">ArchSig Roadmap</p>
-          <h1>Roadmap status stays separate from theorem status.</h1>
+          <h1>Follow ArchSig from scanner to research instrument.</h1>
           <p class="lede">
-            The roadmap tracks tooling phases, implemented pipelines, schema and validator coverage, advisory reports, empirical feedback, planned gaps, and standardization targets. It is mutable planning, not mathematical proof status.
+            The roadmap traces the product surfaces, implemented pipelines,
+            adapter gaps, calibration work, and standardization targets that
+            turn Architecture Signature into a durable practice.
           </p>
         </div>
       </section>
@@ -81,25 +83,19 @@
                 <li><a href="#targets">Standardization targets</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/roadmap.md">
-                    Tooling roadmap
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../commands/">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
+                <li><a href="./" aria-current="page">Roadmap</a></li>
               </ul>
             </div>
           </aside>
@@ -113,6 +109,13 @@
                 AIR / Feature Extension Report, PR / CI governance artifacts,
                 empirical feedback artifacts, Architecture Dynamics artifacts,
                 and a bounded SFT forecasting pipeline.
+              </p>
+              <p>
+                The roadmap should therefore be read as a surface map, not as a
+                promise that ArchSig is waiting to become useful. Core,
+                Review, SFT, and Operational surfaces already name distinct
+                artifact families; the remaining work expands coverage,
+                adapters, calibration, and standardization.
               </p>
               <ul class="term-list">
                 <li>
@@ -138,6 +141,13 @@
                 review, SFT projection, and feedback artifacts, but several
                 adapters and calibration paths remain outside the product
                 surface.
+              </p>
+              <p>
+                A gap is recorded at the boundary where a stronger reader might
+                otherwise overclaim. Dynamic import support, framework
+                conventions, real dataset calibration, and formal bridges are
+                important precisely because ArchSig refuses to pretend they are
+                already measured.
               </p>
               <ul class="status-list">
                 <li>
@@ -211,6 +221,13 @@
                 non-conclusion preservation, schema compatibility policy,
                 example fixtures, report consumer contract, forecast input /
                 output contract, and forecast boundary vocabulary.
+              </p>
+              <p>
+                The standardization target is a stable reading contract. A
+                future tool, CI workflow, or AI reviewer should be able to read
+                an ArchSig artifact and preserve the same distinction between
+                evidence, measurement status, policy decision, empirical
+                feedback, forecast projection, and formal claim boundary.
               </p>
               <div class="claim-strip">
                 <p>

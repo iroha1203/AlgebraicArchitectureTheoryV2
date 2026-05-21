@@ -61,9 +61,11 @@
             <span>Artifacts</span>
           </nav>
           <p class="eyebrow">ArchSig Reference</p>
-          <h1>Artifacts carry evidence, status, and non-conclusions together.</h1>
+          <h1>Every artifact is a portable architectural reading.</h1>
           <p class="lede">
-            ArchSig artifacts are JSON records for a bounded observation universe. Their role is to preserve source refs, measurement status, coverage gaps, theorem boundaries, and report projections across commands.
+            Sig0, diffs, AIR, feature reports, policies, datasets, and forecast
+            envelopes carry the evidence a reviewer needs without losing the
+            limits of the observation.
           </p>
         </div>
       </section>
@@ -82,40 +84,19 @@
                 <li><a href="#diagnostics">Diagnostic reading</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/docs/artifacts-and-boundaries.md">
-                    Artifacts And Boundaries
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/signature_artifacts.md">
-                    Signature artifacts
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/reports.md">
-                    Reports
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/air.md">
-                    AIR
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../commands/">Commands</a></li>
+                <li><a href="./" aria-current="page">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
+                <li><a href="../roadmap/">Roadmap</a></li>
               </ul>
             </div>
           </aside>
@@ -127,6 +108,13 @@
                 The main review flow starts with Sig0 and ends with a PR
                 comment summary. Each step keeps claim level and measurement
                 status visible.
+              </p>
+              <p>
+                Treat an ArchSig artifact as a contract between a producer and
+                a reader. The producer records a bounded universe and the
+                reader agrees not to erase coverage, exactness assumptions,
+                source refs, or non-conclusions when projecting that artifact
+                into another report.
               </p>
               <ul class="term-list">
                 <li>
@@ -156,6 +144,13 @@
                 project that observation into PR review; SFT artifacts project
                 a proposed change into a bounded forecast report; Operational
                 artifacts store calibration and feedback evidence.
+              </p>
+              <p>
+                This separation matters because the same field name can carry
+                different weight in different surfaces. A worsened axis in a
+                diff is a review cue; a threshold violation is a policy cue; a
+                repeated operational pattern is calibration evidence. None of
+                these automatically becomes a formal theorem claim.
               </p>
               <ul class="status-list">
                 <li>
@@ -251,6 +246,13 @@
                 complexity. Diff diagnostics cover worsened axes, improved
                 axes, unmeasured axes, evidence diff, and PR attribution
                 candidates.
+              </p>
+              <p>
+                The diagnostic reading starts with comparability. If an axis is
+                unmeasured in either side of a diff, or if the selected
+                universes differ in a way the schema cannot migrate, the
+                correct result is an explicit boundary rather than a fabricated
+                improvement or regression.
               </p>
               <div class="claim-strip">
                 <p>

@@ -61,9 +61,11 @@
             <span>Examples</span>
           </nav>
           <p class="eyebrow">ArchSig Reference</p>
-          <h1>Examples show how to read reports without overclaiming.</h1>
+          <h1>See architecture signatures catch a feature in motion.</h1>
           <p class="lede">
-            The example set uses a coupon feature extension to show split extension, hidden interaction witness, semantic witness, Feature Extension Report reading, and architecture dynamics interpretation.
+            A coupon extension becomes a compact laboratory for split design,
+            hidden interaction, semantic mismatch, repair hints, and dynamics
+            readings.
           </p>
         </div>
       </section>
@@ -81,30 +83,19 @@
                 <li><a href="#dynamics">Dynamics reading</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/examples.md">
-                    Tooling examples
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/repair_suggestion.md">
-                    Repair suggestion
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../commands/">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="./" aria-current="page">Examples</a></li>
+                <li><a href="../roadmap/">Roadmap</a></li>
               </ul>
             </div>
           </aside>
@@ -117,6 +108,12 @@
                 rather than reaching into adapter internals. AIR can separate
                 embedding, feature view, interaction, static split, and
                 coverage claims.
+              </p>
+              <p>
+                The point of the example is not that coupons are special. The
+                point is that a feature can be added while preserving the
+                observable separation between order logic, coupon logic, and
+                payment behavior under the selected architecture view.
               </p>
               <figure class="code-panel">
                 <figcaption>Good extension shape</figcaption>
@@ -142,6 +139,12 @@ after:
                 internal payment cache. This is a static split failure
                 candidate, not runtime or semantic completeness.
               </p>
+              <p>
+                The witness is useful because it names the interaction that a
+                reviewer can inspect. It does not need to claim that every
+                possible runtime path was observed; it only needs to preserve
+                the measured boundary of this particular obstruction candidate.
+              </p>
               <figure class="code-panel">
                 <figcaption>Witness fragment</figcaption>
                 <pre><code>witnessId: coupon-hidden-payment-cache
@@ -159,6 +162,13 @@ measurementBoundary: measuredNonzero</code></pre>
                 semantic diagram can become non-fillable. The witness is tied
                 to the selected diagram and measurement boundary.
               </p>
+              <p>
+                Semantic examples show why Architecture Signature cannot be
+                only an import graph. A structurally clean extension can still
+                change an observed behavior; when that behavior is part of the
+                selected witness universe, the report should keep the semantic
+                reading separate from structural split status.
+              </p>
               <figure class="code-panel">
                 <figcaption>Semantic non-fillability</figcaption>
                 <pre><code>apply coupon then round
@@ -174,6 +184,12 @@ round then apply coupon</code></pre>
                 introduced obstruction witnesses, repair suggestions, and
                 non-conclusions. The non-conclusions are part of the report,
                 not boilerplate.
+              </p>
+              <p>
+                A good report reading answers four questions: what changed,
+                which witness explains the concern, what repair candidate is
+                available, and which claim the report refuses to make. This
+                keeps the example reviewable instead of merely illustrative.
               </p>
               <ul class="status-list">
                 <li>

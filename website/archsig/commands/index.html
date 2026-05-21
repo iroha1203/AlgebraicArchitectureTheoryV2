@@ -61,9 +61,11 @@
             <span>Commands</span>
           </nav>
           <p class="eyebrow">ArchSig Reference</p>
-          <h1>Commands are organized by artifact boundary.</h1>
+          <h1>Compose scans into architectural judgement.</h1>
           <p class="lede">
-            ArchSig commands form a pipeline from scan output to validation, report generation, governance summaries, empirical datasets, operational feedback artifacts, repair artifacts, and bounded SFT forecasting estimates.
+            The command set moves from raw repository observation to review
+            reports, policy signals, empirical feedback, repair candidates,
+            and bounded SFT forecasts.
           </p>
         </div>
       </section>
@@ -82,30 +84,19 @@
                 <li><a href="#forecast-repair">Forecast and repair</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/docs/commands.md">
-                    Command Guide
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/README.md">
-                    ArchSig README
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="./" aria-current="page">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
+                <li><a href="../roadmap/">Roadmap</a></li>
               </ul>
             </div>
           </aside>
@@ -117,6 +108,13 @@
                 <code>scan</code> is the default command. It emits Sig0 for a
                 Lean or Python repository. <code>validate</code> checks an
                 existing Sig0 artifact without rescanning source files.
+              </p>
+              <p>
+                Command output should be read as an artifact boundary, not as
+                the tool's private implementation detail. The important
+                question after each command is: what universe did it select,
+                which axes did it measure, which inputs did it refuse to infer,
+                and which non-conclusions did it preserve?
               </p>
               <ul class="status-list">
                 <li>
@@ -140,6 +138,13 @@
                 Command groups correspond to product surfaces. This split
                 keeps the shortest Core path separate from review automation,
                 bounded SFT projection, and operational feedback.
+              </p>
+              <p>
+                A command belongs to a surface because of the claim it supports.
+                Core commands observe. Review commands explain a change to a
+                reviewer. SFT commands describe a bounded future-facing
+                projection. Operational commands calibrate signals against
+                process evidence.
               </p>
               <ul class="term-list">
                 <li>
@@ -167,6 +172,14 @@
                 The PR review chain normalizes evidence into AIR, checks
                 theorem promotion preconditions, summarizes extension quality,
                 applies organization policy, and renders a PR comment.
+              </p>
+              <p>
+                The chain is deliberately staged. AIR names the claim and
+                evidence. Theorem checks ask whether a formal reading is
+                licensed. Feature reports explain architecture movement.
+                Policy decisions apply local thresholds. PR comments translate
+                all of that into review text without erasing the earlier
+                boundaries.
               </p>
               <figure class="code-panel">
                 <figcaption>PR review chain</figcaption>
@@ -235,6 +248,12 @@
                 proposal text to a bounded <code>ConsequenceEnvelope</code>.
                 Repair commands validate repair registries, synthesis
                 constraints, and no-solution certificates.
+              </p>
+              <p>
+                Forecast and repair commands are strongest when they are
+                explicit about finite support. They can expose affected regions,
+                forbidden support, unknown remainder, and repair candidates;
+                they do not decide the unique future of the codebase.
               </p>
               <figure class="code-panel">
                 <figcaption>SFT forecast chain</figcaption>

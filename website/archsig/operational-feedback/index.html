@@ -61,9 +61,11 @@
             <span>Operational Feedback</span>
           </nav>
           <p class="eyebrow">ArchSig Manual</p>
-          <h1>Operational feedback is empirical evidence with guardrails.</h1>
+          <h1>Turn review history into calibration pressure.</h1>
           <p class="lede">
-            B10 artifacts let teams review outcomes, calibration, thresholds, ownership erosion, repair adoption, incident correlation, and hypothesis refresh without converting operational records into causal or formal claims.
+            Operational feedback connects signatures to outcomes, thresholds,
+            ownership, repairs, incidents, and hypotheses so teams can tune the
+            signals that shape future architecture.
           </p>
         </div>
       </section>
@@ -80,30 +82,19 @@
                 <li><a href="#non-conclusions">Non-conclusions</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/docs/operational-feedback.md">
-                    Operational Feedback
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/reports.md">
-                    Reports
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../commands/">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="./" aria-current="page">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
+                <li><a href="../roadmap/">Roadmap</a></li>
               </ul>
             </div>
           </aside>
@@ -115,6 +106,13 @@
                 The daily ledger joins outcome linkage and drift ledger inputs
                 inside a specified aggregation window. Other B10 commands emit
                 canonical operational artifacts for calibration and review.
+              </p>
+              <p>
+                Operational feedback is where ArchSig stops being a one-time
+                report and becomes a calibration loop. It records how review
+                signals, thresholds, ownership boundaries, repairs, incidents,
+                and hypotheses behave over time while keeping private and
+                missing data explicit.
               </p>
               <ul class="status-list">
                 <li>
@@ -139,6 +137,12 @@
                 preserve unavailable, private, missing, and unmeasured data
                 states instead of rounding them to measured zero.
               </p>
+              <p>
+                The purpose is not to prove that a metric caused an incident.
+                The purpose is to make review policy adjustable: which warnings
+                were useful, which were noisy, which teams need different
+                thresholds, and which boundaries require better evidence.
+              </p>
               <ul class="term-list">
                 <li>
                   <strong>Report outcome daily ledger</strong>
@@ -162,6 +166,12 @@
                 adoption, incident correlation, and retained hypotheses are
                 calibration inputs. They are not proof that a report, policy,
                 or repair is correct.
+              </p>
+              <p>
+                This page should be read as the operational counterpart of
+                measured zero. Unknown outcomes, private incident records,
+                missing ownership data, and incomparable windows are first-class
+                states, not data-cleaning inconvenience.
               </p>
               <div class="claim-strip">
                 <p>
