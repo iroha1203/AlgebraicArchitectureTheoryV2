@@ -10,6 +10,10 @@ import Formal.Arch.Evolution.SFTEnvelope
 import Formal.Arch.Evolution.SFTInterfaceBoundary
 import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Evolution.SFTCounterexamples
+import Formal.Arch.Evolution.SFTClockedCone
+import Formal.Arch.Evolution.SFTFieldCover
+import Formal.Arch.Evolution.SFTDescent
+import Formal.Arch.Evolution.SFTTheoremRoadmap
 
 /-!
 Documentation-facing entrypoints for the SFT Lean theorem packages.
@@ -49,6 +53,7 @@ inductive Candidate where
   | aatInterfaceBoundary
   | archSigReportBoundary
   | counterexamplePackage
+  | theoremRoadmap
   deriving DecidableEq, Repr
 
 namespace Candidate
@@ -67,6 +72,7 @@ def sftSection : Candidate -> String
   | aatInterfaceBoundary => "AAT / SFT interface"
   | archSigReportBoundary => "AAT / SFT interface"
   | counterexamplePackage => "AAT / SFT forbidden readings"
+  | theoremRoadmap => "SFT theorem roadmap"
 
 /-- Stable schematic name used by documentation and status tables. -/
 def schematicName : Candidate -> String
@@ -82,6 +88,7 @@ def schematicName : Candidate -> String
   | aatInterfaceBoundary => "AAT theorem-status interface boundary"
   | archSigReportBoundary => "ArchSig-SFT report boundary"
   | counterexamplePackage => "SFT-native counterexample package"
+  | theoremRoadmap => "SFT theorem roadmap theorem packages"
 
 /-- Representative Lean declarations that serve as public entrypoints. -/
 def representativeDeclarations : Candidate -> List String
@@ -148,6 +155,36 @@ def representativeDeclarations : Candidate -> List String
        "SFTCounterexamples.Package",
        "SFTCounterexamples.canonicalPackage",
        "SFTCounterexamples.records_nonConclusions"]
+  | theoremRoadmap =>
+      ["ClockedForecastCone",
+       "BoundedClockedForecastCone",
+       "ClockedForecastCone.length_eq_horizon",
+       "clockedForecastCone_of_forecastCone",
+       "BinaryFieldCover",
+       "BinarySFTModel",
+       "CompatibleLocalClockedStep",
+       "CompatibleLocalClockedPath",
+       "BinaryClockedStepGluingData",
+       "glueCompatibleBinaryClockedConeFamily",
+       "BinaryProjectionGluingLaws",
+       "GlobalConePointPathEquivalenceData",
+       "LocalFamilyPathEquivalenceData",
+       "BinaryProjectionGluingPathLaws",
+       "BinaryProjectionGluingPathLaws.toEndpointLaws",
+       "BinaryProjectionGluingPathLaws.glue_project_after_projection_endpoint",
+       "BinaryProjectionGluingPathLaws.project_after_glue_endpoint",
+       "BinaryProjectionGluingEquivalenceLaws.ofEndpointLaws",
+       "BinaryDescentAssumptions.ofStepGluing",
+       "BinaryDescentAssumptions.ofEndpointLaws",
+       "forecastCone_descent_binary_of_endpoint_laws",
+       "forecastCone_descent_binary_of_path_laws",
+       "binaryForecastConeDescentPackage_of_path_laws",
+       "forecastCone_descent_binary",
+       "SFTTheoremRoadmap.ClockedForecastConeDescentPackage.forecastCone_descent",
+       "SFTTheoremRoadmap.ModularityRepresentationPackage.modularity_representation",
+       "SFTTheoremRoadmap.DescentObstructionPackage.descent_obstruction_of_surjectivity_failure",
+       "SFTTheoremRoadmap.ConeCohomologyPackage.h1_zero_iff_local_futures_glue",
+       "SFTTheoremRoadmap.FundamentalModularityTheoremPackage.bounded_evolution_governed_or_typed_witness"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.
@@ -271,6 +308,75 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          reading :=
           "existing finite counterexamples indexed as SFT-native non-conclusion witnesses",
          status := "proved wrappers" }]
+  | theoremRoadmap =>
+      [{ schematic := "ForecastCone Descent / Modularity / Grand SFT roadmap",
+         leanDeclarations :=
+          ["ClockedForecastCone",
+           "BoundedClockedForecastCone",
+           "ClockedForecastCone.length_eq_horizon",
+           "clockedForecastCone_of_forecastCone",
+           "BinaryFieldCover",
+           "BinarySFTModel.projectClockedForecastCone_left",
+           "BinarySFTModel.projectClockedForecastCone_right",
+           "BinarySFTModel.projectClockedStepPairCompatible",
+           "BinarySFTModel.projectedClockedPaths_tickwiseCompatible",
+           "CompatibleBinaryClockedConeFamily",
+           "BinaryClockedStepGluingData",
+           "glueCompatibleLocalClockedPath",
+           "glueCompatibleBinaryClockedConeFamily",
+           "BinaryProjectionGluingLaws",
+           "projected_glued_target_related",
+           "glued_projected_target_related",
+           "GlobalConePointPathEquivalenceData",
+           "LocalFamilyPathEquivalenceData",
+           "BinaryProjectionGluingPathLaws",
+           "BinaryProjectionGluingPathLaws.toEndpointLaws",
+           "BinaryProjectionGluingPathLaws.glue_project_after_projection_endpoint",
+           "BinaryProjectionGluingPathLaws.project_after_glue_endpoint",
+           "BinaryProjectionGluingEquivalenceLaws",
+           "BinaryProjectionGluingEquivalenceLaws.ofEndpointLaws",
+           "BinaryDescentAssumptions.ofStepGluing",
+           "BinaryDescentAssumptions.ofEndpointLaws",
+           "forecastCone_descent_binary_of_endpoint_laws",
+           "binaryForecastConeDescentPackage_of_endpoint_laws",
+           "forecastCone_descent_binary_of_path_laws",
+           "BinarySelectedForecastConeDescentPackage.ofPathLaws",
+           "binaryForecastConeDescentPackage_of_path_laws",
+           "forecastCone_descent_binary",
+           "binaryForecastConeDescentPackage_of_assumptions",
+           "SFTTheoremRoadmap.binaryForecastConeDescent_of_path_laws",
+           "SFTTheoremRoadmap.ClockedForecastConeDescentPackage.forecastCone_descent",
+           "SFTTheoremRoadmap.BinaryForecastConeDescentPackage.forecastCone_binary_descent",
+           "SFTTheoremRoadmap.ModularityRepresentationPackage.modularity_representation",
+           "SFTTheoremRoadmap.FundamentalModularityTheoremPackage.fundamental_modularity"],
+         reading :=
+          "roadmap-scale SFT theorems are implemented as explicit theorem-package surfaces over exact shared-clock cones; binary local-to-global path gluing is constructed from step gluing data, and selected inverse laws can be instantiated from endpoint projection/glue laws or selected path-level inverse laws",
+         status := "defined only / proved accessors under package assumptions" },
+       { schematic := "Descent obstruction / cohomology / normal form / observation / envelope",
+         leanDeclarations :=
+          ["SFTTheoremRoadmap.DescentFailureKind",
+           "SFTTheoremRoadmap.DescentObstructionWitness",
+           "SFTTheoremRoadmap.DescentObstructionPackage.descent_obstruction_of_injectivity_failure",
+           "SFTTheoremRoadmap.ConeCohomologyPackage.h1_zero_iff_local_futures_glue",
+           "SFTTheoremRoadmap.EvolutionaryNormalFormPackage.evolutionary_normal_form",
+           "SFTTheoremRoadmap.not_coneConservative_of_observationCollapse",
+           "SFTTheoremRoadmap.MinimalConsequenceEnvelopePackage.minimal_consequenceEnvelope_factors"],
+         reading :=
+          "local-to-global failure, cohomology, normal forms, observation adequacy, and minimal envelopes are recorded as bounded theorem surfaces",
+         status := "defined only / proved accessors under package assumptions" },
+       { schematic := "Modular attractor / governance / calibration / Yoneda / confluence / lifecycle / fixed point / invariance",
+         leanDeclarations :=
+          ["SFTTheoremRoadmap.ModularAttractorPackage.modular_attractor",
+           "SFTTheoremRoadmap.GovernanceSynthesisPackage.governance_synthesis",
+           "SFTTheoremRoadmap.ClosedLoopCalibrationPackage.closedLoop_calibration_fixedPoint_or_boundary",
+           "SFTTheoremRoadmap.ArtifactYonedaPackage.artifact_yoneda",
+           "SFTTheoremRoadmap.AgenticConfluencePackage.agentic_confluence",
+           "SFTTheoremRoadmap.LifecycleBifurcationPackage.lifecycle_bifurcation_above_threshold",
+           "SFTTheoremRoadmap.FieldShapingFixedPointPackage.fieldShaping_fixedPoints",
+           "SFTTheoremRoadmap.EvolutionaryInvariancePackage.evolutionary_invariance"],
+         reading :=
+          "engineering-surface and closed-loop roadmap theorem families are available as checked theorem-package entrypoints",
+         status := "defined only / proved accessors under package assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
 def nonConclusionBoundary : Candidate -> String
@@ -298,6 +404,8 @@ def nonConclusionBoundary : Candidate -> String
       "report-to-estimate boundary only; no ground-truth architecture, theorem package, or calibrated forecast"
   | counterexamplePackage =>
       "finite non-conclusion witnesses only; no empirical degradation, incident risk, or global forecast claim"
+  | theoremRoadmap =>
+      "roadmap theorem packages only; no unconditional global descent, calibration, governance effectiveness, AI safety, or extractor completeness"
 
 end Candidate
 

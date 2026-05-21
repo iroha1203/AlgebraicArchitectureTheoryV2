@@ -2192,6 +2192,155 @@ SFT-native 索引である。
 | `SFTCounterexamples.nonConclusionList` | `def` | package が公開する selected non-conclusion kind list。 | `defined only` |
 | `SFTCounterexamples.records_nonConclusions` | `theorem` | package の non-conclusion clause を accessor theorem として取り出す。 | `proved` |
 
+## SFT Clocked Cone
+
+File: `Formal/Arch/Evolution/SFTClockedCone.lean`
+
+`ClockedForecastCone` は `ForecastCone` に idle / stutter tick を足した exact shared-clock
+path model である。core membership は `length = horizon` とし、`<= horizon` の読みは
+`BoundedClockedForecastCone` へ分離する。通常の `ForecastCone` からは target-side idle tick
+で padding した exact clock witness への bridge を証明する。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `ClockedFieldStep` | `inductive` | active supported step または idle / stutter step からなる clock tick。 | `defined only` |
+| `ClockedFieldPath` | `abbrev` | `ClockedFieldStep` を primitive step とする finite path。 | `defined only` |
+| `ClockedForecastCone` | `def` | `length = horizon` を要求する exact shared-clock cone membership predicate。 | `defined only` |
+| `BoundedClockedForecastCone` | `def` | `length <= horizon` の bounded clocked cone membership predicate。exact clock とは分離する。 | `defined only` |
+| `ClockedForecastCone.length_eq_horizon` | `theorem` | exact clocked cone membership から path length と horizon の一致を取り出す。 | `proved` |
+| `ClockedForecastCone.length_le_horizon` | `theorem` | exact clocked cone membership から bounded reading を得る。 | `proved` |
+| `ClockedForecastCone.nil_mem` | `theorem` | zero-length clocked path が zero-horizon cone に属すること。 | `proved` |
+| `ClockedForecastCone.idle_mem_one` | `theorem` | single idle tick が exact one-tick clocked cone に属すること。 | `proved` |
+| `BoundedClockedForecastCone.of_clockedForecastCone` | `theorem` | exact shared-clock cone membership を bounded membership へ読む。 | `proved` |
+| `BoundedClockedForecastCone.monotone_horizon` | `theorem` | bounded clocked cone では horizon extension が membership を保存すること。 | `proved` |
+| `clockedFieldPathOfFieldPath` | `def` | 通常の supported `FieldPath` を active tick だけの clocked path へ持ち上げる。 | `defined only` |
+| `boundedClockedForecastCone_of_forecastCone` | `theorem` | 通常の bounded `ForecastCone` witness を同じ horizon の bounded clocked cone witness へ読む。 | `proved` |
+| `clockedForecastCone_of_forecastCone` | `theorem` | 通常の bounded `ForecastCone` witness に idle tick を padding し、同じ horizon の exact `ClockedForecastCone` witness へ読む。 | `proved` |
+| `ClockedConePoint` | `structure` | target、clocked path、exact cone membership を束ねる sigma-like cone point。 | `defined only` |
+| `ClockedConePoint.ofForecastCone` | `def` | 通常の `ForecastCone` witness から exact clocked cone point を作る。 | `defined only` |
+
+## SFT Binary Field Cover
+
+File: `Formal/Arch/Evolution/SFTFieldCover.lean`
+
+`BinaryFieldCover` は global field を left / right local field と shared interface へ制限する
+最初の concrete cover API である。`global_ext` は descent 側で使う theorem-bearing uniqueness
+principle として cover に保持する。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `BinaryFieldCover` | `structure` | global restriction、interface compatibility、glue、restriction laws、`global_ext`、boundary predicates を束ねる binary cover。 | `defined only` |
+| `BinaryFieldCover.compatible_iff_interface_eq` | `theorem` | local compatibility が interface equality と同値であることを取り出す。 | `proved accessor` |
+| `BinaryFieldCover.restricts_compatible` | `theorem` | 任意の global state の left / right restrictions が compatible であることを取り出す。 | `proved accessor` |
+| `BinaryFieldCover.restrictLeft_glue` | `theorem` | compatible local pair を glue した global state の left restriction を回収する。 | `proved accessor` |
+| `BinaryFieldCover.restrictRight_glue` | `theorem` | compatible local pair を glue した global state の right restriction を回収する。 | `proved accessor` |
+| `BinaryFieldCover.glue_restricts_eq` | `theorem` | global state の selected restrictions を glue すると元の global state に戻る。 | `proved` |
+| `BinaryFieldCover.glue_compatible_proof_irrel` | `theorem` | 同じ compatible local pair の glue は compatibility proof の選び方に依存しない。 | `proved` |
+
+## SFT Binary Descent
+
+File: `Formal/Arch/Evolution/SFTDescent.lean`
+
+Exact `ClockedForecastCone` 上の最初の substantive binary descent surface を定義する。global
+cone point は compatible local cone family へ射影でき、compatible local path は
+`BinaryClockedStepGluingData` から global clocked path へ glue できる。さらに selected
+inverse laws は `BinaryProjectionGluingLaws` の endpoint projection/glue laws から
+endpoint-based equivalence として構成できる。加えて
+`BinaryProjectionGluingPathLaws` から、explicit selected path-level equivalence data に
+相対化された path-level inverse-law constructor も構成できる。これは dependent path の
+definitional equality ではなく、selected relatedness であり、その relatedness には
+reflexive / symmetric / transitive laws と endpoint consequence を要求する。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `ConeEquivalence` | `structure` | selected forward / inverse maps、両側の inverse-up-to-relatedness laws、relatedness の reflexive / symmetric / transitive laws を持つ equivalence witness。 | `defined only` |
+| `BinarySFTModel` | `structure` | binary cover、global/local/interface support、step relation、projection/gluing premises、boundary predicates を束ねる model。 | `defined only` |
+| `BinarySFTModel.projectClockedForecastCone_left` | `theorem` | global exact clocked cone membership を left local exact clocked cone membership へ射影する。 | `proved` |
+| `BinarySFTModel.projectClockedForecastCone_right` | `theorem` | global exact clocked cone membership を right local exact clocked cone membership へ射影する。 | `proved` |
+| `CompatibleLocalClockedStep` | `structure` | left/right の 1 tick と source/target compatibility、interface-step boundary を束ねる local tick pair。 | `defined only` |
+| `CompatibleLocalClockedPath` | `inductive` | left/right local clocked paths を tickwise に zip する compatibility witness。 | `defined only` |
+| `CompatibleLocalClockedPath.left_length_eq_right_length` | `theorem` | tickwise-compatible local paths の left/right clock length が一致する。 | `proved` |
+| `BinarySFTModel.projectClockedStepPairCompatible` | `def` | global clock tick の left/right projections から compatible local tick pair を構成する。 | `defined only` |
+| `BinarySFTModel.projectedClockedPaths_tickwiseCompatible` | `def` | global clocked path の left/right projections が tickwise compatible であることを構成する。 | `defined only` |
+| `BinaryClockedStepGluingData` | `structure` | compatible local tick pair から global clock tick を構成する step-level gluing data と boundary predicates。 | `defined only` |
+| `BinaryClockedStepGluingData.glueCompatibleLocalClockedPath` | `def` | tickwise-compatible local paths を global clocked path へ glue する。 | `defined only` |
+| `BinaryClockedStepGluingData.glueCompatibleLocalClockedPath_length` | `theorem` | glued global path の clock length が left local path の length と一致する。 | `proved` |
+| `CompatibleBinaryClockedConeFamily` | `structure` | left/right exact clocked cone points、endpoint compatibility、tickwise local path witness を束ねる local cone family。 | `defined only` |
+| `projectGlobalConePointToBinaryFamily` | `def` | global cone point を compatible binary local family へ射影する。 | `defined only` |
+| `glueCompatibleBinaryClockedConeFamily` | `def` | `BinaryClockedStepGluingData` から compatible local cone family を global exact clocked cone point へ glue する。 | `defined only` |
+| `GlobalConePointTargetEquivalent` | `def` | global cone points を target equality で関連づける endpoint-based equivalence。 | `defined only` |
+| `LocalFamilyTargetEquivalent` | `def` | compatible local families を left/right target equality で関連づける endpoint-based equivalence。 | `defined only` |
+| `GlobalConePointPathEquivalenceData` | `structure` | global cone points の selected path-level relatedness、equivalence-relation laws、endpoint consequence を束ねる。 | `defined only` |
+| `LocalFamilyPathEquivalenceData` | `structure` | compatible local families の selected path-level relatedness、equivalence-relation laws、left/right endpoint consequence を束ねる。 | `defined only` |
+| `globalConePointTargetEquivalent_refl` / `symm` / `trans` | `theorem` | global endpoint equivalence の equivalence-relation laws。 | `proved` |
+| `localFamilyTargetEquivalent_refl` / `symm` / `trans` | `theorem` | local-family endpoint equivalence の equivalence-relation laws。 | `proved` |
+| `BinaryProjectionGluingLaws` | `structure` | step-level projection law boundaries と endpoint projection/glue laws を束ねる。 | `defined only` |
+| `BinaryProjectionGluingPathLaws` | `structure` | endpoint projection/glue laws の上に、global/local の selected path-level inverse laws と strict path law boundary を束ねる。 | `defined only` |
+| `BinaryProjectionGluingPathLaws.toEndpointLaws` | `def` | selected path-level law package から endpoint-law component を忘却する。 | `defined only` |
+| `BinaryProjectionGluingPathLaws.glue_project_after_projection_endpoint` | `theorem` | selected global path inverse law から glue-after-projection の target equality を取り出す。 | `proved accessor` |
+| `BinaryProjectionGluingPathLaws.project_after_glue_endpoint` | `theorem` | selected local-family path inverse law から projection-after-glue の left/right target equality を取り出す。 | `proved accessor` |
+| `projected_glued_target_related` | `theorem` | projection after glue が original local family と endpoint-equivalent であること。 | `proved` |
+| `glued_projected_target_related` | `theorem` | glue after projection が original global cone point と endpoint-equivalent であること。 | `proved` |
+| `BinaryProjectionGluingEquivalenceLaws` | `structure` | concrete step-glued map に対する selected inverse laws と equivalence-relation laws を束ねる。 | `defined only` |
+| `BinaryProjectionGluingEquivalenceLaws.ofEndpointLaws` | `def` | endpoint projection/glue laws から selected equivalence laws を構成する。 | `defined only` |
+| `BinaryDescentAssumptions.ofStepGluing` | `def` | step-level gluing data と selected inverse laws から `BinaryDescentAssumptions` を構成する。 | `defined only` |
+| `BinaryDescentAssumptions.ofEndpointLaws` | `def` | step-level gluing data と endpoint projection/glue laws から `BinaryDescentAssumptions` を構成する。 | `defined only` |
+| `BinaryDescentAssumptions` | `structure` | compatible local family の gluing、selected inverse laws、global/local relatedness の equivalence-relation laws を束ねる descent assumptions。 | `defined only` |
+| `BinaryDescentAssumptions.glueClockedPoint` | `def` | compatible local family から global exact clocked cone point を構成する。 | `defined only` |
+| `forecastCone_descent_binary` | `def` | `BinaryDescentAssumptions` から global cone point と compatible local family の selected `ConeEquivalence` を構成する。 | `defined only` |
+| `forecastCone_descent_binary_of_endpoint_laws` | `def` | step gluing data と endpoint projection/glue laws から binary selected descent equivalence を構成する。 | `defined only` |
+| `forecastCone_descent_binary_of_path_laws` | `def` | step gluing data、endpoint laws、selected path-level inverse laws から binary selected descent equivalence を構成する。 | `defined only` |
+| `BinarySelectedForecastConeDescentPackage.ofAssumptions` | `def` | binary descent assumptions を selected descent package へ束ねる。 | `defined only` |
+| `BinarySelectedForecastConeDescentPackage.ofEndpointLaws` | `def` | endpoint projection/glue laws から selected binary descent package を構成する。 | `defined only` |
+| `BinarySelectedForecastConeDescentPackage.ofPathLaws` | `def` | selected path-level inverse laws から selected binary descent package を構成し、endpoint / step / strict path law boundary を保持する。 | `defined only` |
+| `binaryForecastConeDescentPackage_of_assumptions` | `theorem` | assumptions から selected binary descent package の存在を取り出す。 | `proved accessor` |
+| `binaryForecastConeDescentPackage_of_endpoint_laws` | `theorem` | endpoint projection/glue laws から selected binary descent package の存在を取り出す。 | `proved accessor` |
+| `binaryForecastConeDescentPackage_of_path_laws` | `theorem` | selected path-level inverse laws から selected binary descent package の存在を取り出す。 | `proved accessor` |
+| `SFTModuleBoundary` | `def` | すべての source / horizon で selected descent equivalence があることを module boundary として定義する。 | `defined only` |
+| `moduleBoundary_iff_forecastConeDescent` | `theorem` | `SFTModuleBoundary` と source/horizon indexed descent の同値を取り出す。 | `proved` |
+| `LocalFamilyDoesNotLift` | `def` | compatible local family が global cone point に lift しない failure predicate。 | `defined only` |
+| `GlobalPathsLocallyIdentified` | `def` | distinct global cone points が local projection で同一視される failure predicate。 | `defined only` |
+
+## SFT Theorem Roadmap
+
+File: `Formal/Arch/Evolution/SFTTheoremRoadmap.lean`
+
+`docs/sft/sft_theorem_roadmap_and_research_vision.md` の ForecastCone Descent から
+Fundamental Modularity Theorem までの theorem family を、Lean 側の checked entrypoint
+として束ねた。ロードマップの大定理は無条件の global theorem として主張せず、descent、
+cover compatibility、cohomology、governance、calibration、fixed point などの仮定を明示した
+theorem package surface と accessor theorem として実装する。
+
+Non-conclusions: この entrypoint は global descent、module boundary の完全性、
+cohomology vanishing、governance effectiveness、calibrated forecast correctness、
+AI agent safety、lifecycle decision correctness、extractor completeness を無条件には結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `SFTTheoremRoadmap.ClockedForecastConeDescentPackage` | `structure` | compatible local family との bidirectional equivalence と descent boundary を束ねる ForecastCone Descent package。 | `defined only` |
+| `SFTTheoremRoadmap.ClockedForecastConeDescentPackage.forecastCone_descent` | `theorem` | package assumption から global clocked cone と compatible local family の equivalence witness の存在を取り出す descent witness accessor。 | `proved accessor` |
+| `SFTTheoremRoadmap.BinaryForecastConeDescentPackage.forecastCone_binary_descent` | `theorem` | binary cover の pullback 形式の descent witness existence を取り出す。 | `proved accessor` |
+| `SFTTheoremRoadmap.binaryForecastConeDescent_of_endpoint_laws` | `theorem` | step gluing data と endpoint projection/glue laws から selected binary descent package の存在を取り出す roadmap-facing accessor。 | `proved accessor` |
+| `SFTTheoremRoadmap.binaryForecastConeDescent_of_path_laws` | `theorem` | step gluing data と selected path-level inverse laws から selected binary descent package の存在を取り出す roadmap-facing accessor。finite-cover descent や full Fundamental Modularity theorem は主張しない。 | `proved accessor` |
+| `SFTTheoremRoadmap.ModularityRepresentationPackage.modularity_representation` | `theorem` | module boundary、ForecastCone descent、unique compatible representation の同値 package を展開する。 | `proved accessor` |
+| `SFTTheoremRoadmap.DescentObstructionPackage.obstruction_of_no_lift` | `theorem` | actual no-lift predicate から typed surjectivity obstruction witness を得る。 | `proved accessor` |
+| `SFTTheoremRoadmap.DescentObstructionPackage.obstruction_of_local_identification` | `theorem` | local identification failure から typed injectivity obstruction witness を得る。 | `proved accessor` |
+| `SFTTheoremRoadmap.PathIndistinguishableFor` | `def` | sound decision projection が区別しない path 同士の relation。 | `defined only` |
+| `SFTTheoremRoadmap.ReviewSetoid` | `def` | decision projection relative な quotient 用 setoid。 | `defined only` |
+| `SFTTheoremRoadmap.MinimalEnvelope` | `def` | `ReviewSetoid` の quotient として定義される minimal decision envelope。 | `defined only` |
+| `SFTTheoremRoadmap.MinimalEnvelope.minimalEnvelope_sound` | `theorem` | quotient equality から任意の sound decision projection の equality を得る。 | `proved` |
+| `SFTTheoremRoadmap.MinimalEnvelope.minimalEnvelope_exact` | `theorem` | sound projection が同じなら minimal envelope でも同一視される。 | `proved` |
+| `SFTTheoremRoadmap.MinimalEnvelope.minimalEnvelope_factors` | `theorem` | sound decision projection が minimal envelope を factor する。 | `proved` |
+| `SFTTheoremRoadmap.GovernanceSynthesisPackage.governance_synthesis` | `theorem` | desired-preserving / bad-excluding intervention と hit/miss guard family の同値を取り出す。 | `proved accessor` |
+| `SFTTheoremRoadmap.governance_synthesis_of_guard_basis_complete` | `theorem` | complete guard basis と support restriction premise から bad exclusion / desired preservation を得る。 | `proved` |
+| `SFTTheoremRoadmap.FiniteRefinementHeight.closedLoopCalibration_fixedPoint_or_boundary_of_finiteHeight` | `theorem` | finite rank descent の下で closed-loop update が fixed point または boundary に到達する。 | `proved` |
+| `SFTTheoremRoadmap.artifact_yoneda_of_separating_probes` | `theorem` | separating probes の下で artifact response equivalence から SFT equivalence を得る。 | `proved` |
+| `SFTTheoremRoadmap.agentic_confluence_of_local_normal_forms_and_descent` | `theorem` | descent と unique normal form から fair interleaving convergence を得る。 | `proved` |
+| `SFTTheoremRoadmap.FundamentalModularityTheoremPackage.ofTheoremFamily` | `def` | selected theorem family から grand theorem package を構成する。`computablyGoverned` と `typedBoundaryFailureWitness` は別命題として保持し、disjunction witness を package conclusion へ渡す。 | `defined only` |
+| `SFTTheoremRoadmap.fundamental_modularity_of_theorem_family` | `theorem` | selected theorem family から governed / failure の二分岐を含む `FundamentalModularityConclusion` を得る。 | `proved` |
+| `SFTTheoremRoadmap.FundamentalModularityTheoremPackage.fundamental_modularity` | `theorem` | grand theorem package から modularity と ForecastCone descent の同値を取り出す。 | `proved accessor` |
+| `SFTTheoremRoadmap.FundamentalModularityTheoremPackage.bounded_evolution_governed_or_typed_witness` | `theorem` | bounded evolution は governed または typed boundary failure witness を持つ、という package conclusion を取り出す。 | `proved accessor` |
+
 ## SFT Theorem Package Entrypoint
 
 File: `Formal/Arch/Evolution/SFTTheoremPackages.lean`
@@ -2209,7 +2358,7 @@ Lean theorem witness 化を結論しない。
 | Name | Kind | Description | Status |
 | --- | --- | --- | --- |
 | `SFTTheoremPackages.SchematicCorrespondence` | `structure` | SFT schematic statement と対応する Lean declaration、bounded reading、status を保持する docs-facing metadata row。 | `defined only` |
-| `SFTTheoremPackages.Candidate` | `inductive` | SFT theorem-package group。`SoftwareField`, `ForecastCone`, cone projection, artifact action, policy / governance, reachability, support safety, `FieldUpdate`, `ConsequenceEnvelope`, AAT interface boundary, ArchSig report boundary, counterexample package を列挙する。 | `defined only` |
+| `SFTTheoremPackages.Candidate` | `inductive` | SFT theorem-package group。`SoftwareField`, `ForecastCone`, cone projection, artifact action, policy / governance, reachability, support safety, `FieldUpdate`, `ConsequenceEnvelope`, AAT interface boundary, ArchSig report boundary, counterexample package, theorem roadmap を列挙する。 | `defined only` |
 | `SFTTheoremPackages.Candidate.sftSection` | `def` | candidate が主に対応する SFT source section を返す。 | `defined only` |
 | `SFTTheoremPackages.Candidate.schematicName` | `def` | docs / website status で使う stable schematic name を返す。 | `defined only` |
 | `SFTTheoremPackages.Candidate.representativeDeclarations` | `def` | candidate ごとの代表 Lean declaration 名を返す public entrypoint metadata。 | `defined only` |

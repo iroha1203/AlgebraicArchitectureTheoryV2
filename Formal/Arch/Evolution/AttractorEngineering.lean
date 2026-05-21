@@ -151,8 +151,8 @@ A finite witness separating accepted-step invariant preservation from
 support-family preservation.
 
 The selected controller accepts only safe self-steps. The selected support at
-the safe state still contains an operation that can realize an unsafe drift, so
-support preservation does not follow from accepted preservation alone.
+the safe state still contains an operation that can realize a hazardous drift,
+so support preservation does not follow from accepted preservation alone.
 -/
 namespace AcceptedPreservationNotSupportPreservation
 

@@ -66,4 +66,7 @@ import Formal.Arch.Evolution.SFTEnvelope
 import Formal.Arch.Evolution.SFTInterfaceBoundary
 import Formal.Arch.Evolution.SFTArchSigBoundary
 import Formal.Arch.Evolution.SFTCounterexamples
+import Formal.Arch.Evolution.SFTClockedCone
+import Formal.Arch.Evolution.SFTFieldCover
+import Formal.Arch.Evolution.SFTDescent
 import Formal.Arch.Evolution.SFTTheoremPackages

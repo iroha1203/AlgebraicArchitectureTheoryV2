@@ -1095,8 +1095,12 @@ claim boundary:
 Formal/Arch/Evolution/SFTClockedCone.lean
 Formal/Arch/Evolution/SFTFieldCover.lean
 Formal/Arch/Evolution/SFTDescent.lean
-Formal/Arch/Evolution/SFTDescentObstruction.lean
 ```
+
+現時点の Lean surface では、`SFTClockedCone.lean` が exact shared-clock cone core、
+`SFTFieldCover.lean` が binary cover API、`SFTDescent.lean` が exact clocked cone 上の
+binary descent surface を持つ。no-lift / local-identification から typed obstruction へ接続する
+最小 bridge は `SFTTheoremRoadmap.lean` に置き、独立 module への分割は後続作業とする。
 
 第二波で追加する module:
 
@@ -1172,11 +1176,16 @@ ClockedForecastCone support relation source horizon target path
 そのうえで次を証明する。
 
 ```text
-ForecastCone -> exists ClockedForecastCone
-ClockedForecastCone -> ForecastCone
-ClockedForecastCone.monotone_by_idle_padding
-ClockedForecastCone.active_length_le_horizon
+ClockedForecastCone.length_eq_horizon
+ClockedForecastCone.length_le_horizon
+BoundedClockedForecastCone.of_clockedForecastCone
+BoundedClockedForecastCone.monotone_horizon
+boundedClockedForecastCone_of_forecastCone
+clockedForecastCone_of_forecastCone
 ```
+
+`ClockedForecastCone` 自体は exact horizon を保持し、horizon extension の monotonicity は
+`BoundedClockedForecastCone` または explicit idle-padding bridge として読む。
 
 第二段階では binary cover を concrete に定義する。
 
@@ -1190,7 +1199,7 @@ BinaryFieldCover Global Left Right Interface where
   glue          : (l : Left) -> (r : Right) -> compatible l r -> Global
   glue_left     : ...
   glue_right    : ...
-  glue_unique   : ...
+  global_ext    : ...
 ```
 
 support、policy、step relation は cover と独立に持たせず、restriction compatibility
@@ -2231,6 +2240,25 @@ Phase A: Clocked descent core
 4. theorem index / proof obligations update
 ```
 
+Current Lean status: Phase A の core は `Formal/Arch/Evolution/SFTClockedCone.lean`,
+`Formal/Arch/Evolution/SFTFieldCover.lean`, `Formal/Arch/Evolution/SFTDescent.lean` に分割済み。
+`forecastCone_descent_binary` は `BinaryDescentAssumptions` から selected `ConeEquivalence` を
+構成する theorem-package surface である。`ConeEquivalence` の global/local relatedness は
+reflexive / symmetric / transitive laws を持つ selected equivalence relation として要求される。
+local-to-global path gluing は `BinaryClockedStepGluingData` から
+`glueCompatibleLocalClockedPath` と `glueCompatibleBinaryClockedConeFamily` として構成される。
+`BinaryDescentAssumptions.ofStepGluing` はこの concrete glue function を使って descent assumptions
+を組み立てる。さらに `BinaryProjectionGluingLaws` による endpoint projection/glue laws から
+`BinaryProjectionGluingEquivalenceLaws.ofEndpointLaws` と
+`forecastCone_descent_binary_of_endpoint_laws` を構成できる。
+加えて `BinaryProjectionGluingPathLaws` によって、explicit selected path-level equivalence data
+に相対化した `forecastCone_descent_binary_of_path_laws` と path-law package accessor も構成できる。
+これは dependent path の definitional equality ではなく selected path equivalence である。
+definitional path equality / transport-normalized path equality、finite cover / Cech descent、
+cohomological obstruction interpretation、actual obstruction cutting と governance synthesis の統合、
+concrete finite-height refinement order 上の closed-loop calibration、統合 SFT model 上の Fundamental
+Modularity theorem はまだ無条件には主張しない。
+
 Phase B: Obstruction and review surface
 
 ```text
@@ -2295,8 +2323,8 @@ docs/aat/lean_theorem_index.md
 Formal/Arch/Evolution/SFTTheoremPackages.lean
 ```
 
-この実装計画の最初の実作業は、`ClockedForecastCone` と `BinaryFieldCover` である。
-ここが通ると、SFT の中心命題である
+この実装計画の最初の実作業は、`ClockedForecastCone`、`BinaryFieldCover`、exact cone projection、
+binary descent assumptions の concrete API である。ここが通ると、SFT の中心命題である
 
 ```text
 architecture boundary
@@ -2304,4 +2332,4 @@ architecture boundary
 future-gluing boundary
 ```
 
-を Lean 上の具体的な theorem package に変換できる。
+を Lean 上の具体的な theorem package に変換する土台ができる。
