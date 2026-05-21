@@ -2261,10 +2261,19 @@ ForecastCone descent は、explicit finite gluing と Cech-style compatibility l
 selected skeleton として表現できる。`SFTDescentObstruction.lean` では selected finite descent
 failure を typed obstruction witness へ分類する explicit classifier package と、selected bad
 obstruction witness を governance package で cut する checked accessor surface を追加した。
+`SFTFundamentalModularity.lean` では final conservative assembly surface を追加した。explicit
+descent、obstruction、minimal-envelope、governance、calibration、agentic confluence assumptions
+の下で、bounded selected evolution が governed であるか typed boundary failure を露出することを、
+既存 `SFTTheoremRoadmap.FundamentalModularityConclusion` / `FundamentalModularityTheoremPackage`
+へ bridge する checked theorem-package assembly として読める。agentic component は
+`hAgentic` と governed-side `agenticConfluenceAvailable` bridge として final hypotheses に接続され、
+agentic non-conclusions も roadmap conclusion の boundary に残る。agentic bridge は
+`localConfluence` 単体ではなく、`AgenticConfluencePackage.agentic_confluence` の conclusion である
+`FairInterleavingsConverge package.landing` を final component として読む。
 definitional path equality / transport-normalized path equality、all finite covers satisfying descent、
 all descent failures are completely classified、full Cech cohomology theorem、operational governance
-effectiveness、concrete finite-height refinement order 上の closed-loop calibration、統合 SFT model
-上の Fundamental Modularity theorem はまだ無条件には主張しない。
+effectiveness、empirical calibration correctness、global agentic safety / confluence、assumption-free
+Fundamental Modularity theorem はまだ無条件には主張しない。
 
 Phase B: Obstruction and review surface
 

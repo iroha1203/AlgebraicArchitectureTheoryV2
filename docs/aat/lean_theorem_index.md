@@ -2361,6 +2361,7 @@ Cech cohomology、operational governance effectiveness、Fundamental Modularity 
 | `FiniteDescentObstructionClassifier` | `structure` | selected failure を optional typed witness へ写す classifier、outer / payload failure kind soundness law、completeness boundary を束ねる。 | `defined only` |
 | `FiniteDescentObstructionClassifier.classified_failureKind_eq` | `theorem` | classified witness の outer failure kind が selected failure kind と一致することを取り出す。 | `proved accessor` |
 | `FiniteDescentObstructionClassifier.classified_payload_failureKind_eq` | `theorem` | classified witness の payload failure kind が selected failure kind と一致することを取り出す。 | `proved accessor` |
+| `FiniteDescentObstructionClassifier.classified_payload_matches_witness_kind` | `theorem` | classified witness 内の outer failure kind と payload failure kind の一致を取り出す。 | `proved accessor` |
 | `finite_descent_obstruction_of_classified_failure` | `theorem` | classifier が selected failure を分類しているなら obstruction witness を取り出す。 | `proved accessor` |
 | `finite_descent_obstruction_of_classified_failure_sound` | `theorem` | classified witness とともに outer / payload failure kind equality を取り出す。 | `proved accessor` |
 | `FiniteDescentObstructionPackage` | `structure` | classifier と every-selected-failure-classified assumption、obstruction boundary を束ねる。 | `defined only` |
@@ -2418,6 +2419,48 @@ AI agent safety、lifecycle decision correctness、extractor completeness を無
 | `SFTTheoremRoadmap.fundamental_modularity_of_theorem_family` | `theorem` | selected theorem family から governed / failure の二分岐を含む `FundamentalModularityConclusion` を得る。 | `proved` |
 | `SFTTheoremRoadmap.FundamentalModularityTheoremPackage.fundamental_modularity` | `theorem` | grand theorem package から modularity と ForecastCone descent の同値を取り出す。 | `proved accessor` |
 | `SFTTheoremRoadmap.FundamentalModularityTheoremPackage.bounded_evolution_governed_or_typed_witness` | `theorem` | bounded evolution は governed または typed boundary failure witness を持つ、という package conclusion を取り出す。 | `proved accessor` |
+
+## SFT Fundamental Modularity Final Assembly
+
+File: `Formal/Arch/Evolution/SFTFundamentalModularity.lean`
+
+SFT theorem roadmap の各 package surface を、final conservative assembly layer として束ねる。
+これは assumption-free full theorem ではなく、descent、typed obstruction、minimal review
+envelope、obstruction-cutting governance、closed-loop calibration、agentic confluence などの
+explicit package assumptions の下で、bounded selected evolution が governed であるか typed
+boundary failure を露出する、という checked assembly を提供する。
+
+Non-conclusions: all software evolution is governed、complete descent failure classification、
+all finite covers satisfying descent、full Cech cohomology theorem、operational governance effectiveness、
+empirical calibration correctness、global agentic safety、assumption-free Fundamental Modularity theorem
+は結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `SFTFundamentalModularity.FundamentalEvolutionOutcome` | `inductive` | final assembly の docs-facing outcome vocabulary。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalBoundaryFailureKind` | `inductive` | descent failure、unclassified obstruction、uncut governance、review/calibration/agentic/theorem-family boundary などの typed failure kind。 | `defined only` |
+| `SFTFundamentalModularity.TypedComputationBoundaryFailure` | `structure` | typed boundary failure kind、broken-boundary explanation、evidence boundary、non-conclusions を束ねる。 | `defined only` |
+| `SFTFundamentalModularity.ComputablyGoverned` | `structure` | descent、obstruction handling、minimal envelope、governance cutting、closed-loop settling、agentic confluence を読める governed-side package。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalDescentComponent` | `structure` | modularity-as-descent と ForecastCone descent の selected equivalence boundary を保持する。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalObstructionComponent` | `structure` | technical debt as obstruction と typed failure witness availability を保持する。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalReviewComponent` | `structure` | minimal decision-preserving envelope component。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalGovernanceComponent` | `structure` | obstruction cutting と desired-family preservation component。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalCalibrationComponent` | `structure` | boundary-explicit fixed point と fixed-point-or-boundary expansion component。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalAgenticComponent` | `structure` | agentic confluence と fair interleaving convergence component。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalModularityHypotheses` | `structure` | final assembly に必要な component packages と explicit proof assumptions を束ねる。agentic confluence assumption と governed-side availability bridge も保持する。 | `defined only` |
+| `SFTFundamentalModularity.roadmapConclusion_of_hypotheses` | `def` | final hypotheses から既存 `SFTTheoremRoadmap.FundamentalModularityConclusion` を構成する。 | `defined only` |
+| `SFTFundamentalModularity.roadmapPackage_of_hypotheses` | `def` | final hypotheses から既存 `SFTTheoremRoadmap.FundamentalModularityTheoremPackage` を構成する。 | `defined only` |
+| `SFTFundamentalModularity.fundamental_modularity_final_assembly` | `theorem` | explicit hypotheses の下で theorem-family components、agentic confluence、governed-or-typed-failure conclusion を組み上げる。 | `proved accessor / assembly theorem` |
+| `SFTFundamentalModularity.final_bounded_evolution_governed_or_typed_failure` | `theorem` | final hypotheses から governed または typed boundary failure の disjunction を取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.final_agentic_confluence` | `theorem` | final hypotheses から selected agentic confluence assumption を取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.final_governed_agenticConfluenceAvailable` | `theorem` | final hypotheses の bridge から governed-side agentic confluence availability を取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.final_modularity_iff_forecastConeDescent` | `theorem` | assembled roadmap package が modularity と ForecastCone descent の同値を記録することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.governanceComponent_of_finiteObstructionGovernance` | `def` | finite obstruction governance package を final governance component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.reviewComponent_of_minimalEnvelopePackage` | `def` | minimal consequence-envelope package を final review component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.calibrationComponent_of_closedLoopPackage` | `def` | closed-loop calibration package を final calibration component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage` | `def` | agentic confluence package の conclusion `FairInterleavingsConverge package.landing` を final agentic component の `agenticConfluence` / `fairInterleavingsConverge` として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.agenticComponent_records_agenticConfluence` | `theorem` | package assumptions から final agentic component の `agenticConfluence` conclusion を取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.agenticComponent_records_confluence` | `theorem` | package assumptions から final agentic component の `fairInterleavingsConverge` conclusion を取り出す。 | `proved accessor` |
 
 ## SFT Theorem Package Entrypoint
 

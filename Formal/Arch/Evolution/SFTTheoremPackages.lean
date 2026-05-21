@@ -16,6 +16,7 @@ import Formal.Arch.Evolution.SFTDescent
 import Formal.Arch.Evolution.SFTFiniteCover
 import Formal.Arch.Evolution.SFTDescentObstruction
 import Formal.Arch.Evolution.SFTTheoremRoadmap
+import Formal.Arch.Evolution.SFTFundamentalModularity
 
 /-!
 Documentation-facing entrypoints for the SFT Lean theorem packages.
@@ -193,9 +194,11 @@ def representativeDeclarations : Candidate -> List String
        "FiniteDescentFailure",
        "FiniteObstructionClass",
        "FiniteDescentObstructionPayload",
+       "FiniteTypedObstructionWitness.payload_failureKind_eq",
        "FiniteDescentObstructionClassifier",
        "FiniteDescentObstructionClassifier.classified_failureKind_eq",
        "FiniteDescentObstructionClassifier.classified_payload_failureKind_eq",
+       "FiniteDescentObstructionClassifier.classified_payload_matches_witness_kind",
        "finite_descent_obstruction_of_classified_failure_sound",
        "FiniteDescentObstructionPackage",
        "finite_descent_obstruction_of_failure",
@@ -220,7 +223,31 @@ def representativeDeclarations : Candidate -> List String
        "SFTTheoremRoadmap.ModularityRepresentationPackage.modularity_representation",
        "SFTTheoremRoadmap.DescentObstructionPackage.descent_obstruction_of_surjectivity_failure",
        "SFTTheoremRoadmap.ConeCohomologyPackage.h1_zero_iff_local_futures_glue",
-       "SFTTheoremRoadmap.FundamentalModularityTheoremPackage.bounded_evolution_governed_or_typed_witness"]
+       "SFTTheoremRoadmap.FundamentalModularityTheoremPackage.bounded_evolution_governed_or_typed_witness",
+       "SFTFundamentalModularity.FundamentalEvolutionOutcome",
+       "SFTFundamentalModularity.FundamentalBoundaryFailureKind",
+       "SFTFundamentalModularity.TypedComputationBoundaryFailure",
+       "SFTFundamentalModularity.ComputablyGoverned",
+       "SFTFundamentalModularity.FundamentalDescentComponent",
+       "SFTFundamentalModularity.FundamentalObstructionComponent",
+       "SFTFundamentalModularity.FundamentalReviewComponent",
+       "SFTFundamentalModularity.FundamentalGovernanceComponent",
+       "SFTFundamentalModularity.FundamentalCalibrationComponent",
+       "SFTFundamentalModularity.FundamentalAgenticComponent",
+       "SFTFundamentalModularity.FundamentalModularityHypotheses",
+       "SFTFundamentalModularity.roadmapConclusion_of_hypotheses",
+       "SFTFundamentalModularity.roadmapPackage_of_hypotheses",
+       "SFTFundamentalModularity.fundamental_modularity_final_assembly",
+       "SFTFundamentalModularity.final_bounded_evolution_governed_or_typed_failure",
+       "SFTFundamentalModularity.final_agentic_confluence",
+       "SFTFundamentalModularity.final_governed_agenticConfluenceAvailable",
+       "SFTFundamentalModularity.final_modularity_iff_forecastConeDescent",
+       "SFTFundamentalModularity.governanceComponent_of_finiteObstructionGovernance",
+       "SFTFundamentalModularity.reviewComponent_of_minimalEnvelopePackage",
+       "SFTFundamentalModularity.calibrationComponent_of_closedLoopPackage",
+       "SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage",
+       "SFTFundamentalModularity.agenticComponent_records_agenticConfluence",
+       "SFTFundamentalModularity.agenticComponent_records_confluence"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.
