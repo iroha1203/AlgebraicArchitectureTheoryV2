@@ -80,6 +80,7 @@
                 <li><a href="#hidden-interaction">Hidden interaction</a></li>
                 <li><a href="#semantic-witness">Semantic witness</a></li>
                 <li><a href="#report-reading">Report reading</a></li>
+                <li><a href="#reviewer-comment">Reviewer comment</a></li>
                 <li><a href="#dynamics">Dynamics reading</a></li>
               </ol>
             </nav>
@@ -88,6 +89,8 @@
               <ul>
                 <li><a href="../">Manual overview</a></li>
                 <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../inputs/">Inputs and Configuration</a></li>
+                <li><a href="../reading-output/">Reading the Output</a></li>
                 <li><a href="../commands/">Commands</a></li>
                 <li><a href="../artifacts/">Artifacts</a></li>
                 <li><a href="../boundaries/">Boundaries</a></li>
@@ -204,6 +207,54 @@ round then apply coupon</code></pre>
                   <span>Advisory candidates such as introducing a port or moving access behind a contract.</span>
                 </li>
               </ul>
+              <figure class="code-panel">
+                <figcaption>Report snippet</figcaption>
+                <pre><code>{
+  "splitStatus": "non_split",
+  "introducedObstructionWitnesses": [
+    "coupon-hidden-payment-cache",
+    "coupon-discount-rounding-order"
+  ],
+  "coverageGaps": [
+    "runtime completeness",
+    "semantic completeness beyond selected diagrams"
+  ],
+  "repairSuggestions": [
+    "introduce CouponPort",
+    "move cache access behind PaymentPort contract"
+  ]
+}</code></pre>
+              </figure>
+            </section>
+
+            <section id="reviewer-comment" class="article-section">
+              <h2>Reviewer comment</h2>
+              <p>
+                A reviewer should translate the report into a concrete review
+                request. The point is not to repeat the JSON; it is to say what
+                changed, why it matters, and what evidence remains missing.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Review reading</figcaption>
+                <pre><code>ArchSig found a non-split coupon extension.
+
+Reason:
+- CouponService reaches PaymentAdapter.internalCache.
+- The selected semantic diagram also shows rounding-order mismatch.
+
+Suggested review action:
+- Move cache access behind a PaymentPort contract.
+- Add or confirm an explicit coupon/payment semantic contract.
+
+Boundary:
+- Runtime completeness was not established.
+- This is a measured review witness, not a Lean theorem proof.</code></pre>
+              </figure>
+              <p>
+                This is the style of output a team can use in a PR comment,
+                check summary, or design review note: concrete enough to act
+                on, bounded enough to avoid overclaiming.
+              </p>
             </section>
 
             <section id="dynamics" class="article-section">
