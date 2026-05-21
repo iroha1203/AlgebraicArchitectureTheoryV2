@@ -691,6 +691,8 @@ This would give a deeper semantics of refactoring, migration, and architecture-p
 
 ## 6. Grand Theorem: Fundamental Modularity Theorem of Software Evolution
 
+日本語名: **ソフトウェア進化の基本定理**
+
 The above theorems suggest a larger unifying theorem.
 
 ### Statement Sketch
