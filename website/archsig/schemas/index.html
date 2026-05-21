@@ -61,9 +61,11 @@
             <span>Schemas</span>
           </nav>
           <p class="eyebrow">ArchSig Reference</p>
-          <h1>Schema compatibility is claim-boundary compatibility.</h1>
+          <h1>Let signatures evolve without changing their meaning.</h1>
           <p class="lede">
-            Schema evolution is not only field-shape migration. It must preserve assumptions, coverage, exactness metadata, and non-conclusions so reports keep the same claim boundary after migration.
+            Schema rules make old and new artifacts comparable by preserving
+            assumptions, units, coverage, exactness, and the boundaries that
+            give each report its force.
           </p>
         </div>
       </section>
@@ -80,35 +82,21 @@
                 <li><a href="#migration">Migration rules</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/schema_compatibility.md">
-                    Schema compatibility
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/air.md">
-                    AIR
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/signature_artifacts.md">
-                    Signature artifacts
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../inputs/">Inputs and Configuration</a></li>
+                <li><a href="../reading-output/">Reading the Output</a></li>
+                <li><a href="../air/">AIR</a></li>
+                <li><a href="../commands/">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="./" aria-current="page">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
               </ul>
             </div>
           </aside>
@@ -120,6 +108,17 @@
                 A schema compatibility policy names the artifact, version,
                 field mappings, deprecated fields, required assumptions,
                 coverage / exactness boundaries, and non-conclusions.
+              </p>
+              <p>
+                Most readers come here when an older artifact must still be
+                understood. The practical question is not only "can this JSON
+                parse?" but "can this report still mean the same thing?"
+              </p>
+              <p>
+                Schema evolution is part of the claim boundary. Adding a field,
+                renaming an axis, or changing a unit can change what a report
+                means. ArchSig therefore treats assumptions and non-conclusions
+                as schema material, not as prose outside the artifact.
               </p>
               <figure class="code-panel">
                 <figcaption>Compatibility policy shape</figcaption>
@@ -140,6 +139,12 @@
                 <code>notComparable</code> is a valid boundary outcome, not a
                 generic failure. If schema, unit, projection, or coverage does
                 not align, the tool should avoid inventing a delta.
+              </p>
+              <p>
+                Compatibility is not only about JSON parsing. Two artifacts can
+                both be syntactically valid and still be incomparable because
+                their measurement universes, exactness assumptions, or
+                projection rules differ.
               </p>
               <ul class="term-list">
                 <li>
@@ -170,6 +175,12 @@
                 reports such as PR force, signature trajectory, and dynamics
                 metrics.
               </p>
+              <p>
+                A catalog entry tells downstream readers how to preserve the
+                artifact's meaning. It names the artifact family, the expected
+                boundary fields, and the report surfaces that are allowed to
+                consume it.
+              </p>
               <ul class="status-list">
                 <li>
                   <strong>Core artifacts</strong>
@@ -192,6 +203,11 @@
                 A migration is not safe if it removes an older non-conclusion,
                 silently discharges a new required assumption, or loses
                 coverage and exactness metadata.
+              </p>
+              <p>
+                A useful migration report should tell the reader what was
+                copied, what was mapped, what became unavailable, and which
+                comparison or formal promotion is now blocked.
               </p>
               <div class="claim-strip">
                 <p>

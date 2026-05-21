@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="ArchSig manual landing, reading path, CLI scope, artifact boundary, and source mapping."
+      content="ArchSig manual for architecture signatures, bounded repository observation, review reports, SFT forecast artifacts, and operational feedback."
     >
     <title>ArchSig Manual</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig Manual">
-    <meta property="og:description" content="ArchSig manual landing, reading path, CLI scope, artifact boundary, and source mapping.">
+    <meta property="og:description" content="ArchSig manual for architecture signatures, bounded repository observation, review reports, SFT forecast artifacts, and operational feedback.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig Manual">
-    <meta name="twitter:description" content="ArchSig manual landing, reading path, CLI scope, artifact boundary, and source mapping.">
+    <meta name="twitter:description" content="ArchSig manual for architecture signatures, bounded repository observation, review reports, SFT forecast artifacts, and operational feedback.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -60,12 +60,11 @@
             <span>ArchSig</span>
           </nav>
           <p class="eyebrow">ArchSig Manual</p>
-          <h1>Architecture Signature tooling with explicit claim boundaries.</h1>
+          <h1>Make architecture change visible before it hardens.</h1>
           <p class="lede">
-            ArchSig is the observation layer for signatures and witnesses. It
-            turns repository artifacts into bounded signature, report, workflow,
-            and forecasting artifacts without turning measurement output into
-            Lean theorem status.
+            ArchSig turns code, proposals, reviews, and operations into
+            architecture signatures that teams can inspect, compare, forecast,
+            and calibrate.
           </p>
         </div>
       </section>
@@ -76,149 +75,183 @@
             <nav class="toc-panel" aria-labelledby="toc-title">
               <h2 id="toc-title">On this page</h2>
               <ol>
-                <li><a href="#reading-order">Reading order</a></li>
+                <li><a href="#how-to-read">How to read this manual</a></li>
+                <li><a href="#what-it-is">What ArchSig is</a></li>
+                <li><a href="#signature-model">Signature model</a></li>
                 <li><a href="#product-surfaces">Product surfaces</a></li>
-                <li><a href="#tool-scope">Tool scope</a></li>
-                <li><a href="#reference-map">Reference map</a></li>
+                <li><a href="#report-life">Report life</a></li>
+                <li><a href="#manual-map">Manual map</a></li>
                 <li><a href="#claim-discipline">Claim discipline</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/README.md">
-                    ArchSig README
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/README.md">
-                    Tooling documentation entry
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/principles.md">
-                    Tooling principles
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="./" aria-current="page">Manual overview</a></li>
+                <li><a href="getting-started/">Getting Started</a></li>
+                <li><a href="inputs/">Inputs and Configuration</a></li>
+                <li><a href="reading-output/">Reading the Output</a></li>
+                <li><a href="air/">AIR</a></li>
+                <li><a href="commands/">Commands</a></li>
+                <li><a href="artifacts/">Artifacts</a></li>
+                <li><a href="boundaries/">Boundaries</a></li>
+                <li><a href="workflows/">Workflows</a></li>
+                <li><a href="schemas/">Schemas</a></li>
+                <li><a href="operational-feedback/">Operational Feedback</a></li>
+                <li><a href="examples/">Examples</a></li>
               </ul>
             </div>
           </aside>
 
           <div class="article-main">
-            <section id="reading-order" class="article-section">
-              <h2>Reading order</h2>
+            <section id="how-to-read" class="article-section">
+              <h2>How to read this manual</h2>
               <p>
-                ArchSig is the observation and reporting layer for AAT / SFT.
-                AAT provides the local algebra of architectural change, while
-                SFT reads selected observations as field-shaped computation
-                over future architectural trajectories. Start with the minimal
-                scan path, then read command and artifact references before
-                using reports for PR review or SFT forecasting.
+                Read the first four chapters in order if you are evaluating
+                ArchSig for a repository: run a small scan, prepare inputs,
+                read the output, then inspect AIR. After that, use Commands,
+                Artifacts, Boundaries, Workflows, Schemas, Operational
+                Feedback, and Examples as reference chapters.
               </p>
-              <ul class="chapter-list">
+              <ul class="status-list">
                 <li>
-                  <a href="getting-started/">Getting Started</a>
-                  <span>Fixture scan, validation, repository scan, and Python import graph scan.</span>
+                  <strong>Trying it for the first time</strong>
+                  <span>Start with Getting Started, then Reading the Output. Do not begin with the full command catalog.</span>
                 </li>
                 <li>
-                  <a href="commands/">Commands</a>
-                  <span>CLI reference for scan, reports, policy, dataset, operational feedback, repair, and SFT forecast commands.</span>
+                  <strong>Adding it to PR review</strong>
+                  <span>Read Inputs, AIR, Workflows, and Examples so the review path preserves evidence and coverage.</span>
                 </li>
                 <li>
-                  <a href="artifacts/">Artifacts</a>
-                  <span>Sig0, validation, snapshots, diff reports, AIR, Feature Extension Report, policy decision, datasets, and SFT forecasting artifacts.</span>
-                </li>
-                <li>
-                  <a href="boundaries/">Boundaries</a>
-                  <span>Rules for measured zero, unmeasured axes, theorem promotion, non-conclusions, and lawfulness claims.</span>
-                </li>
-                <li>
-                  <a href="workflows/">Workflows</a>
-                  <span>First adoption, PR review, generated-change provenance, scheduled scan, architecture dynamics, and SFT forecast workflow.</span>
-                </li>
-                <li>
-                  <a href="schemas/">Schemas</a>
-                  <span>Schema version policy, compatibility outcomes, catalog families, and migration guardrails.</span>
-                </li>
-                <li>
-                  <a href="operational-feedback/">Operational Feedback</a>
-                  <span>B10 daily ledger, calibration, threshold, ownership, repair adoption, incident correlation, and hypothesis refresh artifacts.</span>
-                </li>
-                <li>
-                  <a href="examples/">Examples</a>
-                  <span>Good extension, hidden interaction witness, semantic witness, report reading, and dynamics reading.</span>
-                </li>
-                <li>
-                  <a href="roadmap/">Roadmap</a>
-                  <span>B0-B13 phases, current implementation snapshot, and standardization targets.</span>
+                  <strong>Debugging a report</strong>
+                  <span>Identify the artifact type, read its status fields, then follow evidence refs back through AIR or Sig0.</span>
                 </li>
               </ul>
+            </section>
+
+            <section id="what-it-is" class="article-section">
+              <h2>What ArchSig is</h2>
+              <p>
+                ArchSig reads architecture as an observed signature rather
+                than as a single score. A checkout, policy file, runtime edge
+                record, PR description, incident note, or proposal can become
+                an artifact only after its evidence boundary is made explicit.
+                The output is useful because it says both what was seen and
+                what remained outside the observation.
+              </p>
+              <p>
+                The first object is a bounded component universe: components,
+                dependency edges, selected policy edges, optional runtime
+                evidence, unsupported constructs, and metric status. Later
+                commands preserve that boundary while producing diffs,
+                review reports, policy decisions, forecast envelopes, and
+                operational feedback records.
+              </p>
+              <ul class="term-list">
+                <li>
+                  <strong>Observation</strong>
+                  <span>ArchSig records a finite view of a repository or proposal: modules, imports, policy edges, evidence refs, and unsupported constructs.</span>
+                </li>
+                <li>
+                  <strong>Signature</strong>
+                  <span>The observed view is projected onto axes such as cycle risk, SCC size, depth, fanout, boundary violations, runtime exposure, and theorem-boundary status.</span>
+                </li>
+                <li>
+                  <strong>Report</strong>
+                  <span>Reports translate the signature into reviewable changes: worsened axes, improved axes, missing evidence, precondition status, and recommended follow-up.</span>
+                </li>
+                <li>
+                  <strong>Feedback</strong>
+                  <span>Operational artifacts connect signatures to calibration, thresholds, ownership, repair adoption, and outcome records without promoting correlation into theorem status.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="signature-model" class="article-section">
+              <h2>Signature model</h2>
+              <p>
+                A signature axis is never just a number. It is a value together
+                with a measurement status, the selected universe, evidence
+                refs, and non-conclusions. This is the difference between an
+                architectural diagnostic and a loose metric dashboard.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Structural axes</strong>
+                  <span>Component count, dependency relation count, cycle flag, SCC maximum size, maximum depth, reachable cone, and fanout risk.</span>
+                </li>
+                <li>
+                  <strong>Policy axes</strong>
+                  <span>Forbidden boundary edges, abstraction violations, adopted law refs, policy decision status, and measured policy gaps.</span>
+                </li>
+                <li>
+                  <strong>Runtime and semantic axes</strong>
+                  <span>Runtime dependency projection, protected and unprotected paths, semantic witnesses, observation mismatch, and unsupported dynamic behavior.</span>
+                </li>
+                <li>
+                  <strong>Boundary axes</strong>
+                  <span>Measured axes, unmeasured axes, private or unavailable evidence, theorem precondition status, exactness assumptions, and explicit non-conclusions.</span>
+                </li>
+              </ul>
+              <div class="claim-strip">
+                <p>
+                  The central reading rule is simple: a zero value says nothing
+                  until the artifact says the axis was measured in the selected
+                  universe.
+                </p>
+              </div>
             </section>
 
             <section id="product-surfaces" class="article-section">
               <h2>Product surfaces</h2>
               <p>
-                ArchSig is easier to use when the implemented product surface
-                is separated from research, calibration, and adapter gaps. The
-                same CLI family exposes four surfaces with different evidence
-                and claim boundaries.
+                ArchSig is one manual with four product surfaces. The surfaces
+                share artifact discipline but answer different questions: what
+                exists now, what changed in review, what a proposal may open,
+                and how an organization calibrates the signal over time.
               </p>
-              <ul class="term-list">
-                <li>
-                  <strong>AAT</strong>
-                  <span>Local algebra of architectural change.</span>
-                </li>
-                <li>
-                  <strong>ArchSig</strong>
-                  <span>Observation layer for signatures and witnesses.</span>
-                </li>
-                <li>
-                  <strong>SFT</strong>
-                  <span>Field-shaped computation over future architectural trajectories.</span>
-                </li>
-              </ul>
               <ul class="status-list">
                 <li>
                   <strong>ArchSig Core</strong>
-                  <span>Lean and Python import graph scan, Sig0 validation, snapshots, and signature diffs. Remaining gaps include call graph, data dependency, dynamic import, plugin loading, and framework semantics adapters.</span>
+                  <span>Builds a bounded architecture observation from Lean or Python import graphs, explicit policy input, optional runtime evidence, Sig0 validation, snapshots, and signature diffs.</span>
                 </li>
                 <li>
                   <strong>ArchSig Review</strong>
-                  <span>AIR, theorem precondition checks, Feature Extension Report, policy decision, PR comment summary, and baseline suppression. Policy calibration and arbitrary invariant judgment remain review-layer work, not Lean theorem output.</span>
+                  <span>Turns before / after signatures into AIR, theorem precondition checks, Feature Extension Reports, policy decisions, PR comments, and baseline suppressions.</span>
                 </li>
                 <li>
                   <strong>ArchSig SFT</strong>
-                  <span>Markdown PRD / Spec / Issue / AI proposal input can produce bounded forecast artifacts and a <code>ConsequenceEnvelope</code>. Read the <a href="../sft/computation/workbench/#pipeline">ArchSig-SFT pipeline</a> and <a href="../sft/computation/workbench/#calibration">simulator calibration</a> sections for the SFT-side boundary. Real dataset calibration and framework semantics adapters remain gaps.</span>
+                  <span>Reads PRDs, specs, issues, and AI proposals as bounded change artifacts, estimates operation support, constructs forecast cone skeletons, and projects consequence envelopes.</span>
                 </li>
                 <li>
                   <strong>ArchSig Operational</strong>
-                  <span>PR history datasets, outcome linkage, daily ledgers, calibration records, threshold policies, ownership monitors, repair adoption, incident correlation, and hypothesis refresh artifacts support operational learning without causal theorem status.</span>
+                  <span>Maintains datasets, daily ledgers, calibration reviews, threshold policies, ownership monitors, repair adoption records, incident correlations, and hypothesis refresh artifacts.</span>
                 </li>
               </ul>
             </section>
 
-            <section id="tool-scope" class="article-section">
-              <h2>Tool scope</h2>
-              <p>
-                The CLI scans Lean import graphs and Python import graphs,
-                computes structural signature axes, applies optional policy
-                and runtime evidence, and writes JSON artifacts for later
-                validation, diffing, reporting, and forecasting commands.
-              </p>
+            <section id="report-life" class="article-section">
+              <h2>Report life</h2>
+              <ul class="status-list">
+                <li>
+                  <strong>1. Observe</strong>
+                  <span>A scan or descriptor command chooses the source universe and records components, relations, policy refs, runtime evidence, proposal text, or outcome records.</span>
+                </li>
+                <li>
+                  <strong>2. Validate</strong>
+                  <span>Validation checks duplicates, edge closure, external targets, schema shape, and whether placeholder values are being protected by metric status.</span>
+                </li>
+                <li>
+                  <strong>3. Compare</strong>
+                  <span>Diff reports preserve before / after comparability, mark unmeasured deltas, and separate improved axes from worsened axes.</span>
+                </li>
+                <li>
+                  <strong>4. Project</strong>
+                  <span>Review, policy, SFT, and operational commands project the same bounded evidence into the language used by reviewers, CI, planning, and calibration.</span>
+                </li>
+              </ul>
               <figure class="code-panel">
-                <figcaption>Core flow</figcaption>
+                <figcaption>Core report path</figcaption>
                 <pre><code>scan
   -&gt; validate
   -&gt; snapshot
@@ -231,25 +264,59 @@
               </figure>
             </section>
 
-            <section id="reference-map" class="article-section">
-              <h2>Reference map</h2>
+            <section id="manual-map" class="article-section">
+              <h2>Manual map</h2>
               <p>
-                Website pages are summaries. The repository documents remain
-                the source of truth for command behavior, schema details,
-                artifact boundaries, and mutable roadmap status.
+                The ArchSig pages are meant to be read as a self-contained
+                manual. Repository documents and Rust implementation files can
+                verify details, but the public manual should explain the
+                concepts, artifacts, workflows, and boundaries without sending
+                the reader away first.
               </p>
-              <ul class="term-list">
+              <ul class="chapter-list">
                 <li>
-                  <strong>CLI and artifact references</strong>
-                  <span><code>tools/archsig/README.md</code>, <code>tools/archsig/docs/commands.md</code>, and <code>tools/archsig/docs/artifacts-and-boundaries.md</code>.</span>
+                  <a href="getting-started/">Getting Started</a>
+                  <span>Run the smallest useful path and learn how to read the first Sig0 and validation artifacts.</span>
                 </li>
                 <li>
-                  <strong>Tooling theory boundary</strong>
-                  <span><code>docs/tool/README.md</code>, <code>docs/tool/claim_boundary.md</code>, <code>docs/tool/signature_artifacts.md</code>, and <code>docs/tool/reports.md</code>.</span>
+                  <a href="inputs/">Inputs and Configuration</a>
+                  <span>Prepare repository roots, policy files, runtime edge evidence, PR metadata, and proposal text for useful scans.</span>
                 </li>
                 <li>
-                  <strong>Operational and roadmap status</strong>
-                  <span><code>tools/archsig/docs/operational-feedback.md</code> and <code>docs/tool/roadmap.md</code>.</span>
+                  <a href="reading-output/">Reading the Output</a>
+                  <span>Read Sig0, validation reports, signature diffs, feature reports, policy decisions, PR comments, and the field lookup for common report fields.</span>
+                </li>
+                <li>
+                  <a href="air/">AIR</a>
+                  <span>Understand the intermediate representation that turns measurements into claims, coverage, theorem checks, and review reports.</span>
+                </li>
+                <li>
+                  <a href="commands/">Commands</a>
+                  <span>Use scan, validation, diff, review, policy, dataset, forecast, and feedback commands with the command index as reference.</span>
+                </li>
+                <li>
+                  <a href="artifacts/">Artifacts</a>
+                  <span>Understand Sig0, validation, snapshots, diffs, AIR, feature reports, policy decisions, datasets, SFT forecast records, and the output index.</span>
+                </li>
+                <li>
+                  <a href="boundaries/">Boundaries</a>
+                  <span>Read measured zero, unknown, theorem precondition status, non-conclusions, and empirical claims correctly.</span>
+                </li>
+                <li>
+                  <a href="workflows/">Workflows</a>
+                  <span>Adopt ArchSig for first scan, PR review, generated-change provenance, scheduled scans, architecture dynamics, and SFT forecasting.</span>
+                </li>
+                <li>
+                  <a href="schemas/">Schemas</a>
+                  <span>Preserve compatibility, migration meaning, required assumptions, deprecated fields, and non-conclusions.</span>
+                </li>
+                <li>
+                  <a href="operational-feedback/">Operational Feedback</a>
+                  <span>Close the loop with calibration records, thresholds, ownership monitoring, repair adoption, incidents, and hypothesis refresh.</span>
+                </li>
+                <li>
+                  <a href="examples/">Examples</a>
+                  <span>Practice report reading with good extensions, hidden interaction witnesses, semantic witnesses, and dynamics examples.</span>
                 </li>
               </ul>
             </section>
@@ -261,6 +328,14 @@
                 scalar quality score. Every report must be read together with
                 measurement status, coverage gaps, theorem preconditions, and
                 non-conclusions.
+              </p>
+              <p>
+                ArchSig gives architecture review a disciplined grammar: it can
+                say that a witness was measured, that a formal theorem would
+                require missing bridge assumptions, that an empirical pattern
+                is only a calibration signal, or that a recommendation is a
+                review policy decision. These are different claim levels, and
+                the manual keeps them separated.
               </p>
               <div class="claim-strip">
                 <p>

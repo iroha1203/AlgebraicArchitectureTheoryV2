@@ -61,9 +61,11 @@
             <span>Boundaries</span>
           </nav>
           <p class="eyebrow">ArchSig Reference</p>
-          <h1>Read every report through its boundary fields.</h1>
+          <h1>Keep the signal sharp by keeping its edge visible.</h1>
           <p class="lede">
-            ArchSig is useful only when measurement, claim level, theorem promotion, and empirical non-conclusions stay explicit. This page records the guardrails for interpreting tool output.
+            ArchSig separates what was measured, what was inferred, what was
+            blocked, and what remains unknown, so reports stay powerful without
+            becoming overclaims.
           </p>
         </div>
       </section>
@@ -80,35 +82,21 @@
                 <li><a href="#non-conclusions">Non-conclusions</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/docs/artifacts-and-boundaries.md">
-                    Artifacts And Boundaries
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/claim_boundary.md">
-                    Claim boundary
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/theorem_preconditions.md">
-                    Theorem preconditions
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../inputs/">Inputs and Configuration</a></li>
+                <li><a href="../reading-output/">Reading the Output</a></li>
+                <li><a href="../air/">AIR</a></li>
+                <li><a href="../commands/">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="./" aria-current="page">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
               </ul>
             </div>
           </aside>
@@ -120,6 +108,18 @@
                 Measurement status is part of the artifact. A value and an
                 axis must be read together with the status that says whether
                 the value was measured, unmeasured, or out of scope.
+              </p>
+              <p>
+                Use this chapter whenever a report looks too confident. Most
+                mistaken readings come from collapsing four different states:
+                measured zero, missing input, private evidence, and adapter
+                out of scope.
+              </p>
+              <p>
+                This is the central discipline of ArchSig. A dashboard can show
+                a zero; an architecture signature must say whether that zero is
+                a measured fact, a placeholder, a privacy boundary, an
+                unavailable input, or an axis that the adapter does not cover.
               </p>
               <ul class="term-list">
                 <li>
@@ -148,6 +148,13 @@
                 blocked formal claims, empirical observations, and review
                 recommendations. These categories are intentionally not
                 interchangeable.
+              </p>
+              <p>
+                The same observation can appear in several claim levels. A
+                hidden interaction can be a measured witness, a blocked formal
+                claim if theorem preconditions are missing, and a review
+                recommendation if local policy says the witness should be
+                investigated. The report must keep those readings distinct.
               </p>
               <figure class="code-panel">
                 <figcaption>Claim categories</figcaption>
@@ -191,6 +198,23 @@ advisory review recommendation</code></pre>
                 equivalence, semantic preservation, causality, or a scalar
                 ranking of architecture quality.
               </p>
+              <p>
+                Non-conclusions are not apologies. They are the part of the
+                artifact that keeps a useful diagnostic from becoming an
+                overclaim. A report that preserves its non-conclusions can be
+                compared, migrated, calibrated, and reviewed without changing
+                its meaning.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Reviewer use</strong>
+                  <span>Ask whether the missing claim matters for this PR, then request evidence or accept the boundary explicitly.</span>
+                </li>
+                <li>
+                  <strong>Automation use</strong>
+                  <span>Carry non-conclusions into policy decisions and PR comments instead of dropping them from the final surface.</span>
+                </li>
+              </ul>
               <div class="claim-strip">
                 <p>
                   Non-conclusions are part of the artifact contract. Dropping

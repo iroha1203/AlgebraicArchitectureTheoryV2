@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       name="description"
-      content="Minimal ArchSig command path for fixture scan, validation, repository scan, and Python scan."
+      content="First ArchSig session: run a bounded scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface."
     >
     <title>ArchSig Getting Started</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/getting-started/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig Getting Started">
-    <meta property="og:description" content="Minimal ArchSig command path for fixture scan, validation, repository scan, and Python scan.">
+    <meta property="og:description" content="First ArchSig session: run a bounded scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/getting-started/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig Getting Started">
-    <meta name="twitter:description" content="Minimal ArchSig command path for fixture scan, validation, repository scan, and Python scan.">
+    <meta name="twitter:description" content="First ArchSig session: run a bounded scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -61,9 +61,10 @@
             <span>Getting Started</span>
           </nav>
           <p class="eyebrow">ArchSig Manual</p>
-          <h1>Run the smallest useful ArchSig path first.</h1>
+          <h1>Take the first architectural reading.</h1>
           <p class="lede">
-            The first useful ArchSig session scans a fixture, validates the Sig0 output, scans the repository, and checks whether unmeasured axes are being preserved instead of silently treated as zero.
+            Run one scan, open one signature, and see how a repository becomes
+            a map of measured structure, open questions, and next review moves.
           </p>
         </div>
       </section>
@@ -78,29 +79,26 @@
                 <li><a href="#validate">Validate Sig0</a></li>
                 <li><a href="#repository-scan">Repository scan</a></li>
                 <li><a href="#python-scan">Python scan</a></li>
+                <li><a href="#expected-files">Expected files</a></li>
                 <li><a href="#first-reading">First reading</a></li>
                 <li><a href="#after-first-run">After the first run</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/README.md">
-                    ArchSig README
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="./" aria-current="page">Getting Started</a></li>
+                <li><a href="../inputs/">Inputs and Configuration</a></li>
+                <li><a href="../reading-output/">Reading the Output</a></li>
+                <li><a href="../air/">AIR</a></li>
+                <li><a href="../commands/">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
               </ul>
             </div>
           </aside>
@@ -109,8 +107,23 @@
             <section id="fixture-scan" class="article-section">
               <h2>Fixture scan</h2>
               <p>
-                Begin with the minimal fixture so the output shape is known
-                before running against an active repository.
+                Begin with the minimal fixture so the shape of the artifact is
+                visible before any live repository noise appears. The fixture
+                includes policy input and runtime edge evidence, so the first
+                output already shows how structural, policy, and runtime axes
+                sit beside their measurement status.
+              </p>
+              <p>
+                By the end of this chapter, you should be able to produce a
+                Sig0 file, validate it, identify the component and edge lists,
+                and tell a measured zero from an unmeasured placeholder.
+              </p>
+              <p>
+                The scan chooses a root, walks the supported source language,
+                records components and dependency edges, attaches optional
+                policy and runtime evidence, and writes a Sig0 JSON document.
+                It does not claim that unsupported dynamic behavior has been
+                observed.
               </p>
               <figure class="code-panel">
                 <figcaption>Fixture scan</figcaption>
@@ -120,6 +133,12 @@
   --runtime-edges tools/archsig/tests/fixtures/minimal/runtime_edges.json \
   --out .lake/sig0-fixture.json</code></pre>
               </figure>
+              <p>
+                Open <code>.lake/sig0-fixture.json</code> after the command.
+                The first fields to check are <code>schemaVersion</code>,
+                <code>components</code>, <code>edges</code>,
+                <code>signature</code>, and <code>metricStatus</code>.
+              </p>
             </section>
 
             <section id="validate" class="article-section">
@@ -127,7 +146,13 @@
               <p>
                 Validation checks the component list, dependency edge closure,
                 external targets, and policy metric status in an existing Sig0
-                JSON file. It does not rescan source files.
+                JSON file. It does not rescan source files, and it does not
+                strengthen an unmeasured axis into a measured claim.
+              </p>
+              <p>
+                Treat validation as the artifact's first reader. It asks
+                whether the bounded universe is internally coherent enough for
+                later comparison, reporting, and review projection.
               </p>
               <figure class="code-panel">
                 <figcaption>Validation report</figcaption>
@@ -136,12 +161,20 @@
   --out .lake/sig0-fixture-validation.json \
   --universe-mode local-only</code></pre>
               </figure>
+              <p>
+                Open <code>.lake/sig0-fixture-validation.json</code>. A useful
+                first validation read asks whether duplicate components, edge
+                closure problems, external targets, and policy status warnings
+                are present.
+              </p>
             </section>
 
             <section id="repository-scan" class="article-section">
               <h2>Repository scan</h2>
               <p>
-                A repository scan writes Sig0 for the current checkout. Keep
+                A repository scan writes Sig0 for the current checkout. The
+                same reading rule applies: the scan is a bounded observation of
+                supported constructs, not a complete architecture model. Keep
                 policy and runtime evidence explicit when those axes matter;
                 omitted inputs can leave placeholder values with unmeasured
                 status.
@@ -152,6 +185,11 @@
   --root . \
   --out .lake/sig0.json</code></pre>
               </figure>
+              <p>
+                For a real repository, keep the first run boring. Do not tune
+                policy yet. First learn what static structure the scanner can
+                see, then add policy and runtime evidence in a second pass.
+              </p>
             </section>
 
             <section id="python-scan" class="article-section">
@@ -161,6 +199,12 @@
                 <code>from ... import ...</code> edges with the standard AST
                 parser. Dynamic import, plugin loading, and framework
                 conventions remain boundary items.
+              </p>
+              <p>
+                Use <code>--source-root</code> and <code>--package-root</code>
+                to make the selected import universe explicit. This is what
+                lets later reports distinguish a measured dependency from a
+                dependency family that the adapter does not yet observe.
               </p>
               <figure class="code-panel">
                 <figcaption>Python repository</figcaption>
@@ -173,6 +217,29 @@
               </figure>
             </section>
 
+            <section id="expected-files" class="article-section">
+              <h2>Expected files</h2>
+              <p>
+                After the first session, you should have at least one Sig0 file
+                and one validation report. These are the files that later
+                commands consume.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong><code>.lake/sig0-fixture.json</code></strong>
+                  <span>Fixture signature. Use it to learn the JSON shape before reading your repository's output.</span>
+                </li>
+                <li>
+                  <strong><code>.lake/sig0-fixture-validation.json</code></strong>
+                  <span>Validation report for the fixture signature. Use it to see how ArchSig reports artifact quality.</span>
+                </li>
+                <li>
+                  <strong><code>.lake/sig0.json</code></strong>
+                  <span>Your repository signature. This becomes the input to snapshot, diff, AIR, and review commands.</span>
+                </li>
+              </ul>
+            </section>
+
             <section id="first-reading" class="article-section">
               <h2>First reading</h2>
               <p>
@@ -182,6 +249,30 @@
                 an axis is a measured zero, measured nonzero, unmeasured, or
                 out of scope.
               </p>
+              <p>
+                The next chapter gives the full output reading recipe. For the
+                first run, focus on three questions: did the scan find the
+                components you expected, did it find dependency edges that make
+                sense, and which axes are unmeasured?
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong>Measured zero</strong>
+                  <span>The adapter observed the axis in the selected universe and the measured value is zero.</span>
+                </li>
+                <li>
+                  <strong>Unmeasured</strong>
+                  <span>The artifact may contain a placeholder value, but the status says the axis was not observed.</span>
+                </li>
+                <li>
+                  <strong>Not comparable</strong>
+                  <span>Before / after artifacts do not share enough coverage for a meaningful delta on that axis.</span>
+                </li>
+                <li>
+                  <strong>Out of scope</strong>
+                  <span>The selected artifact family or adapter does not attempt to cover that axis.</span>
+                </li>
+              </ul>
               <div class="claim-strip">
                 <p>
                   A placeholder value of zero is not evidence that the risk is
@@ -199,6 +290,12 @@
                 move to SFT forecasting only when the input artifact and
                 bounded horizon are explicit; move to Operational feedback
                 only when outcome records and privacy boundaries are available.
+              </p>
+              <p>
+                If this is your first repository run, the next practical step
+                is not more automation. It is to add the missing inputs that
+                matter for your architecture: policy boundaries, runtime edge
+                evidence, or PR metadata.
               </p>
               <ul class="term-list">
                 <li>
@@ -220,9 +317,9 @@
                 <span>Previous</span>
                 <strong>ArchSig Manual</strong>
               </a>
-              <a href="../commands/">
+              <a href="../inputs/">
                 <span>Next</span>
-                <strong>Commands</strong>
+                <strong>Inputs and Configuration</strong>
               </a>
             </nav>
           </div>

@@ -61,9 +61,11 @@
             <span>Commands</span>
           </nav>
           <p class="eyebrow">ArchSig Reference</p>
-          <h1>Commands are organized by artifact boundary.</h1>
+          <h1>Compose scans into architectural judgement.</h1>
           <p class="lede">
-            ArchSig commands form a pipeline from scan output to validation, report generation, governance summaries, empirical datasets, operational feedback artifacts, repair artifacts, and bounded SFT forecasting estimates.
+            The command set moves from raw repository observation to review
+            reports, policy signals, empirical feedback, repair candidates,
+            and bounded SFT forecasts.
           </p>
         </div>
       </section>
@@ -76,36 +78,28 @@
               <ol>
                 <li><a href="#scan-validate">Scan and validate</a></li>
                 <li><a href="#surface-map">Surface map</a></li>
+                <li><a href="#command-index">Command index</a></li>
                 <li><a href="#review-reports">Review reports</a></li>
                 <li><a href="#policy-schema">Policy and schema</a></li>
                 <li><a href="#dataset-feedback">Dataset and feedback</a></li>
                 <li><a href="#forecast-repair">Forecast and repair</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/docs/commands.md">
-                    Command Guide
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/README.md">
-                    ArchSig README
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../inputs/">Inputs and Configuration</a></li>
+                <li><a href="../reading-output/">Reading the Output</a></li>
+                <li><a href="../air/">AIR</a></li>
+                <li><a href="./" aria-current="page">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="../workflows/">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
               </ul>
             </div>
           </aside>
@@ -117,6 +111,20 @@
                 <code>scan</code> is the default command. It emits Sig0 for a
                 Lean or Python repository. <code>validate</code> checks an
                 existing Sig0 artifact without rescanning source files.
+              </p>
+              <p>
+                Do not memorize the full command set first. Learn the small
+                loop: <code>scan</code>, <code>validate</code>,
+                <code>snapshot</code>, <code>signature-diff</code>,
+                <code>air</code>, and <code>feature-report</code>. The rest of
+                the catalog becomes useful once that loop is familiar.
+              </p>
+              <p>
+                Command output should be read as an artifact boundary, not as
+                the tool's private implementation detail. The important
+                question after each command is: what universe did it select,
+                which axes did it measure, which inputs did it refuse to infer,
+                and which non-conclusions did it preserve?
               </p>
               <ul class="status-list">
                 <li>
@@ -141,6 +149,13 @@
                 keeps the shortest Core path separate from review automation,
                 bounded SFT projection, and operational feedback.
               </p>
+              <p>
+                A command belongs to a surface because of the claim it supports.
+                Core commands observe. Review commands explain a change to a
+                reviewer. SFT commands describe a bounded future-facing
+                projection. Operational commands calibrate signals against
+                process evidence.
+              </p>
               <ul class="term-list">
                 <li>
                   <strong>Core</strong>
@@ -161,12 +176,133 @@
               </ul>
             </section>
 
+            <section id="command-index" class="article-section">
+              <h2>Command index</h2>
+              <p>
+                Use this index when you know the artifact you have and need
+                the next command. The command names below are the stable
+                handles used by the CLI.
+              </p>
+              <ul class="status-list">
+                <li>
+                  <strong><code>scan</code></strong>
+                  <span>Inputs: repository root, optional policy, optional runtime edges. Output: <code>archsig-sig0-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>validate</code></strong>
+                  <span>Input: Sig0. Output: <code>component-universe-validation-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>snapshot</code></strong>
+                  <span>Input: Sig0 plus revision metadata. Output: <code>signature-snapshot-store-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>signature-diff</code></strong>
+                  <span>Inputs: before / after snapshots, optional Sig0 evidence, optional PR metadata. Output: <code>signature-diff-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>air</code></strong>
+                  <span>Inputs: Sig0, optional validation, diff, PR metadata, law policy, and framework adapters. Output: <code>aat-air-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>validate-air</code></strong>
+                  <span>Input: AIR. Output: <code>aat-air-validation-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>theorem-check</code></strong>
+                  <span>Input: AIR. Output: theorem precondition check report for AIR claims.</span>
+                </li>
+                <li>
+                  <strong><code>feature-report</code></strong>
+                  <span>Input: AIR. Output: <code>feature-extension-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>policy-decision</code></strong>
+                  <span>Inputs: Feature Extension Report and optional organization policy. Output: policy decision report.</span>
+                </li>
+                <li>
+                  <strong><code>pr-comment</code></strong>
+                  <span>Inputs: Feature Extension Report and optional policy decision. Output: reviewer-facing Markdown.</span>
+                </li>
+                <li>
+                  <strong><code>baseline-suppression</code></strong>
+                  <span>Inputs: baseline and current reports, optional policy decisions, retention, suppression, and accepted-risk metadata. Output: baseline suppression report.</span>
+                </li>
+                <li>
+                  <strong><code>organization-policy</code>, <code>law-policy-templates</code>, <code>custom-rule-plugins</code></strong>
+                  <span>Inputs: optional registry or policy JSON. Output: validation reports for local review policy and adapter rule material.</span>
+                </li>
+                <li>
+                  <strong><code>repair-registry</code>, <code>synthesis-constraints</code>, <code>no-solution-certificate</code></strong>
+                  <span>Inputs: optional repair, synthesis, or impossibility artifacts. Output: validation reports for repair and synthesis boundaries.</span>
+                </li>
+                <li>
+                  <strong><code>measurement-units</code>, <code>dynamics-measurements</code>, <code>reported-axes-catalog</code></strong>
+                  <span>Inputs: optional registry or measurement contract where applicable. Output: measurement-unit, dynamics-contract, or reported-axes reference artifacts.</span>
+                </li>
+                <li>
+                  <strong><code>schema-compatibility</code></strong>
+                  <span>Inputs: baseline and current artifacts plus optional catalog. Output: schema compatibility check report.</span>
+                </li>
+                <li>
+                  <strong><code>artifact-descriptor</code></strong>
+                  <span>Inputs: Markdown PRD / Spec, GitHub Issue JSON, or AI proposal JSON. Output: <code>artifact-descriptor-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>operation-support-estimate</code></strong>
+                  <span>Input: ArtifactDescriptor. Output: <code>operation-support-estimate-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>forecast-cone-skeleton</code></strong>
+                  <span>Input: OperationSupportEstimate. Output: <code>forecast-cone-skeleton-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>consequence-envelope</code></strong>
+                  <span>Input: ForecastConeSkeleton. Output: <code>consequence-envelope-report-v0</code>.</span>
+                </li>
+                <li>
+                  <strong><code>sft-forecast</code></strong>
+                  <span>Input: PRD / Spec / Issue / AI proposal artifact. Output: descriptor, support estimate, forecast cone, validations, and final consequence envelope in one directory.</span>
+                </li>
+                <li>
+                  <strong><code>dataset</code>, <code>pr-history-dataset</code>, <code>feature-extension-dataset</code>, <code>outcome-linkage-dataset</code></strong>
+                  <span>Inputs: PR metadata, signatures, reports, and outcome observations. Output: empirical dataset records.</span>
+                </li>
+                <li>
+                  <strong><code>report-outcome-daily-ledger</code>, <code>calibration-review-record</code>, <code>team-threshold-policy</code></strong>
+                  <span>Inputs: outcome and drift artifacts where required. Output: B10 operational feedback artifacts.</span>
+                </li>
+                <li>
+                  <strong><code>ownership-boundary-monitor</code>, <code>repair-adoption-record</code>, <code>incident-correlation-monitor</code>, <code>hypothesis-refresh-cycle</code></strong>
+                  <span>Inputs: static fixtures or operational evidence depending on command. Output: B10 monitoring, repair, incident, and hypothesis artifacts.</span>
+                </li>
+                <li>
+                  <strong><code>pr-force-report</code>, <code>signature-trajectory-report</code>, <code>architecture-dynamics-metrics</code></strong>
+                  <span>Inputs: optional report JSON to validate or <code>--fixture</code>. Output: Architecture Dynamics reports or validation reports.</span>
+                </li>
+              </ul>
+            </section>
+
             <section id="review-reports" class="article-section">
               <h2>Review reports</h2>
               <p>
                 The PR review chain normalizes evidence into AIR, checks
                 theorem promotion preconditions, summarizes extension quality,
                 applies organization policy, and renders a PR comment.
+              </p>
+              <p>
+                The chain is deliberately staged. AIR names the claim and
+                evidence. Theorem checks ask whether a formal reading is
+                licensed. Feature reports explain architecture movement.
+                Policy decisions apply local thresholds. PR comments translate
+                all of that into review text without erasing the earlier
+                boundaries.
+              </p>
+              <p>
+                If a later command feels confusing, go one artifact back. A
+                policy decision is easier to understand after the feature
+                report is clear; a feature report is easier to understand after
+                AIR is clear.
               </p>
               <figure class="code-panel">
                 <figcaption>PR review chain</figcaption>
@@ -236,6 +372,12 @@
                 Repair commands validate repair registries, synthesis
                 constraints, and no-solution certificates.
               </p>
+              <p>
+                Forecast and repair commands are strongest when they are
+                explicit about finite support. They can expose affected regions,
+                forbidden support, unknown remainder, and repair candidates;
+                they do not decide the unique future of the codebase.
+              </p>
               <figure class="code-panel">
                 <figcaption>SFT forecast chain</figcaption>
                 <pre><code>artifact-descriptor
@@ -247,9 +389,9 @@
               </figure>
             </section>
             <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../getting-started/">
+              <a href="../air/">
                 <span>Previous</span>
-                <strong>Getting Started</strong>
+                <strong>AIR</strong>
               </a>
               <a href="../artifacts/">
                 <span>Next</span>

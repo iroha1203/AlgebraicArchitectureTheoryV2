@@ -61,9 +61,11 @@
             <span>Workflows</span>
           </nav>
           <p class="eyebrow">ArchSig Manual</p>
-          <h1>Workflows preserve boundaries while reports move between tools.</h1>
+          <h1>Move evidence through the whole review loop.</h1>
           <p class="lede">
-            A workflow is an artifact sequence with source refs, validation, coverage gaps, and non-conclusions preserved from step to step. This page lists the main operating paths.
+            ArchSig workflows carry signatures from first adoption to PR
+            review, generated-change provenance, scheduled drift checks, and
+            future-facing SFT analysis.
           </p>
         </div>
       </section>
@@ -76,35 +78,27 @@
               <ol>
                 <li><a href="#first-adoption">First adoption</a></li>
                 <li><a href="#pr-review">PR review</a></li>
+                <li><a href="#pr-command-path">PR command path</a></li>
                 <li><a href="#generated-change">Generated change</a></li>
                 <li><a href="#scheduled-scan">Scheduled scan</a></li>
                 <li><a href="#dynamics-forecast">Dynamics and forecast</a></li>
               </ol>
             </nav>
-            <div class="source-panel">
-              <h2>Canonical sources</h2>
+            <div class="source-panel" data-sidebar-open="true">
+              <h2>ArchSig manual</h2>
               <ul>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/tool/workflows.md">
-                    Workflows
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/tools/archsig/README.md">
-                    ArchSig README
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="boundary-note">
-              <h2>Boundary note</h2>
-              <ul>
-                <li><code>archsig</code> is not a Lean prover.</li>
-                <li>Tool output is not a Lean theorem.</li>
-                <li>Extractor output is not a complete <code>ComponentUniverse</code>.</li>
-                <li>Measured zero is different from unmeasured.</li>
-                <li>Policy pass does not imply architecture lawfulness.</li>
-                <li>Report warning does not imply incident causality.</li>
+                <li><a href="../">Manual overview</a></li>
+                <li><a href="../getting-started/">Getting Started</a></li>
+                <li><a href="../inputs/">Inputs and Configuration</a></li>
+                <li><a href="../reading-output/">Reading the Output</a></li>
+                <li><a href="../air/">AIR</a></li>
+                <li><a href="../commands/">Commands</a></li>
+                <li><a href="../artifacts/">Artifacts</a></li>
+                <li><a href="../boundaries/">Boundaries</a></li>
+                <li><a href="./" aria-current="page">Workflows</a></li>
+                <li><a href="../schemas/">Schemas</a></li>
+                <li><a href="../operational-feedback/">Operational Feedback</a></li>
+                <li><a href="../examples/">Examples</a></li>
               </ul>
             </div>
           </aside>
@@ -116,6 +110,17 @@
                 First adoption establishes a baseline without pretending that
                 unsupported axes are safe. The useful result is a first report
                 with unmeasured axes and unsupported constructs made explicit.
+              </p>
+              <p>
+                Treat this chapter as the operator's path through the manual:
+                it says which artifacts to produce, which file to read first,
+                and where human review enters the loop.
+              </p>
+              <p>
+                A good first adoption run is not a pass/fail ceremony. It is a
+                vocabulary alignment exercise: teams learn which axes ArchSig
+                can already observe, which local policies need explicit input,
+                and which framework behaviors still sit outside the adapter.
               </p>
               <figure class="code-panel">
                 <figcaption>First adoption flow</figcaption>
@@ -134,6 +139,12 @@
                 difference into AIR, theorem precondition checks, Feature
                 Extension Report, policy decision, and PR comment summary.
               </p>
+              <p>
+                The reviewer should be able to trace every warning back to a
+                measured witness, a policy threshold, a missing precondition,
+                or an unmeasured axis. A workflow that cannot explain this
+                trace has lost the main value of Architecture Signature.
+              </p>
               <figure class="code-panel">
                 <figcaption>PR review flow</figcaption>
                 <pre><code>before scan
@@ -147,6 +158,89 @@
               </figure>
             </section>
 
+            <section id="pr-command-path" class="article-section">
+              <h2>PR command path</h2>
+              <p>
+                A practical PR run usually keeps before and after artifacts in
+                separate directories, then writes review artifacts into the
+                current directory. The exact paths are local convention; the
+                important point is that each output becomes the next command's
+                input.
+              </p>
+              <p>
+                The example below is intentionally linear. In CI you may split
+                it into jobs, but the artifact dependency order should remain
+                visible in logs and retained outputs.
+              </p>
+              <figure class="code-panel">
+                <figcaption>Before and after signatures</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- \
+  --root . \
+  --out .lake/signature-before/sig0.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- \
+  --root . \
+  --policy signature-policy.json \
+  --out .lake/signature-after/sig0.json</code></pre>
+              </figure>
+              <figure class="code-panel">
+                <figcaption>Snapshot and diff</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- snapshot \
+  --input .lake/signature-before/sig0.json \
+  --repo-owner example \
+  --repo-name service \
+  --revision-sha before-sha \
+  --revision-ref main \
+  --revision-branch main \
+  --scanned-at 2026-05-21T00:00:00Z \
+  --out .lake/signature-before/snapshot.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- snapshot \
+  --input .lake/signature-after/sig0.json \
+  --repo-owner example \
+  --repo-name service \
+  --revision-sha after-sha \
+  --revision-ref feature/coupon \
+  --revision-branch feature/coupon \
+  --scanned-at 2026-05-21T00:10:00Z \
+  --out .lake/signature-after/snapshot.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- signature-diff \
+  --before-snapshot .lake/signature-before/snapshot.json \
+  --after-snapshot .lake/signature-after/snapshot.json \
+  --before-sig0 .lake/signature-before/sig0.json \
+  --after-sig0 .lake/signature-after/sig0.json \
+  --pr-metadata .lake/pr-metadata.json \
+  --out .lake/signature-after/diff-report.json</code></pre>
+              </figure>
+              <figure class="code-panel">
+                <figcaption>Review artifacts</figcaption>
+                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- air \
+  --sig0 .lake/signature-after/sig0.json \
+  --diff .lake/signature-after/diff-report.json \
+  --pr-metadata .lake/pr-metadata.json \
+  --out .lake/signature-after/air.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- feature-report \
+  --air .lake/signature-after/air.json \
+  --out .lake/signature-after/feature-report.json</code></pre>
+              </figure>
+              <ul class="status-list">
+                <li>
+                  <strong>First reviewer file</strong>
+                  <span>Read <code>diff-report.json</code> first to see worsened, improved, and unmeasured axes.</span>
+                </li>
+                <li>
+                  <strong>Second reviewer file</strong>
+                  <span>Read <code>feature-report.json</code> for split status, obstruction witnesses, coverage gaps, and repair suggestions.</span>
+                </li>
+                <li>
+                  <strong>Automation output</strong>
+                  <span>Use <code>policy-decision</code> and <code>pr-comment</code> after the review meaning is clear.</span>
+                </li>
+              </ul>
+            </section>
+
             <section id="generated-change" class="article-section">
               <h2>Generated change</h2>
               <p>
@@ -154,6 +248,12 @@
                 prompt ref, generated patch, and human review boundary. The
                 provenance record supports review and reproducibility; it does
                 not decide whether the change is good or bad.
+              </p>
+              <p>
+                Generated-change workflow is especially sensitive to boundary
+                erasure. The prompt may describe a desired operation, the patch
+                may implement only part of it, and the review may accept a
+                narrower claim. ArchSig keeps those layers separate.
               </p>
               <ul class="term-list">
                 <li>
@@ -174,6 +274,12 @@
                 artifacts. Daily drift is a trend artifact, not proof that a
                 report warning caused an operational outcome.
               </p>
+              <p>
+                The scheduled workflow is useful because it makes gradual
+                architecture movement visible before a single PR looks
+                responsible. It supports calibration and ownership review, not
+                causal attribution by itself.
+              </p>
               <figure class="code-panel">
                 <figcaption>Scheduled scan flow</figcaption>
                 <pre><code>scheduled scan
@@ -191,6 +297,11 @@
                 finite support, bounded horizon, proposal refs, unknown
                 remainder, and review recommendations apart from probability
                 or causal forecast claims.
+              </p>
+              <p>
+                Use this workflow after the review surface is already
+                understood. Forecast artifacts are more useful when teams can
+                already read ordinary signature diffs and AIR boundaries.
               </p>
               <figure class="code-panel">
                 <figcaption>Dynamics and forecast</figcaption>
