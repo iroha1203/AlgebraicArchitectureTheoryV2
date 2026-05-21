@@ -13,6 +13,7 @@ import Formal.Arch.Evolution.SFTCounterexamples
 import Formal.Arch.Evolution.SFTClockedCone
 import Formal.Arch.Evolution.SFTFieldCover
 import Formal.Arch.Evolution.SFTDescent
+import Formal.Arch.Evolution.SFTFiniteCover
 import Formal.Arch.Evolution.SFTTheoremRoadmap
 
 /-!
@@ -173,6 +174,20 @@ def representativeDeclarations : Candidate -> List String
        "BinaryProjectionGluingPathLaws.toEndpointLaws",
        "BinaryProjectionGluingPathLaws.glue_project_after_projection_endpoint",
        "BinaryProjectionGluingPathLaws.project_after_glue_endpoint",
+       "UniformFiniteFieldCover",
+       "Cech0Simplex",
+       "Cech1Simplex",
+       "Cech2Simplex",
+       "FiniteSFTModel",
+       "FiniteLocalClockedConeFamily",
+       "FiniteClockedGluingData",
+       "FiniteProjectionGluingLaws",
+       "forecastCone_descent_finite_of_laws",
+       "FiniteSelectedForecastConeDescentPackage.ofLaws",
+       "finiteForecastConeDescentPackage_of_laws",
+       "finiteCoverOfBinaryCover",
+       "FiniteCechDescentCohomologyBridge",
+       "SFTTheoremRoadmap.finiteForecastConeDescent_of_laws",
        "BinaryProjectionGluingEquivalenceLaws.ofEndpointLaws",
        "BinaryDescentAssumptions.ofStepGluing",
        "BinaryDescentAssumptions.ofEndpointLaws",
@@ -333,6 +348,20 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "BinaryProjectionGluingPathLaws.toEndpointLaws",
            "BinaryProjectionGluingPathLaws.glue_project_after_projection_endpoint",
            "BinaryProjectionGluingPathLaws.project_after_glue_endpoint",
+           "UniformFiniteFieldCover",
+           "Cech0Simplex",
+           "Cech1Simplex",
+           "Cech2Simplex",
+           "FiniteSFTModel",
+           "FiniteLocalClockedConeFamily",
+           "FiniteClockedGluingData",
+           "FiniteProjectionGluingLaws",
+           "forecastCone_descent_finite_of_laws",
+           "FiniteSelectedForecastConeDescentPackage.ofLaws",
+           "finiteForecastConeDescentPackage_of_laws",
+           "finiteCoverOfBinaryCover",
+           "FiniteCechDescentCohomologyBridge",
+           "SFTTheoremRoadmap.finiteForecastConeDescent_of_laws",
            "BinaryProjectionGluingEquivalenceLaws",
            "BinaryProjectionGluingEquivalenceLaws.ofEndpointLaws",
            "BinaryDescentAssumptions.ofStepGluing",
@@ -350,7 +379,7 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTTheoremRoadmap.ModularityRepresentationPackage.modularity_representation",
            "SFTTheoremRoadmap.FundamentalModularityTheoremPackage.fundamental_modularity"],
          reading :=
-          "roadmap-scale SFT theorems are implemented as explicit theorem-package surfaces over exact shared-clock cones; binary local-to-global path gluing is constructed from step gluing data, and selected inverse laws can be instantiated from endpoint projection/glue laws or selected path-level inverse laws",
+          "roadmap-scale SFT theorems are implemented as explicit theorem-package surfaces over exact shared-clock cones; binary local-to-global path gluing is constructed from step gluing data, selected inverse laws can be instantiated from endpoint projection/glue laws or selected path-level inverse laws, and finite-cover descent has a Cech-style selected skeleton under explicit gluing laws",
          status := "defined only / proved accessors under package assumptions" },
        { schematic := "Descent obstruction / cohomology / normal form / observation / envelope",
          leanDeclarations :=

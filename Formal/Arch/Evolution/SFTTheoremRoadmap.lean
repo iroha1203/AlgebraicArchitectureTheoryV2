@@ -3,6 +3,7 @@ import Formal.Arch.Evolution.SFTEnvelope
 import Formal.Arch.Evolution.SFTPolicy
 import Formal.Arch.Evolution.SFTReachability
 import Formal.Arch.Evolution.SFTDescent
+import Formal.Arch.Evolution.SFTFiniteCover
 
 /-!
 Lean entrypoints for `docs/sft/sft_theorem_roadmap_and_research_vision.md`.
@@ -249,6 +250,25 @@ theorem binaryForecastConeDescent_of_path_laws
     {source : Global} {horizon : Nat} :
     Nonempty (BinarySelectedForecastConeDescentPackage model source horizon) :=
   binaryForecastConeDescentPackage_of_path_laws glueData pathLaws
+
+/--
+Finite-cover selected descent from explicit finite gluing and Cech-style
+compatibility laws.
+
+This is finite-cover selected descent.  It is not a proof that every finite
+cover satisfies descent.  It is not full Cech cohomology, and it is not the
+Fundamental Modularity Theorem.
+-/
+theorem finiteForecastConeDescent_of_laws
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    (glueData : FiniteClockedGluingData model)
+    (laws : FiniteProjectionGluingLaws glueData)
+    {source : Global} {horizon : Nat} :
+    Nonempty (FiniteSelectedForecastConeDescentPackage model source horizon) :=
+  finiteForecastConeDescentPackage_of_laws glueData laws
 
 /-! ## 5.1 Modularity representation -/
 

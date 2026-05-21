@@ -2301,6 +2301,47 @@ reflexive / symmetric / transitive laws と endpoint consequence を要求する
 | `LocalFamilyDoesNotLift` | `def` | compatible local family が global cone point に lift しない failure predicate。 | `defined only` |
 | `GlobalPathsLocallyIdentified` | `def` | distinct global cone points が local projection で同一視される failure predicate。 | `defined only` |
 
+## SFT Finite-Cover Descent Skeleton
+
+File: `Formal/Arch/Evolution/SFTFiniteCover.lean`
+
+Binary cover descent の上に、uniform finite cover と Cech-style simplex を concrete API として置く。
+この surface は full Cech cohomology ではなく、finite index、selected local family、explicit finite
+gluing、selected compatibility laws に相対化された ForecastCone descent skeleton である。すべての
+finite cover が descent を満たすこと、Cech cohomology theorem、Fundamental Modularity theorem は
+主張しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `UniformFiniteFieldCover` | `structure` | concrete `indices : List Index`、global-to-local restriction、coverage / finite / non-conclusion boundary を束ねる uniform finite cover skeleton。 | `defined only` |
+| `UniformFiniteFieldCover.RecordsCoverage` | `def` | selected cover の coverage boundary を取り出す。 | `defined only` |
+| `UniformFiniteFieldCover.RecordsFiniteBoundary` | `def` | selected finite-witness boundary を取り出す。 | `defined only` |
+| `Cech0Simplex` | `structure` | finite cover の selected 0-simplex / index membership witness。 | `defined only` |
+| `Cech1Simplex` | `structure` | selected pair overlap と overlap boundary を持つ Cech-style 1-simplex。 | `defined only` |
+| `Cech2Simplex` | `structure` | selected triple overlap と triple-overlap boundary を持つ Cech-style 2-simplex。 | `defined only` |
+| `FiniteSFTModel` | `structure` | finite cover 上の global/local support、step relation、operation projection、support / step projection laws を束ねる。 | `defined only` |
+| `FiniteSFTModel.projectClockedStepLocal` | `def` | selected finite index で global clock tick を local clock tick へ射影する。 | `defined only` |
+| `FiniteSFTModel.projectClockedPathLocal` | `def` | selected finite index で global clocked path を local clocked path へ射影する。 | `defined only` |
+| `FiniteSFTModel.projectClockedPathLocal_length` | `theorem` | finite local projection が clock length を保存する。 | `proved` |
+| `FiniteSFTModel.projectClockedForecastCone_local` | `theorem` | exact global clocked cone membership を selected local exact cone membership へ射影する。 | `proved` |
+| `FiniteLocalConeDatum` | `structure` | selected index の local target/path/cone membership を束ねる datum。 | `defined only` |
+| `FiniteLocalClockedConeFamily` | `structure` | 各 selected finite index の local target/path/cone membership と Cech compatibility boundary を束ねる compatible local cone family。 | `defined only` |
+| `FiniteLocalClockedConeFamily.local_length_eq_horizon` | `theorem` | finite local family の各 selected local path が exact shared-clock horizon を持つ。 | `proved` |
+| `projectGlobalConePointToFiniteFamily` | `def` | global cone point を finite local cone family へ射影する。 | `defined only` |
+| `FiniteClockedGluingData` | `structure` | finite local family から global cone point を作る selected gluing data と projection / compatibility / finite-cover boundary。 | `defined only` |
+| `FiniteGlobalConeEquivalenceData` | `structure` | finite descent の global cone point relatedness と equivalence-relation laws を束ねる。 | `defined only` |
+| `FiniteLocalFamilyEquivalenceData` | `structure` | finite local family relatedness と equivalence-relation laws を束ねる。 | `defined only` |
+| `FiniteProjectionGluingLaws` | `structure` | finite projection/glue inverse laws、global/local selected equivalence、Cech compatibility / finite descent boundary を束ねる。 | `defined only` |
+| `forecastCone_descent_finite_of_laws` | `def` | explicit finite gluing と Cech-style compatibility laws から global cone point と finite local family の selected `ConeEquivalence` を構成する。 | `defined only` |
+| `FiniteSelectedForecastConeDescentPackage` | `structure` | finite-cover selected descent equivalence、package boundary、non-conclusions を束ねる。 | `defined only` |
+| `FiniteSelectedForecastConeDescentPackage.ofLaws` | `def` | explicit finite projection/gluing laws から finite selected descent package を構成する。 | `defined only` |
+| `finiteForecastConeDescentPackage_of_laws` | `theorem` | explicit laws から finite selected descent package の存在を取り出す。 | `proved accessor` |
+| `finiteCoverOfBinaryCover` | `def` | binary cover を `Bool` index / `Sum Left Right` local carrier の finite cover skeleton として読む cover-level bridge。 | `defined only` |
+| `BinaryAsFiniteCoverPackage` | `structure` | binary-as-finite cover bridge の package boundary を束ねる。 | `defined only` |
+| `FiniteCechDescentCohomologyBridge` | `structure` | selected `H1Vanishes` と finite descent glue predicate の iff bridge を保持する cohomology-facing skeleton。 | `defined only` |
+| `FiniteCechDescentCohomologyBridge.finiteDescent_of_h1_vanishes` | `theorem` | selected bridge から H1 vanishing implies finite descent reading を取り出す。 | `proved accessor` |
+| `FiniteCechDescentCohomologyBridge.h1_vanishes_of_finiteDescent` | `theorem` | selected bridge から finite descent implies H1 vanishing reading を取り出す。 | `proved accessor` |
+
 ## SFT Theorem Roadmap
 
 File: `Formal/Arch/Evolution/SFTTheoremRoadmap.lean`
@@ -2322,6 +2363,7 @@ AI agent safety、lifecycle decision correctness、extractor completeness を無
 | `SFTTheoremRoadmap.BinaryForecastConeDescentPackage.forecastCone_binary_descent` | `theorem` | binary cover の pullback 形式の descent witness existence を取り出す。 | `proved accessor` |
 | `SFTTheoremRoadmap.binaryForecastConeDescent_of_endpoint_laws` | `theorem` | step gluing data と endpoint projection/glue laws から selected binary descent package の存在を取り出す roadmap-facing accessor。 | `proved accessor` |
 | `SFTTheoremRoadmap.binaryForecastConeDescent_of_path_laws` | `theorem` | step gluing data と selected path-level inverse laws から selected binary descent package の存在を取り出す roadmap-facing accessor。finite-cover descent や full Fundamental Modularity theorem は主張しない。 | `proved accessor` |
+| `SFTTheoremRoadmap.finiteForecastConeDescent_of_laws` | `theorem` | explicit finite gluing と Cech-style compatibility laws から finite selected descent package の存在を取り出す roadmap-facing accessor。すべての finite cover の descent や full Cech cohomology は主張しない。 | `proved accessor` |
 | `SFTTheoremRoadmap.ModularityRepresentationPackage.modularity_representation` | `theorem` | module boundary、ForecastCone descent、unique compatible representation の同値 package を展開する。 | `proved accessor` |
 | `SFTTheoremRoadmap.DescentObstructionPackage.obstruction_of_no_lift` | `theorem` | actual no-lift predicate から typed surjectivity obstruction witness を得る。 | `proved accessor` |
 | `SFTTheoremRoadmap.DescentObstructionPackage.obstruction_of_local_identification` | `theorem` | local identification failure から typed injectivity obstruction witness を得る。 | `proved accessor` |
