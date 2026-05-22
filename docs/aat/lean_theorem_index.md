@@ -2513,6 +2513,11 @@ AI agent safety、lifecycle decision correctness、extractor completeness を無
 | `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.governanceCuttingPackage_preserves_desired` | `theorem` | synthesized finite package が selected desired cone family を preserve することを取り出す。 | `proved accessor` |
 | `SFTTheoremRoadmap.governance_synthesis_of_guard_basis_complete` | `theorem` | complete guard basis と support restriction premise から bad exclusion / desired preservation を得る。 | `proved` |
 | `SFTTheoremRoadmap.FiniteRefinementHeight.closedLoopCalibration_fixedPoint_or_boundary_of_finiteHeight` | `theorem` | finite rank descent の下で closed-loop update が fixed point または boundary に到達する。 | `proved` |
+| `SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge` | `structure` | concrete `Nat`-ranked finite refinement height を closed-loop calibration package へ接続する bridge。 | `defined only` |
+| `SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge.closedLoopPackage` | `def` | finite-height bridge を `ClosedLoopCalibrationPackage` として読む。 | `defined only` |
+| `SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge.finiteHeight_closedLoopCalibration_fixedPoint_or_boundary` | `theorem` | finite-height bridge から selected fixed point または boundary expansion への到達を取り出す。 | `proved` |
+| `SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge.RecordsCalibrationBoundary` | `def` | finite-height bridge の selected calibration / evidence boundary を取り出す。 | `defined only` |
+| `SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge.RecordsNonConclusions` | `def` | finite-height bridge と rank-descent skeleton の non-conclusions を保持する。 | `defined only` |
 | `SFTTheoremRoadmap.artifact_yoneda_of_separating_probes` | `theorem` | separating probes の下で artifact response equivalence から SFT equivalence を得る。 | `proved` |
 | `SFTTheoremRoadmap.agentic_confluence_of_local_normal_forms_and_descent` | `theorem` | descent と unique normal form から fair interleaving convergence を得る。 | `proved` |
 | `SFTTheoremRoadmap.FundamentalModularityTheoremPackage.ofTheoremFamily` | `def` | selected theorem family から grand theorem package を構成する。`computablyGoverned` と `typedBoundaryFailureWitness` は別命題として保持し、disjunction witness を package conclusion へ渡す。 | `defined only` |
@@ -2569,6 +2574,9 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.reviewComponent_of_obstructionAwareEnvelopeBridge` | `def` | obstruction-aware minimal envelope bridge を final review component として読む。 | `defined only` |
 | `SFTFundamentalModularity.reviewComponent_records_obstructionAware_minimalEnvelope` | `theorem` | final review component が obstruction-aware factorization を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.calibrationComponent_of_closedLoopPackage` | `def` | closed-loop calibration package を final calibration component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.calibrationComponent_of_finiteHeightClosedLoopBridge` | `def` | finite-height closed-loop calibration bridge を final calibration component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.calibrationComponent_records_finiteHeight_fixedPointOrBoundary` | `theorem` | finite-height bridge 由来の final calibration component が fixed point または boundary expansion を記録することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.calibrationComponent_records_finiteHeight_boundary` | `theorem` | finite-height bridge 由来の final calibration component が calibration boundary を明示的に保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage` | `def` | agentic confluence package の conclusion `FairInterleavingsConverge package.landing` を final agentic component の `agenticConfluence` / `fairInterleavingsConverge` として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.agenticComponent_records_agenticConfluence` | `theorem` | package assumptions から final agentic component の `agenticConfluence` conclusion を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.agenticComponent_records_confluence` | `theorem` | package assumptions から final agentic component の `fairInterleavingsConverge` conclusion を取り出す。 | `proved accessor` |

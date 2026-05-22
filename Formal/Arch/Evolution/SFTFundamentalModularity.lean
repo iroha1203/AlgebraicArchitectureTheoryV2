@@ -633,6 +633,51 @@ theorem calibrationComponent_records_fixedPointOrBoundary
   SFTTheoremRoadmap.ClosedLoopCalibrationPackage.closedLoop_calibration_fixedPoint_or_boundary
     package hMonotone hEvidence hBoundary hNonConclusion hError initial
 
+/--
+Read a concrete finite-height closed-loop calibration bridge as the final
+calibration component.
+
+This bridge exposes the rank-descent convergence theorem directly at the final
+assembly layer.  It remains a selected finite-height theorem and does not
+promote feedback preservation to empirical forecast accuracy.
+-/
+def calibrationComponent_of_finiteHeightClosedLoopBridge
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge :
+      SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge
+        Estimate update)
+    (initial : Estimate) :
+    FundamentalCalibrationComponent where
+  boundaryExplicitFixedPoint := bridge.boundaryExplicit
+  fixedPointOrBoundaryExpansion :=
+    SFTTheoremRoadmap.EventuallyFixedOrBoundary
+      update bridge.height.boundaryExpansion initial
+  calibrationBoundary := bridge.RecordsCalibrationBoundary
+  nonConclusions := bridge.RecordsNonConclusions
+
+/-- The finite-height bridge component records fixed point or boundary expansion. -/
+theorem calibrationComponent_records_finiteHeight_fixedPointOrBoundary
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge :
+      SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge
+        Estimate update)
+    (initial : Estimate) :
+    (calibrationComponent_of_finiteHeightClosedLoopBridge
+      bridge initial).fixedPointOrBoundaryExpansion :=
+  bridge.finiteHeight_closedLoopCalibration_fixedPoint_or_boundary initial
+
+/-- The finite-height bridge component keeps the calibration boundary explicit. -/
+theorem calibrationComponent_records_finiteHeight_boundary
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge :
+      SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge
+        Estimate update)
+    (initial : Estimate)
+    (hBoundary : bridge.RecordsCalibrationBoundary) :
+    (calibrationComponent_of_finiteHeightClosedLoopBridge
+      bridge initial).calibrationBoundary :=
+  hBoundary
+
 /-- Read agentic confluence package data as the final agentic component. -/
 def agenticComponent_of_agenticConfluencePackage
     {Interleaving : Type u} {ConeQuotient : Type v}

@@ -1260,6 +1260,73 @@ theorem closedLoop_calibration_fixedPoint_or_boundary
 
 end ClosedLoopCalibrationPackage
 
+/--
+Finite-height closed-loop calibration bridge.
+
+This bridge constructs the closed-loop calibration package from a concrete
+Nat-ranked finite refinement height.  The theorem remains about selected
+fixed-point-or-boundary convergence, not empirical forecast accuracy.
+-/
+structure FiniteHeightClosedLoopCalibrationBridge
+    (Estimate : Type u) (update : Estimate -> Estimate) where
+  height : FiniteRefinementHeight Estimate update
+  refinementLe : Estimate -> Estimate -> Prop
+  monotone : Prop
+  evidencePreserving : Prop
+  boundaryExplicit : Prop
+  nonConclusionPreserving : Prop
+  forecastErrorRefining : Prop
+  calibrationBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteHeightClosedLoopCalibrationBridge
+
+/-- Read finite-height descent as a closed-loop calibration package. -/
+def closedLoopPackage
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge : FiniteHeightClosedLoopCalibrationBridge Estimate update) :
+    ClosedLoopCalibrationPackage Estimate update where
+  refinementLe := bridge.refinementLe
+  boundaryExpansionRequirement := bridge.height.boundaryExpansion
+  monotone := bridge.monotone
+  evidencePreserving := bridge.evidencePreserving
+  boundaryExplicit := bridge.boundaryExplicit
+  nonConclusionPreserving := bridge.nonConclusionPreserving
+  forecastErrorRefining := bridge.forecastErrorRefining
+  reachesFixedPointOrBoundary := by
+    intro _hMonotone _hEvidence _hBoundary _hNonConclusion _hError initial
+    exact FiniteRefinementHeight.closedLoopCalibration_fixedPoint_or_boundary_of_finiteHeight
+        bridge.height initial
+  calibrationBoundary :=
+    bridge.calibrationBoundary ∧ bridge.height.evidenceBoundary
+  nonConclusions :=
+    bridge.nonConclusions ∧ bridge.height.nonConclusions
+
+/-- Finite-height calibration reaches a fixed point or boundary expansion. -/
+theorem finiteHeight_closedLoopCalibration_fixedPoint_or_boundary
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge : FiniteHeightClosedLoopCalibrationBridge Estimate update)
+    (initial : Estimate) :
+    EventuallyFixedOrBoundary update bridge.height.boundaryExpansion initial :=
+  FiniteRefinementHeight.closedLoopCalibration_fixedPoint_or_boundary_of_finiteHeight
+    bridge.height initial
+
+/-- The bridge exposes the selected calibration boundary. -/
+def RecordsCalibrationBoundary
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge : FiniteHeightClosedLoopCalibrationBridge Estimate update) :
+    Prop :=
+  bridge.calibrationBoundary ∧ bridge.height.evidenceBoundary
+
+/-- The bridge keeps finite-height and calibration non-conclusions explicit. -/
+def RecordsNonConclusions
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge : FiniteHeightClosedLoopCalibrationBridge Estimate update) :
+    Prop :=
+  bridge.nonConclusions ∧ bridge.height.nonConclusions
+
+end FiniteHeightClosedLoopCalibrationBridge
+
 /-! ## 5.10 Artifact Yoneda -/
 
 /-- Two fields have equivalent artifact responses when every probe gives the same response. -/
