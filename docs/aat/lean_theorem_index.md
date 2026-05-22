@@ -2342,6 +2342,31 @@ finite cover が descent を満たすこと、Cech cohomology theorem、Fundamen
 | `FiniteCechDescentCohomologyBridge.finiteDescent_of_h1_vanishes` | `theorem` | selected bridge から H1 vanishing implies finite descent reading を取り出す。 | `proved accessor` |
 | `FiniteCechDescentCohomologyBridge.h1_vanishes_of_finiteDescent` | `theorem` | selected bridge から finite descent implies H1 vanishing reading を取り出す。 | `proved accessor` |
 
+## SFT Finite Exact Model
+
+File: `Formal/Arch/Evolution/SFTFiniteExactModel.lean`
+
+Fundamental Modularity assumption discharge のため、selected finite proof universe、
+exact cover、operation support / relation、observation boundary、governance basis を
+同じ package として束ねる。これは後続 theorem が参照する public entrypoint であり、
+extractor completeness、empirical correctness、すべての finite cover の descent、
+full Fundamental Modularity theorem は主張しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `FiniteExactSFTModel` | `structure` | selected global / index / local / operation / governance carriers、`UniformFiniteFieldCover`、`FiniteSFTModel`、`ObservationBoundary`、exact cover / operation / observation / governance / extractor / empirical boundary を束ねる。 | `defined only` |
+| `FiniteExactSFTModel.exactCover` | `def` | selected exact finite cover を後続 theorem 向け entrypoint として取り出す。 | `defined only` |
+| `FiniteExactSFTModel.descentModel` | `def` | theorem-bearing `FiniteSFTModel` を後続 descent / obstruction theorem 向け entrypoint として取り出す。 | `defined only` |
+| `FiniteExactSFTModel.exactCover_indices_eq_selected` | `theorem` | exact cover の index list が selected index carrier と一致することを取り出す。 | `proved accessor` |
+| `FiniteExactSFTModel.RecordsSelectedUniverseBoundary` | `def` | selected finite universe boundary を取り出す。 | `defined only` |
+| `FiniteExactSFTModel.RecordsExactCoverBoundary` | `def` | exact cover / coverage / finite witness boundary を取り出す。 | `defined only` |
+| `FiniteExactSFTModel.RecordsOperationBoundary` | `def` | operation support と step relation の boundary を取り出す。 | `defined only` |
+| `FiniteExactSFTModel.RecordsFiniteModelBoundary` | `def` | finite model package 自体の boundary を取り出す。 | `defined only` |
+| `FiniteExactSFTModel.RecordsObservationBoundary` | `def` | selected observation boundary と theorem / non-conclusion boundary を取り出す。 | `defined only` |
+| `FiniteExactSFTModel.RecordsGovernanceBasisBoundary` | `def` | selected governance basis boundary を取り出す。 | `defined only` |
+| `FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary` | `def` | extractor / empirical boundary を completeness や correctness に昇格せず保持する。 | `defined only` |
+| `FiniteExactSFTModel.RecordsNonConclusions` | `def` | cover、finite model、observation、extractor、empirical non-conclusions をまとめて保持する。 | `defined only` |
+
 ## SFT Finite Descent Obstruction / Governance Cutting
 
 File: `Formal/Arch/Evolution/SFTDescentObstruction.lean`

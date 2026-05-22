@@ -70,6 +70,7 @@ import Formal.Arch.Evolution.SFTClockedCone
 import Formal.Arch.Evolution.SFTFieldCover
 import Formal.Arch.Evolution.SFTDescent
 import Formal.Arch.Evolution.SFTFiniteCover
+import Formal.Arch.Evolution.SFTFiniteExactModel
 import Formal.Arch.Evolution.SFTDescentObstruction
 import Formal.Arch.Evolution.SFTFundamentalModularity
 import Formal.Arch.Evolution.SFTTheoremPackages
