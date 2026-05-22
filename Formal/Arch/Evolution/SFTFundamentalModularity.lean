@@ -14,7 +14,7 @@ or exposes a typed boundary failure.
 namespace Formal.Arch
 namespace SFTFundamentalModularity
 
-universe u v w x y z
+universe u v w x y z a
 
 /-- Docs-facing outcome vocabulary for the final conservative assembly. -/
 inductive FundamentalEvolutionOutcome where
@@ -386,6 +386,86 @@ theorem governanceComponent_records_finiteExact_desired_preservation
   fun family hDesired =>
     finiteExact_governance_preserves_desired_family
       soundness family hDesired
+
+/-- Read finite governance synthesis completeness as a final governance component. -/
+def governanceComponent_of_finiteGovernanceSynthesisBridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    {Guard : Type z} {Intervention : Type a}
+    (bridge :
+      SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention)
+    (failure : FiniteDescentFailure model source horizon)
+    (hBadClassified :
+      ∀ witness,
+        bridge.obstructionPackage.classifier.classify failure = some witness ->
+        bridge.target.bad witness) :
+    FundamentalGovernanceComponent :=
+  governanceComponent_of_finiteObstructionGovernance
+    bridge.obstructionGovernancePackage failure hBadClassified
+
+/-- The synthesis bridge component records selected bad-witness cutting. -/
+theorem governanceComponent_records_synthesis_cut
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    {Guard : Type z} {Intervention : Type a}
+    (bridge :
+      SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention)
+    (failure : FiniteDescentFailure model source horizon)
+    (hBadClassified :
+      ∀ witness,
+        bridge.obstructionPackage.classifier.classify failure = some witness ->
+        bridge.target.bad witness) :
+    (governanceComponent_of_finiteGovernanceSynthesisBridge
+      bridge failure hBadClassified).governanceAsObstructionCutting :=
+  governance_cuts_obstruction_of_finite_failure
+    bridge.obstructionGovernancePackage failure hBadClassified
+
+/-- The synthesis bridge component records desired-family preservation. -/
+theorem governanceComponent_records_synthesis_desired_preservation
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    {Guard : Type z} {Intervention : Type a}
+    (bridge :
+      SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention)
+    (failure : FiniteDescentFailure model source horizon)
+    (hBadClassified :
+      ∀ witness,
+        bridge.obstructionPackage.classifier.classify failure = some witness ->
+        bridge.target.bad witness) :
+    (governanceComponent_of_finiteGovernanceSynthesisBridge
+      bridge failure hBadClassified).desiredFamiliesPreserved :=
+  fun family hDesired =>
+    SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.governanceCuttingPackage_preserves_desired
+      bridge family hDesired
+
+/-- The synthesis bridge component exposes the selected guard hit/miss witness. -/
+theorem governanceComponent_records_synthesis_guard_family
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    {Guard : Type z} {Intervention : Type a}
+    (bridge :
+      SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention) :
+    SFTTheoremRoadmap.GuardFamilyHitsBad
+        bridge.synthesis.bad bridge.synthesis.guardHits bridge.guardSet ∧
+      SFTTheoremRoadmap.GuardFamilyMissesDesired
+        bridge.synthesis.desired bridge.synthesis.guardHits bridge.guardSet :=
+  bridge.guard_family_hits_and_misses
 
 /-- Read a minimal consequence-envelope package as the final review component. -/
 def reviewComponent_of_minimalEnvelopePackage
