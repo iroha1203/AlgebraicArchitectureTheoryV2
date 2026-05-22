@@ -18,6 +18,7 @@ import Formal.Arch.Evolution.SFTFiniteExactModel
 import Formal.Arch.Evolution.SFTCechCohomology
 import Formal.Arch.Evolution.SFTDescentObstruction
 import Formal.Arch.Evolution.SFTTheoremRoadmap
+import Formal.Arch.Evolution.SFTAgenticConfluence
 import Formal.Arch.Evolution.SFTFundamentalModularity
 
 /-!
@@ -292,7 +293,16 @@ def representativeDeclarations : Candidate -> List String
        "SFTFundamentalModularity.calibrationComponent_records_finiteHeight_boundary",
        "SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage",
        "SFTFundamentalModularity.agenticComponent_records_agenticConfluence",
-       "SFTFundamentalModularity.agenticComponent_records_confluence"]
+       "SFTFundamentalModularity.agenticComponent_records_confluence",
+       "SFTAgenticConfluence.ReductionReaches",
+       "SFTAgenticConfluence.NewmanStyleConfluenceKernel",
+       "SFTAgenticConfluence.NewmanStyleConfluenceKernel.newmanStyle_fairInterleavingsConverge",
+       "SFTAgenticConfluence.NewmanStyleConfluenceKernel.agenticPackage",
+       "SFTAgenticConfluence.NewmanStyleConfluenceKernel.agenticPackage_records_newmanStyle_confluence",
+       "SFTAgenticConfluence.NewmanStyleConfluenceKernel.RecordsNonConclusions",
+       "SFTFundamentalModularity.agenticComponent_of_newmanStyleConfluenceKernel",
+       "SFTFundamentalModularity.agenticComponent_records_newmanStyle_confluence",
+       "SFTFundamentalModularity.agenticComponent_records_newmanStyle_nonConclusions"]
   | finiteExactModel =>
       ["FiniteExactSFTModel",
        "FiniteExactSFTModel.exactCover",
@@ -549,6 +559,8 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTTheoremRoadmap.ClosedLoopCalibrationPackage.closedLoop_calibration_fixedPoint_or_boundary",
            "SFTTheoremRoadmap.ArtifactYonedaPackage.artifact_yoneda",
            "SFTTheoremRoadmap.AgenticConfluencePackage.agentic_confluence",
+           "SFTAgenticConfluence.NewmanStyleConfluenceKernel.newmanStyle_fairInterleavingsConverge",
+           "SFTFundamentalModularity.agenticComponent_records_newmanStyle_confluence",
            "SFTTheoremRoadmap.LifecycleBifurcationPackage.lifecycle_bifurcation_above_threshold",
            "SFTTheoremRoadmap.FieldShapingFixedPointPackage.fieldShaping_fixedPoints",
            "SFTTheoremRoadmap.EvolutionaryInvariancePackage.evolutionary_invariance"],

@@ -2580,6 +2580,19 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage` | `def` | agentic confluence package の conclusion `FairInterleavingsConverge package.landing` を final agentic component の `agenticConfluence` / `fairInterleavingsConverge` として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.agenticComponent_records_agenticConfluence` | `theorem` | package assumptions から final agentic component の `agenticConfluence` conclusion を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.agenticComponent_records_confluence` | `theorem` | package assumptions から final agentic component の `fairInterleavingsConverge` conclusion を取り出す。 | `proved accessor` |
+| `SFTAgenticConfluence.ReductionReaches` | `inductive` | selected interleaving reduction の reflexive-transitive closure。 | `defined only` |
+| `SFTAgenticConfluence.IsNormal` | `def` | selected reduction step を持たない normal state predicate。 | `defined only` |
+| `SFTAgenticConfluence.PairwiseJoinableLanding` | `def` | two selected interleavings が landing を保存する common reduct で join すること。 | `defined only` |
+| `SFTAgenticConfluence.NewmanStyleConfluenceKernel` | `structure` | selected reduction relation、normal-form witness、termination/local confluence から pairwise joinability を得る Newman-style kernel。 | `defined only` |
+| `SFTAgenticConfluence.NewmanStyleConfluenceKernel.fairInterleavingsConverge_of_pairwiseJoinable` | `theorem` | pairwise joinability から fair interleaving convergence を得る。 | `proved` |
+| `SFTAgenticConfluence.NewmanStyleConfluenceKernel.newmanStyle_fairInterleavingsConverge` | `theorem` | selected termination と local confluence から fair interleaving convergence を得る。 | `proved accessor` |
+| `SFTAgenticConfluence.NewmanStyleConfluenceKernel.agenticPackage` | `def` | Newman-style kernel を既存 `AgenticConfluencePackage` として読む。 | `defined only` |
+| `SFTAgenticConfluence.NewmanStyleConfluenceKernel.agenticPackage_records_newmanStyle_confluence` | `theorem` | kernel 由来 package が Newman-style convergence theorem を保持することを取り出す。 | `proved accessor` |
+| `SFTAgenticConfluence.NewmanStyleConfluenceKernel.RecordsAgentBoundary` | `def` | selected agentic proof boundary を取り出す。 | `defined only` |
+| `SFTAgenticConfluence.NewmanStyleConfluenceKernel.RecordsNonConclusions` | `def` | selected agentic confluence の non-conclusions を保持する。 | `defined only` |
+| `SFTFundamentalModularity.agenticComponent_of_newmanStyleConfluenceKernel` | `def` | Newman-style confluence kernel を final agentic component として読む。 | `defined only` |
+| `SFTFundamentalModularity.agenticComponent_records_newmanStyle_confluence` | `theorem` | Newman-style final agentic component が fair interleaving convergence を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.agenticComponent_records_newmanStyle_nonConclusions` | `theorem` | Newman-style final agentic component が non-conclusions を保持することを取り出す。 | `proved accessor` |
 
 ## SFT Theorem Package Entrypoint
 
