@@ -2377,6 +2377,30 @@ full Fundamental Modularity theorem は主張しない。
 | `FiniteExactDescentAssumptions.DescentPackageNonConclusions` | `def` | 構成された descent package の non-conclusion proposition を取り出す。 | `defined only` |
 | `finiteExactForecastConeDescentPackage_of_assumptions` | `theorem` | 明示された finite exact descent assumptions の下で、各 selected source / horizon の `FiniteSelectedForecastConeDescentPackage` の存在を証明する。 | `proved accessor` |
 
+## SFT Cech Cone Cohomology Vocabulary
+
+File: `Formal/Arch/Evolution/SFTCechCohomology.lean`
+
+Finite cover の 0/1-simplex skeleton と selected exact cone family を接続する
+concrete Cech cochain vocabulary を定義する。ここでは cocycle / coboundary
+predicate と bridge を置くが、`H1 = 0 -> finite descent` や full Cech
+cohomology theorem は証明しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `CechCone0` | `structure` | 各 `Cech0Simplex` に local target / exact local path / cone membership を割り当てる concrete cone-valued 0-cochain。 | `defined only` |
+| `CechCone0.ofFiniteLocalFamily` | `def` | `FiniteLocalClockedConeFamily` を 0-simplex indexed 0-cochain として読む。 | `defined only` |
+| `CechCone0.ofGlobalConePoint` | `def` | global cone point を各 0-simplex へ射影して 0-cochain を作る。 | `defined only` |
+| `CechCone0.local_length_eq_horizon` | `theorem` | 0-cochain の各 local path が selected horizon と同じ exact length を持つ。 | `proved` |
+| `CechCone1` | `structure` | 各 `Cech1Simplex` に overlap compatibility predicate と boundary を割り当てる concrete 1-cochain surface。 | `defined only` |
+| `CechCone1.ofFiniteLocalFamily` | `def` | `FiniteLocalClockedConeFamily` の pairwise compatibility を 1-simplex indexed 1-cochain として読む。 | `defined only` |
+| `IsCechConeCocycle` | `def` | すべての selected 1-simplex で overlap compatibility が成り立つことを cocycle predicate として定義する。 | `defined only` |
+| `CechConeCoboundary` | `structure` | global cone point の selected local projections が 0-cochain target と一致する coboundary witness。 | `defined only` |
+| `IsCechConeCoboundary` | `def` | `CechConeCoboundary` の存在を predicate として読む。 | `defined only` |
+| `CechConeCoboundary.ofGlobalConePoint` | `def` | global cone point の projection から coboundary witness を作る。 | `defined only` |
+| `CechConeCoboundary.isCoboundary_of_globalConePoint` | `theorem` | global cone point の projection が coboundary predicate を満たすことを取り出す。 | `proved accessor` |
+| `cechConeCocycle_of_finiteLocalFamily` | `theorem` | existing finite local family の pairwise compatibility / Cech boundary から concrete cocycle predicate を得る。 | `proved accessor` |
+
 ## SFT Finite Descent Obstruction / Governance Cutting
 
 File: `Formal/Arch/Evolution/SFTDescentObstruction.lean`

@@ -15,6 +15,7 @@ import Formal.Arch.Evolution.SFTFieldCover
 import Formal.Arch.Evolution.SFTDescent
 import Formal.Arch.Evolution.SFTFiniteCover
 import Formal.Arch.Evolution.SFTFiniteExactModel
+import Formal.Arch.Evolution.SFTCechCohomology
 import Formal.Arch.Evolution.SFTDescentObstruction
 import Formal.Arch.Evolution.SFTTheoremRoadmap
 import Formal.Arch.Evolution.SFTFundamentalModularity
@@ -266,7 +267,13 @@ def representativeDeclarations : Candidate -> List String
        "FiniteExactSFTModel.RecordsNonConclusions",
        "FiniteExactDescentAssumptions",
        "FiniteExactDescentAssumptions.descentPackage",
-       "finiteExactForecastConeDescentPackage_of_assumptions"]
+       "finiteExactForecastConeDescentPackage_of_assumptions",
+       "CechCone0",
+       "CechCone1",
+       "IsCechConeCocycle",
+       "CechConeCoboundary",
+       "IsCechConeCoboundary",
+       "cechConeCocycle_of_finiteLocalFamily"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.
@@ -504,9 +511,14 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary",
            "FiniteExactSFTModel.RecordsNonConclusions",
            "FiniteExactDescentAssumptions",
-           "finiteExactForecastConeDescentPackage_of_assumptions"],
+           "finiteExactForecastConeDescentPackage_of_assumptions",
+           "CechCone0",
+           "CechCone1",
+           "IsCechConeCocycle",
+           "IsCechConeCoboundary",
+           "cechConeCocycle_of_finiteLocalFamily"],
          reading :=
-          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package",
+          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package; concrete Cech cone cochains connect the finite simplex skeleton to cocycle and coboundary predicates",
          status := "defined only / proved accessor under explicit assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
