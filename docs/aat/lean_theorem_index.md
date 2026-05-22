@@ -2366,6 +2366,16 @@ full Fundamental Modularity theorem は主張しない。
 | `FiniteExactSFTModel.RecordsGovernanceBasisBoundary` | `def` | selected governance basis boundary を取り出す。 | `defined only` |
 | `FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary` | `def` | extractor / empirical boundary を completeness や correctness に昇格せず保持する。 | `defined only` |
 | `FiniteExactSFTModel.RecordsNonConclusions` | `def` | cover、finite model、observation、extractor、empirical non-conclusions をまとめて保持する。 | `defined only` |
+| `FiniteExactDescentAssumptions` | `structure` | `FiniteExactSFTModel` 上の explicit finite gluing data、projection/gluing laws、exact cover / operation / observation / governance boundary を束ねる descent assumption package。 | `defined only` |
+| `FiniteExactDescentAssumptions.descentPackage` | `def` | explicit assumptions から selected finite ForecastCone descent package を構成する。 | `defined only` |
+| `FiniteExactDescentAssumptions.records_exactCoverBoundary` | `theorem` | finite exact descent assumptions が exact cover boundary を保持することを取り出す。 | `proved accessor` |
+| `FiniteExactDescentAssumptions.records_operationBoundary` | `theorem` | operation support / relation boundary を取り出す。 | `proved accessor` |
+| `FiniteExactDescentAssumptions.records_observationBoundary` | `theorem` | observation boundary を取り出す。 | `proved accessor` |
+| `FiniteExactDescentAssumptions.records_governanceBoundary` | `theorem` | governance basis boundary を取り出す。 | `proved accessor` |
+| `FiniteExactDescentAssumptions.RecordsNonConclusions` | `def` | finite exact descent assumptions の non-conclusion boundary を保持する。 | `defined only` |
+| `FiniteExactDescentAssumptions.DescentPackageBoundary` | `def` | 構成された descent package の boundary proposition を取り出す。 | `defined only` |
+| `FiniteExactDescentAssumptions.DescentPackageNonConclusions` | `def` | 構成された descent package の non-conclusion proposition を取り出す。 | `defined only` |
+| `finiteExactForecastConeDescentPackage_of_assumptions` | `theorem` | 明示された finite exact descent assumptions の下で、各 selected source / horizon の `FiniteSelectedForecastConeDescentPackage` の存在を証明する。 | `proved accessor` |
 
 ## SFT Finite Descent Obstruction / Governance Cutting
 

@@ -263,7 +263,10 @@ def representativeDeclarations : Candidate -> List String
        "FiniteExactSFTModel.RecordsObservationBoundary",
        "FiniteExactSFTModel.RecordsGovernanceBasisBoundary",
        "FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary",
-       "FiniteExactSFTModel.RecordsNonConclusions"]
+       "FiniteExactSFTModel.RecordsNonConclusions",
+       "FiniteExactDescentAssumptions",
+       "FiniteExactDescentAssumptions.descentPackage",
+       "finiteExactForecastConeDescentPackage_of_assumptions"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.
@@ -499,10 +502,12 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "FiniteExactSFTModel.RecordsExactCoverBoundary",
            "FiniteExactSFTModel.RecordsFiniteModelBoundary",
            "FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary",
-           "FiniteExactSFTModel.RecordsNonConclusions"],
+           "FiniteExactSFTModel.RecordsNonConclusions",
+           "FiniteExactDescentAssumptions",
+           "finiteExactForecastConeDescentPackage_of_assumptions"],
          reading :=
-          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems",
-         status := "defined only / boundary accessors" }]
+          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package",
+         status := "defined only / proved accessor under explicit assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
 def nonConclusionBoundary : Candidate -> String
