@@ -46,10 +46,16 @@
     <loc>https://iroha1203.dev/archsig/air/</loc>
   </url>
   <url>
+    <loc>https://iroha1203.dev/archsig/anatomy/</loc>
+  </url>
+  <url>
     <loc>https://iroha1203.dev/archsig/artifacts/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/archsig/boundaries/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/archsig/ci/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/archsig/commands/</loc>
@@ -67,6 +73,9 @@
     <loc>https://iroha1203.dev/archsig/reading-output/</loc>
   </url>
   <url>
+    <loc>https://iroha1203.dev/archsig/semantic-air/</loc>
+  </url>
+  <url>
     <loc>https://iroha1203.dev/archsig/operational-feedback/</loc>
   </url>
   <url>
@@ -74,6 +83,9 @@
   </url>
   <url>
     <loc>https://iroha1203.dev/archsig/workflows/</loc>
+  </url>
+  <url>
+    <loc>https://iroha1203.dev/archsig/why/</loc>
   </url>
   <url>
     <loc>https://iroha1203.dev/outreach/</loc>

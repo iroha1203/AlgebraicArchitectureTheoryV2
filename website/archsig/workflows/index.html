@@ -3,21 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="ArchSig workflow manual for first adoption, PR review, generated-change provenance, scheduled scan, architecture dynamics, and SFT forecasting."
-    >
+    <meta name="description" content="Adopt ArchSig for first scans, PR review, generated changes, scheduled scans, architecture dynamics, operational feedback, and SFT forecast artifacts.">
     <title>ArchSig Workflows</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/workflows/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig Workflows">
-    <meta property="og:description" content="ArchSig workflow manual for first adoption, PR review, generated-change provenance, scheduled scan, architecture dynamics, and SFT forecasting.">
+    <meta property="og:description" content="Adopt ArchSig for first scans, PR review, generated changes, scheduled scans, architecture dynamics, operational feedback, and SFT forecast artifacts.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/workflows/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig Workflows">
-    <meta name="twitter:description" content="ArchSig workflow manual for first adoption, PR review, generated-change provenance, scheduled scan, architecture dynamics, and SFT forecasting.">
+    <meta name="twitter:description" content="Adopt ArchSig for first scans, PR review, generated changes, scheduled scans, architecture dynamics, operational feedback, and SFT forecast artifacts.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -25,16 +22,12 @@
     <link rel="alternate" hreflang="x-default" href="./">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
-      rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/site.css">
     <script defer src="../../assets/site.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-
     <header class="site-header" data-site-header>
       <div class="site-shell header-inner">
         <a class="brand" href="../../" aria-label="AAT SFT home">
@@ -51,294 +44,37 @@
         </nav>
       </div>
     </header>
-
     <main id="main">
       <section class="article-hero section-band">
         <div class="site-shell">
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="../../">Home</a>
-            <a href="../">ArchSig</a>
-            <span>Workflows</span>
-          </nav>
-          <p class="eyebrow">ArchSig Manual</p>
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Workflows</span></nav>
+          <p class="eyebrow">Use ArchSig</p>
           <h1>Move evidence through the whole review loop.</h1>
-          <p class="lede">
-            ArchSig workflows carry signatures from first adoption to PR
-            review, generated-change provenance, scheduled drift checks, and
-            future-facing SFT analysis.
-          </p>
+          <p class="lede">ArchSig is most useful when its artifacts form a repeatable loop from observation to review to calibration.</p>
         </div>
       </section>
-
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title">
-              <h2 id="toc-title">On this page</h2>
-              <ol>
-                <li><a href="#first-adoption">First adoption</a></li>
-                <li><a href="#pr-review">PR review</a></li>
-                <li><a href="#pr-command-path">PR command path</a></li>
-                <li><a href="#generated-change">Generated change</a></li>
-                <li><a href="#scheduled-scan">Scheduled scan</a></li>
-                <li><a href="#dynamics-forecast">Dynamics and forecast</a></li>
-              </ol>
-            </nav>
-            <div class="source-panel" data-sidebar-open="true">
-              <h2>ArchSig manual</h2>
-              <ul>
-                <li><a href="../">Manual overview</a></li>
-                <li><a href="../getting-started/">Getting Started</a></li>
-                <li><a href="../inputs/">Inputs and Configuration</a></li>
-                <li><a href="../reading-output/">Reading the Output</a></li>
-                <li><a href="../air/">AIR</a></li>
-                <li><a href="../commands/">Commands</a></li>
-                <li><a href="../artifacts/">Artifacts</a></li>
-                <li><a href="../boundaries/">Boundaries</a></li>
-                <li><a href="./" aria-current="page">Workflows</a></li>
-                <li><a href="../schemas/">Schemas</a></li>
-                <li><a href="../operational-feedback/">Operational Feedback</a></li>
-                <li><a href="../examples/">Examples</a></li>
-              </ul>
-            </div>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#adoption">First adoption</a></li><li><a href="#pr">PR review</a></li><li><a href="#generated">Generated change</a></li><li><a href="#scheduled">Scheduled scan</a></li><li><a href="#forecast">Proposal forecast</a></li><li><a href="#feedback">Feedback loop</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/" aria-current="page">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
-
           <div class="article-main">
-            <section id="first-adoption" class="article-section">
-              <h2>First adoption</h2>
-              <p>
-                First adoption establishes a baseline without pretending that
-                unsupported axes are safe. The useful result is a first report
-                with unmeasured axes and unsupported constructs made explicit.
-              </p>
-              <p>
-                Treat this chapter as the operator's path through the manual:
-                it says which artifacts to produce, which file to read first,
-                and where human review enters the loop.
-              </p>
-              <p>
-                A good first adoption run is not a pass/fail ceremony. It is a
-                vocabulary alignment exercise: teams learn which axes ArchSig
-                can already observe, which local policies need explicit input,
-                and which framework behaviors still sit outside the adapter.
-              </p>
-              <figure class="code-panel">
-                <figcaption>First adoption flow</figcaption>
-                <pre><code>scan
-  -&gt; validate
-  -&gt; snapshot
-  -&gt; baseline policy
-  -&gt; first signature report</code></pre>
-              </figure>
-            </section>
-
-            <section id="pr-review" class="article-section">
-              <h2>PR review</h2>
-              <p>
-                PR review compares before and after artifacts, then turns the
-                difference into AIR, theorem precondition checks, Feature
-                Extension Report, policy decision, and PR comment summary.
-              </p>
-              <p>
-                The reviewer should be able to trace every warning back to a
-                measured witness, a policy threshold, a missing precondition,
-                or an unmeasured axis. A workflow that cannot explain this
-                trace has lost the main value of Architecture Signature.
-              </p>
-              <figure class="code-panel">
-                <figcaption>PR review flow</figcaption>
-                <pre><code>before scan
-  -&gt; after scan
-  -&gt; signature diff
-  -&gt; AIR
-  -&gt; theorem precondition check
-  -&gt; feature extension report
-  -&gt; policy decision
-  -&gt; PR comment summary</code></pre>
-              </figure>
-            </section>
-
-            <section id="pr-command-path" class="article-section">
-              <h2>PR command path</h2>
-              <p>
-                A practical PR run usually keeps before and after artifacts in
-                separate directories, then writes review artifacts into the
-                current directory. The exact paths are local convention; the
-                important point is that each output becomes the next command's
-                input.
-              </p>
-              <p>
-                The example below is intentionally linear. In CI you may split
-                it into jobs, but the artifact dependency order should remain
-                visible in logs and retained outputs.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Before and after signatures</figcaption>
-                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- \
-  --root . \
-  --out .lake/signature-before/sig0.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- \
-  --root . \
-  --policy signature-policy.json \
-  --out .lake/signature-after/sig0.json</code></pre>
-              </figure>
-              <figure class="code-panel">
-                <figcaption>Snapshot and diff</figcaption>
-                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- snapshot \
-  --input .lake/signature-before/sig0.json \
-  --repo-owner example \
-  --repo-name service \
-  --revision-sha before-sha \
-  --revision-ref main \
-  --revision-branch main \
-  --scanned-at 2026-05-21T00:00:00Z \
-  --out .lake/signature-before/snapshot.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- snapshot \
-  --input .lake/signature-after/sig0.json \
-  --repo-owner example \
-  --repo-name service \
-  --revision-sha after-sha \
-  --revision-ref feature/coupon \
-  --revision-branch feature/coupon \
-  --scanned-at 2026-05-21T00:10:00Z \
-  --out .lake/signature-after/snapshot.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- signature-diff \
-  --before-snapshot .lake/signature-before/snapshot.json \
-  --after-snapshot .lake/signature-after/snapshot.json \
-  --before-sig0 .lake/signature-before/sig0.json \
-  --after-sig0 .lake/signature-after/sig0.json \
-  --pr-metadata .lake/pr-metadata.json \
-  --out .lake/signature-after/diff-report.json</code></pre>
-              </figure>
-              <figure class="code-panel">
-                <figcaption>Review artifacts</figcaption>
-                <pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- air \
-  --sig0 .lake/signature-after/sig0.json \
-  --diff .lake/signature-after/diff-report.json \
-  --pr-metadata .lake/pr-metadata.json \
-  --out .lake/signature-after/air.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- feature-report \
-  --air .lake/signature-after/air.json \
-  --out .lake/signature-after/feature-report.json</code></pre>
-              </figure>
-              <ul class="status-list">
-                <li>
-                  <strong>First reviewer file</strong>
-                  <span>Read <code>diff-report.json</code> first to see worsened, improved, and unmeasured axes.</span>
-                </li>
-                <li>
-                  <strong>Second reviewer file</strong>
-                  <span>Read <code>feature-report.json</code> for split status, obstruction witnesses, coverage gaps, and repair suggestions.</span>
-                </li>
-                <li>
-                  <strong>Automation output</strong>
-                  <span>Use <code>policy-decision</code> and <code>pr-comment</code> after the review meaning is clear.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="generated-change" class="article-section">
-              <h2>Generated change</h2>
-              <p>
-                AI-generated change provenance records provider, model,
-                prompt ref, generated patch, and human review boundary. The
-                provenance record supports review and reproducibility; it does
-                not decide whether the change is good or bad.
-              </p>
-              <p>
-                Generated-change workflow is especially sensitive to boundary
-                erasure. The prompt may describe a desired operation, the patch
-                may implement only part of it, and the review may accept a
-                narrower claim. ArchSig keeps those layers separate.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Prompt and generated patch</strong>
-                  <span>Evidence refs for the generated action and its proposed scope.</span>
-                </li>
-                <li>
-                  <strong>Human review boundary</strong>
-                  <span>Whether the generated change was reviewed, and what review evidence is available.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="scheduled-scan" class="article-section">
-              <h2>Scheduled scan</h2>
-              <p>
-                Scheduled scans update drift ledgers and operational feedback
-                artifacts. Daily drift is a trend artifact, not proof that a
-                report warning caused an operational outcome.
-              </p>
-              <p>
-                The scheduled workflow is useful because it makes gradual
-                architecture movement visible before a single PR looks
-                responsible. It supports calibration and ownership review, not
-                causal attribution by itself.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Scheduled scan flow</figcaption>
-                <pre><code>scheduled scan
-  -&gt; signature snapshot
-  -&gt; drift ledger
-  -&gt; ownership boundary monitor
-  -&gt; operational feedback</code></pre>
-              </figure>
-            </section>
-
-            <section id="dynamics-forecast" class="article-section">
-              <h2>Dynamics and forecast</h2>
-              <p>
-                Architecture Dynamics and SFT forecasting workflows hold
-                finite support, bounded horizon, proposal refs, unknown
-                remainder, and review recommendations apart from probability
-                or causal forecast claims.
-              </p>
-              <p>
-                Use this workflow after the review surface is already
-                understood. Forecast artifacts are more useful when teams can
-                already read ordinary signature diffs and AIR boundaries.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Dynamics and forecast</figcaption>
-                <pre><code>architecture field snapshot
-  + operation proposal log
-  + PR force report
-  -&gt; signature trajectory report
-  -&gt; architecture dynamics metrics report
-
-PRD / Spec / Issue / AI proposal
-  -&gt; ArtifactDescriptor
-  -&gt; OperationSupportEstimate
-  -&gt; ForecastConeSkeleton
-  -&gt; ConsequenceEnvelope</code></pre>
-              </figure>
-            </section>
-            <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../boundaries/">
-                <span>Previous</span>
-                <strong>Boundaries</strong>
-              </a>
-              <a href="../schemas/">
-                <span>Next</span>
-                <strong>Schemas</strong>
-              </a>
-            </nav>
+            <section id="adoption" class="article-section"><h2>First adoption</h2><ol class="numbered-status-list"><li><strong>Scan one repository</strong><span>Produce Sig0 and validation without custom policy.</span></li><li><strong>Add policy selectively</strong><span>Encode one real boundary or law reference rather than a complete architecture constitution.</span></li><li><strong>Compare one PR</strong><span>Run before/head snapshots and signature diff on a change the team already understands.</span></li><li><strong>Review the report manually</strong><span>Check whether the signal helped reviewers inspect the right files and assumptions.</span></li></ol></section>
+<section id="pr" class="article-section"><h2>PR review</h2><p>The PR workflow is the daily path: scan base, scan head, validate both, compare signatures, generate AIR, check theorem preconditions, produce a feature report, evaluate policy, and post a bounded review summary.</p><p>Do not make the first rollout a hard gate. Start with visible comments and a small set of explicit organization thresholds.</p></section>
+<section id="generated" class="article-section"><h2>Generated change</h2><p>For AI-generated code, preserve the proposal and generation context as an artifact. The review question is not only whether tests pass, but whether the generated change moved a boundary or responsibility without making that movement explicit.</p><ul class="status-list"><li><strong>Input</strong><span>AI proposal, prompt summary, linked issue, touched files, and generated-change provenance.</span></li><li><strong>Observation</strong><span>Structural diff, semantic AIR, changed responsibilities, and missing confirmation.</span></li><li><strong>Review</strong><span>Human confirmation for semantic claims and explicit treatment of unmeasured runtime behavior.</span></li></ul></section>
+<section id="scheduled" class="article-section"><h2>Scheduled scan</h2><p>Scheduled scans help teams notice architecture drift outside individual PRs. They should produce snapshots, trajectory reports, drift ledgers, and daily outcome records. The value is trend and calibration, not a sudden universal quality score.</p></section>
+<section id="forecast" class="article-section"><h2>Proposal forecast</h2><p>SFT-facing workflows start from descriptors and move through operation support estimates, forecast cone skeletons, consequence envelopes, calibration hooks, AI proposal governance, and SFT forecast reports. These artifacts describe bounded reachable futures and review pressure; they do not make point predictions.</p></section>
+<section id="feedback" class="article-section"><h2>Feedback loop</h2><p>The loop closes when review outcomes, incidents, repairs, ownership changes, and calibration decisions feed back into future thresholds and interpretation. This is how ArchSig turns one-off PR comments into an architecture evidence layer.</p></section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../inputs/"><span>Previous</span><strong>Inputs and Configuration</strong></a><a class="page-nav-next" href="../artifacts/"><span>Next</span><strong>Artifacts</strong></a></nav>
           </div>
         </div>
       </section>
     </main>
-
     <footer class="site-footer">
       <div class="site-shell footer-inner">
         <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
-        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
-          Repository
-        </a>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
       </div>
     </footer>
   </body>
