@@ -2400,6 +2400,12 @@ cohomology theorem は証明しない。
 | `CechConeCoboundary.ofGlobalConePoint` | `def` | global cone point の projection から coboundary witness を作る。 | `defined only` |
 | `CechConeCoboundary.isCoboundary_of_globalConePoint` | `theorem` | global cone point の projection が coboundary predicate を満たすことを取り出す。 | `proved accessor` |
 | `cechConeCocycle_of_finiteLocalFamily` | `theorem` | existing finite local family の pairwise compatibility / Cech boundary から concrete cocycle predicate を得る。 | `proved accessor` |
+| `CechConeH1Vanishes` | `structure` | concrete selected `H1 = 0` vocabulary として、すべての selected cocycle が coboundary であること、H1 / finite boundary、non-conclusions を束ねる。 | `defined only` |
+| `CechConeH1Vanishes.cocycle_is_coboundary` | `theorem` | selected H1 vanishing から concrete cocycle が coboundary であることを取り出す。 | `proved accessor` |
+| `CechH1FiniteDescentAssumptions` | `structure` | concrete H1 vanishing と `FiniteExactDescentAssumptions` を同じ selected source / horizon slice で束ねる bridge package。 | `defined only` |
+| `CechH1FiniteDescentAssumptions.RecordsH1Vanishes` | `def` | H1 / selected finite boundary を取り出す。 | `defined only` |
+| `CechH1FiniteDescentAssumptions.RecordsNonConclusions` | `def` | H1 と finite descent assumptions の non-conclusion boundary を保持する。 | `defined only` |
+| `h1_vanishes_implies_finite_descent` | `theorem` | concrete selected `H1 = 0` と finite exact descent assumptions の下で selected finite ForecastCone descent package の存在を証明する。 | `proved accessor` |
 
 ## SFT Finite Descent Obstruction / Governance Cutting
 

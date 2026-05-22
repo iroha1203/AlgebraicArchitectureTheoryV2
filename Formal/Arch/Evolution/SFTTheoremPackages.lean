@@ -273,7 +273,11 @@ def representativeDeclarations : Candidate -> List String
        "IsCechConeCocycle",
        "CechConeCoboundary",
        "IsCechConeCoboundary",
-       "cechConeCocycle_of_finiteLocalFamily"]
+       "cechConeCocycle_of_finiteLocalFamily",
+       "CechConeH1Vanishes",
+       "CechConeH1Vanishes.cocycle_is_coboundary",
+       "CechH1FiniteDescentAssumptions",
+       "h1_vanishes_implies_finite_descent"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.
@@ -516,9 +520,11 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "CechCone1",
            "IsCechConeCocycle",
            "IsCechConeCoboundary",
-           "cechConeCocycle_of_finiteLocalFamily"],
+           "cechConeCocycle_of_finiteLocalFamily",
+           "CechConeH1Vanishes",
+           "h1_vanishes_implies_finite_descent"],
          reading :=
-          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package; concrete Cech cone cochains connect the finite simplex skeleton to cocycle and coboundary predicates",
+          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package; concrete Cech cone cochains connect the finite simplex skeleton to cocycle/coboundary predicates and selected H1 vanishing implies selected finite descent under explicit finite exact assumptions",
          status := "defined only / proved accessor under explicit assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
