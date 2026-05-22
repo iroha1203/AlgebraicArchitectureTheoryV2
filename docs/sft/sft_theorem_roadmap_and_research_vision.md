@@ -738,6 +738,15 @@ This is the possible grand theorem of SFT.
 
 It would position SFT as a unified theory of computability, observability, modularity, governance, and evolution in software systems.
 
+Lean status: the current formalization provides a finite selected assembly,
+`SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem`, relative
+to a `FiniteExactSFTModel`, a selected source, a selected horizon, and explicit
+component hypotheses.  It proves the governed-or-typed-boundary-failure
+conclusion for that selected finite package.  It does not prove the
+assumption-free theorem for all software systems, all covers, empirical
+calibration correctness, operational governance effectiveness, or global AI
+safety.
+
 ## 7. Research Phases
 
 ### Phase 1: Local-to-Global Foundation

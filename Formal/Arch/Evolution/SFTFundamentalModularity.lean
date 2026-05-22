@@ -247,6 +247,118 @@ theorem final_modularity_iff_forecastConeDescent
   SFTTheoremRoadmap.FundamentalModularityTheoremPackage.fundamental_modularity
     (roadmapPackage_of_hypotheses h)
 
+/--
+Finite selected Fundamental Modularity theorem package.
+
+This is the final selected assembly over a `FiniteExactSFTModel`, a selected
+source, and a selected horizon.  It packages the already-discharged finite
+components through `FundamentalModularityHypotheses`; it is not an
+assumption-free theorem about all software systems.
+-/
+structure FiniteSelectedFundamentalModularityTheorem
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    (exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance)
+    (source : Global) (horizon : Nat) where
+  hypotheses : FundamentalModularityHypotheses
+  recordsExactCoverBoundary : exactModel.RecordsExactCoverBoundary
+  recordsFiniteModelBoundary : exactModel.RecordsFiniteModelBoundary
+  recordsObservationBoundary : exactModel.RecordsObservationBoundary
+  recordsGovernanceBoundary : exactModel.RecordsGovernanceBasisBoundary
+  theoremBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteSelectedFundamentalModularityTheorem
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {Governance : Type z}
+variable {exactModel :
+  FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+variable {source : Global} {horizon : Nat}
+
+/-- The finite selected package exposes the assembled roadmap conclusion. -/
+def roadmapConclusion
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    SFTTheoremRoadmap.FundamentalModularityConclusion :=
+  roadmapConclusion_of_hypotheses theoremPackage.hypotheses
+
+/-- The finite selected package exposes the assembled roadmap theorem package. -/
+def roadmapPackage
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    SFTTheoremRoadmap.FundamentalModularityTheoremPackage :=
+  roadmapPackage_of_hypotheses theoremPackage.hypotheses
+
+/-- Exact-model theorem boundaries remain explicit. -/
+def RecordsExactModelBoundary
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    Prop :=
+  exactModel.RecordsExactCoverBoundary ∧
+    exactModel.RecordsFiniteModelBoundary ∧
+      exactModel.RecordsObservationBoundary ∧
+        exactModel.RecordsGovernanceBasisBoundary ∧
+          theoremPackage.theoremBoundary
+
+/-- Non-conclusions remain explicit across the finite exact model and final package. -/
+def RecordsNonConclusions
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    Prop :=
+  theoremPackage.nonConclusions ∧ exactModel.RecordsNonConclusions ∧
+    theoremPackage.hypotheses.nonConclusions
+
+/-- The finite selected package records the exact-cover boundary. -/
+theorem records_exactCoverBoundary
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    exactModel.RecordsExactCoverBoundary :=
+  theoremPackage.recordsExactCoverBoundary
+
+/-- The finite selected package records the finite-model boundary. -/
+theorem records_finiteModelBoundary
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    exactModel.RecordsFiniteModelBoundary :=
+  theoremPackage.recordsFiniteModelBoundary
+
+/-- The finite selected final assembly theorem. -/
+theorem finiteSelected_fundamental_modularity
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    theoremPackage.hypotheses.descent.modularityAsDescent ∧
+      theoremPackage.hypotheses.obstruction.technicalDebtAsObstruction ∧
+      theoremPackage.hypotheses.review.minimalDecisionPreservingEnvelope ∧
+      theoremPackage.hypotheses.governance.governanceAsObstructionCutting ∧
+      theoremPackage.hypotheses.calibration.boundaryExplicitFixedPoint ∧
+      theoremPackage.hypotheses.agentic.agenticConfluence ∧
+      (theoremPackage.hypotheses.governed.governedBoundary ∨
+        theoremPackage.hypotheses.failure.explainsBrokenBoundary) :=
+  fundamental_modularity_final_assembly theoremPackage.hypotheses
+
+/-- Finite selected bounded evolution is governed or exposes a typed boundary failure. -/
+theorem governed_or_typed_failure
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    theoremPackage.hypotheses.governed.governedBoundary ∨
+      theoremPackage.hypotheses.failure.explainsBrokenBoundary :=
+  final_bounded_evolution_governed_or_typed_failure
+    theoremPackage.hypotheses
+
+/-- The finite selected package records modularity as ForecastCone descent. -/
+theorem modularity_iff_forecastConeDescent
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon) :
+    theoremPackage.roadmapPackage.modularity ↔
+      theoremPackage.roadmapPackage.forecastConeDescent :=
+  final_modularity_iff_forecastConeDescent theoremPackage.hypotheses
+
+end FiniteSelectedFundamentalModularityTheorem
+
 /-- Read finite obstruction-governance cutting as the final governance component. -/
 def governanceComponent_of_finiteObstructionGovernance
     {Global : Type u} {Index : Type v} {Local : Type w}
