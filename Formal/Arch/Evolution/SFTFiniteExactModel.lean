@@ -197,4 +197,117 @@ theorem descentModel_eq_finiteModel
 
 end FiniteExactSFTModel
 
+/--
+Explicit assumptions under which a finite exact SFT model has selected finite
+ForecastCone descent.
+
+The gluing data and projection/gluing laws remain caller-supplied theorem
+premises.  This package therefore discharges the final-assembly assumption only
+for the selected finite exact model and does not claim descent for every finite
+cover.
+-/
+structure FiniteExactDescentAssumptions
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    (model :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance)
+    where
+  glueData : FiniteClockedGluingData model.descentModel
+  laws : FiniteProjectionGluingLaws glueData
+  recordsExactCoverBoundary : model.RecordsExactCoverBoundary
+  recordsOperationBoundary : model.RecordsOperationBoundary
+  recordsObservationBoundary : model.RecordsObservationBoundary
+  recordsGovernanceBoundary : model.RecordsGovernanceBasisBoundary
+  recordsFiniteModelBoundary : model.RecordsFiniteModelBoundary
+  selectedCompatibilityBoundary : Prop
+  exactDescentBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteExactDescentAssumptions
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {Governance : Type z}
+variable {model :
+  FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+
+/-- The assumptions expose the finite selected descent package. -/
+def descentPackage
+    (assumptions : FiniteExactDescentAssumptions model)
+    {source : Global} {horizon : Nat} :
+    FiniteSelectedForecastConeDescentPackage
+      model.descentModel source horizon :=
+  FiniteSelectedForecastConeDescentPackage.ofLaws
+    assumptions.glueData assumptions.laws
+
+/-- Exact-cover boundary assumptions remain explicit. -/
+theorem records_exactCoverBoundary
+    (assumptions : FiniteExactDescentAssumptions model) :
+    model.RecordsExactCoverBoundary :=
+  assumptions.recordsExactCoverBoundary
+
+/-- Operation support / relation boundary assumptions remain explicit. -/
+theorem records_operationBoundary
+    (assumptions : FiniteExactDescentAssumptions model) :
+    model.RecordsOperationBoundary :=
+  assumptions.recordsOperationBoundary
+
+/-- Observation-boundary assumptions remain explicit. -/
+theorem records_observationBoundary
+    (assumptions : FiniteExactDescentAssumptions model) :
+    model.RecordsObservationBoundary :=
+  assumptions.recordsObservationBoundary
+
+/-- Governance-basis assumptions remain explicit. -/
+theorem records_governanceBoundary
+    (assumptions : FiniteExactDescentAssumptions model) :
+    model.RecordsGovernanceBasisBoundary :=
+  assumptions.recordsGovernanceBoundary
+
+/-- The assumption package records the non-conclusion boundary. -/
+def RecordsNonConclusions
+    (assumptions : FiniteExactDescentAssumptions model) : Prop :=
+  assumptions.nonConclusions ∧ model.RecordsNonConclusions ∧
+    assumptions.glueData.nonConclusions ∧ assumptions.laws.nonConclusions
+
+/--
+The descent package boundary is the explicit finite gluing and compatibility
+boundary supplied by the assumptions.
+-/
+def DescentPackageBoundary
+    (assumptions : FiniteExactDescentAssumptions model)
+    (source : Global) (horizon : Nat) : Prop :=
+  (assumptions.descentPackage
+    (source := source) (horizon := horizon)).packageBoundary
+
+/-- The selected finite descent package keeps an explicit non-conclusion boundary. -/
+def DescentPackageNonConclusions
+    (assumptions : FiniteExactDescentAssumptions model)
+    (source : Global) (horizon : Nat) : Prop :=
+  (assumptions.descentPackage
+    (source := source) (horizon := horizon)).nonConclusions
+
+end FiniteExactDescentAssumptions
+
+/--
+Finite exact cover assumptions imply the selected finite ForecastCone descent
+package for each selected source/horizon slice.
+
+The conclusion is intentionally a selected package under explicit assumptions,
+not full Cech cohomology and not descent for all finite covers.
+-/
+theorem finiteExactForecastConeDescentPackage_of_assumptions
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {model :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    (assumptions : FiniteExactDescentAssumptions model)
+    {source : Global} {horizon : Nat} :
+    Nonempty
+      (FiniteSelectedForecastConeDescentPackage
+        model.descentModel source horizon) :=
+  ⟨assumptions.descentPackage⟩
+
 end Formal.Arch
