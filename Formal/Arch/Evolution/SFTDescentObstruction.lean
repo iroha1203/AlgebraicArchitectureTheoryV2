@@ -1,4 +1,4 @@
-import Formal.Arch.Evolution.SFTFiniteExactModel
+import Formal.Arch.Evolution.SFTCechCohomology
 
 /-!
 Finite descent obstruction and governance-cutting surface.
@@ -370,6 +370,118 @@ theorem finiteExact_failure_classifier_complete
   finite_descent_obstruction_of_classified_failure_sound_complete
     package.classifier failure
     (package.obstructionPackage.everySelectedFailureClassified failure)
+
+/--
+Cech-side obstruction witness for a selected finite cone cocycle.
+
+The record keeps the concrete cocycle together with an explicit selected
+non-coboundary / obstruction boundary.  It is not a full cohomology theorem.
+-/
+structure CechCocycleObstruction
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    (model : FiniteSFTModel cover OperationG OperationL)
+    (source : Global) (horizon : Nat) where
+  zero : CechCone0 model source horizon
+  one : CechCone1 cover model source horizon
+  cocycle : IsCechConeCocycle zero one
+  selectedNonCoboundaryBoundary : Prop
+  obstructionBoundary : Prop
+  nonConclusions : Prop
+
+/--
+Bridge between concrete Cech cocycle obstructions and typed finite obstruction
+witnesses over the same selected finite exact model.
+-/
+structure FiniteCechTypedObstructionBridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    (exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance)
+    (source : Global) (horizon : Nat) where
+  classifierCompleteness :
+    FiniteExactFailureClassifierCompleteness exactModel source horizon
+  witnessToCocycle :
+    FiniteDescentObstructionWitness exactModel.descentModel source horizon ->
+      CechCocycleObstruction exactModel.descentModel source horizon
+  cocycleToFailure :
+    CechCocycleObstruction exactModel.descentModel source horizon ->
+      FiniteDescentFailure exactModel.descentModel source horizon
+  witnessCocycleBoundary : Prop
+  cocycleFailureBoundary : Prop
+  selectedFiniteBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteCechTypedObstructionBridge
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {Governance : Type z}
+variable {exactModel :
+  FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+variable {source : Global} {horizon : Nat}
+
+/-- The bridge records its selected finite boundary. -/
+def RecordsSelectedFiniteBoundary
+    (bridge :
+      FiniteCechTypedObstructionBridge exactModel source horizon) : Prop :=
+  bridge.selectedFiniteBoundary ∧
+    bridge.classifierCompleteness.RecordsClassifierCompletenessBoundary
+
+/-- Non-conclusions remain explicit across Cech and classifier boundaries. -/
+def RecordsNonConclusions
+    (bridge :
+      FiniteCechTypedObstructionBridge exactModel source horizon) : Prop :=
+  bridge.nonConclusions ∧
+    bridge.classifierCompleteness.RecordsNonConclusions
+
+end FiniteCechTypedObstructionBridge
+
+/--
+A typed finite obstruction witness can be read as a selected Cech cocycle
+obstruction through the supplied bridge.
+-/
+def cech_obstruction_of_typed_witness
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (bridge :
+      FiniteCechTypedObstructionBridge exactModel source horizon)
+    (witness :
+      FiniteDescentObstructionWitness exactModel.descentModel source horizon) :
+    CechCocycleObstruction exactModel.descentModel source horizon :=
+  bridge.witnessToCocycle witness
+
+/--
+A selected Cech cocycle obstruction yields a typed finite obstruction witness
+through the selected finite exact classifier-completeness bridge.
+-/
+theorem typed_obstruction_of_cech_cocycle_obstruction
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (bridge :
+      FiniteCechTypedObstructionBridge exactModel source horizon)
+    (obstruction :
+      CechCocycleObstruction exactModel.descentModel source horizon) :
+    ∃ witness :
+      FiniteDescentObstructionWitness exactModel.descentModel source horizon,
+      bridge.classifierCompleteness.classifier.classify
+          (bridge.cocycleToFailure obstruction) = some witness ∧
+        witness.failureKind = (bridge.cocycleToFailure obstruction).kind ∧
+          witness.payload.failureKind =
+            (bridge.cocycleToFailure obstruction).kind ∧
+            witness.payload.failureKind = witness.failureKind :=
+  finiteExact_failure_classifier_complete
+    bridge.classifierCompleteness (bridge.cocycleToFailure obstruction)
 
 /-- Cech bridge plus obstruction classifier boundary for finite descent. -/
 structure FiniteCechObstructionBridge
