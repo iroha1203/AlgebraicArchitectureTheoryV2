@@ -14,6 +14,7 @@ import Formal.Arch.Evolution.SFTClockedCone
 import Formal.Arch.Evolution.SFTFieldCover
 import Formal.Arch.Evolution.SFTDescent
 import Formal.Arch.Evolution.SFTFiniteCover
+import Formal.Arch.Evolution.SFTFiniteExactModel
 import Formal.Arch.Evolution.SFTDescentObstruction
 import Formal.Arch.Evolution.SFTTheoremRoadmap
 import Formal.Arch.Evolution.SFTFundamentalModularity
@@ -57,6 +58,7 @@ inductive Candidate where
   | archSigReportBoundary
   | counterexamplePackage
   | theoremRoadmap
+  | finiteExactModel
   deriving DecidableEq, Repr
 
 namespace Candidate
@@ -76,6 +78,7 @@ def sftSection : Candidate -> String
   | archSigReportBoundary => "AAT / SFT interface"
   | counterexamplePackage => "AAT / SFT forbidden readings"
   | theoremRoadmap => "SFT theorem roadmap"
+  | finiteExactModel => "SFT theorem roadmap"
 
 /-- Stable schematic name used by documentation and status tables. -/
 def schematicName : Candidate -> String
@@ -92,6 +95,7 @@ def schematicName : Candidate -> String
   | archSigReportBoundary => "ArchSig-SFT report boundary"
   | counterexamplePackage => "SFT-native counterexample package"
   | theoremRoadmap => "SFT theorem roadmap theorem packages"
+  | finiteExactModel => "Finite exact SFT model"
 
 /-- Representative Lean declarations that serve as public entrypoints. -/
 def representativeDeclarations : Candidate -> List String
@@ -248,6 +252,18 @@ def representativeDeclarations : Candidate -> List String
        "SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage",
        "SFTFundamentalModularity.agenticComponent_records_agenticConfluence",
        "SFTFundamentalModularity.agenticComponent_records_confluence"]
+  | finiteExactModel =>
+      ["FiniteExactSFTModel",
+       "FiniteExactSFTModel.exactCover",
+       "FiniteExactSFTModel.descentModel",
+       "FiniteExactSFTModel.RecordsSelectedUniverseBoundary",
+       "FiniteExactSFTModel.RecordsExactCoverBoundary",
+       "FiniteExactSFTModel.RecordsOperationBoundary",
+       "FiniteExactSFTModel.RecordsFiniteModelBoundary",
+       "FiniteExactSFTModel.RecordsObservationBoundary",
+       "FiniteExactSFTModel.RecordsGovernanceBasisBoundary",
+       "FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary",
+       "FiniteExactSFTModel.RecordsNonConclusions"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.
@@ -474,6 +490,19 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
          reading :=
           "engineering-surface and closed-loop roadmap theorem families are available as checked theorem-package entrypoints",
          status := "defined only / proved accessors under package assumptions" }]
+  | finiteExactModel =>
+      [{ schematic := "FiniteExactSFTModel selected finite proof universe",
+         leanDeclarations :=
+          ["FiniteExactSFTModel",
+           "FiniteExactSFTModel.exactCover",
+           "FiniteExactSFTModel.descentModel",
+           "FiniteExactSFTModel.RecordsExactCoverBoundary",
+           "FiniteExactSFTModel.RecordsFiniteModelBoundary",
+           "FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary",
+           "FiniteExactSFTModel.RecordsNonConclusions"],
+         reading :=
+          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems",
+         status := "defined only / boundary accessors" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
 def nonConclusionBoundary : Candidate -> String
@@ -503,6 +532,8 @@ def nonConclusionBoundary : Candidate -> String
       "finite non-conclusion witnesses only; no empirical degradation, incident risk, or global forecast claim"
   | theoremRoadmap =>
       "roadmap theorem packages only; no unconditional global descent, calibration, governance effectiveness, AI safety, or extractor completeness"
+  | finiteExactModel =>
+      "selected finite proof universe only; no extractor completeness, empirical correctness, all-covers descent, or full Fundamental Modularity theorem"
 
 end Candidate
 
