@@ -883,6 +883,177 @@ theorem governance_synthesis
 
 end GovernanceSynthesisPackage
 
+/--
+Finite governance synthesis bridge.
+
+The bridge reads an abstract guard/intervention synthesis package over the
+sum of finite obstruction witnesses and desired finite cone families as a
+selected finite governance cutting package.  It records a selected synthesized
+intervention but does not assert real repository governance effectiveness.
+-/
+structure FiniteGovernanceSynthesisBridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    (model : FiniteSFTModel cover OperationG OperationL)
+    (source : Global) (horizon : Nat)
+    (Guard : Type z) (Intervention : Type a) where
+  obstructionPackage :
+    FiniteDescentObstructionPackage model source horizon
+  target :
+    FiniteGovernanceCutTarget model source horizon
+  synthesis :
+    GovernanceSynthesisPackage
+      (Sum
+        (FiniteDescentObstructionWitness model source horizon)
+        (FiniteLocalClockedConeFamily cover model source horizon))
+      Guard Intervention
+  guardSet : Guard -> Prop
+  guardFamilySound : synthesis.guardFamilySound guardSet
+  selectedIntervention : Intervention
+  selectedIntervention_synthesized :
+    synthesis.interventionPreservesDesired selectedIntervention ∧
+      synthesis.interventionExcludesBad selectedIntervention
+  bad_matches_target :
+    ∀ witness, target.bad witness -> synthesis.bad (Sum.inl witness)
+  desired_matches_target :
+    ∀ family, target.desiredPreserved family -> synthesis.desired (Sum.inr family)
+  synthesisBoundary : Prop
+  obstructionToGovernanceBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteGovernanceSynthesisBridge
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {cover : UniformFiniteFieldCover Global Index Local}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {source : Global} {horizon : Nat}
+variable {model : FiniteSFTModel cover OperationG OperationL}
+variable {Guard : Type z} {Intervention : Type a}
+
+/-- The selected guard family gives an abstract synthesized intervention. -/
+theorem synthesized_intervention_of_guard_family
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention) :
+    ∃ intervention,
+      bridge.synthesis.interventionPreservesDesired intervention ∧
+        bridge.synthesis.interventionExcludesBad intervention := by
+  exact bridge.synthesis.synthesisEquivalence.mpr
+    ⟨bridge.guardSet, bridge.guardFamilySound⟩
+
+/-- The selected guard family records hit/miss completeness. -/
+theorem guard_family_hits_and_misses
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention) :
+    GuardFamilyHitsBad bridge.synthesis.bad bridge.synthesis.guardHits
+        bridge.guardSet ∧
+      GuardFamilyMissesDesired bridge.synthesis.desired
+        bridge.synthesis.guardHits bridge.guardSet :=
+  (bridge.synthesis.guardFamilySound_iff_hits_and_misses
+    bridge.guardSet).mp bridge.guardFamilySound
+
+/-- Selected finite bad witnesses are read as abstract bad paths. -/
+theorem selected_bad_matches_synthesis_bad
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention)
+    (witness : FiniteDescentObstructionWitness model source horizon)
+    (hBad : bridge.target.bad witness) :
+    bridge.synthesis.bad (Sum.inl witness) :=
+  bridge.bad_matches_target witness hBad
+
+/-- Selected desired finite families are read as abstract desired paths. -/
+theorem selected_desired_matches_synthesis_desired
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention)
+    (family : FiniteLocalClockedConeFamily cover model source horizon)
+    (hDesired : bridge.target.desiredPreserved family) :
+    bridge.synthesis.desired (Sum.inr family) :=
+  bridge.desired_matches_target family hDesired
+
+/-- The selected guard family hits every selected bad finite obstruction. -/
+theorem guard_family_hits_selected_bad
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention)
+    (witness : FiniteDescentObstructionWitness model source horizon)
+    (hBad : bridge.target.bad witness) :
+    ∃ guard, bridge.guardSet guard ∧
+      bridge.synthesis.guardHits guard (Sum.inl witness) :=
+  bridge.guard_family_hits_and_misses.1
+    (Sum.inl witness)
+    (bridge.selected_bad_matches_synthesis_bad witness hBad)
+
+/-- Read the synthesized intervention as a finite governance cutting package. -/
+def governanceCuttingPackage
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention) :
+    FiniteGovernanceCuttingPackage model source horizon where
+  intervention := Intervention
+  target := bridge.target
+  cutsBad intervention witness :=
+    bridge.synthesis.interventionExcludesBad intervention ∧
+      bridge.target.bad witness
+  preservesDesired intervention family :=
+    bridge.synthesis.interventionPreservesDesired intervention ∧
+      bridge.target.desiredPreserved family
+  selectedIntervention := bridge.selectedIntervention
+  selected_cuts_all_bad := by
+    intro witness hBad
+    exact ⟨bridge.selectedIntervention_synthesized.2, hBad⟩
+  selected_preserves_desired := by
+    intro family hDesired
+    exact ⟨bridge.selectedIntervention_synthesized.1, hDesired⟩
+  governanceBoundary :=
+    bridge.synthesisBoundary ∧ bridge.synthesis.governanceBoundary
+  nonConclusions :=
+    bridge.nonConclusions ∧ bridge.synthesis.nonConclusions ∧
+      bridge.target.nonConclusions
+
+/-- Read the synthesized cutting package together with the obstruction package. -/
+def obstructionGovernancePackage
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention) :
+    FiniteObstructionGovernancePackage model source horizon where
+  obstructionPackage := bridge.obstructionPackage
+  governancePackage := bridge.governanceCuttingPackage
+  obstructionToGovernanceBoundary :=
+    bridge.obstructionToGovernanceBoundary
+  nonConclusions :=
+    bridge.nonConclusions ∧ bridge.obstructionPackage.nonConclusions ∧
+      bridge.governanceCuttingPackage.nonConclusions
+
+/-- The synthesized finite package cuts selected bad obstruction witnesses. -/
+theorem governanceCuttingPackage_cuts_bad
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention)
+    (witness : FiniteDescentObstructionWitness model source horizon)
+    (hBad : bridge.target.bad witness) :
+    bridge.governanceCuttingPackage.cutsBad
+      bridge.governanceCuttingPackage.selectedIntervention witness :=
+  finite_governance_cuts_bad_obstruction
+    bridge.governanceCuttingPackage witness hBad
+
+/-- The synthesized finite package preserves selected desired cone families. -/
+theorem governanceCuttingPackage_preserves_desired
+    (bridge :
+      FiniteGovernanceSynthesisBridge
+        model source horizon Guard Intervention)
+    (family : FiniteLocalClockedConeFamily cover model source horizon)
+    (hDesired : bridge.target.desiredPreserved family) :
+    bridge.governanceCuttingPackage.preservesDesired
+      bridge.governanceCuttingPackage.selectedIntervention family :=
+  finite_governance_preserves_desired_family
+    bridge.governanceCuttingPackage family hDesired
+
+end FiniteGovernanceSynthesisBridge
+
 /-- A support transformation excludes all selected bad paths when after-support admits none of them. -/
 def BadPathExcludedBySupportTransformation
     {Path : Type u}

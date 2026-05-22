@@ -2501,6 +2501,16 @@ AI agent safety、lifecycle decision correctness、extractor completeness を無
 | `SFTTheoremRoadmap.ObstructionAwareReviewEquivalence` | `def` | selected review equivalence が obstruction-aware decision projection を尊重することを表す boundary predicate。 | `defined only` |
 | `SFTTheoremRoadmap.decisionSoundProjection_of_obstructionAware` | `theorem` | obstruction-aware review equivalence を `DecisionSoundProjection` として読む。 | `proved accessor` |
 | `SFTTheoremRoadmap.GovernanceSynthesisPackage.governance_synthesis` | `theorem` | desired-preserving / bad-excluding intervention と hit/miss guard family の同値を取り出す。 | `proved accessor` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge` | `structure` | abstract guard/intervention synthesis を finite obstruction witness / desired cone-family surface に接続する bridge。 | `defined only` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.synthesized_intervention_of_guard_family` | `theorem` | selected sound guard family から abstract synthesized intervention の存在を取り出す。 | `proved accessor` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.guard_family_hits_and_misses` | `theorem` | selected guard family が hit/miss completeness を保持することを取り出す。 | `proved accessor` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.selected_bad_matches_synthesis_bad` | `theorem` | selected finite bad witness を synthesis package 側の abstract bad path として読む。 | `proved accessor` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.selected_desired_matches_synthesis_desired` | `theorem` | selected desired finite family を synthesis package 側の abstract desired path として読む。 | `proved accessor` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.guard_family_hits_selected_bad` | `theorem` | selected bad finite obstruction witness が selected guard family に hit されることを取り出す。 | `proved accessor` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.governanceCuttingPackage` | `def` | synthesized intervention を finite governance cutting package として読む。 | `defined only` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.obstructionGovernancePackage` | `def` | synthesized cutting package と obstruction package を finite obstruction-governance package として束ねる。 | `defined only` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.governanceCuttingPackage_cuts_bad` | `theorem` | synthesized finite package が selected bad obstruction witness を cut することを取り出す。 | `proved accessor` |
+| `SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge.governanceCuttingPackage_preserves_desired` | `theorem` | synthesized finite package が selected desired cone family を preserve することを取り出す。 | `proved accessor` |
 | `SFTTheoremRoadmap.governance_synthesis_of_guard_basis_complete` | `theorem` | complete guard basis と support restriction premise から bad exclusion / desired preservation を得る。 | `proved` |
 | `SFTTheoremRoadmap.FiniteRefinementHeight.closedLoopCalibration_fixedPoint_or_boundary_of_finiteHeight` | `theorem` | finite rank descent の下で closed-loop update が fixed point または boundary に到達する。 | `proved` |
 | `SFTTheoremRoadmap.artifact_yoneda_of_separating_probes` | `theorem` | separating probes の下で artifact response equivalence から SFT equivalence を得る。 | `proved` |
@@ -2549,6 +2559,10 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.governanceComponent_of_finiteExactGovernanceSoundness` | `def` | finite exact governance-cutting soundness package を final governance component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.governanceComponent_records_finiteExact_cut` | `theorem` | finite exact governance component が selected bad-witness cutting を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.governanceComponent_records_finiteExact_desired_preservation` | `theorem` | finite exact governance component が desired-family preservation を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.governanceComponent_of_finiteGovernanceSynthesisBridge` | `def` | finite governance synthesis bridge を final governance component として読む。 | `defined only` |
+| `SFTFundamentalModularity.governanceComponent_records_synthesis_cut` | `theorem` | synthesis bridge 由来の final governance component が selected bad-witness cutting を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.governanceComponent_records_synthesis_desired_preservation` | `theorem` | synthesis bridge 由来の final governance component が desired-family preservation を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.governanceComponent_records_synthesis_guard_family` | `theorem` | synthesis bridge 由来の final governance component が selected guard family の hit/miss witness を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.reviewComponent_of_minimalEnvelopePackage` | `def` | minimal consequence-envelope package を final review component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.FiniteObstructionAwareReviewEnvelopeBridge` | `structure` | finite selected obstruction review projection と minimal consequence-envelope universal property を接続する bridge。 | `defined only` |
 | `SFTFundamentalModularity.FiniteObstructionAwareReviewEnvelopeBridge.obstructionDecision_factors` | `theorem` | selected obstruction decision projection が minimal envelope を通じて factor することを示す。 | `proved accessor` |
