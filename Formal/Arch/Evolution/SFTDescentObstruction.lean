@@ -1,4 +1,4 @@
-import Formal.Arch.Evolution.SFTFiniteCover
+import Formal.Arch.Evolution.SFTFiniteExactModel
 
 /-!
 Finite descent obstruction and governance-cutting surface.
@@ -242,6 +242,134 @@ theorem finite_descent_obstruction_of_failure_sound
   finite_descent_obstruction_of_classified_failure_sound
     package.classifier failure
     (package.everySelectedFailureClassified failure)
+
+/--
+A selected classified failure carries all failure-kind soundness equalities:
+the witness outer tag, payload tag, and witness-internal payload tag agree.
+-/
+theorem finite_descent_obstruction_of_classified_failure_sound_complete
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (classifier :
+      FiniteDescentObstructionClassifier model source horizon)
+    (failure : FiniteDescentFailure model source horizon)
+    (hClassified :
+      ∃ witness, classifier.classify failure = some witness) :
+    ∃ witness : FiniteDescentObstructionWitness model source horizon,
+      classifier.classify failure = some witness ∧
+        witness.failureKind = failure.kind ∧
+          witness.payload.failureKind = failure.kind ∧
+            witness.payload.failureKind = witness.failureKind := by
+  rcases hClassified with ⟨witness, hWitness⟩
+  exact
+    ⟨witness, hWitness,
+      FiniteDescentObstructionClassifier.classified_failureKind_eq
+        classifier hWitness,
+      FiniteDescentObstructionClassifier.classified_payload_failureKind_eq
+        classifier hWitness,
+      FiniteDescentObstructionClassifier.classified_payload_matches_witness_kind
+        classifier hWitness⟩
+
+/--
+Finite exact classifier-completeness package.
+
+The completeness theorem remains relative to the selected finite exact model
+and the supplied classifier package.  It does not classify all software
+failures and does not assert extractor completeness.
+-/
+structure FiniteExactFailureClassifierCompleteness
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    (exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance)
+    (source : Global) (horizon : Nat) where
+  obstructionPackage :
+    FiniteDescentObstructionPackage exactModel.descentModel source horizon
+  recordsExactCoverBoundary : exactModel.RecordsExactCoverBoundary
+  recordsFiniteModelBoundary : exactModel.RecordsFiniteModelBoundary
+  selectedFailureBoundary : Prop
+  classifierCompletenessBoundary : Prop
+  soundnessBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteExactFailureClassifierCompleteness
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {Governance : Type z}
+variable {exactModel :
+  FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+variable {source : Global} {horizon : Nat}
+
+/-- The finite exact package exposes its selected classifier. -/
+def classifier
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    FiniteDescentObstructionClassifier
+      exactModel.descentModel source horizon :=
+  package.obstructionPackage.classifier
+
+/-- Completeness is recorded only for the selected finite exact failure universe. -/
+def RecordsClassifierCompletenessBoundary
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    Prop :=
+  package.classifierCompletenessBoundary ∧
+    package.obstructionPackage.classifier.completenessBoundary
+
+/-- Non-conclusions for classifier completeness remain explicit. -/
+def RecordsNonConclusions
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    Prop :=
+  package.nonConclusions ∧ exactModel.RecordsNonConclusions ∧
+    package.obstructionPackage.nonConclusions ∧
+    package.obstructionPackage.classifier.nonConclusions
+
+/-- Exact-cover boundary assumptions remain explicit. -/
+theorem records_exactCoverBoundary
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    exactModel.RecordsExactCoverBoundary :=
+  package.recordsExactCoverBoundary
+
+/-- Finite-model boundary assumptions remain explicit. -/
+theorem records_finiteModelBoundary
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    exactModel.RecordsFiniteModelBoundary :=
+  package.recordsFiniteModelBoundary
+
+end FiniteExactFailureClassifierCompleteness
+
+/--
+Every selected finite exact descent failure is classified by the supplied
+classifier package, with outer and payload failure-kind soundness preserved.
+-/
+theorem finiteExact_failure_classifier_complete
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon)
+    (failure :
+      FiniteDescentFailure exactModel.descentModel source horizon) :
+    ∃ witness :
+      FiniteDescentObstructionWitness exactModel.descentModel source horizon,
+      package.classifier.classify failure = some witness ∧
+        witness.failureKind = failure.kind ∧
+          witness.payload.failureKind = failure.kind ∧
+            witness.payload.failureKind = witness.failureKind :=
+  finite_descent_obstruction_of_classified_failure_sound_complete
+    package.classifier failure
+    (package.obstructionPackage.everySelectedFailureClassified failure)
 
 /-- Cech bridge plus obstruction classifier boundary for finite descent. -/
 structure FiniteCechObstructionBridge

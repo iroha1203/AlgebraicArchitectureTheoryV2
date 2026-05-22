@@ -2429,9 +2429,17 @@ Cech cohomology、operational governance effectiveness、Fundamental Modularity 
 | `FiniteDescentObstructionClassifier.classified_payload_matches_witness_kind` | `theorem` | classified witness 内の outer failure kind と payload failure kind の一致を取り出す。 | `proved accessor` |
 | `finite_descent_obstruction_of_classified_failure` | `theorem` | classifier が selected failure を分類しているなら obstruction witness を取り出す。 | `proved accessor` |
 | `finite_descent_obstruction_of_classified_failure_sound` | `theorem` | classified witness とともに outer / payload failure kind equality を取り出す。 | `proved accessor` |
+| `finite_descent_obstruction_of_classified_failure_sound_complete` | `theorem` | classified witness とともに outer tag、payload tag、witness-internal payload tag の一致をすべて取り出す。 | `proved accessor` |
 | `FiniteDescentObstructionPackage` | `structure` | classifier と every-selected-failure-classified assumption、obstruction boundary を束ねる。 | `defined only` |
 | `finite_descent_obstruction_of_failure` | `theorem` | package assumption の下で selected finite descent failure から typed obstruction witness を得る。 | `proved accessor` |
 | `finite_descent_obstruction_of_failure_sound` | `theorem` | package assumption の下で obstruction witness と outer / payload failure kind equality を同時に得る。 | `proved accessor` |
+| `FiniteExactFailureClassifierCompleteness` | `structure` | `FiniteExactSFTModel` に相対化された classifier completeness package。selected failure boundary、classifier completeness / soundness boundary、non-conclusions を保持する。 | `defined only` |
+| `FiniteExactFailureClassifierCompleteness.classifier` | `def` | finite exact completeness package から selected classifier を取り出す。 | `defined only` |
+| `FiniteExactFailureClassifierCompleteness.RecordsClassifierCompletenessBoundary` | `def` | selected classifier completeness boundary を取り出す。 | `defined only` |
+| `FiniteExactFailureClassifierCompleteness.RecordsNonConclusions` | `def` | finite exact model、obstruction package、classifier の non-conclusion boundary を保持する。 | `defined only` |
+| `FiniteExactFailureClassifierCompleteness.records_exactCoverBoundary` | `theorem` | finite exact classifier completeness package が exact cover boundary を保持することを取り出す。 | `proved accessor` |
+| `FiniteExactFailureClassifierCompleteness.records_finiteModelBoundary` | `theorem` | finite model boundary を保持することを取り出す。 | `proved accessor` |
+| `finiteExact_failure_classifier_complete` | `theorem` | selected finite exact descent failure が classifier package により typed obstruction witness へ分類され、outer / payload failure-kind soundness が保たれることを証明する。 | `proved accessor` |
 | `FiniteCechObstructionBridge` | `structure` | finite Cech descent bridge、obstruction package、H1 nonzero / obstruction reflection boundary を束ねる。 | `defined only` |
 | `FiniteCechObstructionBridge.finite_descent_of_h1_vanishes` | `theorem` | obstruction bridge 経由で selected H1 vanishing から finite descent reading を取り出す。 | `proved accessor` |
 | `FiniteObstructionReviewProjection` | `structure` | obstruction witness を selected review decision へ写す projection と sound/minimal-envelope boundary を束ねる。 | `defined only` |
