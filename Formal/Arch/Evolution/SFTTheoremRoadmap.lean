@@ -656,6 +656,31 @@ def EnvelopeRespectsDecisionEquivalence
     (projection : ConePath -> Envelope) : Prop :=
   ∀ p q, PathIndistinguishableFor Q p q -> projection p = projection q
 
+/--
+An obstruction-aware review projection is constant on the selected review
+equivalence classes.
+
+This is a review-envelope boundary predicate, not operational optimality of
+the review decision.
+-/
+def ObstructionAwareReviewEquivalence
+    {ConePath : Type u} {Decision : Type v}
+    (reviewEquivalent : ConePath -> ConePath -> Prop)
+    (obstructionDecision : ConePath -> Decision) : Prop :=
+  ∀ p q, reviewEquivalent p q ->
+    obstructionDecision p = obstructionDecision q
+
+/-- Obstruction-aware review equivalence is exactly decision-sound projection. -/
+theorem decisionSoundProjection_of_obstructionAware
+    {ConePath : Type u} {Decision : Type v}
+    {reviewEquivalent : ConePath -> ConePath -> Prop}
+    {obstructionDecision : ConePath -> Decision}
+    (hAware :
+      ObstructionAwareReviewEquivalence
+        reviewEquivalent obstructionDecision) :
+    DecisionSoundProjection reviewEquivalent obstructionDecision :=
+  hAware
+
 namespace MinimalEnvelope
 
 /-- The quotient projection is sound for review indistinguishability. -/

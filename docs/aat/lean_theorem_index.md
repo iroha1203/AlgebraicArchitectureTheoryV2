@@ -2456,6 +2456,15 @@ Cech cohomology、operational governance effectiveness、Fundamental Modularity 
 | `finite_governance_preserves_desired_family` | `theorem` | selected desired local family が selected intervention で preserved されることを取り出す。 | `proved accessor` |
 | `FiniteObstructionGovernancePackage` | `structure` | obstruction package と governance cutting package の bridge boundary を束ねる。 | `defined only` |
 | `governance_cuts_obstruction_of_finite_failure` | `theorem` | selected finite failure が bad obstruction として分類されるなら selected governance intervention がその witness を cut する。 | `proved accessor` |
+| `FiniteExactGovernanceCuttingSoundness` | `structure` | `FiniteExactSFTModel` に相対化された governance cutting soundness package。bad exclusion / desired preservation / operational boundary と non-conclusions を保持する。 | `defined only` |
+| `FiniteExactGovernanceCuttingSoundness.governancePackage` | `def` | finite exact soundness package から selected governance cutting package を取り出す。 | `defined only` |
+| `FiniteExactGovernanceCuttingSoundness.RecordsSoundnessBoundary` | `def` | bad exclusion、desired preservation、operational boundary を取り出す。 | `defined only` |
+| `FiniteExactGovernanceCuttingSoundness.RecordsNonConclusions` | `def` | exact model、obstruction-governance package、governance package の non-conclusion boundary を保持する。 | `defined only` |
+| `FiniteExactGovernanceCuttingSoundness.records_exactCoverBoundary` | `theorem` | exact cover boundary を保持することを取り出す。 | `proved accessor` |
+| `FiniteExactGovernanceCuttingSoundness.records_finiteModelBoundary` | `theorem` | finite model boundary を保持することを取り出す。 | `proved accessor` |
+| `finiteExact_governance_cuts_bad_failure` | `theorem` | selected finite exact model 上で、bad と分類された finite failure が selected intervention により cut されることを取り出す。 | `proved accessor` |
+| `finiteExact_governance_preserves_desired_family` | `theorem` | selected finite exact model 上で、selected desired local family が selected intervention により preserved されることを取り出す。 | `proved accessor` |
+| `finiteExact_governance_cutting_sound` | `theorem` | selected bad obstruction cutting と selected desired-family preservation を同時に取り出す soundness accessor。 | `proved accessor` |
 
 ## SFT Theorem Roadmap
 
@@ -2489,6 +2498,8 @@ AI agent safety、lifecycle decision correctness、extractor completeness を無
 | `SFTTheoremRoadmap.MinimalEnvelope.minimalEnvelope_sound` | `theorem` | quotient equality から任意の sound decision projection の equality を得る。 | `proved` |
 | `SFTTheoremRoadmap.MinimalEnvelope.minimalEnvelope_exact` | `theorem` | sound projection が同じなら minimal envelope でも同一視される。 | `proved` |
 | `SFTTheoremRoadmap.MinimalEnvelope.minimalEnvelope_factors` | `theorem` | sound decision projection が minimal envelope を factor する。 | `proved` |
+| `SFTTheoremRoadmap.ObstructionAwareReviewEquivalence` | `def` | selected review equivalence が obstruction-aware decision projection を尊重することを表す boundary predicate。 | `defined only` |
+| `SFTTheoremRoadmap.decisionSoundProjection_of_obstructionAware` | `theorem` | obstruction-aware review equivalence を `DecisionSoundProjection` として読む。 | `proved accessor` |
 | `SFTTheoremRoadmap.GovernanceSynthesisPackage.governance_synthesis` | `theorem` | desired-preserving / bad-excluding intervention と hit/miss guard family の同値を取り出す。 | `proved accessor` |
 | `SFTTheoremRoadmap.governance_synthesis_of_guard_basis_complete` | `theorem` | complete guard basis と support restriction premise から bad exclusion / desired preservation を得る。 | `proved` |
 | `SFTTheoremRoadmap.FiniteRefinementHeight.closedLoopCalibration_fixedPoint_or_boundary_of_finiteHeight` | `theorem` | finite rank descent の下で closed-loop update が fixed point または boundary に到達する。 | `proved` |
@@ -2535,7 +2546,14 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.final_governed_agenticConfluenceAvailable` | `theorem` | final hypotheses の bridge から governed-side agentic confluence availability を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.final_modularity_iff_forecastConeDescent` | `theorem` | assembled roadmap package が modularity と ForecastCone descent の同値を記録することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.governanceComponent_of_finiteObstructionGovernance` | `def` | finite obstruction governance package を final governance component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.governanceComponent_of_finiteExactGovernanceSoundness` | `def` | finite exact governance-cutting soundness package を final governance component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.governanceComponent_records_finiteExact_cut` | `theorem` | finite exact governance component が selected bad-witness cutting を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.governanceComponent_records_finiteExact_desired_preservation` | `theorem` | finite exact governance component が desired-family preservation を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.reviewComponent_of_minimalEnvelopePackage` | `def` | minimal consequence-envelope package を final review component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.FiniteObstructionAwareReviewEnvelopeBridge` | `structure` | finite selected obstruction review projection と minimal consequence-envelope universal property を接続する bridge。 | `defined only` |
+| `SFTFundamentalModularity.FiniteObstructionAwareReviewEnvelopeBridge.obstructionDecision_factors` | `theorem` | selected obstruction decision projection が minimal envelope を通じて factor することを示す。 | `proved accessor` |
+| `SFTFundamentalModularity.reviewComponent_of_obstructionAwareEnvelopeBridge` | `def` | obstruction-aware minimal envelope bridge を final review component として読む。 | `defined only` |
+| `SFTFundamentalModularity.reviewComponent_records_obstructionAware_minimalEnvelope` | `theorem` | final review component が obstruction-aware factorization を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.calibrationComponent_of_closedLoopPackage` | `def` | closed-loop calibration package を final calibration component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage` | `def` | agentic confluence package の conclusion `FairInterleavingsConverge package.landing` を final agentic component の `agenticConfluence` / `fairInterleavingsConverge` として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.agenticComponent_records_agenticConfluence` | `theorem` | package assumptions から final agentic component の `agenticConfluence` conclusion を取り出す。 | `proved accessor` |

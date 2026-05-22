@@ -682,4 +682,165 @@ theorem governance_cuts_obstruction_of_finite_failure
         package.governancePackage witness
         (hBadClassified witness hWitness)⟩
 
+/--
+Finite exact governance-cutting soundness package.
+
+The package is relative to a selected finite exact model and a supplied
+obstruction/governance package.  It records soundness boundaries for cutting
+selected bad witnesses and preserving selected desired local families without
+claiming operational effectiveness.
+-/
+structure FiniteExactGovernanceCuttingSoundness
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    (exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance)
+    (source : Global) (horizon : Nat) where
+  obstructionGovernance :
+    FiniteObstructionGovernancePackage exactModel.descentModel source horizon
+  recordsExactCoverBoundary : exactModel.RecordsExactCoverBoundary
+  recordsFiniteModelBoundary : exactModel.RecordsFiniteModelBoundary
+  badExclusionBoundary : Prop
+  desiredPreservationBoundary : Prop
+  operationalBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteExactGovernanceCuttingSoundness
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {Governance : Type z}
+variable {exactModel :
+  FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+variable {source : Global} {horizon : Nat}
+
+/-- The selected governance package used by the soundness bridge. -/
+def governancePackage
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon) :
+    FiniteGovernanceCuttingPackage exactModel.descentModel source horizon :=
+  soundness.obstructionGovernance.governancePackage
+
+/-- The soundness package records bad-exclusion and desired-preservation boundaries. -/
+def RecordsSoundnessBoundary
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon) :
+    Prop :=
+  soundness.badExclusionBoundary ∧
+    soundness.desiredPreservationBoundary ∧ soundness.operationalBoundary
+
+/-- Non-conclusions remain explicit for governance soundness. -/
+def RecordsNonConclusions
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon) :
+    Prop :=
+  soundness.nonConclusions ∧ exactModel.RecordsNonConclusions ∧
+    soundness.obstructionGovernance.nonConclusions ∧
+    soundness.governancePackage.nonConclusions
+
+/-- Exact-cover boundary assumptions remain explicit. -/
+theorem records_exactCoverBoundary
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon) :
+    exactModel.RecordsExactCoverBoundary :=
+  soundness.recordsExactCoverBoundary
+
+/-- Finite-model boundary assumptions remain explicit. -/
+theorem records_finiteModelBoundary
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon) :
+    exactModel.RecordsFiniteModelBoundary :=
+  soundness.recordsFiniteModelBoundary
+
+end FiniteExactGovernanceCuttingSoundness
+
+/--
+In a selected finite exact model, a selected bad classified failure is cut by
+the selected governance intervention.
+-/
+theorem finiteExact_governance_cuts_bad_failure
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon)
+    (failure :
+      FiniteDescentFailure exactModel.descentModel source horizon)
+    (hBadClassified :
+      ∀ witness,
+        soundness.obstructionGovernance.obstructionPackage.classifier.classify
+            failure = some witness ->
+        soundness.governancePackage.target.bad witness) :
+    ∃ witness :
+      FiniteDescentObstructionWitness exactModel.descentModel source horizon,
+      soundness.obstructionGovernance.obstructionPackage.classifier.classify
+          failure = some witness ∧
+        soundness.governancePackage.cutsBad
+          soundness.governancePackage.selectedIntervention witness :=
+  governance_cuts_obstruction_of_finite_failure
+    soundness.obstructionGovernance failure hBadClassified
+
+/--
+In a selected finite exact model, the selected governance intervention preserves
+selected desired local cone families.
+-/
+theorem finiteExact_governance_preserves_desired_family
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon)
+    (family :
+      FiniteLocalClockedConeFamily
+        exactModel.cover exactModel.descentModel source horizon)
+    (hDesired : soundness.governancePackage.target.desiredPreserved family) :
+    soundness.governancePackage.preservesDesired
+      soundness.governancePackage.selectedIntervention family :=
+  finite_governance_preserves_desired_family
+    soundness.governancePackage family hDesired
+
+/--
+Combined soundness accessor: selected bad obstruction cutting and selected
+desired-family preservation hold under the finite exact governance package.
+-/
+theorem finiteExact_governance_cutting_sound
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon)
+    (failure :
+      FiniteDescentFailure exactModel.descentModel source horizon)
+    (family :
+      FiniteLocalClockedConeFamily
+        exactModel.cover exactModel.descentModel source horizon)
+    (hBadClassified :
+      ∀ witness,
+        soundness.obstructionGovernance.obstructionPackage.classifier.classify
+            failure = some witness ->
+        soundness.governancePackage.target.bad witness)
+    (hDesired : soundness.governancePackage.target.desiredPreserved family) :
+    (∃ witness :
+      FiniteDescentObstructionWitness exactModel.descentModel source horizon,
+      soundness.obstructionGovernance.obstructionPackage.classifier.classify
+          failure = some witness ∧
+        soundness.governancePackage.cutsBad
+          soundness.governancePackage.selectedIntervention witness) ∧
+      soundness.governancePackage.preservesDesired
+        soundness.governancePackage.selectedIntervention family :=
+  ⟨finiteExact_governance_cuts_bad_failure
+      soundness failure hBadClassified,
+    finiteExact_governance_preserves_desired_family
+      soundness family hDesired⟩
+
 end Formal.Arch
