@@ -2560,6 +2560,16 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.final_agentic_confluence` | `theorem` | final hypotheses から selected agentic confluence assumption を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.final_governed_agenticConfluenceAvailable` | `theorem` | final hypotheses の bridge から governed-side agentic confluence availability を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.final_modularity_iff_forecastConeDescent` | `theorem` | assembled roadmap package が modularity と ForecastCone descent の同値を記録することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem` | `structure` | `FiniteExactSFTModel`、selected source / horizon、final hypotheses、exact-model boundary、non-conclusions を束ねる finite selected final theorem package。 | `defined only` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.roadmapConclusion` | `def` | finite selected package から assembled roadmap conclusion を取り出す。 | `defined only` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.roadmapPackage` | `def` | finite selected package から assembled roadmap theorem package を取り出す。 | `defined only` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.RecordsExactModelBoundary` | `def` | exact cover / finite model / observation / governance / theorem boundary を保持する。 | `defined only` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.RecordsNonConclusions` | `def` | finite exact model と final package の non-conclusions を保持する。 | `defined only` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.records_exactCoverBoundary` | `theorem` | finite selected final package が exact cover boundary を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.records_finiteModelBoundary` | `theorem` | finite selected final package が finite model boundary を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.finiteSelected_fundamental_modularity` | `theorem` | finite exact model / selected source / horizon に相対化された final assembly theorem。 | `proved accessor / assembly theorem` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.governed_or_typed_failure` | `theorem` | finite selected bounded evolution が governed または typed boundary failure を持つことを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.modularity_iff_forecastConeDescent` | `theorem` | finite selected package が modularity と ForecastCone descent の同値を記録することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.governanceComponent_of_finiteObstructionGovernance` | `def` | finite obstruction governance package を final governance component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.governanceComponent_of_finiteExactGovernanceSoundness` | `def` | finite exact governance-cutting soundness package を final governance component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.governanceComponent_records_finiteExact_cut` | `theorem` | finite exact governance component が selected bad-witness cutting を保持することを取り出す。 | `proved accessor` |
