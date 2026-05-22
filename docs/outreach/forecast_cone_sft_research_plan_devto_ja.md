@@ -2,274 +2,62 @@
 
 ## TL;DR
 
-AAT / SFT は、ソフトウェアアーキテクチャを「今のコードの形」だけでなく、「次にどんな未来が到達可能になるか」として読むための研究です。
+Algebraic Architecture Theory (AAT) / Software Field Theory (SFT) は、ソフトウェアアーキテクチャを「今のコードの形」だけでなく、「次にどんな未来が到達可能になるか」として読むための研究です。
+
+この記事では、その見方を `ForecastCone` から始めて、modularity、technical debt、review、governance、learning を一つの研究計画として読むところまで進みます。
+
+一文で言えば、SFT が目指しているのはこういうことです。
+
+> 変更がどんな未来を開くかを見えるようにし、危ない未来は早めに閉じ、よい未来へ進みやすい開発環境を作る。
+
+これはまだ研究計画です。
+すべてが証明済みだと言っているわけではありません。
+
+しかし、この定理像が成立するなら、architecture、technical debt、review、governance、AI coding agents の安全性は、すべて `ForecastCone` という同じ対象のまわりで読み直せるようになります。
+
+## AAT / SFT の全体像は前記事へ
 
 AAT / SFT の全体像は、先にこちらの記事で紹介しました。
 
 [Software Architecture as a Field: Asking Better Questions About Software Evolution](https://blog.iroha1203.dev/software-architecture-as-a-field)
 
-この記事では、その続きとして SFT の中心概念である `ForecastCone` から始めます。
+前記事では、ソフトウェアアーキテクチャを静的な構造だけでなく、変更を引き寄せ、制約し、増幅し、観測可能にする `field` として見る立場を説明しました。
 
-SFT が目指しているのは、ソフトウェア進化を完全に予言することではありません。
-むしろ、明示された境界、観測、ルール、開発プロセスのもとで、
+この記事では、その続きとして SFT の研究計画を扱います。
 
-> このコードベースから、どんな未来が到達可能になるのか？
-
-を計算可能な対象として扱うことです。
-
-## なぜ ForecastCone が必要なのか
+## 問題提起: 速く書けることと、よく進化することは違う
 
 AI coding agents によって、コードを書く速度は大きく上がりました。
 
 しかし、コードを速く書けることと、ソフトウェアが健全に進化することは同じではありません。
 
 ひとつの PRD、ひとつの issue、ひとつのレビュー方針、ひとつの CI rule は、単に「今の変更」を決めるだけではありません。
-それらは次に自然に出てくる PR の形、触られやすいモジュール、見落とされやすい境界、通りやすい shortcut を変えます。
+それらは、次に自然に出てくる PR の形、触られやすいモジュール、見落とされやすい境界、通りやすい shortcut を変えます。
 
-SFT では、このような開発環境全体を `field` として見ます。
+たとえば Vibe coding では、曖昧な PRD からでも、AI agent がそれらしい実装をすぐに作れます。
 
-```text
-codebase
-  + artifacts
-  + practices
-  + agents
-  + governance
-  + feedback
-  -> reachable software futures
-```
+「クーポンを使えるようにして」とだけ書かれた PRD から、checkout flow に小さな `if` が足される。
+最初の demo は動く。
+しかし、その変更が pricing policy、refund、usage limit、audit log の境界を曖昧にしたまま残ると、次の PR はさらにその shortcut を前提にして進みます。
 
-そして、その field のもとで到達可能になる未来の範囲を `ForecastCone` と呼びます。
+問題は、AI が悪いコードを書くことではありません。
+曖昧な artifact と高速な生成が組み合わさると、悪い future path も高速に開いてしまうことです。
 
-ここで重要なのは、ForecastCone は「未来予言」ではないということです。
+従来の review、CI、metrics は、多くの場合、現在の diff や過去に起きた結果を見ます。
+もちろんそれは必要です。
 
-SFT は、
+しかし AI 時代には、それだけでは足りません。
 
-> この PRD から必ずこの PR が生まれる
+問題は「この PR が今通るか」だけではなく、
 
-とは言いません。
-
-そうではなく、
-
-> この field model、operation support、policy、observation boundary、horizon のもとで、どの未来経路が到達可能になるか
-
-を扱います。
-
-天気予報の cone が「一つの確定した未来」ではなく「ありうる進路の範囲」を表すように、ForecastCone はソフトウェア進化の到達可能範囲を表します。
-
-## ForecastCone が見せたいもの
-
-たとえば、ある機能追加の PRD があるとします。
-
-普通の開発では、私たちは次のような問いを立てます。
-
-- この実装方針でよいか？
-- この PR は安全か？
-- テストは足りているか？
-- 境界は壊れていないか？
-
-SFT はさらに一段深く聞きます。
-
-- この PRD は、どんな PR の形を自然にするか？
-- この変更は、次の変更をどの方向へ誘導するか？
-- どの architecture region が触られやすくなるか？
-- どの invariant が保存され、どの obstruction が現れそうか？
-- どの未来は review / CI / governance によって閉じられるべきか？
-- どの未来は望ましいので、閉じずに残すべきか？
-
-つまり ForecastCone は、現在の変更だけではなく、
-
-```text
-this change
-  -> possible next changes
-  -> possible architecture futures
-  -> possible obstruction witnesses
-  -> possible governance decisions
-```
-
-を見るための対象です。
-
-## 最初の大きな定理: ForecastCone Descent
-
-SFT の研究計画で最初に置いている大きな定理候補が、`ForecastCone Descent Theorem` です。
-
-直感的には、こういう主張です。
-
-> グローバルなソフトウェアの未来は、互換性のあるローカルな未来を貼り合わせたものとして計算できる。
-
-もう少しソフトウェア工学っぽく言うと、
-
-> よいモジュール境界とは、現在の依存関係を切るだけの境界ではない。
-> 未来の変更経路をローカルに計算し、それをグローバルな未来として貼り合わせられる境界である。
-
-これはかなり重要な見方の転換です。
-
-従来の modularity は、多くの場合、現在の構造について語られてきました。
-
-- API が分かれている
-- dependency が制御されている
-- responsibility が分離されている
-- coupling が小さい
-
-SFT では、modularity を未来の構造として読み直します。
-
-```text
-modularity
-  =
-local futures glue into global futures
-```
-
-もしある境界の両側で、それぞれの未来を局所的に計算できて、それらが矛盾なく貼り合わさるなら、その境界は進化の意味で本当に modular です。
-
-逆に、局所的には問題なさそうな変更が、統合した瞬間に壊れるなら、そこには descent の失敗があります。
-
-## Technical debt を obstruction として読む
-
-この考え方を進めると、technical debt の見方も変わります。
-
-普通は technical debt を、かなり定性的に語ります。
-
-- ここは複雑
-- 境界が曖昧
-- 依存が絡んでいる
-- 変更が怖い
-- レビューしづらい
-
-SFT はこれを、`ForecastCone` の descent が失敗している状態として読もうとします。
-
-たとえば、
-
-```text
-local tests pass
-local reviews pass
-local AI proposals look valid
-but global integration fails
-```
-
-という状況があります。
-
-これは現場ではよく起きます。
-各チームの範囲では正しそうに見える。各 PR も単体では通る。けれど全体としては壊れる。
-
-SFT では、こうした失敗を単なる「設計が悪い」ではなく、
-
-```text
-locally compatible futures do not glue globally
-```
-
-として扱います。
-
-そして、その失敗に witness を与えたい。
-
-- hidden coupling
-- missing interface invariant
-- unsupported global operation
-- policy conflict
-- observation boundary leak
-- unknown remainder expansion
-
-つまり technical debt は、未来を貼り合わせるときに現れる obstruction として分類できるかもしれません。
-
-これができると、「この設計は悪い」という曖昧な評価ではなく、
-
-> この局所未来はグローバル未来へ lift できない。
-> 理由は、この interface invariant が存在しないからである。
-
-のように言えるようになります。
-
-## Review surface を最小化する
-
-SFT の研究計画でもうひとつ重要なのが、`ConsequenceEnvelope` です。
-
-ForecastCone は未来経路の空間です。
-しかし、人間の reviewer に ForecastCone 全体を見せることはできません。情報量が多すぎます。
-
-そこで必要になるのが、review decision に必要な情報だけを取り出した surface です。
-
-SFT ではこれを `ConsequenceEnvelope` と呼びます。
-
-問いはこうです。
-
-> ある review decision を安全に行うために、reviewer は最低限どの情報を見ればよいのか？
-
-これは AI 時代の code review にかなり効く問いだと思っています。
-
-AI agents はたくさんの PR を作れます。
-しかし reviewer の注意は増えません。
-
-だから、これから重要になるのは「全部見せる」ことではありません。
-安全な判断に必要な差分だけを、過不足なく見せることです。
-
-```text
-ForecastCone
-  -> decision-relevant quotient
-  -> ConsequenceEnvelope
-```
-
-この方向が進むと、review tool は単に diff を見せるものではなくなります。
-
-- どの未来経路が開いたか
-- どの obstruction witness が現れたか
-- どの invariant が危ないか
-- どの情報は今回の判断には不要か
-- どの unknown remainder は明示すべきか
-
-を提示するものになります。
-
-## Governance は guardrail ではなく synthesis になる
-
-AI-era development では、guardrail という言葉がよく使われます。
-
-もちろん guardrail は必要です。
-しかし、単にルールを増やしていくと、開発は重くなります。
-
-SFT が目指す governance は、もう少し構造的です。
-
-問いは、
-
-> 悪い未来を閉じながら、望ましい未来を残すには、どの介入が最小で十分か？
+> この PRD、この agent、この codebase、この review rule の組み合わせは、次にどんな未来を開くのか？
 
 です。
 
-```text
-remove bad futures
-preserve desired futures
-minimize governance burden
-```
+SFT が `ForecastCone` を必要とするのは、この問いを扱うためです。
+ソフトウェア進化を、単なる変更列ではなく、到達可能な未来の空間として計算可能にする対象が必要になります。
 
-これは、review rule、CI gate、type checker、AI policy、ownership rule を、単なる制約ではなく `support transformation` として見る立場です。
-
-よい governance は、開発者や AI agent をただ止めるものではありません。
-よい未来が自然に選ばれ、悪い shortcut が高コストになり、危険な path が観測可能になるように field を変えるものです。
-
-## AI coding agents と Agentic Confluence
-
-ForecastCone Descent が特に重要になるのは、複数の AI agents が並列に開発する世界です。
-
-これからは、ひとつの agent がひとつの PR を出すだけではなく、複数の agents が別々の region を触り、並列に proposal を作り、review と CI を通して統合されるようになります。
-
-そのときに必要な問いは、
-
-> どの proposal は並列に進めても安全か？
-
-です。
-
-SFT の研究計画では、これを `Agentic Confluence Theorem` として考えています。
-
-直感的には、
-
-- local proposal system が terminate する
-- local proposal system が confluent である
-- ForecastCone descent が成り立つ
-- interface constraints が保存される
-- policy が commutation-invariant である
-
-なら、複数 agent の提案をどの順序で受け入れても、同じ global cone quotient に到達する、という方向です。
-
-これは、AI coding の安全性を「気をつけてレビューする」だけでなく、並列開発が安全になる条件として定式化しようとするものです。
-
-## 大きな構想: ソフトウェア進化の基本定理
-
-SFT の長期的な構想は、いくつかの定理候補をまとめて、次のような見取り図を作ることです。
+## 大定理: ソフトウェア進化の基本定理
 
 ```text
 Modularity
@@ -288,14 +76,297 @@ Learning
   = closed-loop boundary-explicit fixed point
 ```
 
-これを一文で言うなら、こうです。
+これを、この記事では **ソフトウェア進化の基本定理** と呼びます。
 
-> 境界づけられたソフトウェア進化は、計算可能に統治できるか、さもなくば、どの計算境界が破れたかを示す型付き witness を持つ。
+数学的な言葉で書くなら、次のようになります。
 
-これはまだ研究計画です。
-すべてが証明済みだと言っているわけではありません。
+> よい architecture boundary とは、現在の依存関係を切る線ではなく、未来の変更経路を局所的に計算し、互換性条件のもとで大域的な未来へ貼り合わせられる境界である。
 
-しかし、もしこの方向が成立するなら、ソフトウェア工学のいくつかの中心概念はかなり違って見えるようになります。
+> technical debt とは、その貼り合わせに失敗したときに現れる obstruction である。
+
+> review とは、ForecastCone 全体を見ることではなく、判断に必要な future distinction だけを保った envelope を見ることである。
+
+> governance とは、悪い未来を閉じながら、望ましい未来を残す support transformation である。
+
+> learning とは、実際の PR、incident、review、運用結果から field estimate を更新し、境界を明示した fixed point へ近づけることである。
+
+これを日々の開発の言葉に戻すと、こうなります。
+
+> よい設計境界なら、チームや AI agent が別々に進めた変更を、あとから安全に組み合わせられる。
+
+> technical debt とは、「なぜか毎回ここで統合が壊れる」を、原因つきで説明できる状態にすることである。
+
+> review では、diff 全部でも未来全部でもなく、判断に必要な危ない未来だけを見たい。
+
+> governance では、開発を止めるルールを増やすのではなく、悪い近道を閉じて、よい実装 path を選びやすくしたい。
+
+> learning では、実際に起きた PR、障害、レビュー結果を使って、次の予測とルールを更新していきたい。
+
+ここで鍵になるのは、これらを別々の話として扱わないことです。
+modularity、technical debt、review、governance、learning を一つの対象のまわりで読む。
+
+その対象が `ForecastCone` です。
+
+## ForecastCone: 到達可能な未来の範囲
+
+SFT では、開発環境全体を `field` として見ます。
+
+```text
+codebase
+  + artifacts
+  + practices
+  + agents
+  + governance
+  + feedback
+  -> reachable software futures
+```
+
+そして、その field のもとで到達可能になる未来の範囲を `ForecastCone` と呼びます。
+
+ForecastCone は未来予言ではありません。
+
+SFT は、
+
+> この PRD から必ずこの PR が生まれる
+
+とは言いません。
+
+そうではなく、
+
+> この field model、operation support、policy、observation boundary、horizon のもとで、どの未来経路が到達可能になるか
+
+を扱います。
+
+たとえば、EC サービスに「期間限定クーポンを追加したい」という PRD が来たとします。
+
+この PRD から生まれる未来はひとつではありません。
+
+- checkout flow に小さな条件分岐を足す未来
+- pricing service に discount policy を追加する未来
+- coupon domain を独立させる未来
+- campaign system や audit log まで広げる未来
+- とりあえず DB column を足して後で整理する未来
+
+これらはすべて、ある意味では「クーポン対応」です。
+しかし、それぞれが開く次の未来はまったく違います。
+
+ForecastCone は、この差を見ます。
+同じ PRD でも、現在の codebase、既存の module boundary、過去の workaround、review rule、CI、AI agent の提案傾向によって、到達しやすい未来と到達しにくい未来が変わるからです。
+
+## Modularity = ForecastCone descent
+
+```text
+Modularity
+  = ForecastCone descent
+```
+
+直感的には、こうです。
+
+> グローバルなソフトウェアの未来は、互換性のあるローカルな未来を貼り合わせたものとして計算できる。
+
+従来の modularity は、API、依存方向、責務分離のように、現在の構造として語られがちです。
+SFT はそこに、未来の条件を足します。
+
+本当に modular な境界なら、`Pricing` 側の未来と `Checkout` 側の未来を局所的に考えたあと、それらを一つの checkout future として貼り合わせられるはずです。
+境界は、ただの線ではなく、未来が壊れずに越えられる場所になります。
+
+## Technical debt = descent obstruction
+
+```text
+Technical debt
+  = descent obstruction
+```
+
+直感的には、technical debt を「未来が貼り合わさらない失敗」として読む、ということです。
+
+local tests pass.
+local reviews pass.
+AI proposal also looks reasonable.
+それでも統合すると壊れる。
+
+このとき、SFT は「設計が悪い」で止めずに、その失敗を obstruction として残したい。
+
+```text
+DescentFailure:
+  missing interface invariant
+
+Witness:
+  Pricing は discounted total を返すが、
+  Checkout は tax-included final charge として扱っている。
+```
+
+こう言えると、technical debt は単なる感想ではなくなります。
+
+> この局所未来はグローバル未来へ lift できない。
+> 理由は境界上の invariant が足りないからである。
+
+これが `Descent Obstruction Theorem` の狙いです。
+
+## Review = minimal decision-preserving envelope
+
+```text
+Review
+  = minimal decision-preserving envelope
+```
+
+ForecastCone は大きい。
+未来経路を全部 reviewer に見せることはできません。
+でも、diff だけでは足りない。
+
+たとえば AI agent がこういう PR を出したとします。
+
+```text
+if coupon_code.present?
+  total = total - discount
+end
+```
+
+diff は小さい。
+しかし reviewer が見たいのは、この数行の見た目だけではありません。
+
+refund path に未観測の分岐が増えるのか。
+usage limit invariant が retry と衝突するのか。
+tax boundary の判断が `Pricing` / `Checkout` 間で未固定なのか。
+
+ここで必要なのは、ForecastCone 全体ではなく、review decision に必要な部分だけです。
+SFT ではこれを `ConsequenceEnvelope` と呼びます。
+
+review tool が目指すべきなのは「全部見せる」ことではなく、判断に必要な未来差分を過不足なく見せることです。
+
+## Governance = desired-cone-preserving obstruction cutting
+
+```text
+Governance
+  = desired-cone-preserving obstruction cutting
+```
+
+危ない未来が見えたとき、一番単純なのは、ルールを増やすことです。
+
+> クーポン周りは危ないので、必ず senior engineer が全部レビューしてください。
+
+これは一応 guardrail です。
+でも、何を閉じているのかが曖昧です。
+そして、だいたい重い。
+
+SFT が考えたい governance は、悪い未来だけを閉じ、望ましい未来を残す介入です。
+
+- `Pricing` と `Checkout` の境界に `DiscountedTotal` と `FinalCharge` を別型として置く
+- coupon usage update を idempotent operation に制限する
+- refund path を触る PR では coupon invariant check を必須にする
+- AI agent には checkout 直下への ad hoc discount 分岐を禁止し、policy object の追加を提案させる
+
+checkout に discount 分岐が散らばる未来は閉じたい。
+でも、coupon policy を独立に進化させる未来は残したい。
+
+`Governance Synthesis Theorem` が目指すのは、この差を扱うことです。
+guardrail を増やす話ではなく、field を整形する話です。
+
+## Learning = closed-loop boundary-explicit fixed point
+
+```text
+Learning
+  = closed-loop boundary-explicit fixed point
+```
+
+SFT は、一回 ForecastCone を計算して終わる理論ではありません。
+
+予測した future path と、実際に起きた PR、incident、review comment、CI failure、runtime observation は照合されます。
+Forecast が外れたなら、それは単なる失敗ではありません。
+
+- field estimate が粗すぎたのか
+- observation boundary が狭すぎたのか
+- policy model が現実の review を表していなかったのか
+- unknown remainder を明示すべきだったのか
+
+を更新する材料になります。
+
+この closed loop が進むと、SFT workbench は単なる分析器ではなくなります。
+ソフトウェア進化の field model を継続的に較正する仕組みになります。
+
+## アトラクターエンジニアリングと ArchSig
+
+この大定理は、SFT だけで閉じているわけではありません。
+
+AAT は、変更が何を保存し、何を破るかを読むための局所理論です。
+ArchSig は、その保存や破れを repository、PR、review、CI、incident から観測するための signature layer です。
+SFT は、それらを使って到達可能な未来を計算し、governance と learning へ接続します。
+
+```text
+AAT
+  -> local laws / invariants / obstruction witnesses
+
+ArchSig
+  -> observed signatures / measured axes / evidence boundaries
+
+SFT
+  -> ForecastCone / ConsequenceEnvelope / governance update
+```
+
+アトラクターエンジニアリングも、ここに接続します。
+
+良い architecture は、良い変更を引き寄せる。
+悪い architecture は、同じ shortcut を何度も選ばせる。
+
+SFT の言葉では、これは reachable futures の形が変わるということです。
+ある governance intervention は、悪い future path を閉じる。
+ある type boundary は、良い local evolution を自然にする。
+ある review rule は、危険な path を観測可能にする。
+
+つまりアトラクターエンジニアリングは、ForecastCone の形を変える実践です。
+ArchSig は、その変化を観測するための道具です。
+そして SFT は、その観測を大定理の各要素へ接続する理論です。
+
+## CS / Software Engineering へのインパクト
+
+ソフトウェア工学は長いあいだ、人間の認知を中心に設計論やアーキテクチャ論を発展させてきました。
+
+それは自然なことです。
+ソフトウェアは複雑で、人間が読めなければ保守できない。
+だから私たちは、責務分離、情報隠蔽、凝集度、結合度、layering、clean architecture、bounded context といった概念を通じて、複雑さを人間が扱える形にしてきました。
+
+この軸は今後も重要です。
+
+ただし、AI coding agents が入ると、ボトルネックは少し変わります。
+コードを書く速度が上がると、問題は「今の構造を人間が理解できるか」だけではなくなります。
+
+複数の agents が並列に動くなら、さらに問いは鋭くなります。
+Agent A が `CouponPolicy` を追加し、Agent B が checkout price preview を修正し、Agent C が refund flow を触る。
+見た目には別々の作業でも、discount の適用順序や final charge invariant を共有しているなら、「別ファイルだから並列でよい」とは言えません。
+
+必要になるのは、個々の PR の正しさだけでなく、それらの future paths が同じ global cone quotient に落ちるかどうかです。
+これが `Agentic Confluence` の問いです。
+
+次に問うべきなのは、
+
+> この構造は、どんな未来を到達可能にしてしまうのか？
+
+です。
+
+良い設計とは、現在のコードを読みやすくするだけではありません。
+良い未来に進みやすく、悪い未来に進みにくい場を作ることでもあります。
+
+この見方では、アーキテクチャの議論は「人間の理解しやすさ」から「未来の到達可能性」へ広がります。
+
+- この境界は、人間にとって分かりやすいだけでなく、未来を局所的に貼り合わせられるか
+- この PR は、今安全なだけでなく、次の変更をどの方向へ誘導するか
+- この metric は、測りやすいだけでなく、未来の違いを保存しているか
+- この review rule は、作業を止めるだけでなく、悪い未来を閉じてよい未来を残しているか
+- この technical debt は、単に読みにくいのではなく、どの gluing failure として現れているか
+- この AI proposal は、単体で正しいだけでなく、他の proposal と安全に commute するか
+- この subsystem は、理解可能かどうかだけでなく、repair 可能な basin にまだいるか
+
+こうした問いは、現場ではすでに存在しています。
+ただし、多くの場合、それらは経験、直感、レビューコメント、incident memory、組織文化の中に分散しています。
+
+SFT は、それらを計算可能な理論対象へ近づけたい。
+
+もしこの方向が成立するなら、software engineering は単なる「複雑なものを人間が理解しやすくする技術」から、
+
+> software evolution を観測し、計算し、統治する科学
+
+へ近づくかもしれません。
+
+そのとき、中心概念はかなり違って見えるようになります。
 
 ```text
 architecture
@@ -326,34 +397,55 @@ lifecycle
   -> bifurcation of repair feasibility
 ```
 
-## CS / Software Engineering へのインパクト
+## Lean 形式化
 
-SFT が目指しているのは、既存の software engineering practice を否定することではありません。
+この研究計画は、Lean でも形式化を進めています。
 
-むしろ逆です。
+Lean でやりたいのは、SFT の語彙を「雰囲気のある比喩」で終わらせないことです。
 
-私たちが普段から行っている判断を、より明示的な対象として扱いたい。
+`field`、`ForecastCone`、`ConsequenceEnvelope`、`governance update` のような言葉を、証明対象になる小さな部品へ分けていく。
+そうすると、研究の大きな構想が、少しずつ型、record、theorem package として触れる形になります。
 
-- この境界は本当に意味があるのか
-- この PR は次の変更をどう誘導するのか
-- この metric は未来の違いを保存しているのか
-- この review rule は何を閉じ、何を残しているのか
-- この technical debt はどの gluing failure として現れているのか
-- この AI proposal は他の proposal と安全に commute するのか
-- この subsystem は repair すべきか、migrate すべきか、retire すべきか
+現在は、次のような部品を形式化しています。
 
-こうした問いは、現場ではすでに存在しています。
-ただし、多くの場合、それらは経験、直感、レビューコメント、incident memory、組織文化の中に分散しています。
+```text
+SoftwareFieldEstimate
+OperationSupport / StepRelation
+ForecastCone / ClockedForecastCone
+ConsequenceEnvelope
+FieldUpdate
+```
 
-SFT は、それらを計算可能な理論対象へ近づけたい。
+たとえば `ForecastCone` は、有限 horizon 内の supported path として扱います。
+`ClockedForecastCone` では、descent のために shared clock と idle/stutter step を導入します。
+`ConsequenceEnvelope` では、cone family から review に必要な情報を取り出す projection を扱います。
 
-その中心にあるのが `ForecastCone` です。
+最終的な大定理も、この部品を組み合わせる形で進めています。
+descent、obstruction、review、governance、calibration、agentic confluence の各 component を明示し、そのもとで、
 
-ソフトウェアアーキテクチャは、今あるコードの形だけではありません。
+```text
+computably governed
+  or
+typed boundary failure
+```
+
+という形の assembly を作る。
+
+この形式化によって、SFT は「かっこいい言葉」ではなく、どこまでが theorem で、どこからが modeling / tooling / empirical boundary なのかを追跡できる研究プログラムになります。
+
+## まとめ
+
+ForecastCone は、未来を予言するための道具ではありません。
+
+明示された modeling boundary、operation support、policy、observation boundary、horizon のもとで、ソフトウェア進化の到達可能な未来を計算対象にするための道具です。
+
+SFT の大きな賭けは、そこから software engineering の中心概念をもう一度組み立てられるのではないか、ということです。
+
+```text
+Architecture is not only the shape of present code.
+It is the shape of reachable futures.
+```
+
+アーキテクチャは、今あるコードの形だけではありません。
+
 それは、そのコードベースからどんな未来が到達可能になるかの形でもあります。
-
-もし SFT が成功するなら、software engineering は単なる「複雑なものを人間が理解しやすくする技術」から、
-
-> software evolution を観測し、計算し、統治する科学
-
-へ近づくかもしれません。
