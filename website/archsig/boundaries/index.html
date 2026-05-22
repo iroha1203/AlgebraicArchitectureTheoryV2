@@ -3,21 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="ArchSig measurement boundary, claim boundary, theorem promotion guardrails, and non-conclusions."
-    >
+    <meta name="description" content="How to read ArchSig evidence boundaries, measurement status, claim boundaries, non-conclusions, formal promotion, runtime evidence, and empirical claims.">
     <title>ArchSig Boundaries</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/boundaries/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig Boundaries">
-    <meta property="og:description" content="ArchSig measurement boundary, claim boundary, theorem promotion guardrails, and non-conclusions.">
+    <meta property="og:description" content="How to read ArchSig evidence boundaries, measurement status, claim boundaries, non-conclusions, formal promotion, runtime evidence, and empirical claims.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/boundaries/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig Boundaries">
-    <meta name="twitter:description" content="ArchSig measurement boundary, claim boundary, theorem promotion guardrails, and non-conclusions.">
+    <meta name="twitter:description" content="How to read ArchSig evidence boundaries, measurement status, claim boundaries, non-conclusions, formal promotion, runtime evidence, and empirical claims.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -25,16 +22,12 @@
     <link rel="alternate" hreflang="x-default" href="./">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
-      rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/site.css">
     <script defer src="../../assets/site.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-
     <header class="site-header" data-site-header>
       <div class="site-shell header-inner">
         <a class="brand" href="../../" aria-label="AAT SFT home">
@@ -51,199 +44,37 @@
         </nav>
       </div>
     </header>
-
     <main id="main">
       <section class="article-hero section-band">
         <div class="site-shell">
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="../../">Home</a>
-            <a href="../">ArchSig</a>
-            <span>Boundaries</span>
-          </nav>
-          <p class="eyebrow">ArchSig Reference</p>
-          <h1>Keep the signal sharp by keeping its edge visible.</h1>
-          <p class="lede">
-            ArchSig separates what was measured, what was inferred, what was
-            blocked, and what remains unknown, so reports stay powerful without
-            becoming overclaims.
-          </p>
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Boundaries</span></nav>
+          <p class="eyebrow">Trust Boundaries</p>
+          <h1>Trust the signal because its edge is visible.</h1>
+          <p class="lede">ArchSig is useful because it says what evidence supports a signal and what the signal does not establish.</p>
         </div>
       </section>
-
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title">
-              <h2 id="toc-title">On this page</h2>
-              <ol>
-                <li><a href="#measurement">Measurement boundary</a></li>
-                <li><a href="#claim">Claim boundary</a></li>
-                <li><a href="#promotion">Formal promotion</a></li>
-                <li><a href="#non-conclusions">Non-conclusions</a></li>
-              </ol>
-            </nav>
-            <div class="source-panel" data-sidebar-open="true">
-              <h2>ArchSig manual</h2>
-              <ul>
-                <li><a href="../">Manual overview</a></li>
-                <li><a href="../getting-started/">Getting Started</a></li>
-                <li><a href="../inputs/">Inputs and Configuration</a></li>
-                <li><a href="../reading-output/">Reading the Output</a></li>
-                <li><a href="../air/">AIR</a></li>
-                <li><a href="../commands/">Commands</a></li>
-                <li><a href="../artifacts/">Artifacts</a></li>
-                <li><a href="./" aria-current="page">Boundaries</a></li>
-                <li><a href="../workflows/">Workflows</a></li>
-                <li><a href="../schemas/">Schemas</a></li>
-                <li><a href="../operational-feedback/">Operational Feedback</a></li>
-                <li><a href="../examples/">Examples</a></li>
-              </ul>
-            </div>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#evidence">Evidence boundary</a></li><li><a href="#status">Measurement status</a></li><li><a href="#claim">Claim boundary</a></li><li><a href="#formal">Formal promotion</a></li><li><a href="#runtime">Runtime and semantic evidence</a></li><li><a href="#non">Non-conclusions</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/" aria-current="page">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
-
           <div class="article-main">
-            <section id="measurement" class="article-section">
-              <h2>Measurement boundary</h2>
-              <p>
-                Measurement status is part of the artifact. A value and an
-                axis must be read together with the status that says whether
-                the value was measured, unmeasured, or out of scope.
-              </p>
-              <p>
-                Use this chapter whenever a report looks too confident. Most
-                mistaken readings come from collapsing four different states:
-                measured zero, missing input, private evidence, and adapter
-                out of scope.
-              </p>
-              <p>
-                This is the central discipline of ArchSig. A dashboard can show
-                a zero; an architecture signature must say whether that zero is
-                a measured fact, a placeholder, a privacy boundary, an
-                unavailable input, or an axis that the adapter does not cover.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>measuredZero</strong>
-                  <span>The axis was measured and the value is zero.</span>
-                </li>
-                <li>
-                  <strong>measuredNonzero</strong>
-                  <span>The axis was measured and the value is nonzero.</span>
-                </li>
-                <li>
-                  <strong>unmeasured</strong>
-                  <span>The axis was not measured. Placeholder zero must not be read as risk zero.</span>
-                </li>
-                <li>
-                  <strong>outOfScope</strong>
-                  <span>The artifact or universe does not cover that axis.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="claim" class="article-section">
-              <h2>Claim boundary</h2>
-              <p>
-                AIR and reports separate formal claims, measured witnesses,
-                blocked formal claims, empirical observations, and review
-                recommendations. These categories are intentionally not
-                interchangeable.
-              </p>
-              <p>
-                The same observation can appear in several claim levels. A
-                hidden interaction can be a measured witness, a blocked formal
-                claim if theorem preconditions are missing, and a review
-                recommendation if local policy says the witness should be
-                investigated. The report must keep those readings distinct.
-              </p>
-              <figure class="code-panel">
-                <figcaption>Claim categories</figcaption>
-                <pre><code>FORMAL_PROVED
-MEASURED_WITNESS
-BLOCKED_FORMAL_CLAIM
-empirical observation
-advisory review recommendation</code></pre>
-              </figure>
-            </section>
-
-            <section id="promotion" class="article-section">
-              <h2>Formal promotion</h2>
-              <p>
-                <code>theorem-check</code> can report whether a claim has the
-                registered theorem refs and bridge preconditions needed for a
-                formal/proved reading. Missing preconditions block promotion;
-                they are not defects in the measurement itself.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Required theorem refs</strong>
-                  <span>The report must point to the intended formal result rather than invent a theorem claim.</span>
-                </li>
-                <li>
-                  <strong>Bridge preconditions</strong>
-                  <span>The tooling universe must satisfy the assumptions needed to connect evidence to Lean-side definitions.</span>
-                </li>
-                <li>
-                  <strong>Coverage and exactness</strong>
-                  <span>Unsupported constructs, missing evidence, and unmeasured axes remain visible.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="non-conclusions" class="article-section">
-              <h2>Non-conclusions</h2>
-              <p>
-                ArchSig output does not claim arbitrary repository
-                completeness, extractor completeness, policy-lawfulness
-                equivalence, semantic preservation, causality, or a scalar
-                ranking of architecture quality.
-              </p>
-              <p>
-                Non-conclusions are not apologies. They are the part of the
-                artifact that keeps a useful diagnostic from becoming an
-                overclaim. A report that preserves its non-conclusions can be
-                compared, migrated, calibrated, and reviewed without changing
-                its meaning.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Reviewer use</strong>
-                  <span>Ask whether the missing claim matters for this PR, then request evidence or accept the boundary explicitly.</span>
-                </li>
-                <li>
-                  <strong>Automation use</strong>
-                  <span>Carry non-conclusions into policy decisions and PR comments instead of dropping them from the final surface.</span>
-                </li>
-              </ul>
-              <div class="claim-strip">
-                <p>
-                  Non-conclusions are part of the artifact contract. Dropping
-                  them during schema migration or report rendering changes the
-                  meaning of the artifact.
-                </p>
-              </div>
-            </section>
-            <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../artifacts/">
-                <span>Previous</span>
-                <strong>Artifacts</strong>
-              </a>
-              <a href="../workflows/">
-                <span>Next</span>
-                <strong>Workflows</strong>
-              </a>
-            </nav>
+            <section id="evidence" class="article-section"><h2>Evidence boundary</h2><p>An evidence boundary is the explicit scope of a signal. It includes the selected source universe, policy inputs, runtime evidence, semantic observations, unavailable evidence, unsupported constructs, private data, and assumptions required for interpretation.</p></section>
+<section id="status" class="article-section"><h2>Measurement status</h2><ul class="term-list"><li><strong>Measured</strong><span>The axis was evaluated in the selected universe.</span></li><li><strong>Unmeasured</strong><span>The artifact has no measurement for that axis.</span></li><li><strong>Unsupported</strong><span>The adapter or command does not observe that construct.</span></li><li><strong>Private or unavailable</strong><span>The evidence may exist, but this artifact cannot inspect it.</span></li><li><strong>Out of scope</strong><span>The axis is intentionally outside the selected run.</span></li></ul></section>
+<section id="claim" class="article-section"><h2>Claim boundary</h2><p>A report can make a review claim, a policy claim, a theorem-precondition claim, or an empirical calibration claim. These levels must not be collapsed. Review evidence can guide inspection without proving an architecture theorem.</p></section>
+<section id="formal" class="article-section"><h2>Formal promotion</h2><p>Formal promotion requires bridge assumptions: extractor completeness for the selected universe, exactness of policy mapping, theorem preconditions, and proof-relevant definitions. ArchSig can report that those assumptions are satisfied, missing, or outside the artifact.</p></section>
+<section id="runtime" class="article-section"><h2>Runtime and semantic evidence</h2><p>Runtime evidence and semantic evidence are powerful because architecture risk often lives outside static imports. They must remain bounded. A trace is not complete runtime semantics. An LLM observation is not a judge. A human-confirmed AIR record is stronger than a raw generated comment.</p></section>
+<section id="non" class="article-section"><h2>Non-conclusions</h2><ul class="status-list"><li><strong>No scalar quality score</strong><span>Architecture Signature is a multi-axis diagnostic.</span></li><li><strong>No extractor completeness by default</strong><span>Unsupported dynamic behavior remains visible.</span></li><li><strong>No causal theorem from correlation</strong><span>Operational records support calibration and hypotheses.</span></li><li><strong>No automatic theorem proof</strong><span>Measured review witnesses are not Lean theorem proofs.</span></li><li><strong>No point forecast</strong><span>SFT artifacts describe bounded forecast structure, not exact future outcomes.</span></li></ul></section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../examples/"><span>Previous</span><strong>Examples</strong></a><a class="page-nav-next" href="../air/"><span>Next</span><strong>AIR</strong></a></nav>
           </div>
         </div>
       </section>
     </main>
-
     <footer class="site-footer">
       <div class="site-shell footer-inner">
         <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
-        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
-          Repository
-        </a>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
       </div>
     </footer>
   </body>

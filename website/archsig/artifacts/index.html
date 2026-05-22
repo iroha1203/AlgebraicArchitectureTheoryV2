@@ -3,21 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="ArchSig artifact reference for Sig0, validation, reports, policy, datasets, operational feedback, and SFT forecasting artifacts."
-    >
-    <title>ArchSig Artifact Reference</title>
+    <meta name="description" content="Reference guide to Sig0, validation reports, snapshots, signature diffs, AIR, feature reports, policy decisions, PR comments, forecast artifacts, and feedback records.">
+    <title>ArchSig Artifacts</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/artifacts/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
-    <meta property="og:title" content="ArchSig Artifact Reference">
-    <meta property="og:description" content="ArchSig artifact reference for Sig0, validation, reports, policy, datasets, operational feedback, and SFT forecasting artifacts.">
+    <meta property="og:title" content="ArchSig Artifacts">
+    <meta property="og:description" content="Reference guide to Sig0, validation reports, snapshots, signature diffs, AIR, feature reports, policy decisions, PR comments, forecast artifacts, and feedback records.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/artifacts/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ArchSig Artifact Reference">
-    <meta name="twitter:description" content="ArchSig artifact reference for Sig0, validation, reports, policy, datasets, operational feedback, and SFT forecasting artifacts.">
+    <meta name="twitter:title" content="ArchSig Artifacts">
+    <meta name="twitter:description" content="Reference guide to Sig0, validation reports, snapshots, signature diffs, AIR, feature reports, policy decisions, PR comments, forecast artifacts, and feedback records.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -25,16 +22,12 @@
     <link rel="alternate" hreflang="x-default" href="./">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
-      rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/site.css">
     <script defer src="../../assets/site.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-
     <header class="site-header" data-site-header>
       <div class="site-shell header-inner">
         <a class="brand" href="../../" aria-label="AAT SFT home">
@@ -51,317 +44,37 @@
         </nav>
       </div>
     </header>
-
     <main id="main">
       <section class="article-hero section-band">
         <div class="site-shell">
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="../../">Home</a>
-            <a href="../">ArchSig</a>
-            <span>Artifacts</span>
-          </nav>
-          <p class="eyebrow">ArchSig Reference</p>
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Artifacts</span></nav>
+          <p class="eyebrow">Use ArchSig</p>
           <h1>Every artifact is a portable architectural reading.</h1>
-          <p class="lede">
-            Sig0, diffs, AIR, feature reports, policies, datasets, and forecast
-            envelopes carry the evidence a reviewer needs without losing the
-            limits of the observation.
-          </p>
+          <p class="lede">ArchSig artifacts are designed to move between local runs, CI, PR review, policy decisions, and operational feedback without losing their evidence boundary.</p>
         </div>
       </section>
-
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title">
-              <h2 id="toc-title">On this page</h2>
-              <ol>
-                <li><a href="#primary">Primary artifacts</a></li>
-                <li><a href="#surface-artifacts">Surface artifacts</a></li>
-                <li><a href="#output-index">Output index</a></li>
-                <li><a href="#policy-registry">Policy and registry</a></li>
-                <li><a href="#datasets">Datasets and feedback</a></li>
-                <li><a href="#forecasting">SFT forecasting</a></li>
-                <li><a href="#diagnostics">Diagnostic reading</a></li>
-              </ol>
-            </nav>
-            <div class="source-panel" data-sidebar-open="true">
-              <h2>ArchSig manual</h2>
-              <ul>
-                <li><a href="../">Manual overview</a></li>
-                <li><a href="../getting-started/">Getting Started</a></li>
-                <li><a href="../inputs/">Inputs and Configuration</a></li>
-                <li><a href="../reading-output/">Reading the Output</a></li>
-                <li><a href="../air/">AIR</a></li>
-                <li><a href="../commands/">Commands</a></li>
-                <li><a href="./" aria-current="page">Artifacts</a></li>
-                <li><a href="../boundaries/">Boundaries</a></li>
-                <li><a href="../workflows/">Workflows</a></li>
-                <li><a href="../schemas/">Schemas</a></li>
-                <li><a href="../operational-feedback/">Operational Feedback</a></li>
-                <li><a href="../examples/">Examples</a></li>
-              </ul>
-            </div>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#core">Core artifacts</a></li><li><a href="#review">Review artifacts</a></li><li><a href="#sft">SFT artifacts</a></li><li><a href="#operational">Operational artifacts</a></li><li><a href="#retention">Retention</a></li><li><a href="#diagnostic">Diagnostic reading</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/" aria-current="page">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
-
           <div class="article-main">
-            <section id="primary" class="article-section">
-              <h2>Primary artifacts</h2>
-              <p>
-                The main review flow starts with Sig0 and ends with a PR
-                comment summary. Each step keeps claim level and measurement
-                status visible.
-              </p>
-              <p>
-                When you receive an ArchSig JSON file, first identify its
-                <code>schemaVersion</code>. That tells you which questions the
-                file can answer and which chapter of this manual to use.
-              </p>
-              <p>
-                Treat an ArchSig artifact as a contract between a producer and
-                a reader. The producer records a bounded universe and the
-                reader agrees not to erase coverage, exactness assumptions,
-                source refs, or non-conclusions when projecting that artifact
-                into another report.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Sig0 output</strong>
-                  <span><code>archsig-sig0-v0</code>: component list, dependency edges, signature axes, and metric status for one revision.</span>
-                </li>
-                <li>
-                  <strong>Validation report</strong>
-                  <span><code>component-universe-validation-report-v0</code>: duplicate, closure, external target, and policy status checks.</span>
-                </li>
-                <li>
-                  <strong>Snapshot and diff</strong>
-                  <span><code>signature-snapshot-store-v0</code> and <code>signature-diff-report-v0</code>: revision persistence and before / after changes.</span>
-                </li>
-                <li>
-                  <strong>AIR and review reports</strong>
-                  <span><code>aat-air-v0</code>, theorem precondition check, Feature Extension Report, policy decision, and PR comment summary.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="surface-artifacts" class="article-section">
-              <h2>Surface artifacts</h2>
-              <p>
-                The artifact catalog should be read by surface. Core artifacts
-                describe a bounded repository observation; Review artifacts
-                project that observation into PR review; SFT artifacts project
-                a proposed change into a bounded forecast report; Operational
-                artifacts store calibration and feedback evidence.
-              </p>
-              <p>
-                This separation matters because the same field name can carry
-                different weight in different surfaces. A worsened axis in a
-                diff is a review cue; a threshold violation is a policy cue; a
-                repeated operational pattern is calibration evidence. None of
-                these automatically becomes a formal theorem claim.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Core artifacts</strong>
-                  <span>Sig0, validation reports, snapshots, diff reports, metric status, and unmeasured axis records.</span>
-                </li>
-                <li>
-                  <strong>Review artifacts</strong>
-                  <span>AIR, AIR validation, theorem precondition check, Feature Extension Report, policy decision, PR comment summary, and baseline suppression.</span>
-                </li>
-                <li>
-                  <strong>SFT artifacts</strong>
-                  <span>ArtifactDescriptor, OperationSupportEstimate, ForecastConeSkeleton, ConsequenceEnvelope, ForecastCalibrationHook, and their validation reports.</span>
-                </li>
-                <li>
-                  <strong>Operational artifacts</strong>
-                  <span>PR history datasets, feature datasets, outcome linkage, daily ledger, calibration, threshold, ownership, repair adoption, incident correlation, and hypothesis refresh records.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="output-index" class="article-section">
-              <h2>Output index</h2>
-              <p>
-                This list is the quick lookup for generated files. Read the
-                <code>schemaVersion</code> first, then use the row below to
-                decide which fields matter.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong><code>archsig-sig0-v0</code></strong>
-                  <span>Produced by <code>scan</code>. Read <code>components</code>, <code>edges</code>, <code>signature</code>, <code>metricStatus</code>, and unsupported constructs.</span>
-                </li>
-                <li>
-                  <strong><code>component-universe-validation-report-v0</code></strong>
-                  <span>Produced by <code>validate</code>. Read validation summary, duplicate components, edge closure, external targets, and policy status checks.</span>
-                </li>
-                <li>
-                  <strong><code>signature-snapshot-store-v0</code></strong>
-                  <span>Produced by <code>snapshot</code>. Read repository refs, revision refs, scan timestamp, policy version, and signature artifact refs.</span>
-                </li>
-                <li>
-                  <strong><code>signature-diff-report-v0</code></strong>
-                  <span>Produced by <code>signature-diff</code>. Read worsened axes, improved axes, metric delta status, evidence diffs, and attribution candidates.</span>
-                </li>
-                <li>
-                  <strong><code>aat-air-v0</code></strong>
-                  <span>Produced by <code>air</code>. Read artifacts, evidence, coverage, claims, operation trace, and extension summary.</span>
-                </li>
-                <li>
-                  <strong><code>aat-air-validation-report-v0</code></strong>
-                  <span>Produced by <code>validate-air</code>. Read unresolved refs, claim boundary checks, runtime metadata checks, semantic metadata checks, and measured-claim evidence checks.</span>
-                </li>
-                <li>
-                  <strong><code>feature-extension-report-v0</code></strong>
-                  <span>Produced by <code>feature-report</code>. Read split status, introduced obstruction witnesses, coverage gaps, theorem precondition summary, and repair suggestions.</span>
-                </li>
-                <li>
-                  <strong>Policy decision report</strong>
-                  <span>Produced by <code>policy-decision</code>. Read pass / warn / fail / advisory outcomes, threshold refs, evidence refs, and non-conclusions.</span>
-                </li>
-                <li>
-                  <strong>PR comment summary</strong>
-                  <span>Produced by <code>pr-comment</code>. Read the reviewer action, changed axis, evidence, missing evidence, and retained boundary text.</span>
-                </li>
-                <li>
-                  <strong><code>artifact-descriptor-v0</code></strong>
-                  <span>Produced by <code>artifact-descriptor</code> or <code>sft-forecast</code>. Read source refs, artifact kind, action candidates, scope, missing evidence, and forecast non-conclusions.</span>
-                </li>
-                <li>
-                  <strong><code>operation-support-estimate-v0</code></strong>
-                  <span>Produced by <code>operation-support-estimate</code> or <code>sft-forecast</code>. Read candidate operation families, known forbidden support, unknown remainder, and confidence boundary.</span>
-                </li>
-                <li>
-                  <strong><code>forecast-cone-skeleton-v0</code></strong>
-                  <span>Produced by <code>forecast-cone-skeleton</code> or <code>sft-forecast</code>. Read horizon, finite support, path candidates, blockers, and unknown remainder.</span>
-                </li>
-                <li>
-                  <strong><code>consequence-envelope-report-v0</code></strong>
-                  <span>Produced by <code>consequence-envelope</code> or <code>sft-forecast</code>. Read affected regions, comparable axes, review recommendations, and forecast non-conclusions.</span>
-                </li>
-                <li>
-                  <strong>B10 operational artifacts</strong>
-                  <span>Produced by operational feedback commands. Read aggregation windows, evidence availability, threshold changes, ownership signals, repair adoption state, and incident correlation boundaries.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="policy-registry" class="article-section">
-              <h2>Policy and registry</h2>
-              <p>
-                Policy, registry, and schema artifacts let teams add local
-                thresholds and adapters without claiming that a policy pass is
-                architecture lawfulness.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>Organization policy</strong>
-                  <span>Warn / fail / advisory rules plus formal claim promotion boundaries.</span>
-                </li>
-                <li>
-                  <strong>Law policy templates and custom rules</strong>
-                  <span>Reusable policy shape with theorem refs, boundary refs, and non-conclusions.</span>
-                </li>
-                <li>
-                  <strong>Schema compatibility report</strong>
-                  <span>Field mappings, deprecated fields, required assumptions, and preserved non-conclusions.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="datasets" class="article-section">
-              <h2>Datasets and feedback</h2>
-              <p>
-                Dataset artifacts are empirical records. They connect PR
-                metadata, reports, and outcome observations without turning
-                correlation into causality.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Empirical datasets</strong>
-                  <span>PR metadata, before / after signatures, feature reports, theorem checks, and outcome linkage.</span>
-                </li>
-                <li>
-                  <strong>Operational feedback</strong>
-                  <span>Daily ledger, calibration review, team threshold, ownership boundary, repair adoption, incident correlation, and hypothesis refresh artifacts.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="forecasting" class="article-section">
-              <h2>SFT forecasting</h2>
-              <p>
-                Forecasting artifacts bound the input, operation support,
-                finite support, horizon, unknown remainder, and review
-                recommendations for a proposed change.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>ArtifactDescriptor</strong>
-                  <span>Source refs, action class candidates, scope, missing evidence, measurement boundary, and forecast non-conclusions.</span>
-                </li>
-                <li>
-                  <strong>OperationSupportEstimate</strong>
-                  <span>Candidate operation families, policy constraints, known forbidden support, unknown remainder, and confidence boundary.</span>
-                </li>
-                <li>
-                  <strong>ForecastConeSkeleton and ConsequenceEnvelope</strong>
-                  <span>Bounded path candidates, affected regions, comparable axes, obstruction candidates, missing boundary, and review / CI recommendations.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="diagnostics" class="article-section">
-              <h2>Diagnostic reading</h2>
-              <p>
-                Single-revision diagnostics cover static cycles, SCC size,
-                max depth, fanout, reachable cone, boundary violations,
-                abstraction violations, runtime exposure, and relation
-                complexity. Diff diagnostics cover worsened axes, improved
-                axes, unmeasured axes, evidence diff, and PR attribution
-                candidates.
-              </p>
-              <p>
-                The diagnostic reading starts with comparability. If an axis is
-                unmeasured in either side of a diff, or if the selected
-                universes differ in a way the schema cannot migrate, the
-                correct result is an explicit boundary rather than a fabricated
-                improvement or regression.
-              </p>
-              <p>
-                The practical outcome of diagnostic reading is a short review
-                sentence: what moved, why it matters, and what evidence is
-                still missing.
-              </p>
-              <div class="claim-strip">
-                <p>
-                  Diff attribution is a review cue. It is not causal proof
-                  that a PR caused an incident, rollback, or MTTR change.
-                </p>
-              </div>
-            </section>
-            <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../commands/">
-                <span>Previous</span>
-                <strong>Commands</strong>
-              </a>
-              <a href="../boundaries/">
-                <span>Next</span>
-                <strong>Boundaries</strong>
-              </a>
-            </nav>
+            <section id="core" class="article-section"><h2>Core artifacts</h2><ul class="status-list"><li><strong>Sig0</strong><span>Baseline architecture signature: components, edges, metrics, metric status, policy status, runtime refs, and unsupported constructs.</span></li><li><strong>Validation report</strong><span>Checks duplicate components, edge closure, external targets, schema shape, and policy metric status.</span></li><li><strong>Snapshot</strong><span>Wraps a signature and validation report with repository, revision, scan, policy, and extractor metadata.</span></li><li><strong>Signature diff</strong><span>Compares before and after snapshots and separates improved, worsened, unchanged, and unmeasured deltas.</span></li></ul></section>
+<section id="review" class="article-section"><h2>Review artifacts</h2><ul class="status-list"><li><strong>AIR</strong><span>Architecture Interpretation Record. Connects signatures and diffs to claims, evidence refs, coverage, theorem preconditions, and report projections.</span></li><li><strong>Theorem check</strong><span>Reports whether a formal theorem-shaped reading has the needed assumptions and bridge evidence.</span></li><li><strong>Feature report</strong><span>Turns AIR into reviewer-facing explanation of feature extension quality, witnesses, and boundaries.</span></li><li><strong>Policy decision</strong><span>Applies organization policy to the feature report and records pass, warn, block, or review-required outcomes.</span></li><li><strong>PR comment summary</strong><span>Human-readable review comment with evidence-backed action and scope.</span></li></ul></section>
+<section id="sft" class="article-section"><h2>SFT artifacts</h2><ul class="status-list"><li><strong>Artifact descriptor</strong><span>Normalizes PRD, spec, issue, or AI proposal into source refs, scope, action class candidates, missing evidence, and non-conclusions.</span></li><li><strong>Operation support estimate</strong><span>Estimates which operations the proposal supports under bounded evidence.</span></li><li><strong>Forecast cone skeleton</strong><span>Represents bounded reachable futures without claiming point prediction.</span></li><li><strong>Consequence envelope</strong><span>Projects likely review-relevant consequence regions and missing evidence.</span></li><li><strong>AI proposal governance</strong><span>Records governance pressure around AI-generated proposals and required confirmation.</span></li></ul></section>
+<section id="operational" class="article-section"><h2>Operational artifacts</h2><ul class="status-list"><li><strong>Dataset records</strong><span>PR history, feature extension, outcome linkage, and report outcome ledgers.</span></li><li><strong>Calibration records</strong><span>Review records, team threshold policies, hypothesis refresh cycles, and detectable values catalogs.</span></li><li><strong>Ownership and repair records</strong><span>Ownership boundary monitors, repair adoption records, architecture drift ledgers, and operation proposal logs.</span></li><li><strong>Incident correlation records</strong><span>Operational correlation monitors that remain empirical evidence, not causal theorem proof.</span></li></ul></section>
+<section id="retention" class="article-section"><h2>Retention</h2><p>CI should retain enough artifacts to audit a PR comment later: before/head Sig0, validation reports, snapshots, diff report, AIR, theorem check, feature report, policy decision, and generated PR comment. Use report artifact retention manifests when teams need reproducible review history.</p></section>
+<section id="diagnostic" class="article-section"><h2>Diagnostic reading</h2><p>When an artifact looks wrong, first identify whether the problem is source selection, policy input, runtime evidence, schema compatibility, validation failure, or claim projection. Do not debug a feature report before checking Sig0 and AIR.</p></section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../workflows/"><span>Previous</span><strong>Workflows</strong></a><a class="page-nav-next" href="../reading-output/"><span>Next</span><strong>Reading Output</strong></a></nav>
           </div>
         </div>
       </section>
     </main>
-
     <footer class="site-footer">
       <div class="site-shell footer-inner">
         <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
-        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
-          Repository
-        </a>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
       </div>
     </footer>
   </body>

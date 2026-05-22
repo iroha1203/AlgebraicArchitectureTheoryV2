@@ -18,9 +18,11 @@ signature trajectories, and bounded software evolution.
   Hiroyuki Nakahata. It models software evolution as field-shaped
   computation over field state, operation support, policy, forecast
   cones, consequence envelopes, governance interventions, and feedback.
-- Architecture Signature (ArchSig) is the diagnostic and tooling surface
-  connected to AAT and SFT. It records multi-axis measurements and review
-  artifacts without treating them as proofs of architecture correctness.
+- Architecture Signature (ArchSig) is an AI-native Architecture Evidence
+  Layer connected to AAT and SFT. It turns code changes into reviewable
+  architectural signals, grounds them in bounded structural, semantic, or
+  operational evidence, and does not treat review artifacts as proofs of
+  architecture correctness.
 
 ## Relationship between AAT and SFT
 
@@ -63,6 +65,11 @@ a proof system.
 - SFT Research Program and Boundaries: https://iroha1203.dev/sft/references/research-program/
 - SFT Glossary: https://iroha1203.dev/sft/references/glossary/
 - ArchSig manual: https://iroha1203.dev/archsig/
+- ArchSig Why: https://iroha1203.dev/archsig/why/
+- ArchSig Getting Started: https://iroha1203.dev/archsig/getting-started/
+- ArchSig CI and PR Review: https://iroha1203.dev/archsig/ci/
+- ArchSig Signal Anatomy: https://iroha1203.dev/archsig/anatomy/
+- ArchSig Semantic AIR: https://iroha1203.dev/archsig/semantic-air/
 - Outreach: https://iroha1203.dev/outreach/
 
 ## Reading order

@@ -3,21 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta
-      name="description"
-      content="ArchSig operational feedback manual for B10 artifacts, commands, reading rules, and non-conclusions."
-    >
+    <meta name="description" content="Operational feedback manual for calibration records, thresholds, ownership monitors, repair adoption, incident correlation, and hypothesis refresh.">
     <title>ArchSig Operational Feedback</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/operational-feedback/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig Operational Feedback">
-    <meta property="og:description" content="ArchSig operational feedback manual for B10 artifacts, commands, reading rules, and non-conclusions.">
+    <meta property="og:description" content="Operational feedback manual for calibration records, thresholds, ownership monitors, repair adoption, incident correlation, and hypothesis refresh.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/operational-feedback/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig Operational Feedback">
-    <meta name="twitter:description" content="ArchSig operational feedback manual for B10 artifacts, commands, reading rules, and non-conclusions.">
+    <meta name="twitter:description" content="Operational feedback manual for calibration records, thresholds, ownership monitors, repair adoption, incident correlation, and hypothesis refresh.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -25,16 +22,12 @@
     <link rel="alternate" hreflang="x-default" href="./">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
-      rel="stylesheet"
-    >
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../../assets/site.css">
     <script defer src="../../assets/site.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-
     <header class="site-header" data-site-header>
       <div class="site-shell header-inner">
         <a class="brand" href="../../" aria-label="AAT SFT home">
@@ -51,178 +44,36 @@
         </nav>
       </div>
     </header>
-
     <main id="main">
       <section class="article-hero section-band">
         <div class="site-shell">
-          <nav class="breadcrumb" aria-label="Breadcrumb">
-            <a href="../../">Home</a>
-            <a href="../">ArchSig</a>
-            <span>Operational Feedback</span>
-          </nav>
-          <p class="eyebrow">ArchSig Manual</p>
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Operational Feedback</span></nav>
+          <p class="eyebrow">Use ArchSig</p>
           <h1>Turn review history into calibration pressure.</h1>
-          <p class="lede">
-            Operational feedback connects signatures to outcomes, thresholds,
-            ownership, repairs, incidents, and hypotheses so teams can tune the
-            signals that shape future architecture.
-          </p>
+          <p class="lede">Operational feedback lets teams learn which architecture signals mattered after review, incidents, repairs, and ownership changes.</p>
         </div>
       </section>
-
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title">
-              <h2 id="toc-title">On this page</h2>
-              <ol>
-                <li><a href="#commands">Commands</a></li>
-                <li><a href="#artifacts">Artifacts</a></li>
-                <li><a href="#reading-rules">Reading rules</a></li>
-                <li><a href="#non-conclusions">Non-conclusions</a></li>
-              </ol>
-            </nav>
-            <div class="source-panel" data-sidebar-open="true">
-              <h2>ArchSig manual</h2>
-              <ul>
-                <li><a href="../">Manual overview</a></li>
-                <li><a href="../getting-started/">Getting Started</a></li>
-                <li><a href="../inputs/">Inputs and Configuration</a></li>
-                <li><a href="../reading-output/">Reading the Output</a></li>
-                <li><a href="../air/">AIR</a></li>
-                <li><a href="../commands/">Commands</a></li>
-                <li><a href="../artifacts/">Artifacts</a></li>
-                <li><a href="../boundaries/">Boundaries</a></li>
-                <li><a href="../workflows/">Workflows</a></li>
-                <li><a href="../schemas/">Schemas</a></li>
-                <li><a href="./" aria-current="page">Operational Feedback</a></li>
-                <li><a href="../examples/">Examples</a></li>
-              </ul>
-            </div>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#commands">Commands</a></li><li><a href="#records">Feedback records</a></li><li><a href="#calibration">Calibration</a></li><li><a href="#incidents">Incidents</a></li><li><a href="#non">Non-conclusions</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/" aria-current="page">Operational Feedback</a></li></ul></div>
           </aside>
-
           <div class="article-main">
-            <section id="commands" class="article-section">
-              <h2>Commands</h2>
-              <p>
-                The daily ledger joins outcome linkage and drift ledger inputs
-                inside a specified aggregation window. Other B10 commands emit
-                canonical operational artifacts for calibration and review.
-              </p>
-              <p>
-                Use this chapter after ArchSig is already part of review. It
-                explains how teams learn from report outcomes without turning
-                noisy operational history into proof.
-              </p>
-              <p>
-                Operational feedback is where ArchSig stops being a one-time
-                report and becomes a calibration loop. It records how review
-                signals, thresholds, ownership boundaries, repairs, incidents,
-                and hypotheses behave over time while keeping private and
-                missing data explicit.
-              </p>
-              <ul class="status-list">
-                <li>
-                  <strong>report-outcome-daily-ledger</strong>
-                  <span>Aggregates outcome linkage and architecture drift ledger records for a bounded window.</span>
-                </li>
-                <li>
-                  <strong>calibration-review-record and team-threshold-policy</strong>
-                  <span>Track false positive / false negative review and team-specific CI policy tuning.</span>
-                </li>
-                <li>
-                  <strong>ownership-boundary-monitor, repair-adoption-record, incident-correlation-monitor, hypothesis-refresh-cycle</strong>
-                  <span>Track operational boundary signals, repair decisions, correlations, and empirical hypothesis updates.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="artifacts" class="article-section">
-              <h2>Artifacts</h2>
-              <p>
-                Operational artifacts are empirical and process records. They
-                preserve unavailable, private, missing, and unmeasured data
-                states instead of rounding them to measured zero.
-              </p>
-              <p>
-                The purpose is not to prove that a metric caused an incident.
-                The purpose is to make review policy adjustable: which warnings
-                were useful, which were noisy, which teams need different
-                thresholds, and which boundaries require better evidence.
-              </p>
-              <ul class="term-list">
-                <li>
-                  <strong>Report outcome daily ledger</strong>
-                  <span>Daily aggregation over outcome linkage and drift evidence.</span>
-                </li>
-                <li>
-                  <strong>Calibration and threshold artifacts</strong>
-                  <span>Review evidence for tuning report sensitivity and CI modes.</span>
-                </li>
-                <li>
-                  <strong>Ownership, repair, incident, and hypothesis artifacts</strong>
-                  <span>Operational records that support review, not formal theorem promotion.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section id="reading-rules" class="article-section">
-              <h2>Reading rules</h2>
-              <p>
-                Reviewer decisions, team thresholds, ownership signals, repair
-                adoption, incident correlation, and retained hypotheses are
-                calibration inputs. They are not proof that a report, policy,
-                or repair is correct.
-              </p>
-              <p>
-                This page should be read as the operational counterpart of
-                measured zero. Unknown outcomes, private incident records,
-                missing ownership data, and incomparable windows are first-class
-                states, not data-cleaning inconvenience.
-              </p>
-              <div class="claim-strip">
-                <p>
-                  Unavailable, private, missing, and unmeasured outcome data
-                  must stay separate from measured-zero evidence.
-                </p>
-              </div>
-            </section>
-
-            <section id="non-conclusions" class="article-section">
-              <h2>Non-conclusions</h2>
-              <p>
-                B10 artifacts do not conclude incident causality, formal claim
-                promotion, theorem precondition discharge, extractor
-                completeness, architecture lawfulness, or semantic
-                preservation.
-              </p>
-              <p>
-                Their value is narrower and more practical: they help teams
-                tune thresholds, decide what evidence to collect next, and keep
-                recurring review signals honest.
-              </p>
-            </section>
-            <nav class="page-nav" aria-label="Reading sequence">
-              <a href="../schemas/">
-                <span>Previous</span>
-                <strong>Schemas</strong>
-              </a>
-              <a href="../examples/">
-                <span>Next</span>
-                <strong>Examples</strong>
-              </a>
-            </nav>
+            <section id="commands" class="article-section"><h2>Commands</h2><p>Operational commands produce and validate datasets for PR history, feature extension outcomes, report outcomes, calibration reviews, team thresholds, ownership boundaries, repair adoption, incident correlations, and hypothesis refresh cycles.</p></section>
+<section id="records" class="article-section"><h2>Feedback records</h2><ul class="status-list"><li><strong>Report outcome ledger</strong><span>Records whether review signals were accepted, rejected, suppressed, or converted into action.</span></li><li><strong>Calibration review record</strong><span>Documents whether thresholds and interpretations should change.</span></li><li><strong>Team threshold policy</strong><span>Captures organization-specific warning and gate levels.</span></li><li><strong>Ownership boundary monitor</strong><span>Tracks whether ownership crossings create review pressure.</span></li><li><strong>Repair adoption record</strong><span>Tracks whether suggested repairs were adopted and whether later signals changed.</span></li></ul></section>
+<section id="calibration" class="article-section"><h2>Calibration</h2><p>Calibration makes ArchSig more useful for a specific team. It can adjust thresholds, suppress known baseline risks, prioritize confirmed witnesses, and refine semantic observations. Calibration records should preserve why a decision was made.</p></section>
+<section id="incidents" class="article-section"><h2>Incidents</h2><p>Incident correlation monitors can connect architecture signals with operational outcomes. Treat this as empirical evidence. It can guide hypotheses, thresholds, and review emphasis, but it is not causal proof.</p></section>
+<section id="non" class="article-section"><h2>Non-conclusions</h2><ul class="status-list"><li><strong>Correlation is not causation</strong><span>Incident linkage supports empirical learning, not a theorem.</span></li><li><strong>Thresholds are local</strong><span>A team threshold policy is not a universal architecture law.</span></li><li><strong>Feedback is not retroactive proof</strong><span>Later outcome data can calibrate the signal, not change what the original artifact observed.</span></li></ul></section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../schemas/"><span>Previous</span><strong>Schemas</strong></a></nav>
           </div>
         </div>
       </section>
     </main>
-
     <footer class="site-footer">
       <div class="site-shell footer-inner">
         <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
-        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">
-          Repository
-        </a>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
       </div>
     </footer>
   </body>
