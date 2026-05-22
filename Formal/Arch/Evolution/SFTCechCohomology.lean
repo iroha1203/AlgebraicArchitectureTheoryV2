@@ -159,6 +159,46 @@ def IsCechConeCoboundary
     (zero : CechCone0 model source horizon) : Prop :=
   Nonempty (CechConeCoboundary zero)
 
+/--
+Concrete selected `H1 = 0` vocabulary for the cone-valued Cech complex.
+
+The theorem-bearing content is the selected statement that every concrete
+cocycle in this source/horizon slice is a coboundary.  This is still relative
+to the selected finite cover and does not assert full Cech cohomology.
+-/
+structure CechConeH1Vanishes
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    (model : FiniteSFTModel cover OperationG OperationL)
+    (source : Global) (horizon : Nat) where
+  everyCocycleCoboundary :
+    ∀ (zero : CechCone0 model source horizon)
+      (one : CechCone1 cover model source horizon),
+      IsCechConeCocycle zero one -> IsCechConeCoboundary zero
+  h1Boundary : Prop
+  selectedFiniteBoundary : Prop
+  nonConclusions : Prop
+
+namespace CechConeH1Vanishes
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {cover : UniformFiniteFieldCover Global Index Local}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {model : FiniteSFTModel cover OperationG OperationL}
+variable {source : Global} {horizon : Nat}
+
+/-- Selected H1 vanishing turns a concrete cocycle into a coboundary. -/
+theorem cocycle_is_coboundary
+    (h1 : CechConeH1Vanishes model source horizon)
+    (zero : CechCone0 model source horizon)
+    (one : CechCone1 cover model source horizon)
+    (hCocycle : IsCechConeCocycle zero one) :
+    IsCechConeCoboundary zero :=
+  h1.everyCocycleCoboundary zero one hCocycle
+
+end CechConeH1Vanishes
+
 namespace CechConeCoboundary
 
 variable {Global : Type u} {Index : Type v} {Local : Type w}
@@ -202,5 +242,72 @@ theorem cechConeCocycle_of_finiteLocalFamily
       (CechCone0.ofFiniteLocalFamily family)
       (CechCone1.ofFiniteLocalFamily family) :=
   ⟨fun _simplex => hCompatible, hBoundary⟩
+
+/--
+Finite descent assumptions strengthened with concrete selected H1 vanishing.
+
+This is the explicit bridge package used by the `H1 = 0 -> finite descent`
+accessor.  It keeps the finite exact descent assumptions separate from the
+selected cohomology statement.
+-/
+structure CechH1FiniteDescentAssumptions
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type}
+    (exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance)
+    (source : Global) (horizon : Nat) where
+  descentAssumptions : FiniteExactDescentAssumptions exactModel
+  h1Vanishes : CechConeH1Vanishes exactModel.descentModel source horizon
+  h1ToDescentBoundary : Prop
+  selectedExactBoundary : Prop
+  nonConclusions : Prop
+
+namespace CechH1FiniteDescentAssumptions
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {Governance : Type}
+variable {exactModel :
+  FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+variable {source : Global} {horizon : Nat}
+
+/-- The bridge package records concrete H1 vanishing for the selected slice. -/
+def RecordsH1Vanishes
+    (assumptions :
+      CechH1FiniteDescentAssumptions exactModel source horizon) : Prop :=
+  assumptions.h1Vanishes.h1Boundary ∧
+    assumptions.h1Vanishes.selectedFiniteBoundary
+
+/-- Non-conclusions remain explicit across H1 and finite descent assumptions. -/
+def RecordsNonConclusions
+    (assumptions :
+      CechH1FiniteDescentAssumptions exactModel source horizon) : Prop :=
+  assumptions.nonConclusions ∧ assumptions.h1Vanishes.nonConclusions ∧
+    assumptions.descentAssumptions.RecordsNonConclusions
+
+end CechH1FiniteDescentAssumptions
+
+/--
+Concrete selected `H1 = 0` plus finite exact descent assumptions imply the
+selected finite ForecastCone descent package.
+
+The result is relative to the selected finite exact model and explicit gluing
+assumptions; it is not a theorem that every finite cover satisfies descent.
+-/
+theorem h1_vanishes_implies_finite_descent
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (assumptions :
+      CechH1FiniteDescentAssumptions exactModel source horizon) :
+    Nonempty
+      (FiniteSelectedForecastConeDescentPackage
+        exactModel.descentModel source horizon) :=
+  finiteExactForecastConeDescentPackage_of_assumptions
+    assumptions.descentAssumptions
 
 end Formal.Arch
