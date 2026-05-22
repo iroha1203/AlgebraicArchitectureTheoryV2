@@ -321,6 +321,72 @@ theorem governanceComponent_records_desired_preservation
     finite_governance_preserves_desired_family
       package.governancePackage family hDesired
 
+/-- Read finite exact governance-cutting soundness as a final governance component. -/
+def governanceComponent_of_finiteExactGovernanceSoundness
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon)
+    (failure :
+      FiniteDescentFailure exactModel.descentModel source horizon)
+    (hBadClassified :
+      ∀ witness,
+        soundness.obstructionGovernance.obstructionPackage.classifier.classify
+            failure = some witness ->
+        soundness.governancePackage.target.bad witness) :
+    FundamentalGovernanceComponent :=
+  governanceComponent_of_finiteObstructionGovernance
+    soundness.obstructionGovernance failure hBadClassified
+
+/-- The finite exact governance component records selected bad-witness cutting. -/
+theorem governanceComponent_records_finiteExact_cut
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon)
+    (failure :
+      FiniteDescentFailure exactModel.descentModel source horizon)
+    (hBadClassified :
+      ∀ witness,
+        soundness.obstructionGovernance.obstructionPackage.classifier.classify
+            failure = some witness ->
+        soundness.governancePackage.target.bad witness) :
+    (governanceComponent_of_finiteExactGovernanceSoundness
+      soundness failure hBadClassified).governanceAsObstructionCutting :=
+  finiteExact_governance_cuts_bad_failure
+    soundness failure hBadClassified
+
+/-- The finite exact governance component records desired-family preservation. -/
+theorem governanceComponent_records_finiteExact_desired_preservation
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (soundness :
+      FiniteExactGovernanceCuttingSoundness exactModel source horizon)
+    (failure :
+      FiniteDescentFailure exactModel.descentModel source horizon)
+    (hBadClassified :
+      ∀ witness,
+        soundness.obstructionGovernance.obstructionPackage.classifier.classify
+            failure = some witness ->
+        soundness.governancePackage.target.bad witness) :
+    (governanceComponent_of_finiteExactGovernanceSoundness
+      soundness failure hBadClassified).desiredFamiliesPreserved :=
+  fun family hDesired =>
+    finiteExact_governance_preserves_desired_family
+      soundness family hDesired
+
 /-- Read a minimal consequence-envelope package as the final review component. -/
 def reviewComponent_of_minimalEnvelopePackage
     {ConePath : Type u} {MinimalEnvelope : Type v}
@@ -349,6 +415,108 @@ theorem reviewComponent_records_minimalEnvelope
   fun _OtherEnvelope otherProjection hSound =>
     SFTTheoremRoadmap.MinimalConsequenceEnvelopePackage.minimal_consequenceEnvelope_factors
       package otherProjection hSound
+
+/--
+Finite obstruction-aware review envelope bridge.
+
+The bridge connects a finite selected obstruction review projection with the
+minimal consequence-envelope universal property.  It remains relative to the
+selected finite model and does not assert operational optimality of review
+decisions.
+-/
+structure FiniteObstructionAwareReviewEnvelopeBridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    (model : FiniteSFTModel cover OperationG OperationL)
+    (source : Global) (horizon : Nat)
+    (ConePath : Type z) (MinimalEnvelope : Type u)
+    (Decision : Type v) where
+  minimalPackage :
+    SFTTheoremRoadmap.MinimalConsequenceEnvelopePackage.{z, u, v}
+      ConePath MinimalEnvelope
+  reviewProjection :
+    FiniteObstructionReviewProjection model source horizon Decision
+  pathObstruction :
+    ConePath -> FiniteDescentObstructionWitness model source horizon
+  obstructionAware :
+    SFTTheoremRoadmap.ObstructionAwareReviewEquivalence
+      minimalPackage.reviewEquivalent
+      (fun path => reviewProjection.decide (pathObstruction path))
+  bridgeBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteObstructionAwareReviewEnvelopeBridge
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {cover : UniformFiniteFieldCover Global Index Local}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {source : Global} {horizon : Nat}
+variable {model : FiniteSFTModel cover OperationG OperationL}
+variable {ConePath : Type z} {MinimalEnvelope : Type u}
+variable {Decision : Type v}
+
+/-- The selected obstruction decision projection factors through the minimal envelope. -/
+theorem obstructionDecision_factors
+    (bridge :
+      FiniteObstructionAwareReviewEnvelopeBridge
+        model source horizon ConePath MinimalEnvelope Decision) :
+    ∃ factor : MinimalEnvelope -> Decision,
+      ∀ path,
+        factor (bridge.minimalPackage.projection path) =
+          bridge.reviewProjection.decide (bridge.pathObstruction path) :=
+  SFTTheoremRoadmap.MinimalConsequenceEnvelopePackage.minimal_consequenceEnvelope_factors
+    bridge.minimalPackage
+    (fun path => bridge.reviewProjection.decide (bridge.pathObstruction path))
+    (SFTTheoremRoadmap.decisionSoundProjection_of_obstructionAware
+      bridge.obstructionAware)
+
+/-- Non-conclusions remain explicit across review and minimal-envelope boundaries. -/
+def RecordsNonConclusions
+    (bridge :
+      FiniteObstructionAwareReviewEnvelopeBridge
+        model source horizon ConePath MinimalEnvelope Decision) : Prop :=
+  bridge.nonConclusions ∧ bridge.minimalPackage.nonConclusions ∧
+    bridge.reviewProjection.nonConclusions
+
+end FiniteObstructionAwareReviewEnvelopeBridge
+
+/-- Read an obstruction-aware minimal envelope bridge as the final review component. -/
+def reviewComponent_of_obstructionAwareEnvelopeBridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {source : Global} {horizon : Nat}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {ConePath : Type z} {MinimalEnvelope : Type u} {Decision : Type v}
+    (bridge :
+      FiniteObstructionAwareReviewEnvelopeBridge
+        model source horizon ConePath MinimalEnvelope Decision) :
+    FundamentalReviewComponent where
+  minimalDecisionPreservingEnvelope :=
+    ∃ factor : MinimalEnvelope -> Decision,
+      ∀ path,
+        factor (bridge.minimalPackage.projection path) =
+          bridge.reviewProjection.decide (bridge.pathObstruction path)
+  reviewBoundary :=
+    bridge.bridgeBoundary ∧ bridge.minimalPackage.envelopeBoundary ∧
+      bridge.reviewProjection.soundDecisionBoundary
+  nonConclusions := bridge.RecordsNonConclusions
+
+/-- The strengthened review component records obstruction-aware factorization. -/
+theorem reviewComponent_records_obstructionAware_minimalEnvelope
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {source : Global} {horizon : Nat}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {ConePath : Type z} {MinimalEnvelope : Type u} {Decision : Type v}
+    (bridge :
+      FiniteObstructionAwareReviewEnvelopeBridge
+        model source horizon ConePath MinimalEnvelope Decision) :
+    (reviewComponent_of_obstructionAwareEnvelopeBridge
+      bridge).minimalDecisionPreservingEnvelope :=
+  bridge.obstructionDecision_factors
 
 /-- Read closed-loop calibration package data as the final calibration component. -/
 def calibrationComponent_of_closedLoopPackage
