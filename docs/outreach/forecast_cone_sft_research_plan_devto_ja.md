@@ -2,30 +2,19 @@
 
 ## TL;DR
 
-Algebraic Architecture Theory (AAT) / Software Field Theory (SFT) は、ソフトウェアアーキテクチャを「今のコードの形」だけでなく、「次にどんな未来が到達可能になるか」として読むための研究です。
-
-この記事では、その見方を `ForecastCone` から始めて、modularity、technical debt、review、governance、learning を一つの研究計画として読むところまで進みます。
-
-一文で言えば、SFT が目指しているのはこういうことです。
+この記事では、Software Field Theory (SFT) の `ForecastCone` から始めて、modularity、technical debt、review、governance、learning を一つの研究計画として読んでいきます。
 
 > 変更がどんな未来を開くかを見えるようにし、危ない未来は早めに閉じ、よい未来へ進みやすい開発環境を作る。
 
-これはまだ研究計画です。
-すべてが証明済みだと言っているわけではありません。
-
-しかし、この定理像が成立するなら、architecture、technical debt、review、governance、AI coding agents の安全性は、すべて `ForecastCone` という同じ対象のまわりで読み直せるようになります。
+この定理像が成立すると、architecture、technical debt、review、governance、AI coding agents の安全性は、すべて `ForecastCone` という同じ対象のまわりで読み直せるようになります。
 
 この構想は Lean でも形式化を進めており、`ForecastCone` や `ConsequenceEnvelope` を小さな record / theorem package として扱える形に分解しています。
 
 ## AAT / SFT の全体像は前記事へ
 
-AAT / SFT の全体像は、先にこちらの記事で紹介しました。
+AAT / SFT の全体像は、こちらの記事で紹介しています。
 
 [Software Architecture as a Field: Asking Better Questions About Software Evolution](https://blog.iroha1203.dev/software-architecture-as-a-field)
-
-前記事では、ソフトウェアアーキテクチャを静的な構造だけでなく、変更を引き寄せ、制約し、増幅し、観測可能にする `field` として見る立場を説明しました。
-
-この記事では、その続きとして SFT の研究計画を扱います。
 
 ## 問題提起: 速く書けることと、よく進化することは違う
 
@@ -33,7 +22,7 @@ AI coding agents によって、コードを書く速度は大きく上がりま
 
 しかし、コードを速く書けることと、ソフトウェアが健全に進化することは同じではありません。
 
-ひとつの PRD、ひとつの issue、ひとつのレビュー方針、ひとつの CI rule は、単に「今の変更」を決めるだけではありません。
+PRD、issue、レビュー方針、CI rule は、単に「今の変更」を決めるだけではありません。
 それらは、次に自然に出てくる PR の形、触られやすいモジュール、見落とされやすい境界、通りやすい shortcut を変えます。
 
 たとえば Vibe coding では、曖昧な PRD からでも、AI agent がそれらしい実装をすぐに作れます。
@@ -45,16 +34,14 @@ AI coding agents によって、コードを書く速度は大きく上がりま
 問題は、AI が悪いコードを書くことではありません。
 曖昧な artifact と高速な生成が組み合わさると、悪い future path も高速に開いてしまうことです。
 
-もう一つ重要なのは、AI agent にとってコードベースそのものが最大のプロンプトになることです。
+AI agent にとって、コードベースそのものが最大のプロンプトになることも重要です。
 
 既存コードに shortcut が多ければ、agent はその pattern を学びやすい。
 境界が曖昧なら、曖昧な場所に自然に変更を足しやすい。
 悪い場は、AI によって増幅され、より大きな technical debt へ育ってしまいます。
 
 従来の review、CI、metrics は、多くの場合、現在の diff や過去に起きた結果を見ます。
-もちろんそれは必要です。
-
-しかし AI 時代には、それだけでは足りません。
+AI 時代には、それだけでは足りません。
 
 問題は「この PR が今通るか」だけではなく、
 
@@ -133,6 +120,8 @@ codebase
 
 そして、その field のもとで到達可能になる未来の範囲を `ForecastCone` と呼びます。
 
+![PRD and pull requests shaping a forecast cone](assets/forecast-cone-prd-pr-force.png)
+
 ForecastCone は未来予言ではありません。
 
 SFT は、
@@ -177,8 +166,7 @@ Modularity
 従来の modularity は、API、依存方向、責務分離のように、現在の構造として語られがちです。
 SOLID、Layered Architecture、Clean Architecture、Design Patterns も、多くの場合、人間が責務を理解し、変更箇所を局所化し、依存を制御するための言葉として使われてきました。
 
-SFT はそれらを否定しません。
-そこに、未来の条件を足します。
+SFT はその延長で、「未来が貼り合わさるか」という条件を足します。
 
 本当に modular な境界なら、`Pricing` 側の未来と `Checkout` 側の未来を局所的に考えたあと、それらを一つの checkout future として貼り合わせられるはずです。
 境界は、ただの線ではなく、未来が壊れずに越えられる場所になります。
@@ -259,7 +247,7 @@ Governance
 
 > クーポン周りは危ないので、必ず senior engineer が全部レビューしてください。
 
-これは一応 guardrail です。
+これは一つの guardrail です。
 でも、何を閉じているのかが曖昧です。
 そして、だいたい重い。
 
@@ -300,7 +288,7 @@ Forecast が外れたなら、それは単なる失敗ではありません。
 
 ## アトラクターエンジニアリングと ArchSig
 
-この大定理は、SFT だけで閉じているわけではありません。
+この大定理は、AAT と ArchSig に接続して初めて実務の手触りを持ちます。
 
 AAT は、変更が何を保存し、何を破るかを読むための局所理論です。
 ArchSig は、その保存や破れを repository、PR、review、CI、incident から観測するための signature layer です。
@@ -323,13 +311,38 @@ SFT
 悪い architecture は、同じ shortcut を何度も選ばせる。
 
 SFT の言葉では、これは reachable futures の形が変わるということです。
-ある governance intervention は、悪い future path を閉じる。
-ある type boundary は、良い local evolution を自然にする。
-ある review rule は、危険な path を観測可能にする。
+governance intervention は悪い future path を閉じ、type boundary は良い local evolution を自然にし、review rule は危険な path を観測可能にする。
 
-つまりアトラクターエンジニアリングは、ForecastCone の形を変える実践です。
+アトラクターエンジニアリングは、ForecastCone の形を変える実践です。
 ArchSig は、その変化を観測するための道具です。
 そして SFT は、その観測を大定理の各要素へ接続する理論です。
+
+## 未来の開発現場のスケッチ
+
+SFT が目指しているのは、開発者の代わりに未来を決める system ではありません。
+開発者、AI agent、review、CI が、「この変更の先に何が起きそうか」を同じ地図の上で見られる開発現場です。
+
+たとえば、曖昧な PRD が来る。
+AI agent はすぐに実装案を出す。
+同時に workbench は、その変更が開きそうな未来の広がりを描き、review に必要な差分だけを見える形にする。
+
+```text
+PRD
+  -> 実装案
+  -> 到達しそうな未来の範囲
+  -> review に必要な差分
+  -> review / CI / governance
+  -> 実際の結果
+  -> 次の見積もりへ反映
+```
+
+reviewer は、diff の全行を最初から読む前に、どの未来が危ないかを見る。
+CI は、単に test が通るかだけでなく、閉じたいリスクが残っていないかを確認する。
+AI agent は、既存の shortcut を真似るだけでなく、より良い未来を開く実装案を優先する。
+
+そして実際の PR、incident、review comment は、次の予測を更新する材料になる。
+
+SFT が考える、未来の開発現場のスケッチです。
 
 ## CS / Software Engineering へのインパクト
 
@@ -339,7 +352,6 @@ SFT は、この問いを AI 時代の開発環境で改めて扱おうとして
 
 ソフトウェア工学は長いあいだ、人間の認知を中心に設計論やアーキテクチャ論を発展させてきました。
 
-それは自然なことです。
 ソフトウェアは複雑で、人間が読めなければ保守できない。
 だから私たちは、責務分離、情報隠蔽、凝集度、結合度、layering、clean architecture、bounded context といった概念を通じて、複雑さを人間が扱える形にしてきました。
 
@@ -359,26 +371,24 @@ SFT は、この問いを AI 時代の開発環境で改めて扱おうとして
 
 この見方では、アーキテクチャの議論は「人間の理解しやすさ」から「未来の到達可能性」へ広がります。
 
-- この境界は、人間にとって分かりやすいだけでなく、未来を局所的に貼り合わせられるか
-- この PR は、今安全なだけでなく、次の変更をどの方向へ誘導するか
-- この metric は、測りやすいだけでなく、未来の違いを保存しているか
-- この review rule は、作業を止めるだけでなく、悪い未来を閉じてよい未来を残しているか
-- この technical debt は、単に読みにくいのではなく、どの gluing failure として現れているか
-- この AI proposal は、単体で正しいだけでなく、他の proposal と安全に commute するか
-- この subsystem は、理解可能かどうかだけでなく、repair 可能な basin にまだいるか
+- この境界は、未来を局所的に貼り合わせられるか
+- この PR は、次の変更をどの方向へ誘導するか
+- この metric は、未来の違いを保存しているか
+- この review rule は、悪い未来を閉じてよい未来を残しているか
+- この technical debt は、どの gluing failure として現れているか
 
 こうした問いは、現場ではすでに存在しています。
 ただし、多くの場合、それらは経験、直感、レビューコメント、incident memory、組織文化の中に分散しています。
 
 SFT は、それらを計算可能な理論対象へ近づけたい。
 
-もしこの方向が成立するなら、software engineering は単なる「複雑なものを人間が理解しやすくする技術」から、
+この方向が成立するなら、software engineering は「複雑なものを人間が理解しやすくする技術」から、
 
 > software evolution を観測し、計算し、統治する科学
 
-へ近づくかもしれません。
+へ近づいていきます。
 
-そのとき、中心概念はかなり違って見えるようになります。
+そのとき、中心概念はかなり違って見えます。
 
 ```text
 architecture
@@ -413,10 +423,10 @@ lifecycle
 
 この研究計画は、Lean でも形式化を進めています。
 
-Lean でやりたいのは、SFT の語彙を「雰囲気のある比喩」で終わらせないことです。
+Lean でやりたいのは、SFT の語彙を比喩で終わらせないことです。
 
 `field`、`ForecastCone`、`ConsequenceEnvelope`、`governance update` のような言葉を、証明対象になる小さな部品へ分けていく。
-そうすると、研究の大きな構想が、少しずつ型、record、theorem package として触れる形になります。
+研究の大きな構想が、少しずつ型、record、theorem package として触れる形になります。
 
 現在は、次のような部品を形式化しています。
 
@@ -441,9 +451,9 @@ computably governed
 typed boundary failure
 ```
 
-という形の assembly を作る。
+という形の assembly を作っています。
 
-この形式化によって、SFT は「かっこいい言葉」ではなく、どこまでが theorem で、どこからが modeling / tooling / empirical boundary なのかを追跡できる研究プログラムになります。
+この形式化によって、SFT はどこまでが theorem で、どこからが modeling / tooling / empirical boundary なのかを追跡できる研究プログラムになります。
 
 ## まとめ
 
@@ -451,7 +461,7 @@ ForecastCone は、未来を予言するための道具ではありません。
 
 明示された modeling boundary、operation support、policy、observation boundary、horizon のもとで、ソフトウェア進化の到達可能な未来を計算対象にするための道具です。
 
-SFT の大きな賭けは、そこから software engineering の中心概念をもう一度組み立てられるのではないか、ということです。
+SFT の大きな賭けは、そこから software engineering の中心概念をもう一度組み立てることです。
 
 ```text
 Architecture is not only the shape of present code.
