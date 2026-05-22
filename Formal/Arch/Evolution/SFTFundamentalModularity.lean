@@ -1,5 +1,6 @@
 import Formal.Arch.Evolution.SFTTheoremRoadmap
 import Formal.Arch.Evolution.SFTDescentObstruction
+import Formal.Arch.Evolution.SFTAgenticConfluence
 
 /-!
 Final conservative assembly surface for the SFT roadmap.
@@ -728,6 +729,54 @@ theorem agenticComponent_records_confluence
       package hTermination hConfluence hDescent hInterface hPolicy).fairInterleavingsConverge :=
   agenticComponent_records_agenticConfluence
     package hTermination hConfluence hDescent hInterface hPolicy
+
+/-- Read a Newman-style confluence kernel as the final agentic component. -/
+def agenticComponent_of_newmanStyleConfluenceKernel
+    {Interleaving : Type u} {ConeQuotient : Type v}
+    (kernel :
+      SFTAgenticConfluence.NewmanStyleConfluenceKernel
+        Interleaving ConeQuotient)
+    (_hTermination : kernel.localTermination)
+    (_hConfluence : kernel.localConfluence)
+    (_hDescent : kernel.forecastConeDescent)
+    (_hInterface : kernel.interfaceConstraintsPreserved)
+    (_hPolicy : kernel.policiesCommutationInvariant) :
+    FundamentalAgenticComponent :=
+  agenticComponent_of_agenticConfluencePackage
+    kernel.agenticPackage _hTermination _hConfluence _hDescent
+      _hInterface _hPolicy
+
+/-- The final agentic component records Newman-style fair interleaving convergence. -/
+theorem agenticComponent_records_newmanStyle_confluence
+    {Interleaving : Type u} {ConeQuotient : Type v}
+    (kernel :
+      SFTAgenticConfluence.NewmanStyleConfluenceKernel
+        Interleaving ConeQuotient)
+    (hTermination : kernel.localTermination)
+    (hConfluence : kernel.localConfluence)
+    (hDescent : kernel.forecastConeDescent)
+    (hInterface : kernel.interfaceConstraintsPreserved)
+    (hPolicy : kernel.policiesCommutationInvariant) :
+    (agenticComponent_of_newmanStyleConfluenceKernel kernel hTermination
+      hConfluence hDescent hInterface hPolicy).fairInterleavingsConverge :=
+  kernel.agenticPackage_records_newmanStyle_confluence
+    hTermination hConfluence hDescent hInterface hPolicy
+
+/-- The final agentic component keeps Newman-style non-conclusions explicit. -/
+theorem agenticComponent_records_newmanStyle_nonConclusions
+    {Interleaving : Type u} {ConeQuotient : Type v}
+    (kernel :
+      SFTAgenticConfluence.NewmanStyleConfluenceKernel
+        Interleaving ConeQuotient)
+    (hTermination : kernel.localTermination)
+    (hConfluence : kernel.localConfluence)
+    (hDescent : kernel.forecastConeDescent)
+    (hInterface : kernel.interfaceConstraintsPreserved)
+    (hPolicy : kernel.policiesCommutationInvariant)
+    (hNonConclusions : kernel.nonConclusions) :
+    (agenticComponent_of_newmanStyleConfluenceKernel kernel hTermination
+      hConfluence hDescent hInterface hPolicy).nonConclusions :=
+  hNonConclusions
 
 end SFTFundamentalModularity
 end Formal.Arch
