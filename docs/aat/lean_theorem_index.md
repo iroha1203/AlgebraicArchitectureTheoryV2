@@ -2440,6 +2440,12 @@ Cech cohomology、operational governance effectiveness、Fundamental Modularity 
 | `FiniteExactFailureClassifierCompleteness.records_exactCoverBoundary` | `theorem` | finite exact classifier completeness package が exact cover boundary を保持することを取り出す。 | `proved accessor` |
 | `FiniteExactFailureClassifierCompleteness.records_finiteModelBoundary` | `theorem` | finite model boundary を保持することを取り出す。 | `proved accessor` |
 | `finiteExact_failure_classifier_complete` | `theorem` | selected finite exact descent failure が classifier package により typed obstruction witness へ分類され、outer / payload failure-kind soundness が保たれることを証明する。 | `proved accessor` |
+| `CechCocycleObstruction` | `structure` | concrete Cech cocycle と selected non-coboundary / obstruction boundary を束ねる Cech-side obstruction witness。 | `defined only` |
+| `FiniteCechTypedObstructionBridge` | `structure` | selected finite exact model 上で typed obstruction witness と Cech cocycle obstruction を対応付ける bridge package。 | `defined only` |
+| `FiniteCechTypedObstructionBridge.RecordsSelectedFiniteBoundary` | `def` | Cech obstruction bridge の selected finite / classifier completeness boundary を取り出す。 | `defined only` |
+| `FiniteCechTypedObstructionBridge.RecordsNonConclusions` | `def` | Cech obstruction bridge と classifier completeness の non-conclusion boundary を保持する。 | `defined only` |
+| `cech_obstruction_of_typed_witness` | `def` | typed finite obstruction witness を selected Cech cocycle obstruction として読む。 | `defined only` |
+| `typed_obstruction_of_cech_cocycle_obstruction` | `theorem` | selected Cech cocycle obstruction から classifier completeness bridge 経由で typed finite obstruction witness を得る。 | `proved accessor` |
 | `FiniteCechObstructionBridge` | `structure` | finite Cech descent bridge、obstruction package、H1 nonzero / obstruction reflection boundary を束ねる。 | `defined only` |
 | `FiniteCechObstructionBridge.finite_descent_of_h1_vanishes` | `theorem` | obstruction bridge 経由で selected H1 vanishing から finite descent reading を取り出す。 | `proved accessor` |
 | `FiniteObstructionReviewProjection` | `structure` | obstruction witness を selected review decision へ写す projection と sound/minimal-envelope boundary を束ねる。 | `defined only` |
