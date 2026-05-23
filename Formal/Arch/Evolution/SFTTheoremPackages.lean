@@ -20,6 +20,7 @@ import Formal.Arch.Evolution.SFTDescentObstruction
 import Formal.Arch.Evolution.SFTTheoremRoadmap
 import Formal.Arch.Evolution.SFTAgenticConfluence
 import Formal.Arch.Evolution.SFTFundamentalModularity
+import Formal.Arch.Evolution.SFTAATFundamentalModularity
 
 /-!
 Documentation-facing entrypoints for the SFT Lean theorem packages.
@@ -61,6 +62,7 @@ inductive Candidate where
   | counterexamplePackage
   | theoremRoadmap
   | finiteExactModel
+  | aatSupportedFundamentalModularity
   deriving DecidableEq, Repr
 
 namespace Candidate
@@ -81,6 +83,7 @@ def sftSection : Candidate -> String
   | counterexamplePackage => "AAT / SFT forbidden readings"
   | theoremRoadmap => "SFT theorem roadmap"
   | finiteExactModel => "SFT theorem roadmap"
+  | aatSupportedFundamentalModularity => "AAT / SFT interface"
 
 /-- Stable schematic name used by documentation and status tables. -/
 def schematicName : Candidate -> String
@@ -98,6 +101,8 @@ def schematicName : Candidate -> String
   | counterexamplePackage => "SFT-native counterexample package"
   | theoremRoadmap => "SFT theorem roadmap theorem packages"
   | finiteExactModel => "Finite exact SFT model"
+  | aatSupportedFundamentalModularity =>
+      "AAT-supported finite selected Fundamental Modularity"
 
 /-- Representative Lean declarations that serve as public entrypoints. -/
 def representativeDeclarations : Candidate -> List String
@@ -332,6 +337,22 @@ def representativeDeclarations : Candidate -> List String
        "CechConeH1Vanishes.cocycle_is_coboundary",
        "CechH1FiniteDescentAssumptions",
        "h1_vanishes_implies_finite_descent"]
+  | aatSupportedFundamentalModularity =>
+      ["SFTAATFundamentalModularity.AATSelectedArchitectureSlice",
+       "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.RecordsProjectionBoundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_projection_observation_reconstruction_missingEvidence",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_finite_source_horizon",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.preserves_nonConclusions",
+       "SFTAATFundamentalModularity.AATSFTBoundaryFailure",
+       "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.finiteSelected_fundamental_modularity",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_typed_boundary_failure",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.
@@ -591,8 +612,21 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "CechConeH1Vanishes",
            "h1_vanishes_implies_finite_descent"],
          reading :=
-          "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package; concrete Cech cone cochains connect the finite simplex skeleton to cocycle/coboundary predicates and selected H1 vanishing implies selected finite descent under explicit finite exact assumptions",
+         "selected finite universe, exact cover, operation support, observation boundary, and governance basis are packaged for downstream assumption-discharge theorems; explicit gluing laws yield a selected finite descent package; concrete Cech cone cochains connect the finite simplex skeleton to cocycle/coboundary predicates and selected H1 vanishing implies selected finite descent under explicit finite exact assumptions",
          status := "defined only / proved accessor under explicit assumptions" }]
+  | aatSupportedFundamentalModularity =>
+      [{ schematic := "AAT-supported finite selected Fundamental Modularity",
+         leanDeclarations :=
+          ["SFTAATFundamentalModularity.AATSupportedSFTBoundary",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise",
+           "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure",
+           "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses",
+           "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_typed_boundary_failure",
+           "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
+           "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim"],
+         reading :=
+          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly",
+         status := "defined only / proved accessors under explicit AAT/SFT boundary assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
 def nonConclusionBoundary : Candidate -> String
@@ -624,6 +658,8 @@ def nonConclusionBoundary : Candidate -> String
       "roadmap theorem packages only; no unconditional global descent, calibration, governance effectiveness, AI safety, or extractor completeness"
   | finiteExactModel =>
       "selected finite proof universe only; no extractor completeness, empirical correctness, all-covers descent, or full Fundamental Modularity theorem"
+  | aatSupportedFundamentalModularity =>
+      "AAT-supported selected slice only; no assumption-free Grand Theorem, empirical correctness, operational effectiveness, global AI safety, or extractor completeness"
 
 end Candidate
 

@@ -2628,6 +2628,46 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.agenticComponent_records_newmanStyle_confluence` | `theorem` | Newman-style final agentic component が fair interleaving convergence を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.agenticComponent_records_newmanStyle_nonConclusions` | `theorem` | Newman-style final agentic component が non-conclusions を保持することを取り出す。 | `proved accessor` |
 
+## SFT AAT-Supported Fundamental Modularity
+
+File: `Formal/Arch/Evolution/SFTAATFundamentalModularity.lean`
+
+Issue [#1046](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1046) と子 Issue
+[#1047](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1047)-
+[#1051](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1051) では、
+AAT の selected architecture slice、AAT theorem status、projection / observation /
+reconstruction / missing-evidence boundary、finite selected SFT model、selected source /
+horizon を、既存の `FiniteSelectedFundamentalModularityTheorem` へ接続する
+AAT-supported theorem package を追加した。
+
+Non-conclusions: AAT-supported package は assumption-free Grand Theorem、all software
+systems / all covers / all runtime schedules、empirical calibration correctness、
+operational governance effectiveness、global AI safety、extractor completeness を結論しない。
+
+| Name | Kind | Description | Status |
+| --- | --- | --- | --- |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice` | `structure` | selected architecture slice と projection / observation / reconstruction / missing-evidence / theorem-status / non-conclusion boundary を束ねる。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary` | `structure` | selected AAT slice、`AATTheoremStatus`、`SFTForecastStatus`、`AATToSFTInterfaceBoundary`、`FiniteExactSFTModel`、selected source / horizon を束ねる AAT-supported SFT boundary package。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsSelectedFiniteBoundary` | `def` | selected architecture slice、finite selected model、selected source、selected horizon の相対化 boundary を保持する。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsAATSliceBoundaries` | `def` | projection / observation / reconstruction / missing-evidence boundary を保持する。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsTheoremAndModelBoundaries` | `def` | exact cover / observation / theorem / ArchSig report / typed failure boundary を保持する。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsNonConclusions` | `def` | AAT slice、AAT theorem status、SFT forecast status、finite exact model の non-conclusions を保持する。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise` | `theorem` | AAT theorem status を SFT local premise として読む accessor。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_projection_observation_reconstruction_missingEvidence` | `theorem` | AAT projection / observation / reconstruction / missing-evidence boundary を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_finite_source_horizon` | `theorem` | AAT-supported package が selected / finite / source-horizon-relative であることを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.preserves_nonConclusions` | `theorem` | AAT / SFT / finite exact model の non-conclusions を保存する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailureKind` | `inductive` | expression / projection / observation / reconstruction / missing evidence / theorem status / ArchSig report の AAT/SFT boundary failure vocabulary。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure` | `structure` | AAT/SFT boundary failure witness と evidence boundary / non-conclusions を束ねる。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure` | `def` | AAT/SFT boundary failure を `TypedComputationBoundaryFailure` として読む bridge。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure_explains` | `theorem` | typed failure bridge が broken-boundary witness を保存する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure_preserves_nonConclusions` | `theorem` | typed failure bridge が non-conclusions を保存する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage` | `structure` | AAT-supported boundary と `FiniteSelectedFundamentalModularityTheorem` を束ねる final package。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses` | `def` | AAT-supported boundary と explicit final hypotheses から AAT-supported final package を構成する。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.finiteSelected_fundamental_modularity` | `theorem` | AAT-supported package から finite selected final assembly conclusion を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_typed_boundary_failure` | `theorem` | governed-or-typed-boundary-failure conclusion を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent` | `theorem` | modularity-as-ForecastCone-descent conclusion を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim` | `theorem` | AAT-supported package が non-conclusions を保持し、無条件 theorem / empirical / operational / AI-safety claim へ昇格しない boundary theorem。 | `proved accessor` |
+
 ## SFT Theorem Package Entrypoint
 
 File: `Formal/Arch/Evolution/SFTTheoremPackages.lean`

@@ -75,4 +75,5 @@ import Formal.Arch.Evolution.SFTCechCohomology
 import Formal.Arch.Evolution.SFTDescentObstruction
 import Formal.Arch.Evolution.SFTAgenticConfluence
 import Formal.Arch.Evolution.SFTFundamentalModularity
+import Formal.Arch.Evolution.SFTAATFundamentalModularity
 import Formal.Arch.Evolution.SFTTheoremPackages

@@ -752,6 +752,17 @@ finite package. It does not prove the assumption-free theorem for all software
 systems, all covers, empirical calibration correctness, operational governance
 effectiveness, or global AI safety.
 
+The AAT-supported reading is now represented separately by
+`SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage`.  This
+package adds an AAT selected-architecture slice, AAT theorem status, projection /
+observation / reconstruction / missing-evidence boundaries, an AAT -> SFT local
+premise interface, and ArchSig/report non-promotion boundaries around the same
+finite selected final assembly.  Its accessors recover the existing
+`FiniteSelectedFundamentalModularityTheorem` conclusion, the
+governed-or-typed-boundary-failure branch, and modularity as ForecastCone
+descent, while preserving non-conclusions instead of upgrading the package to an
+assumption-free, empirical, operational, or AI-safety theorem.
+
 Dependency graph for the finite selected formalization:
 
 ```text
@@ -772,6 +783,12 @@ finite agent-team confluence
 final component hypotheses + finite exact model boundaries
   -> FiniteSelectedFundamentalModularityTheorem
   -> governed-or-typed-boundary-failure conclusion
+
+AAT selected architecture slice
+  + AAT theorem status / projection / observation boundaries
+  + AAT -> SFT local-premise interface
+  + FiniteSelectedFundamentalModularityTheorem
+  -> AATSupportedFundamentalModularityPackage
 ```
 
 ## 7. Research Phases

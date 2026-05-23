@@ -129,6 +129,26 @@ local transition law または admissibility premise として使う。
 | AAT empirical hypothesis | SFT calibrated forecast |
 | AAT non-conclusions | SFT forecast boundary item |
 
+### AAT-supported Grand Theorem package
+
+Lean 側では、AAT boundary 上で SFT Grand Theorem を読むための package を
+`Formal/Arch/Evolution/SFTAATFundamentalModularity.lean` に分離している。
+
+`SFTAATFundamentalModularity.AATSupportedSFTBoundary` は、AAT の selected
+architecture slice、`AATTheoremStatus`、`SFTForecastStatus`、
+`AATToSFTInterfaceBoundary`、`FiniteExactSFTModel`、selected source、selected
+horizon を同じ record に保持する。ここで AAT theorem status は SFT local premise として
+読むだけであり、projection / observation / reconstruction / missing-evidence /
+theorem / ArchSig report boundary は残る。
+
+`SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage` は、この
+boundary と既存の `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem`
+を接続する。したがって得られる結論は selected finite package 上の
+governed-or-typed-boundary-failure と modularity-as-ForecastCone-descent accessor である。
+assumption-free Grand Theorem、all software systems / all covers / all runtime schedules、
+empirical calibration correctness、operational governance effectiveness、global AI safety、
+extractor completeness は結論しない。
+
 ## 5. 非混同
 
 次の同一視は禁止する。
