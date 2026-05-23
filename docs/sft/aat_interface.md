@@ -169,6 +169,26 @@ selected example であり、任意の software system、all covers、all runtim
 extractor completeness、classifier completeness の無条件化、operational governance
 effectiveness へ一般化しない。
 
+artifact-to-boundary pipeline は
+`Formal/Arch/Evolution/SFTArtifactBoundaryBridge.lean` と
+`Formal/Arch/Evolution/SFTAATArtifactBoundaryExamples.lean` に分ける。
+`AATSelectedArchitectureSlice.ofArchMapPreservationPackage` は
+`ArchMapPreservationPackage` を selected AAT slice として読む helper であり、projection /
+observation / reconstruction / missing-evidence / theorem-status / non-conclusion boundary
+を accessor theorem で取り出す。`ArchSigDerivedSFTReportBoundary` は
+`ArchSigSFTReportEstimateBoundary` と report-side facts を束ね、theorem status や calibrated
+forecast correctness を強めずに SFT report / forecast boundary を保持する。
+
+`AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries` は、ArchMap-derived slice と
+ArchSig-derived report boundary を、selected finite exact model と interface boundary に接続して
+`AATSupportedSFTBoundary` を構成する higher-level constructor である。
+`Examples.canonicalArtifactSupportedFundamentalModularityPackage` は、この artifact-boundary
+pipeline から canonical finite AAT-supported package へ到達し、final typed conclusion と
+non-conclusions preservation を取り出す selected finite example である。この pipeline でも
+artifact は theorem proof ではなく theorem precondition / boundary evidence として扱い、
+extractor completeness、calibrated forecast correctness、operational governance effectiveness、
+global AI safety は結論しない。
+
 `AATSFTBoundaryFailureKind` は typed conversion 後も
 `AATTypedComputationBoundaryFailure` に保持される。final typed conclusion は governed /
 existing finite typed failure / AAT-SFT boundary failure の三分岐として読めるため、

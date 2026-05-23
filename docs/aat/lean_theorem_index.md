@@ -2663,6 +2663,14 @@ Issue [#1064](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 では、この canonical example の descent / obstruction / governance component を
 既存 finite selected descent package、finite descent obstruction package、finite
 obstruction-governance package 経由の helper construction に寄せた。
+Issue [#1066](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1066)
+と子 Issue [#1071](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1071),
+[#1067](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1067),
+[#1068](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1068),
+[#1070](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1070),
+[#1069](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1069)
+では、ArchMap / ArchSig artifact boundary を theorem precondition / boundary evidence として
+`AATSupportedSFTBoundary` へ接続する helper と selected finite example を追加した。
 
 Non-conclusions: AAT-supported package は assumption-free Grand Theorem、all software
 systems / all covers / all runtime schedules、empirical calibration correctness、
@@ -2671,8 +2679,25 @@ operational governance effectiveness、global AI safety、extractor completeness
 | Name | Kind | Description | Status |
 | --- | --- | --- | --- |
 | `SFTAATFundamentalModularity.AATSelectedArchitectureSlice` | `structure` | selected architecture slice と projection / observation / reconstruction / missing-evidence / theorem-status / non-conclusion boundary を束ねる。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ofArchMapPreservationPackage` | `def` | `ArchMapPreservationPackage` を selected AAT architecture slice として読む helper。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_selectedArchitecture` | `theorem` | ArchMap preservation package から selected architecture slice evidence を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_projectionBoundary` | `theorem` | ArchMap-derived slice が object / relation preservation と forgetting / unsupported-relation boundary を保持することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_observationBoundary` | `theorem` | ArchMap-derived slice が coverage / exactness boundary を保持することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_reconstructionBoundary` | `theorem` | ArchMap-derived slice が semantic diagram / commutation / nonfillability witness preservation を保持することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_missingEvidence` | `theorem` | ArchMap-derived slice が semantic coverage gap boundary を missing-evidence boundary として保持することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_theoremStatusBoundary` | `theorem` | ArchMap-derived slice が formal promotion guardrail を theorem-status boundary として保持することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_preserves_nonConclusions` | `theorem` | ArchMap-derived slice が non-conclusions を保存することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary` | `structure` | `ArchSigSFTReportEstimateBoundary` と report-side facts を束ねる SFT report / forecast boundary package。 | `defined only` |
+| `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_preserves_observationBoundary` | `theorem` | ArchSig-derived report boundary が selected estimate の observation boundary を保持する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_preserves_reconstructionBoundary` | `theorem` | ArchSig-derived report boundary が selected estimate の reconstruction boundary を保持する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_missing_invariants_remain_missingEvidence` | `theorem` | missing invariants を selected estimate の missing-evidence boundary として保持する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_preserves_theoremBoundary` | `theorem` | ArchSig report の theorem boundary が SFT forecast status 側に残ることを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_boundary_remains_toolingBoundary` | `theorem` | ArchSig report boundary が SFT tooling boundary として残ることを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_boundary_does_not_strengthen_theorem_status` | `theorem` | ArchSig-derived report boundary が theorem status を強めないことを theorem-boundary accessor として示す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_boundary_does_not_calibrate_forecast` | `theorem` | ArchSig-derived report boundary が calibrated forecast correctness を結論せず forecast boundary を残す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary` | `structure` | selected AAT slice、`AATTheoremStatus`、`SFTForecastStatus`、`AATToSFTInterfaceBoundary`、`FiniteExactSFTModel`、selected source / horizon を束ねる AAT-supported SFT boundary package。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel` | `def` | selected slice、interface boundary、finite exact model boundary records から `AATSupportedSFTBoundary` を構成する constructor helper。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries` | `def` | ArchMap-derived selected slice と ArchSig-derived SFT report boundary から `AATSupportedSFTBoundary` を構成する higher-level constructor。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsSelectedFiniteBoundary` | `def` | selected architecture slice、finite selected model、selected source、selected horizon の相対化 boundary を保持する。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsAATSliceBoundaries` | `def` | projection / observation / reconstruction / missing-evidence boundary を保持する。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsTheoremAndModelBoundaries` | `def` | exact cover / observation / theorem / ArchSig report / typed failure boundary を保持する。 | `defined only` |
@@ -2689,6 +2714,8 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.preserves_nonConclusions` | `theorem` | AAT / SFT / finite exact model の non-conclusions を保存する。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_report_and_theorem_status_boundaries` | `theorem` | ArchSig report boundary と AAT/SFT theorem-status boundary を混同せずに theorem/model boundary record として取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.constructor_preserves_nonConclusions` | `theorem` | constructor helper 経由でも AAT/SFT/finite exact model の non-conclusions が保存されることを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.artifact_constructor_records_archMap_boundaries` | `theorem` | artifact constructor 経由で作った boundary から ArchMap-derived projection / observation / reconstruction / missing-evidence boundary を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.artifact_constructor_preserves_nonConclusions` | `theorem` | artifact constructor 経由でも ArchMap / AAT / SFT / finite exact model の non-conclusions が保存されることを取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailureKind` | `inductive` | expression / projection / observation / reconstruction / missing evidence / theorem status / ArchSig report の AAT/SFT boundary failure vocabulary。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure` | `structure` | AAT/SFT boundary failure witness と evidence boundary / non-conclusions を束ねる。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure` | `def` | AAT/SFT boundary failure を `TypedComputationBoundaryFailure` として読む bridge。 | `defined only` |
@@ -2711,6 +2738,13 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent` | `theorem` | modularity-as-ForecastCone-descent conclusion を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim` | `theorem` | AAT-supported package が non-conclusions を保持し、無条件 theorem / empirical / operational / AI-safety claim へ昇格しない boundary theorem。 | `proved accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary` | `def` | singleton finite exact model、selected source、horizon 1、AAT selected slice から構成した canonical AAT-supported boundary。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.artifactSoftwareFieldEstimate` | `def` | ArchSig-like selected report example が保持する singleton `SoftwareFieldEstimate`。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.artifactArchSigReport` | `def` | selected estimate と report / theorem / forecast / non-conclusion boundary を持つ small ArchSig-like report example。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.artifactDerivedReportBoundary` | `def` | small ArchSig-like report を SFT report / forecast boundary として読む derived boundary package。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedBoundary` | `def` | ArchMap preservation package と ArchSig-derived report boundary から canonical finite `AATSupportedSFTBoundary` を構成する artifact-boundary example。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedBoundary_records_artifact_slice` | `theorem` | artifact-boundary example から ArchMap-derived AAT slice boundary を取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedBoundary_records_report_boundary` | `theorem` | artifact-boundary example から ArchSig report boundary を取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedBoundary_preserves_nonConclusions` | `theorem` | artifact-boundary example の boundary non-conclusions preservation を取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalFiniteSelectedDescentPackage` | `def` | singleton model 上の finite selected ForecastCone descent package。 | `defined only` |
 | `SFTAATFundamentalModularity.Examples.canonicalDescentComponent` | `def` | `descentComponent_of_finiteSelectedDescentPackage` 経由で構成した canonical descent component。 | `defined only` |
 | `SFTAATFundamentalModularity.Examples.canonicalDescentComponent_records_finiteSelectedDescent` | `theorem` | canonical descent component が selected finite descent を保持することを取り出す。 | `proved example accessor` |
@@ -2721,10 +2755,13 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.Examples.canonicalGovernanceComponent` | `def` | `governanceComponent_of_finiteObstructionGovernance` 経由で構成した canonical governance component。 | `defined only` |
 | `SFTAATFundamentalModularity.Examples.canonicalGovernanceComponent_records_finite_cut` | `theorem` | canonical governance component が selected bad-witness cutting を保持することを取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage` | `def` | canonical finite AAT-supported boundary と component discharge helper 由来 hypotheses から構成した end-to-end package。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedFundamentalModularityPackage` | `def` | artifact boundary から canonical finite AAT-supported Grand Theorem package へ到達する end-to-end package。 | `defined only` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupported_fundamental_modularity` | `theorem` | canonical package から finite selected final assembly conclusion を取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupported_governed_or_typed_boundary_failure` | `theorem` | canonical package から governed-or-typed-boundary-failure conclusion を取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion` | `theorem` | canonical package から AAT-supported final typed conclusion を取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions` | `theorem` | canonical package が boundary / final package non-conclusions を保存することを取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_final_typed_conclusion` | `theorem` | artifact-boundary package から AAT-supported final typed conclusion を取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_preserves_nonConclusions` | `theorem` | artifact-boundary package が boundary / final package non-conclusions を保存することを取り出す。 | `proved example accessor` |
 
 ## SFT Theorem Package Entrypoint
 

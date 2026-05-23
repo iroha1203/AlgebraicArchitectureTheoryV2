@@ -100,6 +100,22 @@ preservation、nonfillability witness preservation、law / policy boundary prese
 precondition preservation、coverage / exactness / non-conclusion が Lean 側で明示される必要がある。
 tooling confidence、validation success、AIR projection success はこれらの field を discharge しない。
 
+## AAT-supported SFT bridge guardrail
+
+ArchMap / ArchSig artifact を AAT-supported SFT boundary へ渡す場合、claim level は次のように保つ。
+
+```text
+ArchMap preservation package -> selected AAT slice boundary
+ArchSig report boundary -> SFT report / forecast boundary
+selected finite exact model -> theorem package precondition
+artifact validation success -> tooling evidence only
+```
+
+`AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries` は、これらの境界を一つの
+AAT-supported SFT boundary record に束ねるための Lean constructor である。constructor の存在は、
+JSON extractor completeness、forecast calibration、runtime schedule safety、operational governance
+effectiveness、global AI safety を formal claim に昇格しない。
+
 ## Report reading rule
 
 Report consumer は、次を同時に読む。
