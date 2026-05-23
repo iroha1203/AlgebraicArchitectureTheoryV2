@@ -10,7 +10,7 @@ not a full cohomology theorem and does not prove `H1 = 0 -> finite descent`.
 
 namespace Formal.Arch
 
-universe u v w x y
+universe u v w x y z
 
 /--
 Concrete 0-cochain of selected local exact cones over the finite Cech
@@ -253,7 +253,7 @@ selected cohomology statement.
 structure CechH1FiniteDescentAssumptions
     {Global : Type u} {Index : Type v} {Local : Type w}
     {OperationG : Type x} {OperationL : Type y}
-    {Governance : Type}
+    {Governance : Type z}
     (exactModel :
       FiniteExactSFTModel Global Index Local OperationG OperationL Governance)
     (source : Global) (horizon : Nat) where
@@ -267,7 +267,7 @@ namespace CechH1FiniteDescentAssumptions
 
 variable {Global : Type u} {Index : Type v} {Local : Type w}
 variable {OperationG : Type x} {OperationL : Type y}
-variable {Governance : Type}
+variable {Governance : Type z}
 variable {exactModel :
   FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
 variable {source : Global} {horizon : Nat}
@@ -298,7 +298,7 @@ assumptions; it is not a theorem that every finite cover satisfies descent.
 theorem h1_vanishes_implies_finite_descent
     {Global : Type u} {Index : Type v} {Local : Type w}
     {OperationG : Type x} {OperationL : Type y}
-    {Governance : Type}
+    {Governance : Type z}
     {exactModel :
       FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
     {source : Global} {horizon : Nat}
@@ -309,5 +309,35 @@ theorem h1_vanishes_implies_finite_descent
         exactModel.descentModel source horizon) :=
   finiteExactForecastConeDescentPackage_of_assumptions
     assumptions.descentAssumptions
+
+/--
+Normalized-path reading of the selected `H1 = 0 -> finite descent` bridge.
+
+The descent package is still supplied by the explicit finite exact assumptions;
+the additional normalized equality records the path-level inverse-law surface
+used to read the bridge.  This is not a full Cech cohomology theorem and does
+not quantify over all finite covers.
+-/
+theorem h1_vanishes_implies_finite_descent_with_normalized_paths
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (assumptions :
+      CechH1FiniteDescentAssumptions exactModel source horizon)
+    (normalized :
+      FiniteTransportNormalizedPathEquality
+        assumptions.descentAssumptions.glueData source horizon)
+    (hTransport : normalized.transportBoundary)
+    (hH1 : assumptions.RecordsH1Vanishes) :
+    Nonempty
+      (FiniteSelectedForecastConeDescentPackage
+        exactModel.descentModel source horizon) ∧
+      normalized.transportBoundary ∧
+        assumptions.RecordsH1Vanishes :=
+  ⟨h1_vanishes_implies_finite_descent assumptions,
+    hTransport, hH1⟩
 
 end Formal.Arch

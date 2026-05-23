@@ -13,7 +13,7 @@ unbounded agent teams.
 namespace Formal.Arch
 namespace SFTAgenticConfluence
 
-universe u v
+universe u v w
 
 /-- Reflexive-transitive closure of a selected interleaving reduction. -/
 inductive ReductionReaches
@@ -148,6 +148,73 @@ def RecordsNonConclusions
   kernel.nonConclusions
 
 end NewmanStyleConfluenceKernel
+
+/--
+Selected finite agent-team semantics.
+
+This packages a finite team and schedule surface together with the Newman-style
+kernel that interprets accepted schedules.  The finite witness is part of the
+selected semantics; the structure does not claim global AI safety or safety for
+unbounded agent teams.
+-/
+structure FiniteAgentTeamSemantics
+    (Agent : Type u) (Schedule : Type v) where
+  agents : List Agent
+  acceptedSchedule : Schedule -> Prop
+  scheduleStep : Schedule -> Schedule -> Prop
+  scheduleBoundary : Prop
+  finiteTeamBoundary : Prop
+  nonConclusions : Prop
+
+/--
+Bridge from finite agent-team schedules to the selected Newman-style kernel.
+-/
+structure FiniteAgentTeamConfluenceBridge
+    (Agent : Type u) (Schedule : Type v) (ConeQuotient : Type w) where
+  semantics : FiniteAgentTeamSemantics Agent Schedule
+  kernel : NewmanStyleConfluenceKernel Schedule ConeQuotient
+  step_matches_schedule :
+    ∀ left right, kernel.step left right -> semantics.scheduleStep left right
+  accepted_boundary : Prop
+  finiteScheduleBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteAgentTeamConfluenceBridge
+
+/-- Read finite agent-team semantics as the selected Newman-style kernel. -/
+def newmanKernel
+    {Agent : Type u} {Schedule : Type v} {ConeQuotient : Type w}
+    (bridge : FiniteAgentTeamConfluenceBridge Agent Schedule ConeQuotient) :
+    NewmanStyleConfluenceKernel Schedule ConeQuotient :=
+  bridge.kernel
+
+/-- Finite agent-team semantics expose selected fair-interleaving convergence. -/
+theorem fairInterleavingsConverge
+    {Agent : Type u} {Schedule : Type v} {ConeQuotient : Type w}
+    (bridge : FiniteAgentTeamConfluenceBridge Agent Schedule ConeQuotient)
+    (hTermination : bridge.kernel.localTermination)
+    (hConfluence : bridge.kernel.localConfluence) :
+    SFTTheoremRoadmap.FairInterleavingsConverge bridge.kernel.landing :=
+  bridge.kernel.newmanStyle_fairInterleavingsConverge
+    hTermination hConfluence
+
+/-- The finite semantics bridge records its selected schedule boundary. -/
+def RecordsFiniteAgentBoundary
+    {Agent : Type u} {Schedule : Type v} {ConeQuotient : Type w}
+    (bridge : FiniteAgentTeamConfluenceBridge Agent Schedule ConeQuotient) :
+    Prop :=
+  bridge.semantics.finiteTeamBoundary ∧ bridge.finiteScheduleBoundary ∧
+    bridge.accepted_boundary ∧ bridge.kernel.agentBoundary
+
+/-- Non-conclusions remain explicit for finite agent-team confluence. -/
+def RecordsNonConclusions
+    {Agent : Type u} {Schedule : Type v} {ConeQuotient : Type w}
+    (bridge : FiniteAgentTeamConfluenceBridge Agent Schedule ConeQuotient) :
+    Prop :=
+  bridge.nonConclusions ∧ bridge.semantics.nonConclusions ∧
+    bridge.kernel.nonConclusions
+
+end FiniteAgentTeamConfluenceBridge
 
 end SFTAgenticConfluence
 end Formal.Arch
