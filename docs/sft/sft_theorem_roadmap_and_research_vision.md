@@ -801,6 +801,21 @@ non-conclusion preservation.  The accessor theorems
 between assumptions, final conclusion, and non-conclusions readable without
 discharging the assumptions.
 
+The next assumption-discharge frontier is tracked at the
+`FundamentalModularityHypotheses` layer.  The ledger below separates proved
+accessors from package assumptions and future obligations:
+
+| Field / component | Current Lean surface | Status | Remaining frontier |
+| --- | --- | --- | --- |
+| `descent` | `descentComponent_of_finiteSelectedDescentPackage`, `descentComponent_of_finiteExactDescentAssumptions`, `descentComponent_of_h1FiniteDescentAssumptions`, `descentComponent_of_goodFiniteCover` | proved accessors under selected finite package assumptions | no all-covers descent theorem; full Cech cohomology remains future work |
+| `obstruction` | `obstructionComponent_of_finiteDescentObstructionPackage`, `obstructionComponent_of_finiteExactFailureClassifierCompleteness`, `FiniteFailureKindClassifierCoverageMatrix` | proved accessors under explicit classifier completeness | all software failures and extractor outputs are not classified |
+| `review` | `reviewComponent_of_minimalEnvelopePackage`, `reviewComponent_of_obstructionAwareEnvelopeBridge`, `reviewComponent_of_reviewGovernanceCuttingBridge` | proved selected factorization accessors | operational review optimality is not concluded |
+| `governance` | `governanceComponent_of_finiteObstructionGovernance`, `governanceComponent_of_finiteGovernanceSynthesisBridge`, `governanceComponent_of_reviewGovernanceCuttingBridge` | proved selected cutting accessors under bad-witness premises | operational governance effectiveness and empirical policy success remain non-conclusions |
+| `calibration` | `calibrationComponent_of_closedLoopPackage`, `calibrationComponent_of_finiteHeightClosedLoopBridge` | proved finite-height / explicit-boundary accessors | empirical calibration correctness remains a hypothesis |
+| `agentic` | `agenticComponent_of_agenticConfluencePackage`, `agenticComponent_of_newmanStyleConfluenceKernel`, `agenticComponent_of_finiteAgentTeamConfluenceBridge` | proved selected confluence accessors under termination / local-confluence assumptions | global AI safety and unbounded agent-team safety remain non-conclusions |
+| `governed` / `failure` branch | `FundamentalModularityHypotheses.ofDischargedComponents`, `fundamental_modularity_final_assembly`, `final_bounded_evolution_governed_or_typed_failure` | proved final assembly accessor under explicit branch assumption | no assumption-free governed-or-failure theorem |
+| non-conclusions | `final_assembly_preserves_component_nonConclusions`, `RecordsNonConclusions` accessors | proved preservation accessors | empirical, operational, AI-safety, extractor-completeness claims are not upgraded |
+
 Failure taxonomy is kept explicit by
 `finite_failure_enters_final_typed_conclusion`,
 `final_typed_conclusion_records_finite_or_aat_failure_taxonomy`, and
