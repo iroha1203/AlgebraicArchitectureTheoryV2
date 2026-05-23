@@ -139,6 +139,33 @@ def AATStructurePreserved
   M.nonConclusions
 
 /--
+Top-level bounded homomorphism preservation predicate for ArchMap.
+
+This packages the selected object, relation, semantic-diagram, law/policy, and
+flatness-precondition preservation fields without reading any Rust validation
+report, AIR projection, theorem-check checklist, or LLM output as a proof term.
+-/
+def BoundedHomomorphismPreservation
+    (M : ArchMapModel Src Tgt Abs StaticObs SrcExpr TgtExpr SemanticObs) :
+    Prop :=
+  ObjectPreservation M ∧
+  RelationPreservation M ∧
+  SemanticDiagramPreservation M ∧
+  SemanticCommutationPreservation M ∧
+  NonfillabilityWitnessPreservation M ∧
+  LawPolicyPreservation M ∧
+  FlatnessPreconditionPreservation M ∧
+  SelectedTargetFlatness M ∧
+  M.forgettingBoundary ∧
+  M.unsupportedRelationBoundary ∧
+  M.semanticCoverageGapBoundary ∧
+  M.semanticMeasuredZeroBoundary ∧
+  M.coverageBoundary ∧
+  M.exactnessBoundary ∧
+  M.formalPromotionGuardrail ∧
+  M.nonConclusions
+
+/--
 Theorem package for selected ArchMap preservation.
 
 All conclusions are relative to the selected source universe, target component
@@ -215,6 +242,27 @@ theorem nonConclusions_recorded
     M.nonConclusions :=
   pkg.nonConclusions
 
+/-- Access the bundled bounded homomorphism preservation predicate. -/
+theorem boundedHomomorphismPreserved
+    (pkg : ArchMapPreservationPackage M) :
+    BoundedHomomorphismPreservation M :=
+  ⟨pkg.objectRelationPreservation.1,
+    pkg.objectRelationPreservation.2,
+    pkg.semanticDiagramPreservation,
+    pkg.semanticCommutationPreservation,
+    pkg.nonfillabilityWitnessPreservation,
+    pkg.lawPolicyPreservation,
+    pkg.flatnessPreconditionPreservation,
+    pkg.selectedTargetFlatness,
+    pkg.forgettingBoundary,
+    pkg.unsupportedRelationBoundary,
+    pkg.semanticMeasuredZeroUnmeasuredSeparated.2,
+    pkg.semanticMeasuredZeroUnmeasuredSeparated.1,
+    pkg.coverageBoundary,
+    pkg.exactnessBoundary,
+    pkg.formalPromotionGuardrail,
+    pkg.nonConclusions⟩
+
 /-- The package keeps measured semantic zero separate from unmeasured coverage gaps. -/
 theorem semanticMeasuredZero_not_coverageGap
     (pkg : ArchMapPreservationPackage M) :
@@ -261,6 +309,169 @@ theorem aatStructurePreserved_of_archMapPreservationPackage
     (pkg : ArchMapPreservationPackage M) :
     AATStructurePreserved M :=
   pkg.aatStructurePreserved
+
+namespace Examples
+
+/-- One-component source/target graph used by the bounded positive example. -/
+def unitNoEdgeGraph : ArchGraph Unit where
+  edge _ _ := False
+
+/-- The full finite universe for the one-component ArchMap target. -/
+def unitUniverse : ComponentUniverse unitNoEdgeGraph :=
+  ComponentUniverse.full unitNoEdgeGraph [()] (by simp) (by
+    intro c
+    cases c
+    simp)
+
+/-- One-component target flatness model with no static, runtime, or semantic edges. -/
+def unitFlatnessModel :
+    ArchitectureFlatnessModel Unit Unit Unit Unit Unit where
+  static := unitNoEdgeGraph
+  runtime := unitNoEdgeGraph
+  projection := { expose := fun _ => () }
+  abstractStatic := unitNoEdgeGraph
+  staticObservation := { observe := fun _ => () }
+  boundaryAllowed := fun _ _ => True
+  abstractionAllowed := fun _ _ => True
+  runtimeAllowed := fun _ _ => True
+  semantic := { eval := fun _ => () }
+  requiredSemantic := fun _ => False
+  measuredSemantic := []
+
+/-- Concrete bounded ArchMap model for a positive finite preservation example. -/
+def unitArchMapModel :
+    ArchMapModel Unit Unit Unit Unit Unit Unit Unit where
+  target := unitFlatnessModel
+  targetUniverse := unitUniverse
+  objectMap := fun _ => ()
+  semanticDiagramMap := fun d => d
+  selectedSourceObject := fun _ => True
+  selectedSourceRelation := fun _ _ => False
+  selectedSemanticDiagram := fun _ => False
+  sourceNonfillabilityWitness := fun _ => False
+  targetNonfillabilityWitness := fun _ => False
+  selectedLaw := True
+  selectedPolicyBoundary := True
+  selectedFlatnessPrecondition := True
+  forgettingBoundary := True
+  unsupportedRelationBoundary := True
+  semanticCoverageGapBoundary := True
+  semanticMeasuredZeroBoundary := True
+  coverageBoundary := True
+  exactnessBoundary := True
+  formalPromotionGuardrail := True
+  nonConclusions := True
+
+theorem unitWalkAcyclic : WalkAcyclic unitNoEdgeGraph := by
+  intro hClosed
+  rcases hClosed with ⟨c, w, hLen⟩
+  cases w with
+  | nil c =>
+      simp [Walk.length] at hLen
+  | cons hEdge _rest =>
+      exact False.elim hEdge
+
+theorem unitProjectionSound :
+    ProjectionSound unitNoEdgeGraph
+      ({ expose := fun _ : Unit => () } : InterfaceProjection Unit Unit)
+      unitNoEdgeGraph := by
+  intro src dst hEdge
+  exact False.elim hEdge
+
+theorem unitLSPCompatible :
+    LSPCompatible
+      ({ expose := fun _ : Unit => () } : InterfaceProjection Unit Unit)
+      ({ observe := fun _ : Unit => () } : Observation Unit Unit) := by
+  intro x y _hSame
+  cases x
+  cases y
+  rfl
+
+theorem unitStaticFlatWithin :
+    StaticFlatWithin unitFlatnessModel unitUniverse := by
+  exact ⟨unitWalkAcyclic, unitProjectionSound, unitLSPCompatible,
+    (by intro src dst hEdge; exact False.elim hEdge),
+    (by intro src dst hEdge; exact False.elim hEdge)⟩
+
+theorem unitRuntimeFlatWithin :
+    RuntimeFlatWithin unitFlatnessModel unitUniverse := by
+  intro src dst _hSrc _hDst hEdge
+  exact False.elim hEdge
+
+theorem unitSemanticFlatWithin :
+    SemanticFlatWithin unitFlatnessModel := by
+  intro d hMeasured
+  cases hMeasured
+
+theorem unitSemanticCoverageComplete :
+    SemanticCoverageComplete unitFlatnessModel := by
+  intro d hRequired
+  exact False.elim hRequired
+
+theorem unitNoUnmeasuredRequiredAxis :
+    NoUnmeasuredRequiredAxis unitFlatnessModel unitUniverse :=
+  ⟨staticCoverageComplete_of_componentUniverse unitFlatnessModel unitUniverse,
+    (by
+      intro src dst hEdge
+      exact False.elim hEdge),
+    unitSemanticCoverageComplete⟩
+
+theorem unitArchitectureFlatWithin :
+    ArchitectureFlatWithin unitFlatnessModel unitUniverse :=
+  ⟨unitNoUnmeasuredRequiredAxis, unitStaticFlatWithin,
+    unitRuntimeFlatWithin, unitSemanticFlatWithin⟩
+
+theorem unitFlatnessPreconditionPreservation :
+    FlatnessPreconditionPreservation unitArchMapModel :=
+  ⟨trivial, unitNoUnmeasuredRequiredAxis,
+    exactFlatnessObservation_of_exhaustiveCoverage unitNoUnmeasuredRequiredAxis⟩
+
+theorem unitSelectedTargetFlatness :
+    SelectedTargetFlatness unitArchMapModel :=
+  ⟨unitStaticFlatWithin, unitRuntimeFlatWithin, unitSemanticFlatWithin⟩
+
+/--
+Positive finite package: a selected one-object ArchMap preserves the bounded
+homomorphism fields and reaches the AAT structure-preservation accessor.
+-/
+def unitArchMapPreservationPackage :
+    ArchMapPreservationPackage unitArchMapModel where
+  objectRelationPreservation := ⟨
+    (by
+      intro src _hSelected
+      exact unitUniverse.covers ()),
+    (by
+      intro src dst hRel
+      exact False.elim hRel)⟩
+  semanticDiagramPreservation := by
+    intro diagram hSelected
+    exact False.elim hSelected
+  semanticCommutationPreservation := by
+    intro diagram hSelected
+    exact False.elim hSelected
+  nonfillabilityWitnessPreservation := by
+    intro diagram hSelected _hWitness
+    exact False.elim hSelected
+  semanticMeasuredZeroUnmeasuredSeparated := ⟨trivial, trivial⟩
+  lawPolicyPreservation := ⟨trivial, trivial⟩
+  flatnessPreconditionPreservation := unitFlatnessPreconditionPreservation
+  selectedTargetFlatness := unitSelectedTargetFlatness
+  forgettingBoundary := trivial
+  unsupportedRelationBoundary := trivial
+  coverageBoundary := trivial
+  exactnessBoundary := trivial
+  formalPromotionGuardrail := trivial
+  nonConclusions := trivial
+
+theorem unitArchMap_aatStructurePreserved :
+    AATStructurePreserved unitArchMapModel :=
+  unitArchMapPreservationPackage.aatStructurePreserved
+
+theorem unitArchMap_boundedHomomorphismPreserved :
+    BoundedHomomorphismPreservation unitArchMapModel :=
+  unitArchMapPreservationPackage.boundedHomomorphismPreserved
+
+end Examples
 
 end ArchMapModel
 
