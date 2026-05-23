@@ -12,7 +12,7 @@ non-conclusions を落とさない。
 | Surface | Artifact families | Boundary |
 | --- | --- | --- |
 | ArchSig Core | Sig0、validation report、snapshot、signature diff。 | repository observation であり、完全な architecture model 抽出ではない。 |
-| ArchSig Review | AIR、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression。 | review cue / CI cue であり、Lean theorem proof ではない。 |
+| ArchSig Review | AIR、ArchMap、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression。 | review cue / CI cue であり、Lean theorem proof ではない。 |
 | ArchSig SFT | ArtifactDescriptor、OperationSupportEstimate、ForecastConeSkeleton、ConsequenceEnvelope、ForecastCalibrationHook と validation report。 | bounded forecast report projection であり、point prediction、causal proof、forecast correctness ではない。 |
 | ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh。 | empirical / operational feedback であり、correlation を causal theorem にしない。 |
 
@@ -25,6 +25,8 @@ non-conclusions を落とさない。
 | Snapshot | `signature-snapshot-store-v0` | repository revision ごとの保存用 signature record。 |
 | Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
+| ArchMap | `archmap-v0` | supplied JSON の architecture homomorphism map 候補。source inventory、provenance、coverage、conflict、non-conclusions を保持する。 |
+| ArchMap validation report | `archmap-validation-report-v0` | ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail の検査結果。 |
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
 | Feature Extension Report | `feature-extension-report-v0` | PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を持つ。 |

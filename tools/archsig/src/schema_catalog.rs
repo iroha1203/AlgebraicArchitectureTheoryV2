@@ -1,6 +1,7 @@
 use crate::{
     AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION, AIR_SCHEMA_VERSION,
     ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION, ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION,
+    ARCHMAP_SCHEMA_VERSION, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
     CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
@@ -64,6 +65,46 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "AIR coverage layers and claim classifications are the exactness boundary for report generation.",
+                    ],
+                ),
+            ),
+            artifact(
+                "archmap",
+                "ArchMap supplied JSON artifact",
+                ARCHMAP_SCHEMA_VERSION,
+                "semantic-observation-input",
+                "ArchMap MVP",
+                "implemented",
+                vec!["docs/tool/archmap_prd.md"],
+                vec!["#1032", "#1033", "#1035"],
+                compatibility_boundary(
+                    "Map source inventory, provenance, map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
+                    vec![],
+                    vec![
+                        "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
+                    ],
+                    vec![
+                        "ArchMap is supplied JSON evidence, not architecture ground truth or a Lean theorem claim.",
+                    ],
+                ),
+            ),
+            artifact(
+                "archmap-validation-report",
+                "ArchMap Validation Report",
+                ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
+                "validation-output",
+                "ArchMap MVP",
+                "implemented",
+                vec!["docs/tool/archmap_prd.md", "tools/archsig/docs/commands.md"],
+                vec!["#1032", "#1034"],
+                compatibility_boundary(
+                    "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, and formal promotion guardrail checks separate.",
+                    vec![],
+                    vec![
+                        "New checks must report whether they fail, warn, or pass without promoting uncertain mappings.",
+                    ],
+                    vec![
+                        "Validation pass does not imply semantic correctness, completeness, or architecture lawfulness.",
                     ],
                 ),
             ),

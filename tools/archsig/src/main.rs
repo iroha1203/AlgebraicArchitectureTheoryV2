@@ -6,9 +6,9 @@ use std::process::ExitCode;
 
 use archsig::{
     AiProposalGovernanceV0, AiProposalGovernanceValidationReportV0, AirDocumentInput,
-    AirDocumentV0, AirValidationReport, ArchitectureDynamicsMetricsReportV0,
-    ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
-    ArchitectureFieldSnapshotValidationReportV0, ArtifactDescriptorV0,
+    AirDocumentV0, AirValidationReport, ArchMapDocumentV0, ArchMapValidationReportV0,
+    ArchitectureDynamicsMetricsReportV0, ArchitectureDynamicsMetricsReportValidationReportV0,
+    ArchitectureFieldSnapshotV0, ArchitectureFieldSnapshotValidationReportV0, ArtifactDescriptorV0,
     ArtifactDescriptorValidationReportV0, CalibrationReviewRecordV0,
     ComponentUniverseValidationReport, ConsequenceEnvelopeReportV0,
     ConsequenceEnvelopeValidationReportV0, CustomRulePluginRegistryV0,
@@ -33,7 +33,7 @@ use archsig::{
     SignatureTrajectoryReportV0, SignatureTrajectoryReportValidationReportV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence,
-    build_ai_proposal_governance_from_descriptor, build_air_document,
+    build_ai_proposal_governance_from_descriptor, build_air_document, build_air_from_archmap,
     build_artifact_descriptor_from_ai_proposal_json,
     build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
     build_baseline_suppression_report, build_consequence_envelope_from_forecast_cone,
@@ -61,15 +61,16 @@ use archsig::{
     static_synthesis_constraint_artifact, static_team_threshold_policy,
     validate_ai_proposal_governance, validate_air_document_report,
     validate_architecture_dynamics_metrics_report, validate_architecture_field_snapshot,
-    validate_artifact_descriptor_report, validate_component_universe_report,
-    validate_consequence_envelope_report, validate_custom_rule_plugin_registry_report,
-    validate_dynamics_measurement_contract_report, validate_forecast_calibration_hook,
-    validate_forecast_cone_skeleton, validate_law_policy_template_registry_report,
-    validate_measurement_unit_registry_report, validate_no_solution_certificate_report,
-    validate_operation_proposal_log, validate_operation_support_estimate,
-    validate_organization_policy_report, validate_pr_force_report,
-    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
-    validate_signature_trajectory_report, validate_synthesis_constraint_artifact_report,
+    validate_archmap_report, validate_artifact_descriptor_report,
+    validate_component_universe_report, validate_consequence_envelope_report,
+    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
+    validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
+    validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
+    validate_no_solution_certificate_report, validate_operation_proposal_log,
+    validate_operation_support_estimate, validate_organization_policy_report,
+    validate_pr_force_report, validate_repair_rule_registry_report,
+    validate_report_artifact_retention_report, validate_signature_trajectory_report,
+    validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -475,6 +476,40 @@ enum Command {
         /// Optional framework adapter evidence JSON path. Repeat for multiple adapters.
         #[arg(long = "framework-adapter")]
         framework_adapters: Vec<PathBuf>,
+
+        /// Output AIR JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Validate a supplied ArchMap v0 JSON artifact.
+    Archmap {
+        /// Input ArchMap JSON path.
+        #[arg(long)]
+        input: PathBuf,
+
+        /// Optional Sig0 JSON path used for static / semantic conflict checks.
+        #[arg(long)]
+        sig0: Option<PathBuf>,
+
+        /// Output ArchMap validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Project a supplied ArchMap v0 JSON artifact into AIR v0.
+    AirFromArchmap {
+        /// Input ArchMap JSON path.
+        #[arg(long)]
+        archmap: PathBuf,
+
+        /// Optional Sig0 JSON path used to preserve static / semantic conflicts.
+        #[arg(long)]
+        sig0: Option<PathBuf>,
+
+        /// Optional ArchMap validation report path recorded by callers in workflow artifacts.
+        #[arg(long)]
+        validation: Option<PathBuf>,
 
         /// Output AIR JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
@@ -1262,6 +1297,41 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     index,
                 )?;
             }
+            write_json(out, &air)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::Archmap { input, sig0, out }) => {
+            let document: ArchMapDocumentV0 = read_json(&input)?;
+            let sig0_document: Option<Sig0Document> = sig0.as_ref().map(read_json).transpose()?;
+            let report: ArchMapValidationReportV0 = validate_archmap_report(
+                &document,
+                &input.display().to_string(),
+                sig0_document.as_ref(),
+            );
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::AirFromArchmap {
+            archmap,
+            sig0,
+            validation,
+            out,
+        }) => {
+            let document: ArchMapDocumentV0 = read_json(&archmap)?;
+            let sig0_document: Option<Sig0Document> = sig0.as_ref().map(read_json).transpose()?;
+            if let Some(validation_path) = validation.as_ref() {
+                let _: ArchMapValidationReportV0 = read_json(validation_path)?;
+            }
+            let air = build_air_from_archmap(
+                &document,
+                &archmap.display().to_string(),
+                sig0_document.as_ref(),
+            );
             write_json(out, &air)?;
             Ok(ExitCode::SUCCESS)
         }

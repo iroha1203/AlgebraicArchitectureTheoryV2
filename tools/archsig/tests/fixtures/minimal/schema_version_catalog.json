@@ -61,6 +61,61 @@
       }
     },
     {
+      "artifactId": "archmap",
+      "artifactName": "ArchMap supplied JSON artifact",
+      "schemaVersionName": "archmap-v0",
+      "artifactRole": "semantic-observation-input",
+      "ownerPhase": "ArchMap MVP",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archmap_prd.md"
+      ],
+      "downstreamIssues": ["#1032", "#1033", "#1035"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map source inventory, provenance, map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "ArchMap is supplied JSON evidence, not architecture ground truth or a Lean theorem claim."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "archmap-validation-report",
+      "artifactName": "ArchMap Validation Report",
+      "schemaVersionName": "archmap-validation-report-v0",
+      "artifactRole": "validation-output",
+      "ownerPhase": "ArchMap MVP",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archmap_prd.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": ["#1032", "#1034"],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, and formal promotion guardrail checks separate.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New checks must report whether they fail, warn, or pass without promoting uncertain mappings."
+        ],
+        "coverageExactnessBoundary": [
+          "Validation pass does not imply semantic correctness, completeness, or architecture lawfulness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
       "artifactId": "feature-extension-report",
       "artifactName": "Feature Extension Report",
       "schemaVersionName": "feature-extension-report-v0",

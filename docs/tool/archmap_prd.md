@@ -7,6 +7,30 @@ product requirement を定義する。目的は、言語・フレームワーク
 
 Lean status: `empirical hypothesis` / tooling design.
 
+## MVP implementation status
+
+Supplied JSON artifact flow は実装済みである。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
+  --input tools/archsig/tests/fixtures/minimal/archmap.json \
+  --out .lake/archmap-validation.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- air-from-archmap \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --validation .lake/archmap-validation.json \
+  --out .lake/archmap-air.json
+```
+
+`archmap` は `archmap-validation-report-v0` を出し、source inventory、source refs、claim boundary、
+semantic coverage、conflict category、formal promotion guardrail を検査する。
+`air-from-archmap` は `archmap-v0` から `aat-air-v0` を生成し、生成 AIR は `validate-air`、
+`theorem-check`、`feature-report` へ渡せる。
+
+未実装 boundary は `archmap-generate` である。LLM / agent から source inventory と ArchMap JSON を
+自動生成する command、authenticated private context fetch、runtime trace auto collection は
+MVP の non-conclusions として残る。
+
 ## Problem
 
 現行 ArchSig は Lean / Python import graph、policy JSON、runtime edge evidence、

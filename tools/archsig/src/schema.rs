@@ -12,6 +12,8 @@ pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-st
 pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report-v0";
 pub const AIR_SCHEMA_VERSION: &str = "aat-air-v0";
 pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report-v0";
+pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-v0";
+pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report-v0";
 pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report-v0";
 pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness-v0";
 pub const ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION: &str = "architecture-drift-ledger-v0";
@@ -2069,6 +2071,220 @@ pub struct AirClaim {
 #[serde(rename_all = "camelCase")]
 pub struct AirOperationTrace {
     pub operations: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapDocumentV0 {
+    pub schema_version: String,
+    pub map_id: String,
+    pub architecture_id: String,
+    pub generated_at: String,
+    pub generator: ArchMapGenerator,
+    #[serde(default)]
+    pub prompt_refs: Vec<ArchMapArtifactRef>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_inventory_ref: Option<ArchMapArtifactRef>,
+    pub generation_boundary: ArchMapGenerationBoundary,
+    pub source_universe: ArchMapSourceUniverse,
+    pub target_universe: ArchMapTargetUniverse,
+    #[serde(default)]
+    pub map_items: Vec<ArchMapMapItem>,
+    #[serde(default)]
+    pub coverage: ArchMapCoverage,
+    #[serde(default)]
+    pub conflicts: Vec<ArchMapConflict>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapGenerator {
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapArtifactRef {
+    pub artifact_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content_hash: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapGenerationBoundary {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub token_budget: Option<String>,
+    #[serde(default)]
+    pub scope: Vec<String>,
+    #[serde(default)]
+    pub excluded_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub private_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub unavailable_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapSourceUniverse {
+    pub root: String,
+    #[serde(default)]
+    pub included_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub excluded_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub unavailable_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub private_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub hashes: Vec<ArchMapArtifactRef>,
+    #[serde(default)]
+    pub known_blind_spots: Vec<String>,
+    pub selection_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapTargetUniverse {
+    #[serde(default)]
+    pub representation: String,
+    #[serde(default)]
+    pub selected_layers: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapSourceRef {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artifact_id: Option<String>,
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub section: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapMapItem {
+    pub map_item_id: String,
+    pub mapping_kind: String,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub target_ref: ArchMapTargetRef,
+    #[serde(default)]
+    pub preserves: Vec<String>,
+    #[serde(default)]
+    pub forgets: Vec<String>,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub confidence: String,
+    #[serde(default)]
+    pub evidence_refs: Vec<String>,
+    #[serde(default)]
+    pub theorem_refs: Vec<String>,
+    #[serde(default)]
+    pub required_assumptions: Vec<String>,
+    #[serde(default)]
+    pub missing_evidence: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conflict_category: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapTargetRef {
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layer: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub to: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subject_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub predicate: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lhs_path_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rhs_path_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub equivalence: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapCoverage {
+    #[serde(default)]
+    pub measured_layers: Vec<String>,
+    #[serde(default)]
+    pub unmeasured_layers: Vec<String>,
+    #[serde(default)]
+    pub assumed_layers: Vec<String>,
+    #[serde(default)]
+    pub unsupported_constructs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapConflict {
+    pub conflict_id: String,
+    pub category: String,
+    pub subject_ref: String,
+    pub description: String,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapValidationReportV0 {
+    pub schema_version: String,
+    pub archmap_ref: String,
+    pub source_inventory_checks: Vec<ValidationCheck>,
+    pub source_ref_checks: Vec<ValidationCheck>,
+    pub claim_boundary_checks: Vec<ValidationCheck>,
+    pub semantic_coverage_checks: Vec<ValidationCheck>,
+    pub conflict_checks: Vec<ValidationCheck>,
+    pub formal_promotion_guardrail_checks: Vec<ValidationCheck>,
+    pub summary: ArchMapValidationSummary,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapValidationSummary {
+    pub result: String,
+    pub map_item_count: usize,
+    pub conflict_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
