@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "aat-sft-research-notes",
+  "compatibility_date": "2026-05-23",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "website"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}
