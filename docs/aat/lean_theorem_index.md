@@ -2599,17 +2599,30 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.governanceComponent_records_synthesis_desired_preservation` | `theorem` | synthesis bridge 由来の final governance component が desired-family preservation を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.governanceComponent_records_synthesis_guard_family` | `theorem` | synthesis bridge 由来の final governance component が selected guard family の hit/miss witness を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.reviewComponent_of_minimalEnvelopePackage` | `def` | minimal consequence-envelope package を final review component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.reviewComponent_records_minimalEnvelope` | `theorem` | minimal envelope package 由来の final review component から `minimalDecisionPreservingEnvelope` を取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.reviewComponent_records_minimalEnvelope_boundary` | `theorem` | minimal envelope package 由来の final review component が review boundary を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.reviewComponent_records_minimalEnvelope_nonConclusions` | `theorem` | minimal envelope package 由来の final review component が non-conclusions を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.FiniteObstructionAwareReviewEnvelopeBridge` | `structure` | finite selected obstruction review projection と minimal consequence-envelope universal property を接続する bridge。 | `defined only` |
 | `SFTFundamentalModularity.FiniteObstructionAwareReviewEnvelopeBridge.obstructionDecision_factors` | `theorem` | selected obstruction decision projection が minimal envelope を通じて factor することを示す。 | `proved accessor` |
 | `SFTFundamentalModularity.reviewComponent_of_obstructionAwareEnvelopeBridge` | `def` | obstruction-aware minimal envelope bridge を final review component として読む。 | `defined only` |
 | `SFTFundamentalModularity.reviewComponent_records_obstructionAware_minimalEnvelope` | `theorem` | final review component が obstruction-aware factorization を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.reviewComponent_records_obstructionAware_boundary` | `theorem` | obstruction-aware bridge 由来の final review component が bridge / envelope / decision boundary を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.reviewComponent_records_obstructionAware_nonConclusions` | `theorem` | obstruction-aware bridge 由来の final review component が non-conclusions を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.calibrationComponent_of_closedLoopPackage` | `def` | closed-loop calibration package を final calibration component として読む bridge。 | `defined only` |
+| `SFTFundamentalModularity.calibrationComponent_records_boundaryExplicit` | `theorem` | closed-loop package 由来の final calibration component が `boundaryExplicitFixedPoint` を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.calibrationComponent_records_fixedPointOrBoundary` | `theorem` | closed-loop package 由来の final calibration component が fixed point または boundary expansion を記録する。 | `proved accessor` |
+| `SFTFundamentalModularity.calibrationComponent_records_closedLoop_nonConclusions` | `theorem` | closed-loop package 由来の final calibration component が non-conclusions を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.calibrationComponent_of_finiteHeightClosedLoopBridge` | `def` | finite-height closed-loop calibration bridge を final calibration component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.calibrationComponent_records_finiteHeight_fixedPointOrBoundary` | `theorem` | finite-height bridge 由来の final calibration component が fixed point または boundary expansion を記録することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.calibrationComponent_records_finiteHeight_boundary` | `theorem` | finite-height bridge 由来の final calibration component が calibration boundary を明示的に保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.calibrationComponent_records_finiteHeight_boundaryExplicit` | `theorem` | finite-height bridge 由来の final calibration component が `boundaryExplicitFixedPoint` を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.calibrationComponent_records_finiteHeight_nonConclusions` | `theorem` | finite-height bridge 由来の final calibration component が non-conclusions を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage` | `def` | agentic confluence package の conclusion `FairInterleavingsConverge package.landing` を final agentic component の `agenticConfluence` / `fairInterleavingsConverge` として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.agenticComponent_records_agenticConfluence` | `theorem` | package assumptions から final agentic component の `agenticConfluence` conclusion を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.agenticComponent_records_confluence` | `theorem` | package assumptions から final agentic component の `fairInterleavingsConverge` conclusion を取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.agenticComponent_records_agentBoundary` | `theorem` | agentic package 由来の final agentic component が agent boundary を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.agenticComponent_records_nonConclusions` | `theorem` | agentic package 由来の final agentic component が non-conclusions を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.agenticComponent_governedAvailability` | `theorem` | selected agentic confluence と明示 bridge から governed-side `agenticConfluenceAvailable` を取り出す。 | `proved accessor` |
 | `SFTAgenticConfluence.ReductionReaches` | `inductive` | selected interleaving reduction の reflexive-transitive closure。 | `defined only` |
 | `SFTAgenticConfluence.IsNormal` | `def` | selected reduction step を持たない normal state predicate。 | `defined only` |
 | `SFTAgenticConfluence.PairwiseJoinableLanding` | `def` | two selected interleavings が landing を保存する common reduct で join すること。 | `defined only` |
@@ -2631,16 +2644,21 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 ## SFT AAT-Supported Fundamental Modularity
 
 File: `Formal/Arch/Evolution/SFTAATFundamentalModularity.lean`
+Canonical example file: `Formal/Arch/Evolution/SFTAATFundamentalModularityExamples.lean`
 
 Issue [#1046](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1046) と子 Issue
 [#1047](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1047)-
 [#1051](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1051)、および follow-up
-Issue [#1054](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1054) では、
+Issue [#1054](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1054) と
+Issue [#1057](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1057)-
+[#1062](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1062) では、
 AAT の selected architecture slice、AAT theorem status、projection / observation /
 reconstruction / missing-evidence boundary、finite selected SFT model、selected source /
 horizon を、既存の `FiniteSelectedFundamentalModularityTheorem` へ接続する
 AAT-supported theorem package と、AAT/SFT boundary failure kind を final typed conclusion
-まで保存する accessor を追加した。
+まで保存する accessor を追加した。さらに review / calibration / agentic component の
+discharge helper accessor と、singleton canonical finite AAT-supported example 上の
+end-to-end package instantiation を追加した。
 
 Non-conclusions: AAT-supported package は assumption-free Grand Theorem、all software
 systems / all covers / all runtime schedules、empirical calibration correctness、
@@ -2650,6 +2668,7 @@ operational governance effectiveness、global AI safety、extractor completeness
 | --- | --- | --- | --- |
 | `SFTAATFundamentalModularity.AATSelectedArchitectureSlice` | `structure` | selected architecture slice と projection / observation / reconstruction / missing-evidence / theorem-status / non-conclusion boundary を束ねる。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary` | `structure` | selected AAT slice、`AATTheoremStatus`、`SFTForecastStatus`、`AATToSFTInterfaceBoundary`、`FiniteExactSFTModel`、selected source / horizon を束ねる AAT-supported SFT boundary package。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel` | `def` | selected slice、interface boundary、finite exact model boundary records から `AATSupportedSFTBoundary` を構成する constructor helper。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsSelectedFiniteBoundary` | `def` | selected architecture slice、finite selected model、selected source、selected horizon の相対化 boundary を保持する。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsAATSliceBoundaries` | `def` | projection / observation / reconstruction / missing-evidence boundary を保持する。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.RecordsTheoremAndModelBoundaries` | `def` | exact cover / observation / theorem / ArchSig report / typed failure boundary を保持する。 | `defined only` |
@@ -2657,7 +2676,15 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise` | `theorem` | AAT theorem status を SFT local premise として読む accessor。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_projection_observation_reconstruction_missingEvidence` | `theorem` | AAT projection / observation / reconstruction / missing-evidence boundary を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_finite_source_horizon` | `theorem` | AAT-supported package が selected / finite / source-horizon-relative であることを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_source_boundary` | `theorem` | selected source boundary を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_horizon_boundary` | `theorem` | selected horizon boundary を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_aat_projection_boundary` | `theorem` | AAT projection boundary を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_aat_observation_boundary` | `theorem` | AAT observation boundary を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_aat_reconstruction_boundary` | `theorem` | AAT reconstruction boundary を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_aat_missingEvidence_boundary` | `theorem` | AAT missing-evidence boundary を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.preserves_nonConclusions` | `theorem` | AAT / SFT / finite exact model の non-conclusions を保存する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_report_and_theorem_status_boundaries` | `theorem` | ArchSig report boundary と AAT/SFT theorem-status boundary を混同せずに theorem/model boundary record として取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedSFTBoundary.constructor_preserves_nonConclusions` | `theorem` | constructor helper 経由でも AAT/SFT/finite exact model の non-conclusions が保存されることを取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailureKind` | `inductive` | expression / projection / observation / reconstruction / missing evidence / theorem status / ArchSig report の AAT/SFT boundary failure vocabulary。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure` | `structure` | AAT/SFT boundary failure witness と evidence boundary / non-conclusions を束ねる。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure` | `def` | AAT/SFT boundary failure を `TypedComputationBoundaryFailure` として読む bridge。 | `defined only` |
@@ -2679,6 +2706,12 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_nonConclusions_preserved_in_final_typed_conclusion` | `theorem` | final typed conclusion に入る AAT/SFT boundary failure branch が non-conclusions を保持することを取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent` | `theorem` | modularity-as-ForecastCone-descent conclusion を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim` | `theorem` | AAT-supported package が non-conclusions を保持し、無条件 theorem / empirical / operational / AI-safety claim へ昇格しない boundary theorem。 | `proved accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary` | `def` | singleton finite exact model、selected source、horizon 1、AAT selected slice から構成した canonical AAT-supported boundary。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage` | `def` | canonical finite AAT-supported boundary と component discharge helper 由来 hypotheses から構成した end-to-end package。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalAATSupported_fundamental_modularity` | `theorem` | canonical package から finite selected final assembly conclusion を取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalAATSupported_governed_or_typed_boundary_failure` | `theorem` | canonical package から governed-or-typed-boundary-failure conclusion を取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion` | `theorem` | canonical package から AAT-supported final typed conclusion を取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions` | `theorem` | canonical package が boundary / final package non-conclusions を保存することを取り出す。 | `proved example accessor` |
 
 ## SFT Theorem Package Entrypoint
 

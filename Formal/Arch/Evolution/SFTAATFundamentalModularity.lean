@@ -95,6 +95,46 @@ variable {exactModel :
   FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
 variable {source : Global} {horizon : Nat}
 
+/--
+Construct an AAT-supported SFT boundary from the selected slice, interface
+boundary, finite exact model boundaries, and explicit non-conclusion boundaries.
+-/
+def ofSelectedSliceAndFiniteExactModel
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (aatStatus : AATTheoremStatus)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary aatStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence)
+    (archSigReportBoundary theoremBoundary typedFailureBoundary
+      nonConclusions : Prop) :
+    AATSupportedSFTBoundary exactModel source horizon where
+  selectedSlice := selectedSlice
+  aatStatus := aatStatus
+  forecastStatus := forecastStatus
+  interfaceBoundary := interfaceBoundary
+  selectedSourceBoundary := selectedSourceBoundary
+  selectedHorizonBoundary := selectedHorizonBoundary
+  recordsFiniteSelectedModel := hFinite
+  recordsExactCoverBoundary := hExact
+  recordsObservationBoundary := hObservation
+  recordsAATProjectionBoundary := hProjection
+  recordsAATObservationBoundary := hAATObservation
+  recordsAATReconstructionBoundary := hReconstruction
+  recordsAATMissingEvidence := hMissingEvidence
+  archSigReportBoundary := archSigReportBoundary
+  theoremBoundary := theoremBoundary
+  typedFailureBoundary := typedFailureBoundary
+  nonConclusions := nonConclusions
+
 def RecordsSelectedFiniteBoundary
     (boundary : AATSupportedSFTBoundary exactModel source horizon) : Prop :=
   boundary.selectedSlice.RecordsSelectedArchitecture ∧
@@ -148,6 +188,38 @@ theorem records_selected_finite_source_horizon
   ⟨hSlice, boundary.recordsFiniteSelectedModel,
     hSource, hHorizon⟩
 
+theorem records_selected_source_boundary
+    (boundary : AATSupportedSFTBoundary exactModel source horizon)
+    (hSource : boundary.selectedSourceBoundary) :
+    boundary.selectedSourceBoundary :=
+  hSource
+
+theorem records_selected_horizon_boundary
+    (boundary : AATSupportedSFTBoundary exactModel source horizon)
+    (hHorizon : boundary.selectedHorizonBoundary) :
+    boundary.selectedHorizonBoundary :=
+  hHorizon
+
+theorem records_aat_projection_boundary
+    (boundary : AATSupportedSFTBoundary exactModel source horizon) :
+    boundary.selectedSlice.RecordsProjectionBoundary :=
+  boundary.recordsAATProjectionBoundary
+
+theorem records_aat_observation_boundary
+    (boundary : AATSupportedSFTBoundary exactModel source horizon) :
+    boundary.selectedSlice.RecordsObservationBoundary :=
+  boundary.recordsAATObservationBoundary
+
+theorem records_aat_reconstruction_boundary
+    (boundary : AATSupportedSFTBoundary exactModel source horizon) :
+    boundary.selectedSlice.RecordsReconstructionBoundary :=
+  boundary.recordsAATReconstructionBoundary
+
+theorem records_aat_missingEvidence_boundary
+    (boundary : AATSupportedSFTBoundary exactModel source horizon) :
+    boundary.selectedSlice.RecordsMissingEvidence :=
+  boundary.recordsAATMissingEvidence
+
 theorem preserves_nonConclusions
     (boundary : AATSupportedSFTBoundary exactModel source horizon)
     (hBoundary : boundary.nonConclusions)
@@ -165,6 +237,55 @@ theorem report_boundary_does_not_strengthen_theorem_status
     boundary.forecastStatus.RecordsToolingBoundary :=
   boundary.interfaceBoundary.tool_report_output_does_not_strengthen_aat_theorem_status
     hTooling
+
+theorem records_report_and_theorem_status_boundaries
+    (boundary : AATSupportedSFTBoundary exactModel source horizon)
+    (hAATTheorem : boundary.aatStatus.RecordsTheoremBoundary)
+    (hForecastTheorem : boundary.forecastStatus.RecordsTheoremBoundary)
+    (hArchSigReport : boundary.archSigReportBoundary)
+    (hTheoremBoundary : boundary.theoremBoundary)
+    (hTypedFailureBoundary : boundary.typedFailureBoundary) :
+    boundary.RecordsTheoremAndModelBoundaries :=
+  ⟨boundary.recordsExactCoverBoundary, boundary.recordsObservationBoundary,
+    hAATTheorem, hForecastTheorem, hArchSigReport,
+    hTheoremBoundary, hTypedFailureBoundary⟩
+
+theorem constructor_preserves_nonConclusions
+    (selectedSlice : AATSelectedArchitectureSlice)
+    (aatStatus : AATTheoremStatus)
+    (forecastStatus : SFTForecastStatus)
+    (interfaceBoundary :
+      AATToSFTInterfaceBoundary aatStatus forecastStatus)
+    (selectedSourceBoundary : Prop)
+    (selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hProjection : selectedSlice.RecordsProjectionBoundary)
+    (hAATObservation : selectedSlice.RecordsObservationBoundary)
+    (hReconstruction : selectedSlice.RecordsReconstructionBoundary)
+    (hMissingEvidence : selectedSlice.RecordsMissingEvidence)
+    (archSigReportBoundary theoremBoundary typedFailureBoundary
+      nonConclusions : Prop)
+    (hBoundary : nonConclusions)
+    (hSlice : selectedSlice.RecordsNonConclusions)
+    (hAAT : aatStatus.RecordsNonConclusions)
+    (hExactNonConclusions : exactModel.RecordsNonConclusions) :
+    (ofSelectedSliceAndFiniteExactModel
+      (exactModel := exactModel) (source := source) (horizon := horizon)
+      selectedSlice aatStatus forecastStatus interfaceBoundary
+      selectedSourceBoundary selectedHorizonBoundary hFinite hExact
+      hObservation hProjection hAATObservation hReconstruction
+      hMissingEvidence archSigReportBoundary theoremBoundary
+      typedFailureBoundary nonConclusions).RecordsNonConclusions :=
+  (ofSelectedSliceAndFiniteExactModel
+    (exactModel := exactModel) (source := source) (horizon := horizon)
+    selectedSlice aatStatus forecastStatus interfaceBoundary
+    selectedSourceBoundary selectedHorizonBoundary hFinite hExact
+    hObservation hProjection hAATObservation hReconstruction
+    hMissingEvidence archSigReportBoundary theoremBoundary
+    typedFailureBoundary nonConclusions).preserves_nonConclusions
+      hBoundary hSlice hAAT hExactNonConclusions
 
 end AATSupportedSFTBoundary
 

@@ -21,6 +21,7 @@ import Formal.Arch.Evolution.SFTTheoremRoadmap
 import Formal.Arch.Evolution.SFTAgenticConfluence
 import Formal.Arch.Evolution.SFTFundamentalModularity
 import Formal.Arch.Evolution.SFTAATFundamentalModularity
+import Formal.Arch.Evolution.SFTAATFundamentalModularityExamples
 
 /-!
 Documentation-facing entrypoints for the SFT Lean theorem packages.
@@ -287,11 +288,19 @@ def representativeDeclarations : Candidate -> List String
        "SFTFundamentalModularity.governanceComponent_records_synthesis_desired_preservation",
        "SFTFundamentalModularity.governanceComponent_records_synthesis_guard_family",
        "SFTFundamentalModularity.reviewComponent_of_minimalEnvelopePackage",
+       "SFTFundamentalModularity.reviewComponent_records_minimalEnvelope",
+       "SFTFundamentalModularity.reviewComponent_records_minimalEnvelope_boundary",
+       "SFTFundamentalModularity.reviewComponent_records_minimalEnvelope_nonConclusions",
        "SFTFundamentalModularity.FiniteObstructionAwareReviewEnvelopeBridge",
        "SFTFundamentalModularity.FiniteObstructionAwareReviewEnvelopeBridge.obstructionDecision_factors",
        "SFTFundamentalModularity.reviewComponent_of_obstructionAwareEnvelopeBridge",
        "SFTFundamentalModularity.reviewComponent_records_obstructionAware_minimalEnvelope",
+       "SFTFundamentalModularity.reviewComponent_records_obstructionAware_boundary",
+       "SFTFundamentalModularity.reviewComponent_records_obstructionAware_nonConclusions",
        "SFTFundamentalModularity.calibrationComponent_of_closedLoopPackage",
+       "SFTFundamentalModularity.calibrationComponent_records_boundaryExplicit",
+       "SFTFundamentalModularity.calibrationComponent_records_fixedPointOrBoundary",
+       "SFTFundamentalModularity.calibrationComponent_records_closedLoop_nonConclusions",
        "SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge",
        "SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge.closedLoopPackage",
        "SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge.finiteHeight_closedLoopCalibration_fixedPoint_or_boundary",
@@ -300,9 +309,14 @@ def representativeDeclarations : Candidate -> List String
        "SFTFundamentalModularity.calibrationComponent_of_finiteHeightClosedLoopBridge",
        "SFTFundamentalModularity.calibrationComponent_records_finiteHeight_fixedPointOrBoundary",
        "SFTFundamentalModularity.calibrationComponent_records_finiteHeight_boundary",
+       "SFTFundamentalModularity.calibrationComponent_records_finiteHeight_boundaryExplicit",
+       "SFTFundamentalModularity.calibrationComponent_records_finiteHeight_nonConclusions",
        "SFTFundamentalModularity.agenticComponent_of_agenticConfluencePackage",
        "SFTFundamentalModularity.agenticComponent_records_agenticConfluence",
        "SFTFundamentalModularity.agenticComponent_records_confluence",
+       "SFTFundamentalModularity.agenticComponent_records_agentBoundary",
+       "SFTFundamentalModularity.agenticComponent_records_nonConclusions",
+       "SFTFundamentalModularity.agenticComponent_governedAvailability",
        "SFTAgenticConfluence.ReductionReaches",
        "SFTAgenticConfluence.NewmanStyleConfluenceKernel",
        "SFTAgenticConfluence.NewmanStyleConfluenceKernel.newmanStyle_fairInterleavingsConverge",
@@ -341,10 +355,19 @@ def representativeDeclarations : Candidate -> List String
       ["SFTAATFundamentalModularity.AATSelectedArchitectureSlice",
        "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.RecordsProjectionBoundary",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_projection_observation_reconstruction_missingEvidence",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_finite_source_horizon",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_source_boundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_horizon_boundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_aat_projection_boundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_aat_observation_boundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_aat_reconstruction_boundary",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_aat_missingEvidence_boundary",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.preserves_nonConclusions",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_report_and_theorem_status_boundaries",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.constructor_preserves_nonConclusions",
        "SFTAATFundamentalModularity.AATSFTBoundaryFailure",
        "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure",
        "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure",
@@ -355,7 +378,13 @@ def representativeDeclarations : Candidate -> List String
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
-       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim"]
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim",
+       "SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary",
+       "SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage",
+       "SFTAATFundamentalModularity.Examples.canonicalAATSupported_fundamental_modularity",
+       "SFTAATFundamentalModularity.Examples.canonicalAATSupported_governed_or_typed_boundary_failure",
+       "SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion",
+       "SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.
@@ -620,8 +649,11 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
   | aatSupportedFundamentalModularity =>
       [{ schematic := "AAT-supported finite selected Fundamental Modularity",
          leanDeclarations :=
-          ["SFTAATFundamentalModularity.AATSupportedSFTBoundary",
+         ["SFTAATFundamentalModularity.AATSupportedSFTBoundary",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_report_and_theorem_status_boundaries",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.constructor_preserves_nonConclusions",
            "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure",
            "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses",
@@ -629,10 +661,13 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
-           "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim"],
+           "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim",
+           "SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage",
+           "SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion",
+           "SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions"],
          reading :=
-          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly",
-         status := "defined only / proved accessors under explicit AAT/SFT boundary assumptions" }]
+          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly; a singleton canonical finite example instantiates the AAT-supported package end to end",
+         status := "proved accessors and canonical example under explicit AAT/SFT boundary assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
 def nonConclusionBoundary : Candidate -> String

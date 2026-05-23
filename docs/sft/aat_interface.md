@@ -132,7 +132,9 @@ local transition law または admissibility premise として使う。
 ### AAT-supported Grand Theorem package
 
 Lean 側では、AAT boundary 上で SFT Grand Theorem を読むための package を
-`Formal/Arch/Evolution/SFTAATFundamentalModularity.lean` に分離している。
+`Formal/Arch/Evolution/SFTAATFundamentalModularity.lean` に分離している。小さな
+canonical finite example は
+`Formal/Arch/Evolution/SFTAATFundamentalModularityExamples.lean` に置く。
 
 `SFTAATFundamentalModularity.AATSupportedSFTBoundary` は、AAT の selected
 architecture slice、`AATTheoremStatus`、`SFTForecastStatus`、
@@ -140,6 +142,11 @@ architecture slice、`AATTheoremStatus`、`SFTForecastStatus`、
 horizon を同じ record に保持する。ここで AAT theorem status は SFT local premise として
 読むだけであり、projection / observation / reconstruction / missing-evidence /
 theorem / ArchSig report boundary は残る。
+`AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel` は、この record を
+selected slice / interface boundary / finite exact model boundary records から構成する
+constructor helper であり、selected source / horizon、projection / observation /
+reconstruction / missing-evidence boundary、ArchSig report boundary と theorem-status
+boundary、non-conclusions preservation を accessor theorem として取り出せる。
 
 `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage` は、この
 boundary と既存の `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem`
@@ -148,6 +155,15 @@ governed-or-typed-boundary-failure と modularity-as-ForecastCone-descent access
 assumption-free Grand Theorem、all software systems / all covers / all runtime schedules、
 empirical calibration correctness、operational governance effectiveness、global AI safety、
 extractor completeness は結論しない。
+
+Issue #1057-#1062 では、review / calibration / agentic component の discharge helper
+accessor と、singleton finite exact model 上の
+`SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage`
+を追加した。この canonical package は `AATSupportedFundamentalModularityPackage` を
+end-to-end に instantiate し、final typed conclusion と non-conclusions preservation を
+取り出す example theorem を持つ。ただし、これは selected finite AAT-supported model 上の
+例であり、任意の software system、all covers、all runtime schedules、extractor
+completeness へ一般化しない。
 
 Follow-up Issue #1054 では、`AATSFTBoundaryFailureKind` を typed conversion 後にも
 保持する `AATTypedComputationBoundaryFailure` と、governed / existing finite typed failure /
