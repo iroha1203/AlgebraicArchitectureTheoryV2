@@ -2450,7 +2450,11 @@ Cech cohomology、operational governance effectiveness、Fundamental Modularity 
 | `FiniteExactFailureClassifierCompleteness.RecordsNonConclusions` | `def` | finite exact model、obstruction package、classifier の non-conclusion boundary を保持する。 | `defined only` |
 | `FiniteExactFailureClassifierCompleteness.records_exactCoverBoundary` | `theorem` | finite exact classifier completeness package が exact cover boundary を保持することを取り出す。 | `proved accessor` |
 | `FiniteExactFailureClassifierCompleteness.records_finiteModelBoundary` | `theorem` | finite model boundary を保持することを取り出す。 | `proved accessor` |
+| `FiniteFailureKindClassifierCoverage` | `def` | selected classifier coverage を failure kind 単位で表す predicate。global classifier completeness ではない。 | `defined only` |
+| `FiniteFailureKindClassifierCoverageMatrix` | `def` | selected finite failure kind ごとの coverage predicate を束ねる matrix。 | `defined only` |
 | `finiteExact_failure_classifier_complete` | `theorem` | selected finite exact descent failure が classifier package により typed obstruction witness へ分類され、outer / payload failure-kind soundness が保たれることを証明する。 | `proved accessor` |
+| `finiteExact_failureKind_classifier_complete` | `theorem` | finite exact classifier completeness package を selected failure kind ごとの witness availability として読む。 | `proved accessor` |
+| `finiteExact_failureKind_classifier_matrix` | `theorem` | finite exact classifier completeness package から failure-kind coverage matrix を取り出す。 | `proved accessor` |
 | `CechCocycleObstruction` | `structure` | concrete Cech cocycle と selected non-coboundary / obstruction boundary を束ねる Cech-side obstruction witness。 | `defined only` |
 | `FiniteCechTypedObstructionBridge` | `structure` | selected finite exact model 上で typed obstruction witness と Cech cocycle obstruction を対応付ける bridge package。 | `defined only` |
 | `FiniteCechTypedObstructionBridge.RecordsSelectedFiniteBoundary` | `def` | Cech obstruction bridge の selected finite / classifier completeness boundary を取り出す。 | `defined only` |
@@ -2569,6 +2573,7 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.FundamentalCalibrationComponent` | `structure` | boundary-explicit fixed point と fixed-point-or-boundary expansion component。 | `defined only` |
 | `SFTFundamentalModularity.FundamentalAgenticComponent` | `structure` | agentic confluence と fair interleaving convergence component。 | `defined only` |
 | `SFTFundamentalModularity.FundamentalModularityHypotheses` | `structure` | final assembly に必要な component packages と explicit proof assumptions を束ねる。agentic confluence assumption と governed-side availability bridge も保持する。 | `defined only` |
+| `SFTFundamentalModularity.FundamentalModularityHypotheses.ofDischargedComponents` | `def` | discharged selected component propositions と governed-or-failure branch から final hypotheses を組み立てる staged constructor。 | `defined only` |
 | `SFTFundamentalModularity.roadmapConclusion_of_hypotheses` | `def` | final hypotheses から既存 `SFTTheoremRoadmap.FundamentalModularityConclusion` を構成する。 | `defined only` |
 | `SFTFundamentalModularity.roadmapPackage_of_hypotheses` | `def` | final hypotheses から既存 `SFTTheoremRoadmap.FundamentalModularityTheoremPackage` を構成する。 | `defined only` |
 | `SFTFundamentalModularity.fundamental_modularity_final_assembly` | `theorem` | explicit hypotheses の下で theorem-family components、agentic confluence、governed-or-typed-failure conclusion を組み上げる。 | `proved accessor / assembly theorem` |
@@ -2577,6 +2582,7 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.final_governed_agenticConfluenceAvailable` | `theorem` | final hypotheses の bridge から governed-side agentic confluence availability を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.final_modularity_iff_forecastConeDescent` | `theorem` | assembled roadmap package が modularity と ForecastCone descent の同値を記録することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.final_assembly_preserves_component_nonConclusions` | `theorem` | final assembly が component non-conclusions を保持し、assumption-free / empirical / operational / AI-safety claim へ昇格しないことを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.hypotheses_ofDischargedComponents_records_finalAssembly` | `theorem` | staged constructor で作った hypotheses から final selected assembly を即座に回収する。 | `proved accessor` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem` | `structure` | `FiniteExactSFTModel`、selected source / horizon、final hypotheses、exact-model boundary、non-conclusions を束ねる finite selected final theorem package。 | `defined only` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.roadmapConclusion` | `def` | finite selected package から assembled roadmap conclusion を取り出す。 | `defined only` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.roadmapPackage` | `def` | finite selected package から assembled roadmap theorem package を取り出す。 | `defined only` |
@@ -2597,9 +2603,13 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.descentComponent_of_finiteExactDescentAssumptions` | `def` | finite exact descent assumptions から final descent component を構成する。 | `defined only` |
 | `SFTFundamentalModularity.descentComponent_of_h1FiniteDescentAssumptions` | `def` | H1 finite descent assumptions から final descent component を構成する。 | `defined only` |
 | `SFTFundamentalModularity.descentComponent_records_h1FiniteDescent` | `theorem` | H1 finite-descent assumptions 由来の final descent component が selected finite descent package と H1 / non-conclusion boundary を保持することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.descentComponent_of_goodFiniteCover` | `def` | good finite cover sufficient condition を final descent component として読む。 | `defined only` |
+| `SFTFundamentalModularity.descentComponent_records_goodFiniteCover` | `theorem` | good finite cover sufficient condition 由来の final descent component が selected finite descent を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.descentComponent_records_goodFiniteCover_nonConclusions` | `theorem` | good finite cover 由来の final descent component が non-conclusion boundary を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.obstructionComponent_of_finiteDescentObstructionPackage` | `def` | finite classifier package を final obstruction component として読む。 | `defined only` |
 | `SFTFundamentalModularity.obstructionComponent_records_finite_witness` | `theorem` | final obstruction component が selected finite failure の typed witness availability を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.obstructionComponent_of_finiteExactFailureClassifierCompleteness` | `def` | finite exact classifier completeness package を final obstruction component として読む。 | `defined only` |
+| `SFTFundamentalModularity.obstructionComponent_records_finiteExact_failureKind_matrix` | `theorem` | final obstruction component 側から finite exact classifier の failure-kind coverage matrix を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents` | `def` | finite exact model boundary と final hypotheses から finite selected final theorem package を構成する。 | `defined only` |
 | `SFTFundamentalModularity.finiteSelected_ofFiniteExactComponents_records_finalAssembly` | `theorem` | constructor-built finite selected package から final assembly theorem を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.governanceComponent_of_finiteObstructionGovernance` | `def` | finite obstruction governance package を final governance component として読む bridge。 | `defined only` |
@@ -2620,6 +2630,12 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.reviewComponent_records_obstructionAware_minimalEnvelope` | `theorem` | final review component が obstruction-aware factorization を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.reviewComponent_records_obstructionAware_boundary` | `theorem` | obstruction-aware bridge 由来の final review component が bridge / envelope / decision boundary を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.reviewComponent_records_obstructionAware_nonConclusions` | `theorem` | obstruction-aware bridge 由来の final review component が non-conclusions を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.FiniteReviewGovernanceCuttingBridge` | `structure` | obstruction-aware review envelope と governance synthesis が同じ selected obstruction family を参照することを記録する bridge。 | `defined only` |
+| `SFTFundamentalModularity.FiniteReviewGovernanceCuttingBridge.records_sameSelectedObstructionFamily` | `theorem` | review / governance bridge の same-selected-obstruction-family boundary を取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.FiniteReviewGovernanceCuttingBridge.RecordsNonConclusions` | `def` | review / governance bridge、review side、governance side の non-conclusion boundary を束ねる。 | `defined only` |
+| `SFTFundamentalModularity.reviewComponent_of_reviewGovernanceCuttingBridge` | `def` | review-governance bridge の review side を final review component として読む。 | `defined only` |
+| `SFTFundamentalModularity.governanceComponent_of_reviewGovernanceCuttingBridge` | `def` | review-governance bridge の governance side を final governance component として読む。 | `defined only` |
+| `SFTFundamentalModularity.reviewGovernanceCuttingBridge_records_components` | `theorem` | selected review-governance bridge から final review component と final governance cutting component を同時に取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.calibrationComponent_of_closedLoopPackage` | `def` | closed-loop calibration package を final calibration component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.calibrationComponent_records_boundaryExplicit` | `theorem` | closed-loop package 由来の final calibration component が `boundaryExplicitFixedPoint` を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.calibrationComponent_records_fixedPointOrBoundary` | `theorem` | closed-loop package 由来の final calibration component が fixed point または boundary expansion を記録する。 | `proved accessor` |

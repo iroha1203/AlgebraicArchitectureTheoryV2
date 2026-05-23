@@ -347,6 +347,41 @@ theorem records_finiteModelBoundary
 end FiniteExactFailureClassifierCompleteness
 
 /--
+Failure-kind local classifier coverage.
+
+This is a selected finite predicate over the supplied classifier.  It does not
+claim that every software failure, repository failure, or extractor output is
+classified.
+-/
+def FiniteFailureKindClassifierCoverage
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (classifier :
+      FiniteDescentObstructionClassifier model source horizon)
+    (kind : FiniteDescentFailureKind) : Prop :=
+  ∀ failure : FiniteDescentFailure model source horizon,
+    failure.kind = kind ->
+      ∃ witness : FiniteDescentObstructionWitness model source horizon,
+        classifier.classify failure = some witness ∧
+          witness.failureKind = kind ∧
+            witness.payload.failureKind = kind
+
+/-- A package records classifier coverage separately for each selected failure kind. -/
+def FiniteFailureKindClassifierCoverageMatrix
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteDescentObstructionPackage model source horizon) : Prop :=
+  ∀ kind,
+    FiniteFailureKindClassifierCoverage package.classifier kind
+
+/--
 Every selected finite exact descent failure is classified by the supplied
 classifier package, with outer and payload failure-kind soundness preserved.
 -/
@@ -370,6 +405,45 @@ theorem finiteExact_failure_classifier_complete
   finite_descent_obstruction_of_classified_failure_sound_complete
     package.classifier failure
     (package.obstructionPackage.everySelectedFailureClassified failure)
+
+/--
+Finite exact classifier completeness can be read failure-kind by failure-kind.
+
+The theorem only ranges over failures in the selected finite exact model.
+-/
+theorem finiteExact_failureKind_classifier_complete
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon)
+    (kind : FiniteDescentFailureKind) :
+    FiniteFailureKindClassifierCoverage package.classifier kind := by
+  intro failure hKind
+  rcases finiteExact_failure_classifier_complete package failure with
+    ⟨witness, hClassified, hWitnessKind, hPayloadKind, _hPayloadMatches⟩
+  exact
+    ⟨witness, hClassified, hWitnessKind.trans hKind,
+      hPayloadKind.trans hKind⟩
+
+/--
+The finite exact package exposes the whole selected failure-kind coverage
+matrix.
+-/
+theorem finiteExact_failureKind_classifier_matrix
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    FiniteFailureKindClassifierCoverageMatrix package.obstructionPackage :=
+  fun kind => finiteExact_failureKind_classifier_complete package kind
 
 /--
 Cech-side obstruction witness for a selected finite cone cocycle.

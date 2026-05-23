@@ -237,6 +237,54 @@ structure FundamentalModularityHypotheses where
   theoremBoundary : Prop
   nonConclusions : Prop
 
+/--
+Staged constructor for the final assembly hypotheses.
+
+The constructor only packages discharged selected component propositions and
+the explicit governed-or-failure branch.  Any still-undischarged component
+boundary remains in the component records and `nonConclusions`.
+-/
+def FundamentalModularityHypotheses.ofDischargedComponents
+    (descent : FundamentalDescentComponent)
+    (obstruction : FundamentalObstructionComponent)
+    (review : FundamentalReviewComponent)
+    (governance : FundamentalGovernanceComponent)
+    (calibration : FundamentalCalibrationComponent)
+    (agentic : FundamentalAgenticComponent)
+    (governed : ComputablyGoverned)
+    (failure : TypedComputationBoundaryFailure)
+    (hModularity : descent.modularityAsDescent)
+    (hDebt : obstruction.technicalDebtAsObstruction)
+    (hReview : review.minimalDecisionPreservingEnvelope)
+    (hGovernance : governance.governanceAsObstructionCutting)
+    (hLearning : calibration.boundaryExplicitFixedPoint)
+    (hAgentic : agentic.agenticConfluence)
+    (hAgenticAvailable :
+      agentic.agenticConfluence -> governed.agenticConfluenceAvailable)
+    (governed_or_failure :
+      governed.governedBoundary ∨ failure.explainsBrokenBoundary)
+    (theoremBoundary : Prop)
+    (nonConclusions : Prop) :
+    FundamentalModularityHypotheses where
+  descent := descent
+  obstruction := obstruction
+  review := review
+  governance := governance
+  calibration := calibration
+  agentic := agentic
+  governed := governed
+  failure := failure
+  hModularity := hModularity
+  hDebt := hDebt
+  hReview := hReview
+  hGovernance := hGovernance
+  hLearning := hLearning
+  hAgentic := hAgentic
+  hAgenticAvailable := hAgenticAvailable
+  governed_or_failure := governed_or_failure
+  theoremBoundary := theoremBoundary
+  nonConclusions := nonConclusions
+
 /-- Roadmap conclusion assembled from final hypotheses. -/
 def roadmapConclusion_of_hypotheses
     (h : FundamentalModularityHypotheses) :
@@ -314,6 +362,38 @@ theorem final_assembly_preserves_component_nonConclusions
     (roadmapConclusion_of_hypotheses h).nonConclusions := by
   intro hComponents
   simpa [roadmapConclusion_of_hypotheses, toRoadmapConclusion] using hComponents
+
+/-- The staged constructor immediately recovers the final selected assembly. -/
+theorem hypotheses_ofDischargedComponents_records_finalAssembly
+    (descent : FundamentalDescentComponent)
+    (obstruction : FundamentalObstructionComponent)
+    (review : FundamentalReviewComponent)
+    (governance : FundamentalGovernanceComponent)
+    (calibration : FundamentalCalibrationComponent)
+    (agentic : FundamentalAgenticComponent)
+    (governed : ComputablyGoverned)
+    (failure : TypedComputationBoundaryFailure)
+    (hModularity : descent.modularityAsDescent)
+    (hDebt : obstruction.technicalDebtAsObstruction)
+    (hReview : review.minimalDecisionPreservingEnvelope)
+    (hGovernance : governance.governanceAsObstructionCutting)
+    (hLearning : calibration.boundaryExplicitFixedPoint)
+    (hAgentic : agentic.agenticConfluence)
+    (hAgenticAvailable :
+      agentic.agenticConfluence -> governed.agenticConfluenceAvailable)
+    (governed_or_failure :
+      governed.governedBoundary ∨ failure.explainsBrokenBoundary)
+    (theoremBoundary : Prop)
+    (nonConclusions : Prop) :
+    fundamental_modularity_final_assembly
+      (FundamentalModularityHypotheses.ofDischargedComponents
+        descent obstruction review governance calibration agentic governed
+        failure hModularity hDebt hReview hGovernance hLearning hAgentic
+        hAgenticAvailable governed_or_failure theoremBoundary
+        nonConclusions) =
+      ⟨hModularity, hDebt, hReview, hGovernance, hLearning, hAgentic,
+        governed_or_failure⟩ :=
+  rfl
 
 /--
 Finite selected Fundamental Modularity theorem package.
@@ -596,6 +676,45 @@ theorem descentComponent_records_h1FiniteDescent
       assumptions).forecastConeDescent :=
   hBoundary
 
+/-- Read a good finite cover sufficient condition as the final descent component. -/
+def descentComponent_of_goodFiniteCover
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (condition :
+      GoodFiniteCoverDescentCondition model source horizon) :
+    FundamentalDescentComponent :=
+  descentComponent_of_finiteSelectedDescentPackage condition.descentPackage
+
+/-- Good finite cover descent reaches the final descent component boundary. -/
+theorem descentComponent_records_goodFiniteCover
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (condition :
+      GoodFiniteCoverDescentCondition model source horizon)
+    (hBoundary :
+      condition.descentPackage.descentEquivalence.equivalenceBoundary) :
+    (descentComponent_of_goodFiniteCover condition).forecastConeDescent :=
+  hBoundary
+
+/- Good finite cover descent preserves its selected non-conclusion boundary. -/
+theorem descentComponent_records_goodFiniteCover_nonConclusions
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (condition :
+      GoodFiniteCoverDescentCondition model source horizon)
+    (hNonConclusions : condition.descentPackage.nonConclusions) :
+    (descentComponent_of_goodFiniteCover condition).nonConclusions :=
+  hNonConclusions
+
 /-- Read a finite descent obstruction package as the final obstruction component. -/
 def obstructionComponent_of_finiteDescentObstructionPackage
     {Global : Type u} {Index : Type v} {Local : Type w}
@@ -657,6 +776,19 @@ theorem obstructionComponent_records_finiteExact_witness
     (obstructionComponent_of_finiteExactFailureClassifierCompleteness
       package).typedFailureWitnessAvailable :=
   obstructionComponent_records_finite_witness package.obstructionPackage
+
+/-- The final obstruction component exposes selected failure-kind coverage. -/
+theorem obstructionComponent_records_finiteExact_failureKind_matrix
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    FiniteFailureKindClassifierCoverageMatrix package.obstructionPackage :=
+  finiteExact_failureKind_classifier_matrix package
 
 /--
 Construct the finite selected final theorem package from already-built finite
@@ -1149,6 +1281,131 @@ theorem reviewComponent_records_obstructionAware_nonConclusions
     (reviewComponent_of_obstructionAwareEnvelopeBridge
       bridge).nonConclusions :=
   hNonConclusions
+
+/--
+Selected bridge between obstruction-aware review and governance cutting.
+
+The bridge records that the review envelope and governance synthesis are being
+read over the same selected finite obstruction family.  It remains a selected
+finite package boundary, not operational review optimality or governance
+effectiveness.
+-/
+structure FiniteReviewGovernanceCuttingBridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    (model : FiniteSFTModel cover OperationG OperationL)
+    (source : Global) (horizon : Nat)
+    (ConePath : Type z) (MinimalEnvelope : Type u)
+    (Decision : Type v) (Guard : Type x) (Intervention : Type y) where
+  reviewBridge :
+    FiniteObstructionAwareReviewEnvelopeBridge
+      model source horizon ConePath MinimalEnvelope Decision
+  governanceBridge :
+    SFTTheoremRoadmap.FiniteGovernanceSynthesisBridge
+      model source horizon Guard Intervention
+  sameSelectedObstructionFamily : Prop
+  reviewTargetsGovernanceCutting : Prop
+  bridgeBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteReviewGovernanceCuttingBridge
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {cover : UniformFiniteFieldCover Global Index Local}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {model : FiniteSFTModel cover OperationG OperationL}
+variable {source : Global} {horizon : Nat}
+variable {ConePath : Type z} {MinimalEnvelope : Type u}
+variable {Decision : Type v} {Guard : Type x} {Intervention : Type y}
+
+/-- The bridge records that review and governance use the same selected family. -/
+theorem records_sameSelectedObstructionFamily
+    (bridge :
+      FiniteReviewGovernanceCuttingBridge
+        model source horizon ConePath MinimalEnvelope Decision Guard
+        Intervention)
+    (hSame : bridge.sameSelectedObstructionFamily) :
+    bridge.sameSelectedObstructionFamily :=
+  hSame
+
+/-- The bridge keeps operational and empirical non-conclusions explicit. -/
+def RecordsNonConclusions
+    (bridge :
+      FiniteReviewGovernanceCuttingBridge
+        model source horizon ConePath MinimalEnvelope Decision Guard
+        Intervention) : Prop :=
+  bridge.nonConclusions ∧ bridge.reviewBridge.RecordsNonConclusions ∧
+    bridge.governanceBridge.nonConclusions
+
+end FiniteReviewGovernanceCuttingBridge
+
+/-- Read the review side of a selected review-governance bridge. -/
+def reviewComponent_of_reviewGovernanceCuttingBridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    {ConePath : Type z} {MinimalEnvelope : Type u}
+    {Decision : Type v} {Guard : Type x} {Intervention : Type y}
+    (bridge :
+      FiniteReviewGovernanceCuttingBridge
+        model source horizon ConePath MinimalEnvelope Decision Guard
+        Intervention) :
+    FundamentalReviewComponent :=
+  reviewComponent_of_obstructionAwareEnvelopeBridge bridge.reviewBridge
+
+/-- Read the governance side of a selected review-governance bridge. -/
+def governanceComponent_of_reviewGovernanceCuttingBridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    {ConePath : Type z} {MinimalEnvelope : Type u}
+    {Decision : Type v} {Guard : Type x} {Intervention : Type y}
+    (bridge :
+      FiniteReviewGovernanceCuttingBridge
+        model source horizon ConePath MinimalEnvelope Decision Guard
+        Intervention)
+    (failure : FiniteDescentFailure model source horizon)
+    (hBadClassified :
+      ∀ witness,
+        bridge.governanceBridge.obstructionPackage.classifier.classify
+            failure = some witness ->
+        bridge.governanceBridge.target.bad witness) :
+    FundamentalGovernanceComponent :=
+  governanceComponent_of_finiteGovernanceSynthesisBridge
+    bridge.governanceBridge failure hBadClassified
+
+/-- The selected bridge recovers both final review and governance components. -/
+theorem reviewGovernanceCuttingBridge_records_components
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    {ConePath : Type z} {MinimalEnvelope : Type u}
+    {Decision : Type v} {Guard : Type x} {Intervention : Type y}
+    (bridge :
+      FiniteReviewGovernanceCuttingBridge
+        model source horizon ConePath MinimalEnvelope Decision Guard
+        Intervention)
+    (failure : FiniteDescentFailure model source horizon)
+    (hBadClassified :
+      ∀ witness,
+        bridge.governanceBridge.obstructionPackage.classifier.classify
+            failure = some witness ->
+        bridge.governanceBridge.target.bad witness) :
+    (reviewComponent_of_reviewGovernanceCuttingBridge
+      bridge).minimalDecisionPreservingEnvelope ∧
+      (governanceComponent_of_reviewGovernanceCuttingBridge
+        bridge failure hBadClassified).governanceAsObstructionCutting :=
+  ⟨reviewComponent_records_obstructionAware_minimalEnvelope
+      bridge.reviewBridge,
+    governanceComponent_records_synthesis_cut
+      bridge.governanceBridge failure hBadClassified⟩
 
 /-- Read closed-loop calibration package data as the final calibration component. -/
 def calibrationComponent_of_closedLoopPackage
