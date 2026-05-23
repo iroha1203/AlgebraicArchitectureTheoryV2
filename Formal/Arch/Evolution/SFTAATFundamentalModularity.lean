@@ -309,6 +309,45 @@ structure AATSFTBoundaryFailure where
 
 namespace AATSFTBoundaryFailure
 
+/-- Generic constructor for a typed AAT/SFT boundary failure. -/
+def ofKind
+    (kind : AATSFTBoundaryFailureKind)
+    (explainsAATBoundary evidenceBoundary nonConclusions : Prop) :
+    AATSFTBoundaryFailure where
+  kind := kind
+  explainsAATBoundary := explainsAATBoundary
+  evidenceBoundary := evidenceBoundary
+  nonConclusions := nonConclusions
+
+def expressionBoundary :=
+  ofKind AATSFTBoundaryFailureKind.expressionBoundary
+
+def projectionBoundary :=
+  ofKind AATSFTBoundaryFailureKind.projectionBoundary
+
+def observationBoundary :=
+  ofKind AATSFTBoundaryFailureKind.observationBoundary
+
+def reconstructionBoundary :=
+  ofKind AATSFTBoundaryFailureKind.reconstructionBoundary
+
+def missingEvidence :=
+  ofKind AATSFTBoundaryFailureKind.missingEvidence
+
+def theoremStatusBoundary :=
+  ofKind AATSFTBoundaryFailureKind.theoremStatusBoundary
+
+def archSigReportBoundary :=
+  ofKind AATSFTBoundaryFailureKind.archSigReportBoundary
+
+/-- Constructor helpers preserve the fine-grained AAT/SFT boundary kind. -/
+theorem ofKind_records_kind
+    (kind : AATSFTBoundaryFailureKind)
+    (explainsAATBoundary evidenceBoundary nonConclusions : Prop) :
+    (ofKind kind explainsAATBoundary evidenceBoundary nonConclusions).kind =
+      kind :=
+  rfl
+
 def toFundamentalBoundaryFailureKind
     (_failure : AATSFTBoundaryFailure) :
     FundamentalBoundaryFailureKind :=
@@ -706,6 +745,87 @@ def lifecycleTypedFailureSidecar_of_threshold
   nonConclusionBoundary :=
     ⟨package.recordsNonConclusions, package.recordsFinalNonConclusions,
       hLifecycleNonConclusions⟩
+
+/-- Lifecycle sidecar accessor for the final typed conclusion. -/
+theorem lifecycleTypedFailureSidecar_records_final_typed_conclusion
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Field : Type a}
+    (lifecycle : SFTTheoremRoadmap.LifecycleBifurcationPackage Field)
+    (field : Field)
+    (hGe : lifecycle.threshold <= lifecycle.obstructionMeasure field)
+    (hBoundary : lifecycle.lifecycleBoundary)
+    (hLifecycleNonConclusions : lifecycle.nonConclusions) :
+    package.AATSupportedFinalTypedConclusion :=
+  (lifecycleTypedFailureSidecar_of_threshold package lifecycle field hGe
+      hBoundary hLifecycleNonConclusions).finalTypedConclusion
+
+/--
+Field-shaping fixed-point sidecar for AAT-supported Grand Theorem packages.
+
+The selected fixed points come from the SFT roadmap package; the sidecar does
+not claim runtime behavior equivalence or empirical outcome preservation.
+-/
+structure FieldShapingConclusionSidecar
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Transformation : Type a}
+    {shape : Transformation -> Transformation}
+    (fieldShaping :
+      SFTTheoremRoadmap.FieldShapingFixedPointPackage Transformation shape) where
+  finalTypedConclusion : package.AATSupportedFinalTypedConclusion
+  selectedFixedPoints :
+    ∃ least greatest,
+      SFTTheoremRoadmap.IsLeastFixedPoint fieldShaping.le shape least ∧
+        SFTTheoremRoadmap.IsGreatestFixedPoint fieldShaping.le shape greatest
+  minimalPreservesDesiredAndExcludesBad :
+    fieldShaping.RecordsMinimalPreservesDesiredAndExcludesBad
+  sidecarBoundary : fieldShaping.fieldShapingBoundary
+  nonConclusionBoundary :
+    package.boundary.RecordsNonConclusions ∧
+      package.finalPackage.RecordsNonConclusions ∧
+        fieldShaping.nonConclusions
+
+def fieldShapingConclusionSidecar_of_fixedPointPackage
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Transformation : Type a}
+    {shape : Transformation -> Transformation}
+    (fieldShaping :
+      SFTTheoremRoadmap.FieldShapingFixedPointPackage Transformation shape)
+    (hComplete : fieldShaping.supportTransformationsCompleteLattice)
+    (hMonotone : fieldShaping.monotone)
+    (hMinimal :
+      fieldShaping.RecordsMinimalPreservesDesiredAndExcludesBad)
+    (hBoundary : fieldShaping.fieldShapingBoundary)
+    (hNonConclusions : fieldShaping.nonConclusions) :
+    FieldShapingConclusionSidecar package fieldShaping where
+  finalTypedConclusion := package.governed_or_finite_failure_or_aat_boundary_failure
+  selectedFixedPoints :=
+    fieldShaping.fieldShaping_fixedPoints hComplete hMonotone
+  minimalPreservesDesiredAndExcludesBad :=
+    hMinimal
+  sidecarBoundary := hBoundary
+  nonConclusionBoundary :=
+    ⟨package.recordsNonConclusions, package.recordsFinalNonConclusions,
+      hNonConclusions⟩
+
+theorem fieldShapingConclusionSidecar_records_final_typed_conclusion
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Transformation : Type a}
+    {shape : Transformation -> Transformation}
+    (fieldShaping :
+      SFTTheoremRoadmap.FieldShapingFixedPointPackage Transformation shape)
+    (hComplete : fieldShaping.supportTransformationsCompleteLattice)
+    (hMonotone : fieldShaping.monotone)
+    (hMinimal :
+      fieldShaping.RecordsMinimalPreservesDesiredAndExcludesBad)
+    (hBoundary : fieldShaping.fieldShapingBoundary)
+    (hNonConclusions : fieldShaping.nonConclusions) :
+    package.AATSupportedFinalTypedConclusion :=
+  (fieldShapingConclusionSidecar_of_fixedPointPackage package fieldShaping
+      hComplete hMonotone hMinimal hBoundary hNonConclusions).finalTypedConclusion
 
 /--
 Allowed transformation between two selected AAT-supported Grand Theorem

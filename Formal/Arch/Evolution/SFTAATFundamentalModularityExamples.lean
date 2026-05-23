@@ -512,6 +512,10 @@ theorem canonicalAATSupportedBoundary_records_nonConclusions :
   canonicalAATSupportedBoundary.preserves_nonConclusions
     trivial trivial trivial canonicalExactModel_recordsNonConclusions
 
+theorem canonicalAATSupportedBoundary_reads_aat_status_as_local_premise :
+    canonicalAATSupportedBoundary.forecastStatus.RecordsLocalPremise :=
+  canonicalAATSupportedBoundary.aat_status_as_sft_local_premise trivial
+
 def canonicalAATSupportedFundamentalModularityPackage :
     AATSupportedFundamentalModularityPackage canonicalExactModel () 1 :=
   AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses

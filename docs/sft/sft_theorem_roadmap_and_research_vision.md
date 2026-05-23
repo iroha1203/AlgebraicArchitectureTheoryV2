@@ -752,6 +752,21 @@ finite package. It does not prove the assumption-free theorem for all software
 systems, all covers, empirical calibration correctness, operational governance
 effectiveness, or global AI safety.
 
+Issue #1097 and its sub-issues extend this selected theorem family without
+changing that boundary.  `FiniteExactQuantifiedFundamentalModularityTheorem`
+quantifies the selected theorem over source / horizon choices of one finite
+exact model while retaining quantified boundary and non-conclusions.
+`TypedComputationBoundaryFailure.ofKind` and the kind-specific constructors keep
+the final failure taxonomy explicit.  The roadmap-level
+`minimalConsequenceEnvelopePackageOfDecisionEquivalence` and
+`MinimalConsequenceEnvelopePackage.minimal_consequenceEnvelope_factor_unique_on_image`
+record the minimal ConsequenceEnvelope quotient / factorization surface under
+explicit decision-equivalence assumptions.  The H1 finite-descent bridge,
+Cech-obstruction kind-preservation bridge, finite governance synthesis bridge,
+finite-height calibration bridge, and finite-team agentic bridge are therefore
+read as selected package accessors, not as all-covers, operational, empirical,
+or AI-safety theorems.
+
 The AAT-supported reading is now represented separately by
 `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage`.  This
 package adds an AAT selected-architecture slice, AAT theorem status, projection /
@@ -808,6 +823,12 @@ final typed conclusion and records lifecycle non-conclusions.  For invariance,
 preservation explicit, while `EvolutionaryConclusionPreservation` connects an
 `EvolutionaryInvariancePackage` to the target AAT-supported package only under
 that allowed transformation.
+
+`FieldShapingConclusionSidecar` plays the same role for field-shaping: it keeps
+the fixed-point field-shaping conclusion adjacent to the AAT-supported final
+typed conclusion under explicit package assumptions, but it does not turn the
+sidecar into empirical outcome preservation, arbitrary refactoring correctness,
+or runtime behavior equivalence.
 
 Dependency graph for the finite selected formalization:
 

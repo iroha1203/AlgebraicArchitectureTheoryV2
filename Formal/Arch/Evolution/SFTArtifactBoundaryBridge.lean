@@ -285,6 +285,30 @@ theorem artifact_constructor_records_archMap_boundaries
       hObservation theoremBoundary typedFailureBoundary
       nonConclusions).records_projection_observation_reconstruction_missingEvidence
 
+theorem artifact_constructor_reads_aat_status_as_sft_local_premise
+    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (archSigBoundary :
+      ArchSigDerivedSFTReportBoundary report estimate forecast)
+    (interfaceBoundary : AATToSFTInterfaceBoundary aatStatus forecast)
+    (selectedSourceBoundary selectedHorizonBoundary : Prop)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (theoremBoundary typedFailureBoundary nonConclusions : Prop)
+    (hAAT : aatStatus.RecordsTheoremPackage) :
+    (ofArchMapAndArchSigBoundaries
+      (exactModel := exactModel) (source := source) (horizon := horizon)
+      archMapPackage archSigBoundary interfaceBoundary
+      selectedSourceBoundary selectedHorizonBoundary hFinite hExact
+      hObservation theoremBoundary typedFailureBoundary
+      nonConclusions).forecastStatus.RecordsLocalPremise :=
+  (ofArchMapAndArchSigBoundaries
+      (exactModel := exactModel) (source := source) (horizon := horizon)
+      archMapPackage archSigBoundary interfaceBoundary
+      selectedSourceBoundary selectedHorizonBoundary hFinite hExact
+      hObservation theoremBoundary typedFailureBoundary
+      nonConclusions).aat_status_as_sft_local_premise hAAT
+
 theorem artifact_constructor_preserves_nonConclusions
     (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
     (archSigBoundary :

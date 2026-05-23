@@ -41,6 +41,59 @@ structure TypedComputationBoundaryFailure where
   evidenceBoundary : Prop
   nonConclusions : Prop
 
+namespace TypedComputationBoundaryFailure
+
+/-- Generic constructor for a typed final-assembly boundary failure. -/
+def ofKind
+    (kind : FundamentalBoundaryFailureKind)
+    (explainsBrokenBoundary evidenceBoundary nonConclusions : Prop) :
+    TypedComputationBoundaryFailure where
+  kind := kind
+  explainsBrokenBoundary := explainsBrokenBoundary
+  evidenceBoundary := evidenceBoundary
+  nonConclusions := nonConclusions
+
+/-- The generic constructor preserves the selected failure kind. -/
+theorem ofKind_records_kind
+    (kind : FundamentalBoundaryFailureKind)
+    (explainsBrokenBoundary evidenceBoundary nonConclusions : Prop) :
+    (ofKind kind explainsBrokenBoundary evidenceBoundary nonConclusions).kind =
+      kind :=
+  rfl
+
+def descentFailure :=
+  ofKind FundamentalBoundaryFailureKind.descentFailure
+
+def obstructionUnclassified :=
+  ofKind FundamentalBoundaryFailureKind.obstructionUnclassified
+
+def governanceUncut :=
+  ofKind FundamentalBoundaryFailureKind.governanceUncut
+
+def reviewEnvelopeMissing :=
+  ofKind FundamentalBoundaryFailureKind.reviewEnvelopeMissing
+
+def calibrationBoundaryExpanded :=
+  ofKind FundamentalBoundaryFailureKind.calibrationBoundaryExpanded
+
+def agenticConfluenceMissing :=
+  ofKind FundamentalBoundaryFailureKind.agenticConfluenceMissing
+
+def theoremFamilyAssumptionMissing :=
+  ofKind FundamentalBoundaryFailureKind.theoremFamilyAssumptionMissing
+
+/-- Constructor-built typed failures preserve their explanation and non-conclusions. -/
+theorem ofKind_preserves_payload
+    (kind : FundamentalBoundaryFailureKind)
+    (explainsBrokenBoundary evidenceBoundary nonConclusions : Prop) :
+    (ofKind kind explainsBrokenBoundary evidenceBoundary nonConclusions).explainsBrokenBoundary =
+        explainsBrokenBoundary ∧
+      (ofKind kind explainsBrokenBoundary evidenceBoundary nonConclusions).nonConclusions =
+        nonConclusions :=
+  ⟨rfl, rfl⟩
+
+end TypedComputationBoundaryFailure
+
 /-- Positive side of the governed-or-typed-failure conclusion. -/
 structure ComputablyGoverned where
   descentAvailable : Prop
@@ -386,6 +439,87 @@ theorem modularity_iff_forecastConeDescent
 
 end FiniteSelectedFundamentalModularityTheorem
 
+/--
+Finite exact theorem-family wrapper over every selected source and horizon.
+
+This quantifies the existing finite selected theorem package across the finite
+exact proof universe.  It is still relative to the supplied package family and
+does not assert unbounded or assumption-free software evolution.
+-/
+structure FiniteExactQuantifiedFundamentalModularityTheorem
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    (exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance)
+    where
+  theoremAt :
+    ∀ source horizon,
+      FiniteSelectedFundamentalModularityTheorem
+        exactModel source horizon
+  quantifiedBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteExactQuantifiedFundamentalModularityTheorem
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {Governance : Type z}
+variable {exactModel :
+  FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+
+/-- Project the quantified theorem family back to one selected source/horizon. -/
+def selectedPackage
+    (theoremFamily :
+      FiniteExactQuantifiedFundamentalModularityTheorem exactModel)
+    (source : Global) (horizon : Nat) :
+    FiniteSelectedFundamentalModularityTheorem exactModel source horizon :=
+  theoremFamily.theoremAt source horizon
+
+/-- The quantified wrapper is compatible with the existing selected theorem. -/
+theorem selectedPackage_eq_theoremAt
+    (theoremFamily :
+      FiniteExactQuantifiedFundamentalModularityTheorem exactModel)
+    (source : Global) (horizon : Nat) :
+    theoremFamily.selectedPackage source horizon =
+      theoremFamily.theoremAt source horizon :=
+  rfl
+
+/-- Every selected slice exposes the finite selected final assembly theorem. -/
+theorem selected_fundamental_modularity
+    (theoremFamily :
+      FiniteExactQuantifiedFundamentalModularityTheorem exactModel)
+    (source : Global) (horizon : Nat) :
+    (theoremFamily.selectedPackage source horizon).hypotheses.descent.modularityAsDescent ∧
+      (theoremFamily.selectedPackage source horizon).hypotheses.obstruction.technicalDebtAsObstruction ∧
+      (theoremFamily.selectedPackage source horizon).hypotheses.review.minimalDecisionPreservingEnvelope ∧
+      (theoremFamily.selectedPackage source horizon).hypotheses.governance.governanceAsObstructionCutting ∧
+      (theoremFamily.selectedPackage source horizon).hypotheses.calibration.boundaryExplicitFixedPoint ∧
+      (theoremFamily.selectedPackage source horizon).hypotheses.agentic.agenticConfluence ∧
+      ((theoremFamily.selectedPackage source horizon).hypotheses.governed.governedBoundary ∨
+        (theoremFamily.selectedPackage source horizon).hypotheses.failure.explainsBrokenBoundary) :=
+  (theoremFamily.selectedPackage source horizon).finiteSelected_fundamental_modularity
+
+/-- The theorem-family wrapper keeps its explicit finite exact boundaries. -/
+def RecordsQuantifiedBoundary
+    (theoremFamily :
+      FiniteExactQuantifiedFundamentalModularityTheorem exactModel) :
+    Prop :=
+  theoremFamily.quantifiedBoundary ∧
+    ∀ source horizon,
+      (theoremFamily.selectedPackage source horizon).RecordsExactModelBoundary
+
+/-- Non-conclusions remain explicit at every selected slice. -/
+def RecordsNonConclusions
+    (theoremFamily :
+      FiniteExactQuantifiedFundamentalModularityTheorem exactModel) :
+    Prop :=
+  theoremFamily.nonConclusions ∧
+    ∀ source horizon,
+      (theoremFamily.selectedPackage source horizon).RecordsNonConclusions
+
+end FiniteExactQuantifiedFundamentalModularityTheorem
+
 /-- Read selected finite ForecastCone descent as the final descent component. -/
 def descentComponent_of_finiteSelectedDescentPackage
     {Global : Type u} {Index : Type v} {Local : Type w}
@@ -443,6 +577,24 @@ def descentComponent_of_h1FiniteDescentAssumptions
   descentComponent_of_finiteExactDescentAssumptions
     (source := source) (horizon := horizon)
     assumptions.descentAssumptions
+
+/-- H1 finite descent assumptions expose the final descent component boundary. -/
+theorem descentComponent_records_h1FiniteDescent
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (assumptions :
+      CechH1FiniteDescentAssumptions exactModel source horizon)
+    (hBoundary :
+      (assumptions.descentAssumptions.descentPackage
+        (source := source)
+        (horizon := horizon)).descentEquivalence.equivalenceBoundary) :
+    (descentComponent_of_h1FiniteDescentAssumptions
+      assumptions).forecastConeDescent :=
+  hBoundary
 
 /-- Read a finite descent obstruction package as the final obstruction component. -/
 def obstructionComponent_of_finiteDescentObstructionPackage
@@ -1273,6 +1425,52 @@ theorem agenticComponent_records_newmanStyle_nonConclusions
     (agenticComponent_of_newmanStyleConfluenceKernel kernel hTermination
       hConfluence hDescent hInterface hPolicy).nonConclusions :=
   hNonConclusions
+
+/-- Read finite agent-team semantics as the final agentic component. -/
+def agenticComponent_of_finiteAgentTeamConfluenceBridge
+    {Agent : Type u} {Schedule : Type v} {ConeQuotient : Type w}
+    (bridge :
+      SFTAgenticConfluence.FiniteAgentTeamConfluenceBridge
+        Agent Schedule ConeQuotient)
+    (_hTermination : bridge.kernel.localTermination)
+    (_hConfluence : bridge.kernel.localConfluence)
+    (_hDescent : bridge.kernel.forecastConeDescent)
+    (_hInterface : bridge.kernel.interfaceConstraintsPreserved)
+    (_hPolicy : bridge.kernel.policiesCommutationInvariant) :
+    FundamentalAgenticComponent :=
+  agenticComponent_of_newmanStyleConfluenceKernel
+    bridge.kernel _hTermination _hConfluence _hDescent _hInterface _hPolicy
+
+/-- Finite team semantics expose selected fair accepted-schedule convergence. -/
+theorem agenticComponent_records_finiteTeam_confluence
+    {Agent : Type u} {Schedule : Type v} {ConeQuotient : Type w}
+    (bridge :
+      SFTAgenticConfluence.FiniteAgentTeamConfluenceBridge
+        Agent Schedule ConeQuotient)
+    (hTermination : bridge.kernel.localTermination)
+    (hConfluence : bridge.kernel.localConfluence)
+    (hDescent : bridge.kernel.forecastConeDescent)
+    (hInterface : bridge.kernel.interfaceConstraintsPreserved)
+    (hPolicy : bridge.kernel.policiesCommutationInvariant) :
+    (agenticComponent_of_finiteAgentTeamConfluenceBridge bridge hTermination
+      hConfluence hDescent hInterface hPolicy).fairInterleavingsConverge :=
+  bridge.fairInterleavingsConverge hTermination hConfluence
+
+/-- Finite team semantics keep accepted-schedule and agent boundaries explicit. -/
+theorem agenticComponent_records_finiteTeam_boundary
+    {Agent : Type u} {Schedule : Type v} {ConeQuotient : Type w}
+    (bridge :
+      SFTAgenticConfluence.FiniteAgentTeamConfluenceBridge
+        Agent Schedule ConeQuotient)
+    (hTermination : bridge.kernel.localTermination)
+    (hConfluence : bridge.kernel.localConfluence)
+    (hDescent : bridge.kernel.forecastConeDescent)
+    (hInterface : bridge.kernel.interfaceConstraintsPreserved)
+    (hPolicy : bridge.kernel.policiesCommutationInvariant)
+    (hBoundary : bridge.RecordsFiniteAgentBoundary) :
+    (agenticComponent_of_finiteAgentTeamConfluenceBridge bridge hTermination
+      hConfluence hDescent hInterface hPolicy).agentBoundary :=
+  hBoundary.2.2.2
 
 end SFTFundamentalModularity
 end Formal.Arch
