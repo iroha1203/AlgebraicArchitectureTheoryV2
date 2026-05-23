@@ -147,6 +147,12 @@ selected slice / interface boundary / finite exact model boundary records から
 constructor helper であり、selected source / horizon、projection / observation /
 reconstruction / missing-evidence boundary、ArchSig report boundary と theorem-status
 boundary、non-conclusions preservation を accessor theorem として取り出せる。
+`AATSupportedSFTBoundary.aat_status_as_sft_local_premise`,
+`artifact_constructor_reads_aat_status_as_sft_local_premise`, and
+`Examples.canonicalAATSupportedBoundary_reads_aat_status_as_local_premise` は、direct
+boundary、artifact constructor、canonical example のいずれでも AAT theorem status を
+SFT local premise としてだけ読むことを固定する。ここでも theorem status は empirical
+forecast correctness や unconditional SFT theorem に昇格しない。
 
 `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage` は、この
 boundary と既存の `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem`
@@ -214,6 +220,10 @@ global AI safety は結論しない。
 existing finite typed failure / AAT-SFT boundary failure の三分岐として読めるため、
 expression / projection / observation / reconstruction / missing-evidence / theorem-status /
 ArchSig report のどの AAT/SFT 境界が破れたかを AAT/SFT branch まで保持できる。
+`AATSFTBoundaryFailure.ofKind` と kind-specific constructors は、この taxonomy を
+constructor surface でも保持する。したがって AAT/SFT boundary failure は untyped error
+bucket ではなく、どの precondition / evidence boundary が未充足かを明示する witness として
+扱う。
 `finite_failure_enters_final_typed_conclusion`,
 `final_typed_conclusion_records_finite_or_aat_failure_taxonomy`, and
 `final_failure_taxonomy_preserves_nonConclusions` は、既存 finite SFT typed failure と
@@ -226,6 +236,9 @@ conclusion の横に置くが、runtime failure prediction や empirical inciden
 `AllowedGrandTheoremTransformation` と `EvolutionaryConclusionPreservation` は、allowed
 transformation が final typed conclusion と non-conclusion boundary を保存するという明示
 前提の下でのみ invariance package を AAT-supported conclusion preservation として読む。
+`FieldShapingConclusionSidecar` は fixed-point field-shaping conclusion を final typed
+conclusion の横に置く sidecar であり、field-shaping を empirical outcome preservation や
+arbitrary refactoring correctness に昇格しない。
 任意の refactoring correctness、runtime behavior equivalence、empirical outcome
 preservation は結論しない。
 

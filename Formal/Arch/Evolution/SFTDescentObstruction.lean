@@ -483,6 +483,31 @@ theorem typed_obstruction_of_cech_cocycle_obstruction
   finiteExact_failure_classifier_complete
     bridge.classifierCompleteness (bridge.cocycleToFailure obstruction)
 
+/--
+Cech cocycle obstructions preserve the typed failure-kind alignment supplied by
+the selected finite exact classifier bridge.
+-/
+theorem typed_obstruction_of_cech_cocycle_preserves_failure_kind
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (bridge :
+      FiniteCechTypedObstructionBridge exactModel source horizon)
+    (obstruction :
+      CechCocycleObstruction exactModel.descentModel source horizon) :
+    ∃ witness :
+      FiniteDescentObstructionWitness exactModel.descentModel source horizon,
+      witness.failureKind = (bridge.cocycleToFailure obstruction).kind ∧
+        witness.payload.failureKind =
+          (bridge.cocycleToFailure obstruction).kind ∧
+          witness.payload.failureKind = witness.failureKind := by
+  rcases typed_obstruction_of_cech_cocycle_obstruction bridge obstruction with
+    ⟨witness, _hClassified, hFailureKind, hPayloadKind, hPayloadMatches⟩
+  exact ⟨witness, hFailureKind, hPayloadKind, hPayloadMatches⟩
+
 /-- Cech bridge plus obstruction classifier boundary for finite descent. -/
 structure FiniteCechObstructionBridge
     {Global : Type u} {Index : Type v} {Local : Type w}

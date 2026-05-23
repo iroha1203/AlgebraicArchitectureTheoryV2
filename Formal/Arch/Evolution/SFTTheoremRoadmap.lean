@@ -745,6 +745,37 @@ structure MinimalConsequenceEnvelopePackage
   envelopeBoundary : Prop
   nonConclusions : Prop
 
+/--
+Build the canonical quotient envelope package from a selected decision
+equivalence relation.
+
+The quotient is by `PathIndistinguishableFor Q`; the universal property is
+only for projections that respect this selected equivalence.
+-/
+def minimalConsequenceEnvelopePackageOfDecisionEquivalence
+    {ConePath : Type u} {Decision : Type v}
+    (Q : ConePath -> Decision -> Prop) :
+    MinimalConsequenceEnvelopePackage.{u, u, w}
+      ConePath (MinimalEnvelope Q) where
+  reviewEquivalent := PathIndistinguishableFor Q
+  projection := fun path => Quotient.mk (ReviewSetoid Q) path
+  projection_exact := by
+    intro p q
+    constructor
+    · intro hEnvelope
+      exact MinimalEnvelope.minimalEnvelope_exact hEnvelope
+    · intro hEquivalent
+      exact MinimalEnvelope.minimalEnvelope_sound hEquivalent
+  factorsEverySoundEnvelope := by
+    intro OtherEnvelope otherProjection hSound
+    refine ⟨MinimalEnvelope.minimalEnvelope_factor Q otherProjection ?_, ?_⟩
+    · intro p q hEquivalent
+      exact hSound p q hEquivalent
+    · intro path
+      rfl
+  envelopeBoundary := True
+  nonConclusions := True
+
 namespace MinimalConsequenceEnvelopePackage
 
 /-- Any other sound review projection factors through the minimal envelope. -/
@@ -769,6 +800,26 @@ theorem minimal_consequenceEnvelope_exact
     package.projection p = package.projection q ↔
       package.reviewEquivalent p q :=
   package.projection_exact p q
+
+/--
+The factor through a minimal envelope is unique on the image of the selected
+projection.
+-/
+theorem minimal_consequenceEnvelope_factor_unique_on_image
+    {ConePath : Type u} {MinimalEnvelope : Type v}
+    (package :
+      MinimalConsequenceEnvelopePackage.{u, v, w} ConePath MinimalEnvelope)
+    {OtherEnvelope : Type w}
+    (otherProjection : ConePath -> OtherEnvelope)
+    (factor₁ factor₂ : MinimalEnvelope -> OtherEnvelope)
+    (hFactor₁ :
+      ∀ path, factor₁ (package.projection path) = otherProjection path)
+    (hFactor₂ :
+      ∀ path, factor₂ (package.projection path) = otherProjection path)
+    (path : ConePath) :
+    factor₁ (package.projection path) =
+      factor₂ (package.projection path) := by
+  rw [hFactor₁ path, hFactor₂ path]
 
 end MinimalConsequenceEnvelopePackage
 

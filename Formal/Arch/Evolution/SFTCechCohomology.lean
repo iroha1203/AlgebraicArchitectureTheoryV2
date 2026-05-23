@@ -311,6 +311,32 @@ theorem h1_vanishes_implies_finite_descent
     assumptions.descentAssumptions
 
 /--
+Roadmap-facing H1 descent bridge surface.
+
+This exposes the selected finite descent package together with the concrete H1
+and exact-model boundaries that justify reading it.  The package remains
+relative to the supplied finite exact assumptions.
+-/
+theorem h1_vanishes_selected_finite_descent_bridge
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (assumptions :
+      CechH1FiniteDescentAssumptions exactModel source horizon)
+    (hH1 : assumptions.RecordsH1Vanishes)
+    (hNonConclusions : assumptions.RecordsNonConclusions) :
+    Nonempty
+      (FiniteSelectedForecastConeDescentPackage
+        exactModel.descentModel source horizon) ∧
+      assumptions.RecordsH1Vanishes ∧
+        assumptions.RecordsNonConclusions :=
+  ⟨h1_vanishes_implies_finite_descent assumptions,
+    hH1, hNonConclusions⟩
+
+/--
 Normalized-path reading of the selected `H1 = 0 -> finite descent` bridge.
 
 The descent package is still supplied by the explicit finite exact assumptions;
