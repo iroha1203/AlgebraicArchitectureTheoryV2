@@ -78,6 +78,28 @@ non-conclusions preserved
 
 これらが揃わない場合、claim は measured claim または blocked formal claim として扱う。
 
+## ArchMap formal bridge
+
+ArchMap tooling artifact と Lean formal bridge は別物として読む。
+
+```text
+archmap-v0 / validation report
+  -> theorem precondition candidate
+  -> optional Lean ArchMapModel
+  -> explicit ArchMapPreservationPackage
+  -> bounded AATStructurePreserved
+```
+
+`archmap-v0` は selected source universe、mapping item、coverage boundary、missing evidence、
+non-conclusions を保持する tooling artifact である。Lean の `ArchMapModel` は、その情報を
+抽象化して selected AAT architecture universe へ写す model であり、JSON validation pass から
+自動生成または自動証明される theorem witness ではない。
+
+`ArchMapPreservationPackage` に昇格するには、object / relation preservation、semantic diagram
+preservation、nonfillability witness preservation、law / policy boundary preservation、flatness
+precondition preservation、coverage / exactness / non-conclusion が Lean 側で明示される必要がある。
+tooling confidence、validation success、AIR projection success はこれらの field を discharge しない。
+
 ## Report reading rule
 
 Report consumer は、次を同時に読む。
