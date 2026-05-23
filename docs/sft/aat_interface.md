@@ -165,6 +165,13 @@ end-to-end に instantiate し、final typed conclusion と non-conclusions pres
 例であり、任意の software system、all covers、all runtime schedules、extractor
 completeness へ一般化しない。
 
+Issue #1064 では、この canonical package の descent / obstruction / governance component
+を、それぞれ finite selected descent package、finite descent obstruction package、finite
+obstruction-governance package から既存 helper 経由で構成する形に寄せた。これにより
+canonical example は、主要な final component を theorem-package surface から組み立てる
+読みを示す。ただし、singleton selected example であり、all-cover descent、classifier
+completeness の無条件化、operational governance effectiveness は結論しない。
+
 Follow-up Issue #1054 では、`AATSFTBoundaryFailureKind` を typed conversion 後にも
 保持する `AATTypedComputationBoundaryFailure` と、governed / existing finite typed failure /
 AAT-SFT boundary failure の三分岐 final typed conclusion を追加した。これにより、

@@ -12,7 +12,7 @@ namespace Formal.Arch
 namespace SFTAATFundamentalModularity
 namespace Examples
 
-open SFTFundamentalModularity
+open Formal.Arch.SFTFundamentalModularity
 
 abbrev CanonicalGlobal := Unit
 abbrev CanonicalIndex := Unit
@@ -250,25 +250,162 @@ theorem canonicalAgenticComponent_records_nonConclusions :
   agenticComponent_records_nonConclusions canonicalAgenticPackage
     trivial trivial trivial trivial trivial trivial
 
-def canonicalDescentComponent : FundamentalDescentComponent where
-  modularityAsDescent := True
-  forecastConeDescent := True
-  modularity_iff_descent := Iff.rfl
-  descentBoundary := True
+def canonicalClockedConePoint
+    (source : CanonicalGlobal) (horizon : Nat) :
+    ClockedConePoint canonicalFiniteModel.globalSupport
+      canonicalFiniteModel.globalRelation source horizon where
+  target := source
+  path :=
+    idleClockedFieldPath
+      (support := canonicalFiniteModel.globalSupport)
+      (relation := canonicalFiniteModel.globalRelation) source horizon
+  coneMember := by
+    simp [ClockedForecastCone, ExactClockedFieldPath]
+
+def canonicalFiniteSelectedDescentPackage :
+    FiniteSelectedForecastConeDescentPackage canonicalFiniteModel () 1 where
+  descentEquivalence := {
+    toFun := projectGlobalConePointToFiniteFamily canonicalFiniteModel
+    invFun := fun _family => canonicalClockedConePoint () 1
+    leftRelated := fun _ _ => True
+    rightRelated := fun _ _ => True
+    left_refl := by intro _; trivial
+    left_symm := by intro _ _ _; trivial
+    left_trans := by intro _ _ _ _ _; trivial
+    right_refl := by intro _; trivial
+    right_symm := by intro _ _ _; trivial
+    right_trans := by intro _ _ _ _ _; trivial
+    left_related := by intro _; trivial
+    right_related := by intro _; trivial
+    equivalenceBoundary := True
+    nonConclusions := True
+  }
+  packageBoundary := True
   nonConclusions := True
 
-def canonicalObstructionComponent : FundamentalObstructionComponent where
-  technicalDebtAsObstruction := True
-  typedFailureWitnessAvailable := True
+def canonicalDescentComponent : FundamentalDescentComponent :=
+  descentComponent_of_finiteSelectedDescentPackage
+    canonicalFiniteSelectedDescentPackage
+
+theorem canonicalDescentComponent_records_modularityAsDescent :
+    canonicalDescentComponent.modularityAsDescent :=
+  trivial
+
+theorem canonicalDescentComponent_records_finiteSelectedDescent :
+    canonicalDescentComponent.forecastConeDescent :=
+  descentComponent_records_finiteSelectedDescent
+    canonicalFiniteSelectedDescentPackage trivial
+
+def canonicalFiniteFailure :
+    FiniteDescentFailure canonicalFiniteModel () 1 where
+  kind := FiniteDescentFailureKind.noGlobalLift
+  localFamily := none
+  globalLeft := none
+  globalRight := none
+  evidenceBoundary := True
+  nonConclusions := True
+
+def canonicalObstructionPayload
+    (failure : FiniteDescentFailure canonicalFiniteModel () 1) :
+    FiniteDescentObstructionPayload canonicalFiniteModel () 1 where
+  failureKind := failure.kind
+  obstructionClass := FiniteObstructionClass.missingGlue
+  affectedIndices := [()]
+  classifierBoundary := True
+  nonConclusions := True
+
+def canonicalObstructionWitness
+    (failure : FiniteDescentFailure canonicalFiniteModel () 1) :
+    FiniteDescentObstructionWitness canonicalFiniteModel () 1 where
+  failureKind := failure.kind
+  payload := canonicalObstructionPayload failure
+  payload_failureKind_eq := rfl
+  evidenceBoundary := True
+  nonConclusions := True
+
+def canonicalObstructionClassifier :
+    FiniteDescentObstructionClassifier canonicalFiniteModel () 1 where
+  classify := fun failure => some (canonicalObstructionWitness failure)
+  sound := by
+    intro failure witness hClassified
+    cases hClassified
+    exact ⟨rfl, rfl⟩
+  completenessBoundary := True
+  nonConclusions := True
+
+def canonicalObstructionPackage :
+    FiniteDescentObstructionPackage canonicalFiniteModel () 1 where
+  classifier := canonicalObstructionClassifier
+  everySelectedFailureClassified := by
+    intro failure
+    exact ⟨canonicalObstructionWitness failure, rfl⟩
   obstructionBoundary := True
   nonConclusions := True
 
-def canonicalGovernanceComponent : FundamentalGovernanceComponent where
-  governanceAsObstructionCutting := True
-  selectedBadWitnessesCut := True
-  desiredFamiliesPreserved := True
+def canonicalObstructionComponent : FundamentalObstructionComponent :=
+  obstructionComponent_of_finiteDescentObstructionPackage
+    canonicalObstructionPackage
+
+theorem canonicalObstructionComponent_records_technicalDebt :
+    canonicalObstructionComponent.technicalDebtAsObstruction :=
+  fun failure => finite_descent_obstruction_of_failure
+    canonicalObstructionPackage failure
+
+theorem canonicalObstructionComponent_records_finite_witness :
+    canonicalObstructionComponent.typedFailureWitnessAvailable :=
+  obstructionComponent_records_finite_witness canonicalObstructionPackage
+
+def canonicalGovernanceTarget :
+    FiniteGovernanceCutTarget canonicalFiniteModel () 1 where
+  bad := fun _witness => True
+  desiredPreserved := fun _family => True
+  badBoundary := True
+  desiredBoundary := True
+  nonConclusions := True
+
+def canonicalGovernanceCuttingPackage :
+    FiniteGovernanceCuttingPackage canonicalFiniteModel () 1 where
+  intervention := Unit
+  target := canonicalGovernanceTarget
+  cutsBad := fun _intervention _witness => True
+  preservesDesired := fun _intervention _family => True
+  selectedIntervention := ()
+  selected_cuts_all_bad := by intro _ _; trivial
+  selected_preserves_desired := by intro _ _; trivial
   governanceBoundary := True
   nonConclusions := True
+
+def canonicalObstructionGovernancePackage :
+    FiniteObstructionGovernancePackage canonicalFiniteModel () 1 where
+  obstructionPackage := canonicalObstructionPackage
+  governancePackage := canonicalGovernanceCuttingPackage
+  obstructionToGovernanceBoundary := True
+  nonConclusions := True
+
+theorem canonicalFiniteFailure_classified_bad :
+    ∀ witness,
+      canonicalObstructionPackage.classifier.classify canonicalFiniteFailure =
+        some witness ->
+      canonicalGovernanceCuttingPackage.target.bad witness := by
+  intro _witness _hClassified
+  trivial
+
+def canonicalGovernanceComponent : FundamentalGovernanceComponent :=
+  governanceComponent_of_finiteObstructionGovernance
+    canonicalObstructionGovernancePackage canonicalFiniteFailure
+    canonicalFiniteFailure_classified_bad
+
+theorem canonicalGovernanceComponent_records_finite_cut :
+    canonicalGovernanceComponent.governanceAsObstructionCutting :=
+  governanceComponent_records_finite_cut
+    canonicalObstructionGovernancePackage canonicalFiniteFailure
+    canonicalFiniteFailure_classified_bad
+
+theorem canonicalGovernanceComponent_records_desired_preservation :
+    canonicalGovernanceComponent.desiredFamiliesPreserved :=
+  governanceComponent_records_desired_preservation
+    canonicalObstructionGovernancePackage canonicalFiniteFailure
+    canonicalFiniteFailure_classified_bad
 
 def canonicalGoverned : ComputablyGoverned where
   descentAvailable := True
@@ -296,10 +433,10 @@ def canonicalFundamentalModularityHypotheses :
   agentic := canonicalAgenticComponent
   governed := canonicalGoverned
   failure := canonicalFailure
-  hModularity := trivial
-  hDebt := trivial
+  hModularity := canonicalDescentComponent_records_modularityAsDescent
+  hDebt := canonicalObstructionComponent_records_technicalDebt
   hReview := canonicalReviewComponent_records_minimalEnvelope
-  hGovernance := trivial
+  hGovernance := canonicalGovernanceComponent_records_finite_cut
   hLearning := canonicalCalibrationComponent_records_boundaryExplicit
   hAgentic := canonicalAgenticComponent_records_agenticConfluence
   hAgenticAvailable := fun _hAgentic => trivial
