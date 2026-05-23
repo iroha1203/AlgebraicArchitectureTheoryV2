@@ -166,3 +166,20 @@ extension:
 
 `splitStatus = split` は、selected universe と claim boundary に相対化される。
 runtime / semantic / lifting evidence を static split と混同しない。
+
+## ArchMap projection
+
+`air-from-archmap` は supplied JSON の `archmap-v0` を AIR へ投影する。対応は次の通り。
+
+| ArchMap | AIR |
+| --- | --- |
+| source artifact refs | `artifacts[]`, `evidence[]` |
+| object mapping | `components[]` |
+| relation mapping | `relations[]` |
+| semantic diagram / commutation claim | `semanticDiagrams[]`, `architecturePaths[]`, `claims[]` |
+| nonfillability witness | `nonfillabilityWitnesses[]`, obstruction claim |
+| missing evidence / conflict | `claims[].missingPreconditions`, coverage gap / review cue |
+| non-conclusions | `claims[].nonConclusions` |
+
+projection は loss-aware である。runtime trace 不足、private / unavailable context、policy disagreement、
+semantic-runtime disagreement は measured zero や resolved claim に変換しない。

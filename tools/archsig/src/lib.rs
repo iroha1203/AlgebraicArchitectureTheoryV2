@@ -3,6 +3,7 @@ mod air;
 mod air_validation;
 mod architecture_dynamics_metrics;
 mod architecture_field;
+mod archmap;
 mod artifact_descriptor;
 mod artifact_retention;
 mod baseline_suppression;
@@ -60,6 +61,7 @@ pub use architecture_field::{
     static_architecture_field_snapshot, static_operation_proposal_log,
     validate_architecture_field_snapshot, validate_operation_proposal_log,
 };
+pub use archmap::{build_air_from_archmap, validate_archmap_report};
 pub use artifact_descriptor::{
     build_artifact_descriptor_from_ai_proposal_json,
     build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,

@@ -10,7 +10,7 @@ Command は次の product surface に分けて読む。
 | Surface | Commands | 読み方 |
 | --- | --- | --- |
 | ArchSig Core | default scan、`validate`、`snapshot`、`signature-diff` | repository observation と revision diff。未評価軸は `metricStatus` と `metricDeltaStatus` で読む。 |
-| ArchSig Review | `air`、`validate-air`、`theorem-check`、`feature-report`、`policy-decision`、`pr-comment`、`baseline-suppression` | PR / CI review 補助。tool output を formal theorem claim に昇格しない。 |
+| ArchSig Review | `air`、`archmap`、`air-from-archmap`、`validate-air`、`theorem-check`、`feature-report`、`policy-decision`、`pr-comment`、`baseline-suppression` | PR / CI review 補助。tool output を formal theorem claim に昇格しない。 |
 | ArchSig SFT | `artifact-descriptor`、`operation-support-estimate`、`forecast-cone-skeleton`、`consequence-envelope`、`forecast-calibration-hook`、`ai-proposal-governance`、`sft-forecast` | bounded forecast artifact と governance / report projection。point prediction、causal proof、global safety は non-conclusions。 |
 | ArchSig Operational | `dataset`、`pr-history-dataset`、`feature-extension-dataset`、`outcome-linkage-dataset`、B10 feedback commands | calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh 用 artifact。correlation は因果 theorem ではない。 |
 
@@ -106,6 +106,32 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- air \
   --framework-adapter framework-adapter.json \
   --out .lake/signature-current/air.json
 ```
+
+supplied JSON の ArchMap v0 を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
+  --input tools/archsig/tests/fixtures/minimal/archmap.json \
+  --out .lake/archmap-validation.json
+```
+
+`archmap` は `archmap-validation-report-v0` を出す。source inventory / source refs、
+claim boundary、semantic coverage、conflict category、formal promotion guardrail を検査する。
+warning は conflict や dangling boundary を review cue として残すために使い、semantic correctness や
+architecture lawfulness は結論しない。
+
+ArchMap から AIR v0 を作る。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- air-from-archmap \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --validation .lake/archmap-validation.json \
+  --out .lake/archmap-air.json
+```
+
+`air-from-archmap` は source artifact refs を AIR `artifacts[]` / `evidence[]` に、object /
+relation / semantic diagram / nonfillability witness / claim boundary を対応する AIR field に投影する。
+missing evidence、coverage gap、nonConclusions、conflict は measured zero や resolved claim に丸めない。
 
 AIR の参照整合性を検査する。
 

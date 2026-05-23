@@ -58,6 +58,161 @@ fn read_json(path: &Path) -> Value {
 }
 
 #[test]
+fn cli_validates_archmap_fixture_and_guardrails() {
+    let out_dir = temp_dir("archmap-validation");
+    let input = fixture_root().join("archmap.json");
+    let report = out_dir.join("archmap-validation.json");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        input.to_str().expect("fixture path is utf-8"),
+        "--out",
+        report.to_str().expect("output path is utf-8"),
+    ]);
+
+    let json = read_json(&report);
+    assert_eq!(json["schemaVersion"], "archmap-validation-report-v0");
+    assert_eq!(json["summary"]["result"], "warn");
+    assert!(
+        json["conflictChecks"][0]["examples"]
+            .as_array()
+            .expect("conflict examples are an array")
+            .iter()
+            .any(|example| example["source"] == "policy-disagreement")
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|entry| entry == "ArchMap validation does not prove architecture lawfulness")
+    );
+
+    let invalid = out_dir.join("archmap-invalid.json");
+    let invalid_report = out_dir.join("archmap-invalid-validation.json");
+    let mut invalid_json = read_json(&input);
+    invalid_json["mapItems"][0]["sourceRefs"] = serde_json::json!([]);
+    invalid_json["mapItems"][1]["claimClassification"] = serde_json::json!("proved");
+    fs::write(
+        &invalid,
+        serde_json::to_string_pretty(&invalid_json).expect("invalid ArchMap serializes"),
+    )
+    .expect("invalid ArchMap is written");
+
+    let output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        invalid.to_str().expect("invalid path is utf-8"),
+        "--out",
+        invalid_report.to_str().expect("output path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "invalid ArchMap should fail validation"
+    );
+    let invalid_report_json = read_json(&invalid_report);
+    assert_eq!(invalid_report_json["summary"]["result"], "fail");
+    assert_eq!(
+        invalid_report_json["claimBoundaryChecks"][0]["id"],
+        "archmap-measured-claims-have-evidence"
+    );
+    assert_eq!(
+        invalid_report_json["formalPromotionGuardrailChecks"][0]["id"],
+        "archmap-formal-promotion-guardrail"
+    );
+}
+
+#[test]
+fn cli_projects_archmap_to_air_and_existing_reports() {
+    let out_dir = temp_dir("archmap-air-flow");
+    let archmap = fixture_root().join("archmap.json");
+    let validation = out_dir.join("archmap-validation.json");
+    let air = out_dir.join("air.json");
+    let air_validation = out_dir.join("air-validation.json");
+    let theorem_report = out_dir.join("theorem-check.json");
+    let feature_report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        archmap.to_str().expect("fixture path is utf-8"),
+        "--out",
+        validation.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "air-from-archmap",
+        "--archmap",
+        archmap.to_str().expect("fixture path is utf-8"),
+        "--validation",
+        validation.to_str().expect("validation path is utf-8"),
+        "--out",
+        air.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "validate-air",
+        "--input",
+        air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        air_validation.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        theorem_report.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        feature_report.to_str().expect("output path is utf-8"),
+    ]);
+
+    let air_json = read_json(&air);
+    assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    assert!(
+        air_json["semanticDiagrams"]
+            .as_array()
+            .expect("semantic diagrams are an array")
+            .iter()
+            .any(|diagram| diagram["id"] == "diagram-create-user")
+    );
+    assert!(
+        air_json["nonfillabilityWitnesses"]
+            .as_array()
+            .expect("nonfillability witnesses are an array")
+            .iter()
+            .any(|witness| witness["witnessId"] == "witness-user-saga-missing-compensation")
+    );
+    assert!(
+        air_json["claims"]
+            .as_array()
+            .expect("claims are an array")
+            .iter()
+            .any(|claim| claim["predicate"] == "ArchMap conflict review cue: missing-static-edge")
+    );
+
+    let air_validation_json = read_json(&air_validation);
+    assert_eq!(air_validation_json["summary"]["result"], "pass");
+    let theorem_json = read_json(&theorem_report);
+    assert_eq!(
+        theorem_json["schemaVersion"],
+        "theorem-precondition-check-report-v0"
+    );
+    let feature_json = read_json(&feature_report);
+    assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert!(
+        feature_json["semanticPathSummary"]["nonfillabilityWitnessCount"]
+            .as_u64()
+            .expect("witness count is numeric")
+            >= 1
+    );
+}
+
+#[test]
 fn cli_extracts_python_import_graph() {
     let root = python_fixture_root();
     let out_dir = temp_dir("python-import-graph");

@@ -112,3 +112,28 @@ bad exemplar
 ```
 
 この reading は empirical / tooling artifact として扱い、因果 theorem とは読まない。
+
+## ArchMap supplied JSON flow
+
+`tools/archsig/tests/fixtures/minimal/archmap.json` は、supplied JSON から ArchMap MVP flow を
+検証する fixture である。
+
+```text
+archmap.json
+  -> archmap-validation-report-v0
+  -> aat-air-v0
+  -> validate-air
+  -> theorem-check
+  -> feature-report
+```
+
+fixture は次を同時に表す。
+
+- AAT concept: component、relation、signature axis、obstruction witness、law / policy boundary、flatness precondition。
+- SOLID / Layered Architecture: SRP responsibility region、reason-to-change candidate、layer direction policy。
+- Semantic structure: selected semantic diagram、semantic commutation claim、nonfillability witness。
+- Boundary: measured semantic evidence、unmeasured runtime evidence、assumed policy boundary、private / unavailable context、conflict review cue。
+
+`archmap` validation は、LLM-authored measured claim と formal/proved claim を混同しない。
+`air-from-archmap` projection は、semantic measured zero と semantic unmeasured、missing evidence と
+measured zero、conflict と resolved claim を混同しない。
