@@ -741,11 +741,38 @@ It would position SFT as a unified theory of computability, observability, modul
 Lean status: the current formalization provides a finite selected assembly,
 `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem`, relative
 to a `FiniteExactSFTModel`, a selected source, a selected horizon, and explicit
-component hypotheses.  It proves the governed-or-typed-boundary-failure
-conclusion for that selected finite package.  It does not prove the
-assumption-free theorem for all software systems, all covers, empirical
-calibration correctness, operational governance effectiveness, or global AI
-safety.
+component hypotheses.  The assembly now includes constructor/accessor bridges
+from finite selected descent packages, finite exact descent assumptions,
+selected H1 finite-descent assumptions, finite classifier completeness,
+minimal review envelopes, governance synthesis, finite-height calibration, and
+finite agent-team / Newman-style confluence into the final component layer. It
+also records a non-conclusion preservation theorem for the final package. It
+proves the governed-or-typed-boundary-failure conclusion for that selected
+finite package. It does not prove the assumption-free theorem for all software
+systems, all covers, empirical calibration correctness, operational governance
+effectiveness, or global AI safety.
+
+Dependency graph for the finite selected formalization:
+
+```text
+transport-normalized path equality
+  -> finite descent inverse laws
+  -> H1 finite descent bridge
+  -> finite selected descent component
+
+finite classifier completeness
+  -> obstruction component
+  -> governance synthesis / cutting component
+
+minimal review envelope
+finite-height calibration
+finite agent-team confluence
+  -> final component hypotheses
+
+final component hypotheses + finite exact model boundaries
+  -> FiniteSelectedFundamentalModularityTheorem
+  -> governed-or-typed-boundary-failure conclusion
+```
 
 ## 7. Research Phases
 

@@ -362,6 +362,81 @@ structure FiniteProjectionGluingLaws
   nonConclusions : Prop
 
 /--
+Transport-normalized path equality for finite-cover descent.
+
+The relation is the selected equivalence used after projection and gluing have
+transported paths between the global cone and the finite local-family surface.
+It is deliberately package-relative: it records the normalized inverse laws and
+their boundary without claiming definitional equality of dependent paths.
+-/
+structure FiniteTransportNormalizedPathEquality
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    (glueData : FiniteClockedGluingData model)
+    (source : Global) (horizon : Nat) where
+  laws : FiniteProjectionGluingLaws glueData
+  global_normalized :
+    ∀ point :
+      ClockedConePoint model.globalSupport model.globalRelation
+        source horizon,
+      (laws.globalEquiv source horizon).related
+        (glueData.glueFamily
+          (projectGlobalConePointToFiniteFamily model point))
+        point
+  local_normalized :
+    ∀ family : FiniteLocalClockedConeFamily cover model source horizon,
+      (laws.localEquiv source horizon).related
+        (projectGlobalConePointToFiniteFamily model
+          (glueData.glueFamily family))
+        family
+  transportBoundary : Prop
+  nonConclusions : Prop
+
+namespace FiniteTransportNormalizedPathEquality
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {cover : UniformFiniteFieldCover Global Index Local}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {model : FiniteSFTModel cover OperationG OperationL}
+variable {glueData : FiniteClockedGluingData model}
+variable {source : Global} {horizon : Nat}
+
+/-- Normalized gluing after projection gives the selected global inverse law. -/
+theorem global_inverse_law
+    (normalized :
+      FiniteTransportNormalizedPathEquality glueData source horizon)
+    (point :
+      ClockedConePoint model.globalSupport model.globalRelation
+        source horizon) :
+    (normalized.laws.globalEquiv source horizon).related
+      (glueData.glueFamily
+        (projectGlobalConePointToFiniteFamily model point))
+      point :=
+  normalized.global_normalized point
+
+/-- Normalized projection after gluing gives the selected local-family inverse law. -/
+theorem local_inverse_law
+    (normalized :
+      FiniteTransportNormalizedPathEquality glueData source horizon)
+    (family : FiniteLocalClockedConeFamily cover model source horizon) :
+    (normalized.laws.localEquiv source horizon).related
+      (projectGlobalConePointToFiniteFamily model
+        (glueData.glueFamily family))
+      family :=
+  normalized.local_normalized family
+
+/-- The normalized package exposes the finite projection/gluing laws it refines. -/
+def toProjectionGluingLaws
+    (normalized :
+      FiniteTransportNormalizedPathEquality glueData source horizon) :
+    FiniteProjectionGluingLaws glueData :=
+  normalized.laws
+
+end FiniteTransportNormalizedPathEquality
+
+/--
 Finite-cover ForecastCone descent from selected finite gluing and Cech-style
 compatibility laws.
 -/
@@ -432,7 +507,109 @@ def ofLaws
   nonConclusions :=
     glueData.nonConclusions ∧ laws.nonConclusions
 
+/-- Build the selected finite-cover descent package from normalized path laws. -/
+def ofTransportNormalizedPathEquality
+    (glueData : FiniteClockedGluingData model)
+    {source : Global} {horizon : Nat}
+    (normalized :
+      FiniteTransportNormalizedPathEquality glueData source horizon) :
+    FiniteSelectedForecastConeDescentPackage model source horizon :=
+  ofLaws glueData normalized.laws
+
+/-- The selected package records the normalized global inverse law. -/
+theorem normalized_global_inverse_law
+    (glueData : FiniteClockedGluingData model)
+    {source : Global} {horizon : Nat}
+    (normalized :
+      FiniteTransportNormalizedPathEquality glueData source horizon)
+    (point :
+      ClockedConePoint model.globalSupport model.globalRelation
+        source horizon) :
+    ((ofTransportNormalizedPathEquality glueData normalized).descentEquivalence).leftRelated
+      (((ofTransportNormalizedPathEquality glueData normalized).descentEquivalence).invFun
+        (((ofTransportNormalizedPathEquality glueData normalized).descentEquivalence).toFun point))
+      point :=
+  normalized.global_inverse_law point
+
+/-- The selected package records the normalized local-family inverse law. -/
+theorem normalized_local_inverse_law
+    (glueData : FiniteClockedGluingData model)
+    {source : Global} {horizon : Nat}
+    (normalized :
+      FiniteTransportNormalizedPathEquality glueData source horizon)
+    (family : FiniteLocalClockedConeFamily cover model source horizon) :
+    ((ofTransportNormalizedPathEquality glueData normalized).descentEquivalence).rightRelated
+      (((ofTransportNormalizedPathEquality glueData normalized).descentEquivalence).toFun
+        (((ofTransportNormalizedPathEquality glueData normalized).descentEquivalence).invFun family))
+      family :=
+  normalized.local_inverse_law family
+
 end FiniteSelectedForecastConeDescentPackage
+
+/--
+Good finite cover sufficient condition for selected ForecastCone descent.
+
+This is a finite, selected, sufficient-condition package.  It does not say that
+all finite covers satisfy descent; it says that the supplied exact gluing laws
+and normalized transport laws are enough to construct the selected package.
+-/
+structure GoodFiniteCoverDescentCondition
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    (model : FiniteSFTModel cover OperationG OperationL)
+    (source : Global) (horizon : Nat) where
+  glueData : FiniteClockedGluingData model
+  normalized :
+    FiniteTransportNormalizedPathEquality glueData source horizon
+  exactGluingBoundary : Prop
+  supportStableBoundary : Prop
+  goodCoverBoundary : Prop
+  nonConclusions : Prop
+
+namespace GoodFiniteCoverDescentCondition
+
+variable {Global : Type u} {Index : Type v} {Local : Type w}
+variable {cover : UniformFiniteFieldCover Global Index Local}
+variable {OperationG : Type x} {OperationL : Type y}
+variable {model : FiniteSFTModel cover OperationG OperationL}
+variable {source : Global} {horizon : Nat}
+
+/-- A good finite cover yields the selected finite ForecastCone descent package. -/
+def descentPackage
+    (condition :
+      GoodFiniteCoverDescentCondition model source horizon) :
+    FiniteSelectedForecastConeDescentPackage model source horizon :=
+  FiniteSelectedForecastConeDescentPackage.ofTransportNormalizedPathEquality
+    condition.glueData condition.normalized
+
+/-- Good-cover descent records the sufficient-condition boundary only. -/
+def RecordsGoodCoverBoundary
+    (condition :
+      GoodFiniteCoverDescentCondition model source horizon) : Prop :=
+  condition.exactGluingBoundary ∧ condition.supportStableBoundary ∧
+    condition.goodCoverBoundary ∧ condition.normalized.transportBoundary
+
+/-- Non-conclusions remain explicit for the good-cover theorem family. -/
+def RecordsNonConclusions
+    (condition :
+      GoodFiniteCoverDescentCondition model source horizon) : Prop :=
+  condition.nonConclusions ∧ condition.normalized.nonConclusions ∧
+    condition.glueData.nonConclusions
+
+end GoodFiniteCoverDescentCondition
+
+/-- Good finite covers provide selected finite ForecastCone descent. -/
+theorem forecastCone_descent_of_goodFiniteCover
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (condition :
+      GoodFiniteCoverDescentCondition model source horizon) :
+    Nonempty (FiniteSelectedForecastConeDescentPackage model source horizon) :=
+  ⟨condition.descentPackage⟩
 
 /-- Existence wrapper for selected finite-cover descent under explicit laws. -/
 theorem finiteForecastConeDescentPackage_of_laws

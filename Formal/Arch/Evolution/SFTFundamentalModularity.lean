@@ -248,6 +248,21 @@ theorem final_modularity_iff_forecastConeDescent
     (roadmapPackage_of_hypotheses h)
 
 /--
+Final boundary theorem: the conservative assembly preserves the component
+non-conclusions instead of promoting them to assumption-free, empirical,
+operational, or AI-safety claims.
+-/
+theorem final_assembly_preserves_component_nonConclusions
+    (h : FundamentalModularityHypotheses) :
+    h.descent.nonConclusions ∧ h.obstruction.nonConclusions ∧
+      h.review.nonConclusions ∧ h.governance.nonConclusions ∧
+        h.calibration.nonConclusions ∧ h.agentic.nonConclusions ∧
+          h.governed.nonConclusions ∧ h.failure.nonConclusions ->
+    (roadmapConclusion_of_hypotheses h).nonConclusions := by
+  intro hComponents
+  simpa [roadmapConclusion_of_hypotheses, toRoadmapConclusion] using hComponents
+
+/--
 Finite selected Fundamental Modularity theorem package.
 
 This is the final selected assembly over a `FiniteExactSFTModel`, a selected
@@ -312,6 +327,18 @@ def RecordsNonConclusions
   theoremPackage.nonConclusions ∧ exactModel.RecordsNonConclusions ∧
     theoremPackage.hypotheses.nonConclusions
 
+/--
+The finite selected theorem package preserves exact-model and component
+non-conclusions at the final boundary.
+-/
+theorem records_nonConclusions_preserved
+    (theoremPackage :
+      FiniteSelectedFundamentalModularityTheorem exactModel source horizon)
+    (hRecords : theoremPackage.RecordsNonConclusions) :
+    theoremPackage.nonConclusions ∧ exactModel.RecordsNonConclusions ∧
+      theoremPackage.hypotheses.nonConclusions :=
+  hRecords
+
 /-- The finite selected package records the exact-cover boundary. -/
 theorem records_exactCoverBoundary
     (theoremPackage :
@@ -358,6 +385,210 @@ theorem modularity_iff_forecastConeDescent
   final_modularity_iff_forecastConeDescent theoremPackage.hypotheses
 
 end FiniteSelectedFundamentalModularityTheorem
+
+/-- Read selected finite ForecastCone descent as the final descent component. -/
+def descentComponent_of_finiteSelectedDescentPackage
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteSelectedForecastConeDescentPackage model source horizon) :
+    FundamentalDescentComponent where
+  modularityAsDescent := package.descentEquivalence.equivalenceBoundary
+  forecastConeDescent := package.descentEquivalence.equivalenceBoundary
+  modularity_iff_descent := Iff.rfl
+  descentBoundary := package.packageBoundary
+  nonConclusions := package.nonConclusions
+
+/-- The finite descent component records selected ForecastCone descent. -/
+theorem descentComponent_records_finiteSelectedDescent
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteSelectedForecastConeDescentPackage model source horizon)
+    (hBoundary : package.descentEquivalence.equivalenceBoundary) :
+    (descentComponent_of_finiteSelectedDescentPackage
+      package).forecastConeDescent :=
+  hBoundary
+
+/-- Read finite exact descent assumptions as the final descent component. -/
+def descentComponent_of_finiteExactDescentAssumptions
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (assumptions : FiniteExactDescentAssumptions exactModel) :
+    FundamentalDescentComponent :=
+  descentComponent_of_finiteSelectedDescentPackage
+    (assumptions.descentPackage (source := source) (horizon := horizon))
+
+/-- Read selected `H1 = 0` finite descent assumptions as the final descent component. -/
+def descentComponent_of_h1FiniteDescentAssumptions
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (assumptions :
+      CechH1FiniteDescentAssumptions exactModel source horizon) :
+    FundamentalDescentComponent :=
+  descentComponent_of_finiteExactDescentAssumptions
+    (source := source) (horizon := horizon)
+    assumptions.descentAssumptions
+
+/-- Read a finite descent obstruction package as the final obstruction component. -/
+def obstructionComponent_of_finiteDescentObstructionPackage
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteDescentObstructionPackage model source horizon) :
+    FundamentalObstructionComponent where
+  technicalDebtAsObstruction :=
+    ∀ failure : FiniteDescentFailure model source horizon,
+      ∃ witness : FiniteDescentObstructionWitness model source horizon,
+        package.classifier.classify failure = some witness
+  typedFailureWitnessAvailable :=
+    ∀ failure : FiniteDescentFailure model source horizon,
+      ∃ witness : FiniteDescentObstructionWitness model source horizon,
+        package.classifier.classify failure = some witness
+  obstructionBoundary := package.obstructionBoundary
+  nonConclusions := package.nonConclusions
+
+/-- The obstruction component exposes typed witnesses for selected failures. -/
+theorem obstructionComponent_records_finite_witness
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteDescentObstructionPackage model source horizon) :
+    (obstructionComponent_of_finiteDescentObstructionPackage
+      package).typedFailureWitnessAvailable :=
+  fun failure => finite_descent_obstruction_of_failure package failure
+
+/-- Read finite exact classifier completeness as the final obstruction component. -/
+def obstructionComponent_of_finiteExactFailureClassifierCompleteness
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    FundamentalObstructionComponent :=
+  obstructionComponent_of_finiteDescentObstructionPackage
+    package.obstructionPackage
+
+/-- Finite exact classifier completeness exposes typed selected failures. -/
+theorem obstructionComponent_records_finiteExact_witness
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (package :
+      FiniteExactFailureClassifierCompleteness exactModel source horizon) :
+    (obstructionComponent_of_finiteExactFailureClassifierCompleteness
+      package).typedFailureWitnessAvailable :=
+  obstructionComponent_records_finite_witness package.obstructionPackage
+
+/--
+Construct the finite selected final theorem package from already-built finite
+exact components.
+
+This constructor discharges only the package assembly surface.  The component
+fields remain selected finite hypotheses and preserve the exact-model and
+non-conclusion boundaries.
+-/
+def FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (hypotheses : FundamentalModularityHypotheses)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hGovernance : exactModel.RecordsGovernanceBasisBoundary)
+    (theoremBoundary : Prop)
+    (nonConclusions : Prop) :
+    FiniteSelectedFundamentalModularityTheorem exactModel source horizon where
+  hypotheses := hypotheses
+  recordsExactCoverBoundary := hExact
+  recordsFiniteModelBoundary := hFinite
+  recordsObservationBoundary := hObservation
+  recordsGovernanceBoundary := hGovernance
+  theoremBoundary := theoremBoundary
+  nonConclusions := nonConclusions
+
+/-- The constructor-built finite package exposes the final selected theorem. -/
+theorem finiteSelected_ofFiniteExactComponents_records_finalAssembly
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {OperationG : Type x} {OperationL : Type y}
+    {Governance : Type z}
+    {exactModel :
+      FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
+    {source : Global} {horizon : Nat}
+    (hypotheses : FundamentalModularityHypotheses)
+    (hExact : exactModel.RecordsExactCoverBoundary)
+    (hFinite : exactModel.RecordsFiniteModelBoundary)
+    (hObservation : exactModel.RecordsObservationBoundary)
+    (hGovernance : exactModel.RecordsGovernanceBasisBoundary)
+    (theoremBoundary : Prop)
+    (nonConclusions : Prop) :
+    (FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+      (exactModel := exactModel) (source := source) (horizon := horizon)
+      hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+      nonConclusions).hypotheses.descent.modularityAsDescent ∧
+      (FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+        (exactModel := exactModel) (source := source) (horizon := horizon)
+        hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+        nonConclusions).hypotheses.obstruction.technicalDebtAsObstruction ∧
+      (FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+        (exactModel := exactModel) (source := source) (horizon := horizon)
+        hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+        nonConclusions).hypotheses.review.minimalDecisionPreservingEnvelope ∧
+      (FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+        (exactModel := exactModel) (source := source) (horizon := horizon)
+        hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+        nonConclusions).hypotheses.governance.governanceAsObstructionCutting ∧
+      (FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+        (exactModel := exactModel) (source := source) (horizon := horizon)
+        hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+        nonConclusions).hypotheses.calibration.boundaryExplicitFixedPoint ∧
+      (FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+        (exactModel := exactModel) (source := source) (horizon := horizon)
+        hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+        nonConclusions).hypotheses.agentic.agenticConfluence ∧
+      ((FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+        (exactModel := exactModel) (source := source) (horizon := horizon)
+        hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+        nonConclusions).hypotheses.governed.governedBoundary ∨
+        (FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+          (exactModel := exactModel) (source := source) (horizon := horizon)
+          hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+          nonConclusions).hypotheses.failure.explainsBrokenBoundary) :=
+  FiniteSelectedFundamentalModularityTheorem.finiteSelected_fundamental_modularity
+    (FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents
+      (exactModel := exactModel) (source := source) (horizon := horizon)
+      hypotheses hExact hFinite hObservation hGovernance theoremBoundary
+      nonConclusions)
 
 /-- Read finite obstruction-governance cutting as the final governance component. -/
 def governanceComponent_of_finiteObstructionGovernance

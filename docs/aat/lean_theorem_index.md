@@ -2332,9 +2332,18 @@ finite cover が descent を満たすこと、Cech cohomology theorem、Fundamen
 | `FiniteGlobalConeEquivalenceData` | `structure` | finite descent の global cone point relatedness と equivalence-relation laws を束ねる。 | `defined only` |
 | `FiniteLocalFamilyEquivalenceData` | `structure` | finite local family relatedness と equivalence-relation laws を束ねる。 | `defined only` |
 | `FiniteProjectionGluingLaws` | `structure` | finite projection/glue inverse laws、global/local selected equivalence、Cech compatibility / finite descent boundary を束ねる。 | `defined only` |
+| `FiniteTransportNormalizedPathEquality` | `structure` | finite projection/gluing 後の path equality を selected equivalence と normalized inverse laws として束ねる。definitional path equality は主張しない。 | `defined only` |
+| `FiniteTransportNormalizedPathEquality.global_inverse_law` | `theorem` | transport-normalized package から global cone point 側の selected inverse law を取り出す。 | `proved accessor` |
+| `FiniteTransportNormalizedPathEquality.local_inverse_law` | `theorem` | transport-normalized package から finite local-family 側の selected inverse law を取り出す。 | `proved accessor` |
 | `forecastCone_descent_finite_of_laws` | `def` | explicit finite gluing と Cech-style compatibility laws から global cone point と finite local family の selected `ConeEquivalence` を構成する。 | `defined only` |
 | `FiniteSelectedForecastConeDescentPackage` | `structure` | finite-cover selected descent equivalence、package boundary、non-conclusions を束ねる。 | `defined only` |
 | `FiniteSelectedForecastConeDescentPackage.ofLaws` | `def` | explicit finite projection/gluing laws から finite selected descent package を構成する。 | `defined only` |
+| `FiniteSelectedForecastConeDescentPackage.ofTransportNormalizedPathEquality` | `def` | transport-normalized path equality から finite selected descent package を構成する。 | `defined only` |
+| `FiniteSelectedForecastConeDescentPackage.normalized_global_inverse_law` | `theorem` | constructed finite selected package が normalized global inverse law を保持することを取り出す。 | `proved accessor` |
+| `FiniteSelectedForecastConeDescentPackage.normalized_local_inverse_law` | `theorem` | constructed finite selected package が normalized local-family inverse law を保持することを取り出す。 | `proved accessor` |
+| `GoodFiniteCoverDescentCondition` | `structure` | exact gluing、support-stable boundary、transport-normalized inverse laws を good finite cover の十分条件として束ねる。 | `defined only` |
+| `GoodFiniteCoverDescentCondition.descentPackage` | `def` | good finite cover 条件から selected finite descent package を構成する。 | `defined only` |
+| `forecastCone_descent_of_goodFiniteCover` | `theorem` | good-cover sufficient condition から selected finite ForecastCone descent package の存在を取り出す。all finite covers theorem ではない。 | `proved accessor` |
 | `finiteForecastConeDescentPackage_of_laws` | `theorem` | explicit laws から finite selected descent package の存在を取り出す。 | `proved accessor` |
 | `finiteCoverOfBinaryCover` | `def` | binary cover を `Bool` index / `Sum Left Right` local carrier の finite cover skeleton として読む cover-level bridge。 | `defined only` |
 | `BinaryAsFiniteCoverPackage` | `structure` | binary-as-finite cover bridge の package boundary を束ねる。 | `defined only` |
@@ -2406,6 +2415,7 @@ cohomology theorem は証明しない。
 | `CechH1FiniteDescentAssumptions.RecordsH1Vanishes` | `def` | H1 / selected finite boundary を取り出す。 | `defined only` |
 | `CechH1FiniteDescentAssumptions.RecordsNonConclusions` | `def` | H1 と finite descent assumptions の non-conclusion boundary を保持する。 | `defined only` |
 | `h1_vanishes_implies_finite_descent` | `theorem` | concrete selected `H1 = 0` と finite exact descent assumptions の下で selected finite ForecastCone descent package の存在を証明する。 | `proved accessor` |
+| `h1_vanishes_implies_finite_descent_with_normalized_paths` | `theorem` | concrete selected `H1 = 0` bridge を transport-normalized path equality の boundary と合わせて読む。full Cech cohomology theorem ではない。 | `proved accessor` |
 
 ## SFT Finite Descent Obstruction / Governance Cutting
 
@@ -2560,16 +2570,26 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTFundamentalModularity.final_agentic_confluence` | `theorem` | final hypotheses から selected agentic confluence assumption を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.final_governed_agenticConfluenceAvailable` | `theorem` | final hypotheses の bridge から governed-side agentic confluence availability を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.final_modularity_iff_forecastConeDescent` | `theorem` | assembled roadmap package が modularity と ForecastCone descent の同値を記録することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.final_assembly_preserves_component_nonConclusions` | `theorem` | final assembly が component non-conclusions を保持し、assumption-free / empirical / operational / AI-safety claim へ昇格しないことを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem` | `structure` | `FiniteExactSFTModel`、selected source / horizon、final hypotheses、exact-model boundary、non-conclusions を束ねる finite selected final theorem package。 | `defined only` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.roadmapConclusion` | `def` | finite selected package から assembled roadmap conclusion を取り出す。 | `defined only` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.roadmapPackage` | `def` | finite selected package から assembled roadmap theorem package を取り出す。 | `defined only` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.RecordsExactModelBoundary` | `def` | exact cover / finite model / observation / governance / theorem boundary を保持する。 | `defined only` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.RecordsNonConclusions` | `def` | finite exact model と final package の non-conclusions を保持する。 | `defined only` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.records_nonConclusions_preserved` | `theorem` | finite selected final package の exact-model / component non-conclusion records を保持する。 | `proved accessor` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.records_exactCoverBoundary` | `theorem` | finite selected final package が exact cover boundary を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.records_finiteModelBoundary` | `theorem` | finite selected final package が finite model boundary を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.finiteSelected_fundamental_modularity` | `theorem` | finite exact model / selected source / horizon に相対化された final assembly theorem。 | `proved accessor / assembly theorem` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.governed_or_typed_failure` | `theorem` | finite selected bounded evolution が governed または typed boundary failure を持つことを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.modularity_iff_forecastConeDescent` | `theorem` | finite selected package が modularity と ForecastCone descent の同値を記録することを取り出す。 | `proved accessor` |
+| `SFTFundamentalModularity.descentComponent_of_finiteSelectedDescentPackage` | `def` | selected finite ForecastCone descent package を final descent component として読む。 | `defined only` |
+| `SFTFundamentalModularity.descentComponent_of_finiteExactDescentAssumptions` | `def` | finite exact descent assumptions から final descent component を構成する。 | `defined only` |
+| `SFTFundamentalModularity.descentComponent_of_h1FiniteDescentAssumptions` | `def` | H1 finite descent assumptions から final descent component を構成する。 | `defined only` |
+| `SFTFundamentalModularity.obstructionComponent_of_finiteDescentObstructionPackage` | `def` | finite classifier package を final obstruction component として読む。 | `defined only` |
+| `SFTFundamentalModularity.obstructionComponent_records_finite_witness` | `theorem` | final obstruction component が selected finite failure の typed witness availability を保持する。 | `proved accessor` |
+| `SFTFundamentalModularity.obstructionComponent_of_finiteExactFailureClassifierCompleteness` | `def` | finite exact classifier completeness package を final obstruction component として読む。 | `defined only` |
+| `SFTFundamentalModularity.FiniteSelectedFundamentalModularityTheorem.ofFiniteExactComponents` | `def` | finite exact model boundary と final hypotheses から finite selected final theorem package を構成する。 | `defined only` |
+| `SFTFundamentalModularity.finiteSelected_ofFiniteExactComponents_records_finalAssembly` | `theorem` | constructor-built finite selected package から final assembly theorem を取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.governanceComponent_of_finiteObstructionGovernance` | `def` | finite obstruction governance package を final governance component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.governanceComponent_of_finiteExactGovernanceSoundness` | `def` | finite exact governance-cutting soundness package を final governance component として読む bridge。 | `defined only` |
 | `SFTFundamentalModularity.governanceComponent_records_finiteExact_cut` | `theorem` | finite exact governance component が selected bad-witness cutting を保持することを取り出す。 | `proved accessor` |
@@ -2600,6 +2620,10 @@ empirical calibration correctness、global agentic safety、assumption-free Fund
 | `SFTAgenticConfluence.NewmanStyleConfluenceKernel.agenticPackage_records_newmanStyle_confluence` | `theorem` | kernel 由来 package が Newman-style convergence theorem を保持することを取り出す。 | `proved accessor` |
 | `SFTAgenticConfluence.NewmanStyleConfluenceKernel.RecordsAgentBoundary` | `def` | selected agentic proof boundary を取り出す。 | `defined only` |
 | `SFTAgenticConfluence.NewmanStyleConfluenceKernel.RecordsNonConclusions` | `def` | selected agentic confluence の non-conclusions を保持する。 | `defined only` |
+| `SFTAgenticConfluence.FiniteAgentTeamSemantics` | `structure` | finite agent list、accepted schedule、schedule step、finite-team / schedule boundary を束ねる selected finite agent-team semantics。 | `defined only` |
+| `SFTAgenticConfluence.FiniteAgentTeamConfluenceBridge` | `structure` | finite agent-team schedule semantics を Newman-style confluence kernel へ接続する bridge。 | `defined only` |
+| `SFTAgenticConfluence.FiniteAgentTeamConfluenceBridge.fairInterleavingsConverge` | `theorem` | finite agent-team bridge から selected fair interleaving convergence を取り出す。unbounded agent-team safety ではない。 | `proved accessor` |
+| `SFTAgenticConfluence.FiniteAgentTeamConfluenceBridge.RecordsFiniteAgentBoundary` | `def` | finite team / schedule / accepted-boundary / agent-boundary を保持する。 | `defined only` |
 | `SFTFundamentalModularity.agenticComponent_of_newmanStyleConfluenceKernel` | `def` | Newman-style confluence kernel を final agentic component として読む。 | `defined only` |
 | `SFTFundamentalModularity.agenticComponent_records_newmanStyle_confluence` | `theorem` | Newman-style final agentic component が fair interleaving convergence を保持することを取り出す。 | `proved accessor` |
 | `SFTFundamentalModularity.agenticComponent_records_newmanStyle_nonConclusions` | `theorem` | Newman-style final agentic component が non-conclusions を保持することを取り出す。 | `proved accessor` |
