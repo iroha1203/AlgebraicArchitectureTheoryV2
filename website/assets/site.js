@@ -58,6 +58,8 @@ navLinks
 document.querySelector("[data-current-year]").textContent =
   new Date().getFullYear();
 
+const compactSidebarQuery = window.matchMedia("(max-width: 880px)");
+
 document
   .querySelectorAll(
     ".article-sidebar > .toc-panel, .article-sidebar > .source-panel, .article-sidebar > .version-panel, .article-sidebar > .boundary-note"
@@ -88,8 +90,9 @@ document
     button.textContent = heading.textContent;
     heading.replaceChildren(button);
 
-    const expanded =
+    const desktopExpanded =
       panel.classList.contains("toc-panel") || panel.dataset.sidebarOpen === "true";
+    const expanded = compactSidebarQuery.matches ? false : desktopExpanded;
     button.setAttribute("aria-expanded", String(expanded));
     panel.classList.toggle("is-open", expanded);
     content.hidden = !expanded;

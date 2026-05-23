@@ -1037,6 +1037,11 @@ p {
   top: 92px;
   display: grid;
   gap: 18px;
+  max-height: calc(100vh - 112px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
   min-width: 0;
 }
 
@@ -2221,6 +2226,24 @@ p {
 
   .article-sidebar {
     position: static;
+    gap: 10px;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+    scrollbar-gutter: auto;
+  }
+
+  .article-sidebar > .toc-panel,
+  .article-sidebar > .source-panel,
+  .article-sidebar > .version-panel,
+  .article-sidebar > .boundary-note {
+    padding-top: 11px;
+  }
+
+  .article-sidebar .sidebar-panel-content {
+    max-height: min(58vh, 420px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .theorem-card-grid {
