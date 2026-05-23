@@ -51,6 +51,7 @@ To answer these questions, the project keeps the following layers separate:
 | SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
 | Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) |
 | Proof / empirical ledger | Theorem boundaries, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) |
+| Website | The public reading surface for AAT, SFT, and ArchSig, published as a no-build GitHub Pages site. | [Website operating notes](docs/website/README.md) and [website source](website/index.html) |
 
 The README does not duplicate detailed theorem lists or progress ledgers.
 Current Lean status, non-conclusion boundaries, and open proof obligations are
@@ -72,7 +73,8 @@ summaries will be added as the theory and Lean formalization stabilize.
 8. As needed:
    [docs guide](docs/README.md),
    [AAT directory guide](docs/aat/README.md),
-   [SFT directory guide](docs/sft/README.md)
+   [SFT directory guide](docs/sft/README.md),
+   [website operating notes](docs/website/README.md)
 
 ## AAT
 
@@ -121,6 +123,18 @@ boundary status, and forecast boundaries that review and CI can handle.
 The tooling is not the theory itself. It does not confuse measured zero with
 unmeasured, and a tool pass is not read as a Lean theorem.
 
+## Website
+
+The public website in `website/` is a GitHub Pages reading surface for AAT, SFT,
+and ArchSig. It is not the research ledger or the source of theorem status.
+Instead, it presents the theory as web-native preprint / monograph pages and
+presents ArchSig as a public manual while preserving the claim boundaries kept
+in `docs/`.
+
+Website planning and editorial rules live in [docs/website](docs/website/README.md).
+The current stack is intentionally no-build: static HTML, CSS, small JavaScript,
+MathJax, and local assets under `website/assets`.
+
 ## Lean Formalization
 
 See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) for the
@@ -151,6 +165,12 @@ completeness of real-code extractors are not included in that QED.
   - AAT / SFT interface and the SFT body.
 - `docs/tool`
   - AIR, extractor, report, claim boundary, workflow, and schema compatibility.
+- `docs/website`
+  - Internal operating notes for the public website, including sitemap, design,
+    tone, and publication rules.
+- `website`
+  - No-build static GitHub Pages site for the public AAT / SFT / ArchSig reading
+    surface.
 - `Main.lean`
   - Minimal entry point for the executable target `aatv2`.
 - `lakefile.toml`
