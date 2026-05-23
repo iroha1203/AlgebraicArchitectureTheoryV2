@@ -27,7 +27,7 @@ body:
       options:
         - "formal: Lean 形式化"
         - "tool: Rust tooling / ArchSig"
-        - "website: GitHub Pages 公開面"
+        - "website: Cloudflare Pages 公開面"
         - "doc: docs / README"
     validations:
       required: true

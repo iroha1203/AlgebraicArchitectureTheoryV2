@@ -51,7 +51,7 @@ To answer these questions, the project keeps the following layers separate:
 | SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
 | Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) |
 | Proof / empirical ledger | Theorem boundaries, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) |
-| Website | The public reading surface for AAT, SFT, and ArchSig, published as a no-build GitHub Pages site. | [Website operating notes](docs/website/README.md) and [website source](website/index.html) |
+| Website | The public reading surface for AAT, SFT, and ArchSig, published as a no-build Cloudflare Pages site. | [Website operating notes](docs/website/README.md) and [website source](website/index.html) |
 
 The README does not duplicate detailed theorem lists or progress ledgers.
 Current Lean status, non-conclusion boundaries, and open proof obligations are
@@ -125,7 +125,7 @@ unmeasured, and a tool pass is not read as a Lean theorem.
 
 ## Website
 
-The public website in `website/` is a GitHub Pages reading surface for AAT, SFT,
+The public website in `website/` is a Cloudflare Pages reading surface for AAT, SFT,
 and ArchSig. It is not the research ledger or the source of theorem status.
 Instead, it presents the theory as web-native preprint / monograph pages and
 presents ArchSig as a public manual while preserving the claim boundaries kept
@@ -169,7 +169,7 @@ completeness of real-code extractors are not included in that QED.
   - Internal operating notes for the public website, including sitemap, design,
     tone, and publication rules.
 - `website`
-  - No-build static GitHub Pages site for the public AAT / SFT / ArchSig reading
+  - No-build static Cloudflare Pages site for the public AAT / SFT / ArchSig reading
     surface.
 - `Main.lean`
   - Minimal entry point for the executable target `aatv2`.

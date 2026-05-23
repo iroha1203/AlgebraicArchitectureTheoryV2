@@ -3,7 +3,7 @@
 このディレクトリは、公開 website のための非公開の運用メモを置く場所である。
 公開される静的サイト本体は `../../website/` に置く。
 
-`docs/website/` は GitHub Pages の artifact に含めない。公開ページ、asset、
+`docs/website/` は Cloudflare Pages の公開 artifact に含めない。公開ページ、asset、
 `sitemap.xml`、`robots.txt`、`CNAME` は `website/` 側で管理する。
 
 ## 文書の分担
@@ -16,7 +16,7 @@
 ## 公開サイトの位置づけ
 
 - `docs/` は研究本文、Lean status、proof obligation、tooling specification の source of truth として扱う。
-- `website/` は GitHub Pages 向けの public reading surface として扱う。
+- `website/` は Cloudflare Pages 向けの public reading surface として扱う。
 - AAT の数学的正典は `docs/aat/mathematical_theory.md` であり続ける。
   `website/aat/**` はそれを置き換えず、出版物として肉付けした web-native
   monograph / publication edition として扱う。
@@ -54,7 +54,7 @@ SFT treats ... as ...
 - custom domain は `website/CNAME` に記録する。
 - production sitemap は `website/sitemap.xml` に置き、`https://iroha1203.dev/` を URL base とする。
 - `website/robots.txt` は production sitemap を指す。
-- GitHub Pages は `.github/workflows/pages.yml` で `website/` を artifact として deploy する。
+- Cloudflare Pages は `website/` を公開ディレクトリとして deploy する。
 
 ## ローカル preview
 
