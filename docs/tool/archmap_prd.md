@@ -369,6 +369,7 @@ Lean 側の検証対象:
 | `ArchMapModel.NonfillabilityWitnessPreservation` | selected source nonfillability witness が target witness に写る。 |
 | `ArchMapModel.LawPolicyPreservation` | selected law / policy boundary が明示的に保持される。 |
 | `ArchMapModel.FlatnessPreconditionPreservation` | selected flatness precondition、coverage、exactness が zero-curvature theorem package へ接続可能な形で揃う。 |
+| `ArchMapModel.BoundedHomomorphismPreservation` | object / relation / semantic diagram / commutation / witness / law / flatness precondition と boundary field を束ねた top-level bounded homomorphism predicate。 |
 | `ArchMapModel.ArchMapPreservationPackage` | 上記 preservation と forgetting / unsupported / coverage / exactness / formal-promotion guardrail / non-conclusions を theorem package として束ねる。 |
 
 この formal bridge は、LLM が source code を正しく読んだこと、source inventory が完全であること、
@@ -378,12 +379,13 @@ non-conclusions、または external review の責務である。
 
 次フェーズの Lean task:
 
-- `ArchMapModel` の homomorphism 性を、object / relation / semantic diagram / law / flatness
-  preservation を束ねる predicate として明示する。
+- `ArchMapModel.BoundedHomomorphismPreservation` で、object / relation / semantic diagram / law / flatness
+  preservation と boundary field を束ねる top-level predicate を明示する。
 - `preserves[]` と Lean predicate の対応 vocabulary を固定し、`theorem-check` の
   `archmapPreservationPreconditionChecklist` と同期する。
-- expressiveness fixture のうち最小例を Lean 上の finite model として instantiate し、
-  `ArchMapPreservationPackage` を構成できる positive example を追加する。
+- expressiveness fixture の smoke-test 代表として、Lean 上の finite singleton model
+  `ArchMapModel.Examples.unitArchMapModel` と
+  `ArchMapModel.Examples.unitArchMapPreservationPackage` を instantiate する。
 - preservation が構成できない例では、Lean theorem を作らず、tooling report 側で
   `blockedByMissingEvidence`、`blockedByUnmeasuredCoverage`、`blockedByFormalPromotionGuardrail`
   に落ちることを固定する。
@@ -695,15 +697,17 @@ Lean formal verification phase の完了条件:
 - `archmap-generate` を deterministic regeneration 可能にするため、prompt / source inventory / model id 以外に何を保存するか。
 - ArchMap の confidence を fixed enum にするか、calibration artifact と接続するか。
 - semantic diagram vocabulary を AIR の既存 schema に合わせて先に拡張するか、ArchMap 側で先行して保持するか。
-- `archmap-expressiveness-suite-v0` を単一 schema artifact として持つか、fixture directory convention と expected output で管理するか。
-- ArchMap の SFT-facing input candidates を `operationCandidate` / `stateCandidate` / `stateTransitionCandidate` / `eventCandidate` / `workflowCandidate` などに分けるか、既存 `operationSupport` 系に寄せるか。
-- ArchSig が ArchMap から field / force / attractor / basin / ForecastCone / ConsequenceEnvelope を決定論的に計算する SFT projection report を、どの artifact schema として持つか。
-- AAT projection item と SFT computation-input item の optional cross-reference を schema 上に持つか、shared `sourceRefs` だけで対応を表すか。
-- expressiveness suite の pass / fail を schema compatibility と同じ migration guard として扱うか。
-- JSON / AIR / theorem-check candidate から Lean model を手書きで構成するか、将来 generator を用意するか。
-- Lean positive example は expressiveness fixture ごとに作るか、代表 fixture だけを formal bridge smoke test として作るか。
-- `preserves[]` の自然言語 vocabulary を Lean predicate selector へどこまで正規化するか。
-- SFT 側の計算結果を Lean formal bridge に接続する場合、ArchMap ではなく ArchSig-computed SFT artifact から接続するか。
+
+## Resolved v0 Decisions
+
+- expressiveness suite v0 は、`tools/archsig/tests/fixtures/expressiveness/` の fixture directory convention と CLI 回帰テストで管理する。v0 では単一 suite artifact に 10 case を収め、expected output は `cli_locks_archmap_expressiveness_suite_v0_boundaries` で固定する。
+- ArchMap の SFT-facing input は、source-level candidate として `operationCandidate` / `stateCandidate` / `stateTransitionCandidate` / `eventCandidate` / `workflowCandidate` / `testOracleCandidate` / `runtimeObservationCandidate` を許す設計に寄せる。v0 fixture では source refs と `preserves[]` cue で保持し、SFT 計算結果そのものは保持しない。
+- field / force / attractor / basin / ForecastCone / ConsequenceEnvelope は、ArchMap からではなく ArchSig-computed SFT projection / report の責務とする。具体的な SFT projection schema は後続 tooling task として扱う。
+- AAT projection item と SFT computation-input item の cross-reference は、v0 では shared `sourceRefs` と optional review cue に限定する。AAT -> SFT theorem implication とは読まない。
+- expressiveness suite の pass / fail は、schema compatibility と同じく regression guard として扱うが、LLM accuracy や architecture lawfulness の metric ではない。
+- JSON / AIR / theorem-check candidate から Lean model への生成は v0 では行わない。Lean positive example は代表 singleton model を手書きし、将来 generator は別 task とする。
+- `preserves[]` の自然言語 vocabulary は、v0 では bounded selector として正規化する。未対応語彙は candidate / coverage boundary / out-of-scope として残し、proof discharge には使わない。
+- SFT 側の計算結果を Lean formal bridge に接続する場合は、ArchMap ではなく ArchSig-computed SFT artifact から接続する。
 
 ## Non-Conclusions
 

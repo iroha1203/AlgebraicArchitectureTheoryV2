@@ -1,0 +1,212 @@
+{
+  "schemaVersion": "archmap-v0",
+  "mapId": "archmap-expressiveness-suite-v0",
+  "architectureId": "archmap-expressiveness-fixture-repo",
+  "generatedAt": "2026-05-24T00:00:00Z",
+  "generator": {
+    "kind": "supplied-json",
+    "tool": "archsig",
+    "provider": "human-reviewed-fixture",
+    "modelId": "not-applicable"
+  },
+  "sourceInventoryRef": {
+    "artifactId": "archmap-expressiveness-suite-v0-source-inventory",
+    "kind": "source_inventory",
+    "path": "tools/archsig/tests/fixtures/expressiveness/archmap_source_inventory.json",
+    "contentHash": "sha256-expressiveness-source-inventory"
+  },
+  "generationBoundary": {
+    "tokenBudget": "fixture",
+    "scope": ["src", "tests", "docs/architecture.md"],
+    "excludedRefs": [{"kind": "file", "path": "dist/generated.js"}],
+    "privateRefs": [{"artifactId": "private-plugin-rules", "kind": "privateContext", "path": "private/plugin-rules.md"}],
+    "unavailableRefs": [{"artifactId": "src-runtime-trace", "kind": "runtimeTrace", "path": ".lake/runtime-trace.json"}],
+    "nonConclusions": [
+      "suite pass does not measure LLM accuracy",
+      "suite pass does not prove architecture lawfulness",
+      "suite pass does not discharge Lean theorem preconditions"
+    ]
+  },
+  "sourceUniverse": {
+    "root": ".",
+    "includedRefs": [
+      {"artifactId": "src-layer-policy", "kind": "docSection", "path": "docs/architecture.md", "section": "Layer policy"},
+      {"artifactId": "src-user-service", "kind": "file", "path": "src/services/user.ts", "symbol": "UserService", "line": 12},
+      {"artifactId": "src-user-contract", "kind": "test", "path": "tests/user_contract.test.ts", "symbol": "createsUser"},
+      {"artifactId": "src-rounding-test", "kind": "test", "path": "tests/rounding_contract.test.ts", "symbol": "roundingOrder"},
+      {"artifactId": "src-event-store", "kind": "file", "path": "src/events/user_events.ts", "symbol": "UserEventStore"},
+      {"artifactId": "src-saga", "kind": "file", "path": "src/workflows/user_signup_saga.ts", "symbol": "UserSignupSaga"},
+      {"artifactId": "src-framework-route", "kind": "file", "path": "src/routes/[id].ts", "symbol": "frameworkRoute"},
+      {"artifactId": "src-plugin-loader", "kind": "file", "path": "src/plugins/loader.ts", "symbol": "loadPlugin"},
+      {"artifactId": "src-runtime-trace", "kind": "runtimeTrace", "path": ".lake/runtime-trace.json"},
+      {"artifactId": "src-static-edge", "kind": "file", "path": "src/db/user_db.ts", "symbol": "UserDb"}
+    ],
+    "excludedRefs": [{"kind": "file", "path": "dist/generated.js"}],
+    "unavailableRefs": [{"artifactId": "src-runtime-trace", "kind": "runtimeTrace", "path": ".lake/runtime-trace.json"}],
+    "privateRefs": [{"artifactId": "private-plugin-rules", "kind": "privateContext", "path": "private/plugin-rules.md"}],
+    "hashes": [{"artifactId": "src-user-service", "path": "src/services/user.ts", "contentHash": "sha256-expressiveness-user-service"}],
+    "knownBlindSpots": ["runtime trace is unavailable in the fixture", "dynamic plugin registry is private"],
+    "selectionBoundary": "archmap-expressiveness-suite-v0 bounded source inventory"
+  },
+  "targetUniverse": {
+    "representation": "aat-air-v0",
+    "selectedLayers": ["static", "semantic", "policy", "runtime", "framework", "dynamic"]
+  },
+  "mapItems": [
+    {
+      "mapItemId": "layered_policy_violation",
+      "mappingKind": "policyBoundary",
+      "sourceRefs": [{"artifactId": "src-layer-policy", "kind": "docSection", "path": "docs/architecture.md", "section": "Layer policy"}],
+      "targetRef": {"kind": "air-claim", "layer": "policy", "id": "claim-layer-policy", "subjectRef": "policy.layered.route_to_db", "predicate": "route-to-db dependency violates selected layered policy"},
+      "preserves": ["Layered Architecture dependency direction"],
+      "forgets": ["framework adapter internals"],
+      "claimClassification": "assumed",
+      "measurementBoundary": "unmeasured",
+      "confidence": "medium",
+      "requiredAssumptions": ["Layer policy doc is supplied as bounded policy evidence"],
+      "missingEvidence": [],
+      "nonConclusions": ["policy violation cue is not a proof of global architecture lawfulness"],
+      "conflictCategory": "policy-disagreement"
+    },
+    {
+      "mapItemId": "srp_responsibility_split",
+      "mappingKind": "semanticRole",
+      "sourceRefs": [{"artifactId": "src-user-service", "kind": "file", "path": "src/services/user.ts", "symbol": "UserService", "line": 12}],
+      "targetRef": {"kind": "air-claim", "layer": "semantic", "id": "claim-srp-user-service", "subjectRef": "component.user_service.responsibility", "predicate": "UserService mixes orchestration and persistence responsibility candidates"},
+      "preserves": ["SRP responsibility region", "reason-to-change candidate"],
+      "forgets": ["file size heuristic"],
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "confidence": "medium",
+      "missingEvidence": [],
+      "nonConclusions": ["SRP split cue is not a formal SOLID theorem"]
+    },
+    {
+      "mapItemId": "contract_preservation",
+      "mappingKind": "semanticDiagram",
+      "sourceRefs": [{"artifactId": "src-user-contract", "kind": "test", "path": "tests/user_contract.test.ts", "symbol": "createsUser"}],
+      "targetRef": {"kind": "semantic-diagram", "layer": "semantic", "id": "diagram-contract-preservation", "from": "request.createUser", "to": "state.userCreated", "lhsPathRef": "path-route-service-contract", "rhsPathRef": "path-service-contract", "equivalence": "observational", "subjectRef": "semantic.contract.create_user", "predicate": "selected contract observation is preserved across the route-service path"},
+      "preserves": ["contract preservation", "contract-test observation"],
+      "forgets": ["all production traces"],
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "confidence": "medium",
+      "missingEvidence": [],
+      "nonConclusions": ["contract preservation cue is selected-test relative"]
+    },
+    {
+      "mapItemId": "semantic_commutation",
+      "mappingKind": "semanticCommutationClaim",
+      "sourceRefs": [{"artifactId": "src-rounding-test", "kind": "test", "path": "tests/rounding_contract.test.ts", "symbol": "roundingOrder"}],
+      "targetRef": {"kind": "semantic-diagram", "layer": "semantic", "id": "diagram-rounding-commutes", "from": "price.raw", "to": "price.final", "lhsPathRef": "path-discount-then-round", "rhsPathRef": "path-round-then-discount", "equivalence": "observational", "subjectRef": "semantic.diagram.rounding_commutes", "predicate": "selected rounding workflow commutes under the supplied contract observation"},
+      "preserves": ["semantic commutation candidate", "observation equivalence"],
+      "forgets": ["global arithmetic law"],
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "confidence": "medium",
+      "missingEvidence": [],
+      "nonConclusions": ["commutation cue is not a proof for all price paths"]
+    },
+    {
+      "mapItemId": "semantic_non_commutation",
+      "mappingKind": "nonfillabilityWitness",
+      "sourceRefs": [{"artifactId": "src-rounding-test", "kind": "test", "path": "tests/rounding_contract.test.ts", "symbol": "roundingOrder"}],
+      "targetRef": {"kind": "nonfillability-witness", "layer": "semantic", "id": "witness-rounding-non-commutation", "subjectRef": "diagram-rounding-commutes", "predicate": "selected rounding paths do not commute under the supplied observation"},
+      "preserves": ["semantic non-commutation", "nonfillability witness"],
+      "forgets": ["root-cause analysis"],
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "confidence": "medium",
+      "missingEvidence": [],
+      "nonConclusions": ["non-commutation witness is selected-observation relative"]
+    },
+    {
+      "mapItemId": "event_sourcing_projection",
+      "mappingKind": "semanticDiagram",
+      "sourceRefs": [{"artifactId": "src-event-store", "kind": "file", "path": "src/events/user_events.ts", "symbol": "UserEventStore"}],
+      "targetRef": {"kind": "semantic-diagram", "layer": "semantic", "id": "diagram-event-sourcing-projection", "from": "event.userCreated", "to": "readModel.user", "lhsPathRef": "path-event-replay", "rhsPathRef": "path-current-read-model", "equivalence": "observational", "subjectRef": "semantic.event_sourcing.user_projection", "predicate": "event replay projects to the selected read-model observation"},
+      "preserves": ["event sourcing projection", "observation equivalence"],
+      "forgets": ["event log completeness"],
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "confidence": "medium",
+      "missingEvidence": [],
+      "nonConclusions": ["event-sourcing projection cue is not event-log completeness"]
+    },
+    {
+      "mapItemId": "saga_compensation",
+      "mappingKind": "nonfillabilityWitness",
+      "sourceRefs": [{"artifactId": "src-saga", "kind": "file", "path": "src/workflows/user_signup_saga.ts", "symbol": "UserSignupSaga"}],
+      "targetRef": {"kind": "nonfillability-witness", "layer": "semantic", "id": "witness-saga-compensation-gap", "subjectRef": "diagram-event-sourcing-projection", "predicate": "selected saga branch has no compensation witness"},
+      "preserves": ["saga compensation", "nonfillability witness"],
+      "forgets": ["incident causality"],
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredNonzero",
+      "confidence": "medium",
+      "missingEvidence": [],
+      "nonConclusions": ["saga compensation gap is a review cue, not incident causality"]
+    },
+    {
+      "mapItemId": "runtime_static_disagreement",
+      "mappingKind": "reviewBoundary",
+      "sourceRefs": [{"artifactId": "src-runtime-trace", "kind": "runtimeTrace", "path": ".lake/runtime-trace.json"}, {"artifactId": "src-static-edge", "kind": "file", "path": "src/db/user_db.ts", "symbol": "UserDb"}],
+      "targetRef": {"kind": "air-claim", "layer": "runtime", "id": "claim-runtime-static-disagreement", "subjectRef": "runtime.service_user.db_users", "predicate": "runtime edge is unavailable while static code suggests a database dependency"},
+      "preserves": ["runtime/static disagreement"],
+      "forgets": ["runtime frequency"],
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "confidence": "low",
+      "missingEvidence": ["runtime trace not supplied"],
+      "nonConclusions": ["unavailable runtime edge is not measured zero"],
+      "conflictCategory": "semantic-runtime-disagreement"
+    },
+    {
+      "mapItemId": "framework_convention_boundary",
+      "mappingKind": "reviewBoundary",
+      "sourceRefs": [{"artifactId": "src-framework-route", "kind": "file", "path": "src/routes/[id].ts", "symbol": "frameworkRoute"}],
+      "targetRef": {"kind": "air-claim", "layer": "framework", "id": "claim-framework-convention", "subjectRef": "framework.next_route_convention", "predicate": "framework route convention supplies an implicit dependency candidate"},
+      "preserves": ["framework convention boundary"],
+      "forgets": ["framework runtime expansion"],
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "confidence": "low",
+      "missingEvidence": [],
+      "nonConclusions": ["framework convention cue is not extractor completeness"]
+    },
+    {
+      "mapItemId": "dynamic_plugin_blind_spot",
+      "mappingKind": "reviewBoundary",
+      "sourceRefs": [{"artifactId": "src-plugin-loader", "kind": "file", "path": "src/plugins/loader.ts", "symbol": "loadPlugin"}],
+      "targetRef": {"kind": "air-claim", "layer": "dynamic", "id": "claim-dynamic-plugin-blind-spot", "subjectRef": "plugin.dynamic_loader", "predicate": "dynamic plugin loading is outside the selected static fixture"},
+      "preserves": ["dynamic plugin blind spot"],
+      "forgets": ["private plugin registry"],
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "confidence": "low",
+      "missingEvidence": ["private plugin registry not supplied"],
+      "nonConclusions": ["dynamic plugin blind spot is not measured zero"]
+    }
+  ],
+  "coverage": {
+    "measuredLayers": ["static", "semantic"],
+    "unmeasuredLayers": ["runtime", "framework", "dynamic"],
+    "assumedLayers": ["policy"],
+    "unsupportedConstructs": ["dynamic plugin loading", "framework convention expansion"]
+  },
+  "conflicts": [
+    {
+      "conflictId": "conflict-layered-policy-violation",
+      "category": "policy-disagreement",
+      "subjectRef": "policy.layered.route_to_db",
+      "description": "selected source evidence reports a route-to-db dependency forbidden by the policy",
+      "sourceRefs": [{"artifactId": "src-layer-policy", "kind": "docSection", "path": "docs/architecture.md", "section": "Layer policy"}],
+      "nonConclusions": ["policy disagreement is not an automatic repair instruction"]
+    }
+  ],
+  "nonConclusions": [
+    "archmap-expressiveness-suite-v0 is not architecture ground truth",
+    "suite pass does not prove semantic preservation",
+    "suite pass does not prove LLM generation accuracy",
+    "field, force, attractor, basin, ForecastCone, and ConsequenceEnvelope are ArchSig-computed artifacts, not ArchMap-authored facts"
+  ]
+}

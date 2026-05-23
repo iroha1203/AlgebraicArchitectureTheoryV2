@@ -1107,15 +1107,33 @@ pub fn archmap_lean_preservation_vocabulary() -> Vec<ArchMapLeanPreservationVoca
         ),
         lean_vocabulary_entry(
             "archmap-law-policy-preservation",
-            "mappingKind=policyBoundary or targetRef.layer=policy",
+            "mappingKind=policyBoundary, targetRef.layer=policy, or preserves[] contains Layered Architecture / SRP responsibility",
             "LawPolicyPreservation",
             "selected policy boundary candidate is tracked as supplied policy evidence",
+        ),
+        lean_vocabulary_entry(
+            "archmap-contract-observation-preservation",
+            "preserves[] contains contract preservation, contract-test observation, observation equivalence, or event sourcing projection",
+            "SemanticDiagramPreservation",
+            "selected contract or event-projection candidate is tracked as bounded semantic diagram evidence",
+        ),
+        lean_vocabulary_entry(
+            "archmap-semantic-non-commutation-boundary",
+            "preserves[] contains semantic non-commutation, saga compensation, or nonfillability witness",
+            "NonfillabilityWitnessPreservation",
+            "selected non-commutation or compensation candidate is preserved as bounded obstruction evidence",
         ),
         lean_vocabulary_entry(
             "archmap-flatness-precondition-preservation",
             "targetRef.subjectRef contains flatnessPrecondition or preserves contains flatness precondition boundary",
             "FlatnessPreconditionPreservation",
             "selected flatness precondition candidate is tracked without discharging flatness",
+        ),
+        lean_vocabulary_entry(
+            "archmap-runtime-static-disagreement-boundary",
+            "preserves[] contains runtime/static disagreement, framework convention boundary, or dynamic plugin blind spot",
+            "CoverageExactnessBoundary",
+            "review-only coverage boundary remains explicit and is not promoted to a preservation proof",
         ),
         lean_vocabulary_entry(
             "archmap-coverage-boundary",
@@ -1263,6 +1281,11 @@ fn archmap_formal_promotion_guardrail_checklist_entry() -> ArchMapLeanPreservati
 }
 
 fn archmap_item_lean_package_field(item: &ArchMapMapItem) -> &'static str {
+    let preserves_lower = item
+        .preserves
+        .iter()
+        .map(|preserves| preserves.to_ascii_lowercase())
+        .collect::<Vec<_>>();
     if item.mapping_kind == "object" || item.target_ref.kind == "air-component" {
         "ObjectPreservation"
     } else if item.mapping_kind == "relation" || item.target_ref.kind == "air-relation" {
@@ -1277,15 +1300,39 @@ fn archmap_item_lean_package_field(item: &ArchMapMapItem) -> &'static str {
         "NonfillabilityWitnessPreservation"
     } else if item.mapping_kind == "policyBoundary"
         || item.target_ref.layer.as_deref() == Some("policy")
+        || preserves_lower.iter().any(|preserves| {
+            preserves.contains("layered architecture")
+                || preserves.contains("srp responsibility")
+                || preserves.contains("reason-to-change")
+        })
     {
         "LawPolicyPreservation"
+    } else if preserves_lower.iter().any(|preserves| {
+        preserves.contains("contract preservation")
+            || preserves.contains("contract-test observation")
+            || preserves.contains("observation equivalence")
+            || preserves.contains("event sourcing projection")
+    }) {
+        "SemanticDiagramPreservation"
+    } else if preserves_lower.iter().any(|preserves| {
+        preserves.contains("semantic non-commutation")
+            || preserves.contains("saga compensation")
+            || preserves.contains("nonfillability witness")
+            || preserves.contains("obstruction witness")
+    }) {
+        "NonfillabilityWitnessPreservation"
+    } else if preserves_lower.iter().any(|preserves| {
+        preserves.contains("runtime/static disagreement")
+            || preserves.contains("framework convention boundary")
+            || preserves.contains("dynamic plugin blind spot")
+    }) {
+        "CoverageExactnessBoundary"
     } else if item
         .target_ref
         .subject_ref
         .as_deref()
         .is_some_and(|subject_ref| subject_ref.contains("flatnessPrecondition"))
-        || item
-            .preserves
+        || preserves_lower
             .iter()
             .any(|preserves| preserves.contains("flatness precondition"))
     {
@@ -1302,6 +1349,12 @@ fn archmap_item_preservation_status(
 ) -> &'static str {
     if lean_package_field == "OutOfScopeBoundary" {
         "notApplicableOutOfScope"
+    } else if lean_package_field == "CoverageExactnessBoundary" {
+        if item.missing_evidence.is_empty() && !archmap_item_has_unmeasured_coverage(document, item) {
+            "candidate"
+        } else {
+            "blockedByUnmeasuredCoverage"
+        }
     } else if matches!(item.claim_classification.as_str(), "proved" | "formal")
         && item.theorem_refs.is_empty()
     {

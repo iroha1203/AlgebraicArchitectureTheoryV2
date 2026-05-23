@@ -3352,6 +3352,7 @@ success は、Lean theorem witness ではない。
 | `ArchMapModel.FlatnessPreconditionPreservation` | `def` | selected flatness precondition、`ExhaustiveFlatnessCoverage`、`ExactFlatnessObservation` を束ねる zero-curvature theorem package への接続前提。 | `defined only` |
 | `ArchMapModel.SelectedTargetFlatness` | `def` | target 側の selected static / runtime / semantic flatness evidence。 | `defined only` |
 | `ArchMapModel.AATStructurePreserved` | `def` | object / relation / semantic / law / flatness preservation と forgetting / coverage / exactness / guardrail / non-conclusion を含む bounded conclusion。 | `defined only` |
+| `ArchMapModel.BoundedHomomorphismPreservation` | `def` | object / relation / semantic diagram / semantic commutation / nonfillability witness / law-policy / flatness precondition と boundary field を束ねる top-level bounded homomorphism predicate。 | `defined only` |
 | `ArchMapModel.ArchMapPreservationPackage` | `structure` | selected preservation 条件と non-conclusion boundary を明示 field として束ねる theorem package。 | `defined only` |
 | `ArchMapModel.ArchMapPreservationPackage.objectPreservation` | `theorem` | package から selected object preservation を取り出す。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.relationPreservation` | `theorem` | package から selected relation preservation を取り出す。 | `proved` |
@@ -3361,13 +3362,18 @@ success は、Lean theorem witness ではない。
 | `ArchMapModel.ArchMapPreservationPackage.lawPolicyPreserved` | `theorem` | package から law / policy preservation を取り出す。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.flatnessPreconditionsPreserved` | `theorem` | package から flatness precondition preservation を取り出す。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.nonConclusions_recorded` | `theorem` | package が保持する non-conclusions を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.boundedHomomorphismPreserved` | `theorem` | package から bounded homomorphism preservation predicate を取り出す。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.semanticMeasuredZero_not_coverageGap` | `theorem` | semantic measured zero boundary と semantic coverage gap boundary が別 field として記録されていることを取り出す。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.architectureFlatWithin` | `theorem` | selected flatness evidence と preserved preconditions から bounded `ArchitectureFlatWithin` を得る。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.aatStructurePreserved` | `theorem` | package から bounded `AATStructurePreserved` を得る。 | `proved` |
 | `ArchMapModel.aatStructurePreserved_of_archMapPreservationPackage` | `theorem` | package-based structure preservation の top-level spelling。 | `proved` |
+| `ArchMapModel.Examples.unitArchMapModel` | `def` | singleton finite target 上の positive ArchMap model。JSON fixture の parse ではなく、formal bridge smoke test 用の bounded model。 | `defined only` |
+| `ArchMapModel.Examples.unitArchMapPreservationPackage` | `def` | singleton finite model 上で `ArchMapPreservationPackage` を構成する positive example。 | `defined only` |
+| `ArchMapModel.Examples.unitArchMap_aatStructurePreserved` | `theorem` | positive package から bounded `AATStructurePreserved` を取り出す。 | `proved` |
+| `ArchMapModel.Examples.unitArchMap_boundedHomomorphismPreserved` | `theorem` | positive package から `BoundedHomomorphismPreservation` を取り出す。 | `proved` |
 
 Non-conclusions: `ArchMapModel` は `archmap-v0` JSON を Lean が parse / validate した結果ではない。
-`ArchMapPreservationPackage` は selected universe / coverage / exactness / flatness preconditions に
+`BoundedHomomorphismPreservation` と `ArchMapPreservationPackage` は selected universe / coverage / exactness / flatness preconditions に
 相対化された theorem package であり、tooling validation pass、AIR projection success、global
 semantic completeness、architecture lawfulness、extractor completeness、runtime telemetry completeness、
 private / unavailable context の completeness を結論しない。

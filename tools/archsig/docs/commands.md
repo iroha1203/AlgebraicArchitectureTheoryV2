@@ -121,7 +121,7 @@ claim boundary、semantic coverage、conflict category、formal promotion guardr
 これは `archmap-v0` の map item を `ArchMapPreservationPackage` の候補 field
 (`ObjectPreservation`, `RelationPreservation`, `SemanticDiagramPreservation`,
 `SemanticCommutationPreservation`, `NonfillabilityWitnessPreservation`,
-`LawPolicyPreservation`, `FlatnessPreconditionPreservation`, coverage / exactness boundary)
+`LawPolicyPreservation`, `FlatnessPreconditionPreservation`, `CoverageExactnessBoundary`)
 へ対応づけ、missing evidence、unmeasured coverage、formal promotion guardrail、
 supplied assumption、out-of-scope を区別する report surface である。
 canonical fixture では `sourceInventoryRef.path` が
@@ -131,6 +131,14 @@ selection boundary が `archmap.json` 内の `sourceUniverse` と整合するか
 `sourceInventoryChecks` に記録する。
 warning は conflict や dangling boundary を review cue として残すために使い、semantic correctness や
 architecture lawfulness は結論しない。
+
+表現力回帰用には
+`tools/archsig/tests/fixtures/expressiveness/archmap_expressiveness_suite_v0.json` を使う。
+この fixture は layered policy、SRP responsibility、contract preservation、semantic commutation /
+non-commutation、event sourcing projection、saga compensation、runtime/static disagreement、
+framework convention、dynamic plugin blind spot を一つの suite artifact として固定する。
+`cli_locks_archmap_expressiveness_suite_v0_boundaries` は `archmap`、`air-from-archmap`、
+`validate-air`、`theorem-check`、`feature-report` の期待 boundary を検査する。
 
 ArchMap から AIR v0 を作る。
 

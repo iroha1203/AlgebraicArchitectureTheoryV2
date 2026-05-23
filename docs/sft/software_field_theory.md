@@ -276,6 +276,14 @@ real artifacts
   -> SFT field estimates
 ```
 
+この境界で ArchMap と ArchSig の責務を分ける。LLM-authored ArchMap は source artifact から
+architecture / operation / workflow / event / test-oracle / runtime-observation candidate を
+保持する準同型写像候補であり、field、force、attractor、basin、ForecastCone、
+ConsequenceEnvelope を直接 author しない。これらの SFT 計算結果は、ArchSig が source evidence、
+AIR、operation support、runtime / review artifact、calibration boundary から決定論的に生成する
+report 側の責務である。shared source refs は cross-reference であって、AAT projection から SFT
+calculation が theorem として従うことを意味しない。
+
 ArchSig は、単一スコアではなく多軸診断を返す。
 未測定 axis を 0 と読まない。
 signature delta は、両側で測定済みで、axis ごとの比較順序が定義されている場合に限って

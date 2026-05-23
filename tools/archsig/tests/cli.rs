@@ -9,6 +9,10 @@ fn fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal")
 }
 
+fn expressiveness_fixture_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
+}
+
 fn module_root_fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/module_root")
 }
@@ -437,6 +441,197 @@ fn cli_projects_archmap_to_air_and_existing_reports() {
             .as_u64()
             .expect("witness count is numeric")
             >= 1
+    );
+}
+
+#[test]
+fn cli_locks_archmap_expressiveness_suite_v0_boundaries() {
+    let out_dir = temp_dir("archmap-expressiveness-suite");
+    let root = expressiveness_fixture_root();
+    let archmap = root.join("archmap_expressiveness_suite_v0.json");
+    let validation = out_dir.join("archmap-validation.json");
+    let air = out_dir.join("air.json");
+    let air_validation = out_dir.join("air-validation.json");
+    let theorem_report = out_dir.join("theorem-check.json");
+    let feature_report = out_dir.join("feature-report.json");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        archmap.to_str().expect("fixture path is utf-8"),
+        "--out",
+        validation.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "air-from-archmap",
+        "--archmap",
+        archmap.to_str().expect("fixture path is utf-8"),
+        "--validation",
+        validation.to_str().expect("validation path is utf-8"),
+        "--out",
+        air.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "validate-air",
+        "--input",
+        air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        air_validation.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "theorem-check",
+        "--air",
+        air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        theorem_report.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "feature-report",
+        "--air",
+        air.to_str().expect("AIR path is utf-8"),
+        "--out",
+        feature_report.to_str().expect("output path is utf-8"),
+    ]);
+
+    let validation_json = read_json(&validation);
+    assert_eq!(validation_json["summary"]["mapItemCount"], 10);
+    assert_eq!(validation_json["summary"]["result"], "warn");
+    assert!(
+        validation_json["sourceInventoryChecks"]
+            .as_array()
+            .expect("source inventory checks are an array")
+            .iter()
+            .any(|check| check["id"] == "archmap-source-inventory-artifact"
+                && check["result"] == "pass")
+    );
+    assert!(
+        validation_json["leanPreservationVocabulary"]
+            .as_array()
+            .expect("vocabulary is an array")
+            .iter()
+            .any(|entry| {
+                entry["vocabularyId"] == "archmap-runtime-static-disagreement-boundary"
+                    && entry["leanPackageField"] == "CoverageExactnessBoundary"
+            })
+    );
+    let checklist = validation_json["leanPreservationPreconditionChecklist"]
+        .as_array()
+        .expect("checklist is an array");
+    for (map_item_id, field, status) in [
+        (
+            "layered_policy_violation",
+            "LawPolicyPreservation",
+            "satisfiedBySuppliedAssumption",
+        ),
+        (
+            "srp_responsibility_split",
+            "LawPolicyPreservation",
+            "candidate",
+        ),
+        (
+            "contract_preservation",
+            "SemanticDiagramPreservation",
+            "candidate",
+        ),
+        (
+            "semantic_commutation",
+            "SemanticCommutationPreservation",
+            "candidate",
+        ),
+        (
+            "semantic_non_commutation",
+            "NonfillabilityWitnessPreservation",
+            "candidate",
+        ),
+        (
+            "event_sourcing_projection",
+            "SemanticDiagramPreservation",
+            "candidate",
+        ),
+        (
+            "saga_compensation",
+            "NonfillabilityWitnessPreservation",
+            "candidate",
+        ),
+        (
+            "runtime_static_disagreement",
+            "CoverageExactnessBoundary",
+            "blockedByUnmeasuredCoverage",
+        ),
+        (
+            "framework_convention_boundary",
+            "CoverageExactnessBoundary",
+            "blockedByUnmeasuredCoverage",
+        ),
+        (
+            "dynamic_plugin_blind_spot",
+            "CoverageExactnessBoundary",
+            "blockedByUnmeasuredCoverage",
+        ),
+    ] {
+        assert!(
+            checklist.iter().any(|entry| {
+                entry["mapItemId"] == map_item_id
+                    && entry["leanPackageField"] == field
+                    && entry["status"] == status
+            }),
+            "{map_item_id} should map to {field} with {status}"
+        );
+    }
+    assert!(
+        validation_json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|entry| entry == "ArchMap validation does not prove architecture lawfulness")
+    );
+
+    let air_json = read_json(&air);
+    assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    assert!(
+        air_json["semanticDiagrams"]
+            .as_array()
+            .expect("semantic diagrams are an array")
+            .iter()
+            .any(|diagram| diagram["id"] == "diagram-event-sourcing-projection")
+    );
+    assert!(
+        air_json["nonfillabilityWitnesses"]
+            .as_array()
+            .expect("nonfillability witnesses are an array")
+            .iter()
+            .any(|witness| witness["witnessId"] == "witness-saga-compensation-gap")
+    );
+    let air_validation_json = read_json(&air_validation);
+    assert_eq!(air_validation_json["summary"]["result"], "pass");
+
+    let theorem_json = read_json(&theorem_report);
+    let theorem_checklist = theorem_json["archmapPreservationPreconditionChecklist"]
+        .as_array()
+        .expect("theorem-check ArchMap checklist is an array");
+    assert!(
+        theorem_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "dynamic_plugin_blind_spot"
+                && entry["leanPackageField"] == "CoverageExactnessBoundary"
+                && entry["status"] == "blockedByMissingEvidence"
+        }),
+        "theorem-check keeps private dynamic plugin evidence out of proof promotion"
+    );
+    assert!(
+        theorem_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "framework_convention_boundary"
+                && entry["status"] == "blockedByUnmeasuredCoverage"
+        }),
+        "framework convention remains an unmeasured boundary"
+    );
+
+    let feature_json = read_json(&feature_report);
+    assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert!(
+        feature_json["semanticPathSummary"]["nonfillabilityWitnessCount"]
+            .as_u64()
+            .expect("witness count is numeric")
+            >= 2
     );
 }
 

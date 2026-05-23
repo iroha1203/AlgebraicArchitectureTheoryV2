@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "archmap-source-inventory-v0",
+  "inventoryId": "archmap-expressiveness-suite-v0-source-inventory",
+  "root": ".",
+  "includedRefs": [
+    {"artifactId": "src-layer-policy", "kind": "docSection", "path": "docs/architecture.md", "section": "Layer policy"},
+    {"artifactId": "src-user-service", "kind": "file", "path": "src/services/user.ts", "symbol": "UserService", "line": 12},
+    {"artifactId": "src-user-contract", "kind": "test", "path": "tests/user_contract.test.ts", "symbol": "createsUser"},
+    {"artifactId": "src-rounding-test", "kind": "test", "path": "tests/rounding_contract.test.ts", "symbol": "roundingOrder"},
+    {"artifactId": "src-event-store", "kind": "file", "path": "src/events/user_events.ts", "symbol": "UserEventStore"},
+    {"artifactId": "src-saga", "kind": "file", "path": "src/workflows/user_signup_saga.ts", "symbol": "UserSignupSaga"},
+    {"artifactId": "src-framework-route", "kind": "file", "path": "src/routes/[id].ts", "symbol": "frameworkRoute"},
+    {"artifactId": "src-plugin-loader", "kind": "file", "path": "src/plugins/loader.ts", "symbol": "loadPlugin"},
+    {"artifactId": "src-runtime-trace", "kind": "runtimeTrace", "path": ".lake/runtime-trace.json"},
+    {"artifactId": "src-static-edge", "kind": "file", "path": "src/db/user_db.ts", "symbol": "UserDb"}
+  ],
+  "excludedRefs": [
+    {"kind": "file", "path": "dist/generated.js"}
+  ],
+  "unavailableRefs": [
+    {"artifactId": "src-runtime-trace", "kind": "runtimeTrace", "path": ".lake/runtime-trace.json"}
+  ],
+  "privateRefs": [
+    {"artifactId": "private-plugin-rules", "kind": "privateContext", "path": "private/plugin-rules.md"}
+  ],
+  "hashes": [
+    {"artifactId": "src-user-service", "path": "src/services/user.ts", "contentHash": "sha256-expressiveness-user-service"}
+  ],
+  "knownBlindSpots": [
+    "runtime trace is unavailable in the fixture",
+    "dynamic plugin registry is private"
+  ],
+  "selectionBoundary": "archmap-expressiveness-suite-v0 bounded source inventory",
+  "nonConclusions": [
+    "source inventory does not prove repository completeness",
+    "private plugin rules are not reconstructed"
+  ]
+}

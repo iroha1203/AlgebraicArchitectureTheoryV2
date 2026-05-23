@@ -63,6 +63,15 @@ modeling boundary
 | Held-out validation | estimate + later trace refs | validation notes | later trace による consistency check であり、forecast correctness ではない。 |
 | Hypothesis refresh | validation notes + confounders | retained / revised / rejected hypothesis | empirical hypothesis として更新し、formal theorem へ昇格しない。 |
 
+ArchMap はこの pipeline の入力候補を直接 author してよいが、SFT 計算結果を author しない。
+ArchMap 側に保持するのは source-level candidates、たとえば `operationCandidate`、
+`stateCandidate`、`stateTransitionCandidate`、`eventCandidate`、`workflowCandidate`、
+`testOracleCandidate`、`runtimeObservationCandidate` と source refs である。field、force、
+attractor、basin、ForecastCone、ConsequenceEnvelope、calibration boundary は、trace inventory と
+normalization 後に ArchSig / SFT projection report が決定論的に生成する artifact の責務である。
+ArchMap と SFT estimate の対応は shared source evidence の cross-reference であり、
+forecast correctness、incident causality、または AAT theorem implication ではない。
+
 ## Codebase-As-Field-Memory Study
 
 codebase-as-field-memory は、コードベースに沈着した過去の operation support と obstruction を
