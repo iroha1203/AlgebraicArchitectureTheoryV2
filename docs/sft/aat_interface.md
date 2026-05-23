@@ -156,21 +156,24 @@ assumption-free Grand Theorem、all software systems / all covers / all runtime 
 empirical calibration correctness、operational governance effectiveness、global AI safety、
 extractor completeness は結論しない。
 
-Issue #1057-#1062 では、review / calibration / agentic component の discharge helper
-accessor と、singleton finite exact model 上の
-`SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage`
-を追加した。この canonical package は `AATSupportedFundamentalModularityPackage` を
-end-to-end に instantiate し、final typed conclusion と non-conclusions preservation を
-取り出す example theorem を持つ。ただし、これは selected finite AAT-supported model 上の
-例であり、任意の software system、all covers、all runtime schedules、extractor
-completeness へ一般化しない。
+review / calibration / agentic component は、それぞれ final component へ読むための
+discharge helper accessor を持つ。canonical finite example は singleton finite exact
+model 上で `AATSupportedFundamentalModularityPackage` を end-to-end に instantiate し、
+final typed conclusion と non-conclusions preservation を取り出す。
 
-Follow-up Issue #1054 では、`AATSFTBoundaryFailureKind` を typed conversion 後にも
-保持する `AATTypedComputationBoundaryFailure` と、governed / existing finite typed failure /
-AAT-SFT boundary failure の三分岐 final typed conclusion を追加した。これにより、
+canonical example の descent / obstruction / governance component は、それぞれ finite
+selected descent package、finite descent obstruction package、finite
+obstruction-governance package から既存 helper 経由で構成される。この例は、主要な final
+component を theorem-package surface から組み立てる読みを示す。ただし、singleton
+selected example であり、任意の software system、all covers、all runtime schedules、
+extractor completeness、classifier completeness の無条件化、operational governance
+effectiveness へ一般化しない。
+
+`AATSFTBoundaryFailureKind` は typed conversion 後も
+`AATTypedComputationBoundaryFailure` に保持される。final typed conclusion は governed /
+existing finite typed failure / AAT-SFT boundary failure の三分岐として読めるため、
 expression / projection / observation / reconstruction / missing-evidence / theorem-status /
-ArchSig report のどの AAT/SFT 境界が破れたかを、final typed conclusion の AAT/SFT
-branch まで保持して読める。
+ArchSig report のどの AAT/SFT 境界が破れたかを AAT/SFT branch まで保持できる。
 
 ## 5. 非混同
 

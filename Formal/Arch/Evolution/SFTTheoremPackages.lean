@@ -379,6 +379,12 @@ def representativeDeclarations : Candidate -> List String
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim",
+       "SFTAATFundamentalModularity.Examples.canonicalFiniteSelectedDescentPackage",
+       "SFTAATFundamentalModularity.Examples.canonicalDescentComponent",
+       "SFTAATFundamentalModularity.Examples.canonicalObstructionPackage",
+       "SFTAATFundamentalModularity.Examples.canonicalObstructionComponent",
+       "SFTAATFundamentalModularity.Examples.canonicalObstructionGovernancePackage",
+       "SFTAATFundamentalModularity.Examples.canonicalGovernanceComponent",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_fundamental_modularity",
@@ -662,11 +668,14 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim",
+           "SFTAATFundamentalModularity.Examples.canonicalFiniteSelectedDescentPackage",
+           "SFTAATFundamentalModularity.Examples.canonicalObstructionPackage",
+           "SFTAATFundamentalModularity.Examples.canonicalObstructionGovernancePackage",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions"],
          reading :=
-          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly; a singleton canonical finite example instantiates the AAT-supported package end to end",
+          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly; a singleton canonical finite example instantiates the AAT-supported package end to end with descent, obstruction, and governance components routed through existing helper packages",
          status := "proved accessors and canonical example under explicit AAT/SFT boundary assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/

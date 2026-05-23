@@ -2659,6 +2659,10 @@ AAT-supported theorem package と、AAT/SFT boundary failure kind を final type
 まで保存する accessor を追加した。さらに review / calibration / agentic component の
 discharge helper accessor と、singleton canonical finite AAT-supported example 上の
 end-to-end package instantiation を追加した。
+Issue [#1064](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1064)
+では、この canonical example の descent / obstruction / governance component を
+既存 finite selected descent package、finite descent obstruction package、finite
+obstruction-governance package 経由の helper construction に寄せた。
 
 Non-conclusions: AAT-supported package は assumption-free Grand Theorem、all software
 systems / all covers / all runtime schedules、empirical calibration correctness、
@@ -2707,6 +2711,15 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent` | `theorem` | modularity-as-ForecastCone-descent conclusion を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim` | `theorem` | AAT-supported package が non-conclusions を保持し、無条件 theorem / empirical / operational / AI-safety claim へ昇格しない boundary theorem。 | `proved accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary` | `def` | singleton finite exact model、selected source、horizon 1、AAT selected slice から構成した canonical AAT-supported boundary。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalFiniteSelectedDescentPackage` | `def` | singleton model 上の finite selected ForecastCone descent package。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalDescentComponent` | `def` | `descentComponent_of_finiteSelectedDescentPackage` 経由で構成した canonical descent component。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalDescentComponent_records_finiteSelectedDescent` | `theorem` | canonical descent component が selected finite descent を保持することを取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalObstructionPackage` | `def` | singleton model 上の finite descent obstruction classifier package。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalObstructionComponent` | `def` | `obstructionComponent_of_finiteDescentObstructionPackage` 経由で構成した canonical obstruction component。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalObstructionComponent_records_finite_witness` | `theorem` | canonical obstruction component が typed finite witness availability を保持することを取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.canonicalObstructionGovernancePackage` | `def` | singleton model 上の finite obstruction-governance package。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalGovernanceComponent` | `def` | `governanceComponent_of_finiteObstructionGovernance` 経由で構成した canonical governance component。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.canonicalGovernanceComponent_records_finite_cut` | `theorem` | canonical governance component が selected bad-witness cutting を保持することを取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage` | `def` | canonical finite AAT-supported boundary と component discharge helper 由来 hypotheses から構成した end-to-end package。 | `defined only` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupported_fundamental_modularity` | `theorem` | canonical package から finite selected final assembly conclusion を取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupported_governed_or_typed_boundary_failure` | `theorem` | canonical package から governed-or-typed-boundary-failure conclusion を取り出す。 | `proved example accessor` |
