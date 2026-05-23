@@ -82,3 +82,27 @@ coverage ok:
 ```
 
 coverage gap は failure とは限らない。claim boundary の一部として report する。
+
+## ArchMap precondition reading
+
+ArchMap から来る theorem precondition は、Lean theorem witness ではなく candidate として読む。
+
+```text
+ArchMap precondition candidate :=
+  selected source universe
+  + target architecture universe
+  + object / relation preservation claims
+  + semantic diagram / nonfillability claims
+  + law / policy boundary claims
+  + flatness precondition refs
+  + coverage / exactness / non-conclusions
+```
+
+Lean で使う場合は、`Formal/Arch/Signature/ArchMap.lean` の `ArchMapModel` と
+`ArchMapPreservationPackage` に対応する field を明示的に与える。`archmap` validation report は、
+source refs、claim boundary、semantic coverage、formal promotion guardrail を検査するが、
+`ArchMapPreservationPackage` の field を証明しない。
+
+特に `measurementBoundary = measuredZero` と semantic coverage gap は別の前提である。
+unmeasured semantic diagram universe を measured zero として扱う report は、formal promotion
+candidate として block する。

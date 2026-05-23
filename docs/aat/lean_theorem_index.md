@@ -3182,6 +3182,49 @@ File: `Formal/Arch/Extension/Flatness.lean`
 | `LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` | `theorem` | runtime / semantic split preservation package で `LawfulExtensionPreservesFlatness` の runtime / semantic flatness 前提を discharge する。 | `proved` |
 | `architectureFlatWithin_of_splitFeatureExtensionWithin` | `theorem` | `SplitFeatureExtensionWithin` から induced flatness model の bounded `ArchitectureFlatWithin` を得る public preservation theorem。 | `proved` |
 
+## ArchMap Formal Bridge
+
+File: `Formal/Arch/Signature/ArchMap.lean`
+
+この節は ArchMap tooling artifact と Lean formal bridge の境界を索引する。`ArchMapModel` は
+Rust の `archmap-v0` JSON artifact ではなく、selected source universe から AAT の
+`ArchitectureFlatnessModel` へ写す抽象 model である。tooling validation pass や AIR projection
+success は、Lean theorem witness ではない。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `ArchMapModel` | `structure` | source universe / target architecture universe、object map、semantic diagram map、selected coverage / precondition / forgetting / non-conclusion boundary を持つ Lean 抽象 model。 | `defined only` |
+| `ArchMapModel.ObjectPreservation` | `def` | selected source object が target `ComponentUniverse` に写ること。 | `defined only` |
+| `ArchMapModel.RelationPreservation` | `def` | selected source relation が target static dependency edge に写ること。unsupported / forgotten relation とは分離する。 | `defined only` |
+| `ArchMapModel.ObjectRelationPreservation` | `def` | object preservation と relation preservation の package。 | `defined only` |
+| `ArchMapModel.SemanticDiagramPreservation` | `def` | selected semantic diagram が measured target semantic diagram universe に写ること。 | `defined only` |
+| `ArchMapModel.SemanticCommutationPreservation` | `def` | selected semantic diagram の commutation が target semantics で保たれること。 | `defined only` |
+| `ArchMapModel.NonfillabilityWitnessPreservation` | `def` | selected source nonfillability witness が target witness に写ること。 | `defined only` |
+| `ArchMapModel.SemanticMeasuredZeroUnmeasuredSeparated` | `def` | semantic measured zero と semantic coverage gap を別 boundary として保持する marker。 | `defined only` |
+| `ArchMapModel.LawPolicyPreservation` | `def` | selected law と policy boundary の preservation marker。 | `defined only` |
+| `ArchMapModel.FlatnessPreconditionPreservation` | `def` | selected flatness precondition、`ExhaustiveFlatnessCoverage`、`ExactFlatnessObservation` を束ねる zero-curvature theorem package への接続前提。 | `defined only` |
+| `ArchMapModel.SelectedTargetFlatness` | `def` | target 側の selected static / runtime / semantic flatness evidence。 | `defined only` |
+| `ArchMapModel.AATStructurePreserved` | `def` | object / relation / semantic / law / flatness preservation と forgetting / coverage / exactness / guardrail / non-conclusion を含む bounded conclusion。 | `defined only` |
+| `ArchMapModel.ArchMapPreservationPackage` | `structure` | selected preservation 条件と non-conclusion boundary を明示 field として束ねる theorem package。 | `defined only` |
+| `ArchMapModel.ArchMapPreservationPackage.objectPreservation` | `theorem` | package から selected object preservation を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.relationPreservation` | `theorem` | package から selected relation preservation を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.semanticDiagramPreserved` | `theorem` | package から selected semantic diagram preservation を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.semanticCommutationPreserved` | `theorem` | package から selected semantic commutation preservation を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.nonfillabilityWitnessPreserved` | `theorem` | package から selected nonfillability witness preservation を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.lawPolicyPreserved` | `theorem` | package から law / policy preservation を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.flatnessPreconditionsPreserved` | `theorem` | package から flatness precondition preservation を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.nonConclusions_recorded` | `theorem` | package が保持する non-conclusions を取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.semanticMeasuredZero_not_coverageGap` | `theorem` | semantic measured zero boundary と semantic coverage gap boundary が別 field として記録されていることを取り出す。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.architectureFlatWithin` | `theorem` | selected flatness evidence と preserved preconditions から bounded `ArchitectureFlatWithin` を得る。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.aatStructurePreserved` | `theorem` | package から bounded `AATStructurePreserved` を得る。 | `proved` |
+| `ArchMapModel.aatStructurePreserved_of_archMapPreservationPackage` | `theorem` | package-based structure preservation の top-level spelling。 | `proved` |
+
+Non-conclusions: `ArchMapModel` は `archmap-v0` JSON を Lean が parse / validate した結果ではない。
+`ArchMapPreservationPackage` は selected universe / coverage / exactness / flatness preconditions に
+相対化された theorem package であり、tooling validation pass、AIR projection success、global
+semantic completeness、architecture lawfulness、extractor completeness、runtime telemetry completeness、
+private / unavailable context の completeness を結論しない。
+
 ## Architecture Core / Certified Architecture
 
 File: `Formal/Arch/Extension/CertifiedArchitecture.lean`

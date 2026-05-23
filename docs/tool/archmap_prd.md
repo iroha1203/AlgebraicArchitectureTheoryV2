@@ -7,6 +7,28 @@ product requirement を定義する。目的は、言語・フレームワーク
 
 Lean status: `empirical hypothesis` / tooling design.
 
+## Lean formal bridge boundary
+
+Lean 側の対応物は `Formal/Arch/Signature/ArchMap.lean` の `ArchMapModel` である。
+`ArchMapModel` は `archmap-v0` JSON を parse した witness ではなく、source artifact universe から
+selected AAT architecture universe へ写す抽象 model である。Lean theorem はこの抽象 model と、
+caller が与える preservation / coverage / exactness / precondition / non-conclusion 前提に
+相対化される。
+
+`ArchMapPreservationPackage` は、selected object / relation、semantic diagram、semantic
+commutation、nonfillability witness、law / policy boundary、flatness precondition の preservation
+を束ねる theorem package である。package から得られる `AATStructurePreserved` は
+`targetUniverse` と measured semantic diagram universe に相対化された bounded conclusion であり、
+`archmap` validation pass や `air-from-archmap` の成功から自動的に得られるものではない。
+
+Formal promotion の読み替え規則:
+
+- `archmap-v0` / `archmap-validation-report-v0` は theorem precondition candidate と evidence boundary を記録する。
+- `ArchMapModel` は Lean 側の抽象構造であり、JSON artifact そのものではない。
+- `ArchMapPreservationPackage` は theorem witness になりうるが、その各 field は Lean 内で明示的に与える必要がある。
+- tooling validation pass は schema / source refs / claim boundary の検査であり、semantic preservation、global flatness、architecture lawfulness の証明ではない。
+- semantic measured zero と semantic unmeasured は Lean package でも別 boundary として保持し、coverage gap を zero obstruction と読まない。
+
 ## MVP implementation status
 
 Supplied JSON artifact flow は実装済みである。
