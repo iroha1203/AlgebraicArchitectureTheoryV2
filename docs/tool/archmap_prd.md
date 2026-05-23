@@ -5,54 +5,6 @@ product requirement を定義する。目的は、言語・フレームワーク
 増やすのではなく、LLM が codebase を読み、証拠付きの architecture homomorphism map
 候補である ArchMap を生成し、そこから AIR と後段 report を作る flow を確立することである。
 
-Lean status: `empirical hypothesis` / tooling design.
-
-## Lean formal bridge boundary
-
-Lean 側の対応物は `Formal/Arch/Signature/ArchMap.lean` の `ArchMapModel` である。
-`ArchMapModel` は `archmap-v0` JSON を parse した witness ではなく、source artifact universe から
-selected AAT architecture universe へ写す抽象 model である。Lean theorem はこの抽象 model と、
-caller が与える preservation / coverage / exactness / precondition / non-conclusion 前提に
-相対化される。
-
-`ArchMapPreservationPackage` は、selected object / relation、semantic diagram、semantic
-commutation、nonfillability witness、law / policy boundary、flatness precondition の preservation
-を束ねる theorem package である。package から得られる `AATStructurePreserved` は
-`targetUniverse` と measured semantic diagram universe に相対化された bounded conclusion であり、
-`archmap` validation pass や `air-from-archmap` の成功から自動的に得られるものではない。
-
-Formal promotion の読み替え規則:
-
-- `archmap-v0` / `archmap-validation-report-v0` は theorem precondition candidate と evidence boundary を記録する。
-- `ArchMapModel` は Lean 側の抽象構造であり、JSON artifact そのものではない。
-- `ArchMapPreservationPackage` は theorem witness になりうるが、その各 field は Lean 内で明示的に与える必要がある。
-- tooling validation pass は schema / source refs / claim boundary の検査であり、semantic preservation、global flatness、architecture lawfulness の証明ではない。
-- semantic measured zero と semantic unmeasured は Lean package でも別 boundary として保持し、coverage gap を zero obstruction と読まない。
-
-## MVP implementation status
-
-Supplied JSON artifact flow は実装済みである。
-
-```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
-  --input tools/archsig/tests/fixtures/minimal/archmap.json \
-  --out .lake/archmap-validation.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- air-from-archmap \
-  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
-  --validation .lake/archmap-validation.json \
-  --out .lake/archmap-air.json
-```
-
-`archmap` は `archmap-validation-report-v0` を出し、source inventory、source refs、claim boundary、
-semantic coverage、conflict category、formal promotion guardrail を検査する。
-`air-from-archmap` は `archmap-v0` から `aat-air-v0` を生成し、生成 AIR は `validate-air`、
-`theorem-check`、`feature-report` へ渡せる。
-
-未実装 boundary は `archmap-generate` である。LLM / agent から source inventory と ArchMap JSON を
-自動生成する command、authenticated private context fetch、runtime trace auto collection は
-MVP の non-conclusions として残る。
-
 ## Problem
 
 現行 ArchSig は Lean / Python import graph、policy JSON、runtime edge evidence、
