@@ -98,6 +98,55 @@ LLM は architecture の結論を書くのではなく、選択された source 
 selected architecture universe への写像候補を書く。ArchSig はその写像候補を検証し、
 claim boundary、coverage boundary、non-conclusions を保持したまま AIR へ変換する。
 
+## AAT-to-ArchMap representation boundary
+
+ArchMap の理想形は、AAT の full serialization format ではなく、AAT に接続する
+architecture observation、mapping candidate、obstruction cue、theorem-precondition
+candidate の標準交換形式である。claim boundary は表現力を小さくするためではなく、
+ArchMap に載せるべき product surface と、Lean / AAT 側に残すべき proof surface を
+分離するために使う。
+
+AAT から ArchMap へ表現されるべきもの:
+
+- component / object。
+- dependency / morphism / relation。
+- layer、boundary、ownership、allowed dependency direction。
+- policy / law / local contract boundary。
+- SOLID、Layered Architecture、Clean Architecture などの design principle mapping。
+- semantic role、responsibility region、reason-to-change candidate。
+- static / runtime / semantic dependency。
+- semantic diagram。
+- semantic commutation / non-commutation claim。
+- observation equivalence。
+- contract preservation。
+- nonfillability witness / obstruction witness。
+- architecture signature axis。
+- measured、assumed、unmeasured、unavailable、private、out-of-scope boundary。
+- flatness、lawfulness、zero-curvature theorem の precondition candidate。
+- preservation claim。どの構造を保存するか。
+- forgetting claim。どの構造を捨てるか。
+- coverage、exactness、evidence、missing evidence、non-conclusions。
+
+AAT から ArchMap へ表現しなくてよいもの:
+
+- Lean の proof term そのもの。
+- `ComponentUniverse` witness そのもの。
+- 任意の theorem package の内部証明構造。
+- 任意の category-theoretic construction の完全表現。
+- path / walk / matrix / spectral condition などの全計算表現。
+- AAT 理論本文の全定義の完全 serialization。
+- global completeness の証明。
+- semantic preservation の証明。
+- exactness proof。
+- lawfulness proof。
+- theorem precondition discharge そのもの。
+
+ArchMap は、codebase、docs、tests、runtime traces、PR context から観測または根拠づけ
+できる AAT-relevant な構造を、後段の AIR、theorem-check、feature-report、policy
+decision、human review に渡す。Lean proof、任意構成、完全性、定理成立そのものは
+ArchMap の payload ではなく、`theoremRefs`、`requiredAssumptions`、`missingEvidence`、
+`nonConclusions`、または Lean 側の theorem package として接続する。
+
 ## Target Outcome
 
 ArchMap の主要アウトカムは、ArchSig が semantic evidence を第一級に扱えるようにすることである。

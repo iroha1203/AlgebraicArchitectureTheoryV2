@@ -78,4 +78,6 @@ import Formal.Arch.Evolution.SFTAgenticConfluence
 import Formal.Arch.Evolution.SFTFundamentalModularity
 import Formal.Arch.Evolution.SFTAATFundamentalModularity
 import Formal.Arch.Evolution.SFTAATFundamentalModularityExamples
+import Formal.Arch.Evolution.SFTArtifactBoundaryBridge
+import Formal.Arch.Evolution.SFTAATArtifactBoundaryExamples
 import Formal.Arch.Evolution.SFTTheoremPackages

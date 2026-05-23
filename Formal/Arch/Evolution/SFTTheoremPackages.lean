@@ -22,6 +22,8 @@ import Formal.Arch.Evolution.SFTAgenticConfluence
 import Formal.Arch.Evolution.SFTFundamentalModularity
 import Formal.Arch.Evolution.SFTAATFundamentalModularity
 import Formal.Arch.Evolution.SFTAATFundamentalModularityExamples
+import Formal.Arch.Evolution.SFTArtifactBoundaryBridge
+import Formal.Arch.Evolution.SFTAATArtifactBoundaryExamples
 
 /-!
 Documentation-facing entrypoints for the SFT Lean theorem packages.
@@ -353,9 +355,18 @@ def representativeDeclarations : Candidate -> List String
        "h1_vanishes_implies_finite_descent"]
   | aatSupportedFundamentalModularity =>
       ["SFTAATFundamentalModularity.AATSelectedArchitectureSlice",
+       "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ofArchMapPreservationPackage",
+       "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_selectedArchitecture",
+       "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_preserves_nonConclusions",
+       "SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary",
+       "SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_boundary_does_not_strengthen_theorem_status",
+       "SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_boundary_does_not_calibrate_forecast",
        "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.RecordsProjectionBoundary",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.artifact_constructor_records_archMap_boundaries",
+       "SFTAATFundamentalModularity.AATSupportedSFTBoundary.artifact_constructor_preserves_nonConclusions",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_projection_observation_reconstruction_missingEvidence",
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_selected_finite_source_horizon",
@@ -386,6 +397,11 @@ def representativeDeclarations : Candidate -> List String
        "SFTAATFundamentalModularity.Examples.canonicalObstructionGovernancePackage",
        "SFTAATFundamentalModularity.Examples.canonicalGovernanceComponent",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary",
+       "SFTAATFundamentalModularity.Examples.artifactDerivedReportBoundary",
+       "SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedBoundary",
+       "SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedFundamentalModularityPackage",
+       "SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_final_typed_conclusion",
+       "SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_preserves_nonConclusions",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_fundamental_modularity",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_governed_or_typed_boundary_failure",
@@ -656,7 +672,10 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
       [{ schematic := "AAT-supported finite selected Fundamental Modularity",
          leanDeclarations :=
          ["SFTAATFundamentalModularity.AATSupportedSFTBoundary",
+           "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ofArchMapPreservationPackage",
+           "SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel",
+           "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.records_report_and_theorem_status_boundaries",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.constructor_preserves_nonConclusions",
@@ -672,10 +691,12 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
            "SFTAATFundamentalModularity.Examples.canonicalObstructionPackage",
            "SFTAATFundamentalModularity.Examples.canonicalObstructionGovernancePackage",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupportedFundamentalModularityPackage",
+           "SFTAATFundamentalModularity.Examples.canonicalArtifactSupportedFundamentalModularityPackage",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion",
+           "SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_final_typed_conclusion",
            "SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions"],
          reading :=
-          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly; a singleton canonical finite example instantiates the AAT-supported package end to end with descent, obstruction, and governance components routed through existing helper packages",
+          "AAT theorem status, selected architecture slice, finite exact model, selected source, and selected horizon are carried as explicit premises for the finite selected final assembly; ArchMap preservation packages can be read as selected AAT slices and ArchSig report boundaries can be read as SFT report/forecast boundaries before constructing the AAT-supported boundary; singleton canonical examples instantiate both direct and artifact-boundary AAT-supported packages end to end with descent, obstruction, and governance components routed through existing helper packages",
          status := "proved accessors and canonical example under explicit AAT/SFT boundary assumptions" }]
 
 /-- Boundary reminder for reading each SFT candidate as a bounded package. -/
