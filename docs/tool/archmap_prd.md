@@ -211,13 +211,17 @@ manifest である。
 | `includedRefs[]` | LLM に渡した file、symbol、doc section、test、trace、PR metadata。 |
 | `excludedRefs[]` | scope 外、large file、generated file、binary、private data など。 |
 | `unavailableRefs[]` | 参照は必要だが取得できない artifact。 |
-| `selectionReason` | scope を選んだ理由。 |
+| `selectionBoundary` | scope を選んだ境界と理由。 |
 | `hashes[]` | 可能な範囲での content hash / revision ref。 |
 | `knownBlindSpots[]` | dynamic import、reflection、framework convention、runtime trace 不足など。 |
 
 `sourceRefs[]` はこの inventory の中の item を参照する。inventory にない source ref を
 LLM が出した場合、validator は dangling source ref として扱う。private / unavailable
 context は safe や measured zero へ丸めず、coverage gap として保持する。
+canonical fixture では `sourceInventoryRef.path` が
+`tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json` を指し、validator は
+この独立 artifact の欠落や `sourceUniverse` との不整合を `sourceInventoryChecks` に boundary
+finding として記録する。
 
 ### R4. Semantic structure を第一級 mapping kind にする
 

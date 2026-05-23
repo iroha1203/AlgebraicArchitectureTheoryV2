@@ -2,22 +2,31 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
-    AIR_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
-    AirArchitecturePath, AirArtifact, AirClaim, AirComponent, AirCoverage, AirCoverageLayer,
-    AirDocumentV0, AirEvidence, AirExtension, AirFeature, AirIdPolicies, AirNonfillabilityWitness,
-    AirOperationTrace, AirPolicies, AirRelation, AirRevision, AirSemanticDiagram, AirSignature,
-    ArchMapConflict, ArchMapDocumentV0, ArchMapMapItem, ArchMapSourceRef,
-    ArchMapValidationReportV0, ArchMapValidationSummary, Sig0Document, ValidationCheck,
+    AIR_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION,
+    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, AirArchitecturePath, AirArtifact, AirClaim,
+    AirComponent, AirCoverage, AirCoverageLayer, AirDocumentV0, AirEvidence, AirExtension,
+    AirFeature, AirIdPolicies, AirNonfillabilityWitness, AirOperationTrace, AirPolicies,
+    AirRelation, AirRevision, AirSemanticDiagram, AirSignature, ArchMapConflict, ArchMapDocumentV0,
+    ArchMapMapItem, ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
+    ArchMapValidationSummary, Sig0Document, ValidationCheck,
 };
+
+pub struct ArchMapSourceInventoryInput<'a> {
+    pub path: &'a str,
+    pub document: Option<&'a ArchMapSourceInventoryV0>,
+    pub read_error: Option<String>,
+}
 
 pub fn validate_archmap_report(
     document: &ArchMapDocumentV0,
     input_path: &str,
     sig0: Option<&Sig0Document>,
+    source_inventory: Option<ArchMapSourceInventoryInput<'_>>,
 ) -> ArchMapValidationReportV0 {
     let source_inventory_checks = vec![
         check_archmap_schema_version(&document.schema_version),
         check_source_inventory_boundary(document),
+        check_source_inventory_artifact(document, source_inventory.as_ref()),
     ];
     let mut source_ref_checks = vec![check_archmap_unique_map_item_ids(document)];
     source_ref_checks.push(check_source_refs(document));
@@ -106,6 +115,18 @@ pub fn build_air_from_archmap(
         rule_id: Some(document.schema_version.clone()),
         confidence: Some("medium".to_string()),
     }];
+    if let Some(source_inventory_ref) = &document.source_inventory_ref {
+        evidence.push(AirEvidence {
+            evidence_id: "evidence-archmap-source-inventory".to_string(),
+            kind: "manual_annotation".to_string(),
+            artifact_ref: Some(source_inventory_ref.artifact_id.clone()),
+            path: source_inventory_ref.path.clone(),
+            symbol: None,
+            line: None,
+            rule_id: Some(document.schema_version.clone()),
+            confidence: Some("medium".to_string()),
+        });
+    }
     let mut source_evidence_ids = BTreeMap::new();
     for source_ref in all_source_refs(document) {
         let key = source_ref_key(source_ref);
@@ -405,6 +426,142 @@ fn check_source_inventory_boundary(document: &ArchMapDocumentV0) -> ValidationCh
     )
 }
 
+fn check_source_inventory_artifact(
+    document: &ArchMapDocumentV0,
+    source_inventory: Option<&ArchMapSourceInventoryInput<'_>>,
+) -> ValidationCheck {
+    let Some(source_inventory_ref) = &document.source_inventory_ref else {
+        return warning_check_from_examples(
+            "archmap-source-inventory-artifact",
+            "Source inventory artifact ref is present and matches sourceUniverse",
+            vec![generic_validation_example(
+                "sourceInventoryRef",
+                "missing",
+                "source inventory artifact ref is absent; input boundary remains embedded only",
+            )],
+        );
+    };
+
+    let mut examples = Vec::new();
+    let expected_path = source_inventory_ref.path.as_deref().unwrap_or_default();
+    if expected_path.trim().is_empty() {
+        examples.push(generic_validation_example(
+            "sourceInventoryRef.path",
+            "empty",
+            "source inventory artifact path must be explicit",
+        ));
+    }
+
+    let Some(source_inventory) = source_inventory else {
+        examples.push(generic_validation_example(
+            "sourceInventoryRef.path",
+            expected_path,
+            "source inventory artifact was not supplied to validation",
+        ));
+        return warning_check_from_examples(
+            "archmap-source-inventory-artifact",
+            "Source inventory artifact ref is present and matches sourceUniverse",
+            examples,
+        );
+    };
+
+    if source_inventory.path != expected_path {
+        examples.push(generic_validation_example(
+            "sourceInventoryRef.path",
+            source_inventory.path,
+            "loaded source inventory path differs from ArchMap sourceInventoryRef.path",
+        ));
+    }
+    if let Some(read_error) = &source_inventory.read_error {
+        examples.push(generic_validation_example(
+            "sourceInventoryRef.path",
+            expected_path,
+            read_error,
+        ));
+    }
+
+    let Some(inventory) = source_inventory.document else {
+        return warning_check_from_examples(
+            "archmap-source-inventory-artifact",
+            "Source inventory artifact ref is present and matches sourceUniverse",
+            examples,
+        );
+    };
+
+    if inventory.schema_version != ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION {
+        examples.push(generic_validation_example(
+            "sourceInventory.schemaVersion",
+            &inventory.schema_version,
+            "source inventory schema version is unsupported",
+        ));
+    }
+    if inventory.root != document.source_universe.root {
+        examples.push(generic_validation_example(
+            "sourceInventory.root",
+            &inventory.root,
+            "source inventory root differs from ArchMap sourceUniverse.root",
+        ));
+    }
+    if inventory.selection_boundary != document.source_universe.selection_boundary {
+        examples.push(generic_validation_example(
+            "sourceInventory.selectionBoundary",
+            &inventory.selection_boundary,
+            "source inventory selection boundary differs from ArchMap sourceUniverse",
+        ));
+    }
+
+    compare_source_ref_sets(
+        &mut examples,
+        "includedRefs",
+        &inventory.included_refs,
+        &document.source_universe.included_refs,
+    );
+    compare_source_ref_sets(
+        &mut examples,
+        "excludedRefs",
+        &inventory.excluded_refs,
+        &document.source_universe.excluded_refs,
+    );
+    compare_source_ref_sets(
+        &mut examples,
+        "unavailableRefs",
+        &inventory.unavailable_refs,
+        &document.source_universe.unavailable_refs,
+    );
+    compare_source_ref_sets(
+        &mut examples,
+        "privateRefs",
+        &inventory.private_refs,
+        &document.source_universe.private_refs,
+    );
+
+    compare_artifact_ref_sets(
+        &mut examples,
+        "hashes",
+        &inventory.hashes,
+        &document.source_universe.hashes,
+    );
+
+    let mut check = warning_check_from_examples(
+        "archmap-source-inventory-artifact",
+        "Source inventory artifact ref is present and matches sourceUniverse",
+        examples,
+    );
+    if check.result == "pass" {
+        check.count = Some(
+            inventory.included_refs.len()
+                + inventory.excluded_refs.len()
+                + inventory.unavailable_refs.len()
+                + inventory.private_refs.len(),
+        );
+        check.reason = Some(
+            "source inventory preserves included, excluded, unavailable, private, hash, and selection boundary categories"
+                .to_string(),
+        );
+    }
+    check
+}
+
 fn check_archmap_unique_map_item_ids(document: &ArchMapDocumentV0) -> ValidationCheck {
     let duplicate_ids = duplicates(
         document
@@ -595,6 +752,62 @@ fn check_from_examples(
         check.examples = examples;
     }
     check
+}
+
+fn warning_check_from_examples(
+    id: &str,
+    title: &str,
+    examples: Vec<crate::ValidationExample>,
+) -> ValidationCheck {
+    check_from_examples(id, title, examples, "warn")
+}
+
+fn compare_source_ref_sets(
+    examples: &mut Vec<crate::ValidationExample>,
+    field: &str,
+    inventory_refs: &[ArchMapSourceRef],
+    embedded_refs: &[ArchMapSourceRef],
+) {
+    let inventory_keys: BTreeSet<_> = inventory_refs.iter().map(source_ref_key).collect();
+    let embedded_keys: BTreeSet<_> = embedded_refs.iter().map(source_ref_key).collect();
+    for key in inventory_keys.difference(&embedded_keys) {
+        examples.push(generic_validation_example(
+            &format!("sourceInventory.{field}"),
+            key,
+            "source inventory ref is absent from embedded ArchMap sourceUniverse",
+        ));
+    }
+    for key in embedded_keys.difference(&inventory_keys) {
+        examples.push(generic_validation_example(
+            &format!("sourceUniverse.{field}"),
+            key,
+            "embedded ArchMap sourceUniverse ref is absent from source inventory artifact",
+        ));
+    }
+}
+
+fn compare_artifact_ref_sets(
+    examples: &mut Vec<crate::ValidationExample>,
+    field: &str,
+    inventory_refs: &[crate::ArchMapArtifactRef],
+    embedded_refs: &[crate::ArchMapArtifactRef],
+) {
+    let inventory_keys: BTreeSet<_> = inventory_refs.iter().map(artifact_ref_key).collect();
+    let embedded_keys: BTreeSet<_> = embedded_refs.iter().map(artifact_ref_key).collect();
+    for key in inventory_keys.difference(&embedded_keys) {
+        examples.push(generic_validation_example(
+            &format!("sourceInventory.{field}"),
+            key,
+            "source inventory artifact hash is absent from embedded ArchMap sourceUniverse",
+        ));
+    }
+    for key in embedded_keys.difference(&inventory_keys) {
+        examples.push(generic_validation_example(
+            &format!("sourceUniverse.{field}"),
+            key,
+            "embedded ArchMap sourceUniverse hash is absent from source inventory artifact",
+        ));
+    }
 }
 
 fn explicit_and_derived_conflicts(
@@ -954,6 +1167,21 @@ fn source_ref_key(source_ref: &ArchMapSourceRef) -> String {
             .unwrap_or_default(),
         source_ref.section.as_deref().unwrap_or("")
     )
+}
+
+fn artifact_ref_key(artifact_ref: &crate::ArchMapArtifactRef) -> String {
+    let mut parts = Vec::new();
+    parts.push(format!("artifactId={}", artifact_ref.artifact_id));
+    if let Some(kind) = &artifact_ref.kind {
+        parts.push(format!("kind={kind}"));
+    }
+    if let Some(path) = &artifact_ref.path {
+        parts.push(format!("path={path}"));
+    }
+    if let Some(content_hash) = &artifact_ref.content_hash {
+        parts.push(format!("contentHash={content_hash}"));
+    }
+    parts.join("|")
 }
 
 fn stable_id(value: &str) -> String {

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "archmap-source-inventory-v0",
+  "inventoryId": "source-inventory-fixture",
+  "root": ".",
+  "includedRefs": [
+    {
+      "artifactId": "src-route-users",
+      "kind": "file",
+      "path": "src/routes/users.ts",
+      "symbol": "createUserRoute",
+      "line": 42
+    },
+    {
+      "artifactId": "src-service-user",
+      "kind": "file",
+      "path": "src/services/user.ts",
+      "symbol": "UserService",
+      "line": 12
+    },
+    {
+      "artifactId": "doc-architecture",
+      "kind": "docSection",
+      "path": "docs/architecture.md",
+      "section": "Layer policy"
+    },
+    {
+      "artifactId": "test-user-contract",
+      "kind": "test",
+      "path": "tests/user_contract.test.ts",
+      "symbol": "createsUser"
+    }
+  ],
+  "excludedRefs": [
+    {
+      "kind": "file",
+      "path": "dist/generated.js"
+    }
+  ],
+  "unavailableRefs": [
+    {
+      "kind": "runtimeTrace",
+      "path": ".lake/runtime-trace.json"
+    }
+  ],
+  "privateRefs": [
+    {
+      "kind": "privateContext",
+      "path": "private/customer-rules.md"
+    }
+  ],
+  "hashes": [
+    {
+      "artifactId": "src-route-users",
+      "path": "src/routes/users.ts",
+      "contentHash": "sha256-fixture-route"
+    }
+  ],
+  "knownBlindSpots": [
+    "runtime traces not supplied",
+    "dynamic plugin loading not inspected"
+  ],
+  "selectionBoundary": "bounded ArchMap MVP fixture over route, service, policy doc, and contract test",
+  "nonConclusions": [
+    "source inventory is a bounded review universe, not a complete repository mirror",
+    "private refs are named only as boundary markers and are not reconstructed"
+  ]
+}
