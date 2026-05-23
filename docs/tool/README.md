@@ -18,11 +18,12 @@ tool 側の文書群である。
 7. [Workflows](workflows.md)
 8. [Theorem precondition checks](theorem_preconditions.md)
 9. [Repair suggestion](repair_suggestion.md)
-10. [Schema compatibility](schema_compatibility.md)
-11. [SoftwareField reconstruction protocol](software_field_reconstruction_protocol.md)
-12. [SFT calibration and benchmark protocol](sft_calibration_benchmark.md)
-13. [Examples](examples.md)
-14. [Roadmap](roadmap.md)
+10. [ArchMap PRD](archmap_prd.md)
+11. [Schema compatibility](schema_compatibility.md)
+12. [SoftwareField reconstruction protocol](software_field_reconstruction_protocol.md)
+13. [SFT calibration and benchmark protocol](sft_calibration_benchmark.md)
+14. [Examples](examples.md)
+15. [Roadmap](roadmap.md)
 
 ## Tooling capability surface
 
@@ -33,7 +34,7 @@ Tooling docs は、実行できる command / artifact / workflow と、研究・
 | Surface | 主な文書 | 現在の tooling capability | Remaining gaps |
 | --- | --- | --- | --- |
 | ArchSig Core | `signature_artifacts.md`, `extraction.md`, `tools/archsig/README.md` | Lean / Python import graph scan、Sig0 validation、snapshot、signature diff。 | call graph、data dependency、dynamic import、plugin loading、framework semantics adapter。extractor completeness は主張しない。 |
-| ArchSig Review | `air.md`, `reports.md`, `claim_boundary.md`, `theorem_preconditions.md` | AIR、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression。 | organization policy calibration、review workflow tuning、任意 invariant の自動判定。tool output は Lean theorem ではない。 |
+| ArchSig Review | `air.md`, `reports.md`, `claim_boundary.md`, `theorem_preconditions.md`, `archmap_prd.md` | AIR、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression。ArchMap PRD は、LLM-authored architecture homomorphism map から AIR を生成する将来 flow を定義する。 | organization policy calibration、review workflow tuning、任意 invariant の自動判定。ArchMap validation pass は Lean theorem ではない。 |
 | ArchSig SFT | `roadmap.md`, `workflows.md`, `software_field_reconstruction_protocol.md`, `sft_calibration_benchmark.md`, `ai_proposal_governance.md`, `tools/archsig/docs/artifacts-and-boundaries.md` | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から bounded forecast artifact と `ConsequenceEnvelope` を生成する pipeline。`SoftwareFieldEstimate` reconstruction、calibration / benchmark protocol、AI proposal governance は trace と observed refs の照合境界を定義する。 | real dataset calibration、framework semantics adapter。AI policy compliance や `ForecastCone` は point prediction / architecture lawfulness ではない。 |
 | ArchSig Operational | `reports.md`, `workflows.md`, `software_field_reconstruction_protocol.md`, `sft_calibration_benchmark.md`, `tools/archsig/docs/operational-feedback.md` | PR history / feature / outcome dataset、B10 daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh artifacts。 | 実 dataset での継続 calibration、private / missing data boundary、incident / rollback / MTTR との組織別運用接続。correlation は因果 theorem ではない。 |
 
@@ -44,7 +45,7 @@ Tooling docs は、変化の速さごとに分ける。
 | 層 | 文書 | 役割 |
 | --- | --- | --- |
 | Stable-ish spec | `air.md`, `claim_boundary.md`, `signature_artifacts.md`, `schema_compatibility.md` | artifact と claim boundary の中核 schema。 |
-| Evolving design | `extraction.md`, `reports.md`, `workflows.md`, `theorem_preconditions.md`, `repair_suggestion.md`, `software_field_reconstruction_protocol.md`, `sft_calibration_benchmark.md`, `examples.md` | command、report、検証、運用 flow。 |
+| Evolving design | `extraction.md`, `reports.md`, `workflows.md`, `theorem_preconditions.md`, `repair_suggestion.md`, `archmap_prd.md`, `software_field_reconstruction_protocol.md`, `sft_calibration_benchmark.md`, `examples.md` | command、report、検証、運用 flow。 |
 | Mutable planning | `roadmap.md` | phase、standardization target、拡張候補。 |
 
 ## 第一級理論との関係
