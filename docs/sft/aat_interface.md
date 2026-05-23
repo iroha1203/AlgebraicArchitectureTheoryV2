@@ -149,6 +149,13 @@ assumption-free Grand Theorem、all software systems / all covers / all runtime 
 empirical calibration correctness、operational governance effectiveness、global AI safety、
 extractor completeness は結論しない。
 
+Follow-up Issue #1054 では、`AATSFTBoundaryFailureKind` を typed conversion 後にも
+保持する `AATTypedComputationBoundaryFailure` と、governed / existing finite typed failure /
+AAT-SFT boundary failure の三分岐 final typed conclusion を追加した。これにより、
+expression / projection / observation / reconstruction / missing-evidence / theorem-status /
+ArchSig report のどの AAT/SFT 境界が破れたかを、final typed conclusion の AAT/SFT
+branch まで保持して読める。
+
 ## 5. 非混同
 
 次の同一視は禁止する。

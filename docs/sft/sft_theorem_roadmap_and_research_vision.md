@@ -763,6 +763,18 @@ governed-or-typed-boundary-failure branch, and modularity as ForecastCone
 descent, while preserving non-conclusions instead of upgrading the package to an
 assumption-free, empirical, operational, or AI-safety theorem.
 
+The AAT/SFT boundary-failure branch is refined by
+`AATSFTBoundaryFailure.AATTypedComputationBoundaryFailure` and
+`AATSupportedFundamentalModularityPackage.AATSupportedFinalTypedConclusion`.
+These accessors keep the AAT/SFT failure kind visible after typed conversion and
+expose the three-way final reading:
+
+```text
+governed
+  OR existing finite SFT typed failure
+  OR AAT/SFT boundary failure
+```
+
 Dependency graph for the finite selected formalization:
 
 ```text
@@ -789,6 +801,7 @@ AAT selected architecture slice
   + AAT -> SFT local-premise interface
   + FiniteSelectedFundamentalModularityTheorem
   -> AATSupportedFundamentalModularityPackage
+  -> governed OR finite typed failure OR AAT/SFT boundary failure
 ```
 
 ## 7. Research Phases
