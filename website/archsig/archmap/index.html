@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="ArchMap is ArchSig's AI-native architecture telemetry surface: an evidence-carrying map from selected source artifacts to reviewable architecture representation.">
+    <title>ArchMap</title>
+    <link rel="canonical" href="https://iroha1203.dev/archsig/archmap/">
+    <meta property="og:site_name" content="AAT / SFT Research Notes">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="ArchMap">
+    <meta property="og:description" content="ArchMap is ArchSig's AI-native architecture telemetry surface: an evidence-carrying map from selected source artifacts to reviewable architecture representation.">
+    <meta property="og:url" content="https://iroha1203.dev/archsig/archmap/">
+    <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ArchMap">
+    <meta name="twitter:description" content="ArchMap is ArchSig's AI-native architecture telemetry surface: an evidence-carrying map from selected source artifacts to reviewable architecture representation.">
+    <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
+    <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
+    <link rel="alternate" hreflang="en" href="./">
+    <link rel="alternate" hreflang="x-default" href="./">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header" data-site-header>
+      <div class="site-shell header-inner">
+        <a class="brand" href="../../" aria-label="AAT SFT home">
+          <img class="brand-icon" src="../../assets/favicon-512.png" alt="" width="512" height="512" aria-hidden="true">
+          <span class="brand-mark">AAT/SFT</span>
+          <span class="brand-text">Research Notes</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="../../">Home</a>
+          <a href="../../aat/">AAT</a>
+          <a href="../../sft/">SFT</a>
+          <a class="is-active" href="../">ArchSig</a>
+          <a href="../../outreach/">Outreach</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="article-hero section-band">
+        <div class="site-shell">
+          <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>ArchMap</span></nav>
+          <p class="eyebrow">AI-Native Architecture Telemetry</p>
+          <h1>ArchMap turns codebase context into evidence-carrying architecture maps.</h1>
+          <p class="lede">ArchMap lets an LLM, agent, or reviewer describe the architecture it observed without turning that description into architecture truth.</p>
+        </div>
+      </section>
+      <section class="section-band">
+        <div class="site-shell article-layout">
+          <aside class="article-sidebar" aria-label="ArchSig page navigation">
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#surface">Product surface</a></li><li><a href="#flow">Flow</a></li><li><a href="#map-shape">Map shape</a></li><li><a href="#semantic-structure">Semantic structure</a></li><li><a href="#from-map-to-air">From ArchMap to AIR</a></li><li><a href="#boundary">Boundary</a></li><li><a href="#commands">Commands and artifacts</a></li></ol></nav>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/" aria-current="page">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
+          </aside>
+          <div class="article-main">
+            <section id="surface" class="article-section"><h2>Product surface</h2><p>ArchMap is the ArchSig surface for architecture that lives in conventions, tests, runtime traces, PR context, and domain language. Static dependency extractors can see imports and files. ArchMap records the semantic structure a selected observer can justify from a bounded source universe.</p><ul class="status-list"><li><strong>It is a map candidate</strong><span>The artifact describes how selected source refs map to architecture components, relations, roles, diagrams, and claims.</span></li><li><strong>It is evidence-carrying</strong><span>Each item keeps source refs, preserved structure, forgotten structure, coverage, uncertainty, missing evidence, and non-conclusions.</span></li><li><strong>It is AI-native without making AI a judge</strong><span>LLMs and agents can author maps; validation, AIR projection, reports, and reviewers decide how the map is used.</span></li></ul></section>
+<section id="flow" class="article-section"><h2>Flow</h2><p>The useful ArchMap path starts with a selected source universe and ends with review artifacts that still remember what was inspected and what was not inspected.</p><figure class="code-panel"><figcaption>ArchMap flow</figcaption><pre><code>codebase / docs / tests / runtime traces / PR context
+  -> LLM / agent / reviewer
+  -> archmap-v0
+  -> validation
+  -> AIR
+  -> theorem-check / feature-report / policy-decision / pr-comment</code></pre></figure></section>
+<section id="map-shape" class="article-section"><h2>Map shape</h2><p>An <code>archmap-v0</code> artifact carries map identity, generator and prompt provenance, a source inventory, target candidates, mapping items, preservation claims, forgetting claims, and coverage records. The source inventory matters because a map can only speak about the code, docs, tests, traces, and PR metadata that were actually selected.</p><div class="article-table"><table><thead><tr><th scope="col">Field family</th><th scope="col">Review meaning</th></tr></thead><tbody><tr><th scope="row">Source inventory</th><td>Included, excluded, unavailable, private, and known blind-spot refs for the review universe.</td></tr><tr><th scope="row">Mapping items</th><td>Object, relation, semantic role, policy boundary, operation support, and semantic diagram candidates.</td></tr><tr><th scope="row">Preserves / forgets</th><td>The structure the map keeps, such as ownership or contract preservation, and the detail it intentionally discards, such as path multiplicity.</td></tr><tr><th scope="row">Coverage and uncertainty</th><td>Measured, assumed, unmeasured, unavailable, private, out-of-scope, and missing-evidence records.</td></tr><tr><th scope="row">Non-conclusions</th><td>Explicit reminders that the map is not proof of semantic preservation, global completeness, lawfulness, or theorem discharge.</td></tr></tbody></table></div></section>
+<section id="semantic-structure" class="article-section"><h2>Semantic structure</h2><p>ArchMap is valuable when the architecture signal is not visible as a raw import edge. It can carry business-rule movement, workflow order, contract preservation, observation equivalence, semantic commutation claims, and nonfillability witnesses into the review pipeline.</p><ul class="term-list"><li><strong>semanticDiagram</strong><span>A selected workflow, API path, operation order, or implementation route whose behavior should be compared.</span></li><li><strong>semanticCommutationClaim</strong><span>A bounded claim that a selected diagram commutes or fails to commute under the inspected evidence.</span></li><li><strong>contractPreservation</strong><span>A candidate that an API contract, schema compatibility rule, test oracle, or domain invariant is preserved.</span></li><li><strong>observationEquivalence</strong><span>A user-visible result, event stream, state transition, or trace observation that appears equivalent in the selected universe.</span></li><li><strong>nonfillabilityWitness</strong><span>A review cue that a diagram does not close, a path lacks a filler, or a feature creates an obstruction candidate.</span></li></ul></section>
+<section id="from-map-to-air" class="article-section"><h2>From ArchMap to AIR</h2><p>AIR consumes ArchMap as a bounded input, not as final judgment. <code>air-from-archmap</code> projects source refs into AIR artifacts and evidence, maps object and relation candidates into reviewable architecture records, and keeps missing evidence, conflicts, coverage gaps, and non-conclusions visible for downstream reports.</p><p>This is the bridge that lets Semantic AIR talk about business rules and responsibility movement without pretending that generated text is architecture ground truth.</p></section>
+<section id="boundary" class="article-section"><h2>Boundary</h2><p>The ArchMap boundary is a product feature. It separates the positive telemetry surface from the proof surface that belongs to AAT, Lean theorem packages, or human architectural decision making.</p><div class="article-table"><table><thead><tr><th scope="col">ArchMap can carry</th><th scope="col">ArchMap does not prove</th></tr></thead><tbody><tr><td>Components, relations, semantic roles, source refs, and preservation candidates.</td><td>Global architecture completeness or exact reconstruction of the repository.</td></tr><tr><td>Semantic diagrams, contract preservation candidates, observation equivalence, and obstruction witnesses.</td><td>Semantic preservation, lawfulness, theorem precondition discharge, or zero-curvature conclusions.</td></tr><tr><td>Coverage, missing evidence, private context, unavailable refs, and non-conclusions.</td><td>That missing evidence is safe, measured zero, or resolved by model confidence.</td></tr></tbody></table></div></section>
+<section id="commands" class="article-section"><h2>Commands and artifacts</h2><ul class="status-list"><li><strong><code>archmap</code></strong><span>Validates supplied <code>archmap-v0</code> JSON and emits <code>archmap-validation-report-v0</code>.</span></li><li><strong><code>air-from-archmap</code></strong><span>Projects the validated map into AIR while preserving source refs, semantic coverage, missing evidence, conflicts, and non-conclusions.</span></li><li><strong><code>archmap-v0</code></strong><span>The evidence-carrying map candidate authored from the selected source universe.</span></li><li><strong><code>archmap-validation-report-v0</code></strong><span>The validation report that checks source inventory refs, claim boundaries, semantic coverage, conflicts, and formal-promotion guardrails.</span></li></ul></section>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../air/"><span>Previous</span><strong>AIR</strong></a><a class="page-nav-next" href="../semantic-air/"><span>Next</span><strong>Semantic AIR</strong></a></nav>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-shell footer-inner">
+        <p>&copy; <span data-current-year>2026</span> Hiroyuki Nakahata.</p>
+        <a href="https://github.com/iroha1203/AlgebraicArchitectureTheoryV2">Repository</a>
+      </div>
+    </footer>
+  </body>
+</html>
