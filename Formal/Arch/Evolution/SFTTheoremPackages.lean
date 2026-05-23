@@ -384,12 +384,24 @@ def representativeDeclarations : Candidate -> List String
        "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ExplicitAssumptionLedger",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.explicitAssumptionLedger",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.explicitAssumptionLedger_supports_final_typed_conclusion",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.explicitAssumptionLedger_supports_nonConclusion_boundary",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.finiteSelected_fundamental_modularity",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_typed_boundary_failure",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.finite_failure_enters_final_typed_conclusion",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.final_typed_conclusion_records_finite_or_aat_failure_taxonomy",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.final_failure_taxonomy_preserves_nonConclusions",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.LifecycleTypedFailureSidecar",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.lifecycleTypedFailureSidecar_of_threshold",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.AllowedGrandTheoremTransformation",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.EvolutionaryConclusionPreservation",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.evolutionaryConclusionPreservation_of_allowedTransformation",
        "SFTAATFundamentalModularity.Examples.canonicalFiniteSelectedDescentPackage",
        "SFTAATFundamentalModularity.Examples.canonicalDescentComponent",
        "SFTAATFundamentalModularity.Examples.canonicalObstructionPackage",
@@ -406,7 +418,12 @@ def representativeDeclarations : Candidate -> List String
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_fundamental_modularity",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_governed_or_typed_boundary_failure",
        "SFTAATFundamentalModularity.Examples.canonicalAATSupported_final_typed_conclusion",
-       "SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions"]
+       "SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions",
+       "SFTAATFundamentalModularity.Examples.nonSingletonExactModel",
+       "SFTAATFundamentalModularity.Examples.nonSingletonExactModel_has_two_global_points",
+       "SFTAATFundamentalModularity.Examples.nonSingletonAATSupportedFundamentalModularityPackage",
+       "SFTAATFundamentalModularity.Examples.nonSingletonAATSupported_final_typed_conclusion",
+       "SFTAATFundamentalModularity.Examples.nonSingletonAATSupported_preserves_nonConclusions"]
 
 /--
 Schematic-name to Lean-API correspondences for SFT Part III / IV.

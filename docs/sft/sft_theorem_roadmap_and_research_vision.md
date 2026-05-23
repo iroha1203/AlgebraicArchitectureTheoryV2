@@ -775,6 +775,40 @@ governed
   OR AAT/SFT boundary failure
 ```
 
+The AAT-supported package also exposes an explicit assumption ledger through
+`AATSupportedFundamentalModularityPackage.ExplicitAssumptionLedger` and
+`explicitAssumptionLedger`.  The ledger is the Lean-side index for the selected
+finite boundary, selected source / horizon, AAT slice boundaries, theorem/model
+boundaries, final component hypotheses, final typed conclusion, and
+non-conclusion preservation.  The accessor theorems
+`explicitAssumptionLedger_supports_final_typed_conclusion` and
+`explicitAssumptionLedger_supports_nonConclusion_boundary` make the dependency
+between assumptions, final conclusion, and non-conclusions readable without
+discharging the assumptions.
+
+Failure taxonomy is kept explicit by
+`finite_failure_enters_final_typed_conclusion`,
+`final_typed_conclusion_records_finite_or_aat_failure_taxonomy`, and
+`final_failure_taxonomy_preserves_nonConclusions`.  The final branch therefore
+does not collapse existing finite SFT typed failure and AAT/SFT boundary failure
+into an untyped failure bucket.
+
+`SFTAATFundamentalModularity.Examples.nonSingletonAATSupportedFundamentalModularityPackage`
+is a non-singleton selected finite example over `Bool` carriers.  It records two
+selected global points and two selected cover indices, instantiates
+`AATSupportedFundamentalModularityPackage` end to end, and exposes both the
+final typed conclusion and non-conclusion preservation.  The earlier singleton
+example remains as the smallest smoke test, not the only example.
+
+Lifecycle and evolutionary results are connected as sidecar surfaces, not as
+runtime or empirical claims.  `LifecycleTypedFailureSidecar` reads
+`LifecycleBifurcationPackage.lifecycle_bifurcation_above_threshold` next to the
+final typed conclusion and records lifecycle non-conclusions.  For invariance,
+`AllowedGrandTheoremTransformation` makes final-conclusion and non-conclusion
+preservation explicit, while `EvolutionaryConclusionPreservation` connects an
+`EvolutionaryInvariancePackage` to the target AAT-supported package only under
+that allowed transformation.
+
 Dependency graph for the finite selected formalization:
 
 ```text

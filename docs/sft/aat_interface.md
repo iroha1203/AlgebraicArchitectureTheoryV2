@@ -161,6 +161,17 @@ discharge helper accessor を持つ。canonical finite example は singleton fin
 model 上で `AATSupportedFundamentalModularityPackage` を end-to-end に instantiate し、
 final typed conclusion と non-conclusions preservation を取り出す。
 
+Grand Theorem の明示仮定は
+`AATSupportedFundamentalModularityPackage.ExplicitAssumptionLedger` と
+`explicitAssumptionLedger` で一覧できる。ledger は selected finite boundary、selected
+source / horizon、AAT slice boundaries、theorem/model boundaries、descent /
+obstruction / review / governance / calibration / agentic component hypotheses、final typed
+conclusion、non-conclusion boundary を同じ surface に置く。
+`explicitAssumptionLedger_supports_final_typed_conclusion` と
+`explicitAssumptionLedger_supports_nonConclusion_boundary` は、どの仮定が final
+conclusion と non-conclusion preservation を支えるかを読むための accessor であり、
+仮定自体を無条件に証明するものではない。
+
 canonical example の descent / obstruction / governance component は、それぞれ finite
 selected descent package、finite descent obstruction package、finite
 obstruction-governance package から既存 helper 経由で構成される。この例は、主要な final
@@ -168,6 +179,15 @@ component を theorem-package surface から組み立てる読みを示す。た
 selected example であり、任意の software system、all covers、all runtime schedules、
 extractor completeness、classifier completeness の無条件化、operational governance
 effectiveness へ一般化しない。
+
+non-singleton selected finite example として
+`Examples.nonSingletonAATSupportedFundamentalModularityPackage` も置く。この例は
+`Bool` carriers 上で selected global carrier と selected index carrier がどちらも長さ
+2 であることを `nonSingletonExactModel_has_two_global_points` と
+`nonSingletonCover_has_two_indices` で確認し、同じ AAT-supported Grand Theorem package
+を end-to-end に instantiate する。`nonSingletonAATSupported_final_typed_conclusion` と
+`nonSingletonAATSupported_preserves_nonConclusions` により、final typed conclusion と
+non-conclusion preservation を取り出せる。
 
 artifact-to-boundary pipeline は
 `Formal/Arch/Evolution/SFTArtifactBoundaryBridge.lean` と
@@ -194,6 +214,20 @@ global AI safety は結論しない。
 existing finite typed failure / AAT-SFT boundary failure の三分岐として読めるため、
 expression / projection / observation / reconstruction / missing-evidence / theorem-status /
 ArchSig report のどの AAT/SFT 境界が破れたかを AAT/SFT branch まで保持できる。
+`finite_failure_enters_final_typed_conclusion`,
+`final_typed_conclusion_records_finite_or_aat_failure_taxonomy`, and
+`final_failure_taxonomy_preserves_nonConclusions` は、既存 finite SFT typed failure と
+AAT/SFT boundary failure の由来を潰さず、non-conclusion preservation と同じ境界で読む
+ための accessor である。
+
+Lifecycle bifurcation と evolutionary invariance は sidecar として接続する。
+`LifecycleTypedFailureSidecar` は lifecycle threshold 以上の pressure regime を final typed
+conclusion の横に置くが、runtime failure prediction や empirical incident risk を結論しない。
+`AllowedGrandTheoremTransformation` と `EvolutionaryConclusionPreservation` は、allowed
+transformation が final typed conclusion と non-conclusion boundary を保存するという明示
+前提の下でのみ invariance package を AAT-supported conclusion preservation として読む。
+任意の refactoring correctness、runtime behavior equivalence、empirical outcome
+preservation は結論しない。
 
 ## 5. 非混同
 
