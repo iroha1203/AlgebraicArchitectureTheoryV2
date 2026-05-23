@@ -57,7 +57,7 @@ SFT makes software evolution computable.
 | SFT | PRD、Spec、Issue、PR、review、CI、organization、AI、feedback が reachable future をどう変えるかを扱う計算理論。 | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) |
 | Lean 形式化 | 前提を明示できる構造的命題、finite universe、lawfulness bridge、bounded theorem package。 | [Lean 定義・定理索引](docs/aat/lean_theorem_index.md) |
 | Proof / empirical ledger | theorem boundary、未解決 proof obligation、empirical hypothesis、Issue との対応。 | [証明義務と実証仮説](docs/aat/proof_obligations.md) |
-| Website | AAT、SFT、ArchSig を公開向けに読むための no-build GitHub Pages サイト。 | [Website 運用メモ](docs/website/README.md) と [website source](website/index.html) |
+| Website | AAT、SFT、ArchSig を公開向けに読むための no-build Cloudflare Pages サイト。 | [Website 運用メモ](docs/website/README.md) と [website source](website/index.html) |
 
 README は詳細な theorem 一覧や進捗台帳を重複して持ちません。
 現在の Lean status、non-conclusion boundary、未解決 proof obligation は
@@ -124,7 +124,7 @@ measured zero と unmeasured を混同せず、tool pass を Lean theorem とし
 
 ## Website
 
-`website/` は、AAT、SFT、ArchSig を公開向けに読むための GitHub Pages
+`website/` は、AAT、SFT、ArchSig を公開向けに読むための Cloudflare Pages
 reading surface です。研究本文、Lean status、proof obligation の台帳そのものではなく、
 `docs/` で管理する claim boundary を保ったまま、AAT / SFT を web-native preprint /
 monograph として、ArchSig を公開 manual として読める形にします。
@@ -164,7 +164,7 @@ runtime metrics、empirical hypotheses、一般数値 curvature、実コード e
 - `docs/website`
   - 公開 website の sitemap、design、tone、publication rule を管理する内部運用メモ。
 - `website`
-  - AAT / SFT / ArchSig の公開 reading surface を提供する no-build static GitHub Pages site。
+  - AAT / SFT / ArchSig の公開 reading surface を提供する no-build static Cloudflare Pages site。
 - `Main.lean`
   - 実行ターゲット `aatv2` の最小 entry point。
 - `lakefile.toml`

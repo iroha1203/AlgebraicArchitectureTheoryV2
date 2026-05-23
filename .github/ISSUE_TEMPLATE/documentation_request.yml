@@ -28,7 +28,7 @@ body:
         - "docs: 研究文書"
         - "formal status: Lean status / theorem index / proof obligations"
         - "tool docs: ArchSig README / commands / schema docs"
-        - "website copy: GitHub Pages 公開面"
+        - "website copy: Cloudflare Pages 公開面"
         - "entry docs: README.md / README.jp.md"
     validations:
       required: true
