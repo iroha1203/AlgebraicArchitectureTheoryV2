@@ -117,6 +117,13 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
 
 `archmap` は `archmap-validation-report-v0` を出す。source inventory / source refs、
 claim boundary、semantic coverage、conflict category、formal promotion guardrail を検査する。
+出力には `leanPreservationVocabulary` と `leanPreservationPreconditionChecklist` も含まれる。
+これは `archmap-v0` の map item を `ArchMapPreservationPackage` の候補 field
+(`ObjectPreservation`, `RelationPreservation`, `SemanticDiagramPreservation`,
+`SemanticCommutationPreservation`, `NonfillabilityWitnessPreservation`,
+`LawPolicyPreservation`, `FlatnessPreconditionPreservation`, coverage / exactness boundary)
+へ対応づけ、missing evidence、unmeasured coverage、formal promotion guardrail、
+supplied assumption、out-of-scope を区別する report surface である。
 canonical fixture では `sourceInventoryRef.path` が
 `tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json` を指し、validation は
 その独立 artifact の存在、included / excluded / unavailable / private boundary、hash、
@@ -137,6 +144,8 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- air-from-archmap \
 `air-from-archmap` は source artifact refs を AIR `artifacts[]` / `evidence[]` に、object /
 relation / semantic diagram / nonfillability witness / claim boundary を対応する AIR field に投影する。
 missing evidence、coverage gap、nonConclusions、conflict は measured zero や resolved claim に丸めない。
+Lean preservation field との対応は AIR `claims[].requiredAssumptions` に candidate として残し、
+後段 `theorem-check` が ArchMap preservation checklist を再構成できるようにする。
 
 AIR の参照整合性を検査する。
 
@@ -156,6 +165,10 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- theorem-check \
   --air .lake/signature-current/air.json \
   --out .lake/signature-current/theorem-check.json
 ```
+
+ArchMap-derived AIR の場合、`theorem-check` は
+`archmapPreservationPreconditionChecklist` を出力する。これは validation / AIR projection の成功を
+Lean theorem proof に昇格せず、candidate / blocked / supplied-assumption の状態を保持する。
 
 Feature Extension Report を作る。
 

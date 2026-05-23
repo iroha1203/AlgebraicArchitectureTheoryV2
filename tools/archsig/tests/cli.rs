@@ -102,6 +102,57 @@ fn cli_validates_archmap_fixture_and_guardrails() {
             .iter()
             .any(|entry| entry == "ArchMap validation does not prove architecture lawfulness")
     );
+    assert!(
+        json["leanPreservationVocabulary"]
+            .as_array()
+            .expect("Lean preservation vocabulary is an array")
+            .iter()
+            .any(|entry| {
+                entry["archmapSelector"] == "mappingKind=object or targetRef.kind=air-component"
+                    && entry["leanPackageField"] == "ObjectPreservation"
+            })
+    );
+    let preservation_checklist = json["leanPreservationPreconditionChecklist"]
+        .as_array()
+        .expect("Lean preservation checklist is an array");
+    assert!(
+        preservation_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "object-route-users"
+                && entry["leanPackageField"] == "ObjectPreservation"
+                && entry["status"] == "candidate"
+        }),
+        "object mapping should be tracked as an ObjectPreservation candidate"
+    );
+    assert!(
+        preservation_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "policy-layered-route-service"
+                && entry["leanPackageField"] == "LawPolicyPreservation"
+                && entry["status"] == "satisfiedBySuppliedAssumption"
+        }),
+        "supplied policy assumptions should stay distinct from proved theorem discharge"
+    );
+    assert!(
+        preservation_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "semantic-unmeasured-global-commutation"
+                && entry["leanPackageField"] == "SemanticCommutationPreservation"
+                && entry["status"] == "blockedByUnmeasuredCoverage"
+        }),
+        "unmeasured semantic commutation should block preservation discharge"
+    );
+    assert!(
+        preservation_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "runtime-unmeasured-boundary"
+                && entry["status"] == "blockedByMissingEvidence"
+        }),
+        "runtime missing evidence should remain visible in the checklist"
+    );
+    assert!(
+        preservation_checklist.iter().any(|entry| {
+            entry["leanPackageField"] == "FormalPromotionGuardrail"
+                && entry["status"] == "blockedByFormalPromotionGuardrail"
+        }),
+        "validation success should keep the formal promotion guardrail visible"
+    );
 
     let invalid = out_dir.join("archmap-invalid.json");
     let invalid_report = out_dir.join("archmap-invalid-validation.json");
@@ -340,6 +391,44 @@ fn cli_projects_archmap_to_air_and_existing_reports() {
     assert_eq!(
         theorem_json["schemaVersion"],
         "theorem-precondition-check-report-v0"
+    );
+    let theorem_archmap_checklist = theorem_json["archmapPreservationPreconditionChecklist"]
+        .as_array()
+        .expect("theorem-check ArchMap preservation checklist is an array");
+    assert!(
+        theorem_archmap_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "semantic-create-user-diagram"
+                && entry["leanPackageField"] == "SemanticDiagramPreservation"
+                && entry["status"] == "candidate"
+        }),
+        "theorem-check should report semantic diagram preservation candidates"
+    );
+    assert!(
+        theorem_archmap_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "semantic-unmeasured-global-commutation"
+                && entry["leanPackageField"] == "SemanticCommutationPreservation"
+                && entry["status"] == "blockedByUnmeasuredCoverage"
+        }),
+        "theorem-check should keep unmeasured semantic commutation out of proof promotion"
+    );
+    assert!(
+        theorem_archmap_checklist.iter().any(|entry| {
+            entry["mapItemId"] == "runtime-unmeasured-boundary"
+                && entry["status"] == "blockedByMissingEvidence"
+                && entry["missingEvidence"]
+                    .as_array()
+                    .expect("missing evidence is an array")
+                    .iter()
+                    .any(|missing| missing == "runtime trace not supplied")
+        }),
+        "theorem-check should keep missing runtime evidence out of proof promotion"
+    );
+    assert!(
+        theorem_archmap_checklist.iter().any(|entry| {
+            entry["leanPackageField"] == "FormalPromotionGuardrail"
+                && entry["status"] == "blockedByFormalPromotionGuardrail"
+        }),
+        "theorem-check should keep ArchMap formal promotion blocked"
     );
     let feature_json = read_json(&feature_report);
     assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");

@@ -1,7 +1,9 @@
 use std::collections::BTreeSet;
 
+use crate::archmap::archmap_lean_preservation_vocabulary;
 use crate::{
-    AirClaim, AirCoverageLayer, AirDocumentV0, AirSemanticDiagram, PYTHON_COMPONENT_KIND,
+    AirClaim, AirCoverageLayer, AirDocumentV0, AirSemanticDiagram,
+    ArchMapLeanPreservationChecklistEntry, PYTHON_COMPONENT_KIND,
     THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION, TheoremPackageMetadataV0,
     TheoremPackageRegistryV0, TheoremPreconditionCheck, TheoremPreconditionCheckInput,
     TheoremPreconditionCheckReportV0, TheoremPreconditionCheckSummary,
@@ -309,6 +311,8 @@ pub fn build_theorem_precondition_check_report(
     let registry = static_theorem_package_registry();
     let checks = theorem_precondition_checks(document, &registry);
     let summary = theorem_precondition_check_summary(&checks, document.claims.len());
+    let archmap_preservation_precondition_checklist =
+        theorem_check_archmap_preservation_checklist(document);
 
     TheoremPreconditionCheckReportV0 {
         schema_version: THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION.to_string(),
@@ -319,6 +323,7 @@ pub fn build_theorem_precondition_check_report(
         },
         registry,
         summary,
+        archmap_preservation_precondition_checklist,
         checks,
     }
 }
@@ -888,6 +893,131 @@ fn push_missing_once(missing_preconditions: &mut Vec<String>, precondition: &str
     {
         missing_preconditions.push(precondition.to_string());
     }
+}
+
+fn theorem_check_archmap_preservation_checklist(
+    document: &AirDocumentV0,
+) -> Vec<ArchMapLeanPreservationChecklistEntry> {
+    if !document
+        .artifacts
+        .iter()
+        .any(|artifact| artifact.kind == "archmap")
+    {
+        return Vec::new();
+    }
+
+    let mut checklist: Vec<_> = document
+        .claims
+        .iter()
+        .filter(|claim| claim.claim_id.starts_with("claim-archmap-"))
+        .map(theorem_check_archmap_claim_entry)
+        .collect();
+    checklist.push(theorem_check_archmap_formal_guardrail_entry());
+    checklist
+}
+
+fn theorem_check_archmap_claim_entry(claim: &AirClaim) -> ArchMapLeanPreservationChecklistEntry {
+    let lean_package_field = archmap_claim_lean_package_field(claim);
+    let status = archmap_claim_preservation_status(claim, &lean_package_field);
+    let mut blocking_reasons = Vec::new();
+    if !claim.missing_preconditions.is_empty() {
+        blocking_reasons
+            .push("missing evidence blocks preservation precondition discharge".to_string());
+    }
+    if status == "blockedByUnmeasuredCoverage" {
+        blocking_reasons
+            .push("unmeasured claim remains outside theorem precondition discharge".to_string());
+    }
+    if lean_package_field == "OutOfScopeBoundary" {
+        blocking_reasons
+            .push("AIR claim is outside the ArchMapPreservationPackage vocabulary".to_string());
+    }
+
+    ArchMapLeanPreservationChecklistEntry {
+        checklist_id: format!("theorem-check-archmap-preservation-{}", claim.claim_id),
+        map_item_id: claim
+            .claim_id
+            .strip_prefix("claim-archmap-")
+            .map(|id| id.to_string()),
+        lean_package_field,
+        status,
+        candidate_sources: vec![
+            format!("subjectRef={}", claim.subject_ref),
+            format!("predicate={}", claim.predicate),
+        ],
+        blocking_reasons,
+        missing_evidence: claim.missing_preconditions.clone(),
+        coverage_boundary: format!(
+            "claimLevel={}; claimClassification={}; measurementBoundary={}",
+            claim.claim_level, claim.claim_classification, claim.measurement_boundary
+        ),
+        non_conclusions: claim.non_conclusions.clone(),
+    }
+}
+
+fn theorem_check_archmap_formal_guardrail_entry() -> ArchMapLeanPreservationChecklistEntry {
+    ArchMapLeanPreservationChecklistEntry {
+        checklist_id: "theorem-check-archmap-formal-promotion-guardrail".to_string(),
+        map_item_id: None,
+        lean_package_field: "FormalPromotionGuardrail".to_string(),
+        status: "blockedByFormalPromotionGuardrail".to_string(),
+        candidate_sources: vec![
+            "ArchMap-derived AIR".to_string(),
+            "theorem-check".to_string(),
+        ],
+        blocking_reasons: vec![
+            "ArchMap-derived AIR does not supply Lean proof terms or discharged package fields"
+                .to_string(),
+        ],
+        missing_evidence: vec!["ArchMapPreservationPackage witness not supplied".to_string()],
+        coverage_boundary:
+            "theorem-check reports candidate and blocked states; it does not promote ArchMap validation to proof"
+                .to_string(),
+        non_conclusions: vec![
+            "theorem-check pass is not semantic preservation proof".to_string(),
+            "ArchMap-derived AIR is not a Lean theorem witness".to_string(),
+        ],
+    }
+}
+
+fn archmap_claim_lean_package_field(claim: &AirClaim) -> String {
+    claim
+        .required_assumptions
+        .iter()
+        .find_map(|assumption| {
+            assumption
+                .strip_prefix("ArchMapPreservationPackage.")
+                .and_then(|suffix| suffix.strip_suffix(" candidate"))
+                .map(|field| field.to_string())
+        })
+        .or_else(|| {
+            archmap_lean_preservation_vocabulary()
+                .into_iter()
+                .find(|entry| {
+                    claim
+                        .predicate
+                        .contains(entry.lean_package_field.trim_end_matches("Preservation"))
+                })
+                .map(|entry| entry.lean_package_field)
+        })
+        .unwrap_or_else(|| "OutOfScopeBoundary".to_string())
+}
+
+fn archmap_claim_preservation_status(claim: &AirClaim, lean_package_field: &str) -> String {
+    if lean_package_field == "OutOfScopeBoundary" {
+        "notApplicableOutOfScope"
+    } else if !claim.missing_preconditions.is_empty() {
+        "blockedByMissingEvidence"
+    } else if claim.claim_classification == "assumed" {
+        "satisfiedBySuppliedAssumption"
+    } else if claim.measurement_boundary == "unmeasured"
+        || claim.claim_classification == "unmeasured"
+    {
+        "blockedByUnmeasuredCoverage"
+    } else {
+        "candidate"
+    }
+    .to_string()
 }
 
 #[cfg(test)]

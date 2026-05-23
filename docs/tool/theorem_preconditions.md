@@ -103,6 +103,19 @@ Lean で使う場合は、`Formal/Arch/Signature/ArchMap.lean` の `ArchMapModel
 source refs、claim boundary、semantic coverage、formal promotion guardrail を検査するが、
 `ArchMapPreservationPackage` の field を証明しない。
 
+`archmap` validation report と `theorem-check` report は、ArchMap 由来の candidate を
+`leanPreservationPreconditionChecklist` / `archmapPreservationPreconditionChecklist`
+として保持する。対応 vocabulary は、object / relation / semantic diagram /
+semantic commutation / nonfillability witness / law-policy / flatness precondition /
+coverage-exactness boundary を Lean package field 名で示す。status は candidate、
+missing evidence block、unmeasured coverage block、formal promotion guardrail block、
+supplied assumption、out-of-scope を区別する。
+
+`air-from-archmap` はこの対応を AIR `claims[].requiredAssumptions` にも残す。したがって
+`theorem-check` は ArchMap-derived AIR だけを入力にした場合でも、どの
+`ArchMapPreservationPackage` field の候補かを report できる。ただし `theorem-check` pass は
+Lean proof term、semantic preservation proof、または package field discharge ではない。
+
 特に `measurementBoundary = measuredZero` と semantic coverage gap は別の前提である。
 unmeasured semantic diagram universe を measured zero として扱う report は、formal promotion
 candidate として block する。

@@ -261,9 +261,41 @@
       "claimClassification": "assumed",
       "measurementBoundary": "unmeasured",
       "confidence": "medium",
-      "missingEvidence": ["policy JSON not supplied"],
+      "requiredAssumptions": ["Layer policy doc is supplied as bounded policy evidence"],
+      "missingEvidence": [],
       "nonConclusions": ["policy assumption is not measured compliance"],
       "conflictCategory": "policy-disagreement"
+    },
+    {
+      "mapItemId": "semantic-unmeasured-global-commutation",
+      "mappingKind": "semanticCommutationClaim",
+      "sourceRefs": [
+        {
+          "artifactId": "doc-architecture",
+          "kind": "docSection",
+          "path": "docs/architecture.md",
+          "section": "Layer policy"
+        }
+      ],
+      "targetRef": {
+        "kind": "semantic-diagram",
+        "layer": "semantic",
+        "id": "diagram-global-user-commutation",
+        "from": "request.createUser",
+        "to": "state.userCreated",
+        "lhsPathRef": "path-global-user-lhs",
+        "rhsPathRef": "path-global-user-rhs",
+        "equivalence": "observational",
+        "subjectRef": "semantic.diagram.global_user_commutation",
+        "predicate": "global user workflow commutation is outside the measured semantic universe"
+      },
+      "preserves": ["semantic commutation candidate"],
+      "forgets": ["global path coverage"],
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "confidence": "low",
+      "missingEvidence": [],
+      "nonConclusions": ["unmeasured semantic commutation is not measured zero"]
     },
     {
       "mapItemId": "aat-flatness-precondition",
@@ -381,8 +413,8 @@
   ],
   "coverage": {
     "measuredLayers": ["static", "semantic"],
-    "unmeasuredLayers": ["runtime", "policy"],
-    "assumedLayers": [],
+    "unmeasuredLayers": ["runtime"],
+    "assumedLayers": ["policy"],
     "unsupportedConstructs": ["dynamic plugin loading"]
   },
   "conflicts": [
