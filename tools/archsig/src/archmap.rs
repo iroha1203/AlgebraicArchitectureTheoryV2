@@ -7,7 +7,8 @@ use crate::{
     AirComponent, AirCoverage, AirCoverageLayer, AirDocumentV0, AirEvidence, AirExtension,
     AirFeature, AirIdPolicies, AirNonfillabilityWitness, AirOperationTrace, AirPolicies,
     AirRelation, AirRevision, AirSemanticDiagram, AirSignature, ArchMapConflict, ArchMapDocumentV0,
-    ArchMapMapItem, ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
+    ArchMapLeanPreservationChecklistEntry, ArchMapLeanPreservationVocabularyEntry, ArchMapMapItem,
+    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
     ArchMapValidationSummary, Sig0Document, ValidationCheck,
 };
 
@@ -59,6 +60,8 @@ pub fn validate_archmap_report(
     ArchMapValidationReportV0 {
         schema_version: ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION.to_string(),
         archmap_ref: input_path.to_string(),
+        lean_preservation_vocabulary: archmap_lean_preservation_vocabulary(),
+        lean_preservation_precondition_checklist: archmap_lean_preservation_checklist(document),
         source_inventory_checks,
         source_ref_checks,
         claim_boundary_checks,
@@ -1062,12 +1065,311 @@ fn air_claim_from_item(
         measurement_boundary: item.measurement_boundary.clone(),
         theorem_refs: item.theorem_refs.clone(),
         evidence_refs,
-        required_assumptions: item.required_assumptions.clone(),
+        required_assumptions: archmap_item_required_assumptions(item),
         coverage_assumptions: item.preserves.clone(),
         exactness_assumptions: item.forgets.clone(),
         missing_preconditions: item.missing_evidence.clone(),
         non_conclusions: archmap_item_non_conclusions(item),
     }
+}
+
+pub fn archmap_lean_preservation_vocabulary() -> Vec<ArchMapLeanPreservationVocabularyEntry> {
+    vec![
+        lean_vocabulary_entry(
+            "archmap-object-preservation",
+            "mappingKind=object or targetRef.kind=air-component",
+            "ObjectPreservation",
+            "selected ArchMap object candidate preserves a bounded Lean object field",
+        ),
+        lean_vocabulary_entry(
+            "archmap-relation-preservation",
+            "mappingKind=relation or targetRef.kind=air-relation",
+            "RelationPreservation",
+            "selected ArchMap relation candidate preserves a bounded Lean relation field",
+        ),
+        lean_vocabulary_entry(
+            "archmap-semantic-diagram-preservation",
+            "mappingKind=semanticDiagram or targetRef.kind=semantic-diagram",
+            "SemanticDiagramPreservation",
+            "selected semantic diagram candidate preserves a bounded diagram field",
+        ),
+        lean_vocabulary_entry(
+            "archmap-semantic-commutation-preservation",
+            "mappingKind=semanticCommutationClaim",
+            "SemanticCommutationPreservation",
+            "selected commutation claim candidate is tracked without proving commutation",
+        ),
+        lean_vocabulary_entry(
+            "archmap-nonfillability-witness-preservation",
+            "mappingKind=nonfillabilityWitness or targetRef.kind=nonfillability-witness",
+            "NonfillabilityWitnessPreservation",
+            "selected non-fillability witness candidate is preserved as review evidence",
+        ),
+        lean_vocabulary_entry(
+            "archmap-law-policy-preservation",
+            "mappingKind=policyBoundary or targetRef.layer=policy",
+            "LawPolicyPreservation",
+            "selected policy boundary candidate is tracked as supplied policy evidence",
+        ),
+        lean_vocabulary_entry(
+            "archmap-flatness-precondition-preservation",
+            "targetRef.subjectRef contains flatnessPrecondition or preserves contains flatness precondition boundary",
+            "FlatnessPreconditionPreservation",
+            "selected flatness precondition candidate is tracked without discharging flatness",
+        ),
+        lean_vocabulary_entry(
+            "archmap-coverage-boundary",
+            "coverage, missingEvidence, nonConclusions",
+            "CoverageExactnessBoundary",
+            "coverage gaps, exactness limits, missing evidence, and non-conclusions remain explicit",
+        ),
+    ]
+}
+
+pub fn archmap_lean_preservation_checklist(
+    document: &ArchMapDocumentV0,
+) -> Vec<ArchMapLeanPreservationChecklistEntry> {
+    let mut entries: Vec<_> = document
+        .map_items
+        .iter()
+        .map(|item| archmap_item_preservation_checklist_entry(document, item))
+        .collect();
+    entries.push(archmap_coverage_boundary_checklist_entry(document));
+    entries.push(archmap_formal_promotion_guardrail_checklist_entry());
+    entries
+}
+
+fn lean_vocabulary_entry(
+    vocabulary_id: &str,
+    archmap_selector: &str,
+    lean_package_field: &str,
+    preservation_role: &str,
+) -> ArchMapLeanPreservationVocabularyEntry {
+    ArchMapLeanPreservationVocabularyEntry {
+        vocabulary_id: vocabulary_id.to_string(),
+        archmap_selector: archmap_selector.to_string(),
+        lean_package_field: lean_package_field.to_string(),
+        preservation_role: preservation_role.to_string(),
+        report_boundary:
+            "tooling vocabulary records a preservation candidate; it is not a Lean proof witness"
+                .to_string(),
+    }
+}
+
+fn archmap_item_preservation_checklist_entry(
+    document: &ArchMapDocumentV0,
+    item: &ArchMapMapItem,
+) -> ArchMapLeanPreservationChecklistEntry {
+    let lean_package_field = archmap_item_lean_package_field(item);
+    let status = archmap_item_preservation_status(document, item, lean_package_field);
+    let mut blocking_reasons = Vec::new();
+    if !item.missing_evidence.is_empty() {
+        blocking_reasons
+            .push("missing evidence blocks preservation precondition discharge".to_string());
+    }
+    if status == "blockedByUnmeasuredCoverage" {
+        blocking_reasons.push("unmeasured coverage remains a coverage gap".to_string());
+    }
+    if matches!(item.claim_classification.as_str(), "proved" | "formal")
+        && item.theorem_refs.is_empty()
+    {
+        blocking_reasons.push(
+            "formal promotion guardrail blocks theorem claim without theorem refs".to_string(),
+        );
+    }
+    if lean_package_field == "OutOfScopeBoundary" {
+        blocking_reasons
+            .push("mapping kind is outside the ArchMapPreservationPackage vocabulary".to_string());
+    }
+
+    ArchMapLeanPreservationChecklistEntry {
+        checklist_id: format!("archmap-preservation-{}", item.map_item_id),
+        map_item_id: Some(item.map_item_id.clone()),
+        lean_package_field: lean_package_field.to_string(),
+        status: status.to_string(),
+        candidate_sources: vec![
+            format!("mappingKind={}", item.mapping_kind),
+            format!("targetRef.kind={}", item.target_ref.kind),
+        ],
+        blocking_reasons,
+        missing_evidence: item.missing_evidence.clone(),
+        coverage_boundary: archmap_item_coverage_boundary(document, item),
+        non_conclusions: archmap_item_non_conclusions(item),
+    }
+}
+
+fn archmap_coverage_boundary_checklist_entry(
+    document: &ArchMapDocumentV0,
+) -> ArchMapLeanPreservationChecklistEntry {
+    let mut blocking_reasons = Vec::new();
+    if !document.coverage.unmeasured_layers.is_empty() {
+        blocking_reasons.push(format!(
+            "unmeasured layers remain: {}",
+            document.coverage.unmeasured_layers.join(", ")
+        ));
+    }
+    if !document.coverage.unsupported_constructs.is_empty() {
+        blocking_reasons.push(format!(
+            "unsupported constructs remain: {}",
+            document.coverage.unsupported_constructs.join(", ")
+        ));
+    }
+    ArchMapLeanPreservationChecklistEntry {
+        checklist_id: "archmap-preservation-coverage-boundary".to_string(),
+        map_item_id: None,
+        lean_package_field: "CoverageExactnessBoundary".to_string(),
+        status: if blocking_reasons.is_empty() {
+            "candidate"
+        } else {
+            "blockedByUnmeasuredCoverage"
+        }
+        .to_string(),
+        candidate_sources: vec!["coverage".to_string(), "nonConclusions".to_string()],
+        blocking_reasons,
+        missing_evidence: Vec::new(),
+        coverage_boundary: format!(
+            "measured=[{}]; unmeasured=[{}]; assumed=[{}]",
+            document.coverage.measured_layers.join(", "),
+            document.coverage.unmeasured_layers.join(", "),
+            document.coverage.assumed_layers.join(", ")
+        ),
+        non_conclusions: archmap_non_conclusions(document),
+    }
+}
+
+fn archmap_formal_promotion_guardrail_checklist_entry() -> ArchMapLeanPreservationChecklistEntry {
+    ArchMapLeanPreservationChecklistEntry {
+        checklist_id: "archmap-preservation-formal-promotion-guardrail".to_string(),
+        map_item_id: None,
+        lean_package_field: "FormalPromotionGuardrail".to_string(),
+        status: "blockedByFormalPromotionGuardrail".to_string(),
+        candidate_sources: vec![
+            "archmap validation pass".to_string(),
+            "AIR projection success".to_string(),
+        ],
+        blocking_reasons: vec![
+            "validation and projection do not discharge ArchMapPreservationPackage fields"
+                .to_string(),
+        ],
+        missing_evidence: vec!["Lean theorem witness not supplied by archmap-v0".to_string()],
+        coverage_boundary:
+            "formal promotion requires explicit Lean theorem refs and discharged preconditions"
+                .to_string(),
+        non_conclusions: vec![
+            "ArchMap validation pass is not a Lean theorem proof".to_string(),
+            "AIR projection success is not a semantic preservation proof".to_string(),
+        ],
+    }
+}
+
+fn archmap_item_lean_package_field(item: &ArchMapMapItem) -> &'static str {
+    if item.mapping_kind == "object" || item.target_ref.kind == "air-component" {
+        "ObjectPreservation"
+    } else if item.mapping_kind == "relation" || item.target_ref.kind == "air-relation" {
+        "RelationPreservation"
+    } else if item.mapping_kind == "semanticCommutationClaim" {
+        "SemanticCommutationPreservation"
+    } else if item.mapping_kind == "semanticDiagram" || item.target_ref.kind == "semantic-diagram" {
+        "SemanticDiagramPreservation"
+    } else if item.mapping_kind == "nonfillabilityWitness"
+        || item.target_ref.kind == "nonfillability-witness"
+    {
+        "NonfillabilityWitnessPreservation"
+    } else if item.mapping_kind == "policyBoundary"
+        || item.target_ref.layer.as_deref() == Some("policy")
+    {
+        "LawPolicyPreservation"
+    } else if item
+        .target_ref
+        .subject_ref
+        .as_deref()
+        .is_some_and(|subject_ref| subject_ref.contains("flatnessPrecondition"))
+        || item
+            .preserves
+            .iter()
+            .any(|preserves| preserves.contains("flatness precondition"))
+    {
+        "FlatnessPreconditionPreservation"
+    } else {
+        "OutOfScopeBoundary"
+    }
+}
+
+fn archmap_item_preservation_status(
+    document: &ArchMapDocumentV0,
+    item: &ArchMapMapItem,
+    lean_package_field: &str,
+) -> &'static str {
+    if lean_package_field == "OutOfScopeBoundary" {
+        "notApplicableOutOfScope"
+    } else if matches!(item.claim_classification.as_str(), "proved" | "formal")
+        && item.theorem_refs.is_empty()
+    {
+        "blockedByFormalPromotionGuardrail"
+    } else if !item.missing_evidence.is_empty() {
+        "blockedByMissingEvidence"
+    } else if item.claim_classification == "assumed" || !item.required_assumptions.is_empty() {
+        "satisfiedBySuppliedAssumption"
+    } else if archmap_item_has_unmeasured_coverage(document, item) {
+        "blockedByUnmeasuredCoverage"
+    } else {
+        "candidate"
+    }
+}
+
+fn archmap_item_has_unmeasured_coverage(
+    document: &ArchMapDocumentV0,
+    item: &ArchMapMapItem,
+) -> bool {
+    item.measurement_boundary == "unmeasured"
+        || item
+            .target_ref
+            .layer
+            .as_ref()
+            .is_some_and(|layer| document.coverage.unmeasured_layers.contains(layer))
+}
+
+fn archmap_item_coverage_boundary(document: &ArchMapDocumentV0, item: &ArchMapMapItem) -> String {
+    let layer = item.target_ref.layer.as_deref().unwrap_or("unlayered");
+    let layer_state = if document
+        .coverage
+        .measured_layers
+        .iter()
+        .any(|measured| measured == layer)
+    {
+        "measured"
+    } else if document
+        .coverage
+        .assumed_layers
+        .iter()
+        .any(|assumed| assumed == layer)
+    {
+        "assumed"
+    } else if document
+        .coverage
+        .unmeasured_layers
+        .iter()
+        .any(|unmeasured| unmeasured == layer)
+    {
+        "unmeasured"
+    } else {
+        "not listed"
+    };
+    format!(
+        "layer={layer}; layerState={layer_state}; measurementBoundary={}",
+        item.measurement_boundary
+    )
+}
+
+fn archmap_item_required_assumptions(item: &ArchMapMapItem) -> Vec<String> {
+    let mut required_assumptions = item.required_assumptions.clone();
+    required_assumptions.push(format!(
+        "ArchMapPreservationPackage.{} candidate",
+        archmap_item_lean_package_field(item)
+    ));
+    required_assumptions.sort();
+    required_assumptions.dedup();
+    required_assumptions
 }
 
 fn air_claim_from_conflict(conflict: &ArchMapConflict) -> AirClaim {

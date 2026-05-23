@@ -2291,6 +2291,8 @@ pub struct ArchMapConflict {
 pub struct ArchMapValidationReportV0 {
     pub schema_version: String,
     pub archmap_ref: String,
+    pub lean_preservation_vocabulary: Vec<ArchMapLeanPreservationVocabularyEntry>,
+    pub lean_preservation_precondition_checklist: Vec<ArchMapLeanPreservationChecklistEntry>,
     pub source_inventory_checks: Vec<ValidationCheck>,
     pub source_ref_checks: Vec<ValidationCheck>,
     pub claim_boundary_checks: Vec<ValidationCheck>,
@@ -2309,6 +2311,31 @@ pub struct ArchMapValidationSummary {
     pub conflict_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapLeanPreservationVocabularyEntry {
+    pub vocabulary_id: String,
+    pub archmap_selector: String,
+    pub lean_package_field: String,
+    pub preservation_role: String,
+    pub report_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapLeanPreservationChecklistEntry {
+    pub checklist_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub map_item_id: Option<String>,
+    pub lean_package_field: String,
+    pub status: String,
+    pub candidate_sources: Vec<String>,
+    pub blocking_reasons: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub coverage_boundary: String,
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -2762,6 +2789,7 @@ pub struct TheoremPreconditionCheckReportV0 {
     pub input: TheoremPreconditionCheckInput,
     pub registry: TheoremPackageRegistryV0,
     pub summary: TheoremPreconditionCheckSummary,
+    pub archmap_preservation_precondition_checklist: Vec<ArchMapLeanPreservationChecklistEntry>,
     pub checks: Vec<TheoremPreconditionCheck>,
 }
 
