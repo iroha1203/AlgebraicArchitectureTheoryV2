@@ -69,6 +69,7 @@ a proof system.
 - ArchSig Getting Started: https://iroha1203.dev/archsig/getting-started/
 - ArchSig CI and PR Review: https://iroha1203.dev/archsig/ci/
 - ArchSig Signal Anatomy: https://iroha1203.dev/archsig/anatomy/
+- ArchSig ArchMap: https://iroha1203.dev/archsig/archmap/
 - ArchSig Semantic AIR: https://iroha1203.dev/archsig/semantic-air/
 - Outreach: https://iroha1203.dev/outreach/
 
