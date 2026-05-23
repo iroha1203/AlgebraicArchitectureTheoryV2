@@ -15,7 +15,7 @@ namespace SFTAATFundamentalModularity
 
 open SFTFundamentalModularity
 
-universe u v w x y z
+universe u v w x y z a
 
 /-- Selected architecture slice supplied by AAT to an SFT theorem package. -/
 structure AATSelectedArchitectureSlice where
@@ -540,6 +540,270 @@ theorem aat_boundary_failure_nonConclusions_preserved_in_final_typed_conclusion
     failure.toAATTypedComputationBoundaryFailure.typedFailure.nonConclusions =
       failure.nonConclusions :=
   failure.toAATTypedComputationBoundaryFailure_preserves_nonConclusions
+
+/--
+Explicit assumption ledger for the AAT-supported Grand Theorem package.
+
+This is a reading surface: it records the selected finite model, selected
+source/horizon, AAT/SFT boundary, final component hypotheses, and
+non-conclusion boundaries that support the final typed conclusion.  It does not
+discharge those assumptions unconditionally.
+-/
+structure ExplicitAssumptionLedger
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon) where
+  selectedFiniteBoundary : package.boundary.RecordsSelectedFiniteBoundary
+  aatSliceBoundaries : package.boundary.RecordsAATSliceBoundaries
+  theoremAndModelBoundaries : package.boundary.RecordsTheoremAndModelBoundaries
+  finalDescent : package.finalPackage.hypotheses.descent.modularityAsDescent
+  finalObstruction :
+    package.finalPackage.hypotheses.obstruction.technicalDebtAsObstruction
+  finalReview :
+    package.finalPackage.hypotheses.review.minimalDecisionPreservingEnvelope
+  finalGovernance :
+    package.finalPackage.hypotheses.governance.governanceAsObstructionCutting
+  finalCalibration :
+    package.finalPackage.hypotheses.calibration.boundaryExplicitFixedPoint
+  finalAgentic : package.finalPackage.hypotheses.agentic.agenticConfluence
+  finalTypedConclusion : package.AATSupportedFinalTypedConclusion
+  nonConclusionBoundary :
+    package.boundary.RecordsNonConclusions ∧
+      package.finalPackage.RecordsNonConclusions
+
+namespace ExplicitAssumptionLedger
+
+def SupportsFinalTypedConclusion
+    {package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon}
+    (_ledger : ExplicitAssumptionLedger package) : Prop :=
+  package.finalPackage.hypotheses.descent.modularityAsDescent ∧
+    package.finalPackage.hypotheses.obstruction.technicalDebtAsObstruction ∧
+      package.finalPackage.hypotheses.review.minimalDecisionPreservingEnvelope ∧
+        package.finalPackage.hypotheses.governance.governanceAsObstructionCutting ∧
+          package.finalPackage.hypotheses.calibration.boundaryExplicitFixedPoint ∧
+            package.finalPackage.hypotheses.agentic.agenticConfluence ∧
+              package.AATSupportedFinalTypedConclusion
+
+def SupportsNonConclusionBoundary
+    {package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon}
+    (_ledger : ExplicitAssumptionLedger package) : Prop :=
+  package.boundary.RecordsSelectedFiniteBoundary ∧
+    package.boundary.RecordsAATSliceBoundaries ∧
+      package.boundary.RecordsTheoremAndModelBoundaries ∧
+        package.boundary.RecordsNonConclusions ∧
+          package.finalPackage.RecordsNonConclusions
+
+end ExplicitAssumptionLedger
+
+def explicitAssumptionLedger
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    (hSelected :
+      package.boundary.selectedSlice.RecordsSelectedArchitecture)
+    (hSource : package.boundary.selectedSourceBoundary)
+    (hHorizon : package.boundary.selectedHorizonBoundary) :
+    ExplicitAssumptionLedger package where
+  selectedFiniteBoundary :=
+    package.boundary.records_selected_finite_source_horizon
+      hSelected hSource hHorizon
+  aatSliceBoundaries :=
+    package.boundary.records_projection_observation_reconstruction_missingEvidence
+  theoremAndModelBoundaries := package.recordsBoundary
+  finalDescent := package.finalPackage.hypotheses.hModularity
+  finalObstruction := package.finalPackage.hypotheses.hDebt
+  finalReview := package.finalPackage.hypotheses.hReview
+  finalGovernance := package.finalPackage.hypotheses.hGovernance
+  finalCalibration := package.finalPackage.hypotheses.hLearning
+  finalAgentic := package.finalPackage.hypotheses.hAgentic
+  finalTypedConclusion := package.governed_or_finite_failure_or_aat_boundary_failure
+  nonConclusionBoundary := package.does_not_promote_to_unconditional_claim
+
+theorem explicitAssumptionLedger_supports_final_typed_conclusion
+    {package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon}
+    (ledger : ExplicitAssumptionLedger package) :
+    ledger.SupportsFinalTypedConclusion :=
+  ⟨ledger.finalDescent, ledger.finalObstruction, ledger.finalReview,
+    ledger.finalGovernance, ledger.finalCalibration, ledger.finalAgentic,
+    ledger.finalTypedConclusion⟩
+
+theorem explicitAssumptionLedger_supports_nonConclusion_boundary
+    {package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon}
+    (ledger : ExplicitAssumptionLedger package) :
+    ledger.SupportsNonConclusionBoundary :=
+  ⟨ledger.selectedFiniteBoundary, ledger.aatSliceBoundaries,
+    ledger.theoremAndModelBoundaries, ledger.nonConclusionBoundary⟩
+
+theorem finite_failure_enters_final_typed_conclusion
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    (hFailure :
+      package.finalPackage.hypotheses.failure.explainsBrokenBoundary) :
+    package.AATSupportedFinalTypedConclusion :=
+  Or.inr (Or.inl hFailure)
+
+theorem final_typed_conclusion_records_finite_or_aat_failure_taxonomy
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon) :
+    package.finalPackage.hypotheses.governed.governedBoundary ∨
+      package.finalPackage.hypotheses.failure.explainsBrokenBoundary ∨
+        ∃ failure : AATSFTBoundaryFailure.AATTypedComputationBoundaryFailure,
+          failure.typedFailure.explainsBrokenBoundary :=
+  package.governed_or_finite_failure_or_aat_boundary_failure
+
+theorem final_failure_taxonomy_preserves_nonConclusions
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    (failure : AATSFTBoundaryFailure) :
+    package.boundary.RecordsNonConclusions ∧
+      package.finalPackage.RecordsNonConclusions ∧
+      failure.toAATTypedComputationBoundaryFailure.typedFailure.nonConclusions =
+        failure.nonConclusions :=
+  ⟨package.recordsNonConclusions, package.recordsFinalNonConclusions,
+    failure.toAATTypedComputationBoundaryFailure_preserves_nonConclusions⟩
+
+/--
+Lifecycle bifurcation as a sidecar to the final typed-failure reading.
+
+The sidecar records lifecycle pressure facts next to the final typed
+conclusion.  Its non-conclusion field keeps the reading from becoming a
+runtime-failure or empirical-incident theorem.
+-/
+structure LifecycleTypedFailureSidecar
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Field : Type a}
+    (lifecycle : SFTTheoremRoadmap.LifecycleBifurcationPackage Field)
+    (field : Field) where
+  finalTypedConclusion : package.AATSupportedFinalTypedConclusion
+  lifecycleBifurcation : ¬ lifecycle.repairOnlyPreservesTarget field
+  pressureRegimeNotRepair :
+    lifecycle.pressureRegime field ≠
+      SFTTheoremRoadmap.LifecyclePressureRegime.repair
+  sidecarBoundary : lifecycle.lifecycleBoundary
+  nonConclusionBoundary :
+    package.boundary.RecordsNonConclusions ∧
+      package.finalPackage.RecordsNonConclusions ∧ lifecycle.nonConclusions
+
+def lifecycleTypedFailureSidecar_of_threshold
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Field : Type a}
+    (lifecycle : SFTTheoremRoadmap.LifecycleBifurcationPackage Field)
+    (field : Field)
+    (hGe : lifecycle.threshold <= lifecycle.obstructionMeasure field)
+    (hBoundary : lifecycle.lifecycleBoundary)
+    (hLifecycleNonConclusions : lifecycle.nonConclusions) :
+    LifecycleTypedFailureSidecar package lifecycle field where
+  finalTypedConclusion := package.governed_or_finite_failure_or_aat_boundary_failure
+  lifecycleBifurcation :=
+    lifecycle.lifecycle_bifurcation_above_threshold field hGe
+  pressureRegimeNotRepair :=
+    lifecycle.lifecycle_pressure_regime_of_threshold field hGe
+  sidecarBoundary := hBoundary
+  nonConclusionBoundary :=
+    ⟨package.recordsNonConclusions, package.recordsFinalNonConclusions,
+      hLifecycleNonConclusions⟩
+
+/--
+Allowed transformation between two selected AAT-supported Grand Theorem
+packages.
+
+The preservation maps are explicit assumptions.  They are not a theorem about
+arbitrary refactorings, runtime behavior, or empirical outcomes.
+-/
+structure AllowedGrandTheoremTransformation
+    (sourcePackage :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Global' : Type u} {Index' : Type v} {Local' : Type w}
+    {OperationG' : Type x} {OperationL' : Type y}
+    {Governance' : Type z}
+    {exactModel' :
+      FiniteExactSFTModel Global' Index' Local' OperationG' OperationL'
+        Governance'}
+    {source' : Global'} {horizon' : Nat}
+    (targetPackage :
+      AATSupportedFundamentalModularityPackage exactModel' source' horizon') where
+  preservesFinalTypedConclusion :
+    sourcePackage.AATSupportedFinalTypedConclusion ->
+      targetPackage.AATSupportedFinalTypedConclusion
+  preservesNonConclusionBoundary :
+    sourcePackage.boundary.RecordsNonConclusions ∧
+      sourcePackage.finalPackage.RecordsNonConclusions ->
+        targetPackage.boundary.RecordsNonConclusions ∧
+          targetPackage.finalPackage.RecordsNonConclusions
+  transformationBoundary : Prop
+  nonConclusions : Prop
+
+/--
+Evolutionary-invariance sidecar for AAT-supported Grand Theorem packages.
+
+The `evolutionarilyEquivalent` field comes from the roadmap package.  Final
+typed-conclusion and non-conclusion preservation come only from the selected
+allowed transformation, keeping semantic equivalence and operational safety out
+of the conclusion.
+-/
+structure EvolutionaryConclusionPreservation
+    (sourcePackage :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Global' : Type u} {Index' : Type v} {Local' : Type w}
+    {OperationG' : Type x} {OperationL' : Type y}
+    {Governance' : Type z}
+    {exactModel' :
+      FiniteExactSFTModel Global' Index' Local' OperationG' OperationL'
+        Governance'}
+    {source' : Global'} {horizon' : Nat}
+    (targetPackage :
+      AATSupportedFundamentalModularityPackage exactModel' source' horizon')
+    {Field : Type a}
+    (invariance : SFTTheoremRoadmap.EvolutionaryInvariancePackage Field)
+    (F G : Field) where
+  evolutionarilyEquivalent : invariance.evolutionarilyEquivalent F G
+  targetFinalTypedConclusion : targetPackage.AATSupportedFinalTypedConclusion
+  targetNonConclusionBoundary :
+    targetPackage.boundary.RecordsNonConclusions ∧
+      targetPackage.finalPackage.RecordsNonConclusions
+  invarianceBoundary : invariance.invarianceBoundary
+  transformationBoundary : Prop
+  transformationNonConclusions : Prop
+  nonConclusions : invariance.nonConclusions ∧ transformationNonConclusions
+
+def evolutionaryConclusionPreservation_of_allowedTransformation
+    (sourcePackage :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    {Global' : Type u} {Index' : Type v} {Local' : Type w}
+    {OperationG' : Type x} {OperationL' : Type y}
+    {Governance' : Type z}
+    {exactModel' :
+      FiniteExactSFTModel Global' Index' Local' OperationG' OperationL'
+        Governance'}
+    {source' : Global'} {horizon' : Nat}
+    (targetPackage :
+      AATSupportedFundamentalModularityPackage exactModel' source' horizon')
+    {Field : Type a}
+    (invariance : SFTTheoremRoadmap.EvolutionaryInvariancePackage Field)
+    (F G : Field)
+    (hCone : invariance.forecastConesNaturallyEquivalent F G)
+    (transformation :
+      AllowedGrandTheoremTransformation sourcePackage targetPackage)
+    (hInvarianceBoundary : invariance.invarianceBoundary)
+    (hInvarianceNonConclusions : invariance.nonConclusions)
+    (hTransformationNonConclusions : transformation.nonConclusions) :
+    EvolutionaryConclusionPreservation sourcePackage targetPackage
+      invariance F G where
+  evolutionarilyEquivalent := invariance.evolutionary_invariance F G hCone
+  targetFinalTypedConclusion :=
+    transformation.preservesFinalTypedConclusion
+      sourcePackage.governed_or_finite_failure_or_aat_boundary_failure
+  targetNonConclusionBoundary :=
+    transformation.preservesNonConclusionBoundary
+      sourcePackage.does_not_promote_to_unconditional_claim
+  invarianceBoundary := hInvarianceBoundary
+  transformationBoundary := transformation.transformationBoundary
+  transformationNonConclusions := transformation.nonConclusions
+  nonConclusions := ⟨hInvarianceNonConclusions, hTransformationNonConclusions⟩
 
 end AATSupportedFundamentalModularityPackage
 

@@ -547,6 +547,188 @@ theorem canonicalAATSupported_preserves_nonConclusions :
       canonicalAATSupportedFundamentalModularityPackage.finalPackage.RecordsNonConclusions :=
   canonicalAATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim
 
+/-! ## Non-singleton selected finite example -/
+
+abbrev NonSingletonGlobal := Bool
+abbrev NonSingletonIndex := Bool
+abbrev NonSingletonLocal := Bool
+abbrev NonSingletonOperationG := Unit
+abbrev NonSingletonOperationL := Unit
+abbrev NonSingletonGovernance := Unit
+
+def nonSingletonCover :
+    UniformFiniteFieldCover
+      NonSingletonGlobal NonSingletonIndex NonSingletonLocal where
+  indices := [false, true]
+  restrict := fun _ i => i
+  coversGlobal := True
+  finiteBoundary := True
+  nonConclusions := True
+
+theorem nonSingletonCover_has_two_indices :
+    nonSingletonCover.indices.length = 2 := by
+  rfl
+
+def nonSingletonSupport :
+    OperationSupport NonSingletonGlobal NonSingletonOperationG where
+  supports := fun _ _ => True
+  coverageAssumptions := True
+  supportBoundary := True
+  nonConclusions := True
+
+def nonSingletonLocalSupport :
+    OperationSupport NonSingletonLocal NonSingletonOperationL where
+  supports := fun _ _ => True
+  coverageAssumptions := True
+  supportBoundary := True
+  nonConclusions := True
+
+def nonSingletonRelation :
+    StepRelation NonSingletonGlobal NonSingletonOperationG where
+  step := fun _ _ _ => True
+  coverageAssumptions := True
+  theoremBoundary := True
+  nonConclusions := True
+
+def nonSingletonLocalRelation :
+    StepRelation NonSingletonLocal NonSingletonOperationL where
+  step := fun _ _ _ => True
+  coverageAssumptions := True
+  theoremBoundary := True
+  nonConclusions := True
+
+def nonSingletonFiniteModel :
+    FiniteSFTModel nonSingletonCover
+      NonSingletonOperationG NonSingletonOperationL where
+  globalSupport := nonSingletonSupport
+  globalRelation := nonSingletonRelation
+  localSupport := nonSingletonLocalSupport
+  localRelation := nonSingletonLocalRelation
+  projectLocalOp := fun _ _ => ()
+  global_support_projects_local := by
+    intro _ _ _ _ _support
+    trivial
+  global_step_projects_local := by
+    intro _ _ _ _ _hIndex _hSupport _hStep
+    trivial
+  supportBoundary := True
+  stepBoundary := True
+  nonConclusions := True
+
+def nonSingletonObservationBoundary :
+    ObservationBoundary NonSingletonGlobal where
+  pathClassesVisible := True
+  affectedRegionsVisible := True
+  comparableAxes := True
+  observedProjectionBoundary := True
+  missingBoundary := True
+  theoremBoundary := True
+  unknownRemainder := True
+  nonConclusions := True
+
+def nonSingletonExactModel :
+    FiniteExactSFTModel
+      NonSingletonGlobal NonSingletonIndex NonSingletonLocal
+      NonSingletonOperationG NonSingletonOperationL
+      NonSingletonGovernance where
+  selectedGlobalCarrier := [false, true]
+  selectedIndexCarrier := [false, true]
+  selectedLocalCarrier := [false, true]
+  selectedOperationCarrier := [()]
+  governanceBasisCarrier := [()]
+  cover := nonSingletonCover
+  cover_indices_eq_selected := rfl
+  finiteModel := nonSingletonFiniteModel
+  observationBoundary := nonSingletonObservationBoundary
+  exactCoverBoundary := True
+  selectedUniverseBoundary := True
+  operationSupportBoundary := True
+  operationRelationBoundary := True
+  observationBoundaryExplicit := True
+  governanceBasisBoundary := True
+  finiteModelBoundary := True
+  extractorBoundary := True
+  empiricalBoundary := True
+  nonConclusions := True
+
+theorem nonSingletonExactModel_has_two_global_points :
+    nonSingletonExactModel.selectedGlobalCarrier.length = 2 := by
+  rfl
+
+theorem nonSingletonExactModel_recordsExactCoverBoundary :
+    nonSingletonExactModel.RecordsExactCoverBoundary := by
+  simp [nonSingletonExactModel, nonSingletonCover,
+    FiniteExactSFTModel.RecordsExactCoverBoundary,
+    UniformFiniteFieldCover.RecordsCoverage,
+    UniformFiniteFieldCover.RecordsFiniteBoundary]
+
+theorem nonSingletonExactModel_recordsFiniteModelBoundary :
+    nonSingletonExactModel.RecordsFiniteModelBoundary := by
+  simp [nonSingletonExactModel, FiniteExactSFTModel.RecordsFiniteModelBoundary]
+
+theorem nonSingletonExactModel_recordsObservationBoundary :
+    nonSingletonExactModel.RecordsObservationBoundary := by
+  simp [nonSingletonExactModel, nonSingletonObservationBoundary,
+    FiniteExactSFTModel.RecordsObservationBoundary,
+    ObservationBoundary.RecordsTheoremBoundary,
+    ObservationBoundary.RecordsNonConclusions]
+
+theorem nonSingletonExactModel_recordsGovernanceBoundary :
+    nonSingletonExactModel.RecordsGovernanceBasisBoundary := by
+  simp [nonSingletonExactModel,
+    FiniteExactSFTModel.RecordsGovernanceBasisBoundary]
+
+theorem nonSingletonExactModel_recordsNonConclusions :
+    nonSingletonExactModel.RecordsNonConclusions := by
+  simp [nonSingletonExactModel, nonSingletonCover, nonSingletonFiniteModel,
+    nonSingletonObservationBoundary,
+    FiniteExactSFTModel.RecordsNonConclusions,
+    FiniteExactSFTModel.RecordsFiniteModelBoundary,
+    FiniteExactSFTModel.RecordsExtractorEmpiricalBoundary,
+    UniformFiniteFieldCover.RecordsNonConclusions,
+    ObservationBoundary.RecordsNonConclusions]
+
+def nonSingletonAATSupportedBoundary :
+    AATSupportedSFTBoundary nonSingletonExactModel false 2 :=
+  AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel
+    (exactModel := nonSingletonExactModel) (source := false) (horizon := 2)
+    canonicalSelectedSlice canonicalAATStatus canonicalForecastStatus
+    canonicalInterfaceBoundary True True
+    nonSingletonExactModel_recordsFiniteModelBoundary
+    nonSingletonExactModel_recordsExactCoverBoundary
+    nonSingletonExactModel_recordsObservationBoundary
+    trivial trivial trivial trivial True True True True
+
+def nonSingletonAATSupportedFundamentalModularityPackage :
+    AATSupportedFundamentalModularityPackage nonSingletonExactModel false 2 :=
+  AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses
+    (exactModel := nonSingletonExactModel) (source := false) (horizon := 2)
+    nonSingletonAATSupportedBoundary
+    canonicalFundamentalModularityHypotheses
+    nonSingletonExactModel_recordsGovernanceBoundary
+    trivial trivial trivial trivial trivial trivial trivial trivial
+    nonSingletonExactModel_recordsNonConclusions trivial
+
+theorem nonSingletonAATSupported_fundamental_modularity :
+    nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.hypotheses.descent.modularityAsDescent ∧
+      nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.hypotheses.obstruction.technicalDebtAsObstruction ∧
+      nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.hypotheses.review.minimalDecisionPreservingEnvelope ∧
+      nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.hypotheses.governance.governanceAsObstructionCutting ∧
+      nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.hypotheses.calibration.boundaryExplicitFixedPoint ∧
+      nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.hypotheses.agentic.agenticConfluence ∧
+      (nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.hypotheses.governed.governedBoundary ∨
+        nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.hypotheses.failure.explainsBrokenBoundary) :=
+  nonSingletonAATSupportedFundamentalModularityPackage.finiteSelected_fundamental_modularity
+
+theorem nonSingletonAATSupported_final_typed_conclusion :
+    nonSingletonAATSupportedFundamentalModularityPackage.AATSupportedFinalTypedConclusion :=
+  nonSingletonAATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure
+
+theorem nonSingletonAATSupported_preserves_nonConclusions :
+    nonSingletonAATSupportedFundamentalModularityPackage.boundary.RecordsNonConclusions ∧
+      nonSingletonAATSupportedFundamentalModularityPackage.finalPackage.RecordsNonConclusions :=
+  nonSingletonAATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim
+
 end Examples
 end SFTAATFundamentalModularity
 end Formal.Arch

@@ -2671,10 +2671,20 @@ Issue [#1066](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 [#1069](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1069)
 では、ArchMap / ArchSig artifact boundary を theorem precondition / boundary evidence として
 `AATSupportedSFTBoundary` へ接続する helper と selected finite example を追加した。
+Issue [#1072](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1072) と子
+Issue [#1073](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1073),
+[#1074](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1074),
+[#1076](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1076),
+[#1077](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1077),
+[#1075](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1075)
+では、explicit assumption ledger、final failure taxonomy accessors、non-singleton selected
+finite example、lifecycle sidecar、evolutionary conclusion-preservation sidecar を追加した。
 
 Non-conclusions: AAT-supported package は assumption-free Grand Theorem、all software
 systems / all covers / all runtime schedules、empirical calibration correctness、
-operational governance effectiveness、global AI safety、extractor completeness を結論しない。
+operational governance effectiveness、runtime failure prediction、empirical incident risk、
+arbitrary refactoring correctness、runtime behavior equivalence、global AI safety、
+extractor completeness を結論しない。
 
 | Name | Kind | Description | Status |
 | --- | --- | --- | --- |
@@ -2728,15 +2738,27 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure_preserves_nonConclusions` | `theorem` | refined typed failure が non-conclusions を保存する。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage` | `structure` | AAT-supported boundary と `FiniteSelectedFundamentalModularityTheorem` を束ねる final package。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses` | `def` | AAT-supported boundary と explicit final hypotheses から AAT-supported final package を構成する。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ExplicitAssumptionLedger` | `structure` | selected finite boundary、selected source / horizon、AAT slice boundaries、theorem/model boundaries、final component hypotheses、final typed conclusion、non-conclusion boundary を束ねる Grand Theorem assumption ledger。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.explicitAssumptionLedger` | `def` | package と selected source / horizon evidence から explicit assumption ledger を構成する。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.explicitAssumptionLedger_supports_final_typed_conclusion` | `theorem` | ledger から final component hypotheses と final typed conclusion の対応を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.explicitAssumptionLedger_supports_nonConclusion_boundary` | `theorem` | ledger から selected/AAT/theorem/model boundaries と non-conclusion preservation の対応を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.finiteSelected_fundamental_modularity` | `theorem` | AAT-supported package から finite selected final assembly conclusion を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_typed_boundary_failure` | `theorem` | governed-or-typed-boundary-failure conclusion を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.AATSupportedFinalTypedConclusion` | `def` | governed / existing finite typed failure / AAT-SFT boundary failure の三分岐 final typed conclusion。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.finite_failure_enters_final_typed_conclusion` | `theorem` | existing finite SFT typed failure が三分岐 final typed conclusion の finite failure branch に入ることを示す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.final_typed_conclusion_records_finite_or_aat_failure_taxonomy` | `theorem` | final typed conclusion が governed / finite SFT typed failure / AAT-SFT boundary failure の taxonomy を保持することを読む accessor。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure` | `theorem` | AAT-supported package から governed または existing finite typed failure の branch を三分岐 conclusion として取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion` | `theorem` | 明示された AAT/SFT boundary failure witness が三分岐 final typed conclusion の AAT/SFT branch に入ることを示す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_kind_preserved_in_final_typed_conclusion` | `theorem` | final typed conclusion に入る AAT/SFT boundary failure branch が failure kind を保持することを取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_nonConclusions_preserved_in_final_typed_conclusion` | `theorem` | final typed conclusion に入る AAT/SFT boundary failure branch が non-conclusions を保持することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.final_failure_taxonomy_preserves_nonConclusions` | `theorem` | finite/AAT failure taxonomy reading と boundary/final non-conclusion preservation を同時に保持する。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent` | `theorem` | modularity-as-ForecastCone-descent conclusion を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim` | `theorem` | AAT-supported package が non-conclusions を保持し、無条件 theorem / empirical / operational / AI-safety claim へ昇格しない boundary theorem。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.LifecycleTypedFailureSidecar` | `structure` | lifecycle bifurcation を final typed conclusion の sidecar として読む record。runtime / empirical claim には昇格しない。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.lifecycleTypedFailureSidecar_of_threshold` | `def` | lifecycle threshold 以上の evidence から lifecycle sidecar を構成し、pressure regime と non-conclusions を保持する。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.AllowedGrandTheoremTransformation` | `structure` | AAT-supported package 間の allowed transformation が final typed conclusion と non-conclusion boundary を保存することを明示前提として束ねる。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.EvolutionaryConclusionPreservation` | `structure` | evolutionary invariance package と allowed transformation の下で、target package の final conclusion / non-conclusion preservation を読む sidecar。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.evolutionaryConclusionPreservation_of_allowedTransformation` | `def` | ForecastCone equivalence と allowed transformation から evolutionary conclusion-preservation sidecar を構成する。 | `defined only` |
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupportedBoundary` | `def` | singleton finite exact model、selected source、horizon 1、AAT selected slice から構成した canonical AAT-supported boundary。 | `defined only` |
 | `SFTAATFundamentalModularity.Examples.artifactSoftwareFieldEstimate` | `def` | ArchSig-like selected report example が保持する singleton `SoftwareFieldEstimate`。 | `defined only` |
 | `SFTAATFundamentalModularity.Examples.artifactArchSigReport` | `def` | selected estimate と report / theorem / forecast / non-conclusion boundary を持つ small ArchSig-like report example。 | `defined only` |
@@ -2762,6 +2784,13 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.Examples.canonicalAATSupported_preserves_nonConclusions` | `theorem` | canonical package が boundary / final package non-conclusions を保存することを取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_final_typed_conclusion` | `theorem` | artifact-boundary package から AAT-supported final typed conclusion を取り出す。 | `proved example accessor` |
 | `SFTAATFundamentalModularity.Examples.canonicalArtifactSupported_preserves_nonConclusions` | `theorem` | artifact-boundary package が boundary / final package non-conclusions を保存することを取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.nonSingletonCover_has_two_indices` | `theorem` | non-singleton selected finite example の cover index carrier が長さ 2 であることを確認する。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.nonSingletonExactModel` | `def` | `Bool` carriers 上の non-singleton selected finite exact model。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.nonSingletonExactModel_has_two_global_points` | `theorem` | non-singleton selected finite exact model の selected global carrier が長さ 2 であることを確認する。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.nonSingletonAATSupportedFundamentalModularityPackage` | `def` | non-singleton selected finite exact model 上で AAT-supported package を end-to-end instantiate する example。 | `defined only` |
+| `SFTAATFundamentalModularity.Examples.nonSingletonAATSupported_fundamental_modularity` | `theorem` | non-singleton package から finite selected final assembly conclusion を取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.nonSingletonAATSupported_final_typed_conclusion` | `theorem` | non-singleton package から AAT-supported final typed conclusion を取り出す。 | `proved example accessor` |
+| `SFTAATFundamentalModularity.Examples.nonSingletonAATSupported_preserves_nonConclusions` | `theorem` | non-singleton package が boundary / final package non-conclusions を保存することを取り出す。 | `proved example accessor` |
 
 ## SFT Theorem Package Entrypoint
 
