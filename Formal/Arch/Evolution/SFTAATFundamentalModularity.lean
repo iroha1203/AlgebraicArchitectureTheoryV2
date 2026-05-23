@@ -201,6 +201,36 @@ def toTypedComputationBoundaryFailure
   evidenceBoundary := failure.evidenceBoundary
   nonConclusions := failure.nonConclusions
 
+/--
+Typed SFT failure together with the AAT/SFT-specific boundary kind that produced
+it.
+
+`TypedComputationBoundaryFailure` uses the coarser final-assembly failure
+vocabulary.  This wrapper keeps the finer AAT/SFT boundary classification
+available after the typed conversion.
+-/
+structure AATTypedComputationBoundaryFailure where
+  sourceFailure : AATSFTBoundaryFailure
+  typedFailure : TypedComputationBoundaryFailure
+  recordsKind : AATSFTBoundaryFailureKind
+  recordsKind_eq_source : recordsKind = sourceFailure.kind
+  typedFailure_eq_source : typedFailure = sourceFailure.toTypedComputationBoundaryFailure
+  explains_preserved :
+    typedFailure.explainsBrokenBoundary = sourceFailure.explainsAATBoundary
+  nonConclusions_preserved :
+    typedFailure.nonConclusions = sourceFailure.nonConclusions
+
+def toAATTypedComputationBoundaryFailure
+    (failure : AATSFTBoundaryFailure) :
+    AATTypedComputationBoundaryFailure where
+  sourceFailure := failure
+  typedFailure := failure.toTypedComputationBoundaryFailure
+  recordsKind := failure.kind
+  recordsKind_eq_source := rfl
+  typedFailure_eq_source := rfl
+  explains_preserved := rfl
+  nonConclusions_preserved := rfl
+
 theorem toTypedComputationBoundaryFailure_explains
     (failure : AATSFTBoundaryFailure) :
     failure.toTypedComputationBoundaryFailure.explainsBrokenBoundary =
@@ -210,6 +240,29 @@ theorem toTypedComputationBoundaryFailure_explains
 theorem toTypedComputationBoundaryFailure_preserves_nonConclusions
     (failure : AATSFTBoundaryFailure) :
     failure.toTypedComputationBoundaryFailure.nonConclusions =
+      failure.nonConclusions :=
+  rfl
+
+theorem toAATTypedComputationBoundaryFailure_records_kind
+    (failure : AATSFTBoundaryFailure) :
+    failure.toAATTypedComputationBoundaryFailure.recordsKind = failure.kind :=
+  rfl
+
+theorem toAATTypedComputationBoundaryFailure_preserves_typed_failure
+    (failure : AATSFTBoundaryFailure) :
+    failure.toAATTypedComputationBoundaryFailure.typedFailure =
+      failure.toTypedComputationBoundaryFailure :=
+  rfl
+
+theorem toAATTypedComputationBoundaryFailure_preserves_explanation
+    (failure : AATSFTBoundaryFailure) :
+    failure.toAATTypedComputationBoundaryFailure.typedFailure.explainsBrokenBoundary =
+      failure.explainsAATBoundary :=
+  rfl
+
+theorem toAATTypedComputationBoundaryFailure_preserves_nonConclusions
+    (failure : AATSFTBoundaryFailure) :
+    failure.toAATTypedComputationBoundaryFailure.typedFailure.nonConclusions =
       failure.nonConclusions :=
   rfl
 
@@ -316,6 +369,56 @@ theorem does_not_promote_to_unconditional_claim
     package.boundary.RecordsNonConclusions ∧
       package.finalPackage.RecordsNonConclusions :=
   ⟨package.recordsNonConclusions, package.recordsFinalNonConclusions⟩
+
+/--
+Final typed conclusion for the AAT-supported package.
+
+The first two branches are the existing finite selected final-assembly
+conclusion.  The third branch exposes an AAT/SFT boundary failure while keeping
+the finer AAT/SFT boundary kind available through
+`AATTypedComputationBoundaryFailure.recordsKind`.
+-/
+def AATSupportedFinalTypedConclusion
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon) :
+    Prop :=
+  package.finalPackage.hypotheses.governed.governedBoundary ∨
+    package.finalPackage.hypotheses.failure.explainsBrokenBoundary ∨
+      ∃ failure : AATSFTBoundaryFailure.AATTypedComputationBoundaryFailure,
+        failure.typedFailure.explainsBrokenBoundary
+
+theorem governed_or_finite_failure_or_aat_boundary_failure
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon) :
+    package.AATSupportedFinalTypedConclusion :=
+  match package.governed_or_typed_boundary_failure with
+  | Or.inl hGoverned => Or.inl hGoverned
+  | Or.inr hFiniteFailure => Or.inr (Or.inl hFiniteFailure)
+
+theorem aat_boundary_failure_enters_final_typed_conclusion
+    (package :
+      AATSupportedFundamentalModularityPackage exactModel source horizon)
+    (failure : AATSFTBoundaryFailure)
+    (hFailure : failure.explainsAATBoundary) :
+    package.AATSupportedFinalTypedConclusion :=
+  Or.inr (Or.inr
+    ⟨failure.toAATTypedComputationBoundaryFailure,
+      by
+        simpa
+          [AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure,
+            AATSFTBoundaryFailure.toTypedComputationBoundaryFailure]
+          using hFailure⟩)
+
+theorem aat_boundary_failure_kind_preserved_in_final_typed_conclusion
+    (failure : AATSFTBoundaryFailure) :
+    failure.toAATTypedComputationBoundaryFailure.recordsKind = failure.kind :=
+  failure.toAATTypedComputationBoundaryFailure_records_kind
+
+theorem aat_boundary_failure_nonConclusions_preserved_in_final_typed_conclusion
+    (failure : AATSFTBoundaryFailure) :
+    failure.toAATTypedComputationBoundaryFailure.typedFailure.nonConclusions =
+      failure.nonConclusions :=
+  failure.toAATTypedComputationBoundaryFailure_preserves_nonConclusions
 
 end AATSupportedFundamentalModularityPackage
 

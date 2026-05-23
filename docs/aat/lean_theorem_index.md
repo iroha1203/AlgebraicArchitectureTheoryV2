@@ -2634,11 +2634,13 @@ File: `Formal/Arch/Evolution/SFTAATFundamentalModularity.lean`
 
 Issue [#1046](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1046) と子 Issue
 [#1047](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1047)-
-[#1051](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1051) では、
+[#1051](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1051)、および follow-up
+Issue [#1054](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1054) では、
 AAT の selected architecture slice、AAT theorem status、projection / observation /
 reconstruction / missing-evidence boundary、finite selected SFT model、selected source /
 horizon を、既存の `FiniteSelectedFundamentalModularityTheorem` へ接続する
-AAT-supported theorem package を追加した。
+AAT-supported theorem package と、AAT/SFT boundary failure kind を final typed conclusion
+まで保存する accessor を追加した。
 
 Non-conclusions: AAT-supported package は assumption-free Grand Theorem、all software
 systems / all covers / all runtime schedules、empirical calibration correctness、
@@ -2659,12 +2661,22 @@ operational governance effectiveness、global AI safety、extractor completeness
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailureKind` | `inductive` | expression / projection / observation / reconstruction / missing evidence / theorem status / ArchSig report の AAT/SFT boundary failure vocabulary。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure` | `structure` | AAT/SFT boundary failure witness と evidence boundary / non-conclusions を束ねる。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure` | `def` | AAT/SFT boundary failure を `TypedComputationBoundaryFailure` として読む bridge。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure.AATTypedComputationBoundaryFailure` | `structure` | typed SFT failure と、その由来である AAT/SFT boundary failure kind を一緒に保持する refined wrapper。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure` | `def` | AAT/SFT boundary failure を kind-preserving refined typed failure として読む bridge。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure_explains` | `theorem` | typed failure bridge が broken-boundary witness を保存する。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure_preserves_nonConclusions` | `theorem` | typed failure bridge が non-conclusions を保存する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure_records_kind` | `theorem` | refined typed failure が AAT/SFT boundary failure kind を潰さず保持することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure_preserves_explanation` | `theorem` | refined typed failure が broken-boundary witness を保存する。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure_preserves_nonConclusions` | `theorem` | refined typed failure が non-conclusions を保存する。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage` | `structure` | AAT-supported boundary と `FiniteSelectedFundamentalModularityTheorem` を束ねる final package。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses` | `def` | AAT-supported boundary と explicit final hypotheses から AAT-supported final package を構成する。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.finiteSelected_fundamental_modularity` | `theorem` | AAT-supported package から finite selected final assembly conclusion を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_typed_boundary_failure` | `theorem` | governed-or-typed-boundary-failure conclusion を取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.AATSupportedFinalTypedConclusion` | `def` | governed / existing finite typed failure / AAT-SFT boundary failure の三分岐 final typed conclusion。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure` | `theorem` | AAT-supported package から governed または existing finite typed failure の branch を三分岐 conclusion として取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion` | `theorem` | 明示された AAT/SFT boundary failure witness が三分岐 final typed conclusion の AAT/SFT branch に入ることを示す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_kind_preserved_in_final_typed_conclusion` | `theorem` | final typed conclusion に入る AAT/SFT boundary failure branch が failure kind を保持することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_nonConclusions_preserved_in_final_typed_conclusion` | `theorem` | final typed conclusion に入る AAT/SFT boundary failure branch が non-conclusions を保持することを取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent` | `theorem` | modularity-as-ForecastCone-descent conclusion を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim` | `theorem` | AAT-supported package が non-conclusions を保持し、無条件 theorem / empirical / operational / AI-safety claim へ昇格しない boundary theorem。 | `proved accessor` |
 

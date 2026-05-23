@@ -347,10 +347,13 @@ def representativeDeclarations : Candidate -> List String
        "SFTAATFundamentalModularity.AATSupportedSFTBoundary.preserves_nonConclusions",
        "SFTAATFundamentalModularity.AATSFTBoundaryFailure",
        "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure",
+       "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.finiteSelected_fundamental_modularity",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_typed_boundary_failure",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure",
+       "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
        "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim"]
 
@@ -620,8 +623,11 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
           ["SFTAATFundamentalModularity.AATSupportedSFTBoundary",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.aat_status_as_sft_local_premise",
            "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toTypedComputationBoundaryFailure",
+           "SFTAATFundamentalModularity.AATSFTBoundaryFailure.toAATTypedComputationBoundaryFailure",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_typed_boundary_failure",
+           "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure",
+           "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.aat_boundary_failure_enters_final_typed_conclusion",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.modularity_iff_forecastConeDescent",
            "SFTAATFundamentalModularity.AATSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim"],
          reading :=
