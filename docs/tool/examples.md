@@ -134,6 +134,13 @@ fixture は次を同時に表す。
 - Semantic structure: selected semantic diagram、semantic commutation claim、nonfillability witness。
 - Boundary: measured semantic evidence、unmeasured runtime evidence、assumed policy boundary、private / unavailable context、conflict review cue。
 
+`archmap.json` の `sourceInventoryRef` は、独立 fixture
+`tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json` を指す。この source inventory
+artifact は LLM に渡した bounded review universe を再現するためのもので、included / excluded /
+unavailable / private refs、hash、known blind spots、selection boundary を保持する。`archmap`
+validation は、この artifact の欠落や `sourceUniverse` との不整合を architecture ground truth
+判定ではなく `sourceInventoryChecks` の boundary finding として報告する。
+
 `archmap` validation は、LLM-authored measured claim と formal/proved claim を混同しない。
 `air-from-archmap` projection は、semantic measured zero と semantic unmeasured、missing evidence と
 measured zero、conflict と resolved claim を混同しない。

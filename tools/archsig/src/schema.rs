@@ -13,6 +13,7 @@ pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report-v0
 pub const AIR_SCHEMA_VERSION: &str = "aat-air-v0";
 pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report-v0";
 pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-v0";
+pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory-v0";
 pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report-v0";
 pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report-v0";
 pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness-v0";
@@ -2156,6 +2157,29 @@ pub struct ArchMapSourceUniverse {
     #[serde(default)]
     pub known_blind_spots: Vec<String>,
     pub selection_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapSourceInventoryV0 {
+    pub schema_version: String,
+    pub inventory_id: String,
+    pub root: String,
+    #[serde(default)]
+    pub included_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub excluded_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub unavailable_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub private_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub hashes: Vec<ArchMapArtifactRef>,
+    #[serde(default)]
+    pub known_blind_spots: Vec<String>,
+    pub selection_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]

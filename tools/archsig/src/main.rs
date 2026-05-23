@@ -1,14 +1,15 @@
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
     AiProposalGovernanceV0, AiProposalGovernanceValidationReportV0, AirDocumentInput,
-    AirDocumentV0, AirValidationReport, ArchMapDocumentV0, ArchMapValidationReportV0,
-    ArchitectureDynamicsMetricsReportV0, ArchitectureDynamicsMetricsReportValidationReportV0,
-    ArchitectureFieldSnapshotV0, ArchitectureFieldSnapshotValidationReportV0, ArtifactDescriptorV0,
+    AirDocumentV0, AirValidationReport, ArchMapDocumentV0, ArchMapSourceInventoryInput,
+    ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchitectureDynamicsMetricsReportV0,
+    ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
+    ArchitectureFieldSnapshotValidationReportV0, ArtifactDescriptorV0,
     ArtifactDescriptorValidationReportV0, CalibrationReviewRecordV0,
     ComponentUniverseValidationReport, ConsequenceEnvelopeReportV0,
     ConsequenceEnvelopeValidationReportV0, CustomRulePluginRegistryV0,
@@ -1303,10 +1304,38 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         Some(Command::Archmap { input, sig0, out }) => {
             let document: ArchMapDocumentV0 = read_json(&input)?;
             let sig0_document: Option<Sig0Document> = sig0.as_ref().map(read_json).transpose()?;
+            let source_inventory_path = document
+                .source_inventory_ref
+                .as_ref()
+                .and_then(|source_inventory_ref| source_inventory_ref.path.as_deref());
+            let mut source_inventory_document: Option<ArchMapSourceInventoryV0> = None;
+            let mut source_inventory_error: Option<String> = None;
+            if let Some(path) = source_inventory_path {
+                match resolve_archmap_sidecar_path(&input, path) {
+                    Some(resolved_path) => match read_json(&resolved_path) {
+                        Ok(source_inventory) => source_inventory_document = Some(source_inventory),
+                        Err(error) => {
+                            source_inventory_error = Some(format!(
+                                "source inventory artifact could not be read: {error}"
+                            ));
+                        }
+                    },
+                    None => {
+                        source_inventory_error =
+                            Some("source inventory artifact path does not exist".to_string());
+                    }
+                }
+            }
+            let source_inventory = source_inventory_path.map(|path| ArchMapSourceInventoryInput {
+                path,
+                document: source_inventory_document.as_ref(),
+                read_error: source_inventory_error.clone(),
+            });
             let report: ArchMapValidationReportV0 = validate_archmap_report(
                 &document,
                 &input.display().to_string(),
                 sig0_document.as_ref(),
+                source_inventory,
             );
             let failed = report.summary.result == "fail";
             write_json(out, &report)?;
@@ -2237,6 +2266,33 @@ fn write_text(out: Option<PathBuf>, value: &str) -> Result<(), Box<dyn Error>> {
 
 fn read_json<T: serde::de::DeserializeOwned>(path: &PathBuf) -> Result<T, Box<dyn Error>> {
     Ok(serde_json::from_reader(File::open(path)?)?)
+}
+
+fn resolve_archmap_sidecar_path(archmap_path: &Path, sidecar_path: &str) -> Option<PathBuf> {
+    let raw_path = PathBuf::from(sidecar_path);
+    if raw_path.is_absolute() {
+        return raw_path.exists().then_some(raw_path);
+    }
+
+    if let Ok(current_dir) = std::env::current_dir() {
+        let candidate = current_dir.join(&raw_path);
+        if candidate.exists() {
+            return Some(candidate);
+        }
+    }
+
+    let archmap_parent = archmap_path.parent()?;
+    let local_candidate = archmap_parent.join(&raw_path);
+    if local_candidate.exists() {
+        return Some(local_candidate);
+    }
+    for ancestor in archmap_parent.ancestors() {
+        let candidate = ancestor.join(&raw_path);
+        if candidate.exists() {
+            return Some(candidate);
+        }
+    }
+    None
 }
 
 fn read_risk_dispositions(paths: &[PathBuf]) -> Result<Vec<RiskDispositionV0>, Box<dyn Error>> {

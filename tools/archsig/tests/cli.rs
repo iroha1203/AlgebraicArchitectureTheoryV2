@@ -74,6 +74,20 @@ fn cli_validates_archmap_fixture_and_guardrails() {
     let json = read_json(&report);
     assert_eq!(json["schemaVersion"], "archmap-validation-report-v0");
     assert_eq!(json["summary"]["result"], "warn");
+    let source_inventory_checks = json["sourceInventoryChecks"]
+        .as_array()
+        .expect("source inventory checks are an array");
+    assert!(
+        source_inventory_checks.iter().any(|check| {
+            check["id"] == "archmap-source-inventory-artifact"
+                && check["result"] == "pass"
+                && check["reason"]
+                    .as_str()
+                    .expect("source inventory pass has a reason")
+                    .contains("included, excluded, unavailable, private")
+        }),
+        "source inventory artifact boundary should be present and consistent"
+    );
     assert!(
         json["conflictChecks"][0]["examples"]
             .as_array()
@@ -120,6 +134,109 @@ fn cli_validates_archmap_fixture_and_guardrails() {
     assert_eq!(
         invalid_report_json["formalPromotionGuardrailChecks"][0]["id"],
         "archmap-formal-promotion-guardrail"
+    );
+
+    let missing_inventory = out_dir.join("archmap-missing-source-inventory.json");
+    let missing_inventory_report = out_dir.join("archmap-missing-source-inventory-report.json");
+    let mut missing_inventory_json = read_json(&input);
+    missing_inventory_json["sourceInventoryRef"]["path"] =
+        serde_json::json!("tools/archsig/tests/fixtures/minimal/missing_source_inventory.json");
+    fs::write(
+        &missing_inventory,
+        serde_json::to_string_pretty(&missing_inventory_json)
+            .expect("missing inventory ArchMap serializes"),
+    )
+    .expect("missing inventory ArchMap is written");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        missing_inventory
+            .to_str()
+            .expect("missing inventory path is utf-8"),
+        "--out",
+        missing_inventory_report
+            .to_str()
+            .expect("output path is utf-8"),
+    ]);
+    let missing_inventory_report_json = read_json(&missing_inventory_report);
+    assert_eq!(missing_inventory_report_json["summary"]["result"], "warn");
+    assert!(
+        missing_inventory_report_json["sourceInventoryChecks"]
+            .as_array()
+            .expect("source inventory checks are an array")
+            .iter()
+            .any(|check| {
+                check["id"] == "archmap-source-inventory-artifact"
+                    && check["result"] == "warn"
+                    && check["examples"]
+                        .as_array()
+                        .expect("warning examples are an array")
+                        .iter()
+                        .any(|example| {
+                            example["evidence"] == "source inventory artifact path does not exist"
+                        })
+            })
+    );
+
+    let mismatched_inventory = out_dir.join("archmap-source-inventory-mismatched.json");
+    let mismatched_archmap = out_dir.join("archmap-mismatched-source-inventory.json");
+    let mismatched_inventory_report =
+        out_dir.join("archmap-mismatched-source-inventory-report.json");
+    let mut inventory_json = read_json(&fixture_root().join("archmap_source_inventory.json"));
+    inventory_json["includedRefs"] = serde_json::json!([]);
+    fs::write(
+        &mismatched_inventory,
+        serde_json::to_string_pretty(&inventory_json).expect("mismatched inventory serializes"),
+    )
+    .expect("mismatched inventory is written");
+    let mut mismatched_archmap_json = read_json(&input);
+    mismatched_archmap_json["sourceInventoryRef"]["path"] = serde_json::json!(
+        mismatched_inventory
+            .to_str()
+            .expect("mismatched inventory path is utf-8")
+    );
+    fs::write(
+        &mismatched_archmap,
+        serde_json::to_string_pretty(&mismatched_archmap_json)
+            .expect("mismatched ArchMap serializes"),
+    )
+    .expect("mismatched ArchMap is written");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        mismatched_archmap
+            .to_str()
+            .expect("mismatched ArchMap path is utf-8"),
+        "--out",
+        mismatched_inventory_report
+            .to_str()
+            .expect("output path is utf-8"),
+    ]);
+    let mismatched_inventory_report_json = read_json(&mismatched_inventory_report);
+    assert_eq!(
+        mismatched_inventory_report_json["summary"]["result"],
+        "warn"
+    );
+    assert!(
+        mismatched_inventory_report_json["sourceInventoryChecks"]
+            .as_array()
+            .expect("source inventory checks are an array")
+            .iter()
+            .any(|check| {
+                check["id"] == "archmap-source-inventory-artifact"
+                    && check["result"] == "warn"
+                    && check["examples"]
+                        .as_array()
+                        .expect("warning examples are an array")
+                        .iter()
+                        .any(|example| {
+                            example["source"] == "sourceUniverse.includedRefs"
+                                && example["evidence"]
+                                    == "embedded ArchMap sourceUniverse ref is absent from source inventory artifact"
+                        })
+            })
     );
 }
 
@@ -173,6 +290,28 @@ fn cli_projects_archmap_to_air_and_existing_reports() {
 
     let air_json = read_json(&air);
     assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    assert!(
+        air_json["artifacts"]
+            .as_array()
+            .expect("AIR artifacts are an array")
+            .iter()
+            .any(|artifact| {
+                artifact["artifactId"] == "source-inventory-fixture"
+                    && artifact["kind"] == "source_inventory"
+                    && artifact["path"]
+                        == "tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json"
+            })
+    );
+    assert!(
+        air_json["evidence"]
+            .as_array()
+            .expect("AIR evidence is an array")
+            .iter()
+            .any(|evidence| {
+                evidence["evidenceId"] == "evidence-archmap-source-inventory"
+                    && evidence["artifactRef"] == "source-inventory-fixture"
+            })
+    );
     assert!(
         air_json["semanticDiagrams"]
             .as_array()

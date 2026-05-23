@@ -117,6 +117,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
 
 `archmap` は `archmap-validation-report-v0` を出す。source inventory / source refs、
 claim boundary、semantic coverage、conflict category、formal promotion guardrail を検査する。
+canonical fixture では `sourceInventoryRef.path` が
+`tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json` を指し、validation は
+その独立 artifact の存在、included / excluded / unavailable / private boundary、hash、
+selection boundary が `archmap.json` 内の `sourceUniverse` と整合するかを
+`sourceInventoryChecks` に記録する。
 warning は conflict や dangling boundary を review cue として残すために使い、semantic correctness や
 architecture lawfulness は結論しない。
 
