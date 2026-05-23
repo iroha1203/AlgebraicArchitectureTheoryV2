@@ -840,6 +840,28 @@ theorem reviewComponent_records_minimalEnvelope
     SFTTheoremRoadmap.MinimalConsequenceEnvelopePackage.minimal_consequenceEnvelope_factors
       package otherProjection hSound
 
+/- The minimal-envelope helper preserves review boundary data explicitly. -/
+theorem reviewComponent_records_minimalEnvelope_boundary
+    {ConePath : Type u} {MinimalEnvelope : Type v}
+    (package :
+      SFTTheoremRoadmap.MinimalConsequenceEnvelopePackage.{u, v, w}
+        ConePath MinimalEnvelope)
+    (hBoundary : package.envelopeBoundary) :
+    (reviewComponent_of_minimalEnvelopePackage
+      package).reviewBoundary :=
+  hBoundary
+
+/- The minimal-envelope helper preserves review non-conclusions explicitly. -/
+theorem reviewComponent_records_minimalEnvelope_nonConclusions
+    {ConePath : Type u} {MinimalEnvelope : Type v}
+    (package :
+      SFTTheoremRoadmap.MinimalConsequenceEnvelopePackage.{u, v, w}
+        ConePath MinimalEnvelope)
+    (hNonConclusions : package.nonConclusions) :
+    (reviewComponent_of_minimalEnvelopePackage
+      package).nonConclusions :=
+  hNonConclusions
+
 /--
 Finite obstruction-aware review envelope bridge.
 
@@ -942,6 +964,40 @@ theorem reviewComponent_records_obstructionAware_minimalEnvelope
       bridge).minimalDecisionPreservingEnvelope :=
   bridge.obstructionDecision_factors
 
+/- The obstruction-aware review helper preserves its bridge boundary data. -/
+theorem reviewComponent_records_obstructionAware_boundary
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {source : Global} {horizon : Nat}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {ConePath : Type z} {MinimalEnvelope : Type u} {Decision : Type v}
+    (bridge :
+      FiniteObstructionAwareReviewEnvelopeBridge
+        model source horizon ConePath MinimalEnvelope Decision)
+    (hBoundary :
+      bridge.bridgeBoundary ∧ bridge.minimalPackage.envelopeBoundary ∧
+        bridge.reviewProjection.soundDecisionBoundary) :
+    (reviewComponent_of_obstructionAwareEnvelopeBridge
+      bridge).reviewBoundary :=
+  hBoundary
+
+/- The obstruction-aware review helper preserves review non-conclusions. -/
+theorem reviewComponent_records_obstructionAware_nonConclusions
+    {Global : Type u} {Index : Type v} {Local : Type w}
+    {cover : UniformFiniteFieldCover Global Index Local}
+    {OperationG : Type x} {OperationL : Type y}
+    {source : Global} {horizon : Nat}
+    {model : FiniteSFTModel cover OperationG OperationL}
+    {ConePath : Type z} {MinimalEnvelope : Type u} {Decision : Type v}
+    (bridge :
+      FiniteObstructionAwareReviewEnvelopeBridge
+        model source horizon ConePath MinimalEnvelope Decision)
+    (hNonConclusions : bridge.RecordsNonConclusions) :
+    (reviewComponent_of_obstructionAwareEnvelopeBridge
+      bridge).nonConclusions :=
+  hNonConclusions
+
 /-- Read closed-loop calibration package data as the final calibration component. -/
 def calibrationComponent_of_closedLoopPackage
     {Estimate : Type u} {update : Estimate -> Estimate}
@@ -976,6 +1032,37 @@ theorem calibrationComponent_records_fixedPointOrBoundary
       hBoundary hNonConclusion hError initial).fixedPointOrBoundaryExpansion :=
   SFTTheoremRoadmap.ClosedLoopCalibrationPackage.closedLoop_calibration_fixedPoint_or_boundary
     package hMonotone hEvidence hBoundary hNonConclusion hError initial
+
+/- The closed-loop calibration helper exposes the boundary-explicit premise. -/
+theorem calibrationComponent_records_boundaryExplicit
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (package :
+      SFTTheoremRoadmap.ClosedLoopCalibrationPackage Estimate update)
+    (hMonotone : package.monotone)
+    (hEvidence : package.evidencePreserving)
+    (hBoundary : package.boundaryExplicit)
+    (hNonConclusion : package.nonConclusionPreserving)
+    (hError : package.forecastErrorRefining)
+    (initial : Estimate) :
+    (calibrationComponent_of_closedLoopPackage package hMonotone hEvidence
+      hBoundary hNonConclusion hError initial).boundaryExplicitFixedPoint :=
+  hBoundary
+
+/- The closed-loop calibration helper preserves calibration non-conclusions. -/
+theorem calibrationComponent_records_closedLoop_nonConclusions
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (package :
+      SFTTheoremRoadmap.ClosedLoopCalibrationPackage Estimate update)
+    (hMonotone : package.monotone)
+    (hEvidence : package.evidencePreserving)
+    (hBoundary : package.boundaryExplicit)
+    (hNonConclusion : package.nonConclusionPreserving)
+    (hError : package.forecastErrorRefining)
+    (initial : Estimate)
+    (hNonConclusions : package.nonConclusions) :
+    (calibrationComponent_of_closedLoopPackage package hMonotone hEvidence
+      hBoundary hNonConclusion hError initial).nonConclusions :=
+  hNonConclusions
 
 /--
 Read a concrete finite-height closed-loop calibration bridge as the final
@@ -1021,6 +1108,30 @@ theorem calibrationComponent_records_finiteHeight_boundary
     (calibrationComponent_of_finiteHeightClosedLoopBridge
       bridge initial).calibrationBoundary :=
   hBoundary
+
+/- The finite-height calibration helper exposes the boundary-explicit premise. -/
+theorem calibrationComponent_records_finiteHeight_boundaryExplicit
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge :
+      SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge
+        Estimate update)
+    (initial : Estimate)
+    (hBoundary : bridge.boundaryExplicit) :
+    (calibrationComponent_of_finiteHeightClosedLoopBridge
+      bridge initial).boundaryExplicitFixedPoint :=
+  hBoundary
+
+/- The finite-height calibration helper preserves calibration non-conclusions. -/
+theorem calibrationComponent_records_finiteHeight_nonConclusions
+    {Estimate : Type u} {update : Estimate -> Estimate}
+    (bridge :
+      SFTTheoremRoadmap.FiniteHeightClosedLoopCalibrationBridge
+        Estimate update)
+    (initial : Estimate)
+    (hNonConclusions : bridge.RecordsNonConclusions) :
+    (calibrationComponent_of_finiteHeightClosedLoopBridge
+      bridge initial).nonConclusions :=
+  hNonConclusions
 
 /-- Read agentic confluence package data as the final agentic component. -/
 def agenticComponent_of_agenticConfluencePackage
@@ -1072,6 +1183,48 @@ theorem agenticComponent_records_confluence
       package hTermination hConfluence hDescent hInterface hPolicy).fairInterleavingsConverge :=
   agenticComponent_records_agenticConfluence
     package hTermination hConfluence hDescent hInterface hPolicy
+
+/- The agentic package helper preserves the agent boundary explicitly. -/
+theorem agenticComponent_records_agentBoundary
+    {Interleaving : Type u} {ConeQuotient : Type v}
+    (package :
+      SFTTheoremRoadmap.AgenticConfluencePackage
+        Interleaving ConeQuotient)
+    (hTermination : package.localTermination)
+    (hConfluence : package.localConfluence)
+    (hDescent : package.forecastConeDescent)
+    (hInterface : package.interfaceConstraintsPreserved)
+    (hPolicy : package.policiesCommutationInvariant)
+    (hBoundary : package.agentBoundary) :
+    (agenticComponent_of_agenticConfluencePackage
+      package hTermination hConfluence hDescent hInterface hPolicy).agentBoundary :=
+  hBoundary
+
+/- The agentic package helper preserves agentic non-conclusions explicitly. -/
+theorem agenticComponent_records_nonConclusions
+    {Interleaving : Type u} {ConeQuotient : Type v}
+    (package :
+      SFTTheoremRoadmap.AgenticConfluencePackage
+        Interleaving ConeQuotient)
+    (hTermination : package.localTermination)
+    (hConfluence : package.localConfluence)
+    (hDescent : package.forecastConeDescent)
+    (hInterface : package.interfaceConstraintsPreserved)
+    (hPolicy : package.policiesCommutationInvariant)
+    (hNonConclusions : package.nonConclusions) :
+    (agenticComponent_of_agenticConfluencePackage
+      package hTermination hConfluence hDescent hInterface hPolicy).nonConclusions :=
+  hNonConclusions
+
+/- Bridge selected agentic confluence into the governed-side availability field. -/
+theorem agenticComponent_governedAvailability
+    (agentic : FundamentalAgenticComponent)
+    (governed : ComputablyGoverned)
+    (hAvailable :
+      agentic.agenticConfluence -> governed.agenticConfluenceAvailable)
+    (hAgentic : agentic.agenticConfluence) :
+    governed.agenticConfluenceAvailable :=
+  hAvailable hAgentic
 
 /-- Read a Newman-style confluence kernel as the final agentic component. -/
 def agenticComponent_of_newmanStyleConfluenceKernel
