@@ -40,6 +40,9 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 
 ## 最短手順
 
+生成 artifact は標準では `.archsig/` 以下に置く。`.archsig/` は作業用出力ディレクトリであり、
+canonical fixture や regression test 用 artifact は `tools/archsig/tests/fixtures/` に置く。
+
 fixture で scan する。
 
 ```bash
@@ -47,15 +50,15 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- \
   --root tools/archsig/tests/fixtures/minimal \
   --policy tools/archsig/tests/fixtures/minimal/policy_measured_zero.json \
   --runtime-edges tools/archsig/tests/fixtures/minimal/runtime_edges.json \
-  --out .lake/sig0-fixture.json
+  --out .archsig/signature/sig0-fixture.json
 ```
 
 validation report を作る。
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- validate \
-  --input .lake/sig0-fixture.json \
-  --out .lake/sig0-fixture-validation.json \
+  --input .archsig/signature/sig0-fixture.json \
+  --out .archsig/signature/sig0-fixture-validation.json \
   --universe-mode local-only
 ```
 
@@ -64,7 +67,7 @@ repository root を scan する。
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- \
   --root . \
-  --out .lake/sig0.json
+  --out .archsig/signature/sig0.json
 ```
 
 Python repository を scan する場合は `--language python` を指定する。
@@ -75,7 +78,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- \
   --root path/to/repository \
   --source-root src \
   --package-root src \
-  --out .lake/python-sig0.json
+  --out .archsig/signature/python-sig0.json
 ```
 
 `--out` を省略すると JSON は stdout に出る。

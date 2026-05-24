@@ -12,34 +12,34 @@ Daily ledger を作る。
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- report-outcome-daily-ledger \
-  --outcome-linkage .lake/outcome-linkage-dataset.json \
-  --drift-ledger .lake/architecture-drift-ledger.json \
+  --outcome-linkage .archsig/operational/outcome-linkage-dataset.json \
+  --drift-ledger .archsig/operational/architecture-drift-ledger.json \
   --generated-at 2026-05-05T00:00:00Z \
   --window-start 2026-05-04T00:00:00Z \
   --window-end 2026-05-05T00:00:00Z \
-  --out .lake/report-outcome-daily-ledger.json
+  --out .archsig/operational/report-outcome-daily-ledger.json
 ```
 
 Canonical B10 artifact を出力する。
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- calibration-review-record \
-  --out .lake/calibration-review-record.json
+  --out .archsig/operational/calibration-review-record.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- team-threshold-policy \
-  --out .lake/team-threshold-policy.json
+  --out .archsig/operational/team-threshold-policy.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- ownership-boundary-monitor \
-  --out .lake/ownership-boundary-monitor.json
+  --out .archsig/operational/ownership-boundary-monitor.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- repair-adoption-record \
-  --out .lake/repair-adoption-record.json
+  --out .archsig/operational/repair-adoption-record.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- incident-correlation-monitor \
-  --out .lake/incident-correlation-monitor.json
+  --out .archsig/operational/incident-correlation-monitor.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- hypothesis-refresh-cycle \
-  --out .lake/hypothesis-refresh-cycle.json
+  --out .archsig/operational/hypothesis-refresh-cycle.json
 ```
 
 ## Artifacts
