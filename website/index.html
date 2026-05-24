@@ -29,6 +29,14 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap"
       rel="stylesheet"
     >
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
     <link rel="stylesheet" href="assets/site.css">
     <script defer src="assets/site.js"></script>
     <script type="application/ld+json">
@@ -199,9 +207,9 @@
             <h2>ArchSig</h2>
             <p>
               ArchSig is an AI-native Architecture Evidence Layer for PR
-              review. It turns code changes into reviewable architecture
-              signals and grounds each signal in bounded structural, semantic,
-              or operational evidence.
+              review. It scans code changes, compares architecture signatures,
+              maps source context, and turns architectural movement into
+              reviewer action.
             </p>
           </div>
           <div class="research-detail">
@@ -215,7 +223,6 @@
               <a href="archsig/workflows/">Workflows</a>
               <a href="archsig/reading-output/">Reading Output</a>
               <a href="archsig/examples/">Examples</a>
-              <a href="archsig/boundaries/">Boundaries</a>
               <a href="archsig/air/">AIR</a>
               <a href="archsig/archmap/">ArchMap</a>
               <a href="archsig/semantic-air/">Semantic AIR</a>

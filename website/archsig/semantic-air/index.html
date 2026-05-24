@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="How ArchMap and Semantic AIR use LLM-generated semantic observations as bounded AIR evidence rather than unbounded AI judgment.">
+    <meta name="description" content="How ArchMap and Semantic AIR use LLM-generated semantic observations as source-linked AIR evidence rather than free-form AI judgment.">
     <title>Semantic AIR</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/semantic-air/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="Semantic AIR">
-    <meta property="og:description" content="How ArchMap and Semantic AIR use LLM-generated semantic observations as bounded AIR evidence rather than unbounded AI judgment.">
+    <meta property="og:description" content="How ArchMap and Semantic AIR use LLM-generated semantic observations as source-linked AIR evidence rather than free-form AI judgment.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/semantic-air/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Semantic AIR">
-    <meta name="twitter:description" content="How ArchMap and Semantic AIR use LLM-generated semantic observations as bounded AIR evidence rather than unbounded AI judgment.">
+    <meta name="twitter:description" content="How ArchMap and Semantic AIR use LLM-generated semantic observations as source-linked AIR evidence rather than free-form AI judgment.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -23,6 +23,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
     <link rel="stylesheet" href="../../assets/site.css">
     <script defer src="../../assets/site.js"></script>
     <!-- Google tag (gtag.js) -->
@@ -60,18 +68,18 @@
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Semantic AIR</span></nav>
           <p class="eyebrow">Theory Behind ArchSig</p>
           <h1>Use LLMs as semantic observers, not judges.</h1>
-          <p class="lede">Semantic AIR lets ArchSig represent business-rule and responsibility movement after ArchMap has recorded the source universe, evidence refs, coverage, and non-conclusions.</p>
+          <p class="lede">Semantic AIR lets ArchSig represent business-rule and responsibility movement after ArchMap has recorded the source universe, evidence refs, coverage, and review follow-ups.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
             <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#role">LLM role</a></li><li><a href="#record">Semantic AIR record</a></li><li><a href="#example">Coupon example</a></li><li><a href="#confirmation">Human confirmation</a></li><li><a href="#risks">Risk controls</a></li></ol></nav>
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../semantic-air/" aria-current="page">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Evidence Model</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/" aria-current="page">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="role" class="article-section"><h2>LLM role</h2><p>An LLM can read code, PR text, and domain notes to propose semantic observations: a business rule moved, a state transition changed owner, a feature now depends on payment semantics, or a hidden assumption appeared. In ArchSig, that output first belongs in <a href="../archmap/">ArchMap</a> as a map candidate with source refs, then becomes Semantic AIR only after projection and validation preserve its evidence boundary.</p><ul class="term-list"><li><strong>semantic_observation</strong><span>What the model observed in code or text.</span></li><li><strong>semantic_hypothesis</strong><span>A proposed interpretation that needs review.</span></li><li><strong>review_signal</strong><span>A bounded signal sent to PR review.</span></li><li><strong>evidence_boundary</strong><span>What sources were inspected and what was not inspected.</span></li><li><strong>requires_human_confirmation</strong><span>Whether a human reviewer must confirm the semantic reading.</span></li></ul></section>
-<section id="record" class="article-section"><h2>Semantic AIR record</h2><p>A semantic AIR record should include observed behavior, architectural interpretation, source refs, required confirmation, evidence boundary, and the ArchMap coverage record that explains the selected source universe. It should avoid final language such as “this is wrong” unless policy and human review have made that decision explicit.</p></section>
+            <section id="role" class="article-section"><h2>LLM role</h2><p>An LLM can read code, PR text, and domain notes to propose semantic observations: a business rule moved, a state transition changed owner, a feature now depends on payment semantics, or a hidden assumption appeared. In ArchSig, that output first belongs in <a href="../archmap/">ArchMap</a> as a map candidate with source refs, then becomes Semantic AIR only after projection and validation preserve its source inventory.</p><ul class="term-list"><li><strong>semantic_observation</strong><span>What the model observed in code or text.</span></li><li><strong>semantic_hypothesis</strong><span>A proposed interpretation that needs review.</span></li><li><strong>review_signal</strong><span>A review signal sent to PR review.</span></li><li><strong>source_inventory</strong><span>What sources were inspected and what was not inspected.</span></li><li><strong>requires_human_confirmation</strong><span>Whether a human reviewer must confirm the semantic reading.</span></li></ul></section>
+<section id="record" class="article-section"><h2>Semantic AIR record</h2><p>A semantic AIR record should include observed behavior, architectural interpretation, source refs, required confirmation, source inventory, and the ArchMap coverage record that explains the selected source universe. It should avoid final language such as “this is wrong” unless policy and human review have made that decision explicit.</p></section>
 <section id="example" class="article-section"><h2>Coupon example</h2><figure class="code-panel"><figcaption>Semantic AIR example</figcaption><pre><code>AIR: CouponFeature introduces a semantic dependency on PaymentCalculation.
 
 Observed behavior:
