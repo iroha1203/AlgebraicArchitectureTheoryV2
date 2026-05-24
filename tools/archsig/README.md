@@ -31,12 +31,29 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 - supplied JSON の `archmap-v0` を validation report に変換し、AIR へ loss-aware に投影する。
 - 実証研究用 dataset、B10 operational feedback artifact、B12 SFT forecasting MVP の
   descriptor / support estimate / cone / envelope / calibration hook を JSON として出力する。
+- Codex skill として、ArchMap 作成、ArchSig 実行、artifact 診断の作業手順を AI agent に渡せる。
 
 詳細な command と artifact は次に分けている。
 
 - [Command Guide](docs/commands.md)
 - [Artifacts And Boundaries](docs/artifacts-and-boundaries.md)
 - [Operational Feedback](docs/operational-feedback.md)
+
+## Codex Skills
+
+`tools/archsig/skills/` には、ArchSig / ArchMap を Codex から扱うための skill bundle を置く。
+これらは ArchSig source repository に依存せず、built `archsig` binary と skill bundle だけで動ける
+ことを目標にしている。実行時は `archsig` が `PATH` にあるか、`ARCHSIG_BIN=/path/to/archsig`
+で明示されている前提で読む。
+
+| Skill | 用途 |
+| --- | --- |
+| [`archmap-creater`](skills/archmap-creater/SKILL.md) | repository evidence から bounded `archmap-v0` を作成し、source inventory、mapping guide、schema cheatsheet、examples に沿って validation まで進める。 |
+| [`archsig-executer`](skills/archsig-executer/SKILL.md) | `archsig` binary を使って scan、validation、ArchMap-to-AIR、ArchMap-to-SFT、ForecastCone、ConsequenceEnvelope などの artifact pipeline を実行する。 |
+| [`arch-doctor`](skills/arch-doctor/SKILL.md) | 生成済み artifact を読み、現在の architecture state、bounded evolution forecast、evidence gap、次の設計アクションを診断する。 |
+
+skill は AI native な操作面であり、tool output を Lean proof、forecast correctness、incident causality、
+global architecture truth として読まない。生成 artifact は標準では `.archsig/` 以下に置く。
 
 ## 最短手順
 
