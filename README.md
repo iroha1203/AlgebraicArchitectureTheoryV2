@@ -208,3 +208,7 @@ Open work is tracked in GitHub Issues. Issues are organized according to the
 research dependency structure with milestones and `type:*`, `area:*`,
 `priority:*`, and `status:*` labels. The README does not duplicate the issue
 list.
+
+## License
+
+This repository is licensed under the MIT License. See [LICENSE](LICENSE).
