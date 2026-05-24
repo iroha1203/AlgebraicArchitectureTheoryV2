@@ -200,3 +200,7 @@ Algebraic Architecture Theory V2
 Issue は研究の依存構造に沿って milestone と
 `type:*`, `area:*`, `priority:*`, `status:*` label で整理します。
 README には Issue 一覧を重複して持たせません。
+
+## ライセンス
+
+このリポジトリは MIT License で公開します。詳細は [LICENSE](LICENSE) を参照してください。
