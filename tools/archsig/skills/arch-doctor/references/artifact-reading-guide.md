@@ -9,13 +9,17 @@ Prefer artifacts in this order when available:
 1. `consequence-envelope-report-v0`
 2. `forecast-cone-skeleton-v0`
 3. `operation-support-estimate-v0`
-4. `archmap-validation-report-v0`
-5. `feature-extension-report-v0`
-6. `theorem-precondition-report-v0`
-7. `policy-decision-report-v0`
-8. `signature-diff-report-v0`
-9. Sig0 and Sig0 validation reports
-10. `forecast-calibration-hook-v0`
+4. `intent-archmap-alignment-validation-report-v0`
+5. `intentmap-validation-report-v0`
+6. `archmap-validation-report-v0`
+7. `pr-quality-analysis-report-v0`
+8. `feature-extension-report-v0`
+9. `theorem-precondition-report-v0`
+10. `policy-decision-report-v0`
+11. `signature-diff-report-v0`
+12. Sig0 and Sig0 validation reports
+13. `forecast-calibration-hook-v0`
+14. `intent-calibration-record-v0`
 
 Use richer downstream reports for interpretation, but trace important claims back to source refs, evidence refs, or missing evidence fields.
 
@@ -27,6 +31,8 @@ Use richer downstream reports for interpretation, but trace important claims bac
 | Sig0 validation | structural validity and local closure of Sig0-like artifacts | correctness of architecture interpretation |
 | signature diff | before/after deltas and unmeasured delta boundaries | attribution certainty or causal explanation |
 | ArchMap validation | source refs, boundary checks, semantic coverage, conflict cues, promotion guardrails | ground truth architecture or Lean proof |
+| IntentMap validation | PRD / Epic / Spec intent items, missing decisions, ambiguity, missing evidence, source refs | implementation plan completeness or forecast result |
+| AlignmentMap validation | intent-to-architecture refs, unaligned / unsupported / ambiguous boundaries | implementation impact guarantee or semantic correctness proof |
 | AIR | normalized review evidence and claims | proof discharge or full semantic model |
 | theorem-check | theorem precondition status and blocked/candidate fields | proved theorem unless a separate proof artifact says so |
 | feature report | review-oriented summary of split status, witnesses, gaps, and checks | automatic merge decision |
@@ -35,6 +41,8 @@ Use richer downstream reports for interpretation, but trace important claims bac
 | forecast cone skeleton | bounded path class candidates and forecast boundary | point prediction, probability, global safety |
 | consequence envelope | likely consequence surfaces and review recommendations | causal proof or incident prediction |
 | calibration hook | link between forecast items and future/observed artifacts | causal calibration by itself |
+| intent calibration record | link between IntentMap items, forecast items, observed implementation refs, and missing decision status | forecast correctness or causality proof |
+| PR quality analysis | ArchMap-side review cues and missing evidence | merge approval or architecture lawfulness |
 
 ## Fields To Inspect First
 
@@ -57,6 +65,10 @@ Look for these fields or similarly named sections:
 - `leanPreservationPreconditionChecklist`
 - `candidateOperationFamilies`
 - `unknownRemainder`
+- `missingDecisions`
+- `ambiguousIntents`
+- `unalignedIntents`
+- `unsupportedIntents`
 - `forecastBoundary`
 - `pathClassCandidates`
 - `recommendations`

@@ -157,6 +157,130 @@
       }
     },
     {
+      "artifactId": "intentmap",
+      "artifactName": "IntentMap supplied JSON artifact",
+      "schemaVersionName": "intentmap-v0",
+      "artifactRole": "planning-intent-input",
+      "ownerPhase": "PRD v3",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v3.md"
+      ],
+      "downstreamIssues": [
+        "#1149",
+        "#1150",
+        "#1156"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map intent source refs, LLM provenance, intent items, missing decisions, ambiguous intents, missing evidence, and non-conclusions by stable camelCase names.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New intent kinds must preserve source refs, claim classification, confidence boundary, missing decisions, and non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "IntentMap is LLM-authored planning evidence, not implementation truth, forecast correctness, or a complete plan."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "intent-archmap-alignment",
+      "artifactName": "IntentMap to ArchMap AlignmentMap",
+      "schemaVersionName": "intent-archmap-alignment-v0",
+      "artifactRole": "planning-alignment-input",
+      "ownerPhase": "PRD v3",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v3.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1151",
+        "#1152",
+        "#1154",
+        "#1156"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map intent refs, ArchMap refs, alignment kind, preserves / forgets, confidence, unaligned / unsupported / ambiguous boundaries, missing evidence, and non-conclusions explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New alignment kinds must keep intentUnaligned / unsupported / ambiguous states distinct from measured zero."
+        ],
+        "coverageExactnessBoundary": [
+          "AlignmentMap validation does not prove semantic correctness, implementation impact, quality, causality, or future outcome."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "pr-quality-analysis",
+      "artifactName": "PR Quality Analysis report",
+      "schemaVersionName": "pr-quality-analysis-report-v0",
+      "artifactRole": "review-output",
+      "ownerPhase": "PRD v3",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v3.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1153"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map ArchMap, AIR, theorem-check, feature-report, and policy-decision refs to reviewer-facing cues and missing evidence without automatic merge approval.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New cue kinds must declare evidence boundary and avoid merge-decision or architecture-lawfulness claims."
+        ],
+        "coverageExactnessBoundary": [
+          "PR quality analysis is review evidence, not merge approval or a global architecture ranking."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "intent-calibration-record",
+      "artifactName": "Intent calibration record",
+      "schemaVersionName": "intent-calibration-record-v0",
+      "artifactRole": "empirical-feedback",
+      "ownerPhase": "PRD v3",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v3.md",
+        "docs/tool/sft_calibration_benchmark.md"
+      ],
+      "downstreamIssues": [
+        "#1157"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map IntentMap item refs, forecast item refs, observed implementation refs, missing decision statuses, and forecast usefulness feedback separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New calibration fields must distinguish observed evidence, missing decision status, and qualitative usefulness feedback."
+        ],
+        "coverageExactnessBoundary": [
+          "Calibration is empirical feedback, not causal proof or forecast correctness proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
       "artifactId": "feature-extension-report",
       "artifactName": "Feature Extension Report",
       "schemaVersionName": "feature-extension-report-v0",

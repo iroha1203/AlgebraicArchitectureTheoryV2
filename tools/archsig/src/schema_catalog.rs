@@ -5,8 +5,10 @@ use crate::{
     CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
-    INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
-    OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, PR_FORCE_REPORT_SCHEMA_VERSION,
+    INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION,
+    INTENT_CALIBRATION_RECORD_SCHEMA_VERSION, INTENTMAP_SCHEMA_VERSION,
+    OBSTRUCTION_WITNESS_SCHEMA_VERSION, OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION,
+    PR_FORCE_REPORT_SCHEMA_VERSION, PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
     REPAIR_ADOPTION_RECORD_SCHEMA_VERSION, REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION,
     SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION,
@@ -129,6 +131,95 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "Generation protocol does not execute the model or prove the generated ArchMap correct.",
+                    ],
+                ),
+            ),
+            artifact(
+                "intentmap",
+                "IntentMap supplied JSON artifact",
+                INTENTMAP_SCHEMA_VERSION,
+                "planning-intent-input",
+                "PRD v3",
+                "implemented",
+                vec!["docs/tool/archsig_archmap_prd_v3.md"],
+                vec!["#1149", "#1150", "#1156"],
+                compatibility_boundary(
+                    "Map intent source refs, LLM provenance, intent items, missing decisions, ambiguous intents, missing evidence, and non-conclusions by stable camelCase names.",
+                    vec![],
+                    vec![
+                        "New intent kinds must preserve source refs, claim classification, confidence boundary, missing decisions, and non-conclusions.",
+                    ],
+                    vec![
+                        "IntentMap is LLM-authored planning evidence, not implementation truth, forecast correctness, or a complete plan.",
+                    ],
+                ),
+            ),
+            artifact(
+                "intent-archmap-alignment",
+                "IntentMap to ArchMap AlignmentMap",
+                INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION,
+                "planning-alignment-input",
+                "PRD v3",
+                "implemented",
+                vec![
+                    "docs/tool/archsig_archmap_prd_v3.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                vec!["#1151", "#1152", "#1154", "#1156"],
+                compatibility_boundary(
+                    "Map intent refs, ArchMap refs, alignment kind, preserves / forgets, confidence, unaligned / unsupported / ambiguous boundaries, missing evidence, and non-conclusions explicitly.",
+                    vec![],
+                    vec![
+                        "New alignment kinds must keep intentUnaligned / unsupported / ambiguous states distinct from measured zero.",
+                    ],
+                    vec![
+                        "AlignmentMap validation does not prove semantic correctness, implementation impact, quality, causality, or future outcome.",
+                    ],
+                ),
+            ),
+            artifact(
+                "pr-quality-analysis",
+                "PR Quality Analysis report",
+                PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
+                "review-output",
+                "PRD v3",
+                "implemented",
+                vec![
+                    "docs/tool/archsig_archmap_prd_v3.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                vec!["#1153"],
+                compatibility_boundary(
+                    "Map ArchMap, AIR, theorem-check, feature-report, and policy-decision refs to reviewer-facing cues and missing evidence without automatic merge approval.",
+                    vec![],
+                    vec![
+                        "New cue kinds must declare evidence boundary and avoid merge-decision or architecture-lawfulness claims.",
+                    ],
+                    vec![
+                        "PR quality analysis is review evidence, not merge approval or a global architecture ranking.",
+                    ],
+                ),
+            ),
+            artifact(
+                "intent-calibration-record",
+                "Intent calibration record",
+                INTENT_CALIBRATION_RECORD_SCHEMA_VERSION,
+                "empirical-feedback",
+                "PRD v3",
+                "implemented",
+                vec![
+                    "docs/tool/archsig_archmap_prd_v3.md",
+                    "docs/tool/sft_calibration_benchmark.md",
+                ],
+                vec!["#1157"],
+                compatibility_boundary(
+                    "Map IntentMap item refs, forecast item refs, observed implementation refs, missing decision statuses, and forecast usefulness feedback separately.",
+                    vec![],
+                    vec![
+                        "New calibration fields must distinguish observed evidence, missing decision status, and qualitative usefulness feedback.",
+                    ],
+                    vec![
+                        "Calibration is empirical feedback, not causal proof or forecast correctness proof.",
                     ],
                 ),
             ),

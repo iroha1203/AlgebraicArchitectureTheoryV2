@@ -19,14 +19,17 @@ use archsig::{
     EmpiricalDatasetInput, FeatureExtensionReportV0, ForecastCalibrationHookV0,
     ForecastCalibrationHookValidationReportV0, ForecastConeSkeletonV0,
     ForecastConeSkeletonValidationReportV0, FrameworkAdapterEvidenceV0, HypothesisRefreshCycleV0,
-    IncidentCorrelationMonitorV0, LawPolicyTemplateRegistryV0,
-    LawPolicyTemplateRegistryValidationReportV0, MeasurementUnitRegistryV0,
-    MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
+    IncidentCorrelationMonitorV0, IntentArchMapAlignmentV0,
+    IntentArchMapAlignmentValidationReportV0, IntentCalibrationRecordV0,
+    IntentCalibrationValidationReportV0, IntentMapV0, IntentMapValidationReportV0,
+    LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0,
+    MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OperationProposalLogV0,
     OperationProposalLogValidationReportV0, OperationSupportEstimateV0,
     OperationSupportEstimateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, OwnershipBoundaryMonitorV0, PolicyDecisionReportV0,
-    PrForceReportV0, PrForceReportValidationReportV0, RepairAdoptionRecordV0, RepairRuleRegistryV0,
+    PrForceReportV0, PrForceReportValidationReportV0, PrQualityAnalysisReportV0,
+    PrQualityAnalysisValidationReportV0, RepairAdoptionRecordV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
     ReportArtifactRetentionValidationReportV0, ReportOutcomeDailyLedgerInput,
     RepositoryRevisionRef, RiskDispositionV0, ScanMetadata, SchemaCompatibilityCheckReportV0,
@@ -41,11 +44,13 @@ use archsig::{
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
     build_operation_support_estimate_from_archmap,
-    build_operation_support_estimate_from_descriptor, build_outcome_linkage_dataset_from_files,
-    build_policy_decision_report, build_pr_history_dataset_from_github_files,
-    build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
-    build_schema_compatibility_check_report, build_signature_diff_report,
-    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
+    build_operation_support_estimate_from_descriptor,
+    build_operation_support_estimate_from_intent_alignment,
+    build_outcome_linkage_dataset_from_files, build_policy_decision_report,
+    build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
+    build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
+    build_signature_diff_report, build_signature_snapshot_record,
+    build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     render_pr_comment_markdown, static_ai_proposal_governance,
     static_architecture_dynamics_metrics_report, static_architecture_field_snapshot,
@@ -54,25 +59,27 @@ use archsig::{
     static_detectable_values_reported_axes_catalog, static_dynamics_measurement_contract,
     static_forecast_calibration_hook, static_forecast_cone_skeleton,
     static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
+    static_intent_archmap_alignment, static_intent_calibration_record, static_intent_map,
     static_law_policy_template_registry, static_measurement_unit_registry,
     static_no_solution_certificate, static_operation_proposal_log,
     static_operation_support_estimate, static_organization_policy,
-    static_ownership_boundary_monitor, static_pr_force_report, static_repair_adoption_record,
-    static_repair_rule_registry, static_report_artifact_retention_manifest,
-    static_schema_version_catalog, static_signature_trajectory_report,
-    static_synthesis_constraint_artifact, static_team_threshold_policy,
-    validate_ai_proposal_governance, validate_air_document_report,
+    static_ownership_boundary_monitor, static_pr_force_report, static_pr_quality_analysis_report,
+    static_repair_adoption_record, static_repair_rule_registry,
+    static_report_artifact_retention_manifest, static_schema_version_catalog,
+    static_signature_trajectory_report, static_synthesis_constraint_artifact,
+    static_team_threshold_policy, validate_ai_proposal_governance, validate_air_document_report,
     validate_architecture_dynamics_metrics_report, validate_architecture_field_snapshot,
     validate_archmap_report, validate_artifact_descriptor_report,
     validate_component_universe_report, validate_consequence_envelope_report,
     validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
     validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
+    validate_intent_archmap_alignment, validate_intent_calibration_record, validate_intent_map,
     validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
     validate_no_solution_certificate_report, validate_operation_proposal_log,
     validate_operation_support_estimate, validate_organization_policy_report,
-    validate_pr_force_report, validate_repair_rule_registry_report,
-    validate_report_artifact_retention_report, validate_signature_trajectory_report,
-    validate_synthesis_constraint_artifact_report,
+    validate_pr_force_report, validate_pr_quality_analysis_report,
+    validate_repair_rule_registry_report, validate_report_artifact_retention_report,
+    validate_signature_trajectory_report, validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -783,6 +790,74 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Emit or validate an intentmap-v0 artifact.
+    IntentMap {
+        /// Optional IntentMap JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical minimal intentmap-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output IntentMap or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate an intent-archmap-alignment-v0 artifact.
+    IntentArchmapAlignment {
+        /// Optional AlignmentMap JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// IntentMap JSON path used for dangling reference validation.
+        #[arg(long = "intent-map")]
+        intent_map: Option<PathBuf>,
+
+        /// ArchMap JSON path used for dangling reference validation.
+        #[arg(long)]
+        archmap: Option<PathBuf>,
+
+        /// Emit the canonical minimal intent-archmap-alignment-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output AlignmentMap or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Build operation support from IntentMap x ArchMap alignment.
+    IntentForecast {
+        /// IntentMap JSON path.
+        #[arg(long = "intent-map")]
+        intent_map: PathBuf,
+
+        /// ArchMap JSON path.
+        #[arg(long)]
+        archmap: PathBuf,
+
+        /// AlignmentMap JSON path.
+        #[arg(long)]
+        alignment: PathBuf,
+
+        /// Output directory for operation support, ForecastCone, ConsequenceEnvelope, and validations.
+        #[arg(long = "out-dir")]
+        out_dir: PathBuf,
+
+        /// Bounded horizon step count for forecast-cone-skeleton-v0 generation.
+        #[arg(long = "horizon-steps", default_value_t = 3)]
+        horizon_steps: u32,
+
+        /// Human-readable horizon boundary for forecast-cone-skeleton-v0 generation.
+        #[arg(
+            long = "horizon-window",
+            default_value = "selected bounded intent forecast horizon"
+        )]
+        horizon_window: String,
+    },
+
     /// Emit or validate an operation-support-estimate-v0 artifact.
     OperationSupportEstimate {
         /// Optional OperationSupportEstimate JSON path to validate.
@@ -892,6 +967,36 @@ enum Command {
         fixture: bool,
 
         /// Output hook or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate a pr-quality-analysis-report-v0 artifact.
+    PrQualityAnalysis {
+        /// Optional PR quality analysis JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical minimal pr-quality-analysis-report-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output report or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate an intent-calibration-record-v0 artifact.
+    IntentCalibrationRecord {
+        /// Optional intent calibration record JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical minimal intent-calibration-record-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output record or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1863,6 +1968,154 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 ExitCode::SUCCESS
             })
         }
+        Some(Command::IntentMap {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let intent_map: IntentMapV0 = static_intent_map();
+                write_json(out, &intent_map)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let intent_map: IntentMapV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_intent_map);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-intentmap".to_string());
+            let validation: IntentMapValidationReportV0 =
+                validate_intent_map(&intent_map, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::IntentArchmapAlignment {
+            input,
+            intent_map,
+            archmap,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let alignment: IntentArchMapAlignmentV0 = static_intent_archmap_alignment();
+                write_json(out, &alignment)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let alignment: IntentArchMapAlignmentV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_intent_archmap_alignment);
+            let intent_map_doc: Option<IntentMapV0> =
+                intent_map.as_ref().map(read_json).transpose()?;
+            let archmap_doc: Option<ArchMapDocumentV0> =
+                archmap.as_ref().map(read_json).transpose()?;
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-intent-archmap-alignment".to_string());
+            let validation: IntentArchMapAlignmentValidationReportV0 =
+                validate_intent_archmap_alignment(
+                    &alignment,
+                    intent_map_doc.as_ref(),
+                    archmap_doc.as_ref(),
+                    &input_path,
+                );
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::IntentForecast {
+            intent_map,
+            archmap,
+            alignment,
+            out_dir,
+            horizon_steps,
+            horizon_window,
+        }) => {
+            std::fs::create_dir_all(&out_dir)?;
+            let intent_map_doc: IntentMapV0 = read_json(&intent_map)?;
+            let archmap_doc: ArchMapDocumentV0 = read_json(&archmap)?;
+            let alignment_doc: IntentArchMapAlignmentV0 = read_json(&alignment)?;
+
+            let intent_validation_path = out_dir.join("intentmap-validation.json");
+            let alignment_validation_path =
+                out_dir.join("intent-archmap-alignment-validation.json");
+            let estimate_path = out_dir.join("operation-support-estimate.json");
+            let estimate_validation_path =
+                out_dir.join("operation-support-estimate-validation.json");
+            let cone_path = out_dir.join("forecast-cone-skeleton.json");
+            let cone_validation_path = out_dir.join("forecast-cone-skeleton-validation.json");
+            let envelope_path = out_dir.join("consequence-envelope-report.json");
+            let envelope_validation_path = out_dir.join("consequence-envelope-validation.json");
+
+            let intent_validation: IntentMapValidationReportV0 =
+                validate_intent_map(&intent_map_doc, &intent_map.display().to_string());
+            let alignment_validation: IntentArchMapAlignmentValidationReportV0 =
+                validate_intent_archmap_alignment(
+                    &alignment_doc,
+                    Some(&intent_map_doc),
+                    Some(&archmap_doc),
+                    &alignment.display().to_string(),
+                );
+            let estimate: OperationSupportEstimateV0 =
+                build_operation_support_estimate_from_intent_alignment(
+                    &intent_map_doc,
+                    &archmap_doc,
+                    &alignment_doc,
+                );
+            let estimate_validation: OperationSupportEstimateValidationReportV0 =
+                validate_operation_support_estimate(
+                    &estimate,
+                    &estimate_path.display().to_string(),
+                );
+            let cone: ForecastConeSkeletonV0 = build_forecast_cone_skeleton_from_operation_support(
+                &estimate,
+                horizon_steps,
+                &horizon_window,
+            );
+            let cone_validation: ForecastConeSkeletonValidationReportV0 =
+                validate_forecast_cone_skeleton(&cone, &cone_path.display().to_string());
+            let envelope: ConsequenceEnvelopeReportV0 =
+                build_consequence_envelope_from_forecast_cone(&cone);
+            let envelope_validation: ConsequenceEnvelopeValidationReportV0 =
+                validate_consequence_envelope_report(
+                    &envelope,
+                    &envelope_path.display().to_string(),
+                );
+            let failed = intent_validation.summary.result == "fail"
+                || alignment_validation.summary.result == "fail"
+                || estimate_validation.summary.result == "fail"
+                || cone_validation.summary.result == "fail"
+                || envelope_validation.summary.result == "fail";
+
+            write_json(Some(intent_validation_path), &intent_validation)?;
+            write_json(Some(alignment_validation_path), &alignment_validation)?;
+            write_json(Some(estimate_path), &estimate)?;
+            write_json(Some(estimate_validation_path), &estimate_validation)?;
+            write_json(Some(cone_path), &cone)?;
+            write_json(Some(cone_validation_path), &cone_validation)?;
+            write_json(Some(envelope_path), &envelope)?;
+            write_json(Some(envelope_validation_path), &envelope_validation)?;
+
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
         Some(Command::OperationSupportEstimate {
             input,
             descriptor,
@@ -2089,6 +2342,64 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-forecast-calibration-hook".to_string());
             let validation: ForecastCalibrationHookValidationReportV0 =
                 validate_forecast_calibration_hook(&hook, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::PrQualityAnalysis {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let report: PrQualityAnalysisReportV0 = static_pr_quality_analysis_report();
+                write_json(out, &report)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let report: PrQualityAnalysisReportV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_pr_quality_analysis_report);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-pr-quality-analysis".to_string());
+            let validation: PrQualityAnalysisValidationReportV0 =
+                validate_pr_quality_analysis_report(&report, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::IntentCalibrationRecord {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let record: IntentCalibrationRecordV0 = static_intent_calibration_record();
+                write_json(out, &record)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let record: IntentCalibrationRecordV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_intent_calibration_record);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-intent-calibration-record".to_string());
+            let validation: IntentCalibrationValidationReportV0 =
+                validate_intent_calibration_record(&record, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
             Ok(if failed {

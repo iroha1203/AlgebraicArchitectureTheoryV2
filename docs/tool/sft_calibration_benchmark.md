@@ -14,11 +14,14 @@ Lean status: `empirical hypothesis` / tooling validation.
 | 入力 | 役割 |
 | --- | --- |
 | `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal の action class、scope、source refs、missing evidence を保持する。 |
+| `intentmap-v0` | PRD / Epic / Spec の intent item、missing decision、ambiguous intent、missing evidence、non-conclusions を保持する。 |
+| `intent-archmap-alignment-v0` | IntentMap item と current ArchMap item の対応、unaligned / unsupported / ambiguous alignment を保持する。 |
 | `archmap-v0` / `archmap-sft-input` | ArchMap-derived source refs と SFT-facing map item を operation support estimate へ投影する。 |
 | `operation-support-estimate-v0` | candidate operation families、policy constraints、known forbidden support、unknown remainder を保持する。 |
 | `forecast-cone-skeleton-v0` | finite support と bounded horizon に相対化した path class candidates を保持する。 |
 | `consequence-envelope-report-v0` | signature axes、obstruction candidates、missing boundary、review / CI recommendation を reviewer-facing に投影する。 |
 | `forecast-calibration-hook-v0` | forecast item refs と observed PR / review / CI / outcome refs を対応付ける。 |
+| `intent-calibration-record-v0` | IntentMap item refs、forecast item refs、observed implementation refs、missing decision status、forecast usefulness feedback を対応付ける。 |
 | B10 / B11 operational artifacts | PR history、feature extension dataset、outcome linkage、calibration review、incident correlation、hypothesis refresh を保持する。 |
 
 ここでの calibration は、forecast item と observed artifact を対応付け、どの item が
@@ -27,6 +30,11 @@ unavailable / private / missing data を measured zero として扱わない。
 ArchMap-derived forecast item refs も同じ扱いで、PR / review / CI / incident / rollback /
 repair adoption との照合対象にはできるが、formal theorem、global quality ranking、
 incident causality には昇格しない。
+IntentMap-derived forecast では、forecast item の照合に加えて、intent item と observed
+implementation artifact の対応、missing decision が resolved / unresolved のどちらとして
+観測されたか、forecast cue が review に有用だったかを `intent-calibration-record-v0` に保存する。
+この record も empirical feedback であり、PRD 読解の正しさ、forecast correctness、因果関係を
+証明しない。
 
 ## Input-Output Boundary
 
@@ -34,8 +42,10 @@ incident causality には昇格しない。
 
 ```text
 source artifact
+  -> IntentMap / AlignmentMap when planning context is used
   -> bounded SFT forecast artifacts
   -> forecast-calibration-hook
+  -> intent-calibration-record when IntentMap refs are present
   -> held-out PR / review / CI / outcome refs
   -> calibration review categories
   -> hypothesis refresh / benchmark report
@@ -48,6 +58,7 @@ source artifact
 | Forecast capture | PRD / Spec / Issue / AI proposal | B13 forecast artifact set | 実 PR や outcome を見ない時点の bounded forecast として保存する。 |
 | Observation capture | PR / review / CI / incident / rollback refs | B10 / B11 operational artifacts | private / unavailable / unmeasured data を明示し、欠測を安全判定にしない。 |
 | Linkage | forecast item refs + observed refs | `forecast-calibration-hook-v0` | matched / unmatched / unavailable / private / notComparable を区別する。 |
+| Intent linkage | IntentMap item refs + forecast item refs + observed refs | `intent-calibration-record-v0` | missing decision resolved / unresolved、observed implementation refs、forecast usefulness feedback を保存する。 |
 | Review classification | hook + reviewer judgement | `calibration-review-record-v0` | false positive / false negative / inconclusive を policy input として保存する。 |
 | Benchmark aggregation | calibration records + held-out set metadata | benchmark summary | organization / repository / horizon / artifact-kind に相対化する。 |
 | Hypothesis refresh | benchmark summary + confounders | hypothesis refresh artifact | retained / revised / rejected を empirical hypothesis として扱う。 |

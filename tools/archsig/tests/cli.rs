@@ -9,6 +9,185 @@ fn fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal")
 }
 
+#[test]
+fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
+    let root = fixture_root();
+    let out_dir = temp_dir("intentmap-alignment-workflow");
+    let intent_fixture = root.join("intentmap.json");
+    let alignment_fixture = root.join("intent_archmap_alignment.json");
+    let archmap_fixture = root.join("archmap.json");
+    let intent_validation = out_dir.join("intentmap-validation.json");
+    let alignment_validation = out_dir.join("alignment-validation.json");
+    let forecast_dir = out_dir.join("forecast");
+    let pr_quality_validation = out_dir.join("pr-quality-validation.json");
+    let calibration_validation = out_dir.join("intent-calibration-validation.json");
+
+    run_sig0(&[
+        "intent-map",
+        "--input",
+        intent_fixture
+            .to_str()
+            .expect("intent fixture path is utf-8"),
+        "--out",
+        intent_validation
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+    let intent_json = read_json(&intent_validation);
+    assert_eq!(
+        intent_json["schemaVersion"],
+        "intentmap-validation-report-v0"
+    );
+    assert_eq!(intent_json["summary"]["result"], "pass");
+    assert!(
+        intent_json["checks"]
+            .as_array()
+            .expect("checks are array")
+            .iter()
+            .any(|check| check["id"] == "intentmap-boundaries-first-class")
+    );
+    assert!(
+        intent_json["intentMap"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are array")
+            .iter()
+            .any(|entry| {
+                entry == "IntentMap does not provide an implementation plan completeness guarantee"
+            })
+    );
+
+    run_sig0(&[
+        "intent-archmap-alignment",
+        "--input",
+        alignment_fixture
+            .to_str()
+            .expect("alignment fixture path is utf-8"),
+        "--intent-map",
+        intent_fixture
+            .to_str()
+            .expect("intent fixture path is utf-8"),
+        "--archmap",
+        archmap_fixture
+            .to_str()
+            .expect("archmap fixture path is utf-8"),
+        "--out",
+        alignment_validation
+            .to_str()
+            .expect("alignment validation path is utf-8"),
+    ]);
+    let alignment_json = read_json(&alignment_validation);
+    assert_eq!(
+        alignment_json["schemaVersion"],
+        "intent-archmap-alignment-validation-report-v0"
+    );
+    assert_eq!(alignment_json["summary"]["result"], "pass");
+    assert!(
+        alignment_json["checks"]
+            .as_array()
+            .expect("checks are array")
+            .iter()
+            .any(|check| {
+                check["id"] == "intent-archmap-alignment-boundaries-not-measured-zero"
+            })
+    );
+
+    run_sig0(&[
+        "intent-forecast",
+        "--intent-map",
+        intent_fixture
+            .to_str()
+            .expect("intent fixture path is utf-8"),
+        "--archmap",
+        archmap_fixture
+            .to_str()
+            .expect("archmap fixture path is utf-8"),
+        "--alignment",
+        alignment_fixture
+            .to_str()
+            .expect("alignment fixture path is utf-8"),
+        "--out-dir",
+        forecast_dir.to_str().expect("forecast dir is utf-8"),
+    ]);
+    let estimate = read_json(&forecast_dir.join("operation-support-estimate.json"));
+    assert_eq!(estimate["schemaVersion"], "operation-support-estimate-v0");
+    assert_eq!(
+        estimate["descriptorRef"]["descriptorSchemaVersion"],
+        "intent-archmap-alignment-v0"
+    );
+    assert!(
+        estimate["unknownRemainder"][0]["unknownAxes"]
+            .as_array()
+            .expect("unknown axes are array")
+            .iter()
+            .any(|axis| {
+                axis.as_str()
+                    .expect("axis is string")
+                    .contains("coupons may stack")
+            })
+    );
+    let cone = read_json(&forecast_dir.join("forecast-cone-skeleton.json"));
+    assert_eq!(cone["schemaVersion"], "forecast-cone-skeleton-v0");
+    assert!(
+        cone["nonConclusions"]
+            .as_array()
+            .expect("forecast nonConclusions are array")
+            .iter()
+            .any(|entry| entry == "forecast cone skeleton does not assign probabilities")
+    );
+
+    run_sig0(&[
+        "pr-quality-analysis",
+        "--input",
+        root.join("pr_quality_analysis_report.json")
+            .to_str()
+            .expect("PR quality fixture path is utf-8"),
+        "--out",
+        pr_quality_validation
+            .to_str()
+            .expect("PR quality validation path is utf-8"),
+    ]);
+    let pr_quality = read_json(&pr_quality_validation);
+    assert_eq!(
+        pr_quality["schemaVersion"],
+        "pr-quality-analysis-validation-report-v0"
+    );
+    assert_eq!(pr_quality["summary"]["result"], "pass");
+    assert!(
+        pr_quality["report"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are array")
+            .iter()
+            .any(|entry| entry
+                == "PR quality analysis is reviewer-facing evidence, not merge approval")
+    );
+
+    run_sig0(&[
+        "intent-calibration-record",
+        "--input",
+        root.join("intent_calibration_record.json")
+            .to_str()
+            .expect("calibration fixture path is utf-8"),
+        "--out",
+        calibration_validation
+            .to_str()
+            .expect("calibration validation path is utf-8"),
+    ]);
+    let calibration = read_json(&calibration_validation);
+    assert_eq!(
+        calibration["schemaVersion"],
+        "intent-calibration-validation-report-v0"
+    );
+    assert_eq!(calibration["summary"]["result"], "pass");
+    assert!(
+        calibration["record"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are array")
+            .iter()
+            .any(|entry| entry
+                == "intent calibration record is empirical feedback, not causal proof")
+    );
+}
+
 fn expressiveness_fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }

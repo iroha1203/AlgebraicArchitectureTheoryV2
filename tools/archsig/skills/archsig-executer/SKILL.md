@@ -1,6 +1,6 @@
 ---
 name: archsig-executer
-description: Run ArchSig CLI workflows and produce bounded JSON artifacts. Use when Codex is asked to execute ArchSig commands, scan repositories, validate Sig0 or ArchMap, create snapshots or signature diffs, project ArchMap to AIR or SFT input, build ForecastConeSkeleton or ConsequenceEnvelope artifacts, create calibration hooks, or verify the ArchSig tooling pipeline.
+description: Run ArchSig CLI workflows and produce bounded JSON artifacts. Use when Codex is asked to execute ArchSig commands, scan repositories, validate Sig0, ArchMap, IntentMap, or AlignmentMap, create snapshots or signature diffs, project ArchMap or IntentMap x ArchMap alignment to AIR/SFT input, build ForecastConeSkeleton or ConsequenceEnvelope artifacts, create calibration hooks or intent calibration records, run PR quality analysis, or verify the ArchSig tooling pipeline.
 ---
 
 # ArchSig Executer
@@ -124,6 +124,49 @@ ${ARCHSIG_BIN:-archsig} forecast-calibration-hook \
   --out .archsig/sft/forecast-calibration-hook.json
 ```
 
+## IntentMap Planning Pipeline
+
+Use this when the user asks for Epic / PRD / Spec planning forecast. Do not run PRD-only forecast as
+the main result when IntentMap and ArchMap alignment are available.
+
+```bash
+${ARCHSIG_BIN:-archsig} intent-map \
+  --input .archsig/intent/intentmap.json \
+  --out .archsig/intent/intentmap-validation.json
+
+${ARCHSIG_BIN:-archsig} intent-archmap-alignment \
+  --input .archsig/intent/intent-archmap-alignment.json \
+  --intent-map .archsig/intent/intentmap.json \
+  --archmap .archsig/archmap/archmap.json \
+  --out .archsig/intent/alignment-validation.json
+
+${ARCHSIG_BIN:-archsig} intent-forecast \
+  --intent-map .archsig/intent/intentmap.json \
+  --archmap .archsig/archmap/archmap.json \
+  --alignment .archsig/intent/intent-archmap-alignment.json \
+  --out-dir .archsig/intent/forecast
+```
+
+For empirical follow-up, create an intent calibration record when observed PR / test / runtime refs
+are available:
+
+```bash
+${ARCHSIG_BIN:-archsig} intent-calibration-record \
+  --input .archsig/intent/intent-calibration-record.json \
+  --out .archsig/intent/intent-calibration-validation.json
+```
+
+## PR Quality Pipeline
+
+Use this for PR / CI analysis after ArchMap-side artifacts exist. It is separate from IntentMap
+planning forecast and does not decide mergeability.
+
+```bash
+${ARCHSIG_BIN:-archsig} pr-quality-analysis \
+  --input .archsig/pr/pr-quality-analysis-report.json \
+  --out .archsig/pr/pr-quality-analysis-validation.json
+```
+
 ## Reading Outputs
 
 Always preserve these distinctions in summaries:
@@ -131,6 +174,8 @@ Always preserve these distinctions in summaries:
 - measured zero vs unmeasured
 - validation success vs theorem proof
 - candidate support vs forecast result
+- missing decision vs missing evidence
+- unaligned / unsupported intent vs measured zero
 - correlation or calibration hook vs causal theorem
 - warning vs failure
 - missing evidence vs negative evidence
