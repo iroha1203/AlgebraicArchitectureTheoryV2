@@ -1,3 +1,72 @@
+const themeStorageKey = "aat-sft-theme";
+const systemDarkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+let storedTheme = null;
+
+try {
+  storedTheme = localStorage.getItem(themeStorageKey);
+} catch {
+  storedTheme = null;
+}
+
+if (storedTheme === "light" || storedTheme === "dark") {
+  document.documentElement.dataset.theme = storedTheme;
+}
+
+function getEffectiveTheme() {
+  const selectedTheme = document.documentElement.dataset.theme;
+  if (selectedTheme === "light" || selectedTheme === "dark") return selectedTheme;
+  return systemDarkQuery.matches ? "dark" : "light";
+}
+
+function updateThemeToggle(button) {
+  const effectiveTheme = getEffectiveTheme();
+  const nextTheme = effectiveTheme === "dark" ? "light" : "dark";
+  const icon =
+    effectiveTheme === "dark"
+      ? '<svg class="theme-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.8A7.4 7.4 0 0 1 9.2 3.8 8.3 8.3 0 1 0 20.2 14.8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      : '<svg class="theme-toggle-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2.5M12 18.5V21M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M3 12h2.5M18.5 12H21M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  button.innerHTML = icon;
+  button.setAttribute(
+    "aria-label",
+    `Current theme: ${effectiveTheme}. Switch to ${nextTheme} theme`
+  );
+  button.title = `Current theme: ${effectiveTheme}. Switch to ${nextTheme} theme`;
+}
+
+document.querySelectorAll(".header-inner").forEach((header) => {
+  const nav = header.querySelector(".site-nav");
+  if (!nav || header.querySelector(".theme-toggle")) return;
+
+  const actions = document.createElement("div");
+  actions.className = "header-actions";
+  nav.before(actions);
+  actions.appendChild(nav);
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "theme-toggle";
+  button.setAttribute("aria-live", "polite");
+  updateThemeToggle(button);
+
+  button.addEventListener("click", () => {
+    const nextTheme = getEffectiveTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = nextTheme;
+    try {
+      localStorage.setItem(themeStorageKey, nextTheme);
+    } catch {}
+    updateThemeToggle(button);
+  });
+
+  systemDarkQuery.addEventListener("change", () => {
+    if (!document.documentElement.dataset.theme) {
+      updateThemeToggle(button);
+    }
+  });
+
+  actions.appendChild(button);
+});
+
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
 
 if (window.location.protocol === "file:") {

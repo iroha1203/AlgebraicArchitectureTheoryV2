@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="First ArchSig session: run a bounded scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface.">
+    <meta name="description" content="First ArchSig session: run a first scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface.">
     <title>ArchSig Getting Started</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/getting-started/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig Getting Started">
-    <meta property="og:description" content="First ArchSig session: run a bounded scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface.">
+    <meta property="og:description" content="First ArchSig session: run a first scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/getting-started/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig Getting Started">
-    <meta name="twitter:description" content="First ArchSig session: run a bounded scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface.">
+    <meta name="twitter:description" content="First ArchSig session: run a first scan, validate Sig0, read measured and unmeasured axes, then choose the next review surface.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -23,6 +23,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
     <link rel="stylesheet" href="../../assets/site.css">
     <script defer src="../../assets/site.js"></script>
     <!-- Google tag (gtag.js) -->
@@ -67,7 +75,7 @@
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
             <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#install">Install and prerequisites</a></li><li><a href="#fixture">Fixture scan</a></li><li><a href="#validate">Validate Sig0</a></li><li><a href="#repo">Repository scan</a></li><li><a href="#read">First reading</a></li><li><a href="#next">Next moves</a></li></ol></nav>
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/" aria-current="page">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/" aria-current="page">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Evidence Model</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
           <div class="article-main">
             <section id="install" class="article-section"><h2>Install and prerequisites</h2><p>ArchSig currently runs from the repository tooling crate. You need Rust and Cargo available, then run commands from the repository root.</p><figure class="code-panel"><figcaption>Command shape</figcaption><pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- &lt;command&gt; &lt;flags&gt;</code></pre></figure><p>The default scan supports Lean repositories. Python mode supports static import extraction with the standard AST parser.</p></section>
@@ -88,7 +96,7 @@
   --source-root src \
   --package-root src \
   --out .lake/python-sig0.json</code></pre></figure></section>
-<section id="read" class="article-section"><h2>First reading</h2><ul class="status-list"><li><strong><code>components</code></strong><span>The selected component universe. Ask whether names match the architecture boundary you expected.</span></li><li><strong><code>edges</code></strong><span>The observed dependency relation. Ask whether surprising edges are real dependencies or adapter limitations.</span></li><li><strong><code>signature</code></strong><span>The architecture axes emitted for this universe.</span></li><li><strong><code>metricStatus</code></strong><span>The field that tells you whether a value was measured, unavailable, unsupported, private, or out of scope.</span></li></ul><div class="claim-strip"><p>A zero value is useful only when its status says the axis was measured.</p></div></section>
+<section id="read" class="article-section"><h2>First reading</h2><ul class="status-list"><li><strong><code>components</code></strong><span>The selected component universe. Ask whether names match the architecture slice you expected.</span></li><li><strong><code>edges</code></strong><span>The observed dependency relation. Ask whether surprising edges are real dependencies or adapter limitations.</span></li><li><strong><code>signature</code></strong><span>The architecture axes emitted for this universe.</span></li><li><strong><code>metricStatus</code></strong><span>The field that tells you whether a value was measured, unavailable, unsupported, private, or out of scope.</span></li></ul><div class="claim-strip"><p>A zero value is useful only when its status says the axis was measured.</p></div></section>
 <section id="next" class="article-section"><h2>Next moves</h2><p>If you want PR review, continue to <a href="../ci/">CI and PR Review</a>. If you want to understand reports first, read <a href="../reading-output/">Reading Output</a>. If you need to prepare policy, runtime edges, PR metadata, or proposal inputs, read <a href="../inputs/">Inputs and Configuration</a>.</p></section>
             <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../why/"><span>Previous</span><strong>Why ArchSig?</strong></a><a class="page-nav-next" href="../ci/"><span>Next</span><strong>CI and PR Review</strong></a></nav>
           </div>

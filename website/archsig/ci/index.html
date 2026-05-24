@@ -23,6 +23,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
     <link rel="stylesheet" href="../../assets/site.css">
     <script defer src="../../assets/site.js"></script>
     <!-- Google tag (gtag.js) -->
@@ -67,7 +75,7 @@
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
             <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#shape">CI shape</a></li><li><a href="#before-after">Before and after scans</a></li><li><a href="#air">AIR and reports</a></li><li><a href="#comment">PR comment</a></li><li><a href="#gate">Review gate policy</a></li><li><a href="#minimal">Minimal workflow</a></li></ol></nav>
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/" aria-current="page">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/" aria-current="page">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Evidence Model</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
           <div class="article-main">
             <section id="shape" class="article-section"><h2>CI shape</h2><p>The strongest ArchSig CI path compares a base signature and a head signature, validates both, generates a diff, projects the diff into AIR, and then produces a human-readable review artifact.</p><figure class="code-panel"><figcaption>PR review pipeline</figcaption><pre><code>base scan
@@ -98,7 +106,7 @@ head scan
   --after-sig0 .lake/signature-current/sig0.json \
   --pr-metadata .lake/pr-metadata-123.json \
   --out .lake/signature-current/diff-report.json</code></pre></figure></section>
-<section id="air" class="article-section"><h2>AIR and reports</h2><p>AIR is the bridge from measured output to review language. It records evidence references, coverage, theorem precondition status, and claim boundaries before reports are generated.</p><figure class="code-panel"><figcaption>AIR to feature report</figcaption><pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- air \
+<section id="air" class="article-section"><h2>AIR and reports</h2><p>AIR is the bridge from measured output to review language. It records evidence references, coverage, theorem precondition status, and claim records before reports are generated.</p><figure class="code-panel"><figcaption>AIR to feature report</figcaption><pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- air \
   --sig0 .lake/signature-current/sig0.json \
   --validation .lake/signature-current/validation.json \
   --diff .lake/signature-current/diff-report.json \
@@ -117,7 +125,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- pr-comment \
   --feature-report .lake/signature-current/feature-report.json \
   --policy-decision .lake/signature-current/policy-decision.json \
   --out .lake/signature-current/pr-comment-summary.md</code></pre></figure></section>
-<section id="gate" class="article-section"><h2>Review gate policy</h2><ul class="status-list"><li><strong>Block on artifact invalidity</strong><span>Schema or validation failures can block because the review artifact is not trustworthy.</span></li><li><strong>Warn on bounded risk</strong><span>Measured architectural risk should usually become reviewer attention unless the organization has an explicit policy threshold.</span></li><li><strong>Do not block on unknown as if it were failure</strong><span>Unknown, unmeasured, unsupported, and private evidence states should be visible, not silently converted into pass/fail.</span></li><li><strong>Record suppressions</strong><span>Baseline suppressions need justification so the signal can be recalibrated later.</span></li></ul></section>
+<section id="gate" class="article-section"><h2>Review gate policy</h2><ul class="status-list"><li><strong>Block on artifact invalidity</strong><span>Schema or validation failures can block because the review artifact is not trustworthy.</span></li><li><strong>Warn on measured risk</strong><span>Measured architectural risk should usually become reviewer attention unless the organization has an explicit policy threshold.</span></li><li><strong>Do not block on unknown as if it were failure</strong><span>Unknown, unmeasured, unsupported, and private evidence states should be visible, not silently converted into pass/fail.</span></li><li><strong>Record suppressions</strong><span>Baseline suppressions need justification so the signal can be recalibrated later.</span></li></ul></section>
 <section id="minimal" class="article-section"><h2>Minimal workflow</h2><p>A minimal first CI integration can stop after scan, validate, and signature diff. Add AIR, feature reports, policy decisions, and PR comments once the team agrees on how signals should be read.</p></section>
             <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../getting-started/"><span>Previous</span><strong>Getting Started</strong></a><a class="page-nav-next" href="../inputs/"><span>Next</span><strong>Inputs and Configuration</strong></a></nav>
           </div>

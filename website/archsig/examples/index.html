@@ -23,6 +23,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400..700&amp;display=swap" rel="stylesheet">
+    <script>
+      try {
+        const theme = localStorage.getItem("aat-sft-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+        }
+      } catch {}
+    </script>
     <link rel="stylesheet" href="../../assets/site.css">
     <script defer src="../../assets/site.js"></script>
     <!-- Google tag (gtag.js) -->
@@ -60,14 +68,14 @@
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>Examples</span></nav>
           <p class="eyebrow">Read ArchSig</p>
           <h1>See architecture signals catch a feature in motion.</h1>
-          <p class="lede">Examples make ArchSig concrete: the tool is strongest when a reviewer can see the changed boundary, evidence, and next action.</p>
+          <p class="lede">Examples make ArchSig concrete: the tool is strongest when a reviewer can see the architectural movement, source evidence, and next action.</p>
         </div>
       </section>
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
             <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#clean">Clean extension</a></li><li><a href="#hidden">Hidden interaction</a></li><li><a href="#semantic">Semantic witness</a></li><li><a href="#comment">PR comment anatomy</a></li><li><a href="#dynamics">Dynamics reading</a></li></ol></nav>
-            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/" aria-current="page">Examples</a></li><li><a href="../boundaries/">Boundaries</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
+            <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/" aria-current="page">Examples</a></li><li><a href="../boundaries/">Evidence Model</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
           <div class="article-main">
             <section id="clean" class="article-section"><h2>Clean extension</h2><p>A clean coupon extension adds feature behavior behind an existing payment port. Structural evidence shows new feature components and no direct reach into payment internals. Semantic evidence says discount calculation is expressed through an explicit contract. The feature report can mark the extension as reviewable with no hidden dependency witness.</p></section>
@@ -80,10 +88,10 @@ Why it matters:
 Review action:
 - Move cache access behind PaymentPort.
 - Confirm coupon/payment rounding order.</code></pre></figure></section>
-<section id="semantic" class="article-section"><h2>Semantic witness</h2><p>A semantic witness records meaning that static edges alone do not capture: discount before tax, normalized amount assumptions, state transition ownership, or responsibility movement between Pricing, Coupon, and Payment. Semantic witnesses belong in AIR with explicit evidence boundaries.</p></section>
-<section id="comment" class="article-section"><h2>PR comment anatomy</h2><ul class="status-list"><li><strong>Summary</strong><span>One sentence naming the architectural movement.</span></li><li><strong>Evidence</strong><span>Files, edges, semantic observations, runtime refs, or policy rules.</span></li><li><strong>Reviewer action</strong><span>What to inspect or change before merge.</span></li><li><strong>Boundary</strong><span>What was not measured, not confirmed, or not promoted to theorem status.</span></li></ul></section>
+<section id="semantic" class="article-section"><h2>Semantic witness</h2><p>A semantic witness records meaning that static edges alone do not capture: discount before tax, normalized amount assumptions, state transition ownership, or responsibility movement between Pricing, Coupon, and Payment. Semantic witnesses let AIR carry architecture meaning into reports and PR comments.</p></section>
+<section id="comment" class="article-section"><h2>PR comment anatomy</h2><ul class="status-list"><li><strong>Summary</strong><span>One sentence naming the architectural movement.</span></li><li><strong>Evidence</strong><span>Files, edges, semantic observations, runtime refs, or policy rules.</span></li><li><strong>Reviewer action</strong><span>What to inspect or change before merge.</span></li><li><strong>Follow-up</strong><span>What to confirm, monitor, or recalibrate after the review.</span></li></ul></section>
 <section id="dynamics" class="article-section"><h2>Dynamics reading</h2><p>Architecture dynamics artifacts describe movement over time: drift ledgers, trajectory reports, operation proposal logs, repair adoption, and incident correlations. They are useful because they turn repeated review signals into calibration pressure.</p></section>
-            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../anatomy/"><span>Previous</span><strong>Signal Anatomy</strong></a><a class="page-nav-next" href="../boundaries/"><span>Next</span><strong>Boundaries</strong></a></nav>
+            <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../anatomy/"><span>Previous</span><strong>Signal Anatomy</strong></a><a class="page-nav-next" href="../boundaries/"><span>Next</span><strong>Evidence Model</strong></a></nav>
           </div>
         </div>
       </section>
