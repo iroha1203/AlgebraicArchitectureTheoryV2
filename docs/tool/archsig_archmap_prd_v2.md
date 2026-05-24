@@ -246,11 +246,11 @@ ArchSig は AI-native tool として、LLM が ArchMap を作成する workflow 
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-generate \
-  --source-inventory .lake/archmap-source-inventory.json \
-  --prompt-pack .lake/archmap-prompt.md \
+  --source-inventory .archsig/archmap/source-inventory.json \
+  --prompt-pack .archsig/archmap/prompt.md \
   --provider external-agent \
   --model-id model-name \
-  --out .lake/archmap-generation-protocol.json
+  --out .archsig/archmap/generation-protocol.json
 ```
 
 この surface が行うこと:

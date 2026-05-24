@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arch Doctor"
+  short_description: "Analyze architecture state from artifacts"
+  default_prompt: "Use $arch-doctor to analyze ArchSig and ArchMap outputs and recommend bounded next steps."
