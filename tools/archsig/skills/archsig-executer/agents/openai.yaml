@@ -1,4 +1,0 @@
-interface:
-  display_name: "ArchSig Executer"
-  short_description: "Run ArchSig artifact pipelines"
-  default_prompt: "Use $archsig-executer to run the ArchSig pipeline and produce bounded JSON artifacts."

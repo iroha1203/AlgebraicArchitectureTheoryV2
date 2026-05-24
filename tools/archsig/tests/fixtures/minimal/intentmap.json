@@ -43,7 +43,7 @@
   },
   "generator": {
     "authoredBy": "llm",
-    "promptRef": "tools/archsig/skills/archmap-creater/references/intentmap-authoring-guide.md",
+    "promptRef": "tools/archsig/skills/intentmap-creater/references/intent-extraction-guide.md",
     "modelRef": "reviewer-supplied",
     "extractionBoundary": "extract semantic intent with source refs; do not invent missing decisions",
     "nonConclusions": [

@@ -35,7 +35,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
   から operation support、ForecastCone、ConsequenceEnvelope を deterministic に生成する。
 - PR diff / repository evidence から作られた ArchMap 系 artifact を、merge approval ではない
   PR quality review cue として読む `pr-quality-analysis-report-v0` を出力する。
-- Codex skill として、ArchMap 作成、ArchSig 実行、artifact 診断の作業手順を AI agent に渡せる。
+- Codex skill として、ArchMap 作成、IntentMap 作成、PR / CI 分析、Epic / PRD forecast の作業手順を AI agent に渡せる。
 
 詳細な command と artifact は次に分けている。
 
@@ -52,9 +52,10 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 
 | Skill | 用途 |
 | --- | --- |
-| [`archmap-creater`](skills/archmap-creater/SKILL.md) | repository evidence から bounded `archmap-v0` を作成し、PRD / Epic / Spec から bounded `intentmap-v0` を作る。source inventory、mapping guide、schema cheatsheet、IntentMap authoring guide、examples に沿って validation まで進める。 |
-| [`archsig-executer`](skills/archsig-executer/SKILL.md) | `archsig` binary を使って scan、validation、ArchMap-to-AIR、ArchMap-to-SFT、IntentMap validation、AlignmentMap validation、intent forecast、ForecastCone、ConsequenceEnvelope などの artifact pipeline を実行する。 |
-| [`arch-doctor`](skills/arch-doctor/SKILL.md) | 生成済み artifact を読み、現在の architecture state、bounded evolution forecast、planning boundary、evidence gap、次の設計アクションを診断する。 |
+| [`archmap-creater`](skills/archmap-creater/SKILL.md) | repository evidence から bounded `archmap-v0` を作成し、validation まで進める。IntentMap は扱わない。 |
+| [`intentmap-creater`](skills/intentmap-creater/SKILL.md) | Epic / PRD / Spec / Issue / proposal から bounded `intentmap-v0` を作成し、missing decision と ambiguous intent を保持して validation まで進める。 |
+| [`arch-pr-analyzer`](skills/arch-pr-analyzer/SKILL.md) | PR / CI の architecture artifact を読み、architecture risk、review cue、evidence gap、次の PR review action を分析する。planning forecast は扱わない。 |
+| [`arch-intent-forecaster`](skills/arch-intent-forecaster/SKILL.md) | IntentMap x ArchMap alignment から planning forecast artifact を読み、bounded evolution pressure、missing decision、planning action を分析する。PR merge review は扱わない。 |
 
 skill は AI native な操作面であり、tool output を Lean proof、forecast correctness、incident causality、
 global architecture truth として読まない。生成 artifact は標準では `.archsig/` 以下に置く。
