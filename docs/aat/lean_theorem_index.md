@@ -2728,6 +2728,8 @@ extractor completeness を結論しない。
 | `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_missingEvidence` | `theorem` | ArchMap-derived slice が semantic coverage gap boundary を missing-evidence boundary として保持することを取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_theoremStatusBoundary` | `theorem` | ArchMap-derived slice が formal promotion guardrail を theorem-status boundary として保持することを取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_preserves_nonConclusions` | `theorem` | ArchMap-derived slice が non-conclusions を保存することを取り出す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ArchMapAATHomomorphicReading` | `def` | ArchMap-derived selected slice の architecture / projection / observation / reconstruction / missing-evidence / theorem-status / non-conclusion boundary を AAT homomorphic reading として束ねる。 | `defined only` |
+| `SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_aatHomomorphicReading` | `theorem` | `ArchMapPreservationPackage` から AAT homomorphic reading を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary` | `structure` | `ArchSigSFTReportEstimateBoundary` と report-side facts を束ねる SFT report / forecast boundary package。 | `defined only` |
 | `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_preserves_observationBoundary` | `theorem` | ArchSig-derived report boundary が selected estimate の observation boundary を保持する。 | `proved accessor` |
 | `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_preserves_reconstructionBoundary` | `theorem` | ArchSig-derived report boundary が selected estimate の reconstruction boundary を保持する。 | `proved accessor` |
@@ -2736,6 +2738,8 @@ extractor completeness を結論しない。
 | `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_boundary_remains_toolingBoundary` | `theorem` | ArchSig report boundary が SFT tooling boundary として残ることを取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_boundary_does_not_strengthen_theorem_status` | `theorem` | ArchSig-derived report boundary が theorem status を強めないことを theorem-boundary accessor として示す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary.report_boundary_does_not_calibrate_forecast` | `theorem` | ArchSig-derived report boundary が calibrated forecast correctness を結論せず forecast boundary を残す。 | `proved accessor` |
+| `SFTAATFundamentalModularity.ArchMapAATSFTHomomorphicBoundary` | `def` | ArchMap-derived AAT homomorphic reading と ArchSig-derived SFT estimate / forecast boundary reading を合わせた AAT/SFT homomorphic boundary。 | `defined only` |
+| `SFTAATFundamentalModularity.archMap_archSig_aatSftHomomorphicBoundary` | `theorem` | ArchMap preservation package と ArchSig-derived report boundary から combined AAT/SFT homomorphic boundary を取り出す。 | `proved accessor` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary` | `structure` | selected AAT slice、`AATTheoremStatus`、`SFTForecastStatus`、`AATToSFTInterfaceBoundary`、`FiniteExactSFTModel`、selected source / horizon を束ねる AAT-supported SFT boundary package。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel` | `def` | selected slice、interface boundary、finite exact model boundary records から `AATSupportedSFTBoundary` を構成する constructor helper。 | `defined only` |
 | `SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries` | `def` | ArchMap-derived selected slice と ArchSig-derived SFT report boundary から `AATSupportedSFTBoundary` を構成する higher-level constructor。 | `defined only` |
@@ -3369,6 +3373,7 @@ success は、Lean theorem witness ではない。
 | `ArchMapModel.SelectedTargetFlatness` | `def` | target 側の selected static / runtime / semantic flatness evidence。 | `defined only` |
 | `ArchMapModel.AATStructurePreserved` | `def` | object / relation / semantic / law / flatness preservation と forgetting / coverage / exactness / guardrail / non-conclusion を含む bounded conclusion。 | `defined only` |
 | `ArchMapModel.BoundedHomomorphismPreservation` | `def` | object / relation / semantic diagram / semantic commutation / nonfillability witness / law-policy / flatness precondition と boundary field を束ねる top-level bounded homomorphism predicate。 | `defined only` |
+| `ArchMapModel.AATHomomorphicRelation` | `def` | selected ArchMap model を AAT architecture surface への bounded homomorphic relation として読み、`BoundedHomomorphismPreservation` と `AATStructurePreserved` を束ねる。 | `defined only` |
 | `ArchMapModel.ArchMapPreservationPackage` | `structure` | selected preservation 条件と non-conclusion boundary を明示 field として束ねる theorem package。 | `defined only` |
 | `ArchMapModel.ArchMapPreservationPackage.objectPreservation` | `theorem` | package から selected object preservation を取り出す。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.relationPreservation` | `theorem` | package から selected relation preservation を取り出す。 | `proved` |
@@ -3382,11 +3387,14 @@ success は、Lean theorem witness ではない。
 | `ArchMapModel.ArchMapPreservationPackage.semanticMeasuredZero_not_coverageGap` | `theorem` | semantic measured zero boundary と semantic coverage gap boundary が別 field として記録されていることを取り出す。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.architectureFlatWithin` | `theorem` | selected flatness evidence と preserved preconditions から bounded `ArchitectureFlatWithin` を得る。 | `proved` |
 | `ArchMapModel.ArchMapPreservationPackage.aatStructurePreserved` | `theorem` | package から bounded `AATStructurePreserved` を得る。 | `proved` |
+| `ArchMapModel.ArchMapPreservationPackage.aatHomomorphicRelation` | `theorem` | package から ArchMap-to-AAT の bounded homomorphic relation を得る。 | `proved` |
 | `ArchMapModel.aatStructurePreserved_of_archMapPreservationPackage` | `theorem` | package-based structure preservation の top-level spelling。 | `proved` |
+| `ArchMapModel.aatHomomorphicRelation_of_archMapPreservationPackage` | `theorem` | ArchMap-to-AAT homomorphic relation の top-level spelling。 | `proved` |
 | `ArchMapModel.Examples.unitArchMapModel` | `def` | singleton finite target 上の positive ArchMap model。JSON fixture の parse ではなく、formal bridge smoke test 用の bounded model。 | `defined only` |
 | `ArchMapModel.Examples.unitArchMapPreservationPackage` | `def` | singleton finite model 上で `ArchMapPreservationPackage` を構成する positive example。 | `defined only` |
 | `ArchMapModel.Examples.unitArchMap_aatStructurePreserved` | `theorem` | positive package から bounded `AATStructurePreserved` を取り出す。 | `proved` |
 | `ArchMapModel.Examples.unitArchMap_boundedHomomorphismPreserved` | `theorem` | positive package から `BoundedHomomorphismPreservation` を取り出す。 | `proved` |
+| `ArchMapModel.Examples.unitArchMap_aatHomomorphicRelation` | `theorem` | positive package から ArchMap-to-AAT homomorphic relation を取り出す。 | `proved` |
 
 Non-conclusions: `ArchMapModel` は `archmap-v0` JSON を Lean が parse / validate した結果ではない。
 `BoundedHomomorphismPreservation` と `ArchMapPreservationPackage` は selected universe / coverage / exactness / flatness preconditions に

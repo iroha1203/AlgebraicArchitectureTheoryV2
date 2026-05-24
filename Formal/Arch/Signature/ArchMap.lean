@@ -166,6 +166,19 @@ def BoundedHomomorphismPreservation
   M.nonConclusions
 
 /--
+ArchMap-to-AAT homomorphic relation exposed by the formal bridge.
+
+This reads an ArchMap model as a bounded homomorphism candidate into the AAT
+architecture surface and records the induced bounded AAT structure.  It is not
+a parser for `archmap-v0` JSON and does not assert global repository
+completeness.
+-/
+def AATHomomorphicRelation
+    (M : ArchMapModel Src Tgt Abs StaticObs SrcExpr TgtExpr SemanticObs) :
+    Prop :=
+  BoundedHomomorphismPreservation M ∧ AATStructurePreserved M
+
+/--
 Theorem package for selected ArchMap preservation.
 
 All conclusions are relative to the selected source universe, target component
@@ -301,6 +314,15 @@ theorem aatStructurePreserved
     pkg.formalPromotionGuardrail,
     pkg.nonConclusions⟩
 
+/--
+The package presents the selected ArchMap as a bounded homomorphic relation
+into the AAT architecture surface.
+-/
+theorem aatHomomorphicRelation
+    (pkg : ArchMapPreservationPackage M) :
+    AATHomomorphicRelation M :=
+  ⟨pkg.boundedHomomorphismPreserved, pkg.aatStructurePreserved⟩
+
 end ArchMapPreservationPackage
 
 /-- Convenience theorem spelling for package-based structure preservation. -/
@@ -309,6 +331,13 @@ theorem aatStructurePreserved_of_archMapPreservationPackage
     (pkg : ArchMapPreservationPackage M) :
     AATStructurePreserved M :=
   pkg.aatStructurePreserved
+
+/-- Convenience theorem spelling for the ArchMap-to-AAT homomorphic relation. -/
+theorem aatHomomorphicRelation_of_archMapPreservationPackage
+    {M : ArchMapModel Src Tgt Abs StaticObs SrcExpr TgtExpr SemanticObs}
+    (pkg : ArchMapPreservationPackage M) :
+    AATHomomorphicRelation M :=
+  pkg.aatHomomorphicRelation
 
 namespace Examples
 
@@ -470,6 +499,10 @@ theorem unitArchMap_aatStructurePreserved :
 theorem unitArchMap_boundedHomomorphismPreserved :
     BoundedHomomorphismPreservation unitArchMapModel :=
   unitArchMapPreservationPackage.boundedHomomorphismPreserved
+
+theorem unitArchMap_aatHomomorphicRelation :
+    AATHomomorphicRelation unitArchMapModel :=
+  unitArchMapPreservationPackage.aatHomomorphicRelation
 
 end Examples
 

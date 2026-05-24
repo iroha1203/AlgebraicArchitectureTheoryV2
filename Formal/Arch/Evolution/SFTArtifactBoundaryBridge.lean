@@ -87,6 +87,36 @@ theorem archMap_preserves_nonConclusions
     (ofArchMapPreservationPackage pkg).RecordsNonConclusions :=
   pkg.nonConclusions
 
+/--
+ArchMap-to-AAT homomorphic reading used by the AAT/SFT artifact bridge.
+
+This packages the selected architecture, projection, observation,
+reconstruction, missing-evidence, theorem-status, and non-conclusion readings
+of the ArchMap package. It is a boundary/precondition reading, not a claim that
+the supplied tooling artifact is complete or globally correct.
+-/
+def ArchMapAATHomomorphicReading
+    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
+    Prop :=
+  (ofArchMapPreservationPackage pkg).RecordsSelectedArchitecture ∧
+  (ofArchMapPreservationPackage pkg).RecordsProjectionBoundary ∧
+  (ofArchMapPreservationPackage pkg).RecordsObservationBoundary ∧
+  (ofArchMapPreservationPackage pkg).RecordsReconstructionBoundary ∧
+  (ofArchMapPreservationPackage pkg).RecordsMissingEvidence ∧
+  (ofArchMapPreservationPackage pkg).RecordsTheoremStatusBoundary ∧
+  (ofArchMapPreservationPackage pkg).RecordsNonConclusions
+
+theorem archMap_aatHomomorphicReading
+    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
+    ArchMapAATHomomorphicReading pkg :=
+  ⟨archMap_records_selectedArchitecture pkg,
+    archMap_records_projectionBoundary pkg,
+    archMap_records_observationBoundary pkg,
+    archMap_records_reconstructionBoundary pkg,
+    archMap_records_missingEvidence pkg,
+    archMap_records_theoremStatusBoundary pkg,
+    archMap_preserves_nonConclusions pkg⟩
+
 end AATSelectedArchitectureSlice
 
 /--
@@ -199,6 +229,78 @@ theorem report_boundary_does_not_calibrate_forecast
     derived.recordsForecastBoundary
 
 end ArchSigDerivedSFTReportBoundary
+
+/--
+Combined homomorphic boundary reading from an ArchMap-selected AAT slice and an
+ArchSig-derived SFT report boundary.
+
+The first component records that the ArchMap package can be read as a bounded
+homomorphic AAT slice.  The second component records that the ArchSig report
+preserves the selected SFT estimate / forecast boundaries.  This combined
+relation is intentionally boundary-level: it does not prove calibrated forecast
+correctness or turn tool output into a Lean theorem witness.
+-/
+def ArchMapAATSFTHomomorphicBoundary
+    {Src : Type a} {Tgt : Type b} {Abs : Type c}
+    {MapStaticObs : Type d} {SrcExpr : Type e}
+    {TgtExpr : Type f} {MapSemanticObs : Type q}
+    {M :
+      ArchMapModel Src Tgt Abs MapStaticObs SrcExpr TgtExpr MapSemanticObs}
+    {FieldState : Type r} {ReportC : Type s} {ReportA : Type t}
+    {ReportStaticObs : Type u} {ReportSemanticExpr : Type v}
+    {ReportSemanticObs : Type w}
+    {report :
+      ArchSigSFTReport FieldState ReportC ReportA ReportStaticObs
+        ReportSemanticExpr ReportSemanticObs}
+    {estimate :
+      SoftwareFieldEstimate FieldState ReportC ReportA ReportStaticObs
+        ReportSemanticExpr ReportSemanticObs}
+    {forecast : SFTForecastStatus}
+    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (_archSigBoundary :
+      ArchSigDerivedSFTReportBoundary report estimate forecast) :
+    Prop :=
+  AATSelectedArchitectureSlice.ArchMapAATHomomorphicReading
+    archMapPackage ∧
+  estimate.RecordsObservationBoundary ∧
+  estimate.RecordsReconstructionBoundary ∧
+  estimate.RecordsMissingEvidence ∧
+  forecast.RecordsTheoremBoundary ∧
+  forecast.RecordsForecastBoundary ∧
+  forecast.RecordsToolingBoundary ∧
+  estimate.RecordsNonConclusions ∧
+  forecast.RecordsNonConclusions
+
+theorem archMap_archSig_aatSftHomomorphicBoundary
+    {Src : Type a} {Tgt : Type b} {Abs : Type c}
+    {MapStaticObs : Type d} {SrcExpr : Type e}
+    {TgtExpr : Type f} {MapSemanticObs : Type q}
+    {M :
+      ArchMapModel Src Tgt Abs MapStaticObs SrcExpr TgtExpr MapSemanticObs}
+    {FieldState : Type r} {ReportC : Type s} {ReportA : Type t}
+    {ReportStaticObs : Type u} {ReportSemanticExpr : Type v}
+    {ReportSemanticObs : Type w}
+    {report :
+      ArchSigSFTReport FieldState ReportC ReportA ReportStaticObs
+        ReportSemanticExpr ReportSemanticObs}
+    {estimate :
+      SoftwareFieldEstimate FieldState ReportC ReportA ReportStaticObs
+        ReportSemanticExpr ReportSemanticObs}
+    {forecast : SFTForecastStatus}
+    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (archSigBoundary :
+      ArchSigDerivedSFTReportBoundary report estimate forecast) :
+    ArchMapAATSFTHomomorphicBoundary archMapPackage archSigBoundary :=
+  ⟨AATSelectedArchitectureSlice.archMap_aatHomomorphicReading
+      archMapPackage,
+    archSigBoundary.report_preserves_observationBoundary,
+    archSigBoundary.report_preserves_reconstructionBoundary,
+    archSigBoundary.report_missing_invariants_remain_missingEvidence,
+    archSigBoundary.report_preserves_theoremBoundary,
+    archSigBoundary.report_preserves_forecastBoundary,
+    archSigBoundary.report_boundary_remains_toolingBoundary,
+    (archSigBoundary.report_preserves_nonConclusions).1,
+    (archSigBoundary.report_preserves_nonConclusions).2⟩
 
 namespace AATSupportedSFTBoundary
 
