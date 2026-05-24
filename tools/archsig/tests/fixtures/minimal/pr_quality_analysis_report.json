@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "pr-quality-analysis-report-v0",
+  "reportId": "fixture-pr-quality-analysis-v0",
+  "archmapRef": {
+    "schemaVersion": "archmap-v0",
+    "mapId": "fixture-archmap-v0",
+    "path": "tools/archsig/tests/fixtures/minimal/archmap.json",
+    "mapItemIds": [
+      "object-route-users",
+      "policy-layered-route-service",
+      "runtime-unmeasured-boundary"
+    ],
+    "nonConclusions": [
+      "AlignmentMap does not prove implementation impact",
+      "AlignmentMap does not guarantee future outcome or quality",
+      "intentUnaligned is planning boundary, not measured zero",
+      "unsupported and ambiguous alignments remain review cues",
+      "validation pass does not prove semantic correctness of LLM-authored maps"
+    ]
+  },
+  "airRef": {
+    "artifactId": "artifact:air",
+    "artifactKind": "air",
+    "path": "air.json",
+    "schemaVersion": "aat-air-v0",
+    "nonConclusions": [
+      "PR quality analysis is reviewer-facing evidence, not merge approval",
+      "PR quality analysis does not prove architecture lawfulness",
+      "missing evidence remains review boundary",
+      "quality cues are not global rankings"
+    ]
+  },
+  "theoremCheckRef": {
+    "artifactId": "artifact:theorem-check",
+    "artifactKind": "theorem-check",
+    "path": "theorem-check.json",
+    "schemaVersion": "theorem-precondition-check-report-v0",
+    "nonConclusions": [
+      "PR quality analysis is reviewer-facing evidence, not merge approval",
+      "PR quality analysis does not prove architecture lawfulness",
+      "missing evidence remains review boundary",
+      "quality cues are not global rankings"
+    ]
+  },
+  "featureReportRef": {
+    "artifactId": "artifact:feature-report",
+    "artifactKind": "feature-report",
+    "path": "feature-report.json",
+    "schemaVersion": "feature-extension-report-v0",
+    "nonConclusions": [
+      "PR quality analysis is reviewer-facing evidence, not merge approval",
+      "PR quality analysis does not prove architecture lawfulness",
+      "missing evidence remains review boundary",
+      "quality cues are not global rankings"
+    ]
+  },
+  "policyDecisionRef": {
+    "artifactId": "artifact:policy-decision",
+    "artifactKind": "policy-decision",
+    "path": "policy-decision.json",
+    "schemaVersion": "policy-decision-report-v0",
+    "nonConclusions": [
+      "PR quality analysis is reviewer-facing evidence, not merge approval",
+      "PR quality analysis does not prove architecture lawfulness",
+      "missing evidence remains review boundary",
+      "quality cues are not global rankings"
+    ]
+  },
+  "cues": [
+    {
+      "cueId": "cue:responsibility-mixing",
+      "cueKind": "responsibilityMixing",
+      "sourceRefs": [
+        "object-route-users"
+      ],
+      "severity": "review",
+      "reviewFocus": "review semantic dependency and split need before merge",
+      "evidenceBoundary": "selected ArchMap/AIR/theorem-check artifacts only",
+      "nonConclusions": [
+        "PR quality analysis is reviewer-facing evidence, not merge approval",
+        "PR quality analysis does not prove architecture lawfulness",
+        "missing evidence remains review boundary",
+        "quality cues are not global rankings"
+      ]
+    },
+    {
+      "cueId": "cue:runtime-static-disagreement",
+      "cueKind": "runtimeStaticDisagreement",
+      "sourceRefs": [
+        "object-route-users"
+      ],
+      "severity": "review",
+      "reviewFocus": "compare runtime evidence need with static ArchMap refs",
+      "evidenceBoundary": "selected ArchMap/AIR/theorem-check artifacts only",
+      "nonConclusions": [
+        "PR quality analysis is reviewer-facing evidence, not merge approval",
+        "PR quality analysis does not prove architecture lawfulness",
+        "missing evidence remains review boundary",
+        "quality cues are not global rankings"
+      ]
+    },
+    {
+      "cueId": "cue:policy-conflict",
+      "cueKind": "policyConflict",
+      "sourceRefs": [
+        "object-route-users"
+      ],
+      "severity": "review",
+      "reviewFocus": "review policy boundary and theorem precondition report",
+      "evidenceBoundary": "selected ArchMap/AIR/theorem-check artifacts only",
+      "nonConclusions": [
+        "PR quality analysis is reviewer-facing evidence, not merge approval",
+        "PR quality analysis does not prove architecture lawfulness",
+        "missing evidence remains review boundary",
+        "quality cues are not global rankings"
+      ]
+    }
+  ],
+  "missingEvidence": [
+    {
+      "boundaryId": "missing-evidence:pr-runtime",
+      "boundaryKind": "missingEvidence",
+      "intentItemRefs": [],
+      "archmapItemRefs": [
+        "runtime-unmeasured-boundary"
+      ],
+      "reason": "runtime evidence was not supplied to selected PR analysis",
+      "treatment": "retain as review cue, not merge blocker by itself",
+      "nonConclusions": [
+        "AlignmentMap does not prove implementation impact",
+        "AlignmentMap does not guarantee future outcome or quality",
+        "intentUnaligned is planning boundary, not measured zero",
+        "unsupported and ambiguous alignments remain review cues",
+        "validation pass does not prove semantic correctness of LLM-authored maps"
+      ]
+    }
+  ],
+  "reviewSummary": {
+    "summaryId": "summary:pr-quality",
+    "cueCount": 3,
+    "missingEvidenceCount": 1,
+    "reviewerNotes": [
+      "ArchMap is the PR-side source; IntentMap planning flow is not required for PR quality analysis",
+      "report surfaces review cues and missing evidence without automatic merge decision"
+    ],
+    "nonConclusions": [
+      "PR quality analysis is reviewer-facing evidence, not merge approval",
+      "PR quality analysis does not prove architecture lawfulness",
+      "missing evidence remains review boundary",
+      "quality cues are not global rankings"
+    ]
+  },
+  "nonConclusions": [
+    "PR quality analysis is reviewer-facing evidence, not merge approval",
+    "PR quality analysis does not prove architecture lawfulness",
+    "missing evidence remains review boundary",
+    "quality cues are not global rankings"
+  ]
+}

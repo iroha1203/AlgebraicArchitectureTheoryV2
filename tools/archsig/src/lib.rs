@@ -17,6 +17,7 @@ mod feature_report;
 mod framework_adapter;
 mod github;
 mod graph;
+mod intentmap;
 mod law_policy_template;
 mod measurement_unit;
 mod no_solution_certificate;
@@ -91,6 +92,12 @@ pub use framework_adapter::attach_framework_adapter_evidence;
 pub use github::{
     build_pr_history_dataset_from_github_files, build_pr_history_dataset_from_github_values,
     build_pr_metadata_from_github_files, build_pr_metadata_from_github_values,
+};
+pub use intentmap::{
+    build_operation_support_estimate_from_intent_alignment, static_intent_archmap_alignment,
+    static_intent_calibration_record, static_intent_map, static_pr_quality_analysis_report,
+    validate_intent_archmap_alignment, validate_intent_calibration_record, validate_intent_map,
+    validate_pr_quality_analysis_report,
 };
 pub use law_policy_template::{
     static_law_policy_template_registry, validate_law_policy_template_registry_report,

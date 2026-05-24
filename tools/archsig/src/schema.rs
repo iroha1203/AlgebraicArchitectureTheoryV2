@@ -86,6 +86,11 @@ pub const HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION: &str = "hypothesis-refresh-cy
 pub const ARTIFACT_DESCRIPTOR_SCHEMA_VERSION: &str = "artifact-descriptor-v0";
 pub const ARTIFACT_DESCRIPTOR_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "artifact-descriptor-validation-report-v0";
+pub const INTENTMAP_SCHEMA_VERSION: &str = "intentmap-v0";
+pub const INTENTMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "intentmap-validation-report-v0";
+pub const INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION: &str = "intent-archmap-alignment-v0";
+pub const INTENT_ARCHMAP_ALIGNMENT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "intent-archmap-alignment-validation-report-v0";
 pub const OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION: &str = "operation-support-estimate-v0";
 pub const OPERATION_SUPPORT_ESTIMATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "operation-support-estimate-validation-report-v0";
@@ -98,6 +103,12 @@ pub const CONSEQUENCE_ENVELOPE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION: &str = "forecast-calibration-hook-v0";
 pub const FORECAST_CALIBRATION_HOOK_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "forecast-calibration-hook-validation-report-v0";
+pub const PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION: &str = "pr-quality-analysis-report-v0";
+pub const PR_QUALITY_ANALYSIS_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "pr-quality-analysis-validation-report-v0";
+pub const INTENT_CALIBRATION_RECORD_SCHEMA_VERSION: &str = "intent-calibration-record-v0";
+pub const INTENT_CALIBRATION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "intent-calibration-validation-report-v0";
 pub const AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION: &str = "ai-proposal-governance-v0";
 pub const AI_PROPOSAL_GOVERNANCE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "ai-proposal-governance-validation-report-v0";
@@ -4059,6 +4070,208 @@ pub struct ArtifactDescriptorValidationSummary {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct IntentMapV0 {
+    pub schema_version: String,
+    pub intent_map_id: String,
+    pub source_universe: IntentSourceUniverseV0,
+    pub generator: IntentMapGeneratorV0,
+    pub items: Vec<IntentItemV0>,
+    pub missing_decisions: Vec<IntentBoundaryItemV0>,
+    pub ambiguous_intents: Vec<IntentBoundaryItemV0>,
+    pub missing_evidence: Vec<IntentBoundaryItemV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentSourceUniverseV0 {
+    pub universe_id: String,
+    pub source_refs: Vec<IntentSourceRefV0>,
+    pub included_kinds: Vec<String>,
+    pub excluded_kinds: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentSourceRefV0 {
+    pub source_ref_id: String,
+    pub source_kind: String,
+    pub path_or_url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stable_ref: Option<String>,
+    pub evidence_role: String,
+    pub retained_fields: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapGeneratorV0 {
+    pub authored_by: String,
+    pub prompt_ref: String,
+    pub model_ref: String,
+    pub extraction_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentItemV0 {
+    pub intent_item_id: String,
+    pub intent_kind: String,
+    pub source_refs: Vec<String>,
+    pub target_intent_ref: String,
+    pub preserves: Vec<String>,
+    pub forgets: Vec<String>,
+    pub claim_classification: String,
+    pub confidence: String,
+    pub required_assumptions: Vec<String>,
+    pub missing_decisions: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentBoundaryItemV0 {
+    pub boundary_id: String,
+    pub boundary_kind: String,
+    pub intent_item_refs: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapValidationReportV0 {
+    pub schema_version: String,
+    pub input: IntentMapValidationInput,
+    pub intent_map: IntentMapV0,
+    pub summary: IntentMapValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub intent_map_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapValidationSummary {
+    pub result: String,
+    pub intent_item_count: usize,
+    pub missing_decision_count: usize,
+    pub ambiguous_intent_count: usize,
+    pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentV0 {
+    pub schema_version: String,
+    pub alignment_map_id: String,
+    pub intent_map_ref: IntentMapArtifactRefV0,
+    pub archmap_ref: IntentArchMapArtifactRefV0,
+    pub alignments: Vec<IntentArchMapAlignmentItemV0>,
+    pub unaligned_intents: Vec<IntentAlignmentBoundaryItemV0>,
+    pub unsupported_intents: Vec<IntentAlignmentBoundaryItemV0>,
+    pub ambiguous_alignments: Vec<IntentAlignmentBoundaryItemV0>,
+    pub missing_evidence: Vec<IntentAlignmentBoundaryItemV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapArtifactRefV0 {
+    pub schema_version: String,
+    pub intent_map_id: String,
+    pub path: String,
+    pub intent_item_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapArtifactRefV0 {
+    pub schema_version: String,
+    pub map_id: String,
+    pub path: String,
+    pub map_item_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentItemV0 {
+    pub alignment_id: String,
+    pub alignment_kind: String,
+    pub intent_item_ref: String,
+    pub archmap_item_refs: Vec<String>,
+    pub preserves: Vec<String>,
+    pub forgets: Vec<String>,
+    pub confidence: String,
+    pub missing_decisions: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentAlignmentBoundaryItemV0 {
+    pub boundary_id: String,
+    pub boundary_kind: String,
+    pub intent_item_refs: Vec<String>,
+    pub archmap_item_refs: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentValidationReportV0 {
+    pub schema_version: String,
+    pub input: IntentArchMapAlignmentValidationInput,
+    pub alignment_map: IntentArchMapAlignmentV0,
+    pub summary: IntentArchMapAlignmentValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub alignment_map_id: String,
+    pub intent_map_id: String,
+    pub archmap_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentValidationSummary {
+    pub result: String,
+    pub alignment_count: usize,
+    pub unaligned_intent_count: usize,
+    pub unsupported_intent_count: usize,
+    pub ambiguous_alignment_count: usize,
+    pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OperationSupportEstimateV0 {
     pub schema_version: String,
     pub estimate_id: String,
@@ -4552,6 +4765,159 @@ pub struct ForecastCalibrationHookValidationSummary {
     pub forecast_item_count: usize,
     pub observed_outcome_count: usize,
     pub match_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityAnalysisReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub archmap_ref: IntentArchMapArtifactRefV0,
+    pub air_ref: Option<PrQualityArtifactRefV0>,
+    pub theorem_check_ref: Option<PrQualityArtifactRefV0>,
+    pub feature_report_ref: Option<PrQualityArtifactRefV0>,
+    pub policy_decision_ref: Option<PrQualityArtifactRefV0>,
+    pub cues: Vec<PrQualityCueV0>,
+    pub missing_evidence: Vec<IntentAlignmentBoundaryItemV0>,
+    pub review_summary: PrQualityReviewSummaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityArtifactRefV0 {
+    pub artifact_id: String,
+    pub artifact_kind: String,
+    pub path: String,
+    pub schema_version: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityCueV0 {
+    pub cue_id: String,
+    pub cue_kind: String,
+    pub source_refs: Vec<String>,
+    pub severity: String,
+    pub review_focus: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityReviewSummaryV0 {
+    pub summary_id: String,
+    pub cue_count: usize,
+    pub missing_evidence_count: usize,
+    pub reviewer_notes: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityAnalysisValidationReportV0 {
+    pub schema_version: String,
+    pub input: PrQualityAnalysisValidationInput,
+    pub report: PrQualityAnalysisReportV0,
+    pub summary: PrQualityAnalysisValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityAnalysisValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub report_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityAnalysisValidationSummary {
+    pub result: String,
+    pub cue_count: usize,
+    pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationRecordV0 {
+    pub schema_version: String,
+    pub calibration_id: String,
+    pub intent_map_ref: IntentMapArtifactRefV0,
+    pub forecast_cone_ref: ConsequenceForecastConeRefV0,
+    pub observed_artifact_refs: Vec<CalibrationObservedOutcomeRefV0>,
+    pub intent_matches: Vec<IntentCalibrationMatchV0>,
+    pub missing_decision_statuses: Vec<MissingDecisionObservedStatusV0>,
+    pub forecast_usefulness_feedback: Vec<ForecastUsefulnessFeedbackV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationMatchV0 {
+    pub match_id: String,
+    pub intent_item_id: String,
+    pub forecast_item_id: String,
+    pub observed_ref_id: Option<String>,
+    pub status: String,
+    pub rationale: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MissingDecisionObservedStatusV0 {
+    pub decision_id: String,
+    pub intent_item_refs: Vec<String>,
+    pub status: String,
+    pub observed_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastUsefulnessFeedbackV0 {
+    pub feedback_id: String,
+    pub intent_item_refs: Vec<String>,
+    pub forecast_item_refs: Vec<String>,
+    pub feedback_kind: String,
+    pub reviewer_note: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationValidationReportV0 {
+    pub schema_version: String,
+    pub input: IntentCalibrationValidationInput,
+    pub record: IntentCalibrationRecordV0,
+    pub summary: IntentCalibrationValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub calibration_id: String,
+    pub intent_map_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationValidationSummary {
+    pub result: String,
+    pub intent_match_count: usize,
+    pub observed_artifact_count: usize,
+    pub missing_decision_status_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

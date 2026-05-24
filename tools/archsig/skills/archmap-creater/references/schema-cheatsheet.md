@@ -170,3 +170,53 @@ ${ARCHSIG_BIN:-archsig} archmap \
   --input <archmap.json> \
   --out .archsig/archmap/validation.json
 ```
+
+## IntentMap Fields
+
+Use `intentmap-v0` for PRD / Epic / Spec intent before planning forecast. Required top-level shape:
+
+```json
+{
+  "schemaVersion": "intentmap-v0",
+  "intentMapId": "...",
+  "sourceUniverse": {},
+  "generator": {},
+  "items": [],
+  "missingDecisions": [],
+  "ambiguousIntents": [],
+  "missingEvidence": [],
+  "nonConclusions": []
+}
+```
+
+Each `items[]` entry should include `intentItemId`, `intentKind`, `sourceRefs`, `targetIntentRef`,
+`preserves`, `forgets`, `claimClassification`, `confidence`, `requiredAssumptions`,
+`missingDecisions`, `missingEvidence`, and `nonConclusions`.
+
+Prefer these `intentKind` values: `requirement`, `operation`, `workflow`, `state`, `transition`,
+`invariant`, `acceptance`, `non-goal`, `ambiguity`.
+
+Prefer these `claimClassification` values: `measured`, `assumed`, `unmeasured`, `ambiguous`,
+`decision-needed`.
+
+## AlignmentMap Fields
+
+Use `intent-archmap-alignment-v0` after an IntentMap and current ArchMap exist.
+
+Each `alignments[]` entry should include `alignmentId`, `alignmentKind`, `intentItemRef`,
+`archmapItemRefs`, `preserves`, `forgets`, `confidence`, `missingDecisions`, `missingEvidence`,
+and `nonConclusions`.
+
+Allowed `alignmentKind` values:
+
+- `intentToObject`
+- `intentToRelation`
+- `intentToWorkflow`
+- `intentToStateTransition`
+- `intentToPolicyBoundary`
+- `intentToTestOracle`
+- `intentToRuntimeObservation`
+- `intentUnaligned`
+
+Keep `unalignedIntents`, `unsupportedIntents`, `ambiguousAlignments`, and `missingEvidence` explicit.
+These are planning boundaries, not measured zero.

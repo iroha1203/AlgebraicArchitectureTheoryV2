@@ -14,14 +14,18 @@ Read ArchSig and ArchMap artifacts as bounded architecture evidence. Produce a c
 Use the richest available artifacts first:
 
 - `archmap-validation-report-v0`
+- `intentmap-validation-report-v0`
+- `intent-archmap-alignment-validation-report-v0`
 - `operation-support-estimate-v0`
 - `forecast-cone-skeleton-v0`
 - `consequence-envelope-report-v0`
+- `pr-quality-analysis-report-v0`
 - `signature-diff-report-v0`
 - `feature-extension-report-v0`
 - `policy-decision-report-v0`
 - `theorem-precondition-report-v0`
 - `forecast-calibration-hook-v0`
+- `intent-calibration-record-v0`
 - Sig0 and validation reports
 
 If artifacts are missing, ask to run `$archsig-executer` or run it when appropriate.
@@ -48,6 +52,8 @@ For non-trivial diagnosis:
 
 3. Read SFT-facing evolution signals.
    - Use operation families, candidate supports, forecast cone path classes, consequence envelope recommendations, and calibration refs.
+   - For planning forecast, trace operation support back to IntentMap item refs and AlignmentMap boundaries.
+   - Keep missing decisions, ambiguous intents, unaligned intents, unsupported intents, and missing evidence separate.
    - Describe likely pressure directions and bounded consequences, not point predictions.
    - Do not claim incident causality, global safety, quality ranking, or forecast correctness.
 
@@ -88,6 +94,9 @@ Keep the answer direct. Cite artifact paths and important ids when available. Do
 - `ForecastConeSkeleton` is a bounded forecast artifact; it is not a probability distribution or point prediction.
 - `ConsequenceEnvelope` is a report projection; it is not a causal proof.
 - Calibration artifacts connect predictions to observations; they do not by themselves establish causality.
+- IntentMap is LLM-authored intent evidence, not an implementation plan.
+- AlignmentMap connects intent refs to architecture refs; it does not guarantee implementation impact.
+- PR quality analysis provides review cues; it is not merge approval or architecture lawfulness.
 
 ## Escalation
 

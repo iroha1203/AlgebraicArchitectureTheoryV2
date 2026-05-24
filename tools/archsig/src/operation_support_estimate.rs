@@ -3,8 +3,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::validation::{count_checks, generic_validation_example, validation_check};
 use crate::{
     ARTIFACT_DESCRIPTOR_SCHEMA_VERSION, ArtifactActionClassCandidateV0, ArtifactDescriptorV0,
-    CandidateOperationFamilyV0, KnownForbiddenOperationSupportV0,
-    OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION,
+    CandidateOperationFamilyV0, INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION,
+    KnownForbiddenOperationSupportV0, OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION,
     OPERATION_SUPPORT_ESTIMATE_VALIDATION_REPORT_SCHEMA_VERSION, OperationSupportDescriptorRefV0,
     OperationSupportEstimateV0, OperationSupportEstimateValidationInput,
     OperationSupportEstimateValidationReportV0, OperationSupportEstimateValidationSummary,
@@ -537,7 +537,10 @@ fn check_schema_version(estimate: &OperationSupportEstimateV0) -> ValidationChec
 fn check_descriptor_ref(estimate: &OperationSupportEstimateV0) -> ValidationCheck {
     let descriptor = &estimate.descriptor_ref;
     let invalid = estimate.estimate_id.trim().is_empty()
-        || descriptor.descriptor_schema_version != ARTIFACT_DESCRIPTOR_SCHEMA_VERSION
+        || !matches!(
+            descriptor.descriptor_schema_version.as_str(),
+            ARTIFACT_DESCRIPTOR_SCHEMA_VERSION | INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION
+        )
         || descriptor.descriptor_id.trim().is_empty()
         || descriptor.artifact_kind.trim().is_empty()
         || descriptor.source_ref_ids.is_empty()

@@ -15,8 +15,8 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | Surface | 現在使えるもの | Remaining gaps |
 | --- | --- | --- |
 | ArchSig Core | Lean / Python import graph scan、Sig0、validation、snapshot、signature diff。policy JSON と runtime edge evidence は明示入力として扱える。 | call graph、data dependency、dynamic import、plugin loading、framework convention は adapter boundary。extractor output は完全な `ComponentUniverse` ではない。 |
-| ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment summary、baseline suppression。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定、ArchMap generation command は未完成。tool output は Lean theorem ではない。 |
-| ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、validation report を生成する bounded pipeline。 | real dataset calibration、framework semantics adapter は remaining gaps。`ForecastCone` は point prediction ではなく、`ConsequenceEnvelope` は report projection である。 |
+| ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment summary、baseline suppression、PR quality analysis。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定。tool output は Lean theorem や merge approval ではない。 |
+| ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、validation report を生成する bounded pipeline。PRD v3 では `IntentMap`、`AlignmentMap`、`intent-forecast` を使って planning forecast を作る。 | real dataset calibration、framework semantics adapter は remaining gaps。`ForecastCone` は point prediction ではなく、`ConsequenceEnvelope` は report projection である。 |
 | ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、B10 daily ledger、calibration review、team threshold、ownership boundary、repair adoption、incident correlation、hypothesis refresh artifacts。 | 実 dataset での calibration、incident / rollback / MTTR との運用接続、confounder 管理、private data boundary の組織別設計が残る。correlation は因果 theorem ではない。 |
 
 ## できること
@@ -31,6 +31,10 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 - supplied JSON の `archmap-v0` を validation report に変換し、AIR へ loss-aware に投影する。
 - 実証研究用 dataset、B10 operational feedback artifact、B12 SFT forecasting MVP の
   descriptor / support estimate / cone / envelope / calibration hook を JSON として出力する。
+- PRD / Epic / Spec の意図を `intentmap-v0` として保持し、`intent-archmap-alignment-v0`
+  から operation support、ForecastCone、ConsequenceEnvelope を deterministic に生成する。
+- PR diff / repository evidence から作られた ArchMap 系 artifact を、merge approval ではない
+  PR quality review cue として読む `pr-quality-analysis-report-v0` を出力する。
 - Codex skill として、ArchMap 作成、ArchSig 実行、artifact 診断の作業手順を AI agent に渡せる。
 
 詳細な command と artifact は次に分けている。
@@ -48,9 +52,9 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 
 | Skill | 用途 |
 | --- | --- |
-| [`archmap-creater`](skills/archmap-creater/SKILL.md) | repository evidence から bounded `archmap-v0` を作成し、source inventory、mapping guide、schema cheatsheet、examples に沿って validation まで進める。 |
-| [`archsig-executer`](skills/archsig-executer/SKILL.md) | `archsig` binary を使って scan、validation、ArchMap-to-AIR、ArchMap-to-SFT、ForecastCone、ConsequenceEnvelope などの artifact pipeline を実行する。 |
-| [`arch-doctor`](skills/arch-doctor/SKILL.md) | 生成済み artifact を読み、現在の architecture state、bounded evolution forecast、evidence gap、次の設計アクションを診断する。 |
+| [`archmap-creater`](skills/archmap-creater/SKILL.md) | repository evidence から bounded `archmap-v0` を作成し、PRD / Epic / Spec から bounded `intentmap-v0` を作る。source inventory、mapping guide、schema cheatsheet、IntentMap authoring guide、examples に沿って validation まで進める。 |
+| [`archsig-executer`](skills/archsig-executer/SKILL.md) | `archsig` binary を使って scan、validation、ArchMap-to-AIR、ArchMap-to-SFT、IntentMap validation、AlignmentMap validation、intent forecast、ForecastCone、ConsequenceEnvelope などの artifact pipeline を実行する。 |
+| [`arch-doctor`](skills/arch-doctor/SKILL.md) | 生成済み artifact を読み、現在の architecture state、bounded evolution forecast、planning boundary、evidence gap、次の設計アクションを診断する。 |
 
 skill は AI native な操作面であり、tool output を Lean proof、forecast correctness、incident causality、
 global architecture truth として読まない。生成 artifact は標準では `.archsig/` 以下に置く。
@@ -136,11 +140,15 @@ archmap-v0
 | `archmap-validation-report-v0` | supplied ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail。 |
 | `policy-decision-report-v0` | organization policy に基づく pass / warn / fail / advisory decision。 |
 | `pr-comment-summary-v0` | GitHub Checks / PR comment 向け Markdown summary。 |
+| `pr-quality-analysis-report-v0` | ArchMap / AIR / theorem-check / feature-report / policy-decision 由来の PR review cue。merge 可否は自動判定しない。 |
+| `intentmap-v0` | PRD / Epic / Spec の requirement、operation、workflow、state transition、acceptance、non-goal、ambiguity、missing decision を source refs とともに保持する。 |
+| `intent-archmap-alignment-v0` | IntentMap item と ArchMap item の対応、unaligned / unsupported / ambiguous intent、missing evidence を保持する。 |
 | `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal を SFT forecasting MVP の入力境界へ正規化する。 |
-| `operation-support-estimate-v0` | `artifact-descriptor-v0` から候補 operation family、policy constraints、known forbidden support、unknown remainder を保持する。 |
+| `operation-support-estimate-v0` | `artifact-descriptor-v0` または `intent-archmap-alignment-v0` から候補 operation family、policy constraints、known forbidden support、unknown remainder を保持する。 |
 | `forecast-cone-skeleton-v0` | finite support と bounded horizon に相対化した path class candidates と forecast boundary を保持する。 |
 | `consequence-envelope-report-v0` | signature axis、obstruction candidate、missing boundary、review / CI recommendation を report projection にまとめる。 |
 | `forecast-calibration-hook-v0` | forecast item refs と B10 / B11 の observed artifact refs を対応付ける。 |
+| `intent-calibration-record-v0` | IntentMap item、forecast item、observed implementation artifact、missing decision status、forecast usefulness feedback を対応付ける。 |
 
 [Signature diff report workflow](../../.github/workflows/signature-diff.yml) は、PR / push /
 schedule / manual run で Sig0、validation、snapshot、`signature-diff-report-v0` を作り、

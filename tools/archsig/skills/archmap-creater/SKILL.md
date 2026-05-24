@@ -1,13 +1,13 @@
 ---
 name: archmap-creater
-description: Create bounded ArchMap artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an archmap-v0 JSON file, prepare an ArchMap source inventory or prompt pack, run the archmap-generate protocol, or turn code/docs/tests/runtime hints into LLM-authored architecture mapping evidence.
+description: Create bounded ArchMap and IntentMap artifacts. Use when Codex is asked to draft, generate, update, or validate an archmap-v0 or intentmap-v0 JSON file, prepare an ArchMap source inventory or prompt pack, run the archmap-generate protocol, align PRD / Epic / Spec intent to architecture evidence, or turn code/docs/tests/runtime hints into LLM-authored mapping evidence.
 ---
 
 # ArchMap Creater
 
 ## Purpose
 
-Create `archmap-v0` as bounded LLM-authored evidence. Treat ArchMap as a source-to-architecture mapping artifact that may feed AIR and SFT projections, not as ground truth, Lean proof, forecast correctness, or causal diagnosis.
+Create `archmap-v0` and `intentmap-v0` as bounded LLM-authored evidence. Treat ArchMap as a source-to-architecture mapping artifact and IntentMap as a source-to-intent mapping artifact. Either may feed AIR or SFT projections, but neither is ground truth, Lean proof, forecast correctness, implementation plan completeness, or causal diagnosis.
 
 ## Inputs
 
@@ -15,6 +15,7 @@ Collect only evidence the user allows and record the boundary explicitly:
 
 - source inventory paths, included refs, excluded refs, private refs, unavailable refs, known blind spots
 - code, docs, tests, PR context, runtime hints, framework adapters, or policy files
+- PRD / Epic / Spec / Issue / proposal text when creating IntentMap
 - the requested architecture scope and target representation
 - any prompt pack or model provenance needed for reproducibility
 
@@ -64,15 +65,39 @@ ${ARCHSIG_BIN:-archsig} archmap-generate \
    - Separate AAT-facing items from SFT-facing items. Shared source refs are allowed; proof claims and forecast inputs must not be conflated.
    - Include semantic structure only when evidence supports it.
 
-4. Validate the result.
+4. Draft `intentmap-v0` when the task is planning or PRD forecast.
+   - Use `items[]` as the unit of requirement / operation / workflow / state transition / invariant / acceptance / non-goal / ambiguity.
+   - Keep `intentItemId`, `intentKind`, `sourceRefs`, `targetIntentRef`, `preserves`, `forgets`, `claimClassification`, `confidence`, `requiredAssumptions`, `missingDecisions`, `missingEvidence`, and `nonConclusions` explicit.
+   - Put unresolved product choices in `missingDecisions[]`; do not fill them with guesses.
+   - Put ambiguous wording in `ambiguousIntents[]`; do not convert it to measured support.
+   - Keep confidence as review priority, not probability.
+
+5. Validate the result.
 
 ```bash
 ${ARCHSIG_BIN:-archsig} archmap \
   --input <archmap.json> \
   --out .archsig/archmap/validation.json
+
+${ARCHSIG_BIN:-archsig} intent-map \
+  --input <intentmap.json> \
+  --out .archsig/intent/intentmap-validation.json
 ```
 
-5. Read the validation report before handing the artifact downstream.
+6. For planning forecast, create or validate `intent-archmap-alignment-v0`.
+   - Link IntentMap item ids to ArchMap map item ids.
+   - Use `intentUnaligned`, unsupported intent, ambiguous alignment, and missing evidence boundaries when the current ArchMap does not support the intent.
+   - Validate with both artifacts when available.
+
+```bash
+${ARCHSIG_BIN:-archsig} intent-archmap-alignment \
+  --input <alignment.json> \
+  --intent-map <intentmap.json> \
+  --archmap <archmap.json> \
+  --out .archsig/intent/alignment-validation.json
+```
+
+7. Read the validation report before handing the artifact downstream.
    - Treat failures as schema or boundary problems to fix.
    - Treat warnings as review cues, not automatic rejection.
    - Check `formalPromotionGuardrailChecks`, `leanPreservationPreconditionChecklist`, `sourceInventoryChecks`, conflicts, missing evidence, and non-conclusions.
@@ -83,6 +108,8 @@ ${ARCHSIG_BIN:-archsig} archmap \
 - Never claim that `archmap-v0` validates architecture lawfulness.
 - Never claim that validation produces a Lean proof term.
 - Never put ForecastCone, ConsequenceEnvelope, attractor, basin, incident causality, or quality ranking into ArchMap as computed results.
+- Never put implementation plan completeness, forecast correctness, effort estimate, future probability, or resolved product decisions into IntentMap.
+- Preserve `missingDecision`, `ambiguousIntent`, `intentUnaligned`, `unsupportedIntent`, and `missingEvidence` as first-class boundaries.
 - Do not write implementation progress into PRDs. Use issues, theorem indexes, proof obligations, roadmaps, or PRs for status.
 
 ## Handoff

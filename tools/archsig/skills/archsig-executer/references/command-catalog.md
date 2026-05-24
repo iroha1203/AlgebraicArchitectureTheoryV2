@@ -143,6 +143,52 @@ ${ARCHSIG_BIN:-archsig} forecast-calibration-hook \
   --out .archsig/sft/forecast-calibration-hook.json
 ```
 
+## IntentMap Planning Forecast
+
+Validate IntentMap:
+
+```bash
+${ARCHSIG_BIN:-archsig} intent-map \
+  --input .archsig/intent/intentmap.json \
+  --out .archsig/intent/intentmap-validation.json
+```
+
+Validate AlignmentMap:
+
+```bash
+${ARCHSIG_BIN:-archsig} intent-archmap-alignment \
+  --input .archsig/intent/intent-archmap-alignment.json \
+  --intent-map .archsig/intent/intentmap.json \
+  --archmap .archsig/archmap/archmap.json \
+  --out .archsig/intent/alignment-validation.json
+```
+
+Run planning forecast:
+
+```bash
+${ARCHSIG_BIN:-archsig} intent-forecast \
+  --intent-map .archsig/intent/intentmap.json \
+  --archmap .archsig/archmap/archmap.json \
+  --alignment .archsig/intent/intent-archmap-alignment.json \
+  --out-dir .archsig/intent/forecast
+```
+
+Create intent calibration record validation:
+
+```bash
+${ARCHSIG_BIN:-archsig} intent-calibration-record \
+  --input .archsig/intent/intent-calibration-record.json \
+  --out .archsig/intent/intent-calibration-validation.json
+```
+
+## PR Quality Analysis
+
+```bash
+${ARCHSIG_BIN:-archsig} pr-quality-analysis \
+  --input .archsig/pr/pr-quality-analysis-report.json \
+  --out .archsig/pr/pr-quality-analysis-validation.json
+```
+
 ## Failure Handling
 
 - If a command fails, stop the downstream pipeline.
