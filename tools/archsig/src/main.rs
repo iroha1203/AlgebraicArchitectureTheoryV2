@@ -40,6 +40,7 @@ use archsig::{
     build_baseline_suppression_report, build_consequence_envelope_from_forecast_cone,
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
+    build_operation_support_estimate_from_archmap,
     build_operation_support_estimate_from_descriptor, build_outcome_linkage_dataset_from_files,
     build_policy_decision_report, build_pr_history_dataset_from_github_files,
     build_pr_metadata_from_github_files, build_report_outcome_daily_ledger_from_files,
@@ -494,6 +495,40 @@ enum Command {
         sig0: Option<PathBuf>,
 
         /// Output ArchMap validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit a bounded external-agent protocol for generating ArchMap JSON.
+    ArchmapGenerate {
+        /// Source inventory JSON path used by the external agent.
+        #[arg(long = "source-inventory")]
+        source_inventory: PathBuf,
+
+        /// Prompt pack path retained as provenance.
+        #[arg(long = "prompt-pack")]
+        prompt_pack: PathBuf,
+
+        /// Model provider name retained as provenance.
+        #[arg(long, default_value = "external-agent")]
+        provider: String,
+
+        /// Model id retained as provenance.
+        #[arg(long = "model-id", default_value = "unspecified")]
+        model_id: String,
+
+        /// Output generation protocol JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Project a supplied ArchMap v0 JSON artifact into SFT operation-support input.
+    ArchmapSftInput {
+        /// Input ArchMap JSON path.
+        #[arg(long)]
+        archmap: PathBuf,
+
+        /// Output operation-support-estimate-v0 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -972,6 +1007,13 @@ enum Command {
     },
 
     /// Check B9 schema migration / compatibility metadata between two artifacts.
+    SchemaCatalog {
+        /// Output schema version catalog JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Check B9 schema migration / compatibility metadata between two artifacts.
     SchemaCompatibility {
         /// Baseline artifact JSON path.
         #[arg(long)]
@@ -1344,6 +1386,61 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             } else {
                 ExitCode::SUCCESS
             })
+        }
+        Some(Command::ArchmapGenerate {
+            source_inventory,
+            prompt_pack,
+            provider,
+            model_id,
+            out,
+        }) => {
+            let inventory: ArchMapSourceInventoryV0 = read_json(&source_inventory)?;
+            let protocol = serde_json::json!({
+                "schemaVersion": "archmap-generation-protocol-v0",
+                "protocolId": format!("archmap-generation:{}", inventory.inventory_id),
+                "sourceInventoryRef": {
+                    "artifactId": inventory.inventory_id,
+                    "kind": "source_inventory",
+                    "path": source_inventory.display().to_string()
+                },
+                "promptPackRef": {
+                    "artifactId": "archmap-prompt-pack",
+                    "kind": "prompt",
+                    "path": prompt_pack.display().to_string()
+                },
+                "modelProvenance": {
+                    "provider": provider,
+                    "modelId": model_id
+                },
+                "requiredWorkflow": [
+                    "read source inventory includedRefs / excludedRefs / privateRefs / unavailableRefs separately",
+                    "produce archmap-v0 JSON with sourceRefs, preserves, forgets, missingEvidence, and nonConclusions",
+                    "run archsig archmap --input <archmap.json> before downstream projection",
+                    "preserve invalid, dangling, unsupported, private, and unavailable evidence as boundary data"
+                ],
+                "generationBoundary": {
+                    "selectionBoundary": inventory.selection_boundary,
+                    "privateRefCount": inventory.private_refs.len(),
+                    "unavailableRefCount": inventory.unavailable_refs.len(),
+                    "nonConclusions": [
+                        "external agent output is not semantic truth",
+                        "generation protocol does not reconstruct private context",
+                        "validation pass does not prove architecture lawfulness"
+                    ]
+                }
+            });
+            write_json(out, &protocol)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::ArchmapSftInput { archmap, out }) => {
+            let document: ArchMapDocumentV0 = read_json(&archmap)?;
+            let estimate: OperationSupportEstimateV0 =
+                build_operation_support_estimate_from_archmap(
+                    &document,
+                    &archmap.display().to_string(),
+                );
+            write_json(out, &estimate)?;
+            Ok(ExitCode::SUCCESS)
         }
         Some(Command::AirFromArchmap {
             archmap,
@@ -2164,6 +2261,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             } else {
                 ExitCode::SUCCESS
             })
+        }
+        Some(Command::SchemaCatalog { out }) => {
+            let catalog: SchemaVersionCatalogV0 = static_schema_version_catalog();
+            write_json(out, &catalog)?;
+            Ok(ExitCode::SUCCESS)
         }
         Some(Command::SchemaCompatibility {
             before,

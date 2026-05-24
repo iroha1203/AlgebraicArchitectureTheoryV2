@@ -296,6 +296,127 @@ fn cli_validates_archmap_fixture_and_guardrails() {
 }
 
 #[test]
+fn cli_projects_archmap_to_sft_input_and_generation_protocol() {
+    let out_dir = temp_dir("archmap-sft-input");
+    let input = fixture_root().join("archmap.json");
+    let source_inventory = fixture_root().join("archmap_source_inventory.json");
+    let estimate = out_dir.join("archmap-operation-support.json");
+    let cone = out_dir.join("archmap-forecast-cone.json");
+    let envelope = out_dir.join("archmap-consequence-envelope.json");
+    let protocol = out_dir.join("archmap-generation-protocol.json");
+
+    run_sig0(&[
+        "archmap-sft-input",
+        "--archmap",
+        input.to_str().expect("fixture path is utf-8"),
+        "--out",
+        estimate.to_str().expect("output path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-cone-skeleton",
+        "--operation-support",
+        estimate.to_str().expect("estimate path is utf-8"),
+        "--out",
+        cone.to_str().expect("cone path is utf-8"),
+    ]);
+    run_sig0(&[
+        "consequence-envelope",
+        "--forecast-cone",
+        cone.to_str().expect("cone path is utf-8"),
+        "--out",
+        envelope.to_str().expect("envelope path is utf-8"),
+    ]);
+    run_sig0(&[
+        "archmap-generate",
+        "--source-inventory",
+        source_inventory
+            .to_str()
+            .expect("source inventory path is utf-8"),
+        "--prompt-pack",
+        ".lake/archmap-prompt.md",
+        "--provider",
+        "fixture-provider",
+        "--model-id",
+        "fixture-model",
+        "--out",
+        protocol.to_str().expect("protocol path is utf-8"),
+    ]);
+
+    let estimate_json = read_json(&estimate);
+    assert_eq!(
+        estimate_json["schemaVersion"],
+        "operation-support-estimate-v0"
+    );
+    assert!(
+        estimate_json["candidateOperationFamilies"]
+            .as_array()
+            .expect("candidate families are an array")
+            .iter()
+            .any(|family| family["operationFamily"] == "runtime-observation")
+    );
+    assert!(
+        estimate_json["unknownRemainder"]
+            .as_array()
+            .expect("unknown remainder is an array")
+            .iter()
+            .any(|remainder| {
+                remainder["treatment"]
+                    .as_str()
+                    .expect("treatment is a string")
+                    .contains("do not round to absence or measured zero")
+            })
+    );
+
+    let cone_json = read_json(&cone);
+    assert!(
+        cone_json["operationSupportRef"]["sourceRefIds"]
+            .as_array()
+            .expect("cone source refs are an array")
+            .iter()
+            .any(|source| {
+                source
+                    .as_str()
+                    .expect("source ref is a string")
+                    .starts_with("source:archmap:")
+            })
+    );
+    let envelope_json = read_json(&envelope);
+    assert!(
+        envelope_json["forecastConeRef"]["sourceRefIds"]
+            .as_array()
+            .expect("envelope source refs are an array")
+            .iter()
+            .any(|source| {
+                source
+                    .as_str()
+                    .expect("source ref is a string")
+                    .starts_with("source:archmap:")
+            })
+    );
+
+    let protocol_json = read_json(&protocol);
+    assert_eq!(
+        protocol_json["schemaVersion"],
+        "archmap-generation-protocol-v0"
+    );
+    assert_eq!(
+        protocol_json["modelProvenance"]["provider"],
+        "fixture-provider"
+    );
+    assert!(
+        protocol_json["requiredWorkflow"]
+            .as_array()
+            .expect("required workflow is an array")
+            .iter()
+            .any(|step| {
+                step.as_str()
+                    .expect("workflow step is a string")
+                    .contains("invalid, dangling, unsupported, private, and unavailable")
+            })
+    );
+}
+
+#[test]
 fn cli_projects_archmap_to_air_and_existing_reports() {
     let out_dir = temp_dir("archmap-air-flow");
     let archmap = fixture_root().join("archmap.json");

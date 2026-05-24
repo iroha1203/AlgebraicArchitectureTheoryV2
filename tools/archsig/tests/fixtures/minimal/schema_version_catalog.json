@@ -43,7 +43,10 @@
         "docs/aat_v2_tooling_design.md#31-air-v0-schema",
         "docs/design/archsig_tooling_index.md"
       ],
-      "downstreamIssues": ["#608", "#609"],
+      "downstreamIssues": [
+        "#608",
+        "#609"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map ids, relation refs, evidence refs, claims, coverage layers, and theorem-package refs explicitly; never infer a formal claim from renamed fields.",
         "deprecatedFields": [],
@@ -70,12 +73,17 @@
       "primaryDocs": [
         "docs/tool/archmap_prd.md"
       ],
-      "downstreamIssues": ["#1032", "#1033", "#1035"],
+      "downstreamIssues": [
+        "#1032",
+        "#1033",
+        "#1035"
+      ],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map source inventory, provenance, map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
+        "fieldMappingPolicy": "Map source inventory, prompt/model provenance, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
-          "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions."
+          "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
+          "SFT-facing mapping kinds must remain projection input and not forecast result claims."
         ],
         "coverageExactnessBoundary": [
           "ArchMap is supplied JSON evidence, not architecture ground truth or a Lean theorem claim."
@@ -98,15 +106,48 @@
         "docs/tool/archmap_prd.md",
         "tools/archsig/docs/commands.md"
       ],
-      "downstreamIssues": ["#1032", "#1034"],
+      "downstreamIssues": [
+        "#1032",
+        "#1034"
+      ],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, and formal promotion guardrail checks separate.",
+        "fieldMappingPolicy": "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, and formal promotion guardrail checks separate.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "New checks must report whether they fail, warn, or pass without promoting uncertain mappings."
         ],
         "coverageExactnessBoundary": [
           "Validation pass does not imply semantic correctness, completeness, or architecture lawfulness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "archmap-generation-protocol",
+      "artifactName": "ArchMap generation protocol",
+      "schemaVersionName": "archmap-generation-protocol-v0",
+      "artifactRole": "external-agent-protocol",
+      "ownerPhase": "ArchMap v2",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v2.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1139"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map source inventory refs, prompt pack refs, model provenance, required workflow, and private / unavailable generation boundary explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New generation workflow fields must preserve model provenance and validation boundary."
+        ],
+        "coverageExactnessBoundary": [
+          "Generation protocol does not execute the model or prove the generated ArchMap correct."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
@@ -126,7 +167,10 @@
         "docs/aat_v2_tooling_design.md#5-feature-extension-report",
         "docs/design/archsig_tooling_index.md"
       ],
-      "downstreamIssues": ["#608", "#609"],
+      "downstreamIssues": [
+        "#608",
+        "#609"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map review summary, witness, theorem precondition, coverage gap, repair suggestion, and non-conclusion fields separately.",
         "deprecatedFields": [],
@@ -153,7 +197,10 @@
       "primaryDocs": [
         "docs/aat_v2_tooling_design.md#6-obstruction-witness-schema"
       ],
-      "downstreamIssues": ["#608", "#610"],
+      "downstreamIssues": [
+        "#608",
+        "#610"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map witness id, layer, kind, extension role, classification, evidence, theorem refs, claim classification, measurement boundary, and non-conclusions independently.",
         "deprecatedFields": [],
@@ -180,7 +227,10 @@
       "primaryDocs": [
         "docs/aat_v2_tooling_design.md#51-architecture-drift-ledger"
       ],
-      "downstreamIssues": ["#608", "#610"],
+      "downstreamIssues": [
+        "#608",
+        "#610"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map stable grouping keys, aggregation window, source, metric, status, suppression, repair, witness, claim, and non-conclusion fields separately.",
         "deprecatedFields": [],
@@ -208,7 +258,9 @@
         "docs/aat_v2_tooling_design.md#41-detectable-values--reported-axes",
         "docs/design/schema_version_catalog.md#detectable-values--reported-axes-catalog"
       ],
-      "downstreamIssues": ["#608"],
+      "downstreamIssues": [
+        "#608"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map axis id, layer, value type, measurement boundary, evidence requirements, theorem refs, and non-conclusions explicitly.",
         "deprecatedFields": [],
@@ -236,7 +288,9 @@
         "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
         "docs/design/schema_version_catalog.md#report-outcome-daily-ledger-metadata"
       ],
-      "downstreamIssues": ["#620"],
+      "downstreamIssues": [
+        "#620"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map aggregation window, source report refs, retention policy, outcome metric summaries, missing/private/unmeasured boundaries, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -264,7 +318,9 @@
         "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
         "docs/design/schema_version_catalog.md#calibration-review-record-metadata"
       ],
-      "downstreamIssues": ["#621"],
+      "downstreamIssues": [
+        "#621"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map report finding refs, witness refs, reviewer decision, outcome refs, confidence, missing evidence, calibration input, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -292,7 +348,9 @@
         "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
         "docs/design/schema_version_catalog.md#team-threshold-policy-metadata"
       ],
-      "downstreamIssues": ["#622"],
+      "downstreamIssues": [
+        "#622"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map team scope, effective period, per-axis thresholds, CI modes, calibration sources, rollback policy, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -320,7 +378,9 @@
         "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
         "docs/design/schema_version_catalog.md#ownership-boundary-monitor-metadata"
       ],
-      "downstreamIssues": ["#623"],
+      "downstreamIssues": [
+        "#623"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map source refs, ownership scopes, boundary erosion signals, missing evidence, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -348,7 +408,9 @@
         "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
         "docs/design/schema_version_catalog.md#repair-adoption-record-metadata"
       ],
-      "downstreamIssues": ["#623"],
+      "downstreamIssues": [
+        "#623"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map suggestion refs, adopted / rejected / deferred decision, follow-up outcomes, side-effect notes, missing evidence, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -376,7 +438,9 @@
         "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
         "docs/design/schema_version_catalog.md#incident-correlation-monitor-metadata"
       ],
-      "downstreamIssues": ["#624"],
+      "downstreamIssues": [
+        "#624"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map correlation window, source refs, metric axes, correlations, confounder notes, missing / private data, refresh decision, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -404,7 +468,9 @@
         "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
         "docs/design/schema_version_catalog.md#hypothesis-refresh-cycle-metadata"
       ],
-      "downstreamIssues": ["#624"],
+      "downstreamIssues": [
+        "#624"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map source monitor refs, versioned hypothesis refs, change reasons, refresh decision, retained / rejected hypotheses, proposed updates, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -432,7 +498,9 @@
         "docs/design/architecture_dynamics_tooling_design.md#pr-force-report-v0",
         "docs/design/architecture_signature_dynamics.md#layer-4-pr-force-model"
       ],
-      "downstreamIssues": ["#675"],
+      "downstreamIssues": [
+        "#675"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map accepted PR transition refs, signed Signature deltas, observed force vector slots, decomposition components, evidence refs, measurement boundary, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -460,7 +528,10 @@
         "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-v0",
         "docs/design/architecture_signature_dynamics.md#quantitative-metric-derivation"
       ],
-      "downstreamIssues": ["#671", "#718"],
+      "downstreamIssues": [
+        "#671",
+        "#718"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map repository, selected window, source refs, trajectory / force / gap / field-control / AI dynamics / attractor-engineering metric groups, basin simulations, field shaping signals, readiness axes, measurement boundary, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -494,7 +565,9 @@
         "docs/design/architecture_dynamics_tooling_design.md#signature-trajectory-report-v0",
         "docs/design/architecture_signature_dynamics.md#signature-trajectory-metrics"
       ],
-      "downstreamIssues": ["#676"],
+      "downstreamIssues": [
+        "#676"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map repository, selected window, trajectory points, force refs, drift / stability / excursion / endpoint-compression signals, selected regions, measurement boundary, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -524,7 +597,9 @@
         "docs/tool/ai_proposal_governance.md",
         "tools/archsig/docs/artifacts-and-boundaries.md#sft-forecasting-input-artifacts"
       ],
-      "downstreamIssues": ["#900"],
+      "downstreamIssues": [
+        "#900"
+      ],
       "compatibilityBoundary": {
         "fieldMappingPolicy": "Map proposal refs, prompt / policy boundary, support taxonomy, shortcut witnesses, review / CI mediation, posterior field update, evidence boundary, and non-conclusions separately.",
         "deprecatedFields": [],
@@ -552,22 +627,41 @@
     "dimensions": [
       {
         "dimension": "field_mapping",
-        "requiredMetadata": ["sourceField", "targetField", "mappingKind", "requiredReview"],
+        "requiredMetadata": [
+          "sourceField",
+          "targetField",
+          "mappingKind",
+          "requiredReview"
+        ],
         "checkerBoundary": "A checker may validate declared field mappings, but it must not infer semantic equivalence."
       },
       {
         "dimension": "deprecated_fields",
-        "requiredMetadata": ["field", "replacement", "removalPhase", "readerBehavior"],
+        "requiredMetadata": [
+          "field",
+          "replacement",
+          "removalPhase",
+          "readerBehavior"
+        ],
         "checkerBoundary": "Deprecated fields remain compatibility metadata until removal; migration must preserve explicit reader behavior."
       },
       {
         "dimension": "new_required_assumptions",
-        "requiredMetadata": ["assumptionId", "appliesTo", "requiredFor", "fallbackWhenMissing"],
+        "requiredMetadata": [
+          "assumptionId",
+          "appliesTo",
+          "requiredFor",
+          "fallbackWhenMissing"
+        ],
         "checkerBoundary": "New assumptions must be reported as missing or undischarged unless explicit evidence is present."
       },
       {
         "dimension": "non_conclusions",
-        "requiredMetadata": ["nonConclusion", "appliesTo", "reason"],
+        "requiredMetadata": [
+          "nonConclusion",
+          "appliesTo",
+          "reason"
+        ],
         "checkerBoundary": "Non-conclusions are mandatory guardrails and cannot be dropped by migration."
       },
       {

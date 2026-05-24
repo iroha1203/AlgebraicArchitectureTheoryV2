@@ -78,10 +78,11 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["docs/tool/archmap_prd.md"],
                 vec!["#1032", "#1033", "#1035"],
                 compatibility_boundary(
-                    "Map source inventory, provenance, map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
+                    "Map source inventory, prompt/model provenance, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
                     vec![],
                     vec![
                         "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
+                        "SFT-facing mapping kinds must remain projection input and not forecast result claims.",
                     ],
                     vec![
                         "ArchMap is supplied JSON evidence, not architecture ground truth or a Lean theorem claim.",
@@ -98,13 +99,36 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 vec!["docs/tool/archmap_prd.md", "tools/archsig/docs/commands.md"],
                 vec!["#1032", "#1034"],
                 compatibility_boundary(
-                    "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, and formal promotion guardrail checks separate.",
+                    "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, and formal promotion guardrail checks separate.",
                     vec![],
                     vec![
                         "New checks must report whether they fail, warn, or pass without promoting uncertain mappings.",
                     ],
                     vec![
                         "Validation pass does not imply semantic correctness, completeness, or architecture lawfulness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "archmap-generation-protocol",
+                "ArchMap generation protocol",
+                "archmap-generation-protocol-v0",
+                "external-agent-protocol",
+                "ArchMap v2",
+                "implemented",
+                vec![
+                    "docs/tool/archsig_archmap_prd_v2.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                vec!["#1139"],
+                compatibility_boundary(
+                    "Map source inventory refs, prompt pack refs, model provenance, required workflow, and private / unavailable generation boundary explicitly.",
+                    vec![],
+                    vec![
+                        "New generation workflow fields must preserve model provenance and validation boundary.",
+                    ],
+                    vec![
+                        "Generation protocol does not execute the model or prove the generated ArchMap correct.",
                     ],
                 ),
             ),

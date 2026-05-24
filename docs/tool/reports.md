@@ -152,3 +152,11 @@ SFT forecast の calibration / benchmark では、`docs/tool/sft_calibration_ben
 forecast item refs と observed PR / review / CI / outcome refs を held-out trace として照合する。
 false positive / false negative review は review mediation と AI shortcut detection を分けて記録し、
 private / unavailable / missing data を measured zero に丸めない。
+
+ArchMap-derived report flow では、`archmap-generate` が source inventory / prompt pack /
+model provenance / required workflow を protocol artifact として残し、`archmap` validation が
+AAT-facing と SFT-facing projection の分離を guardrail として記録する。`archmap-sft-input` は
+SFT-facing map items を `operation-support-estimate-v0` に投影し、後段の `forecast-cone-skeleton` と
+`consequence-envelope` に `source:archmap:*` refs を渡す。LLM-readable output は、この source refs、
+boundary、missing evidence、non-conclusions を compact review surface として読むための artifact であり、
+LLM 判断の正当化や Lean theorem witness ではない。

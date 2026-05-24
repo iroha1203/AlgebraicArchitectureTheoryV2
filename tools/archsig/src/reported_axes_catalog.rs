@@ -66,6 +66,53 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
             vec![],
             vec!["unmeasured semantic evidence is not treated as commuting"],
         ),
+        axis(
+            "archMapAatProjection",
+            "semantic",
+            "candidate | blocked | assumed | unmeasured",
+            vec![
+                "ArchMap Validation Report",
+                "AIR",
+                "Theorem Precondition Check",
+            ],
+            "unmeasured",
+            vec![
+                "ArchMap mapItems preserve AAT-facing object / relation / semantic / law / flatness selectors",
+            ],
+            vec!["ArchMapModel.ArchMapPreservationPackage.aatHomomorphicRelation"],
+            vec![
+                "AAT-facing projection is a bounded preservation checklist, not JSON proof parsing",
+            ],
+        ),
+        axis(
+            "archMapSftOperationSupport",
+            "sft",
+            "candidate families + unknown remainder",
+            vec![
+                "ArchMap Validation Report",
+                "Operation Support Estimate",
+                "ForecastCone",
+            ],
+            "unmeasured",
+            vec![
+                "ArchMap SFT-facing mapItems are projected by archmap-sft-input with retained source refs",
+            ],
+            vec![],
+            vec![
+                "ArchMap-derived operation support is not a forecast result",
+                "ArchMap confidence is review priority, not probability",
+            ],
+        ),
+        axis(
+            "forecastCalibrationLinkage",
+            "empirical",
+            "matched | unmatched | unavailable | private | notComparable",
+            vec!["Forecast Calibration Hook", "Calibration Review Record"],
+            "notComparable",
+            vec!["forecast item refs and observed outcome refs are both retained"],
+            vec![],
+            vec!["unavailable, private, and notComparable feedback is not measured zero"],
+        ),
     ];
 
     DetectableValuesReportedAxesCatalogV0 {
@@ -229,7 +276,11 @@ fn axis(
         allowed_measurement_boundaries: vec![
             "measuredZero".to_string(),
             "measuredNonzero".to_string(),
+            "assumed".to_string(),
             "unmeasured".to_string(),
+            "unavailable".to_string(),
+            "private".to_string(),
+            "notComparable".to_string(),
             "outOfScope".to_string(),
         ],
         default_measurement_boundary: default_measurement_boundary.to_string(),
