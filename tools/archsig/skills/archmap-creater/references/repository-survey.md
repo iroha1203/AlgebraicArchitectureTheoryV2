@@ -7,7 +7,7 @@ Use this guide before drafting ArchMap for an unfamiliar repository or unfamilia
 1. Read entry documents.
    - `README.md`, language-specific README files, tool README files
    - architecture docs when present
-   - product/tool PRDs when present
+   - architecture docs, tool docs, and policy docs when present
    - AAT/SFT boundary docs when present
 
 2. Identify executable and library entrypoints.

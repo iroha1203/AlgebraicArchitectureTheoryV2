@@ -101,7 +101,7 @@ pub fn static_intent_map() -> IntentMapV0 {
         generator: IntentMapGeneratorV0 {
             authored_by: "llm".to_string(),
             prompt_ref:
-                "tools/archsig/skills/archmap-creater/references/intentmap-authoring-guide.md"
+                "tools/archsig/skills/intentmap-creater/references/intent-extraction-guide.md"
                     .to_string(),
             model_ref: "reviewer-supplied".to_string(),
             extraction_boundary:

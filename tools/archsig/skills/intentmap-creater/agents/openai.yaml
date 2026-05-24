@@ -1,0 +1,4 @@
+interface:
+  display_name: "IntentMap Creater"
+  short_description: "Create and validate IntentMap artifacts"
+  default_prompt: "Use $intentmap-creater to create an intentmap-v0 artifact from Epic, PRD, Spec, Issue, or proposal text."
