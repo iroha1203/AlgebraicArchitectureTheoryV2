@@ -242,28 +242,28 @@ ArchMap-derived semantic evidence を入力にできる必要がある。
 
 ArchSig は AI-native tool として、LLM が ArchMap を作成する workflow を first-class に扱う。
 
-候補 command:
+生成 workflow の固定 surface:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-generate \
-  --root . \
-  --scope src \
-  --scope docs \
-  --question "Map AAT/SFT relevant architecture and operation candidates" \
-  --out .lake/archmap.json \
-  --validation .lake/archmap-validation.json
+  --source-inventory .lake/archmap-source-inventory.json \
+  --prompt-pack .lake/archmap-prompt.md \
+  --provider external-agent \
+  --model-id model-name \
+  --out .lake/archmap-generation-protocol.json
 ```
 
-この command が行うこと:
+この surface が行うこと:
 
-- source inventory を生成する。
-- prompt pack に AAT / SFT claim boundary、schema、non-conclusions を含める。
-- LLM に ArchMap JSON を生成させる。
-- validation を実行する。
+- source inventory、prompt pack、model / provider provenance を generation protocol として残す。
+- prompt pack に AAT / SFT claim boundary、schema、non-conclusions を含めることを要求する。
+- LLM / external agent が ArchMap JSON を生成する時の required workflow を固定する。
+- 生成後に `archmap` validation を実行する手順を protocol に含める。
 - invalid / dangling / unsupported / private / unavailable を boundary として保持する。
 
-この command が行わないこと:
+この surface が行わないこと:
 
+- model を直接実行する。
 - LLM の推論を proof として扱う。
 - source universe の完全性を主張する。
 - runtime trace を自動で網羅収集する。

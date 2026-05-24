@@ -153,7 +153,11 @@
       "allowedMeasurementBoundaries": [
         "measuredZero",
         "measuredNonzero",
+        "assumed",
         "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
         "outOfScope"
       ],
       "defaultMeasurementBoundary": "measuredZero",
@@ -184,7 +188,11 @@
       "allowedMeasurementBoundaries": [
         "measuredZero",
         "measuredNonzero",
+        "assumed",
         "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
         "outOfScope"
       ],
       "defaultMeasurementBoundary": "measuredZero",
@@ -213,7 +221,11 @@
       "allowedMeasurementBoundaries": [
         "measuredZero",
         "measuredNonzero",
+        "assumed",
         "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
         "outOfScope"
       ],
       "defaultMeasurementBoundary": "measuredZero",
@@ -241,7 +253,11 @@
       "allowedMeasurementBoundaries": [
         "measuredZero",
         "measuredNonzero",
+        "assumed",
         "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
         "outOfScope"
       ],
       "defaultMeasurementBoundary": "unmeasured",
@@ -272,7 +288,11 @@
       "allowedMeasurementBoundaries": [
         "measuredZero",
         "measuredNonzero",
+        "assumed",
         "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
         "outOfScope"
       ],
       "defaultMeasurementBoundary": "unmeasured",
@@ -282,6 +302,107 @@
       "theoremRefs": [],
       "compatibilityNotes": [
         "unmeasured semantic evidence is not treated as commuting"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
+    },
+    {
+      "axisId": "archMapAatProjection",
+      "layer": "semantic",
+      "valueType": "candidate | blocked | assumed | unmeasured",
+      "reportedIn": [
+        "ArchMap Validation Report",
+        "AIR",
+        "Theorem Precondition Check"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "assumed",
+        "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "unmeasured",
+      "evidenceRequirements": [
+        "ArchMap mapItems preserve AAT-facing object / relation / semantic / law / flatness selectors"
+      ],
+      "theoremRefs": [
+        "ArchMapModel.ArchMapPreservationPackage.aatHomomorphicRelation"
+      ],
+      "compatibilityNotes": [
+        "AAT-facing projection is a bounded preservation checklist, not JSON proof parsing"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
+    },
+    {
+      "axisId": "archMapSftOperationSupport",
+      "layer": "sft",
+      "valueType": "candidate families + unknown remainder",
+      "reportedIn": [
+        "ArchMap Validation Report",
+        "Operation Support Estimate",
+        "ForecastCone"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "assumed",
+        "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "unmeasured",
+      "evidenceRequirements": [
+        "ArchMap SFT-facing mapItems are projected by archmap-sft-input with retained source refs"
+      ],
+      "theoremRefs": [],
+      "compatibilityNotes": [
+        "ArchMap-derived operation support is not a forecast result",
+        "ArchMap confidence is review priority, not probability"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
+    },
+    {
+      "axisId": "forecastCalibrationLinkage",
+      "layer": "empirical",
+      "valueType": "matched | unmatched | unavailable | private | notComparable",
+      "reportedIn": [
+        "Forecast Calibration Hook",
+        "Calibration Review Record"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "assumed",
+        "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "notComparable",
+      "evidenceRequirements": [
+        "forecast item refs and observed outcome refs are both retained"
+      ],
+      "theoremRefs": [],
+      "compatibilityNotes": [
+        "unavailable, private, and notComparable feedback is not measured zero"
       ],
       "nonConclusions": [
         "axis value compatibility does not prove semantic preservation",
@@ -391,6 +512,37 @@
         ],
         "exactnessAssumptions": [
           "unmeasured semantic evidence is not treated as commuting"
+        ]
+      },
+      {
+        "axisOrLayer": "archMapAatProjection",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "ArchMap mapItems preserve AAT-facing object / relation / semantic / law / flatness selectors"
+        ],
+        "exactnessAssumptions": [
+          "AAT-facing projection is a bounded preservation checklist, not JSON proof parsing"
+        ]
+      },
+      {
+        "axisOrLayer": "archMapSftOperationSupport",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "ArchMap SFT-facing mapItems are projected by archmap-sft-input with retained source refs"
+        ],
+        "exactnessAssumptions": [
+          "ArchMap-derived operation support is not a forecast result",
+          "ArchMap confidence is review priority, not probability"
+        ]
+      },
+      {
+        "axisOrLayer": "forecastCalibrationLinkage",
+        "measurementBoundary": "notComparable",
+        "coverageAssumptions": [
+          "forecast item refs and observed outcome refs are both retained"
+        ],
+        "exactnessAssumptions": [
+          "unavailable, private, and notComparable feedback is not measured zero"
         ]
       }
     ],

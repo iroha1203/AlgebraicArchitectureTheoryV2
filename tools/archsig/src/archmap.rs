@@ -3,13 +3,18 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     AIR_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION, ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION,
-    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, AirArchitecturePath, AirArtifact, AirClaim,
-    AirComponent, AirCoverage, AirCoverageLayer, AirDocumentV0, AirEvidence, AirExtension,
-    AirFeature, AirIdPolicies, AirNonfillabilityWitness, AirOperationTrace, AirPolicies,
-    AirRelation, AirRevision, AirSemanticDiagram, AirSignature, ArchMapConflict, ArchMapDocumentV0,
-    ArchMapLeanPreservationChecklistEntry, ArchMapLeanPreservationVocabularyEntry, ArchMapMapItem,
-    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
-    ArchMapValidationSummary, Sig0Document, ValidationCheck,
+    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, ARTIFACT_DESCRIPTOR_SCHEMA_VERSION,
+    AirArchitecturePath, AirArtifact, AirClaim, AirComponent, AirCoverage, AirCoverageLayer,
+    AirDocumentV0, AirEvidence, AirExtension, AirFeature, AirIdPolicies, AirNonfillabilityWitness,
+    AirOperationTrace, AirPolicies, AirRelation, AirRevision, AirSemanticDiagram, AirSignature,
+    ArchMapConflict, ArchMapDocumentV0, ArchMapLeanPreservationChecklistEntry,
+    ArchMapLeanPreservationVocabularyEntry, ArchMapMapItem, ArchMapSourceInventoryV0,
+    ArchMapSourceRef, ArchMapValidationReportV0, ArchMapValidationSummary,
+    CandidateOperationFamilyV0, KnownForbiddenOperationSupportV0,
+    OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION, OperationSupportDescriptorRefV0,
+    OperationSupportEstimateV0, OperationSupportEvidenceBoundaryV0,
+    OperationSupportPolicyConstraintV0, OperationSupportUnknownRemainderV0, Sig0Document,
+    ValidationCheck,
 };
 
 pub struct ArchMapSourceInventoryInput<'a> {
@@ -37,7 +42,10 @@ pub fn validate_archmap_report(
     ];
     let semantic_coverage_checks = vec![check_semantic_coverage(document)];
     let conflict_checks = vec![check_conflicts(document, sig0)];
-    let formal_promotion_guardrail_checks = vec![check_formal_promotion_guardrail(document)];
+    let formal_promotion_guardrail_checks = vec![
+        check_formal_promotion_guardrail(document),
+        check_projection_separation(document),
+    ];
 
     let mut all_checks = Vec::new();
     all_checks.append(&mut source_inventory_checks.clone());
@@ -76,6 +84,79 @@ pub fn validate_archmap_report(
             warning_check_count,
         },
         non_conclusions: archmap_non_conclusions(document),
+    }
+}
+
+pub fn build_operation_support_estimate_from_archmap(
+    document: &ArchMapDocumentV0,
+    _input_path: &str,
+) -> OperationSupportEstimateV0 {
+    let source_ref_ids = archmap_sft_source_refs(document);
+    let candidate_operation_families = archmap_sft_candidate_families(document, &source_ref_ids);
+    let family_ids = candidate_operation_families
+        .iter()
+        .map(|family| family.family_id.clone())
+        .collect::<Vec<_>>();
+
+    OperationSupportEstimateV0 {
+        schema_version: OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION.to_string(),
+        estimate_id: format!("estimate:archmap:{}", stable_id(&document.map_id)),
+        descriptor_ref: OperationSupportDescriptorRefV0 {
+            descriptor_schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
+            descriptor_id: format!("descriptor:archmap:{}", document.map_id),
+            artifact_kind: "archmap".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            action_class_candidate_ids: document
+                .map_items
+                .iter()
+                .map(|item| format!("candidate:archmap:{}", item.map_item_id))
+                .collect(),
+            non_conclusions: archmap_sft_non_conclusions(),
+        },
+        candidate_operation_families,
+        policy_constraints: vec![OperationSupportPolicyConstraintV0 {
+            constraint_id: "constraint:archmap:no-forecast-correctness".to_string(),
+            constraint_kind: "claim-boundary".to_string(),
+            applies_to_family_ids: family_ids.clone(),
+            source_ref_ids: source_ref_ids.clone(),
+            rule: "ArchMap-derived SFT input is bounded evidence and must not be treated as a forecast result".to_string(),
+            safety_claim_boundary: "projection preserves source refs and missing evidence, not semantic truth or probability".to_string(),
+            non_conclusions: archmap_sft_non_conclusions(),
+        }],
+        known_forbidden_support: vec![KnownForbiddenOperationSupportV0 {
+            forbidden_id: "forbidden:archmap:llm-forecast-result".to_string(),
+            operation_family: "llm-authored-forecast-result".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            constraint_refs: vec!["constraint:archmap:no-forecast-correctness".to_string()],
+            reason: "LLM or ArchMap input may describe operation evidence, but does not write the forecast result".to_string(),
+            boundary: "forecast correctness and causal prediction remain outside the ArchMap-to-SFT projection".to_string(),
+            non_conclusions: archmap_sft_non_conclusions(),
+        }],
+        unknown_remainder: archmap_sft_unknown_remainders(document, &family_ids, &source_ref_ids),
+        evidence_boundary: OperationSupportEvidenceBoundaryV0 {
+            boundary_id: format!("boundary:archmap:{}:sft-input", stable_id(&document.map_id)),
+            source_ref_ids,
+            measurement_boundary_refs: vec![
+                format!("archmap:{}", document.map_id),
+                "docs/tool/archsig_archmap_prd_v2.md#r3".to_string(),
+            ],
+            confidence_boundary:
+                "ArchMap confidence is qualitative review priority, not probability".to_string(),
+            evidence_kinds: unique_strings(
+                document
+                    .map_items
+                    .iter()
+                    .flat_map(|item| item.source_refs.iter().map(|source| source.kind.clone()))
+                    .collect(),
+            ),
+            unsupported_constructs: document.coverage.unsupported_constructs.clone(),
+            assumptions: vec![
+                "SFT-facing projection uses selected ArchMap mapItems only".to_string(),
+                "missing, private, and unavailable evidence remains boundary data".to_string(),
+            ],
+            non_conclusions: archmap_sft_non_conclusions(),
+        },
+        non_conclusions: archmap_sft_non_conclusions(),
     }
 }
 
@@ -735,6 +816,43 @@ fn check_formal_promotion_guardrail(document: &ArchMapDocumentV0) -> ValidationC
     )
 }
 
+fn check_projection_separation(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    let has_aat = document.map_items.iter().any(is_aat_facing_item);
+    let has_sft = document.map_items.iter().any(is_sft_facing_item);
+    if !has_aat {
+        examples.push(generic_validation_example(
+            "mapItems[]",
+            "aat-facing",
+            "AAT-facing projection has no selected map item",
+        ));
+    }
+    if !has_sft {
+        examples.push(generic_validation_example(
+            "mapItems[]",
+            "sft-facing",
+            "SFT-facing projection has no selected map item",
+        ));
+    }
+    examples.extend(document.map_items.iter().filter_map(|item| {
+        (is_sft_facing_item(item)
+            && matches!(item.claim_classification.as_str(), "proved" | "formal"))
+        .then(|| {
+            generic_validation_example(
+                &item.map_item_id,
+                &item.claim_classification,
+                "SFT-facing forecast input item must not be promoted to a Lean theorem claim",
+            )
+        })
+    }));
+    check_from_examples(
+        "archmap-aat-sft-projection-separation",
+        "AAT-facing and SFT-facing projections remain separate bounded readings",
+        examples,
+        "warn",
+    )
+}
+
 fn check_from_examples(
     id: &str,
     title: &str,
@@ -1350,7 +1468,8 @@ fn archmap_item_preservation_status(
     if lean_package_field == "OutOfScopeBoundary" {
         "notApplicableOutOfScope"
     } else if lean_package_field == "CoverageExactnessBoundary" {
-        if item.missing_evidence.is_empty() && !archmap_item_has_unmeasured_coverage(document, item) {
+        if item.missing_evidence.is_empty() && !archmap_item_has_unmeasured_coverage(document, item)
+        {
             "candidate"
         } else {
             "blockedByUnmeasuredCoverage"
@@ -1465,6 +1584,219 @@ fn archmap_non_conclusions(document: &ArchMapDocumentV0) -> Vec<String> {
     non_conclusions
 }
 
+fn archmap_sft_candidate_families(
+    document: &ArchMapDocumentV0,
+    source_ref_ids: &[String],
+) -> Vec<CandidateOperationFamilyV0> {
+    let mut families = document
+        .map_items
+        .iter()
+        .filter(|item| is_sft_facing_item(item))
+        .map(|item| {
+            let item_source_refs = retained_string_refs(
+                &item
+                    .source_refs
+                    .iter()
+                    .map(|source| format!("source:archmap:{}", source_ref_key(source)))
+                    .collect::<Vec<_>>(),
+                source_ref_ids,
+            );
+            CandidateOperationFamilyV0 {
+                family_id: format!("family:archmap:{}", item.map_item_id),
+                operation_family: archmap_sft_operation_family(item),
+                support_kind: format!("archmap-{}-evidence", item.measurement_boundary),
+                action_class_candidate_ids: vec![format!("candidate:archmap:{}", item.map_item_id)],
+                source_ref_ids: item_source_refs,
+                confidence: item.confidence.clone(),
+                rationale: format!(
+                    "Projected from ArchMap item {} without assigning forecast probability.",
+                    item.map_item_id
+                ),
+                assumptions: item.required_assumptions.clone(),
+                non_conclusions: archmap_sft_non_conclusions(),
+            }
+        })
+        .collect::<Vec<_>>();
+    if families.is_empty() {
+        families.push(CandidateOperationFamilyV0 {
+            family_id: "family:archmap:selected-boundary".to_string(),
+            operation_family: "selected-archmap-boundary".to_string(),
+            support_kind: "archmap-boundary-only".to_string(),
+            action_class_candidate_ids: vec!["candidate:archmap:selected-boundary".to_string()],
+            source_ref_ids: source_ref_ids.to_vec(),
+            confidence: "low".to_string(),
+            rationale: "ArchMap contains no SFT-facing item; retain the boundary as unknown input."
+                .to_string(),
+            assumptions: vec![
+                "human review is required before SFT forecast construction".to_string(),
+            ],
+            non_conclusions: archmap_sft_non_conclusions(),
+        });
+    }
+    families
+}
+
+fn archmap_sft_unknown_remainders(
+    document: &ArchMapDocumentV0,
+    family_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<OperationSupportUnknownRemainderV0> {
+    let mut remainders = Vec::new();
+    for item in &document.map_items {
+        if !item.missing_evidence.is_empty() || item.measurement_boundary == "unmeasured" {
+            remainders.push(OperationSupportUnknownRemainderV0 {
+                remainder_id: format!("unknown:archmap:{}", item.map_item_id),
+                affected_family_ids: family_ids.to_vec(),
+                source_ref_ids: retained_string_refs(
+                    &item
+                        .source_refs
+                        .iter()
+                        .map(|source| format!("source:archmap:{}", source_ref_key(source)))
+                        .collect::<Vec<_>>(),
+                    source_ref_ids,
+                ),
+                unknown_axes: unique_strings(
+                    item.missing_evidence
+                        .iter()
+                        .cloned()
+                        .chain(std::iter::once(item.measurement_boundary.clone()))
+                        .collect(),
+                ),
+                reason: format!(
+                    "ArchMap item {} carries missing or unmeasured evidence",
+                    item.map_item_id
+                ),
+                treatment: "retain as SFT input boundary; do not round to absence or measured zero"
+                    .to_string(),
+                non_conclusions: archmap_sft_non_conclusions(),
+            });
+        }
+    }
+    if remainders.is_empty() {
+        remainders.push(OperationSupportUnknownRemainderV0 {
+            remainder_id: "unknown:archmap:private-unavailable-source-refs".to_string(),
+            affected_family_ids: family_ids.to_vec(),
+            source_ref_ids: source_ref_ids.to_vec(),
+            unknown_axes: vec!["privateRefs".to_string(), "unavailableRefs".to_string()],
+            reason: "ArchMap generation boundary may include private or unavailable refs"
+                .to_string(),
+            treatment: "retain boundary categories for later forecast and calibration artifacts"
+                .to_string(),
+            non_conclusions: archmap_sft_non_conclusions(),
+        });
+    }
+    remainders
+}
+
+fn archmap_sft_source_refs(document: &ArchMapDocumentV0) -> Vec<String> {
+    let mut refs = Vec::new();
+    refs.push(format!("source:archmap:{}", document.map_id));
+    refs.extend(
+        all_source_refs(document)
+            .into_iter()
+            .map(|source| format!("source:archmap:{}", source_ref_key(source))),
+    );
+    refs.extend(
+        document
+            .source_inventory_ref
+            .iter()
+            .map(|artifact| format!("source:archmap:{}", artifact.artifact_id)),
+    );
+    unique_strings(refs)
+}
+
+fn archmap_sft_operation_family(item: &ArchMapMapItem) -> String {
+    let lower = item.mapping_kind.to_ascii_lowercase();
+    if lower.contains("workflow") {
+        "workflow".to_string()
+    } else if lower.contains("event") {
+        "event".to_string()
+    } else if lower.contains("state") {
+        "state-transition".to_string()
+    } else if lower.contains("test") || item.source_refs.iter().any(|source| source.kind == "test")
+    {
+        "test-oracle".to_string()
+    } else if item.target_ref.layer.as_deref() == Some("runtime") {
+        "runtime-observation".to_string()
+    } else if lower.contains("policy") {
+        "proposal-force-candidate".to_string()
+    } else if lower.contains("relation") || item.target_ref.kind == "air-relation" {
+        "semantic-relation".to_string()
+    } else {
+        "operation-candidate".to_string()
+    }
+}
+
+fn is_aat_facing_item(item: &ArchMapMapItem) -> bool {
+    let target = item
+        .target_ref
+        .subject_ref
+        .as_deref()
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    item.preserves
+        .iter()
+        .any(|preserves| preserves.to_ascii_lowercase().contains("aat"))
+        || target.contains("signature")
+        || target.contains("flatness")
+        || item
+            .theorem_refs
+            .iter()
+            .any(|theorem| theorem.contains("ArchMap"))
+}
+
+fn is_sft_facing_item(item: &ArchMapMapItem) -> bool {
+    matches!(
+        item.mapping_kind.as_str(),
+        "operation"
+            | "workflow"
+            | "event"
+            | "state"
+            | "transition"
+            | "testOracle"
+            | "runtimeObservation"
+            | "proposalForceCandidate"
+            | "relation"
+            | "semanticRole"
+            | "policyBoundary"
+            | "nonfillabilityWitness"
+    ) || item.target_ref.layer.as_deref() == Some("runtime")
+        || item.preserves.iter().any(|preserves| {
+            let lower = preserves.to_ascii_lowercase();
+            lower.contains("operation")
+                || lower.contains("workflow")
+                || lower.contains("event")
+                || lower.contains("runtime")
+                || lower.contains("obstruction")
+        })
+}
+
+fn archmap_sft_non_conclusions() -> Vec<String> {
+    vec![
+        "ArchMap-derived SFT input is not a forecast result".to_string(),
+        "ArchMap confidence is review priority, not probability".to_string(),
+        "missing, private, unavailable, and unsupported evidence is not measured zero".to_string(),
+        "SFT projection does not promote tooling evidence to a Lean theorem claim".to_string(),
+    ]
+}
+
+fn retained_string_refs(candidate_refs: &[String], all_source_refs: &[String]) -> Vec<String> {
+    let all = all_source_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let retained = candidate_refs
+        .iter()
+        .filter(|source| all.contains(source.as_str()))
+        .cloned()
+        .collect::<Vec<_>>();
+    if retained.is_empty() {
+        all_source_refs.to_vec()
+    } else {
+        unique_strings(retained)
+    }
+}
+
 fn evidence_refs_for_item(
     item: &ArchMapMapItem,
     source_evidence_ids: &BTreeMap<String, String>,
@@ -1549,5 +1881,13 @@ fn stable_id(value: &str) -> String {
                 '-'
             }
         })
+        .collect()
+}
+
+fn unique_strings(values: Vec<String>) -> Vec<String> {
+    let mut seen = BTreeSet::new();
+    values
+        .into_iter()
+        .filter(|value| seen.insert(value.clone()))
         .collect()
 }

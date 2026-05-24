@@ -14,6 +14,7 @@ Lean status: `empirical hypothesis` / tooling validation.
 | 入力 | 役割 |
 | --- | --- |
 | `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal の action class、scope、source refs、missing evidence を保持する。 |
+| `archmap-v0` / `archmap-sft-input` | ArchMap-derived source refs と SFT-facing map item を operation support estimate へ投影する。 |
 | `operation-support-estimate-v0` | candidate operation families、policy constraints、known forbidden support、unknown remainder を保持する。 |
 | `forecast-cone-skeleton-v0` | finite support と bounded horizon に相対化した path class candidates を保持する。 |
 | `consequence-envelope-report-v0` | signature axes、obstruction candidates、missing boundary、review / CI recommendation を reviewer-facing に投影する。 |
@@ -23,6 +24,9 @@ Lean status: `empirical hypothesis` / tooling validation.
 ここでの calibration は、forecast item と observed artifact を対応付け、どの item が
 matched、unmatched、unavailable、private、notComparable だったかを記録する作業である。
 unavailable / private / missing data を measured zero として扱わない。
+ArchMap-derived forecast item refs も同じ扱いで、PR / review / CI / incident / rollback /
+repair adoption との照合対象にはできるが、formal theorem、global quality ranking、
+incident causality には昇格しない。
 
 ## Input-Output Boundary
 
