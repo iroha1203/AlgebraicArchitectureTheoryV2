@@ -302,6 +302,16 @@ trajectory、feedback update を推定する。
 signature delta は、両側で測定済みで、axis ごとの比較順序が定義されている場合に限って
 比較される。
 
+AAT 側の共通 surface は `aat-observable-bundle-v0` として読む。この bundle は
+ArchitectureObject / ComponentUniverse、ObstructionWitness、TheoremBoundary /
+NonConclusion、ArchitectureOperation、Projection / Observation / LSP / DIP、FeatureExtension、
+Path / Homotopy / DiagramFiller / NonFillability、StateTransition / EffectBoundary、
+Repair / Synthesis / ComplexityTransfer、AnalyticRepresentation / ObstructionValuation を、
+source refs、measurement status、review action、responsibility boundary として保持する。
+`unmeasured`、`outOfScope`、`private`、`unavailable`、`unsupported`、`dynamicBlindSpot` は
+measured zero ではない。bundle validation は AAT theorem proof や extractor completeness を
+強めない。
+
 `ForecastCone` formal core との接続は、次の境界で読む。
 
 ```text

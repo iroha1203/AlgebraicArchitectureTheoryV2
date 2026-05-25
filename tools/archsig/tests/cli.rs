@@ -188,6 +188,84 @@ fn cli_intentmap_alignment_forecast_and_calibration_workflow() {
     );
 }
 
+#[test]
+fn cli_emits_and_validates_aat_observable_bundle() {
+    let out_dir = temp_dir("aat-observable-bundle");
+    let bundle = out_dir.join("aat-observable-bundle.json");
+    let validation = out_dir.join("aat-observable-bundle-validation.json");
+    let canonical_fixture = fixture_root().join("aat_observable_bundle.json");
+
+    run_sig0(&[
+        "aat-observable-bundle",
+        "--fixture",
+        "--out",
+        bundle.to_str().expect("bundle path is utf-8"),
+    ]);
+    let bundle_json = read_json(&bundle);
+    assert_eq!(bundle_json["schemaVersion"], "aat-observable-bundle-v0");
+    assert!(
+        bundle_json["conceptMappings"]
+            .as_array()
+            .expect("concept mappings are array")
+            .len()
+            >= 10
+    );
+    assert!(
+        bundle_json["conceptMappings"]
+            .as_array()
+            .expect("concept mappings are array")
+            .iter()
+            .any(|entry| entry["aatConcept"] == "ArchitectureObject / ComponentUniverse")
+    );
+    assert!(
+        bundle_json["selectedUniverse"]["unavailableRefs"]
+            .as_array()
+            .expect("unavailable refs are array")
+            .iter()
+            .any(|entry| entry == "runtime:production-traces")
+    );
+    assert!(
+        bundle_json["llmReviewSurface"]["reviewQuestions"]
+            .as_array()
+            .expect("review questions are array")
+            .iter()
+            .any(|entry| entry
+                .as_str()
+                .expect("review question is string")
+                .contains("obstruction witnesses"))
+    );
+
+    run_sig0(&[
+        "aat-observable-bundle",
+        "--input",
+        canonical_fixture
+            .to_str()
+            .expect("canonical bundle path is utf-8"),
+        "--out",
+        validation.to_str().expect("validation path is utf-8"),
+    ]);
+    let validation_json = read_json(&validation);
+    assert_eq!(
+        validation_json["schemaVersion"],
+        "aat-observable-bundle-validation-report-v0"
+    );
+    assert_eq!(validation_json["summary"]["result"], "pass");
+    assert!(
+        validation_json["checks"]
+            .as_array()
+            .expect("checks are array")
+            .iter()
+            .any(|check| check["id"] == "aat-observable-responsibility-boundary")
+    );
+    assert!(
+        validation_json["bundle"]["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are array")
+            .iter()
+            .any(|entry| entry == "unmeasured is not measured zero")
+    );
+}
+
 fn expressiveness_fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }

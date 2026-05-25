@@ -341,6 +341,51 @@
       }
     },
     {
+      "artifactId": "aat-observable-bundle",
+      "artifactName": "AAT Observable Bundle",
+      "schemaVersionName": "aat-observable-bundle-v0",
+      "artifactRole": "aat-observable-review-bundle",
+      "ownerPhase": "AAT observable bridge",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/aat_archsig_reduction.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1166",
+        "#1167",
+        "#1168",
+        "#1169",
+        "#1170",
+        "#1171",
+        "#1172",
+        "#1173",
+        "#1174",
+        "#1175",
+        "#1176",
+        "#1177",
+        "#1178",
+        "#1179"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map AAT concepts, source refs, selected universe, witness refs, operation candidates, theorem boundaries, review actions, and responsibility splits without promoting tooling evidence to proof.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New AAT concept mappings must declare expressibility, retention, reviewability, measurement status, responsibility, and non-conclusions.",
+          "New measured axes must keep measuredZero, measuredNonzero, unmeasured, outOfScope, private, unavailable, unsupported, and dynamic boundaries distinct."
+        ],
+        "coverageExactnessBoundary": [
+          "AAT Observable Bundle is a review artifact bundle, not AAT itself, extractor completeness, global lawfulness proof, or merge approval."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
       "artifactId": "intent-calibration-record",
       "artifactName": "Intent calibration record",
       "schemaVersionName": "intent-calibration-record-v0",

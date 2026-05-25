@@ -5,9 +5,10 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
-    AiProposalGovernanceV0, AiProposalGovernanceValidationReportV0, AirDocumentInput,
-    AirDocumentV0, AirValidationReport, ArchMapDocumentV0, ArchMapSourceInventoryInput,
-    ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchitectureDynamicsMetricsReportV0,
+    AatObservableBundleV0, AatObservableBundleValidationReportV0, AiProposalGovernanceV0,
+    AiProposalGovernanceValidationReportV0, AirDocumentInput, AirDocumentV0, AirValidationReport,
+    ArchMapDocumentV0, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
+    ArchMapValidationReportV0, ArchitectureDynamicsMetricsReportV0,
     ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
     ArchitectureFieldSnapshotValidationReportV0, ArchitecturePolicyV0,
     ArchitecturePolicyValidationReportV0, ArtifactDescriptorV0,
@@ -53,29 +54,29 @@ use archsig::{
     build_signature_diff_report, build_signature_snapshot_record,
     build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    read_architecture_policy, render_pr_comment_markdown, static_ai_proposal_governance,
-    static_architecture_dynamics_metrics_report, static_architecture_field_snapshot,
-    static_artifact_descriptor, static_calibration_review_record,
-    static_consequence_envelope_report, static_custom_rule_plugin_registry,
-    static_detectable_values_reported_axes_catalog, static_dynamics_measurement_contract,
-    static_forecast_calibration_hook, static_forecast_cone_skeleton,
-    static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
-    static_intent_archmap_alignment, static_intent_calibration_record, static_intent_map,
-    static_law_policy_template_registry, static_measurement_unit_registry,
-    static_no_solution_certificate, static_operation_proposal_log,
-    static_operation_support_estimate, static_organization_policy,
+    read_architecture_policy, render_pr_comment_markdown, static_aat_observable_bundle,
+    static_ai_proposal_governance, static_architecture_dynamics_metrics_report,
+    static_architecture_field_snapshot, static_artifact_descriptor,
+    static_calibration_review_record, static_consequence_envelope_report,
+    static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
+    static_dynamics_measurement_contract, static_forecast_calibration_hook,
+    static_forecast_cone_skeleton, static_hypothesis_refresh_cycle,
+    static_incident_correlation_monitor, static_intent_archmap_alignment,
+    static_intent_calibration_record, static_intent_map, static_law_policy_template_registry,
+    static_measurement_unit_registry, static_no_solution_certificate,
+    static_operation_proposal_log, static_operation_support_estimate, static_organization_policy,
     static_ownership_boundary_monitor, static_pr_force_report, static_pr_quality_analysis_report,
     static_repair_adoption_record, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_schema_version_catalog,
     static_signature_trajectory_report, static_synthesis_constraint_artifact,
-    static_team_threshold_policy, validate_ai_proposal_governance, validate_air_document_report,
-    validate_architecture_dynamics_metrics_report, validate_architecture_field_snapshot,
-    validate_architecture_policy_report, validate_archmap_report,
-    validate_artifact_descriptor_report, validate_component_universe_report,
-    validate_consequence_envelope_report, validate_custom_rule_plugin_registry_report,
-    validate_dynamics_measurement_contract_report, validate_forecast_calibration_hook,
-    validate_forecast_cone_skeleton, validate_intent_archmap_alignment,
-    validate_intent_calibration_record, validate_intent_map,
+    static_team_threshold_policy, validate_aat_observable_bundle, validate_ai_proposal_governance,
+    validate_air_document_report, validate_architecture_dynamics_metrics_report,
+    validate_architecture_field_snapshot, validate_architecture_policy_report,
+    validate_archmap_report, validate_artifact_descriptor_report,
+    validate_component_universe_report, validate_consequence_envelope_report,
+    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
+    validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
+    validate_intent_archmap_alignment, validate_intent_calibration_record, validate_intent_map,
     validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
     validate_no_solution_certificate_report, validate_operation_proposal_log,
     validate_operation_support_estimate, validate_organization_policy_report,
@@ -1010,6 +1011,21 @@ enum Command {
         fixture: bool,
 
         /// Output report or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate an aat-observable-bundle-v0 artifact.
+    AatObservableBundle {
+        /// Optional AAT observable bundle JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical minimal aat-observable-bundle-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output bundle or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -2424,6 +2440,35 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 .unwrap_or_else(|| "static-pr-quality-analysis".to_string());
             let validation: PrQualityAnalysisValidationReportV0 =
                 validate_pr_quality_analysis_report(&report, &input_path);
+            let failed = validation.summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::AatObservableBundle {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let bundle: AatObservableBundleV0 = static_aat_observable_bundle();
+                write_json(out, &bundle)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let bundle: AatObservableBundleV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_aat_observable_bundle);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-aat-observable-bundle".to_string());
+            let validation: AatObservableBundleValidationReportV0 =
+                validate_aat_observable_bundle(&bundle, &input_path);
             let failed = validation.summary.result == "fail";
             write_json(out, &validation)?;
             Ok(if failed {
