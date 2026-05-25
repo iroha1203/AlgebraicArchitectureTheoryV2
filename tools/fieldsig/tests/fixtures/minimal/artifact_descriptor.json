@@ -111,7 +111,7 @@
       "sourceRefIds": [
         "source:issue-733"
       ],
-      "rationale": "Issue names an archsig artifact-descriptor entrypoint.",
+      "rationale": "Issue names a fieldsig artifact-descriptor entrypoint.",
       "assumptions": [
         "candidate was inferred from selected source refs only",
         "candidate does not imply an operation support estimate"

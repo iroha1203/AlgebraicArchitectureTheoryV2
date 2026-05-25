@@ -218,7 +218,7 @@ global AI safety は結論しない。
 ArchMap-derived slice は AAT projection surface に限定する。LLM-authored ArchMap に保持してよい
 SFT-facing 情報は、operation / state / state transition / event / workflow / test oracle /
 runtime observation の source-level candidate と source refs である。field、force、attractor、
-basin、ForecastCone、ConsequenceEnvelope、calibration boundary は ArchSig-computed SFT report
+basin、ForecastCone、ConsequenceEnvelope、calibration boundary は FieldSig-computed SFT report
 または projection artifact の責務であり、ArchMap から theorem implication として導出しない。
 ArchMap item と SFT computation-input item を対応させる場合も、shared source evidence への
 cross-reference として読む。これは AAT -> SFT の依存、または AAT theorem から SFT 計算結果が

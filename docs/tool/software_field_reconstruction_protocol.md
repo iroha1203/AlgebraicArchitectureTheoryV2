@@ -68,7 +68,7 @@ ArchMap 側に保持するのは source-level candidates、たとえば `operati
 `stateCandidate`、`stateTransitionCandidate`、`eventCandidate`、`workflowCandidate`、
 `testOracleCandidate`、`runtimeObservationCandidate` と source refs である。field、force、
 attractor、basin、ForecastCone、ConsequenceEnvelope、calibration boundary は、trace inventory と
-normalization 後に ArchSig / SFT projection report が決定論的に生成する artifact の責務である。
+normalization 後に FieldSig projection report が決定論的に生成する artifact の責務である。
 CLI surface では `archmap-sft-input` が ArchMap item を `operation-support-estimate-v0` に投影する。
 この投影は selected source universe に相対化され、missing / private / unavailable / unsupported evidence を
 unknown remainder として残す。

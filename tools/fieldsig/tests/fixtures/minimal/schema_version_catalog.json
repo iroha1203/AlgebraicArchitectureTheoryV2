@@ -286,7 +286,7 @@
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/archsig_archmap_prd_v3.md",
-        "tools/archsig/docs/commands.md"
+        "tools/fieldsig/docs/commands.md"
       ],
       "downstreamIssues": [
         "#1151",
@@ -319,8 +319,8 @@
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/roadmap.md",
-        "tools/archsig/docs/commands.md",
-        "tools/archsig/docs/artifacts-and-boundaries.md"
+        "tools/fieldsig/docs/commands.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
       ],
       "downstreamIssues": [
         "#1182",
@@ -352,8 +352,8 @@
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/roadmap.md",
-        "tools/archsig/docs/commands.md",
-        "tools/archsig/docs/artifacts-and-boundaries.md"
+        "tools/fieldsig/docs/commands.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
       ],
       "downstreamIssues": [
         "#1185"
@@ -383,8 +383,8 @@
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/roadmap.md",
-        "tools/archsig/docs/commands.md",
-        "tools/archsig/docs/artifacts-and-boundaries.md"
+        "tools/fieldsig/docs/commands.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
       ],
       "downstreamIssues": [
         "#1182",
@@ -415,8 +415,8 @@
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/roadmap.md",
-        "tools/archsig/docs/commands.md",
-        "tools/archsig/docs/artifacts-and-boundaries.md"
+        "tools/fieldsig/docs/commands.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
       ],
       "downstreamIssues": [
         "#1182",
@@ -983,7 +983,7 @@
       "status": "implemented",
       "primaryDocs": [
         "docs/tool/ai_proposal_governance.md",
-        "tools/archsig/docs/artifacts-and-boundaries.md#sft-forecasting-input-artifacts"
+        "tools/fieldsig/docs/artifacts-and-boundaries.md#sft-forecasting-input-artifacts"
       ],
       "downstreamIssues": [
         "#900"

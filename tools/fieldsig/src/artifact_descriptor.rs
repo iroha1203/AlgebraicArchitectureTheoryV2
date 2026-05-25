@@ -118,7 +118,7 @@ pub fn static_artifact_descriptor() -> ArtifactDescriptorV0 {
                 "cli-entrypoint",
                 "medium",
                 &["source:issue-733"],
-                "Issue names an archsig artifact-descriptor entrypoint.",
+                "Issue names a fieldsig artifact-descriptor entrypoint.",
             ),
         ],
         scope: ArtifactDescriptorScopeV0 {

@@ -228,7 +228,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "implemented",
                 vec![
                     "docs/tool/archsig_archmap_prd_v3.md",
-                    "tools/archsig/docs/commands.md",
+                    "tools/fieldsig/docs/commands.md",
                 ],
                 vec!["#1151", "#1152", "#1154", "#1156"],
                 compatibility_boundary(
@@ -251,8 +251,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "implemented",
                 vec![
                     "docs/tool/roadmap.md",
-                    "tools/archsig/docs/commands.md",
-                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/fieldsig/docs/commands.md",
+                    "tools/fieldsig/docs/artifacts-and-boundaries.md",
                 ],
                 vec!["#1182", "#1184", "#1185"],
                 compatibility_boundary(
@@ -275,8 +275,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "implemented",
                 vec![
                     "docs/tool/roadmap.md",
-                    "tools/archsig/docs/commands.md",
-                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/fieldsig/docs/commands.md",
+                    "tools/fieldsig/docs/artifacts-and-boundaries.md",
                 ],
                 vec!["#1185"],
                 compatibility_boundary(
@@ -299,8 +299,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "implemented",
                 vec![
                     "docs/tool/roadmap.md",
-                    "tools/archsig/docs/commands.md",
-                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/fieldsig/docs/commands.md",
+                    "tools/fieldsig/docs/artifacts-and-boundaries.md",
                 ],
                 vec!["#1182", "#1185"],
                 compatibility_boundary(
@@ -323,8 +323,8 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "implemented",
                 vec![
                     "docs/tool/roadmap.md",
-                    "tools/archsig/docs/commands.md",
-                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/fieldsig/docs/commands.md",
+                    "tools/fieldsig/docs/artifacts-and-boundaries.md",
                 ],
                 vec!["#1182", "#1183", "#1186"],
                 compatibility_boundary(
@@ -745,7 +745,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "implemented",
                 vec![
                     "docs/tool/ai_proposal_governance.md",
-                    "tools/archsig/docs/artifacts-and-boundaries.md#sft-forecasting-input-artifacts",
+                    "tools/fieldsig/docs/artifacts-and-boundaries.md#sft-forecasting-input-artifacts",
                 ],
                 vec!["#900"],
                 compatibility_boundary(
