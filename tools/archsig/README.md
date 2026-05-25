@@ -33,7 +33,7 @@ This writes:
 - `.archsig/archmap-primary/aat-observable-bundle.json`
 - `.archsig/archmap-primary/aat-observable-bundle-validation.json`
 
-The validation report contains `homomorphismDiagnostics`; the Feature Extension Report contains `homomorphismSummary`. These are user-facing AAT diagnostics, not proof objects.
+The validation report contains `homomorphismDiagnostics`; the Feature Extension Report carries the same ArchMap homomorphism family surface forward in `homomorphismSummary`, including object, relation, law, obstruction, and signature-axis families. The AAT Observable Bundle derives concept mapping review status from the ArchMap validation checklist, theorem precondition report, and Feature Extension Report. These are user-facing AAT diagnostics, not proof objects.
 
 When language import-graph evidence is needed, run it explicitly as an adapter:
 

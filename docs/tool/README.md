@@ -9,7 +9,7 @@ The previous mixed ArchSig / ArchMap / AIR / theorem-precondition / FieldSig-tra
 Current source-of-truth boundaries:
 
 - ArchSig starts from supplied `archmap-v0` evidence read as a bounded AAT homomorphism. It diagnoses domain / codomain, object map, relation map, law map, obstruction map, signature-axis map, preservation claims, forgetful boundaries, unmeasured boundaries, unsupported boundaries, and non-conclusions.
-- ArchSig projects that homomorphism through AIR, theorem precondition checks, Feature Extension Report, and AAT Observable Bundle review artifacts.
+- ArchSig projects that homomorphism through AIR, theorem precondition checks, Feature Extension Report, and AAT Observable Bundle review artifacts. Feature Report keeps the ArchMap homomorphism family surface, and AAT Observable Bundle derives concept / theorem-boundary review status from the validation checklist and workflow reports.
 - Lean / Python import-graph output is optional bounded adapter evidence, emitted explicitly by `archsig adapter-scan`; adapter artifacts retain `coverageBoundary`, `unsupportedConstructs`, `missingEvidence`, and `nonConclusions`.
 - ArchSig validation does not prove extractor completeness, semantic correctness, architecture lawfulness, global safety, or Lean theorem discharge.
 - FieldSig / SFT forecast and governance surfaces are not owned by ArchSig.
