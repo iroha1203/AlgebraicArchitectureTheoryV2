@@ -24,10 +24,10 @@ SFT の大きな魅力である次の三点を弱く見せている。
 - `docs/sft/software_field_theory.md`
 - `docs/sft/aat_interface.md`
 - `docs/outreach/en/aat_sft_hashnode_mvp_v_0_1.md`
-- `docs/tool/software_field_reconstruction_protocol.md`
-- `docs/tool/sft_calibration_benchmark.md`
-- `docs/tool/ai_proposal_governance.md`
-- `docs/tool/signature_artifacts.md`
+- `tools/fieldsig/docs/artifacts-and-boundaries.md`
+- `tools/fieldsig/docs/commands.md`
+- `tools/fieldsig/docs/operational-feedback.md`
+- `tools/archsig/docs/artifacts-and-boundaries.md`
 - `docs/aat/mathematical_theory.md`
 - `docs/aat/lean_theorem_index.md`
 - `docs/aat/proof_obligations.md`
@@ -253,7 +253,7 @@ References
 主な source:
 
 - `docs/sft/software_field_theory.md` sections 22, 28。
-- `docs/tool/ai_proposal_governance.md`。
+- `tools/fieldsig/docs/artifacts-and-boundaries.md`。
 
 ### `/sft/field/organization-structure/` 1-4. Organization Structure as Field
 
@@ -338,7 +338,7 @@ References
 主な source:
 
 - `docs/sft/software_field_theory.md` sections 3, 8。
-- `docs/tool/software_field_reconstruction_protocol.md`。
+- `tools/fieldsig/docs/artifacts-and-boundaries.md`。
 
 ### `/sft/computation/aat-interface/` 2-2. AAT / SFT Interface
 
@@ -372,7 +372,7 @@ References
 主な source:
 
 - `docs/sft/aat_interface.md` section 6。
-- `docs/tool/signature_artifacts.md`。
+- `tools/archsig/docs/artifacts-and-boundaries.md`。
 - `website/archsig/**` は surface 確認用。
 
 ### `/sft/computation/operation-support/` 2-4. Operation Support and Policy
@@ -496,8 +496,8 @@ References
 
 主な source:
 
-- `docs/tool/reports.md`
-- `docs/tool/signature_artifacts.md`
+- `tools/fieldsig/docs/artifacts-and-boundaries.md`
+- `tools/archsig/docs/artifacts-and-boundaries.md`
 - `docs/sft/aat_interface.md` section 6。
 
 ### `/sft/computation/simulator-calibration/` 2-12. Simulator and Calibration
@@ -512,7 +512,7 @@ References
 主な source:
 
 - `docs/sft/software_field_theory.md` section 21。
-- `docs/tool/sft_calibration_benchmark.md`。
+- `tools/fieldsig/docs/artifacts-and-boundaries.md`。
 
 ### `/sft/intervention/` 3. Field Intervention and Control
 
@@ -581,7 +581,7 @@ References
 主な source:
 
 - `docs/sft/software_field_theory.md` section 22。
-- `docs/tool/ai_proposal_governance.md`。
+- `tools/fieldsig/docs/artifacts-and-boundaries.md`。
 
 ### `/sft/intervention/lifecycle/` 3-5. Lifecycle Decisions
 

@@ -64,7 +64,15 @@ pub(crate) fn sig0_document_for_edges(
         policy_violations: Vec::new(),
         runtime_edge_evidence: Vec::new(),
         runtime_dependency_graph: None,
+        coverage_boundary: "test support selected universe".to_string(),
         unsupported_constructs: Vec::new(),
+        missing_evidence: vec![
+            "test support does not model complete repository evidence".to_string(),
+        ],
+        non_conclusions: vec![
+            "test support Sig0 is not architecture ground truth".to_string(),
+            "missing evidence is not measured zero".to_string(),
+        ],
     }
 }
 

@@ -184,7 +184,7 @@ SoftwareFieldEstimate :=
 ```
 
 tooling 側では、この境界を
-[`docs/tool/software_field_reconstruction_protocol.md`](../tool/software_field_reconstruction_protocol.md)
+[`tools/fieldsig/docs/artifacts-and-boundaries.md`](../../tools/fieldsig/docs/artifacts-and-boundaries.md)
 で管理する。そこでは PRD / Issue / PR / review / CI / incident / ownership trace を
 observed、derived、unavailable、private、unknown、notComparable に分ける。
 これにより、SFT は開発場全体の完全モデル化を避けつつ、明示境界内の計算可能な断面を扱う。
@@ -1119,7 +1119,7 @@ SFT が計算理論として成立する最低ラインは level 3 である。
 実務ツールとしての価値は level 4 から強くなり、予測理論としての主張は level 5 以降、
 科学的な検証可能性は level 6 の calibration に依存する。
 
-level 6 の最小 protocol は `docs/tool/sft_calibration_benchmark.md` で管理する。
+level 6 の最小 protocol は `tools/fieldsig/docs/artifacts-and-boundaries.md` で管理する。
 そこでは forecast item refs と observed PR / review / CI / outcome refs を held-out trace として
 対応付け、review mediation と AI shortcut detection を別 benchmark として評価する。
 calibration がない段階の `ConsequenceEnvelope` は、bounded review artifact であり、
@@ -1146,7 +1146,7 @@ AI agent :=
 SFT は AI agent の一般的安全性を証明しない。
 AI agent が生成する operation support を bound し、AAT theorem boundary と SFT forecast boundary の中で
 review / CI feedback により制御する枠組みを与える。
-最小 protocol は `docs/tool/ai_proposal_governance.md` で管理する。
+最小 protocol は `tools/fieldsig/docs/artifacts-and-boundaries.md` で管理する。
 そこでは prompt / policy boundary、allowed operation support、shortcut witness、
 review / CI mediation、posterior field update を分け、AI policy compliance を
 architecture lawfulness に昇格しない。

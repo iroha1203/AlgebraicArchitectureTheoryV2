@@ -28,18 +28,20 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "B0-B8",
                 "implemented",
                 vec![
-                    "docs/aat_v2_tooling_design.md#4-architecture-signature-artifact-layer",
-                    "docs/design/archsig_tooling_index.md",
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
                 ],
                 vec![],
                 compatibility_boundary(
-                    "Map component/relation/signature fields by stable camelCase names; new axes must be added with metricStatus boundary metadata.",
+                    "Map component/relation/signature fields by stable camelCase names; adapter coverageBoundary, unsupportedConstructs, missingEvidence, and nonConclusions must remain explicit.",
                     vec![],
                     vec![
                         "New required axes must declare measuredZero/measuredNonzero/unmeasured/outOfScope semantics.",
+                        "New adapter evidence must preserve coverage and missing-evidence boundaries.",
                     ],
                     vec![
                         "metricStatus is the compatibility boundary for coverage and exactness of Sig0 axes.",
+                        "Sig0 is bounded adapter evidence, not the ArchSig primary review surface or extractor completeness proof.",
                     ],
                 ),
             ),
@@ -73,7 +75,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "semantic-observation-input",
                 "ArchMap MVP",
                 "implemented",
-                vec!["docs/tool/archmap_prd.md"],
+                vec![
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
+                ],
                 vec!["#1032", "#1033", "#1035"],
                 compatibility_boundary(
                     "Map source inventory, prompt/model provenance, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
@@ -94,7 +99,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "validation-output",
                 "ArchMap MVP",
                 "implemented",
-                vec!["docs/tool/archmap_prd.md", "tools/archsig/docs/commands.md"],
+                vec![
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
+                ],
                 vec!["#1032", "#1034"],
                 compatibility_boundary(
                     "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, and formal promotion guardrail checks separate.",
@@ -114,7 +122,10 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "law-aware-review-policy",
                 "ArchMap law-aware review",
                 "implemented",
-                vec!["docs/tool/archmap_prd.md", "tools/archsig/docs/commands.md"],
+                vec![
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
+                ],
                 vec!["#1162"],
                 compatibility_boundary(
                     "Map adopted laws, layer selectors, dependency rules, exceptions, and SRP taxonomy explicitly; do not infer policy from repository shape.",
@@ -176,7 +187,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchMap v2",
                 "implemented",
                 vec![
-                    "docs/tool/archsig_archmap_prd_v2.md",
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
                     "tools/archsig/docs/commands.md",
                 ],
                 vec!["#1139"],
@@ -199,7 +210,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "PRD v3",
                 "implemented",
                 vec![
-                    "docs/tool/archsig_archmap_prd_v3.md",
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
                     "tools/archsig/docs/commands.md",
                 ],
                 vec!["#1153"],
@@ -222,7 +233,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "AAT observable bridge",
                 "implemented",
                 vec![
-                    "docs/tool/aat_archsig_reduction.md",
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
                     "tools/archsig/docs/artifacts-and-boundaries.md",
                     "tools/archsig/docs/commands.md",
                 ],

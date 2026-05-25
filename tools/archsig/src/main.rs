@@ -5,7 +5,13 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
-    AatObservableBundleV0, AatObservableBundleValidationReportV0, AirDocumentInput, AirDocumentV0,
+    AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION, AatAnalyticAxisV0, AatConceptMappingV0,
+    AatCoverageBoundaryV0, AatFeatureExtensionEvidenceV0, AatLlmReviewSurfaceV0,
+    AatObservableBundleV0, AatObservableBundleValidationReportV0, AatObservableSourceRefV0,
+    AatObservedAxisV0, AatOperationCandidateV0, AatProjectionObservationEvidenceV0,
+    AatRepairSynthesisEvidenceV0, AatResponsibilityBoundaryV0, AatReviewActionV0,
+    AatSelectedUniverseV0, AatSemanticDiagramEvidenceV0, AatStateEffectLawEvidenceV0,
+    AatTheoremBoundaryV0, AatWitnessCatalogEntryV0, AirDocumentInput, AirDocumentV0,
     AirValidationReport, ArchMapDocumentV0, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
     ArchMapValidationReportV0, ArchitecturePolicyV0, ArchitecturePolicyValidationReportV0,
     ComponentUniverseValidationReport, CustomRulePluginRegistryV0,
@@ -46,42 +52,48 @@ use archsig::{
 use clap::{Parser, Subcommand};
 
 #[derive(Debug, Parser)]
-#[command(version, about = "Extract ArchSig JSON from Lean module imports")]
+#[command(
+    version,
+    about = "Validate ArchMap-first ArchSig review artifacts and bounded adapter evidence"
+)]
 struct Args {
     #[command(subcommand)]
     command: Option<Command>,
-
-    /// Repository root to scan.
-    #[arg(long, default_value = ".")]
-    root: PathBuf,
-
-    /// Output JSON path. If omitted, JSON is written to stdout.
-    #[arg(long)]
-    out: Option<PathBuf>,
-
-    /// Optional boundary / abstraction policy JSON file.
-    #[arg(long)]
-    policy: Option<PathBuf>,
-
-    /// Optional runtime edge evidence JSON file.
-    #[arg(long = "runtime-edges")]
-    runtime_edges: Option<PathBuf>,
-
-    /// Source language to scan.
-    #[arg(long, default_value = "lean", value_parser = ["lean", "python"])]
-    language: String,
-
-    /// Python source root relative to --root. Repeat for multiple roots.
-    #[arg(long = "source-root")]
-    source_roots: Vec<PathBuf>,
-
-    /// Python package root relative to --root. Repeat for multiple roots.
-    #[arg(long = "package-root")]
-    package_roots: Vec<PathBuf>,
 }
 
 #[derive(Debug, Subcommand)]
 enum Command {
+    /// Run a bounded language adapter scan and emit Sig0 evidence.
+    AdapterScan {
+        /// Repository root to scan.
+        #[arg(long, default_value = ".")]
+        root: PathBuf,
+
+        /// Output JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+
+        /// Optional boundary / abstraction policy JSON file.
+        #[arg(long)]
+        policy: Option<PathBuf>,
+
+        /// Optional runtime edge evidence JSON file.
+        #[arg(long = "runtime-edges")]
+        runtime_edges: Option<PathBuf>,
+
+        /// Source language to scan.
+        #[arg(long, default_value = "lean", value_parser = ["lean", "python"])]
+        language: String,
+
+        /// Python source root relative to --root. Repeat for multiple roots.
+        #[arg(long = "source-root")]
+        source_roots: Vec<PathBuf>,
+
+        /// Python package root relative to --root. Repeat for multiple roots.
+        #[arg(long = "package-root")]
+        package_roots: Vec<PathBuf>,
+    },
+
     /// Validate an existing ArchSig JSON document.
     Validate {
         /// Input ArchSig JSON path.
@@ -485,6 +497,25 @@ enum Command {
         out: Option<PathBuf>,
     },
 
+    /// Build the ArchMap-primary review workflow artifacts.
+    ArchmapWorkflow {
+        /// Input ArchMap JSON path.
+        #[arg(long)]
+        archmap: PathBuf,
+
+        /// Optional Sig0 adapter evidence used only for conflict checks.
+        #[arg(long)]
+        sig0: Option<PathBuf>,
+
+        /// Output directory for workflow artifacts.
+        #[arg(long = "out-dir")]
+        out_dir: PathBuf,
+
+        /// Treat measured AIR claims without evidence refs as validation failures.
+        #[arg(long)]
+        strict_measured_evidence: bool,
+    },
+
     /// Emit the B9 detectable values / reported axes catalog.
     ReportedAxesCatalog {
         /// Output reported axes catalog JSON path. If omitted, JSON is written to stdout.
@@ -609,6 +640,26 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
     let args = Args::parse();
 
     match args.command {
+        Some(Command::AdapterScan {
+            root,
+            out,
+            policy,
+            runtime_edges,
+            language,
+            source_roots,
+            package_roots,
+        }) => {
+            let document = build_adapter_sig0(
+                &root,
+                policy.as_deref(),
+                runtime_edges.as_deref(),
+                &language,
+                &source_roots,
+                &package_roots,
+            )?;
+            write_json(out, &document)?;
+            Ok(ExitCode::SUCCESS)
+        }
         Some(Command::Validate {
             input,
             out,
@@ -1136,6 +1187,107 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 ExitCode::SUCCESS
             })
         }
+        Some(Command::ArchmapWorkflow {
+            archmap,
+            sig0,
+            out_dir,
+            strict_measured_evidence,
+        }) => {
+            let report_path = out_dir.join("archmap-validation.json");
+            let air_path = out_dir.join("air.json");
+            let air_validation_path = out_dir.join("air-validation.json");
+            let theorem_check_path = out_dir.join("theorem-precondition-check.json");
+            let feature_report_path = out_dir.join("feature-report.json");
+            let observable_bundle_path = out_dir.join("aat-observable-bundle.json");
+            let observable_validation_path = out_dir.join("aat-observable-bundle-validation.json");
+
+            let document: ArchMapDocumentV0 = read_json(&archmap)?;
+            let sig0_document: Option<Sig0Document> = sig0.as_ref().map(read_json).transpose()?;
+            let source_inventory_path = document
+                .source_inventory_ref
+                .as_ref()
+                .and_then(|source_inventory_ref| source_inventory_ref.path.as_deref());
+            let mut source_inventory_document: Option<ArchMapSourceInventoryV0> = None;
+            let mut source_inventory_error: Option<String> = None;
+            if let Some(path) = source_inventory_path {
+                match resolve_archmap_sidecar_path(&archmap, path) {
+                    Some(resolved_path) => match read_json(&resolved_path) {
+                        Ok(source_inventory) => source_inventory_document = Some(source_inventory),
+                        Err(error) => {
+                            source_inventory_error = Some(format!(
+                                "source inventory artifact could not be read: {error}"
+                            ));
+                        }
+                    },
+                    None => {
+                        source_inventory_error =
+                            Some("source inventory artifact path does not exist".to_string());
+                    }
+                }
+            }
+            let source_inventory = source_inventory_path.map(|path| ArchMapSourceInventoryInput {
+                path,
+                document: source_inventory_document.as_ref(),
+                read_error: source_inventory_error.clone(),
+            });
+            let archmap_report = validate_archmap_report(
+                &document,
+                &archmap.display().to_string(),
+                sig0_document.as_ref(),
+                source_inventory,
+            );
+            let archmap_failed = archmap_report.summary.result == "fail";
+            write_json(Some(report_path.clone()), &archmap_report)?;
+
+            let air = build_air_from_archmap(
+                &document,
+                &archmap.display().to_string(),
+                sig0_document.as_ref(),
+            );
+            write_json(Some(air_path.clone()), &air)?;
+
+            let air_validation = validate_air_document_report(
+                &air,
+                &air_path.display().to_string(),
+                strict_measured_evidence,
+            );
+            let air_failed = air_validation.summary.result == "fail";
+            write_json(Some(air_validation_path.clone()), &air_validation)?;
+
+            let theorem_check =
+                build_theorem_precondition_check_report(&air, &air_path.display().to_string());
+            write_json(Some(theorem_check_path.clone()), &theorem_check)?;
+
+            let feature_report =
+                build_feature_extension_report(&air, &air_path.display().to_string());
+            write_json(Some(feature_report_path.clone()), &feature_report)?;
+
+            let observable_bundle = observable_bundle_from_archmap_workflow(
+                &document,
+                &air,
+                &theorem_check,
+                &feature_report,
+                &archmap,
+                &report_path,
+                &air_path,
+                &air_validation_path,
+                &theorem_check_path,
+                &feature_report_path,
+            );
+            write_json(Some(observable_bundle_path.clone()), &observable_bundle)?;
+            let observable_validation = validate_aat_observable_bundle(
+                &observable_bundle,
+                &observable_bundle_path.display().to_string(),
+            );
+            let observable_failed = observable_validation.summary.result == "fail";
+            write_json(Some(observable_validation_path), &observable_validation)?;
+
+            Ok(if archmap_failed || air_failed || observable_failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
         Some(Command::ReportedAxesCatalog { out }) => {
             let catalog: DetectableValuesReportedAxesCatalogV0 =
                 static_detectable_values_reported_axes_catalog();
@@ -1292,57 +1444,598 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             })
         }
         None => {
-            let document = match args.language.as_str() {
-                "lean" => {
-                    if policy_schema_version(args.policy.as_deref())?.as_deref()
-                        == Some("architecture-policy-v0")
-                    {
-                        let mut document = extract_sig0_with_runtime(
-                            &args.root,
-                            None,
-                            args.runtime_edges.as_deref(),
-                        )?;
-                        if let Some(policy_path) = args.policy.as_deref() {
-                            let architecture_policy = read_architecture_policy(policy_path)?;
-                            apply_architecture_policy_to_sig0(
-                                &mut document,
-                                &architecture_policy,
-                                Some(&policy_path.display().to_string()),
-                            );
-                        }
-                        document
-                    } else {
-                        extract_sig0_with_runtime(
-                            &args.root,
-                            args.policy.as_deref(),
-                            args.runtime_edges.as_deref(),
-                        )?
-                    }
-                }
-                "python" => {
-                    if args.runtime_edges.is_some() {
-                        return Err(
-                            "runtime edge projection is not part of python-import-graph-v0".into(),
-                        );
-                    }
-                    let mut document =
-                        extract_python_sig0(&args.root, &args.source_roots, &args.package_roots)?;
-                    if let Some(policy_path) = args.policy.as_deref() {
-                        let architecture_policy = read_architecture_policy(policy_path)?;
-                        apply_architecture_policy_to_sig0(
-                            &mut document,
-                            &architecture_policy,
-                            Some(&policy_path.display().to_string()),
-                        );
-                    }
-                    document
-                }
-                _ => unreachable!("clap restricts language values"),
-            };
-            write_json(args.out, &document)?;
-            Ok(ExitCode::SUCCESS)
+            Err("ArchSig is ArchMap-primary; use `archsig archmap-workflow` for review artifacts or `archsig adapter-scan` for bounded Lean/Python evidence.".into())
         }
     }
+}
+
+fn build_adapter_sig0(
+    root: &Path,
+    policy: Option<&Path>,
+    runtime_edges: Option<&Path>,
+    language: &str,
+    source_roots: &[PathBuf],
+    package_roots: &[PathBuf],
+) -> Result<Sig0Document, Box<dyn Error>> {
+    let document = match language {
+        "lean" => {
+            if policy_schema_version(policy)?.as_deref() == Some("architecture-policy-v0") {
+                let mut document = extract_sig0_with_runtime(root, None, runtime_edges)?;
+                if let Some(policy_path) = policy {
+                    let architecture_policy = read_architecture_policy(policy_path)?;
+                    apply_architecture_policy_to_sig0(
+                        &mut document,
+                        &architecture_policy,
+                        Some(&policy_path.display().to_string()),
+                    );
+                }
+                document
+            } else {
+                extract_sig0_with_runtime(root, policy, runtime_edges)?
+            }
+        }
+        "python" => {
+            if runtime_edges.is_some() {
+                return Err("runtime edge projection is not part of python-import-graph-v0".into());
+            }
+            let mut document = extract_python_sig0(root, source_roots, package_roots)?;
+            if let Some(policy_path) = policy {
+                let architecture_policy = read_architecture_policy(policy_path)?;
+                apply_architecture_policy_to_sig0(
+                    &mut document,
+                    &architecture_policy,
+                    Some(&policy_path.display().to_string()),
+                );
+            }
+            document
+        }
+        _ => unreachable!("clap restricts language values"),
+    };
+    Ok(document)
+}
+
+fn observable_bundle_from_archmap_workflow(
+    archmap: &ArchMapDocumentV0,
+    air: &AirDocumentV0,
+    theorem_check: &TheoremPreconditionCheckReportV0,
+    feature_report: &FeatureExtensionReportV0,
+    archmap_path: &Path,
+    archmap_validation_path: &Path,
+    air_path: &Path,
+    air_validation_path: &Path,
+    theorem_check_path: &Path,
+    feature_report_path: &Path,
+) -> AatObservableBundleV0 {
+    let source_refs = vec![
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:archmap:primary".to_string(),
+            artifact_kind: "archmap".to_string(),
+            schema_version: "archmap-v0".to_string(),
+            path: archmap_path.display().to_string(),
+            retained_fields: vec![
+                "sourceUniverse".to_string(),
+                "mapItems".to_string(),
+                "coverage".to_string(),
+                "conflicts".to_string(),
+                "nonConclusions".to_string(),
+            ],
+            non_conclusions: vec![
+                "ArchMap is supplied structural evidence, not architecture ground truth"
+                    .to_string(),
+            ],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:archmap-validation:primary".to_string(),
+            artifact_kind: "archmap-validation-report".to_string(),
+            schema_version: "archmap-validation-report-v0".to_string(),
+            path: archmap_validation_path.display().to_string(),
+            retained_fields: vec![
+                "sourceInventoryChecks".to_string(),
+                "claimBoundaryChecks".to_string(),
+                "formalPromotionGuardrailChecks".to_string(),
+            ],
+            non_conclusions: vec![
+                "ArchMap validation does not prove semantic completeness".to_string(),
+            ],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:air:primary".to_string(),
+            artifact_kind: "air".to_string(),
+            schema_version: "aat-air-v0".to_string(),
+            path: air_path.display().to_string(),
+            retained_fields: vec![
+                "artifacts".to_string(),
+                "evidence".to_string(),
+                "claims".to_string(),
+                "coverage".to_string(),
+            ],
+            non_conclusions: vec![
+                "AIR projection records review claims, not Lean theorem discharge".to_string(),
+            ],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:air-validation:primary".to_string(),
+            artifact_kind: "air-validation-report".to_string(),
+            schema_version: "aat-air-validation-report-v0".to_string(),
+            path: air_validation_path.display().to_string(),
+            retained_fields: vec!["claimChecks".to_string(), "coverageChecks".to_string()],
+            non_conclusions: vec!["AIR validation does not approve merge".to_string()],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:theorem-check:primary".to_string(),
+            artifact_kind: "theorem-precondition-check-report".to_string(),
+            schema_version: "theorem-precondition-check-report-v0".to_string(),
+            path: theorem_check_path.display().to_string(),
+            retained_fields: vec!["checks".to_string(), "summary".to_string()],
+            non_conclusions: vec![
+                "precondition check is not a proof of the referenced theorem".to_string(),
+            ],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:feature-report:primary".to_string(),
+            artifact_kind: "feature-extension-report".to_string(),
+            schema_version: "feature-extension-report-v0".to_string(),
+            path: feature_report_path.display().to_string(),
+            retained_fields: vec![
+                "coverageGaps".to_string(),
+                "theoremPreconditionChecks".to_string(),
+                "nonConclusions".to_string(),
+            ],
+            non_conclusions: vec![
+                "feature report is a review artifact, not a global safety guarantee".to_string(),
+            ],
+        },
+    ];
+    let source_ref_ids: Vec<String> = source_refs
+        .iter()
+        .map(|source_ref| source_ref.source_ref_id.clone())
+        .collect();
+    let concept_mappings = archmap_primary_concept_mappings();
+    let review_actions = archmap_primary_review_actions();
+    let witness_ref = feature_report
+        .introduced_obstruction_witnesses
+        .first()
+        .map(|witness| witness.witness_id.clone())
+        .unwrap_or_else(|| "witness:archmap-primary-boundary".to_string());
+    let theorem_claim_ref = theorem_check
+        .checks
+        .first()
+        .map(|check| check.claim_id.clone())
+        .unwrap_or_else(|| "claim:archmap-primary-theorem-boundary".to_string());
+
+    AatObservableBundleV0 {
+        schema_version: AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION.to_string(),
+        bundle_id: format!("archmap-primary-workflow:{}", archmap.map_id),
+        architecture_id: archmap.architecture_id.clone(),
+        source_refs,
+        selected_universe: AatSelectedUniverseV0 {
+            universe_id: format!("universe:{}", archmap.architecture_id),
+            included_refs: archmap
+                .source_universe
+                .included_refs
+                .iter()
+                .map(archmap_source_ref_label)
+                .collect(),
+            excluded_refs: archmap
+                .source_universe
+                .excluded_refs
+                .iter()
+                .map(archmap_source_ref_label)
+                .collect(),
+            private_refs: archmap
+                .source_universe
+                .private_refs
+                .iter()
+                .map(archmap_source_ref_label)
+                .collect(),
+            unavailable_refs: archmap
+                .source_universe
+                .unavailable_refs
+                .iter()
+                .map(archmap_source_ref_label)
+                .collect(),
+            unsupported_refs: archmap.coverage.unsupported_constructs.clone(),
+            dynamic_boundary_refs: archmap.source_universe.known_blind_spots.clone(),
+            exactness_assumptions: vec![archmap.source_universe.selection_boundary.clone()],
+            measurement_status: "partiallyMeasured".to_string(),
+            non_conclusions: vec![
+                "selected universe is not the complete deployed system".to_string(),
+                "excluded, private, unavailable, and unsupported refs are not measured zero"
+                    .to_string(),
+            ],
+        },
+        concept_mappings,
+        observed_axes: vec![
+            AatObservedAxisV0 {
+                axis_id: "axis:archmap-map-items".to_string(),
+                concept_refs: vec!["concept:architecture-object".to_string()],
+                artifact_refs: vec!["source:archmap:primary".to_string()],
+                measurement_status: "partiallyMeasured".to_string(),
+                value: Some(archmap.map_items.len() as i64),
+                boundary: "mapItems are supplied evidence, not complete architecture enumeration"
+                    .to_string(),
+                non_conclusions: vec!["map item count is not a quality score".to_string()],
+            },
+            AatObservedAxisV0 {
+                axis_id: "axis:air-relations".to_string(),
+                concept_refs: vec!["concept:projection-observation".to_string()],
+                artifact_refs: vec!["source:air:primary".to_string()],
+                measurement_status: "partiallyMeasured".to_string(),
+                value: Some(air.relations.len() as i64),
+                boundary: "AIR relations are projected from ArchMap and optional adapter evidence"
+                    .to_string(),
+                non_conclusions: vec!["relation count is not global coupling proof".to_string()],
+            },
+        ],
+        coverage_boundaries: vec![
+            AatCoverageBoundaryV0 {
+                boundary_id: "coverage:archmap-selected-universe".to_string(),
+                boundary_kind: "selection-boundary".to_string(),
+                affected_refs: source_ref_ids.clone(),
+                measurement_status: "partiallyMeasured".to_string(),
+                review_action_ref: Some("review:inspect-coverage-boundary".to_string()),
+                non_conclusions: vec!["selected coverage is not system completeness".to_string()],
+            },
+            AatCoverageBoundaryV0 {
+                boundary_id: "coverage:unmeasured-semantic-and-runtime".to_string(),
+                boundary_kind: "unmeasured".to_string(),
+                affected_refs: archmap.coverage.unmeasured_layers.clone(),
+                measurement_status: "unmeasured".to_string(),
+                review_action_ref: Some("review:request-next-evidence".to_string()),
+                non_conclusions: vec!["unmeasured layer is not measured zero".to_string()],
+            },
+            AatCoverageBoundaryV0 {
+                boundary_id: "coverage:out-of-scope-private-unavailable".to_string(),
+                boundary_kind: "out-of-scope".to_string(),
+                affected_refs: archmap
+                    .source_universe
+                    .private_refs
+                    .iter()
+                    .chain(archmap.source_universe.unavailable_refs.iter())
+                    .map(archmap_source_ref_label)
+                    .collect(),
+                measurement_status: "outOfScope".to_string(),
+                review_action_ref: Some("review:inspect-coverage-boundary".to_string()),
+                non_conclusions: vec![
+                    "out-of-scope evidence is retained as boundary data".to_string(),
+                ],
+            },
+        ],
+        witness_catalog: vec![AatWitnessCatalogEntryV0 {
+            witness_ref: witness_ref.clone(),
+            witness_kind: feature_report
+                .review_summary
+                .top_witnesses
+                .first()
+                .cloned()
+                .unwrap_or_else(|| "coverage-boundary".to_string()),
+            law_refs: feature_report.theorem_package_refs.clone(),
+            source_refs: source_ref_ids.clone(),
+            measurement_status: "partiallyMeasured".to_string(),
+            severity: feature_report.review_summary.required_action.clone(),
+            review_action_ref: "review:request-next-evidence".to_string(),
+            non_conclusions: vec![
+                "witness is review evidence, not incident causality or theorem proof".to_string(),
+            ],
+        }],
+        operation_candidates: vec![AatOperationCandidateV0 {
+            operation_ref: "operation:archmap-primary-review".to_string(),
+            operation_kind: "review-workflow".to_string(),
+            role: feature_report.split_status.clone(),
+            confidence: "medium".to_string(),
+            deterministic_cues: vec![
+                format!("air relation count: {}", air.relations.len()),
+                format!(
+                    "feature report action: {}",
+                    feature_report.review_summary.required_action
+                ),
+            ],
+            llm_judgment_needed: vec![
+                "semantic operation classification".to_string(),
+                "review severity and next evidence prioritization".to_string(),
+            ],
+            evidence_refs: source_ref_ids.clone(),
+            preserved_invariant_refs: feature_report
+                .preserved_invariants
+                .iter()
+                .map(|invariant| invariant.invariant.clone())
+                .collect(),
+            possible_transferred_obstruction_refs: vec![witness_ref.clone()],
+            non_conclusions: vec!["operation candidate is not theorem discharge".to_string()],
+        }],
+        projection_observation_evidence: vec![AatProjectionObservationEvidenceV0 {
+            evidence_ref: "evidence:archmap-to-air".to_string(),
+            evidence_kind: "archmap-projection".to_string(),
+            source_ref: "source:archmap:primary".to_string(),
+            target_ref: "source:air:primary".to_string(),
+            local_contract_boundary: "ArchMap source refs and map items are retained".to_string(),
+            global_layering_boundary: "global layering is not concluded from projection"
+                .to_string(),
+            witness_refs: vec![witness_ref.clone()],
+            non_conclusions: vec![
+                "projection evidence does not prove semantic preservation".to_string(),
+            ],
+        }],
+        feature_extension_evidence: vec![AatFeatureExtensionEvidenceV0 {
+            evidence_ref: "evidence:feature-report:primary".to_string(),
+            feature_ref: feature_report
+                .feature
+                .feature_id
+                .clone()
+                .unwrap_or_else(|| format!("feature:{}", archmap.architecture_id)),
+            operation_ref: "operation:archmap-primary-review".to_string(),
+            obstruction_classifications: feature_report.review_summary.top_witnesses.clone(),
+            source_refs: source_ref_ids.clone(),
+            witness_refs: vec![witness_ref.clone()],
+            missing_evidence_refs: feature_report.undischarged_assumptions.clone(),
+            static_boundary: "adapter evidence is optional".to_string(),
+            runtime_boundary: feature_report.runtime_summary.measurement_boundary.clone(),
+            semantic_boundary: feature_report
+                .semantic_path_summary
+                .measurement_boundary
+                .clone(),
+            coverage_boundary: archmap.source_universe.selection_boundary.clone(),
+            non_conclusions: feature_report.non_conclusions.clone(),
+        }],
+        semantic_diagram_evidence: vec![AatSemanticDiagramEvidenceV0 {
+            evidence_ref: "evidence:semantic-diagrams:primary".to_string(),
+            path_refs: feature_report
+                .semantic_path_summary
+                .representative_path_ids
+                .clone(),
+            homotopy_refs: Vec::new(),
+            diagram_refs: feature_report
+                .semantic_path_summary
+                .representative_diagram_ids
+                .clone(),
+            filler_status: feature_report
+                .semantic_path_summary
+                .measurement_boundary
+                .clone(),
+            nonfillability_witness_refs: feature_report
+                .semantic_path_summary
+                .representative_nonfillability_witness_ids
+                .clone(),
+            observation_refs: vec!["source:feature-report:primary".to_string()],
+            measurement_status: "partiallyMeasured".to_string(),
+            non_conclusions: feature_report.semantic_path_summary.non_conclusions.clone(),
+        }],
+        state_effect_law_evidence: vec![AatStateEffectLawEvidenceV0 {
+            evidence_ref: "evidence:state-effect-boundary:primary".to_string(),
+            law_kind: "selected-architecture-policy".to_string(),
+            law_case_refs: air.policies.laws.clone(),
+            measurement_status: "partiallyMeasured".to_string(),
+            witness_refs: vec![witness_ref.clone()],
+            unmeasured_law_families: archmap.coverage.unmeasured_layers.clone(),
+            non_conclusions: vec![
+                "selected law evidence is not global architecture lawfulness".to_string(),
+            ],
+        }],
+        repair_synthesis_evidence: vec![AatRepairSynthesisEvidenceV0 {
+            evidence_ref: "evidence:repair-boundary:primary".to_string(),
+            repair_step_refs: feature_report
+                .repair_suggestions
+                .iter()
+                .map(|suggestion| suggestion.suggestion_id.clone())
+                .collect(),
+            synthesis_candidate_refs: Vec::new(),
+            no_solution_certificate_refs: Vec::new(),
+            selected_obstruction_decrease_refs: Vec::new(),
+            transferred_risk_refs: feature_report.complexity_transfer_candidates.clone(),
+            solver_status: "not-run".to_string(),
+            non_conclusions: vec![
+                "repair suggestions are review candidates, not guaranteed improvements".to_string(),
+            ],
+        }],
+        analytic_axes: vec![AatAnalyticAxisV0 {
+            axis_id: "analytic:feature-report-coverage".to_string(),
+            metric_ref: "feature-report.coverageGaps".to_string(),
+            representation_strength: vec!["review-summary".to_string()],
+            selected_witness_universe: vec![witness_ref.clone()],
+            aggregate_zero_reflection:
+                "zero coverage gaps would still require explicit exactness assumptions".to_string(),
+            coverage_assumptions: vec![archmap.source_universe.selection_boundary.clone()],
+            non_conclusions: vec!["aggregate value is not semantic flatness".to_string()],
+        }],
+        theorem_boundaries: vec![AatTheoremBoundaryV0 {
+            boundary_ref: "boundary:theorem-precondition:primary".to_string(),
+            claim_ref: theorem_claim_ref,
+            claim_level: "tooling-validation".to_string(),
+            claim_classification: theorem_check.summary.result.clone(),
+            missing_preconditions: theorem_check
+                .checks
+                .iter()
+                .flat_map(|check| check.missing_preconditions.clone())
+                .collect(),
+            measured_violation_refs: vec![witness_ref],
+            review_action_ref: "review:inspect-theorem-boundary".to_string(),
+            non_conclusions: vec!["theorem precondition check is not a Lean proof".to_string()],
+        }],
+        review_actions,
+        llm_review_surface: AatLlmReviewSurfaceV0 {
+            skill_ref: "tools/archsig/skills/aat-reviewer/SKILL.md".to_string(),
+            input_artifact_refs: source_ref_ids,
+            review_questions: vec![
+                "Which invariant is preserved, broken, unmeasured, or out of scope?".to_string(),
+                "Which ArchMap evidence would change the review decision?".to_string(),
+                "Which theorem boundary blocks formal promotion?".to_string(),
+            ],
+            output_categories: vec![
+                "violation".to_string(),
+                "risk".to_string(),
+                "acceptable".to_string(),
+                "unmeasured".to_string(),
+                "nextEvidence".to_string(),
+            ],
+            deterministic_inputs: vec![
+                "ArchMap validation".to_string(),
+                "AIR validation".to_string(),
+                "theorem precondition checks".to_string(),
+                "feature report coverage gaps".to_string(),
+            ],
+            llm_judgment_boundaries: vec![
+                "semantic operation classification".to_string(),
+                "next evidence prioritization".to_string(),
+            ],
+            human_review_boundaries: vec![
+                "risk acceptance".to_string(),
+                "product decision resolution".to_string(),
+                "merge approval".to_string(),
+            ],
+            non_conclusions: vec![
+                "LLM review does not prove semantic correctness".to_string(),
+                "LLM review does not approve merge automatically".to_string(),
+            ],
+        },
+        responsibility_boundary: AatResponsibilityBoundaryV0 {
+            deterministic_tool: vec![
+                "validate schema version and refs".to_string(),
+                "preserve measurement status and nonConclusions".to_string(),
+                "surface measured witnesses and dangling refs".to_string(),
+            ],
+            llm_review: vec![
+                "interpret operation candidates against AAT questions".to_string(),
+                "translate nonConclusions into next evidence".to_string(),
+            ],
+            human_review: vec![
+                "decide acceptable residual risk".to_string(),
+                "accept or reject design tradeoffs".to_string(),
+            ],
+            formal_proof: vec![
+                "Lean theorem packages remain separate from ArchSig validation".to_string(),
+            ],
+            non_conclusions: vec![
+                "responsibility split does not make tooling output a proof".to_string(),
+            ],
+        },
+        non_conclusions: vec![
+            "AAT observable bundle is tooling evidence, not a Lean theorem proof".to_string(),
+            "validation pass does not prove extractor completeness".to_string(),
+            "unmeasured is not measured zero".to_string(),
+            "LLM review output is judgment support, not automatic merge approval".to_string(),
+            "ArchMap workflow does not prove architecture lawfulness".to_string(),
+        ],
+    }
+}
+
+fn archmap_primary_concept_mappings() -> Vec<AatConceptMappingV0> {
+    let concepts = [
+        (
+            "concept:architecture-object",
+            "ArchitectureObject / ComponentUniverse",
+            "partiallyMeasured",
+        ),
+        (
+            "concept:obstruction-witness",
+            "ObstructionWitness",
+            "partiallyMeasured",
+        ),
+        (
+            "concept:theorem-boundary",
+            "TheoremBoundary / NonConclusion",
+            "unmeasured",
+        ),
+        (
+            "concept:operation",
+            "ArchitectureOperation",
+            "partiallyMeasured",
+        ),
+        (
+            "concept:projection-observation",
+            "Projection / Observation / LSP / DIP",
+            "partiallyMeasured",
+        ),
+        (
+            "concept:feature-extension",
+            "FeatureExtension / ExtensionObstruction",
+            "partiallyMeasured",
+        ),
+        (
+            "concept:semantic-diagram",
+            "Path / Homotopy / DiagramFiller / NonFillability",
+            "unmeasured",
+        ),
+        (
+            "concept:state-effect",
+            "StateTransition / EffectBoundary",
+            "partiallyMeasured",
+        ),
+        (
+            "concept:repair-synthesis",
+            "Repair / Synthesis / ComplexityTransfer",
+            "outOfScope",
+        ),
+        (
+            "concept:analytic-representation",
+            "AnalyticRepresentation / ObstructionValuation",
+            "unmeasured",
+        ),
+    ];
+    concepts
+        .into_iter()
+        .map(
+            |(concept_id, aat_concept, measurement_status)| AatConceptMappingV0 {
+                concept_id: concept_id.to_string(),
+                aat_concept: aat_concept.to_string(),
+                artifact_refs: vec![
+                    "source:archmap:primary".to_string(),
+                    "source:air:primary".to_string(),
+                ],
+                report_refs: vec![
+                    "source:theorem-check:primary".to_string(),
+                    "source:feature-report:primary".to_string(),
+                ],
+                skill_refs: vec!["tools/archsig/skills/aat-reviewer/SKILL.md".to_string()],
+                expressibility: "representable".to_string(),
+                retention_status: "retained".to_string(),
+                review_status: "reviewable".to_string(),
+                measurement_status: measurement_status.to_string(),
+                responsibility: "deterministic+LLM+human".to_string(),
+                non_conclusions: vec!["concept mapping is not a Lean theorem".to_string()],
+            },
+        )
+        .collect()
+}
+
+fn archmap_primary_review_actions() -> Vec<AatReviewActionV0> {
+    vec![
+        AatReviewActionV0 {
+            review_action_id: "review:inspect-coverage-boundary".to_string(),
+            category: "boundary".to_string(),
+            source_refs: vec!["source:archmap:primary".to_string()],
+            action: "review selected universe, private refs, unavailable refs, and unsupported constructs".to_string(),
+            next_evidence: vec!["source inventory update".to_string()],
+            owner: "human-review".to_string(),
+            non_conclusions: vec!["coverage review does not prove system completeness".to_string()],
+        },
+        AatReviewActionV0 {
+            review_action_id: "review:request-next-evidence".to_string(),
+            category: "nextEvidence".to_string(),
+            source_refs: vec!["source:feature-report:primary".to_string()],
+            action: "request missing runtime, semantic, or theorem evidence before strengthening claims".to_string(),
+            next_evidence: vec!["runtime traces".to_string(), "semantic map refinement".to_string()],
+            owner: "human-review".to_string(),
+            non_conclusions: vec!["missing evidence is not measured zero".to_string()],
+        },
+        AatReviewActionV0 {
+            review_action_id: "review:inspect-theorem-boundary".to_string(),
+            category: "theoremBoundary".to_string(),
+            source_refs: vec!["source:theorem-check:primary".to_string()],
+            action: "keep formal theorem claims blocked unless preconditions are explicitly discharged".to_string(),
+            next_evidence: vec!["Lean theorem package evidence".to_string()],
+            owner: "formal-proof".to_string(),
+            non_conclusions: vec!["precondition report is not Lean theorem discharge".to_string()],
+        },
+    ]
+}
+
+fn archmap_source_ref_label(source_ref: &archsig::ArchMapSourceRef) -> String {
+    source_ref
+        .artifact_id
+        .clone()
+        .or_else(|| source_ref.path.clone())
+        .or_else(|| source_ref.symbol.clone())
+        .unwrap_or_else(|| source_ref.kind.clone())
 }
 
 fn policy_schema_version(path: Option<&Path>) -> Result<Option<String>, Box<dyn Error>> {

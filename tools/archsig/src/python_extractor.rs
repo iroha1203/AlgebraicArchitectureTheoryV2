@@ -313,7 +313,22 @@ pub fn extract_python_sig0(
         policy_violations: Vec::new(),
         runtime_edge_evidence: Vec::new(),
         runtime_dependency_graph: None,
+        coverage_boundary:
+            "Python import graph adapter covers ast import/from statements under selected roots only; dynamic imports, plugin loading, framework conventions, runtime behavior, and semantic architecture mapping remain boundary evidence."
+                .to_string(),
         unsupported_constructs: unsupported,
+        missing_evidence: vec![
+            "runtime behavior not supplied by python-import-graph-v0".to_string(),
+            "semantic architecture mapping not supplied by adapter-scan".to_string(),
+            "framework-specific routing, dependency injection, generated code, and plugin metadata require separate adapter evidence"
+                .to_string(),
+        ],
+        non_conclusions: vec![
+            "adapter-scan output is bounded evidence, not ArchMap ground truth".to_string(),
+            "adapter-scan does not prove extractor completeness".to_string(),
+            "missing or unsupported evidence is not measured zero".to_string(),
+            "Sig0 validation does not prove architecture lawfulness".to_string(),
+        ],
     })
 }
 

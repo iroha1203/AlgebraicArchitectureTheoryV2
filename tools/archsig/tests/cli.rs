@@ -14,6 +14,14 @@ fn cli_help_excludes_fieldsig_owned_commands() {
     let output = run_sig0_output(&["--help"]);
     assert!(output.status.success());
     let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("archmap-workflow"),
+        "ArchSig help must expose the ArchMap-primary workflow\n{stdout}"
+    );
+    assert!(
+        stdout.contains("adapter-scan"),
+        "ArchSig help must expose bounded adapter scanning separately\n{stdout}"
+    );
     for command in [
         "intent-map",
         "intent-forecast",
@@ -35,12 +43,24 @@ fn cli_help_excludes_fieldsig_owned_commands() {
 }
 
 #[test]
-fn cli_extracts_and_validates_sig0() {
+fn cli_rejects_implicit_scan_default() {
+    let output = run_sig0_output(&[]);
+    assert!(!output.status.success());
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("ArchSig is ArchMap-primary"),
+        "implicit scan should be rejected with an ArchMap-primary boundary\n{stderr}"
+    );
+}
+
+#[test]
+fn cli_adapter_scan_emits_bounded_sig0_evidence() {
     let out_dir = temp_dir("sig0");
     let sig0 = out_dir.join("sig0.json");
     let validation = out_dir.join("validation.json");
 
     run_sig0(&[
+        "adapter-scan",
         "--root",
         fixture_root().to_str().expect("fixture path is utf-8"),
         "--out",
@@ -48,6 +68,28 @@ fn cli_extracts_and_validates_sig0() {
     ]);
     let sig_json = read_json(&sig0);
     assert_eq!(sig_json["schemaVersion"], "archsig-sig0-v0");
+    assert_eq!(
+        sig_json["coverageBoundary"].as_str(),
+        Some(
+            "Lean import graph adapter covers explicit leading import declarations only; missing runtime, semantic, dynamic, generated, and framework evidence is retained as a boundary."
+        )
+    );
+    assert!(
+        sig_json["unsupportedConstructs"].is_array(),
+        "adapter output must retain unsupportedConstructs even when empty"
+    );
+    assert!(
+        sig_json["missingEvidence"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "adapter output must retain missing evidence boundaries"
+    );
+    assert!(
+        sig_json["nonConclusions"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "adapter output must retain non-conclusions"
+    );
 
     run_sig0(&[
         "validate",
@@ -66,21 +108,19 @@ fn cli_extracts_and_validates_sig0() {
 }
 
 #[test]
-fn cli_validates_archmap_and_projects_to_air() {
-    let out_dir = temp_dir("archmap-air");
+fn cli_runs_archmap_primary_workflow() {
+    let out_dir = temp_dir("archmap-workflow");
     let root = fixture_root();
     let archmap = root.join("archmap.json");
-    let validation = out_dir.join("archmap-validation.json");
-    let air = out_dir.join("archmap-air.json");
 
     run_sig0(&[
-        "archmap",
-        "--input",
+        "archmap-workflow",
+        "--archmap",
         archmap.to_str().expect("archmap path is utf-8"),
-        "--out",
-        validation.to_str().expect("validation path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory path is utf-8"),
     ]);
-    let validation_json = read_json(&validation);
+    let validation_json = read_json(&out_dir.join("archmap-validation.json"));
     assert_eq!(
         validation_json["schemaVersion"],
         "archmap-validation-report-v0"
@@ -93,17 +133,43 @@ fn cli_validates_archmap_and_projects_to_air() {
         "ArchMap validation should complete without failing"
     );
 
-    run_sig0(&[
-        "air-from-archmap",
-        "--archmap",
-        archmap.to_str().expect("archmap path is utf-8"),
-        "--validation",
-        validation.to_str().expect("validation path is utf-8"),
-        "--out",
-        air.to_str().expect("air path is utf-8"),
-    ]);
-    let air_json = read_json(&air);
+    let air_json = read_json(&out_dir.join("air.json"));
     assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    let theorem_json = read_json(&out_dir.join("theorem-precondition-check.json"));
+    assert_eq!(
+        theorem_json["schemaVersion"],
+        "theorem-precondition-check-report-v0"
+    );
+    let feature_json = read_json(&out_dir.join("feature-report.json"));
+    assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    let bundle_json = read_json(&out_dir.join("aat-observable-bundle.json"));
+    assert_eq!(bundle_json["schemaVersion"], "aat-observable-bundle-v0");
+    assert_eq!(
+        bundle_json["architectureId"], "archmap-fixture-repo",
+        "workflow bundle must use the input ArchMap architecture id"
+    );
+    let bundle_text = serde_json::to_string(&bundle_json).expect("bundle json serializes");
+    assert!(
+        !bundle_text.contains("coupon-service"),
+        "workflow bundle must not retain static fixture architecture id"
+    );
+    assert!(
+        !bundle_text.contains("source:air:coupon"),
+        "workflow bundle must not retain static fixture AIR source refs"
+    );
+    assert!(
+        !bundle_text.contains("source:archmap:coupon"),
+        "workflow bundle must not retain static fixture ArchMap source refs"
+    );
+    let source_ref_ids = bundle_json["sourceRefs"]
+        .as_array()
+        .expect("source refs are array")
+        .iter()
+        .map(|entry| entry["sourceRefId"].as_str().expect("source ref id"))
+        .collect::<Vec<_>>();
+    assert!(source_ref_ids.contains(&"source:archmap:primary"));
+    assert!(source_ref_ids.contains(&"source:air:primary"));
+    assert!(source_ref_ids.contains(&"source:theorem-check:primary"));
 }
 
 #[test]

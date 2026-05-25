@@ -47,6 +47,7 @@ pub fn validate_component_universe_report(
     ));
     checks.push(check_external_edge_targets(&external_edges, universe_mode));
     checks.push(check_metric_status_complete(&document.metric_status));
+    checks.push(check_adapter_boundaries(document));
     checks.push(check_metric_measured(
         "boundary-policy-status",
         "boundary violation metric is measured",
@@ -289,6 +290,24 @@ fn check_metric_status_complete(metric_status: &BTreeMap<String, MetricStatus>) 
     check
 }
 
+fn check_adapter_boundaries(document: &Sig0Document) -> ValidationCheck {
+    let complete = !document.coverage_boundary.is_empty()
+        && !document.missing_evidence.is_empty()
+        && !document.non_conclusions.is_empty();
+    let mut check = validation_check(
+        "adapter-boundary-retained",
+        "adapter output retains coverage, missing evidence, unsupported, and non-conclusion boundaries",
+        if complete { "pass" } else { "fail" },
+    );
+    if !complete {
+        check.reason = Some(
+            "coverageBoundary, missingEvidence, and nonConclusions must be explicit on Sig0 adapter output"
+                .to_string(),
+        );
+    }
+    check
+}
+
 fn check_metric_measured(
     id: &str,
     title: &str,
@@ -479,7 +498,10 @@ mod tests {
             policy_violations: Vec::new(),
             runtime_edge_evidence: Vec::new(),
             runtime_dependency_graph: None,
+            coverage_boundary: "test selected universe".to_string(),
             unsupported_constructs: Vec::new(),
+            missing_evidence: vec!["test fixture omits full repository evidence".to_string()],
+            non_conclusions: vec!["missing evidence is not measured zero".to_string()],
         };
 
         let report =

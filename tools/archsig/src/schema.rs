@@ -298,8 +298,13 @@ pub struct Sig0Document {
     pub runtime_edge_evidence: Vec<RuntimeEdgeEvidence>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub runtime_dependency_graph: Option<RuntimeDependencyGraphProjection>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub coverage_boundary: String,
+    #[serde(default)]
     pub unsupported_constructs: Vec<UnsupportedConstruct>,
+    #[serde(default)]
+    pub missing_evidence: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
