@@ -10,15 +10,18 @@ Use this playbook for Epic / PRD / Spec planning forecast.
 | "what is unclear" | IntentMap validation, AlignmentMap validation | missing decisions, ambiguous intents, unsupported intents |
 | "what architecture will be touched" | AlignmentMap, ArchMap validation | aligned objects, relations, policies, test oracles |
 | "what should we decide next" | IntentMap, consequence envelope | decisions that reduce forecast uncertainty |
+| "what judgement should reviewer return" | SFT review summary | opened / closed futures, boundary failures, next actions |
 | "did forecast help" | intent calibration record | observed refs and usefulness feedback |
 
 ## Forecast Rules
 
 - ForecastConeSkeleton is not a probability distribution.
 - ConsequenceEnvelope is a report projection, not causal proof.
+- SFT review summary is deterministic judgement input, not final LLM judgement or merge approval.
 - IntentMap is LLM-authored intent evidence, not an implementation plan.
 - AlignmentMap connects intent refs to architecture refs; it does not guarantee implementation impact.
 - Missing decisions should become planning actions, not guessed conclusions.
+- Missing invariant, unknown remainder, and typed boundary failure should become next actions with evidence refs.
 
 ## Recommendation Strategy
 

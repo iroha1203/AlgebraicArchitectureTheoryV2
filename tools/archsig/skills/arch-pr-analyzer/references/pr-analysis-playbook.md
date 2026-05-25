@@ -15,10 +15,12 @@ Use this playbook for PR / CI architecture review.
 ## Review Rules
 
 - Treat `pr-quality-analysis-report-v0` as review cue, not merge approval.
+- Treat `sft-review-summary-v0` as judgement input. Its status is bounded triage, not approval.
 - Treat theorem-check as precondition status, not proof discharge.
 - Treat absence of measured violations as inconclusive when important axes are unmeasured.
 - Prefer concrete evidence gaps over broad refactor advice.
 - Do not use forecast cone language for PR merge review.
+- If future-impact review is requested, translate unknown remainder, missing invariant, and boundary failure into next actions with evidence refs.
 
 ## Recommendation Strategy
 

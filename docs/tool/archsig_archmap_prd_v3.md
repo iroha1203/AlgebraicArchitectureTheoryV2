@@ -177,10 +177,14 @@ IntentMap
   -> operation-support-estimate
   -> forecast-cone-skeleton
   -> consequence-envelope-report
+  -> sft-review-summary
 ```
 
 ForecastCone は、変更可能性の path class、bounded horizon、unknown remainder、
-review focus、test / runtime / policy evidence needs を表す。point prediction ではない。
+gluing condition、governance intervention、typed boundary failure、review focus、
+test / runtime / policy evidence needs を表す。point prediction ではない。
+`sft-review-summary` は `ConsequenceEnvelope` から opened futures、closed futures、
+boundary failures、next actions を evidence refs 付きで取り出す reviewer-facing projection である。
 
 ## Product Requirements
 
@@ -352,9 +356,11 @@ ArchSig の責務:
 - operation-support-estimate。
 - forecast-cone-skeleton。
 - consequence-envelope-report。
+- sft-review-summary。
 - calibration hook。
 
-LLM は forecast result、causal conclusion、Lean proof、quality ranking を直接書かない。
+LLM は `sft-review-summary` の evidence refs / boundary refs を引用して bounded judgement を返す。
+LLM は forecast result、causal conclusion、Lean proof、quality ranking、merge approval を直接書かない。
 ArchSig は LLM の semantic extraction を ground truth として扱わない。
 
 ### R8. IntentMap は missing decision を第一級 boundary として保持する

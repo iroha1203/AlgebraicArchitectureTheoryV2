@@ -83,12 +83,14 @@ non-conclusions を落とさない。
 | IntentMap validation report | `intentmap-validation-report-v0` | source refs、claim classification、confidence boundary、missing decision / ambiguity / missing evidence、non-conclusions を検査する。 |
 | AlignmentMap | `intent-archmap-alignment-v0` | IntentMap item と ArchMap item の対応、preserves / forgets、unaligned / unsupported / ambiguous boundary、missing evidence を保持する。 |
 | AlignmentMap validation report | `intent-archmap-alignment-validation-report-v0` | IntentMap refs と ArchMap refs の dangling reference、alignment kind、measured zero への丸め、non-conclusions を検査する。 |
-| OperationSupportEstimate | `operation-support-estimate-v0` | descriptor refs、candidate operation families、policy constraints、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
+| OperationSupportEstimate | `operation-support-estimate-v0` | descriptor refs、candidate operation families、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
 | OperationSupportEstimate validation report | `operation-support-estimate-validation-report-v0` | unknown support と measured zero の混同、global policy safety / future trajectory safety への昇格を検査する。 |
-| ForecastConeSkeleton | `forecast-cone-skeleton-v0` | finite support refs、bounded horizon、path class candidates、forecast boundary、unknown remainder を保持する。 |
+| ForecastConeSkeleton | `forecast-cone-skeleton-v0` | finite support refs、bounded horizon、path class candidates、gluing evidence、governance interventions、typed boundary failures、forecast boundary、unknown remainder を保持する。 |
 | ForecastConeSkeleton validation report | `forecast-cone-skeleton-validation-report-v0` | probability claim、unmeasured axis の safe 扱い、support / horizon refs 欠落を検査する。 |
-| ConsequenceEnvelope | `consequence-envelope-report-v0` | affected regions、signature axes、axis delta ranges、obstruction candidates、missing / theorem boundary items、review / CI recommendation を保持する。 |
+| ConsequenceEnvelope | `consequence-envelope-report-v0` | affected regions、signature axes、axis delta ranges、obstruction candidates、missing / theorem boundary items、typed boundary failures、reviewer actions、review / CI recommendation を保持する。 |
 | ConsequenceEnvelope validation report | `consequence-envelope-report-validation-report-v0` | source refs、measurement boundary、forecast non-conclusions、unknown remainder の欠落を検査する。 |
+| SFT review summary | `sft-review-summary-v0` | opened futures、closed futures、boundary failures、next actions、evidence refs、boundary refs、LLM judgement contract を保持する。 |
+| SFT review summary validation report | `sft-review-summary-validation-report-v0` | status、evidence refs、boundary refs、forbidden readings、non-conclusions を検査する。 |
 | ForecastCalibrationHook | `forecast-calibration-hook-v0` | forecast item refs と observed PR / review / CI / outcome refs、B10 / B11 artifact boundary を対応付ける。 |
 | ForecastCalibrationHook validation report | `forecast-calibration-hook-validation-report-v0` | matched / unmatched / unavailable / private / notComparable を measured zero と混同していないことを検査する。 |
 | IntentCalibrationRecord | `intent-calibration-record-v0` | IntentMap item、forecast item、observed implementation artifact、missing decision status、forecast usefulness feedback を対応付ける。 |
@@ -99,7 +101,8 @@ non-conclusions を落とさない。
 
 `artifact-descriptor-v0` は B12 SFT forecasting MVP の最初の入力正規化 artifact である。
 後段では `operation-support-estimate-v0`、`forecast-cone-skeleton-v0`、
-`consequence-envelope-report-v0`、`forecast-calibration-hook-v0` が境界を引き継ぐ。
+`consequence-envelope-report-v0`、`sft-review-summary-v0`、`forecast-calibration-hook-v0`
+が境界を引き継ぐ。
 これらは probability、causal prediction、global safety、forecast correctness、Lean theorem
 claim を生成しない。missing evidence、unsupported constructs、forecast non-conclusions は
 後段 artifact に引き継ぐ境界として読む。
@@ -120,7 +123,8 @@ private / unavailable / missing data は non-conclusion boundary として残す
 `sft-forecast` は Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、
 AI proposal JSON から
 `artifact-descriptor-v0`、`operation-support-estimate-v0`、
-`forecast-cone-skeleton-v0`、`consequence-envelope-report-v0` と各 validation report を
+`forecast-cone-skeleton-v0`、`consequence-envelope-report-v0`、
+`sft-review-summary-v0` と各 validation report を
 同じ出力 directory に生成する end-to-end command である。command の成功は bounded
 tooling pipeline の validation 成功であり、extractor completeness、forecast correctness、
 causal prediction、Lean theorem claim への昇格を意味しない。
@@ -150,10 +154,16 @@ unknown remainder、calibration refs、non-conclusions を report に残す。
 `consequence-envelope-report-v0` は `forecast-cone-skeleton-v0` からの
 loss-aware report projection として読む。一つ以上の bounded cone skeleton から、
 path class candidates、affected regions、comparable signature axes、axis delta ranges、
-obstruction candidates、missing / theorem boundary items、review / CI recommendation を
-まとめる。projection 後も `unknownRemainder`、measurement boundary、forecast
+obstruction candidates、missing / theorem boundary items、typed boundary failures、
+reviewer actions、review / CI recommendation をまとめる。projection 後も `unknownRemainder`、measurement boundary、forecast
 non-conclusions を保持する必要がある。envelope report は projection 元の cone family を
 一意復元しないし、probability、causal proof、calibrated forecast correctness を主張しない。
+
+`sft-review-summary-v0` は `consequence-envelope-report-v0` から reviewer / LLM judgement
+入力へ寄せた deterministic projection である。opened futures / closed futures /
+boundary failures / next actions は evidence refs と boundary refs を必ず持つ。LLM が返す
+judgement はこの summary を根拠にするが、tool は LLM provider 呼び出し、merge approval、
+probability claim、Lean theorem promotion を行わない。
 
 ## Measurement Boundary
 

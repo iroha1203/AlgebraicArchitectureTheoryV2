@@ -60,6 +60,56 @@
     "requiredEvidenceFields": ["semanticRole", "responsibilityRegions", "reasonToChange", "lawRefs"],
     "judgmentBoundary": "LLM Review Skill may classify probableViolation only with evidence refs and policy refs"
   },
+  "sftGovernance": {
+    "adoptedInvariantRefs": ["invariant:layer-direction", "invariant:srp-taxonomy"],
+    "allowedOperationFamilies": [
+      {
+        "ruleId": "allow-schema-review-support",
+        "appliesTo": ["family:schema-and-validator"],
+        "disposition": "allowed",
+        "reason": "schema and validator changes are allowed when boundary evidence is retained",
+        "evidenceRefs": ["LayeredArchitecture", "SOLID.SRP"],
+        "reviewerAction": "verify evidence refs before treating support as governed"
+      }
+    ],
+    "conditionallyAllowedSupport": [
+      {
+        "ruleId": "condition-runtime-support",
+        "appliesTo": ["family:runtime-observation"],
+        "disposition": "conditionallyAllowed",
+        "reason": "runtime support requires observation boundary evidence",
+        "evidenceRefs": ["invariant:layer-direction"],
+        "reviewerAction": "request runtime observation evidence or keep unknown remainder open"
+      }
+    ],
+    "forbiddenFuturePathClasses": [
+      {
+        "ruleId": "forbid-probability-forecast",
+        "appliesTo": ["path:causal-probability-assignment"],
+        "disposition": "forbidden",
+        "reason": "policy does not allow probability forecasts from architecture evidence alone",
+        "evidenceRefs": ["policy:no-causal-forecast"],
+        "reviewerAction": "report as closed future or boundary failure"
+      }
+    ],
+    "requiredGovernanceInterventions": [
+      {
+        "interventionId": "governance:review-boundary-failure",
+        "interventionKind": "review-gate",
+        "appliesTo": ["missing-invariant", "undefined-operation-support", "unglued-local-futures"],
+        "requiredBefore": "review judgement",
+        "preservationBoundary": "intervention preserves reviewer evidence boundary, not correctness",
+        "evidenceRefs": ["policy:no-causal-forecast"]
+      }
+    ],
+    "selectedHorizonRefs": ["horizon:selected-bounded-review"],
+    "observationBoundaryRefs": ["boundary:policy-selected-observation"],
+    "nonConclusions": [
+      "SFT governance policy does not prove future safety",
+      "policy undefined is not a safe path",
+      "forbidden future path classes are review boundaries, not causal predictions"
+    ]
+  },
   "nonConclusions": [
     "architecture policy is review evidence, not a Lean theorem",
     "LayeredArchitecture findings are deterministic over the measured selector universe only",

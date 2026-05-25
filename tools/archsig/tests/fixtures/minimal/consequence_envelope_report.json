@@ -183,6 +183,55 @@
       ]
     }
   ],
+  "typedBoundaryFailures": [
+    {
+      "failureId": "failure:runtime-invariant-missing",
+      "failureKind": "missing-invariant",
+      "affectedRegionIds": [
+        "region:tools-archsig-sft"
+      ],
+      "affectedAxisIds": [
+        "axis:unknown-remainder"
+      ],
+      "evidenceRefs": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "reason": "runtime propagation invariant is absent from the selected report evidence",
+      "nextAction": "request runtime invariant evidence or keep the future open",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "reviewerActions": [
+    {
+      "actionId": "action:review-runtime-boundary",
+      "actionKind": "request-evidence",
+      "status": "needs_human_judgement",
+      "sourceItemRefs": [
+        "missing:runtime-propagation-invariant"
+      ],
+      "evidenceRefs": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "message": "Review runtime propagation evidence before closing the forecast boundary",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
   "theoremBoundaryItems": [
     {
       "itemId": "theorem-boundary:no-lean-promotion",

@@ -314,6 +314,9 @@ fn policy_constraints_from_descriptor(
             rule: "Do not promote tooling estimates to Lean theorem claims.".to_string(),
             safety_claim_boundary: "constraint is local to selected descriptor evidence"
                 .to_string(),
+            policy_refs: vec!["policy:no-theorem-promotion".to_string()],
+            support_disposition: "allowed".to_string(),
+            governance_action_refs: vec!["governance:keep-formal-claim-boundary".to_string()],
             non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
         },
         OperationSupportPolicyConstraintV0 {
@@ -324,6 +327,9 @@ fn policy_constraints_from_descriptor(
             rule: "Do not treat operation support estimates as causal forecasts.".to_string(),
             safety_claim_boundary: "constraint is local to selected operation support evidence"
                 .to_string(),
+            policy_refs: vec!["policy:no-causal-forecast".to_string()],
+            support_disposition: "forbidden".to_string(),
+            governance_action_refs: vec!["governance:require-review-summary".to_string()],
             non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
         },
     ]
@@ -511,6 +517,9 @@ fn policy_constraint(
         source_ref_ids: strings(source_ref_ids),
         rule: rule.to_string(),
         safety_claim_boundary: safety_claim_boundary.to_string(),
+        policy_refs: vec![format!("policy:{}", id_suffix(constraint_id))],
+        support_disposition: "conditionallyAllowed".to_string(),
+        governance_action_refs: vec![format!("governance:{}", id_suffix(constraint_id))],
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
 }
@@ -898,4 +907,12 @@ fn validation_result(checks: &[ValidationCheck]) -> String {
 
 fn strings(values: &[&str]) -> Vec<String> {
     values.iter().map(|value| value.to_string()).collect()
+}
+
+fn id_suffix(value: &str) -> String {
+    value
+        .rsplit_once(':')
+        .map(|(_, suffix)| suffix)
+        .unwrap_or(value)
+        .replace([' ', '/'], "-")
 }

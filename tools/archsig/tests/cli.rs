@@ -4322,6 +4322,23 @@ fn cli_evaluates_architecture_policy_law_report_and_python_policy_status() {
             .iter()
             .any(|check| check["id"] == "architecture-policy-srp-evidence-boundary-recorded")
     );
+    assert!(
+        validation_json["checks"]
+            .as_array()
+            .expect("checks are array")
+            .iter()
+            .any(|check| {
+                check["id"] == "architecture-policy-sft-governance-boundary-recorded"
+                    && check["result"] == "pass"
+            })
+    );
+    assert!(
+        validation_json["policy"]["sftGovernance"]["forbiddenFuturePathClasses"]
+            .as_array()
+            .expect("forbidden futures are array")
+            .iter()
+            .any(|rule| rule["disposition"] == "forbidden")
+    );
 
     run_sig0(&[
         "--root",
@@ -8920,6 +8937,102 @@ fn cli_consequence_envelope_emits_fixture_and_validates_boundaries() {
 }
 
 #[test]
+fn cli_sft_review_summary_projects_reviewer_judgement_contract() {
+    let root = fixture_root();
+    let out_dir = temp_dir("sft-review-summary");
+    let summary = out_dir.join("sft-review-summary.json");
+    let validation = out_dir.join("sft-review-summary-validation.json");
+    let generated_summary = out_dir.join("sft-review-summary-generated.json");
+    let invalid_summary = out_dir.join("sft-review-summary-invalid.json");
+    let invalid_validation = out_dir.join("sft-review-summary-invalid-validation.json");
+
+    run_sig0(&[
+        "sft-review-summary",
+        "--fixture",
+        "--out",
+        summary.to_str().expect("summary path is utf-8"),
+    ]);
+    run_sig0(&[
+        "sft-review-summary",
+        "--input",
+        summary.to_str().expect("summary path is utf-8"),
+        "--out",
+        validation.to_str().expect("validation path is utf-8"),
+    ]);
+    run_sig0(&[
+        "sft-review-summary",
+        "--consequence-envelope",
+        root.join("consequence_envelope_report.json")
+            .to_str()
+            .expect("envelope fixture path is utf-8"),
+        "--out",
+        generated_summary
+            .to_str()
+            .expect("generated summary path is utf-8"),
+    ]);
+
+    let validation_json = read_json(&validation);
+    assert_eq!(
+        validation_json["schemaVersion"],
+        "sft-review-summary-validation-report-v0"
+    );
+    assert_eq!(validation_json["validationSummary"]["result"], "pass");
+    assert!(
+        validation_json["checks"]
+            .as_array()
+            .expect("checks are array")
+            .iter()
+            .any(|check| {
+                check["id"] == "sft-review-summary-evidence-and-boundary-refs-required"
+                    && check["result"] == "pass"
+            })
+    );
+
+    let generated = read_json(&generated_summary);
+    assert_eq!(generated["schemaVersion"], "sft-review-summary-v0");
+    assert!(
+        generated["openedFutures"]
+            .as_array()
+            .expect("opened futures are array")
+            .iter()
+            .any(|future| !future["evidenceRefs"].as_array().unwrap().is_empty())
+    );
+    assert!(
+        generated["llmJudgementContract"]["forbiddenReadings"]
+            .as_array()
+            .expect("forbidden readings are array")
+            .iter()
+            .any(|reading| reading == "Lean theorem promotion")
+    );
+
+    let mut invalid = generated;
+    invalid["status"] = serde_json::json!("approved");
+    invalid["nextActions"][0]["evidenceRefs"] = serde_json::json!([]);
+    fs::write(
+        &invalid_summary,
+        serde_json::to_string_pretty(&invalid).expect("invalid summary serializes"),
+    )
+    .expect("invalid summary is written");
+    let output = run_sig0_output(&[
+        "sft-review-summary",
+        "--input",
+        invalid_summary
+            .to_str()
+            .expect("invalid summary path is utf-8"),
+        "--out",
+        invalid_validation
+            .to_str()
+            .expect("invalid validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "unsupported status and missing evidence refs should fail validation"
+    );
+    let invalid_report = read_json(&invalid_validation);
+    assert_eq!(invalid_report["validationSummary"]["result"], "fail");
+}
+
+#[test]
 fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
     let root = fixture_root();
     let out_dir = temp_dir("sft-forecast");
@@ -8931,6 +9044,8 @@ fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
     let cone_validation = out_dir.join("forecast-cone-skeleton-validation.json");
     let envelope = out_dir.join("consequence-envelope-report.json");
     let envelope_validation = out_dir.join("consequence-envelope-validation.json");
+    let review_summary = out_dir.join("sft-review-summary.json");
+    let review_summary_validation = out_dir.join("sft-review-summary-validation.json");
 
     run_sig0(&[
         "sft-forecast",
@@ -8957,6 +9072,8 @@ fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
         &cone_validation,
         &envelope,
         &envelope_validation,
+        &review_summary,
+        &review_summary_validation,
     ] {
         assert!(path.exists(), "expected sft-forecast output {path:?}");
     }
@@ -9045,6 +9162,18 @@ fn cli_sft_forecast_generates_coupon_pipeline_and_retains_boundaries() {
     assert_eq!(
         envelope_json["schemaVersion"],
         "consequence-envelope-report-v0"
+    );
+    let review_summary_json = read_json(&review_summary);
+    assert_eq!(
+        review_summary_json["schemaVersion"],
+        "sft-review-summary-v0"
+    );
+    assert!(
+        review_summary_json["boundaryFailures"]
+            .as_array()
+            .expect("boundary failures are array")
+            .iter()
+            .any(|failure| !failure["evidenceRefs"].as_array().unwrap().is_empty())
     );
     assert!(
         envelope_json["forecastConeRef"]["sourceRefIds"]

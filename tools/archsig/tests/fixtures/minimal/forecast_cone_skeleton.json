@@ -157,6 +157,83 @@
       ]
     }
   ],
+  "gluingEvidence": [
+    {
+      "gluingId": "gluing:schema-envelope-local-futures",
+      "localFutureRefs": [
+        "path:schema-to-envelope",
+        "path:cli-validation-feedback"
+      ],
+      "status": "missing_evidence",
+      "sourceRefIds": [
+        "source:issue-735",
+        "source:operation-support-estimate-fixture",
+        "source:roadmap-b12",
+        "source:sft-consequence-envelope"
+      ],
+      "boundary": "local forecast futures are listed for review; gluing is not proved",
+      "reviewerAction": "check whether schema and CLI validation futures can be reviewed together",
+      "nonConclusions": [
+        "forecast cone skeleton is bounded by selected finite support and horizon",
+        "forecast cone skeleton does not assign probabilities",
+        "forecast cone skeleton does not prove global risk reduction",
+        "forecast cone skeleton does not prove trajectory-level safety",
+        "forecast cone skeleton is not an empirical prediction theorem"
+      ]
+    }
+  ],
+  "governanceInterventions": [
+    {
+      "interventionId": "governance:retain-boundary-and-open-issue",
+      "interventionKind": "review-gate",
+      "targetPathClassIds": [
+        "path:cli-validation-feedback"
+      ],
+      "policyRefs": [
+        "policy:sft-review-boundary"
+      ],
+      "cutAction": "open downstream issue before treating runtime unknowns as closed",
+      "preservationBoundary": "governance cut is a reviewer action candidate, not correctness proof",
+      "sourceRefIds": [
+        "source:issue-735",
+        "source:operation-support-estimate-fixture",
+        "source:roadmap-b12",
+        "source:sft-consequence-envelope"
+      ],
+      "reviewerAction": "ask reviewer to confirm whether boundary issue is required",
+      "nonConclusions": [
+        "forecast cone skeleton is bounded by selected finite support and horizon",
+        "forecast cone skeleton does not assign probabilities",
+        "forecast cone skeleton does not prove global risk reduction",
+        "forecast cone skeleton does not prove trajectory-level safety",
+        "forecast cone skeleton is not an empirical prediction theorem"
+      ]
+    }
+  ],
+  "typedBoundaryFailures": [
+    {
+      "failureId": "failure:runtime-invariant-missing",
+      "failureKind": "missing-invariant",
+      "affectedPathClassIds": [
+        "path:cli-validation-feedback"
+      ],
+      "evidenceRefs": [
+        "source:issue-735",
+        "source:operation-support-estimate-fixture",
+        "source:roadmap-b12",
+        "source:sft-consequence-envelope"
+      ],
+      "reason": "runtime propagation invariant is absent from the selected support",
+      "reviewerAction": "request invariant evidence or keep runtime future open",
+      "nonConclusions": [
+        "forecast cone skeleton is bounded by selected finite support and horizon",
+        "forecast cone skeleton does not assign probabilities",
+        "forecast cone skeleton does not prove global risk reduction",
+        "forecast cone skeleton does not prove trajectory-level safety",
+        "forecast cone skeleton is not an empirical prediction theorem"
+      ]
+    }
+  ],
   "forecastBoundary": {
     "boundaryId": "boundary:b12.3-forecast-cone-skeleton",
     "sourceRefIds": [

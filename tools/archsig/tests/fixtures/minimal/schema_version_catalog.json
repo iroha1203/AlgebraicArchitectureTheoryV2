@@ -311,6 +311,135 @@
       }
     },
     {
+      "artifactId": "operation-support-estimate",
+      "artifactName": "Operation support estimate",
+      "schemaVersionName": "operation-support-estimate-v0",
+      "artifactRole": "bounded-forecast-input",
+      "ownerPhase": "SFT review judgement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/roadmap.md",
+        "tools/archsig/docs/commands.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1182",
+        "#1184",
+        "#1185"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map candidate operation families, policy constraints, support disposition, governance action refs, forbidden support, unknown remainder, and evidence boundary explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New policy fields must preserve allowed, conditionallyAllowed, forbidden, and unknown distinctions."
+        ],
+        "coverageExactnessBoundary": [
+          "Operation support is bounded evidence, not actual future support or policy safety proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "forecast-cone-skeleton",
+      "artifactName": "ForecastCone skeleton",
+      "schemaVersionName": "forecast-cone-skeleton-v0",
+      "artifactRole": "bounded-forecast-artifact",
+      "ownerPhase": "SFT review judgement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/roadmap.md",
+        "tools/archsig/docs/commands.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1185"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map finite support, bounded horizon, path classes, gluing evidence, governance interventions, typed boundary failures, forecast boundary, unknown remainder, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New future evidence must keep gluing, governance, and typed boundary failure refs source-bound."
+        ],
+        "coverageExactnessBoundary": [
+          "ForecastCone does not assign probability, causal prediction, global safety, or theorem proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "consequence-envelope-report",
+      "artifactName": "ConsequenceEnvelope report",
+      "schemaVersionName": "consequence-envelope-report-v0",
+      "artifactRole": "review-projection",
+      "ownerPhase": "SFT review judgement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/roadmap.md",
+        "tools/archsig/docs/commands.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1182",
+        "#1185"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map affected regions, axes, deltas, obstruction candidates, missing boundaries, typed failures, reviewer actions, theorem boundaries, recommendations, and unknown remainder explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New reviewer-facing fields must preserve evidence refs and boundary refs."
+        ],
+        "coverageExactnessBoundary": [
+          "ConsequenceEnvelope is report projection, not final judgement, causality proof, or Lean theorem."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "sft-review-summary",
+      "artifactName": "SFT review summary",
+      "schemaVersionName": "sft-review-summary-v0",
+      "artifactRole": "review-judgement-input",
+      "ownerPhase": "SFT review judgement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/roadmap.md",
+        "tools/archsig/docs/commands.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1182",
+        "#1183",
+        "#1186"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map opened futures, closed futures, boundary failures, next actions, evidence refs, boundary refs, and LLM judgement contract without making the LLM call.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New judgement statuses must remain bounded triage and require evidence refs."
+        ],
+        "coverageExactnessBoundary": [
+          "SFT review summary is deterministic projection, not merge approval, probability claim, or theorem proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
       "artifactId": "pr-quality-analysis",
       "artifactName": "PR Quality Analysis report",
       "schemaVersionName": "pr-quality-analysis-report-v0",

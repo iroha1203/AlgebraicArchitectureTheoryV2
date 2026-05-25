@@ -35,10 +35,11 @@ use archsig::{
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
     ReportArtifactRetentionValidationReportV0, ReportOutcomeDailyLedgerInput,
     RepositoryRevisionRef, RiskDispositionV0, ScanMetadata, SchemaCompatibilityCheckReportV0,
-    SchemaVersionCatalogV0, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
-    SignatureTrajectoryReportV0, SignatureTrajectoryReportValidationReportV0, SnapshotRecordInput,
-    SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
-    TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, apply_architecture_policy_to_sig0,
+    SchemaVersionCatalogV0, SftReviewSummaryV0, SftReviewSummaryValidationReportV0, Sig0Document,
+    SignatureDiffReportV0, SignatureSnapshotStoreRecordV0, SignatureTrajectoryReportV0,
+    SignatureTrajectoryReportValidationReportV0, SnapshotRecordInput, SnapshotRepositoryRef,
+    SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0, TeamThresholdPolicyV0,
+    TheoremPreconditionCheckReportV0, apply_architecture_policy_to_sig0,
     attach_framework_adapter_evidence, build_ai_proposal_governance_from_descriptor,
     build_air_document, build_air_from_archmap, build_artifact_descriptor_from_ai_proposal_json,
     build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
@@ -51,8 +52,8 @@ use archsig::{
     build_outcome_linkage_dataset_from_files, build_policy_decision_report,
     build_pr_history_dataset_from_github_files, build_pr_metadata_from_github_files,
     build_report_outcome_daily_ledger_from_files, build_schema_compatibility_check_report,
-    build_signature_diff_report, build_signature_snapshot_record,
-    build_theorem_precondition_check_report, extract_python_sig0,
+    build_sft_review_summary_from_consequence_envelope, build_signature_diff_report,
+    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     read_architecture_policy, render_pr_comment_markdown, static_aat_observable_bundle,
     static_ai_proposal_governance, static_architecture_dynamics_metrics_report,
@@ -68,21 +69,23 @@ use archsig::{
     static_ownership_boundary_monitor, static_pr_force_report, static_pr_quality_analysis_report,
     static_repair_adoption_record, static_repair_rule_registry,
     static_report_artifact_retention_manifest, static_schema_version_catalog,
-    static_signature_trajectory_report, static_synthesis_constraint_artifact,
-    static_team_threshold_policy, validate_aat_observable_bundle, validate_ai_proposal_governance,
-    validate_air_document_report, validate_architecture_dynamics_metrics_report,
-    validate_architecture_field_snapshot, validate_architecture_policy_report,
-    validate_archmap_report, validate_artifact_descriptor_report,
-    validate_component_universe_report, validate_consequence_envelope_report,
-    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
-    validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
-    validate_intent_archmap_alignment, validate_intent_calibration_record, validate_intent_map,
+    static_sft_review_summary, static_signature_trajectory_report,
+    static_synthesis_constraint_artifact, static_team_threshold_policy,
+    validate_aat_observable_bundle, validate_ai_proposal_governance, validate_air_document_report,
+    validate_architecture_dynamics_metrics_report, validate_architecture_field_snapshot,
+    validate_architecture_policy_report, validate_archmap_report,
+    validate_artifact_descriptor_report, validate_component_universe_report,
+    validate_consequence_envelope_report, validate_custom_rule_plugin_registry_report,
+    validate_dynamics_measurement_contract_report, validate_forecast_calibration_hook,
+    validate_forecast_cone_skeleton, validate_intent_archmap_alignment,
+    validate_intent_calibration_record, validate_intent_map,
     validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
     validate_no_solution_certificate_report, validate_operation_proposal_log,
     validate_operation_support_estimate, validate_organization_policy_report,
     validate_pr_force_report, validate_pr_quality_analysis_report,
     validate_repair_rule_registry_report, validate_report_artifact_retention_report,
-    validate_signature_trajectory_report, validate_synthesis_constraint_artifact_report,
+    validate_sft_review_summary, validate_signature_trajectory_report,
+    validate_synthesis_constraint_artifact_report,
 };
 use clap::{Parser, Subcommand};
 
@@ -951,6 +954,25 @@ enum Command {
         fixture: bool,
 
         /// Output report or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Emit or validate an sft-review-summary-v0 artifact.
+    SftReviewSummary {
+        /// Optional SFT review summary JSON path to validate.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// ConsequenceEnvelope report JSON path to generate sft-review-summary-v0 from.
+        #[arg(long = "consequence-envelope")]
+        consequence_envelope: Option<PathBuf>,
+
+        /// Emit the canonical minimal sft-review-summary-v0 fixture.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output summary or validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -2302,6 +2324,43 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 ExitCode::SUCCESS
             })
         }
+        Some(Command::SftReviewSummary {
+            input,
+            consequence_envelope,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let summary: SftReviewSummaryV0 = static_sft_review_summary();
+                write_json(out, &summary)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            if let Some(envelope_path) = consequence_envelope {
+                let envelope: ConsequenceEnvelopeReportV0 = read_json(&envelope_path)?;
+                let summary: SftReviewSummaryV0 =
+                    build_sft_review_summary_from_consequence_envelope(&envelope);
+                write_json(out, &summary)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let summary: SftReviewSummaryV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_sft_review_summary);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-sft-review-summary".to_string());
+            let validation: SftReviewSummaryValidationReportV0 =
+                validate_sft_review_summary(&summary, &input_path);
+            let failed = validation.validation_summary.result == "fail";
+            write_json(out, &validation)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
         Some(Command::SftForecast {
             artifact,
             artifact_format,
@@ -2369,11 +2428,21 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     &envelope,
                     &envelope_path.display().to_string(),
                 );
+            let review_summary: SftReviewSummaryV0 =
+                build_sft_review_summary_from_consequence_envelope(&envelope);
+            let review_summary_path = out_dir.join("sft-review-summary.json");
+            let review_summary_validation_path = out_dir.join("sft-review-summary-validation.json");
+            let review_summary_validation: SftReviewSummaryValidationReportV0 =
+                validate_sft_review_summary(
+                    &review_summary,
+                    &review_summary_path.display().to_string(),
+                );
 
             let failed = descriptor_validation.summary.result == "fail"
                 || estimate_validation.summary.result == "fail"
                 || cone_validation.summary.result == "fail"
-                || envelope_validation.summary.result == "fail";
+                || envelope_validation.summary.result == "fail"
+                || review_summary_validation.validation_summary.result == "fail";
 
             write_json(Some(descriptor_path), &descriptor)?;
             write_json(Some(descriptor_validation_path), &descriptor_validation)?;
@@ -2383,6 +2452,11 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(Some(cone_validation_path), &cone_validation)?;
             write_json(Some(envelope_path), &envelope)?;
             write_json(Some(envelope_validation_path), &envelope_validation)?;
+            write_json(Some(review_summary_path), &review_summary)?;
+            write_json(
+                Some(review_summary_validation_path),
+                &review_summary_validation,
+            )?;
 
             Ok(if failed {
                 ExitCode::from(1)
