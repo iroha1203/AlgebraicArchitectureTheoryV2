@@ -39,6 +39,7 @@ pub fn validate_archmap_report(
     let claim_boundary_checks = vec![
         check_measured_claim_evidence(document),
         check_missing_evidence_not_measured_zero(document),
+        check_srp_evidence_boundary(document),
     ];
     let semantic_coverage_checks = vec![check_semantic_coverage(document)];
     let conflict_checks = vec![check_conflicts(document, sig0)];
@@ -739,6 +740,42 @@ fn check_missing_evidence_not_measured_zero(document: &ArchMapDocumentV0) -> Val
         examples,
         "fail",
     )
+}
+
+fn check_srp_evidence_boundary(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let examples: Vec<_> = document
+        .map_items
+        .iter()
+        .filter(|item| is_srp_item(item))
+        .filter(|item| {
+            item.semantic_role.is_none()
+                || item.responsibility_regions.is_empty()
+                || item.reason_to_change.is_empty()
+                || item.law_refs.is_empty()
+        })
+        .map(|item| {
+            generic_validation_example(
+                &item.map_item_id,
+                "SRP",
+                "SRP review cue must keep semanticRole, responsibilityRegions, reasonToChange, and lawRefs typed",
+            )
+        })
+        .collect();
+    check_from_examples(
+        "archmap-srp-evidence-boundary-typed",
+        "SRP review cues keep typed semantic evidence",
+        examples,
+        "warn",
+    )
+}
+
+fn is_srp_item(item: &ArchMapMapItem) -> bool {
+    item.law_refs.iter().any(|law| law.contains("SRP"))
+        || item
+            .preserves
+            .iter()
+            .any(|preserve| preserve.to_ascii_lowercase().contains("srp"))
+        || item.map_item_id.to_ascii_lowercase().contains("srp")
 }
 
 fn check_semantic_coverage(document: &ArchMapDocumentV0) -> ValidationCheck {
@@ -1539,6 +1576,12 @@ fn archmap_item_required_assumptions(item: &ArchMapMapItem) -> Vec<String> {
         "ArchMapPreservationPackage.{} candidate",
         archmap_item_lean_package_field(item)
     ));
+    if is_srp_item(item) {
+        required_assumptions.push(
+            "SRP probable violation requires LLM Review Skill judgment with evidence refs and policy refs"
+                .to_string(),
+        );
+    }
     required_assumptions.sort();
     required_assumptions.dedup();
     required_assumptions
@@ -1568,6 +1611,13 @@ fn archmap_item_non_conclusions(item: &ArchMapMapItem) -> Vec<String> {
     non_conclusions.push("ArchMap item does not prove semantic preservation".to_string());
     if item.claim_classification != "proved" {
         non_conclusions.push("LLM-authored mapping is not a Lean theorem".to_string());
+    }
+    if is_srp_item(item) {
+        non_conclusions.push("SRP cue is not a deterministic tool violation".to_string());
+        non_conclusions.push(
+            "SRP probableViolation requires review judgment with cited evidence and policy refs"
+                .to_string(),
+        );
     }
     non_conclusions.sort();
     non_conclusions.dedup();

@@ -1,19 +1,21 @@
 use crate::{
     AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION, AIR_SCHEMA_VERSION,
     ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION, ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION,
+    ARCHITECTURE_POLICY_SCHEMA_VERSION, ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
     ARCHMAP_SCHEMA_VERSION, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
     CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
     INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION,
     INTENT_CALIBRATION_RECORD_SCHEMA_VERSION, INTENTMAP_SCHEMA_VERSION,
-    OBSTRUCTION_WITNESS_SCHEMA_VERSION, OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION,
-    PR_FORCE_REPORT_SCHEMA_VERSION, PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
-    REPAIR_ADOPTION_RECORD_SCHEMA_VERSION, REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION,
-    SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION,
-    SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION,
-    SchemaCompatibilityBoundaryV0, SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0,
-    SchemaVersionCatalogEntryV0, SchemaVersionCatalogV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION,
+    LAW_VIOLATION_REPORT_SCHEMA_VERSION, OBSTRUCTION_WITNESS_SCHEMA_VERSION,
+    OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION, PR_FORCE_REPORT_SCHEMA_VERSION,
+    PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION, REPAIR_ADOPTION_RECORD_SCHEMA_VERSION,
+    REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION, SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION,
+    SCHEMA_VERSION, SCHEMA_VERSION_CATALOG_SCHEMA_VERSION,
+    SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
+    SchemaCompatibilityDimensionV0, SchemaCompatibilityPolicyV0, SchemaVersionCatalogEntryV0,
+    SchemaVersionCatalogV0, TEAM_THRESHOLD_POLICY_SCHEMA_VERSION,
 };
 
 pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
@@ -108,6 +110,67 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "Validation pass does not imply semantic correctness, completeness, or architecture lawfulness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "architecture-policy",
+                "Architecture policy artifact",
+                ARCHITECTURE_POLICY_SCHEMA_VERSION,
+                "law-aware-review-policy",
+                "ArchMap law-aware review",
+                "implemented",
+                vec!["docs/tool/archmap_prd.md", "tools/archsig/docs/commands.md"],
+                vec!["#1162"],
+                compatibility_boundary(
+                    "Map adopted laws, layer selectors, dependency rules, exceptions, and SRP taxonomy explicitly; do not infer policy from repository shape.",
+                    vec![],
+                    vec![
+                        "New law families must declare deterministic versus LLM-review enforcement boundary.",
+                    ],
+                    vec![
+                        "Architecture policy is review evidence, not a Lean theorem or architecture lawfulness proof.",
+                    ],
+                ),
+            ),
+            artifact(
+                "architecture-policy-validation-report",
+                "Architecture policy validation report",
+                ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
+                "validation-output",
+                "ArchMap law-aware review",
+                "implemented",
+                vec!["tools/archsig/docs/commands.md"],
+                vec!["#1162"],
+                compatibility_boundary(
+                    "Keep identity, adopted law, layer selector, dependency rule, SRP evidence, and non-conclusion checks separate.",
+                    vec![],
+                    vec!["New checks must distinguish fail, warn, and unmeasured policy evidence."],
+                    vec![
+                        "Validation pass does not imply architecture lawfulness or SRP violation.",
+                    ],
+                ),
+            ),
+            artifact(
+                "law-violation-report",
+                "Law violation report",
+                LAW_VIOLATION_REPORT_SCHEMA_VERSION,
+                "review-output",
+                "ArchMap law-aware review",
+                "implemented",
+                vec![
+                    "tools/archsig/docs/commands.md",
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                ],
+                vec!["#1164", "#1165"],
+                compatibility_boundary(
+                    "Map deterministic Layered findings, allowed exceptions, SRP cues, unmeasured selectors, review actions, and non-conclusions explicitly.",
+                    vec![],
+                    vec![
+                        "New law findings must preserve evidence refs and policy refs before review classification.",
+                    ],
+                    vec![
+                        "Layered findings are selected-universe tooling evidence and SRP cues are not tool-only violations.",
                     ],
                 ),
             ),

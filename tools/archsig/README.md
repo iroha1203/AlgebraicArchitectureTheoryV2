@@ -15,7 +15,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | Surface | 現在使えるもの | Remaining gaps |
 | --- | --- | --- |
 | ArchSig Core | Lean / Python import graph scan、Sig0、validation、snapshot、signature diff。policy JSON と runtime edge evidence は明示入力として扱える。 | call graph、data dependency、dynamic import、plugin loading、framework convention は adapter boundary。extractor output は完全な `ComponentUniverse` ではない。 |
-| ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment summary、baseline suppression、PR quality analysis。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定。tool output は Lean theorem や merge approval ではない。 |
+| ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、architecture-policy、law violation report、policy decision、PR comment summary、baseline suppression、PR quality analysis。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定。tool output は Lean theorem や merge approval ではない。 |
 | ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、validation report を生成する bounded pipeline。PRD v3 では `IntentMap`、`AlignmentMap`、`intent-forecast` を使って planning forecast を作る。 | real dataset calibration、framework semantics adapter は remaining gaps。`ForecastCone` は point prediction ではなく、`ConsequenceEnvelope` は report projection である。 |
 | ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、B10 daily ledger、calibration review、team threshold、ownership boundary、repair adoption、incident correlation、hypothesis refresh artifacts。 | 実 dataset での calibration、incident / rollback / MTTR との運用接続、confounder 管理、private data boundary の組織別設計が残る。correlation は因果 theorem ではない。 |
 
@@ -24,6 +24,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 - Lean `import` / Python `import` graph から component と dependency edge を抽出する。
 - `hasCycle`, `sccMaxSize`, `maxDepth`, `fanoutRisk` などの構造 metric を計算する。
 - policy JSON がある場合、boundary / abstraction violation を測る。
+- architecture-policy JSON がある場合、Layered Architecture の deterministic violation と SRP review cue boundary を分ける。
 - runtime edge evidence JSON がある場合、runtime dependency projection を出す。
 - Sig0 output を validation し、revision snapshot と before / after diff を作る。
 - PR metadata、AIR、theorem precondition check、Feature Extension Report、policy decision、
@@ -139,6 +140,8 @@ archmap-v0
 | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | `feature-extension-report-v0` | split status、witness、coverage gap、theorem precondition checks。 |
 | `archmap-validation-report-v0` | supplied ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail。 |
+| `architecture-policy-v0` | project-local adopted laws、layer selectors、exceptions、SRP taxonomy。 |
+| `law-violation-report-v0` | Layered deterministic violation、allowed exception、unmeasured selector、SRP review cue。 |
 | `policy-decision-report-v0` | organization policy に基づく pass / warn / fail / advisory decision。 |
 | `pr-comment-summary-v0` | GitHub Checks / PR comment 向け Markdown summary。 |
 | `pr-quality-analysis-report-v0` | ArchMap / AIR / theorem-check / feature-report / policy-decision 由来の PR review cue。merge 可否は自動判定しない。 |
@@ -177,6 +180,7 @@ AI agent や CI job は `signature` の値だけで判断せず、`metricStatus`
 - LLM / agent から `archmap-v0` を自動生成する。
 - metric と incident / rollback / MTTR の因果関係を証明する。
 - Lean theorem proof、extractor completeness、architecture lawfulness を tooling output だけで結論する。
+- SRP cue を deterministic tool violation として結論する。
 
 ## Test
 

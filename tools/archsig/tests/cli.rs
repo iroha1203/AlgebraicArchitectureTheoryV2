@@ -4215,6 +4215,115 @@ fn cli_extracts_policy_runtime_fixture_contract() {
 }
 
 #[test]
+fn cli_evaluates_architecture_policy_law_report_and_python_policy_status() {
+    let root = fixture_root();
+    let out_dir = temp_dir("architecture-policy");
+    let policy = root.join("architecture_policy.json");
+    let validation = out_dir.join("architecture-policy-validation.json");
+    let sig0 = out_dir.join("sig0.json");
+    let report = out_dir.join("law-violation-report.json");
+    let python_sig0 = out_dir.join("python-sig0.json");
+
+    run_sig0(&[
+        "architecture-policy",
+        "--input",
+        policy.to_str().expect("policy path is utf-8"),
+        "--out",
+        validation.to_str().expect("validation path is utf-8"),
+    ]);
+    let validation_json = read_json(&validation);
+    assert_eq!(
+        validation_json["schemaVersion"],
+        "architecture-policy-validation-report-v0"
+    );
+    assert_eq!(validation_json["summary"]["result"], "pass");
+    assert!(
+        validation_json["checks"]
+            .as_array()
+            .expect("checks are array")
+            .iter()
+            .any(|check| check["id"] == "architecture-policy-srp-evidence-boundary-recorded")
+    );
+
+    run_sig0(&[
+        "--root",
+        root.to_str().expect("fixture path is utf-8"),
+        "--policy",
+        policy.to_str().expect("policy path is utf-8"),
+        "--out",
+        sig0.to_str().expect("sig0 path is utf-8"),
+    ]);
+    let sig0_json = read_json(&sig0);
+    assert_eq!(
+        sig0_json["policies"]["schemaVersion"],
+        "architecture-policy-v0"
+    );
+    assert_eq!(
+        sig0_json["metricStatus"]["boundaryViolationCount"]["measured"],
+        true
+    );
+    assert_eq!(sig0_json["signature"]["boundaryViolationCount"], 1);
+    assert!(
+        sig0_json["policyViolations"]
+            .as_array()
+            .expect("policy violations are array")
+            .iter()
+            .any(|violation| {
+                violation["relationIds"]
+                    .as_array()
+                    .expect("relation ids are array")
+                    .iter()
+                    .any(|id| id == "forbid-domain-app")
+            })
+    );
+
+    run_sig0(&[
+        "law-violation-report",
+        "--sig0",
+        sig0.to_str().expect("sig0 path is utf-8"),
+        "--policy",
+        policy.to_str().expect("policy path is utf-8"),
+        "--out",
+        report.to_str().expect("report path is utf-8"),
+    ]);
+    let report_json = read_json(&report);
+    assert_eq!(report_json["schemaVersion"], "law-violation-report-v0");
+    assert_eq!(report_json["summary"]["deterministicViolationCount"], 1);
+    assert!(
+        report_json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are array")
+            .iter()
+            .any(|entry| entry == "SRP findings are evidence cues for LLM review, not tool-only violation judgments")
+    );
+
+    let python_root = python_fixture_root();
+    run_sig0(&[
+        "--language",
+        "python",
+        "--root",
+        python_root.to_str().expect("python fixture path is utf-8"),
+        "--source-root",
+        "src",
+        "--package-root",
+        "src",
+        "--policy",
+        policy.to_str().expect("policy path is utf-8"),
+        "--out",
+        python_sig0.to_str().expect("python sig0 path is utf-8"),
+    ]);
+    let python_json = read_json(&python_sig0);
+    assert_eq!(
+        python_json["policies"]["schemaVersion"],
+        "architecture-policy-v0"
+    );
+    assert_eq!(
+        python_json["metricStatus"]["boundaryViolationCount"]["measured"], false,
+        "selector mismatch must stay unmeasured instead of measured zero"
+    );
+}
+
+#[test]
 fn cli_dataset_fixture_keeps_unmeasured_deltas_null() {
     let root = fixture_root();
     let out_dir = temp_dir("dataset");

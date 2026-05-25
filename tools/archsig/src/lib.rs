@@ -3,6 +3,7 @@ mod air;
 mod air_validation;
 mod architecture_dynamics_metrics;
 mod architecture_field;
+mod architecture_policy;
 mod archmap;
 mod artifact_descriptor;
 mod artifact_retention;
@@ -61,6 +62,10 @@ pub use architecture_dynamics_metrics::{
 pub use architecture_field::{
     static_architecture_field_snapshot, static_operation_proposal_log,
     validate_architecture_field_snapshot, validate_operation_proposal_log,
+};
+pub use architecture_policy::{
+    apply_architecture_policy_to_sig0, build_law_violation_report, read_architecture_policy,
+    srp_review_cue_from_archmap_item, validate_architecture_policy_report,
 };
 pub use archmap::{
     ArchMapSourceInventoryInput, build_air_from_archmap,

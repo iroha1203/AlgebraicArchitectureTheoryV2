@@ -9,7 +9,8 @@ use archsig::{
     AirDocumentV0, AirValidationReport, ArchMapDocumentV0, ArchMapSourceInventoryInput,
     ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchitectureDynamicsMetricsReportV0,
     ArchitectureDynamicsMetricsReportValidationReportV0, ArchitectureFieldSnapshotV0,
-    ArchitectureFieldSnapshotValidationReportV0, ArtifactDescriptorV0,
+    ArchitectureFieldSnapshotValidationReportV0, ArchitecturePolicyV0,
+    ArchitecturePolicyValidationReportV0, ArtifactDescriptorV0,
     ArtifactDescriptorValidationReportV0, CalibrationReviewRecordV0,
     ComponentUniverseValidationReport, ConsequenceEnvelopeReportV0,
     ConsequenceEnvelopeValidationReportV0, CustomRulePluginRegistryV0,
@@ -22,7 +23,7 @@ use archsig::{
     IncidentCorrelationMonitorV0, IntentArchMapAlignmentV0,
     IntentArchMapAlignmentValidationReportV0, IntentCalibrationRecordV0,
     IntentCalibrationValidationReportV0, IntentMapV0, IntentMapValidationReportV0,
-    LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0,
+    LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0,
     MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OperationProposalLogV0,
     OperationProposalLogValidationReportV0, OperationSupportEstimateV0,
@@ -36,14 +37,14 @@ use archsig::{
     SchemaVersionCatalogV0, Sig0Document, SignatureDiffReportV0, SignatureSnapshotStoreRecordV0,
     SignatureTrajectoryReportV0, SignatureTrajectoryReportValidationReportV0, SnapshotRecordInput,
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
-    TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, attach_framework_adapter_evidence,
-    build_ai_proposal_governance_from_descriptor, build_air_document, build_air_from_archmap,
-    build_artifact_descriptor_from_ai_proposal_json,
+    TeamThresholdPolicyV0, TheoremPreconditionCheckReportV0, apply_architecture_policy_to_sig0,
+    attach_framework_adapter_evidence, build_ai_proposal_governance_from_descriptor,
+    build_air_document, build_air_from_archmap, build_artifact_descriptor_from_ai_proposal_json,
     build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
     build_baseline_suppression_report, build_consequence_envelope_from_forecast_cone,
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
-    build_operation_support_estimate_from_archmap,
+    build_law_violation_report, build_operation_support_estimate_from_archmap,
     build_operation_support_estimate_from_descriptor,
     build_operation_support_estimate_from_intent_alignment,
     build_outcome_linkage_dataset_from_files, build_policy_decision_report,
@@ -52,7 +53,7 @@ use archsig::{
     build_signature_diff_report, build_signature_snapshot_record,
     build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
-    render_pr_comment_markdown, static_ai_proposal_governance,
+    read_architecture_policy, render_pr_comment_markdown, static_ai_proposal_governance,
     static_architecture_dynamics_metrics_report, static_architecture_field_snapshot,
     static_artifact_descriptor, static_calibration_review_record,
     static_consequence_envelope_report, static_custom_rule_plugin_registry,
@@ -69,11 +70,12 @@ use archsig::{
     static_signature_trajectory_report, static_synthesis_constraint_artifact,
     static_team_threshold_policy, validate_ai_proposal_governance, validate_air_document_report,
     validate_architecture_dynamics_metrics_report, validate_architecture_field_snapshot,
-    validate_archmap_report, validate_artifact_descriptor_report,
-    validate_component_universe_report, validate_consequence_envelope_report,
-    validate_custom_rule_plugin_registry_report, validate_dynamics_measurement_contract_report,
-    validate_forecast_calibration_hook, validate_forecast_cone_skeleton,
-    validate_intent_archmap_alignment, validate_intent_calibration_record, validate_intent_map,
+    validate_architecture_policy_report, validate_archmap_report,
+    validate_artifact_descriptor_report, validate_component_universe_report,
+    validate_consequence_envelope_report, validate_custom_rule_plugin_registry_report,
+    validate_dynamics_measurement_contract_report, validate_forecast_calibration_hook,
+    validate_forecast_cone_skeleton, validate_intent_archmap_alignment,
+    validate_intent_calibration_record, validate_intent_map,
     validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
     validate_no_solution_certificate_report, validate_operation_proposal_log,
     validate_operation_support_estimate, validate_organization_policy_report,
@@ -636,6 +638,32 @@ enum Command {
         input: Option<PathBuf>,
 
         /// Output organization policy validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Validate a project-local architecture-policy v0 artifact.
+    ArchitecturePolicy {
+        /// Architecture policy JSON path.
+        #[arg(long)]
+        input: PathBuf,
+
+        /// Output architecture policy validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Evaluate architecture-policy laws against a Sig0 artifact.
+    LawViolationReport {
+        /// Sig0 JSON path.
+        #[arg(long)]
+        sig0: PathBuf,
+
+        /// Architecture policy JSON path.
+        #[arg(long)]
+        policy: PathBuf,
+
+        /// Output law violation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -1679,6 +1707,31 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 ExitCode::SUCCESS
             })
         }
+        Some(Command::ArchitecturePolicy { input, out }) => {
+            let policy: ArchitecturePolicyV0 = read_json(&input)?;
+            let input_path = input.display().to_string();
+            let report: ArchitecturePolicyValidationReportV0 =
+                validate_architecture_policy_report(&policy, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::LawViolationReport { sig0, policy, out }) => {
+            let sig0_document: Sig0Document = read_json(&sig0)?;
+            let policy_document: ArchitecturePolicyV0 = read_json(&policy)?;
+            let report: LawViolationReportV0 = build_law_violation_report(
+                &sig0_document,
+                Some(&sig0.display().to_string()),
+                &policy_document,
+                Some(&policy.display().to_string()),
+            );
+            write_json(out, &report)?;
+            Ok(ExitCode::SUCCESS)
+        }
         Some(Command::LawPolicyTemplates { input, out }) => {
             let registry: LawPolicyTemplateRegistryV0 = input
                 .as_ref()
@@ -2608,24 +2661,49 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
         }
         None => {
             let document = match args.language.as_str() {
-                "lean" => extract_sig0_with_runtime(
-                    &args.root,
-                    args.policy.as_deref(),
-                    args.runtime_edges.as_deref(),
-                )?,
-                "python" => {
-                    if args.policy.is_some() {
-                        return Err(
-                            "Python policy measurement is tracked by the Sig0 / AIR normalization work"
-                                .into(),
-                        );
+                "lean" => {
+                    if policy_schema_version(args.policy.as_deref())?.as_deref()
+                        == Some("architecture-policy-v0")
+                    {
+                        let mut document = extract_sig0_with_runtime(
+                            &args.root,
+                            None,
+                            args.runtime_edges.as_deref(),
+                        )?;
+                        if let Some(policy_path) = args.policy.as_deref() {
+                            let architecture_policy = read_architecture_policy(policy_path)?;
+                            apply_architecture_policy_to_sig0(
+                                &mut document,
+                                &architecture_policy,
+                                Some(&policy_path.display().to_string()),
+                            );
+                        }
+                        document
+                    } else {
+                        extract_sig0_with_runtime(
+                            &args.root,
+                            args.policy.as_deref(),
+                            args.runtime_edges.as_deref(),
+                        )?
                     }
+                }
+                "python" => {
                     if args.runtime_edges.is_some() {
                         return Err(
                             "runtime edge projection is not part of python-import-graph-v0".into(),
                         );
                     }
-                    extract_python_sig0(&args.root, &args.source_roots, &args.package_roots)?
+                    let mut document =
+                        extract_python_sig0(&args.root, &args.source_roots, &args.package_roots)?;
+                    if let Some(policy_path) = args.policy.as_deref() {
+                        let architecture_policy = read_architecture_policy(policy_path)?;
+                        apply_architecture_policy_to_sig0(
+                            &mut document,
+                            &architecture_policy,
+                            Some(&policy_path.display().to_string()),
+                        );
+                    }
+                    document
                 }
                 _ => unreachable!("clap restricts language values"),
             };
@@ -2633,6 +2711,18 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             Ok(ExitCode::SUCCESS)
         }
     }
+}
+
+fn policy_schema_version(path: Option<&Path>) -> Result<Option<String>, Box<dyn Error>> {
+    let Some(path) = path else {
+        return Ok(None);
+    };
+    let source = std::fs::read_to_string(path)?;
+    let value: serde_json::Value = serde_json::from_str(&source)?;
+    Ok(value
+        .get("schemaVersion")
+        .and_then(|value| value.as_str())
+        .map(str::to_string))
 }
 
 fn write_json<T: serde::Serialize>(out: Option<PathBuf>, value: &T) -> Result<(), Box<dyn Error>> {

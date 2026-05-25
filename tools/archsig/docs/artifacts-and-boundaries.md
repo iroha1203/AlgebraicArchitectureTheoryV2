@@ -40,6 +40,9 @@ non-conclusions を落とさない。
 | --- | --- | --- |
 | Organization policy validation report | `organization-policy-validation-report-v0` | warn / fail / advisory policy と formal claim promotion boundary を検査する。 |
 | Law policy template registry validation report | `law-policy-template-registry-validation-report-v0` | policy template registry の boundary refs と non-conclusions を検査する。 |
+| Architecture policy | `architecture-policy-v0` | project-local adopted laws、layer selectors、allowed / forbidden dependency、exception、SRP taxonomy を保持する。 |
+| Architecture policy validation report | `architecture-policy-validation-report-v0` | law-aware policy の selector / SRP evidence boundary / non-conclusions を検査する。 |
+| Law violation report | `law-violation-report-v0` | Layered Architecture の deterministic violation、allowed exception、unmeasured selector、SRP review cue を分ける。 |
 | Custom rule plugin registry validation report | `custom-rule-plugin-registry-validation-report-v0` | custom rule plugin registry の theorem refs と claim boundary を検査する。 |
 | Measurement unit registry validation report | `measurement-unit-registry-validation-report-v0` | measurement unit selection と evidence adapter boundary を検査する。 |
 | Repair rule registry validation report | `repair-rule-registry-validation-report-v0` | repair rule registry の selected obstruction boundary と advisory non-conclusions を検査する。 |
@@ -190,6 +193,8 @@ tooling evidence であり、Lean `ComponentUniverse` bridge precondition なし
 | fanout / 依存集中 | `fanoutRisk`, `maxFanout` | 依存辺総数や局所的な結合点候補が増えた。 | fanout 増加は常に悪ではない。 |
 | 到達 cone | `reachableConeSize` | 変更理解や影響確認の範囲が広がる候補。 | edge 方向は `source depends on target`。 |
 | boundary violation | `boundaryViolationCount`, `policyViolations[]` | 意図した layer / domain boundary が破られている候補。 | policy 未指定なら placeholder 0 でも違反なしとは読まない。 |
+| Layered law violation | `law-violation-report-v0.deterministicViolations[]`, `policyViolations[]` | resolved layer selector と measured import edge に対する deterministic forbidden dependency。 | selector 未解決、dynamic import、framework convention は unmeasured。policy pass は architecture lawfulness proof ではない。 |
+| SRP review cue | `archmap-v0.mapItems[].semanticRole`, `responsibilityRegions`, `reasonToChange`, `lawRefs`, `law-violation-report-v0.srpCues[]` | LLM Review Skill が probable violation / acceptable orchestrator / unmeasured を判断するための semantic evidence。 | tool 単独で SRP violation を断定しない。 |
 | abstraction violation | `abstractionViolationCount`, `policyViolations[]` | abstraction boundary の破れ候補。 | Lean の `ProjectionSound` witness そのものではない。 |
 | runtime exposure | `runtimePropagation`, `runtimeDependencyGraph`, `runtimeEdgeEvidence[]` | runtime evidence 上の exposure radius が大きい。 | runtime edge evidence を渡した場合だけ測定済み。 |
 | relation complexity | `relationComplexity`, `counts.*`, `excludedEvidence[]` | 状態遷移設計や運用リスクの review 対象候補。 | candidate evidence からの observation。 |
@@ -210,6 +215,7 @@ before / after の差分診断:
 - 任意 repository から完全な architecture model を抽出できる。
 - extractor output が Lean `ComponentUniverse` と同一である。
 - policy pass や schema compatibility pass が architecture lawfulness を示す。
+- SRP cue が tool-only violation を示す。
 - migration pass が semantic preservation を示す。
 - measured witness が Lean theorem proof である。
 - report warning が incident / rollback / MTTR を引き起こした。
