@@ -213,6 +213,6 @@
     "archmap-expressiveness-suite-v0 is not architecture ground truth",
     "suite pass does not prove semantic preservation",
     "suite pass does not prove LLM generation accuracy",
-    "field, force, attractor, basin, ForecastCone, and ConsequenceEnvelope are ArchSig-computed artifacts, not ArchMap-authored facts"
+    "field, force, attractor, basin, ForecastCone, and ConsequenceEnvelope are FieldSig-computed artifacts, not ArchMap-authored facts"
   ]
 }

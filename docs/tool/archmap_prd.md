@@ -721,12 +721,12 @@ Lean formal verification phase の完了条件:
 
 - expressiveness suite v0 は、`tools/archsig/tests/fixtures/expressiveness/` の fixture directory convention と CLI 回帰テストで管理する。v0 では単一 suite artifact に 10 case を収め、expected output は `cli_locks_archmap_expressiveness_suite_v0_boundaries` で固定する。
 - ArchMap の SFT-facing input は、source-level candidate として `operationCandidate` / `stateCandidate` / `stateTransitionCandidate` / `eventCandidate` / `workflowCandidate` / `testOracleCandidate` / `runtimeObservationCandidate` を許す設計に寄せる。v0 fixture では source refs と `preserves[]` cue で保持し、SFT 計算結果そのものは保持しない。
-- field / force / attractor / basin / ForecastCone / ConsequenceEnvelope は、ArchMap からではなく ArchSig-computed SFT projection / report の責務とする。具体的な SFT projection schema は後続 tooling task として扱う。
+- field / force / attractor / basin / ForecastCone / ConsequenceEnvelope は、ArchMap からではなく FieldSig-computed SFT projection / report の責務とする。具体的な SFT projection schema は FieldSig tooling task として扱う。
 - AAT projection item と SFT computation-input item の cross-reference は、v0 では shared `sourceRefs` と optional review cue に限定する。AAT -> SFT theorem implication とは読まない。
 - expressiveness suite の pass / fail は、schema compatibility と同じく regression guard として扱うが、LLM accuracy や architecture lawfulness の metric ではない。
 - JSON / AIR / theorem-check candidate から Lean model への生成は v0 では行わない。Lean positive example は代表 singleton model を手書きし、将来 generator は別 task とする。
 - `preserves[]` の自然言語 vocabulary は、v0 では bounded selector として正規化する。未対応語彙は candidate / coverage boundary / out-of-scope として残し、proof discharge には使わない。
-- SFT 側の計算結果を Lean formal bridge に接続する場合は、ArchMap ではなく ArchSig-computed SFT artifact から接続する。
+- SFT 側の計算結果を Lean formal bridge に接続する場合は、ArchMap ではなく FieldSig-computed SFT artifact から接続する。
 
 ## Non-Conclusions
 
