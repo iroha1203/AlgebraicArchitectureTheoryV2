@@ -8,11 +8,11 @@ use crate::{
     FeatureExtensionReportV0, FeatureReportArchitectureSummary, FeatureReportCoverageGap,
     FeatureReportEdgeRef, FeatureReportEvidenceRef, FeatureReportGeneratedPatchOperation,
     FeatureReportGeneratedPatchReviewWarning, FeatureReportGeneratedPatchSummary,
-    FeatureReportInput, FeatureReportInterpretedExtension, FeatureReportInvariant,
-    FeatureReportObstructionWitness, FeatureReportRepairSuggestion, FeatureReportReviewSummary,
-    FeatureReportRuntimeSummary, FeatureReportSemanticDiagramSummary,
-    FeatureReportSemanticNonfillabilityWitnessSummary, FeatureReportSemanticPathSummary,
-    RepairRuleV0, TheoremPreconditionCheck,
+    FeatureReportHomomorphismFamily, FeatureReportHomomorphismSummary, FeatureReportInput,
+    FeatureReportInterpretedExtension, FeatureReportInvariant, FeatureReportObstructionWitness,
+    FeatureReportRepairSuggestion, FeatureReportReviewSummary, FeatureReportRuntimeSummary,
+    FeatureReportSemanticDiagramSummary, FeatureReportSemanticNonfillabilityWitnessSummary,
+    FeatureReportSemanticPathSummary, RepairRuleV0, TheoremPreconditionCheck,
 };
 
 pub fn build_feature_extension_report(
@@ -119,6 +119,11 @@ pub fn build_feature_extension_report(
             measured_axes,
             unmeasured_axes,
         },
+        homomorphism_summary: feature_report_homomorphism_summary(
+            document,
+            &coverage_gaps,
+            &introduced_obstruction_witnesses,
+        ),
         runtime_summary,
         interpreted_extension: FeatureReportInterpretedExtension {
             embedding_claim_ref: document.extension.embedding_claim_ref.clone(),
@@ -166,6 +171,115 @@ pub fn build_feature_extension_report(
             "Runtime formal claims require coverage, projection, exactness, and theorem preconditions".to_string(),
         ],
         non_conclusions,
+    }
+}
+
+fn feature_report_homomorphism_summary(
+    document: &AirDocumentV0,
+    coverage_gaps: &[FeatureReportCoverageGap],
+    obstruction_witnesses: &[FeatureReportObstructionWitness],
+) -> FeatureReportHomomorphismSummary {
+    let relation_entries = document
+        .relations
+        .iter()
+        .filter(|relation| relation.extraction_rule.as_deref() == Some("archmap-v0-projection"))
+        .count();
+    let object_entries = document
+        .components
+        .iter()
+        .filter(|component| component.kind == "archmap-component")
+        .count();
+    let unmeasured_boundaries = coverage_gaps
+        .iter()
+        .filter(|gap| gap.measurement_boundary == "unmeasured")
+        .map(|gap| gap.layer.clone())
+        .chain(
+            document
+                .coverage
+                .layers
+                .iter()
+                .filter(|layer| layer.measurement_boundary == "unmeasured")
+                .map(|layer| layer.layer.clone()),
+        )
+        .collect::<Vec<_>>();
+    let unsupported_boundaries = coverage_gaps
+        .iter()
+        .flat_map(|gap| gap.unsupported_constructs.clone())
+        .chain(
+            document
+                .coverage
+                .layers
+                .iter()
+                .flat_map(|layer| layer.unsupported_constructs.clone()),
+        )
+        .collect::<Vec<_>>();
+    let forgetful_boundaries = document
+        .claims
+        .iter()
+        .flat_map(|claim| claim.exactness_assumptions.clone())
+        .filter(|assumption| !assumption.trim().is_empty())
+        .collect::<Vec<_>>();
+    let obstruction_refs = obstruction_witnesses
+        .iter()
+        .map(|witness| witness.witness_id.clone())
+        .collect::<Vec<_>>();
+    let classification = if !obstruction_refs.is_empty() {
+        "nonHomomorphic"
+    } else if !unmeasured_boundaries.is_empty() || !unsupported_boundaries.is_empty() {
+        "partial"
+    } else if !forgetful_boundaries.is_empty() {
+        "lossy"
+    } else {
+        "homomorphic"
+    };
+    let next_evidence = if classification == "homomorphic" {
+        Vec::new()
+    } else {
+        vec!["supply ArchMap evidence for unmeasured or lossy map families".to_string()]
+    };
+
+    FeatureReportHomomorphismSummary {
+        classification: classification.to_string(),
+        domain: "ArchMap selected source universe".to_string(),
+        codomain: document.feature.description.clone().unwrap_or_else(|| {
+            "AAT observable signature / obstruction / boundary universe".to_string()
+        }),
+        map_families: vec![
+            FeatureReportHomomorphismFamily {
+                map_family: "object".to_string(),
+                entry_count: object_entries,
+                measured_count: object_entries,
+                unmeasured_count: 0,
+                lossy_count: 0,
+            },
+            FeatureReportHomomorphismFamily {
+                map_family: "relation".to_string(),
+                entry_count: relation_entries,
+                measured_count: relation_entries,
+                unmeasured_count: 0,
+                lossy_count: document
+                    .claims
+                    .iter()
+                    .filter(|claim| !claim.exactness_assumptions.is_empty())
+                    .count(),
+            },
+        ],
+        preserved_structure_refs: document
+            .claims
+            .iter()
+            .flat_map(|claim| claim.coverage_assumptions.clone())
+            .collect(),
+        obstruction_refs,
+        forgetful_boundaries,
+        unmeasured_boundaries,
+        unsupported_boundaries,
+        next_evidence,
+        non_conclusions: vec![
+            "ArchMap homomorphism summary is review evidence, not architecture ground truth"
+                .to_string(),
+            "homomorphic classification is bounded to the selected source and AAT codomain"
+                .to_string(),
+        ],
     }
 }
 

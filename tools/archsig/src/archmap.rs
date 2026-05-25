@@ -7,9 +7,12 @@ use crate::{
     AirComponent, AirCoverage, AirCoverageLayer, AirDocumentV0, AirEvidence, AirExtension,
     AirFeature, AirIdPolicies, AirNonfillabilityWitness, AirOperationTrace, AirPolicies,
     AirRelation, AirRevision, AirSemanticDiagram, AirSignature, ArchMapConflict, ArchMapDocumentV0,
-    ArchMapLeanPreservationChecklistEntry, ArchMapLeanPreservationVocabularyEntry, ArchMapMapItem,
-    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
-    ArchMapValidationSummary, Sig0Document, ValidationCheck,
+    ArchMapHomomorphismDiagnosticsV0, ArchMapHomomorphismFamilySummaryV0,
+    ArchMapHomomorphismMapEntryV0, ArchMapHomomorphismPreservationClaimV0,
+    ArchMapHomomorphismUniverseV0, ArchMapHomomorphismV0, ArchMapLeanPreservationChecklistEntry,
+    ArchMapLeanPreservationVocabularyEntry, ArchMapMapItem, ArchMapSourceInventoryV0,
+    ArchMapSourceRef, ArchMapValidationReportV0, ArchMapValidationSummary, Sig0Document,
+    ValidationCheck,
 };
 
 pub struct ArchMapSourceInventoryInput<'a> {
@@ -42,6 +45,9 @@ pub fn validate_archmap_report(
         check_formal_promotion_guardrail(document),
         check_projection_separation(document),
     ];
+    let homomorphism = archmap_homomorphism(document);
+    let homomorphism_diagnostics = archmap_homomorphism_diagnostics(document, &homomorphism, sig0);
+    let homomorphism_checks = vec![check_homomorphism_diagnostics(&homomorphism_diagnostics)];
 
     let mut all_checks = Vec::new();
     all_checks.append(&mut source_inventory_checks.clone());
@@ -50,6 +56,7 @@ pub fn validate_archmap_report(
     all_checks.extend(semantic_coverage_checks.clone());
     all_checks.extend(conflict_checks.clone());
     all_checks.extend(formal_promotion_guardrail_checks.clone());
+    all_checks.extend(homomorphism_checks);
 
     let failed_check_count = count_checks(&all_checks, "fail");
     let warning_check_count = count_checks(&all_checks, "warn");
@@ -72,15 +79,262 @@ pub fn validate_archmap_report(
         semantic_coverage_checks,
         conflict_checks,
         formal_promotion_guardrail_checks,
+        homomorphism_diagnostics: homomorphism_diagnostics.clone(),
         summary: ArchMapValidationSummary {
             result: result.to_string(),
             map_item_count: document.map_items.len(),
+            homomorphism_classification: homomorphism_diagnostics.classification,
             conflict_count: explicit_and_derived_conflicts(document, sig0).len(),
             failed_check_count,
             warning_check_count,
         },
         non_conclusions: archmap_non_conclusions(document),
     }
+}
+
+pub fn archmap_homomorphism(document: &ArchMapDocumentV0) -> ArchMapHomomorphismV0 {
+    if !document.homomorphism.object_map.is_empty()
+        || !document.homomorphism.relation_map.is_empty()
+        || !document.homomorphism.law_map.is_empty()
+        || !document.homomorphism.obstruction_map.is_empty()
+        || !document.homomorphism.signature_axis_map.is_empty()
+    {
+        return document.homomorphism.clone();
+    }
+
+    let domain_refs = document
+        .source_universe
+        .included_refs
+        .iter()
+        .map(archmap_source_ref_label)
+        .collect();
+    let codomain_refs = document
+        .target_universe
+        .selected_layers
+        .iter()
+        .map(|layer| format!("aat-layer:{layer}"))
+        .collect();
+    let mut hom = ArchMapHomomorphismV0 {
+        reading: "bounded AAT homomorphism derived from legacy mapItems".to_string(),
+        domain: ArchMapHomomorphismUniverseV0 {
+            universe_id: format!("source:{}", document.architecture_id),
+            description: "selected source architecture evidence".to_string(),
+            refs: domain_refs,
+            boundary: document.source_universe.selection_boundary.clone(),
+        },
+        codomain: ArchMapHomomorphismUniverseV0 {
+            universe_id: format!("aat:{}", document.architecture_id),
+            description: document.target_universe.representation.clone(),
+            refs: codomain_refs,
+            boundary: "selected AAT observable universe".to_string(),
+        },
+        object_map: Vec::new(),
+        relation_map: Vec::new(),
+        law_map: Vec::new(),
+        obstruction_map: Vec::new(),
+        signature_axis_map: Vec::new(),
+        preservation_claims: Vec::new(),
+        forgetful_boundary: Vec::new(),
+        unmeasured_boundary: document.coverage.unmeasured_layers.clone(),
+        unsupported_boundary: document.coverage.unsupported_constructs.clone(),
+        non_conclusions: archmap_non_conclusions(document),
+    };
+
+    for item in &document.map_items {
+        let entry = ArchMapHomomorphismMapEntryV0 {
+            map_entry_id: item.map_item_id.clone(),
+            map_family: archmap_item_map_family(item).to_string(),
+            source_ref: item
+                .source_refs
+                .first()
+                .map(archmap_source_ref_label)
+                .unwrap_or_else(|| "source:unspecified".to_string()),
+            target_ref: archmap_target_ref_label(item),
+            preserves: item.preserves.clone(),
+            forgets: item.forgets.clone(),
+            measurement_boundary: item.measurement_boundary.clone(),
+            claim_classification: item.claim_classification.clone(),
+            evidence_refs: item.evidence_refs.clone(),
+            non_conclusions: archmap_item_non_conclusions(item),
+        };
+        for forgets in &item.forgets {
+            hom.forgetful_boundary
+                .push(format!("{} forgets {forgets}", item.map_item_id));
+        }
+        if item.measurement_boundary == "unmeasured" || item.claim_classification == "unmeasured" {
+            hom.unmeasured_boundary.push(item.map_item_id.clone());
+        }
+        hom.preservation_claims
+            .extend(
+                item.preserves
+                    .iter()
+                    .enumerate()
+                    .map(
+                        |(index, preserved_structure)| ArchMapHomomorphismPreservationClaimV0 {
+                            claim_id: format!("preservation-{}-{}", item.map_item_id, index + 1),
+                            map_entry_ref: item.map_item_id.clone(),
+                            preserved_structure: preserved_structure.clone(),
+                            status: archmap_item_homomorphism_status(document, item).to_string(),
+                            boundary: item.measurement_boundary.clone(),
+                            missing_evidence: item.missing_evidence.clone(),
+                            non_conclusions: archmap_item_non_conclusions(item),
+                        },
+                    ),
+            );
+
+        match entry.map_family.as_str() {
+            "object" => hom.object_map.push(entry),
+            "relation" => hom.relation_map.push(entry),
+            "law" => hom.law_map.push(entry),
+            "obstruction" => hom.obstruction_map.push(entry),
+            "signatureAxis" => hom.signature_axis_map.push(entry),
+            _ => hom.signature_axis_map.push(entry),
+        }
+    }
+
+    hom.forgetful_boundary.sort();
+    hom.forgetful_boundary.dedup();
+    hom.unmeasured_boundary.sort();
+    hom.unmeasured_boundary.dedup();
+    hom.unsupported_boundary.sort();
+    hom.unsupported_boundary.dedup();
+    hom
+}
+
+fn archmap_homomorphism_diagnostics(
+    document: &ArchMapDocumentV0,
+    hom: &ArchMapHomomorphismV0,
+    sig0: Option<&Sig0Document>,
+) -> ArchMapHomomorphismDiagnosticsV0 {
+    let families = [
+        ("object", hom.object_map.as_slice()),
+        ("relation", hom.relation_map.as_slice()),
+        ("law", hom.law_map.as_slice()),
+        ("obstruction", hom.obstruction_map.as_slice()),
+        ("signatureAxis", hom.signature_axis_map.as_slice()),
+    ];
+    let map_family_summaries = families
+        .iter()
+        .map(|(family, entries)| homomorphism_family_summary(family, entries))
+        .collect::<Vec<_>>();
+    let mut preservation_failures = hom
+        .preservation_claims
+        .iter()
+        .filter(|claim| claim.status == "nonHomomorphic" || claim.status == "blocked")
+        .map(|claim| {
+            format!(
+                "{} does not preserve {}",
+                claim.map_entry_ref, claim.preserved_structure
+            )
+        })
+        .collect::<Vec<_>>();
+    preservation_failures.extend(
+        explicit_and_derived_conflicts(document, sig0)
+            .into_iter()
+            .map(|conflict| format!("{}: {}", conflict.category, conflict.subject_ref)),
+    );
+    preservation_failures.sort();
+    preservation_failures.dedup();
+
+    let mut next_evidence = Vec::new();
+    if !hom.unmeasured_boundary.is_empty() {
+        next_evidence.push("supply evidence for unmeasured homomorphism map families".to_string());
+    }
+    if !hom.unsupported_boundary.is_empty() {
+        next_evidence
+            .push("declare adapter or manual evidence for unsupported constructs".to_string());
+    }
+    if !preservation_failures.is_empty() {
+        next_evidence.push("review non-homomorphic preservation failures".to_string());
+    }
+
+    let classification = if !preservation_failures.is_empty() {
+        "nonHomomorphic"
+    } else if !hom.unmeasured_boundary.is_empty() || !hom.unsupported_boundary.is_empty() {
+        "partial"
+    } else if !hom.forgetful_boundary.is_empty() {
+        "lossy"
+    } else {
+        "homomorphic"
+    };
+
+    ArchMapHomomorphismDiagnosticsV0 {
+        classification: classification.to_string(),
+        reading: if hom.reading.is_empty() {
+            "bounded AAT homomorphism".to_string()
+        } else {
+            hom.reading.clone()
+        },
+        domain_ref: hom.domain.universe_id.clone(),
+        codomain_ref: hom.codomain.universe_id.clone(),
+        map_family_summaries,
+        preservation_failures,
+        forgetful_boundaries: hom.forgetful_boundary.clone(),
+        unmeasured_boundaries: hom.unmeasured_boundary.clone(),
+        unsupported_boundaries: hom.unsupported_boundary.clone(),
+        obstruction_refs: hom
+            .obstruction_map
+            .iter()
+            .map(|entry| entry.target_ref.clone())
+            .collect(),
+        signature_axis_refs: hom
+            .signature_axis_map
+            .iter()
+            .map(|entry| entry.target_ref.clone())
+            .collect(),
+        next_evidence,
+        non_conclusions: hom.non_conclusions.clone(),
+    }
+}
+
+fn homomorphism_family_summary(
+    family: &str,
+    entries: &[ArchMapHomomorphismMapEntryV0],
+) -> ArchMapHomomorphismFamilySummaryV0 {
+    ArchMapHomomorphismFamilySummaryV0 {
+        map_family: family.to_string(),
+        entry_count: entries.len(),
+        measured_count: entries
+            .iter()
+            .filter(|entry| entry.claim_classification == "measured")
+            .count(),
+        unmeasured_count: entries
+            .iter()
+            .filter(|entry| {
+                entry.claim_classification == "unmeasured"
+                    || entry.measurement_boundary == "unmeasured"
+            })
+            .count(),
+        assumed_count: entries
+            .iter()
+            .filter(|entry| entry.claim_classification == "assumed")
+            .count(),
+        lossy_count: entries
+            .iter()
+            .filter(|entry| !entry.forgets.is_empty())
+            .count(),
+    }
+}
+
+fn check_homomorphism_diagnostics(
+    diagnostics: &ArchMapHomomorphismDiagnosticsV0,
+) -> ValidationCheck {
+    let result = if diagnostics.classification == "nonHomomorphic" {
+        "warn"
+    } else {
+        "pass"
+    };
+    let mut check = validation_check(
+        "archmap-homomorphism-diagnostics",
+        "ArchMap is read as a bounded AAT homomorphism with explicit loss and boundary diagnostics",
+        result,
+    );
+    if diagnostics.classification == "nonHomomorphic" {
+        check.reason = Some(
+            "non-homomorphic preservation failures are retained as review evidence".to_string(),
+        );
+    }
+    check
 }
 
 pub fn build_air_from_archmap(
@@ -1548,12 +1802,71 @@ fn archmap_item_non_conclusions(item: &ArchMapMapItem) -> Vec<String> {
 
 fn archmap_non_conclusions(document: &ArchMapDocumentV0) -> Vec<String> {
     let mut non_conclusions = document.non_conclusions.clone();
+    non_conclusions.extend(document.homomorphism.non_conclusions.clone());
     non_conclusions.extend(document.generation_boundary.non_conclusions.clone());
+    non_conclusions.push(
+        "ArchMap is a bounded AAT homomorphism candidate, not architecture ground truth"
+            .to_string(),
+    );
     non_conclusions.push("ArchMap validation does not prove architecture lawfulness".to_string());
     non_conclusions.push("ArchMap validation does not prove semantic completeness".to_string());
     non_conclusions.sort();
     non_conclusions.dedup();
     non_conclusions
+}
+
+fn archmap_item_map_family(item: &ArchMapMapItem) -> &'static str {
+    let lean_field = archmap_item_lean_package_field(item);
+    match lean_field {
+        "ObjectPreservation" => "object",
+        "RelationPreservation" | "SemanticDiagramPreservation" => "relation",
+        "LawPolicyPreservation" => "law",
+        "NonfillabilityWitnessPreservation" => "obstruction",
+        "FlatnessPreconditionPreservation" | "CoverageExactnessBoundary" => "signatureAxis",
+        _ => "signatureAxis",
+    }
+}
+
+fn archmap_item_homomorphism_status(
+    document: &ArchMapDocumentV0,
+    item: &ArchMapMapItem,
+) -> &'static str {
+    if item.conflict_category.is_some() {
+        "nonHomomorphic"
+    } else if !item.missing_evidence.is_empty()
+        || archmap_item_has_unmeasured_coverage(document, item)
+    {
+        "blocked"
+    } else if item.claim_classification == "assumed" {
+        "assumed"
+    } else {
+        "preserved"
+    }
+}
+
+fn archmap_source_ref_label(source_ref: &ArchMapSourceRef) -> String {
+    if let Some(artifact_id) = &source_ref.artifact_id {
+        return artifact_id.clone();
+    }
+    if let Some(path) = &source_ref.path {
+        return path.clone();
+    }
+    source_ref.kind.clone()
+}
+
+fn archmap_target_ref_label(item: &ArchMapMapItem) -> String {
+    item.target_ref
+        .subject_ref
+        .clone()
+        .or_else(|| item.target_ref.id.clone())
+        .or_else(|| {
+            item.target_ref
+                .from
+                .as_ref()
+                .zip(item.target_ref.to.as_ref())
+                .map(|(from, to)| format!("{from}->{to}"))
+        })
+        .unwrap_or_else(|| item.map_item_id.clone())
 }
 
 fn is_aat_facing_item(item: &ArchMapMapItem) -> bool {

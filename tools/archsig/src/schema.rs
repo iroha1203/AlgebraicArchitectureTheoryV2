@@ -1162,11 +1162,90 @@ pub struct ArchMapDocumentV0 {
     pub source_universe: ArchMapSourceUniverse,
     pub target_universe: ArchMapTargetUniverse,
     #[serde(default)]
+    pub homomorphism: ArchMapHomomorphismV0,
+    #[serde(default)]
     pub map_items: Vec<ArchMapMapItem>,
     #[serde(default)]
     pub coverage: ArchMapCoverage,
     #[serde(default)]
     pub conflicts: Vec<ArchMapConflict>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapHomomorphismV0 {
+    #[serde(default)]
+    pub reading: String,
+    #[serde(default)]
+    pub domain: ArchMapHomomorphismUniverseV0,
+    #[serde(default)]
+    pub codomain: ArchMapHomomorphismUniverseV0,
+    #[serde(default)]
+    pub object_map: Vec<ArchMapHomomorphismMapEntryV0>,
+    #[serde(default)]
+    pub relation_map: Vec<ArchMapHomomorphismMapEntryV0>,
+    #[serde(default)]
+    pub law_map: Vec<ArchMapHomomorphismMapEntryV0>,
+    #[serde(default)]
+    pub obstruction_map: Vec<ArchMapHomomorphismMapEntryV0>,
+    #[serde(default)]
+    pub signature_axis_map: Vec<ArchMapHomomorphismMapEntryV0>,
+    #[serde(default)]
+    pub preservation_claims: Vec<ArchMapHomomorphismPreservationClaimV0>,
+    #[serde(default)]
+    pub forgetful_boundary: Vec<String>,
+    #[serde(default)]
+    pub unmeasured_boundary: Vec<String>,
+    #[serde(default)]
+    pub unsupported_boundary: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapHomomorphismUniverseV0 {
+    #[serde(default)]
+    pub universe_id: String,
+    #[serde(default)]
+    pub description: String,
+    #[serde(default)]
+    pub refs: Vec<String>,
+    #[serde(default)]
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapHomomorphismMapEntryV0 {
+    pub map_entry_id: String,
+    pub map_family: String,
+    pub source_ref: String,
+    pub target_ref: String,
+    #[serde(default)]
+    pub preserves: Vec<String>,
+    #[serde(default)]
+    pub forgets: Vec<String>,
+    pub measurement_boundary: String,
+    pub claim_classification: String,
+    #[serde(default)]
+    pub evidence_refs: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapHomomorphismPreservationClaimV0 {
+    pub claim_id: String,
+    pub map_entry_ref: String,
+    pub preserved_structure: String,
+    pub status: String,
+    pub boundary: String,
+    #[serde(default)]
+    pub missing_evidence: Vec<String>,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
 }
@@ -1383,8 +1462,38 @@ pub struct ArchMapValidationReportV0 {
     pub semantic_coverage_checks: Vec<ValidationCheck>,
     pub conflict_checks: Vec<ValidationCheck>,
     pub formal_promotion_guardrail_checks: Vec<ValidationCheck>,
+    pub homomorphism_diagnostics: ArchMapHomomorphismDiagnosticsV0,
     pub summary: ArchMapValidationSummary,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapHomomorphismDiagnosticsV0 {
+    pub classification: String,
+    pub reading: String,
+    pub domain_ref: String,
+    pub codomain_ref: String,
+    pub map_family_summaries: Vec<ArchMapHomomorphismFamilySummaryV0>,
+    pub preservation_failures: Vec<String>,
+    pub forgetful_boundaries: Vec<String>,
+    pub unmeasured_boundaries: Vec<String>,
+    pub unsupported_boundaries: Vec<String>,
+    pub obstruction_refs: Vec<String>,
+    pub signature_axis_refs: Vec<String>,
+    pub next_evidence: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapHomomorphismFamilySummaryV0 {
+    pub map_family: String,
+    pub entry_count: usize,
+    pub measured_count: usize,
+    pub unmeasured_count: usize,
+    pub assumed_count: usize,
+    pub lossy_count: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1392,6 +1501,7 @@ pub struct ArchMapValidationReportV0 {
 pub struct ArchMapValidationSummary {
     pub result: String,
     pub map_item_count: usize,
+    pub homomorphism_classification: String,
     pub conflict_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
@@ -1484,6 +1594,7 @@ pub struct FeatureExtensionReportV0 {
     pub feature: AirFeature,
     pub review_summary: FeatureReportReviewSummary,
     pub architecture_summary: FeatureReportArchitectureSummary,
+    pub homomorphism_summary: FeatureReportHomomorphismSummary,
     #[serde(default)]
     pub runtime_summary: FeatureReportRuntimeSummary,
     pub interpreted_extension: FeatureReportInterpretedExtension,
@@ -1505,6 +1616,32 @@ pub struct FeatureExtensionReportV0 {
     pub repair_suggestions: Vec<FeatureReportRepairSuggestion>,
     pub empirical_annotations: Vec<String>,
     pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportHomomorphismSummary {
+    pub classification: String,
+    pub domain: String,
+    pub codomain: String,
+    pub map_families: Vec<FeatureReportHomomorphismFamily>,
+    pub preserved_structure_refs: Vec<String>,
+    pub obstruction_refs: Vec<String>,
+    pub forgetful_boundaries: Vec<String>,
+    pub unmeasured_boundaries: Vec<String>,
+    pub unsupported_boundaries: Vec<String>,
+    pub next_evidence: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportHomomorphismFamily {
+    pub map_family: String,
+    pub entry_count: usize,
+    pub measured_count: usize,
+    pub unmeasured_count: usize,
+    pub lossy_count: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

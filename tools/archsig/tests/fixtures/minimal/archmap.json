@@ -113,6 +113,168 @@
     "representation": "aat-air-v0",
     "selectedLayers": ["static", "semantic", "policy", "runtime"]
   },
+  "homomorphism": {
+    "reading": "bounded AAT homomorphism from selected source architecture evidence to AAT observable signature, obstruction, and boundary space",
+    "domain": {
+      "universeId": "source:archmap-fixture-repo",
+      "description": "route, service, policy document, and contract-test source evidence",
+      "refs": ["src-route-users", "src-service-user", "doc-architecture", "test-user-contract"],
+      "boundary": "bounded ArchMap MVP fixture over route, service, policy doc, and contract test"
+    },
+    "codomain": {
+      "universeId": "aat:archmap-fixture-repo",
+      "description": "AAT object / relation / law / obstruction / signature-axis review universe",
+      "refs": ["aat-object", "aat-relation", "aat-law", "aat-obstruction", "aat-signature-axis"],
+      "boundary": "selected AAT observable universe; not global architecture truth"
+    },
+    "objectMap": [
+      {
+        "mapEntryId": "object-route-users",
+        "mapFamily": "object",
+        "sourceRef": "src-route-users",
+        "targetRef": "route.users",
+        "preserves": ["component identity"],
+        "forgets": ["method count"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["src-route-users"],
+        "nonConclusions": ["object map is bounded to the selected source universe"]
+      },
+      {
+        "mapEntryId": "object-service-user",
+        "mapFamily": "object",
+        "sourceRef": "src-service-user",
+        "targetRef": "service.user",
+        "preserves": ["component identity"],
+        "forgets": ["constructor details"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["src-service-user"],
+        "nonConclusions": ["object map is not complete service discovery"]
+      }
+    ],
+    "relationMap": [
+      {
+        "mapEntryId": "relation-route-service",
+        "mapFamily": "relation",
+        "sourceRef": "src-route-users",
+        "targetRef": "semantic.route.users->service.user",
+        "preserves": ["request-to-service semantic dependency"],
+        "forgets": ["call count", "runtime frequency"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["src-route-users", "src-service-user"],
+        "nonConclusions": ["semantic relation map does not prove runtime relation"]
+      },
+      {
+        "mapEntryId": "semantic-create-user-diagram",
+        "mapFamily": "relation",
+        "sourceRef": "test-user-contract",
+        "targetRef": "semantic.diagram.create_user",
+        "preserves": ["contract-test observation"],
+        "forgets": ["all production traces"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["test-user-contract"],
+        "nonConclusions": ["diagram map is not global semantic completeness"]
+      }
+    ],
+    "lawMap": [
+      {
+        "mapEntryId": "policy-layered-route-service",
+        "mapFamily": "law",
+        "sourceRef": "doc-architecture",
+        "targetRef": "policy.layered.route_to_service",
+        "preserves": ["Layered Architecture dependency direction", "SOLID DIP local policy boundary"],
+        "forgets": ["framework adapter implementation"],
+        "measurementBoundary": "unmeasured",
+        "claimClassification": "assumed",
+        "evidenceRefs": ["doc-architecture"],
+        "nonConclusions": ["policy assumption is not measured compliance"]
+      }
+    ],
+    "obstructionMap": [
+      {
+        "mapEntryId": "nonfillability-user-saga",
+        "mapFamily": "obstruction",
+        "sourceRef": "test-user-contract",
+        "targetRef": "witness-user-saga-missing-compensation",
+        "preserves": ["obstruction witness"],
+        "forgets": ["root-cause analysis"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["test-user-contract"],
+        "nonConclusions": ["obstruction map is not incident causality"]
+      }
+    ],
+    "signatureAxisMap": [
+      {
+        "mapEntryId": "aat-flatness-precondition",
+        "mapFamily": "signatureAxis",
+        "sourceRef": "test-user-contract",
+        "targetRef": "signature.semantic.flatnessPrecondition",
+        "preserves": ["AAT signature axis", "flatness precondition boundary"],
+        "forgets": ["global semantic completeness"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["test-user-contract"],
+        "nonConclusions": ["signature axis map does not discharge zero-curvature preconditions"]
+      },
+      {
+        "mapEntryId": "runtime-unmeasured-boundary",
+        "mapFamily": "signatureAxis",
+        "sourceRef": "src-service-user",
+        "targetRef": "runtime.service.user->db.users",
+        "preserves": ["runtime dependency boundary"],
+        "forgets": ["runtime frequency"],
+        "measurementBoundary": "unmeasured",
+        "claimClassification": "unmeasured",
+        "evidenceRefs": ["src-service-user"],
+        "nonConclusions": ["runtime boundary is not measured zero"]
+      }
+    ],
+    "preservationClaims": [
+      {
+        "claimId": "preservation-object-route-users",
+        "mapEntryRef": "object-route-users",
+        "preservedStructure": "component identity",
+        "status": "preserved",
+        "boundary": "selected source component",
+        "missingEvidence": [],
+        "nonConclusions": ["component identity preservation is bounded"]
+      },
+      {
+        "claimId": "preservation-policy-layered-route-service",
+        "mapEntryRef": "policy-layered-route-service",
+        "preservedStructure": "Layered Architecture dependency direction",
+        "status": "assumed",
+        "boundary": "policy document evidence",
+        "missingEvidence": [],
+        "nonConclusions": ["policy preservation is not measured compliance"]
+      },
+      {
+        "claimId": "preservation-runtime-boundary",
+        "mapEntryRef": "runtime-unmeasured-boundary",
+        "preservedStructure": "runtime dependency boundary",
+        "status": "blocked",
+        "boundary": "runtime trace unavailable",
+        "missingEvidence": ["runtime trace not supplied"],
+        "nonConclusions": ["unmeasured runtime map is not measured zero"]
+      }
+    ],
+    "forgetfulBoundary": [
+      "method count",
+      "constructor details",
+      "runtime frequency",
+      "global semantic completeness"
+    ],
+    "unmeasuredBoundary": ["runtime", "policy-layered-route-service", "runtime-unmeasured-boundary"],
+    "unsupportedBoundary": ["dynamic plugin loading"],
+    "nonConclusions": [
+      "ArchMap homomorphism is bounded to selected source evidence",
+      "homomorphism diagnostics do not prove architecture lawfulness"
+    ]
+  },
   "mapItems": [
     {
       "mapItemId": "object-route-users",
