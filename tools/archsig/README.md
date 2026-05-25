@@ -1,6 +1,6 @@
 # ArchSig
 
-`archsig` is an AAT structural review CLI. Its primary surface is an ArchMap-first workflow: supplied `archmap-v0` evidence is validated, projected to AIR, checked against theorem-precondition boundaries, summarized as a Feature Extension Report, and bundled as AAT observable review evidence.
+`archsig` is an AAT structural review CLI. Its primary surface is an ArchMap-homomorphism workflow: supplied `archmap-v0` evidence is read as a bounded map from selected source architecture evidence into the AAT object / relation / law / obstruction / signature-axis world. ArchSig diagnoses what that map preserves, what it forgets, which parts are unmeasured or unsupported, and which obstruction witnesses or next evidence should be reviewed.
 
 ArchSig is not a Lean prover, extractor-completeness claim, architecture-lawfulness oracle, merge approval system, or SFT forecast engine. FieldSig owns SFT forecast, IntentMap, workflow evidence, operational feedback, dynamics, governance, and calibration under `tools/fieldsig`.
 
@@ -8,14 +8,14 @@ ArchSig is not a Lean prover, extractor-completeness claim, architecture-lawfuln
 
 | Surface | Current role | Boundary |
 | --- | --- | --- |
-| ArchMap primary workflow | `archmap-workflow`, `archmap`, `air-from-archmap`, `validate-air`, `theorem-check`, `feature-report`, `aat-observable-bundle` | Supplied evidence and validation reports are review artifacts, not semantic truth or Lean theorem discharge. The workflow bundle is built from the input ArchMap and generated reports, not from the static fixture. |
+| ArchMap homomorphism workflow | `archmap-workflow`, `archmap`, `air-from-archmap`, `validate-air`, `theorem-check`, `feature-report`, `aat-observable-bundle` | ArchMap is the canonical bounded AAT homomorphism input. Diagnostics report homomorphic / partial / lossy / non-homomorphic status, preservation failures, forgetful boundaries, unmeasured boundaries, unsupported boundaries, AAT signature axes, and obstruction refs. |
 | Bounded adapters | `adapter-scan` for Lean / Python import-graph Sig0 evidence, optional framework adapter evidence | Adapter output is an evidence supplier for conflict checks or legacy diff workflows; it retains `coverageBoundary`, `unsupportedConstructs`, `missingEvidence`, and `nonConclusions`, but it is not the ArchSig primary surface and does not produce a complete `ComponentUniverse`. |
 | Revision comparison | `validate`, `snapshot`, `signature-diff` over explicit Sig0 adapter artifacts | Diff values must be read with measured / unmeasured boundaries and non-conclusions. |
 | Review support | policy, law violation, policy decision, PR comment, PR quality analysis, schema compatibility | Tool output supports review; humans remain responsible for risk acceptance and product decisions. |
 
 ## Quick Start
 
-Run the primary ArchMap workflow:
+Run the primary ArchMap homomorphism workflow:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
@@ -32,6 +32,8 @@ This writes:
 - `.archsig/archmap-primary/feature-report.json`
 - `.archsig/archmap-primary/aat-observable-bundle.json`
 - `.archsig/archmap-primary/aat-observable-bundle-validation.json`
+
+The validation report contains `homomorphismDiagnostics`; the Feature Extension Report contains `homomorphismSummary`. These are user-facing AAT diagnostics, not proof objects.
 
 When language import-graph evidence is needed, run it explicitly as an adapter:
 

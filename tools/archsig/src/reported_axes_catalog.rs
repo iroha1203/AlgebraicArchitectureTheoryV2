@@ -84,6 +84,26 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
                 "AAT-facing projection is a bounded preservation checklist, not JSON proof parsing",
             ],
         ),
+        axis(
+            "archMapHomomorphismClassification",
+            "archmap",
+            "homomorphic | partial | lossy | nonHomomorphic | unmeasured",
+            vec![
+                "ArchMap Validation Report",
+                "Feature Extension Report",
+                "AAT Observable Bundle",
+            ],
+            "unmeasured",
+            vec![
+                "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, and signature-axis map",
+                "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit",
+            ],
+            vec!["ArchMapModel.AATHomomorphicRelation"],
+            vec![
+                "homomorphic is bounded to the selected ArchMap domain and codomain",
+                "partial and lossy are review states, not failure to parse JSON",
+            ],
+        ),
     ];
 
     DetectableValuesReportedAxesCatalogV0 {
@@ -150,6 +170,20 @@ fn frozen_fixtures() -> Vec<BenchmarkSuiteFixtureV0> {
             vec![
                 "aiSessionTraceability:unmeasured",
                 "boundaryViolationCount:unmeasured",
+            ],
+        ),
+        fixture(
+            "archmap-homomorphism-expressiveness",
+            "tools/archsig/tests/fixtures/expressiveness/archmap_expressiveness_suite_v0.json",
+            "ArchMap",
+            vec![
+                "AAT concept coverage matrix",
+                "homomorphism boundary preservation",
+            ],
+            vec![
+                "archMapHomomorphismClassification:partial",
+                "runtime:unmeasured",
+                "dynamic:unsupported",
             ],
         ),
     ]

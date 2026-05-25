@@ -1,17 +1,17 @@
 # ArchSig Artifacts And Boundaries
 
-ArchSig owns AAT structural review artifacts. Its primary artifact path is ArchMap -> AIR -> theorem-precondition check -> Feature Extension Report -> AAT Observable Bundle.
+ArchSig owns AAT structural review artifacts. Its primary artifact path is ArchMap homomorphism -> AIR -> theorem-precondition check -> Feature Extension Report -> AAT Observable Bundle.
 
 ## Primary Artifacts
 
 | artifact | schemaVersion | role |
 | --- | --- | --- |
-| ArchMap | `archmap-v0` | Supplied structural map from selected sources to architecture objects, relations, semantic diagrams, missing evidence, coverage boundaries, and non-conclusions. |
-| ArchMap validation report | `archmap-validation-report-v0` | Source inventory, source refs, semantic coverage, conflict, projection separation, and formal-promotion guardrail checks. |
+| ArchMap | `archmap-v0` | Bounded homomorphism candidate from selected source architecture evidence to AAT object / relation / law / obstruction / signature-axis space. It records domain, codomain, object map, relation map, law map, obstruction map, signature-axis map, preservation claims, forgetful boundary, unmeasured boundary, unsupported boundary, and non-conclusions. |
+| ArchMap validation report | `archmap-validation-report-v0` | Source inventory, source refs, semantic coverage, conflict, projection separation, formal-promotion guardrail checks, and user-facing `homomorphismDiagnostics`. |
 | AIR | `aat-air-v0` | Architecture Interpretation Record connecting ArchMap evidence to review claims, coverage, semantic paths, and theorem-boundary data. |
 | AIR validation report | `aat-air-validation-report-v0` | Reference, claim, coverage, and theorem-promotion guardrail checks. |
 | Theorem precondition check | `theorem-precondition-check-report-v0` | Boundary report for formal theorem-shaped claims. |
-| Feature Extension Report | `feature-extension-report-v0` | Reviewer-facing structural movement report with coverage gaps and theorem-precondition results. |
+| Feature Extension Report | `feature-extension-report-v0` | Reviewer-facing structural movement report with coverage gaps, homomorphism summary, obstruction refs, and theorem-precondition results. |
 | AAT Observable Bundle | `aat-observable-bundle-v0` | AAT concept / witness / selected universe review bundle with deterministic, LLM, human, and formal-proof responsibility boundaries. |
 | PR quality analysis | `pr-quality-analysis-report-v0` | Review cue projection from ArchMap / AIR / theorem-check / feature-report / policy refs. |
 
@@ -32,4 +32,4 @@ Adapter output must preserve coverage boundary, unsupported constructs, missing 
 
 FieldSig consumes ArchSig outputs through JSON artifact refs. ArchSig does not expose SFT / workflow commands or compatibility aliases. In particular, `operation-support-estimate-v0`, `forecast-cone-skeleton-v0`, `consequence-envelope-report-v0`, `software-field-measurement-v0`, `fieldsig-run-manifest-v0`, operational feedback, dynamics, governance, and calibration artifacts belong to FieldSig.
 
-Validation pass for either tool is not a Lean proof, forecast correctness proof, probability claim, causal theorem, global safety guarantee, semantic correctness proof, extractor-completeness proof, or replacement for CI / tests / human review.
+Validation pass for either tool is not a Lean proof, forecast correctness proof, probability claim, causal theorem, global safety guarantee, semantic correctness proof, extractor-completeness proof, or replacement for CI / tests / human review. A `homomorphic` classification is bounded to the selected ArchMap domain and codomain; it is not a claim that the repository or deployed system is globally complete.

@@ -108,6 +108,26 @@
         "axis-removal-requires-migration-note",
         "measurement-boundary-change-requires-review"
       ]
+    },
+    {
+      "fixtureId": "archmap-homomorphism-expressiveness",
+      "path": "tools/archsig/tests/fixtures/expressiveness/archmap_expressiveness_suite_v0.json",
+      "artifactKind": "ArchMap",
+      "frozenFor": [
+        "AAT concept coverage matrix",
+        "homomorphism boundary preservation"
+      ],
+      "expectedBoundaries": [
+        "archMapHomomorphismClassification:partial",
+        "runtime:unmeasured",
+        "dynamic:unsupported"
+      ],
+      "updateRuleRefs": [
+        "axis-addition-requires-version-review",
+        "axis-rename-requires-explicit-field-mapping",
+        "axis-removal-requires-migration-note",
+        "measurement-boundary-change-requires-review"
+      ]
     }
   ],
   "updateRules": [
@@ -343,6 +363,43 @@
         "unmeasured axis evidence is not measured-zero evidence",
         "reported axis evidence does not promote a Lean theorem claim"
       ]
+    },
+    {
+      "axisId": "archMapHomomorphismClassification",
+      "layer": "archmap",
+      "valueType": "homomorphic | partial | lossy | nonHomomorphic | unmeasured",
+      "reportedIn": [
+        "ArchMap Validation Report",
+        "Feature Extension Report",
+        "AAT Observable Bundle"
+      ],
+      "allowedMeasurementBoundaries": [
+        "measuredZero",
+        "measuredNonzero",
+        "assumed",
+        "unmeasured",
+        "unavailable",
+        "private",
+        "notComparable",
+        "outOfScope"
+      ],
+      "defaultMeasurementBoundary": "unmeasured",
+      "evidenceRequirements": [
+        "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, and signature-axis map",
+        "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit"
+      ],
+      "theoremRefs": [
+        "ArchMapModel.AATHomomorphicRelation"
+      ],
+      "compatibilityNotes": [
+        "homomorphic is bounded to the selected ArchMap domain and codomain",
+        "partial and lossy are review states, not failure to parse JSON"
+      ],
+      "nonConclusions": [
+        "axis value compatibility does not prove semantic preservation",
+        "unmeasured axis evidence is not measured-zero evidence",
+        "reported axis evidence does not promote a Lean theorem claim"
+      ]
     }
   ],
   "schemaCompatibility": {
@@ -456,6 +513,18 @@
         ],
         "exactnessAssumptions": [
           "AAT-facing projection is a bounded preservation checklist, not JSON proof parsing"
+        ]
+      },
+      {
+        "axisOrLayer": "archMapHomomorphismClassification",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, and signature-axis map",
+          "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit"
+        ],
+        "exactnessAssumptions": [
+          "homomorphic is bounded to the selected ArchMap domain and codomain",
+          "partial and lossy are review states, not failure to parse JSON"
         ]
       }
     ],

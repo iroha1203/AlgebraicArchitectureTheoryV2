@@ -9,6 +9,10 @@ fn fixture_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/minimal")
 }
 
+fn expressiveness_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
+}
+
 #[test]
 fn cli_help_excludes_fieldsig_owned_commands() {
     let output = run_sig0_output(&["--help"]);
@@ -125,6 +129,31 @@ fn cli_runs_archmap_primary_workflow() {
         validation_json["schemaVersion"],
         "archmap-validation-report-v0"
     );
+    assert_eq!(
+        validation_json["homomorphismDiagnostics"]["reading"].as_str(),
+        Some(
+            "bounded AAT homomorphism from selected source architecture evidence to AAT observable signature, obstruction, and boundary space"
+        )
+    );
+    assert!(
+        matches!(
+            validation_json["homomorphismDiagnostics"]["classification"].as_str(),
+            Some("partial" | "nonHomomorphic")
+        ),
+        "ArchMap validation must classify the bounded homomorphism with explicit boundary state"
+    );
+    let family_names = validation_json["homomorphismDiagnostics"]["mapFamilySummaries"]
+        .as_array()
+        .expect("homomorphism family summaries are present")
+        .iter()
+        .map(|entry| entry["mapFamily"].as_str().expect("map family"))
+        .collect::<Vec<_>>();
+    for family in ["object", "relation", "law", "obstruction", "signatureAxis"] {
+        assert!(
+            family_names.contains(&family),
+            "homomorphism diagnostics must retain {family} map family"
+        );
+    }
     assert!(
         matches!(
             validation_json["summary"]["result"].as_str(),
@@ -142,6 +171,19 @@ fn cli_runs_archmap_primary_workflow() {
     );
     let feature_json = read_json(&out_dir.join("feature-report.json"));
     assert_eq!(feature_json["schemaVersion"], "feature-extension-report-v0");
+    assert!(
+        matches!(
+            feature_json["homomorphismSummary"]["classification"].as_str(),
+            Some("partial" | "nonHomomorphic" | "lossy")
+        ),
+        "Feature report must summarize the ArchMap homomorphism boundary"
+    );
+    assert!(
+        feature_json["homomorphismSummary"]["unmeasuredBoundaries"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "homomorphism summary must keep unmeasured boundaries"
+    );
     let bundle_json = read_json(&out_dir.join("aat-observable-bundle.json"));
     assert_eq!(bundle_json["schemaVersion"], "aat-observable-bundle-v0");
     assert_eq!(
@@ -170,6 +212,51 @@ fn cli_runs_archmap_primary_workflow() {
     assert!(source_ref_ids.contains(&"source:archmap:primary"));
     assert!(source_ref_ids.contains(&"source:air:primary"));
     assert!(source_ref_ids.contains(&"source:theorem-check:primary"));
+}
+
+#[test]
+fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
+    let out_dir = temp_dir("archmap-homomorphism-expressiveness");
+    let archmap = expressiveness_root().join("archmap_expressiveness_suite_v0.json");
+    let validation = out_dir.join("archmap-validation.json");
+
+    run_sig0(&[
+        "archmap",
+        "--input",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--out",
+        validation.to_str().expect("validation path is utf-8"),
+    ]);
+
+    let json = read_json(&validation);
+    assert_eq!(
+        json["homomorphismDiagnostics"]["reading"].as_str(),
+        Some("AAT concept coverage matrix for ArchMap bounded homomorphism expressiveness")
+    );
+    let family_names = json["homomorphismDiagnostics"]["mapFamilySummaries"]
+        .as_array()
+        .expect("homomorphism family summaries are array")
+        .iter()
+        .map(|entry| entry["mapFamily"].as_str().expect("map family"))
+        .collect::<Vec<_>>();
+    for family in ["object", "relation", "law", "obstruction", "signatureAxis"] {
+        assert!(
+            family_names.contains(&family),
+            "expressiveness matrix must retain AAT {family} map family"
+        );
+    }
+    assert!(
+        json["homomorphismDiagnostics"]["unsupportedBoundaries"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "unsupported AAT concept coverage must remain explicit"
+    );
+    assert!(
+        json["homomorphismDiagnostics"]["unmeasuredBoundaries"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "unmeasured AAT concept coverage must remain explicit"
+    );
 }
 
 #[test]

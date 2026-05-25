@@ -1,10 +1,10 @@
 # ArchSig Commands
 
-`archsig` is ArchMap-primary. The normal review path starts from supplied `archmap-v0` evidence. Lean / Python import-graph scanning is available only through the explicit `adapter-scan` command as bounded evidence.
+`archsig` is ArchMap-homomorphism-primary. The normal review path starts from supplied `archmap-v0` evidence and reads it as a bounded AAT homomorphism from selected source architecture evidence into AAT object / relation / law / obstruction / signature-axis space. Lean / Python import-graph scanning is available only through the explicit `adapter-scan` command as bounded evidence.
 
 FieldSig owns SFT forecast, IntentMap, workflow evidence, operational feedback, dynamics, governance, and calibration commands under `tools/fieldsig`.
 
-## ArchMap Primary Workflow
+## ArchMap Homomorphism Workflow
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
@@ -12,7 +12,9 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
   --out-dir .archsig/archmap-primary
 ```
 
-The command emits ArchMap validation, AIR, AIR validation, theorem precondition check, Feature Extension Report, AAT Observable Bundle, and bundle validation artifacts. The bundle is assembled from the input ArchMap and generated workflow reports, so static fixture architecture ids, source refs, witnesses, and selected universes are not carried into workflow output. Optional Sig0 adapter evidence can be supplied for static / semantic conflict checks:
+The command emits ArchMap validation, AIR, AIR validation, theorem precondition check, Feature Extension Report, AAT Observable Bundle, and bundle validation artifacts. The ArchMap validation report includes `homomorphismDiagnostics`; the Feature Extension Report includes `homomorphismSummary`. These surfaces answer the user-facing AAT questions: what structure the ArchMap preserves, what it forgets, where it is partial or non-homomorphic, which axes are unmeasured, and which obstruction witnesses or next evidence should be reviewed.
+
+The bundle is assembled from the input ArchMap and generated workflow reports, so static fixture architecture ids, source refs, witnesses, and selected universes are not carried into workflow output. Optional Sig0 adapter evidence can be supplied for static / semantic conflict checks:
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \

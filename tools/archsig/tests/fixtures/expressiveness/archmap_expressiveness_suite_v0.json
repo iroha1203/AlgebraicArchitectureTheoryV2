@@ -52,6 +52,143 @@
     "representation": "aat-air-v0",
     "selectedLayers": ["static", "semantic", "policy", "runtime", "framework", "dynamic"]
   },
+  "homomorphism": {
+    "reading": "AAT concept coverage matrix for ArchMap bounded homomorphism expressiveness",
+    "domain": {
+      "universeId": "source:archmap-expressiveness-fixture-repo",
+      "description": "selected source refs covering policy, service, contract, event, saga, framework, runtime, dynamic, and static evidence",
+      "refs": [
+        "src-layer-policy",
+        "src-user-service",
+        "src-user-contract",
+        "src-rounding-test",
+        "src-event-store",
+        "src-saga",
+        "src-framework-route",
+        "src-plugin-loader",
+        "src-runtime-trace",
+        "src-static-edge"
+      ],
+      "boundary": "archmap-expressiveness-suite-v0 bounded source inventory"
+    },
+    "codomain": {
+      "universeId": "aat:archmap-expressiveness-fixture-repo",
+      "description": "AAT coverage matrix over object, relation, boundary, layer, policy, contract, runtime edge, state effect, semantic diagram, obstruction, operation, repair, and signature axis",
+      "refs": [
+        "object",
+        "relation",
+        "boundary",
+        "layer",
+        "policy",
+        "contract",
+        "runtime-edge",
+        "state-effect",
+        "semantic-diagram",
+        "obstruction",
+        "operation",
+        "repair",
+        "signature-axis"
+      ],
+      "boundary": "selected AAT concept coverage matrix; not repository completeness"
+    },
+    "objectMap": [
+      {
+        "mapEntryId": "srp_responsibility_split",
+        "mapFamily": "object",
+        "sourceRef": "src-user-service",
+        "targetRef": "component.user_service.responsibility",
+        "preserves": ["SRP responsibility region", "reason-to-change candidate"],
+        "forgets": ["file size heuristic"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["src-user-service"],
+        "nonConclusions": ["object/responsibility coverage is selected-source relative"]
+      }
+    ],
+    "relationMap": [
+      {
+        "mapEntryId": "contract_preservation",
+        "mapFamily": "relation",
+        "sourceRef": "src-user-contract",
+        "targetRef": "semantic.contract.create_user",
+        "preserves": ["contract preservation", "contract-test observation"],
+        "forgets": ["all production traces"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["src-user-contract"],
+        "nonConclusions": ["contract relation coverage is not global semantic completeness"]
+      }
+    ],
+    "lawMap": [
+      {
+        "mapEntryId": "layered_policy_violation",
+        "mapFamily": "law",
+        "sourceRef": "src-layer-policy",
+        "targetRef": "policy.layered.route_to_db",
+        "preserves": ["Layered Architecture dependency direction"],
+        "forgets": ["framework adapter internals"],
+        "measurementBoundary": "unmeasured",
+        "claimClassification": "assumed",
+        "evidenceRefs": ["src-layer-policy"],
+        "nonConclusions": ["policy map is not global architecture lawfulness"]
+      }
+    ],
+    "obstructionMap": [
+      {
+        "mapEntryId": "semantic_non_commutation",
+        "mapFamily": "obstruction",
+        "sourceRef": "src-rounding-test",
+        "targetRef": "witness-rounding-non-commutation",
+        "preserves": ["semantic non-commutation", "nonfillability witness"],
+        "forgets": ["all price paths"],
+        "measurementBoundary": "measuredNonzero",
+        "claimClassification": "measured",
+        "evidenceRefs": ["src-rounding-test"],
+        "nonConclusions": ["obstruction witness is selected-observation relative"]
+      }
+    ],
+    "signatureAxisMap": [
+      {
+        "mapEntryId": "runtime_unmeasured",
+        "mapFamily": "signatureAxis",
+        "sourceRef": "src-runtime-trace",
+        "targetRef": "signature.runtimePropagation",
+        "preserves": ["runtime edge boundary"],
+        "forgets": ["runtime frequency"],
+        "measurementBoundary": "unmeasured",
+        "claimClassification": "unmeasured",
+        "evidenceRefs": ["src-runtime-trace"],
+        "nonConclusions": ["runtime signature axis is not measured zero"]
+      }
+    ],
+    "preservationClaims": [
+      {
+        "claimId": "coverage-matrix-object",
+        "mapEntryRef": "srp_responsibility_split",
+        "preservedStructure": "object / responsibility",
+        "status": "preserved",
+        "boundary": "selected service source",
+        "missingEvidence": [],
+        "nonConclusions": ["coverage matrix is not completeness proof"]
+      },
+      {
+        "claimId": "coverage-matrix-runtime",
+        "mapEntryRef": "runtime_unmeasured",
+        "preservedStructure": "runtime edge boundary",
+        "status": "blocked",
+        "boundary": "runtime trace unavailable",
+        "missingEvidence": ["runtime trace unavailable"],
+        "nonConclusions": ["runtime gap remains unmeasured"]
+      }
+    ],
+    "forgetfulBoundary": ["framework adapter internals", "all production traces", "all price paths"],
+    "unmeasuredBoundary": ["runtime", "dynamic"],
+    "unsupportedBoundary": ["dynamic plugin registry", "private framework convention"],
+    "nonConclusions": [
+      "coverage matrix pass does not prove AAT completeness",
+      "unsupported concept coverage remains explicit"
+    ]
+  },
   "mapItems": [
     {
       "mapItemId": "layered_policy_violation",
