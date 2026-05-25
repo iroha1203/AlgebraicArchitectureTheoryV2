@@ -17,6 +17,7 @@ Analyze Epic / PRD / Spec planning forecast. This skill simplifies ArchSig's Int
 - `operation-support-estimate-v0`
 - `forecast-cone-skeleton-v0`
 - `consequence-envelope-report-v0`
+- `sft-review-summary-v0`
 - `intent-calibration-record-v0`
 
 Do not use PR quality analysis as planning forecast unless the user explicitly asks to compare planning evidence with PR evidence.
@@ -60,6 +61,14 @@ ${ARCHSIG_BIN:-archsig} intent-forecast \
   --out-dir .archsig/intent/forecast
 ```
 
+If only a ConsequenceEnvelope is available, project it to reviewer-facing SFT judgement input:
+
+```bash
+${ARCHSIG_BIN:-archsig} sft-review-summary \
+  --consequence-envelope .archsig/intent/forecast/consequence-envelope-report.json \
+  --out .archsig/intent/forecast/sft-review-summary.json
+```
+
 4. Validate or read calibration records when observed implementation refs are available.
 
 ```bash
@@ -72,6 +81,8 @@ ${ARCHSIG_BIN:-archsig} intent-calibration-record \
    - Trace forecast signals back to IntentMap item refs and AlignmentMap boundaries.
    - Keep missing decisions, ambiguous intents, unsupported intents, and missing evidence separate.
    - Describe likely pressure directions and bounded consequences, not point predictions.
+   - Translate unknown remainder, missing invariant, non-conclusion, and typed boundary failure into reviewer next actions.
+   - For bounded LLM judgement, cite `sft-review-summary-v0` evidence refs and boundary refs.
 
 ## Output Shape
 
@@ -87,6 +98,12 @@ Evidence gaps
 
 Recommended next actions
 - ...
+
+SFT review judgement
+- opened futures:
+- closed futures:
+- boundary failures:
+- next actions:
 
 Non-conclusions
 - ...

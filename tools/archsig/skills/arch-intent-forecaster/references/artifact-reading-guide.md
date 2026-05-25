@@ -8,6 +8,7 @@
 | operation-support-estimate | candidate operation families and known support boundary | forecast result |
 | ForecastConeSkeleton | bounded path class candidates and missing support | probability or point prediction |
 | ConsequenceEnvelope | consequence surfaces and planning recommendations | causal theorem |
+| SFT review summary | opened futures, closed futures, boundary failures, next actions, LLM judgement contract | final judgement, merge approval, probability claim |
 | intent calibration record | observed implementation refs and forecast usefulness feedback | causality or global forecast correctness |
 
 Always preserve top-level and item-level `nonConclusions`.

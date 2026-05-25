@@ -104,6 +104,9 @@ pub const FORECAST_CONE_SKELETON_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION: &str = "consequence-envelope-report-v0";
 pub const CONSEQUENCE_ENVELOPE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "consequence-envelope-report-validation-report-v0";
+pub const SFT_REVIEW_SUMMARY_SCHEMA_VERSION: &str = "sft-review-summary-v0";
+pub const SFT_REVIEW_SUMMARY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "sft-review-summary-validation-report-v0";
 pub const FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION: &str = "forecast-calibration-hook-v0";
 pub const FORECAST_CALIBRATION_HOOK_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "forecast-calibration-hook-validation-report-v0";
@@ -3240,6 +3243,8 @@ pub struct ArchitecturePolicyV0 {
     #[serde(default)]
     pub exceptions: Vec<ArchitecturePolicyExceptionV0>,
     pub srp: ArchitecturePolicySrpV0,
+    #[serde(default)]
+    pub sft_governance: ArchitecturePolicySftGovernanceV0,
     pub non_conclusions: Vec<String>,
 }
 
@@ -3291,6 +3296,49 @@ pub struct ArchitecturePolicySrpV0 {
     pub allowed_orchestrator_roles: Vec<String>,
     pub required_evidence_fields: Vec<String>,
     pub judgment_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicySftGovernanceV0 {
+    #[serde(default)]
+    pub adopted_invariant_refs: Vec<String>,
+    #[serde(default)]
+    pub allowed_operation_families: Vec<ArchitecturePolicyFutureRuleV0>,
+    #[serde(default)]
+    pub conditionally_allowed_support: Vec<ArchitecturePolicyFutureRuleV0>,
+    #[serde(default)]
+    pub forbidden_future_path_classes: Vec<ArchitecturePolicyFutureRuleV0>,
+    #[serde(default)]
+    pub required_governance_interventions: Vec<ArchitecturePolicyGovernanceInterventionV0>,
+    #[serde(default)]
+    pub selected_horizon_refs: Vec<String>,
+    #[serde(default)]
+    pub observation_boundary_refs: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyFutureRuleV0 {
+    pub rule_id: String,
+    pub applies_to: Vec<String>,
+    pub disposition: String,
+    pub reason: String,
+    pub evidence_refs: Vec<String>,
+    pub reviewer_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyGovernanceInterventionV0 {
+    pub intervention_id: String,
+    pub intervention_kind: String,
+    pub applies_to: Vec<String>,
+    pub required_before: String,
+    pub preservation_boundary: String,
+    pub evidence_refs: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -4818,6 +4866,12 @@ pub struct OperationSupportPolicyConstraintV0 {
     pub source_ref_ids: Vec<String>,
     pub rule: String,
     pub safety_claim_boundary: String,
+    #[serde(default)]
+    pub policy_refs: Vec<String>,
+    #[serde(default)]
+    pub support_disposition: String,
+    #[serde(default)]
+    pub governance_action_refs: Vec<String>,
     pub non_conclusions: Vec<String>,
 }
 
@@ -4898,8 +4952,52 @@ pub struct ForecastConeSkeletonV0 {
     pub finite_support_refs: Vec<ForecastFiniteSupportRefV0>,
     pub bounded_horizon: ForecastBoundedHorizonV0,
     pub path_class_candidates: Vec<ForecastPathClassCandidateV0>,
+    #[serde(default)]
+    pub gluing_evidence: Vec<ForecastGluingEvidenceV0>,
+    #[serde(default)]
+    pub governance_interventions: Vec<ForecastGovernanceInterventionEvidenceV0>,
+    #[serde(default)]
+    pub typed_boundary_failures: Vec<ForecastTypedBoundaryFailureV0>,
     pub forecast_boundary: ForecastBoundaryV0,
     pub unknown_remainder: Vec<ForecastUnknownRemainderV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastGluingEvidenceV0 {
+    pub gluing_id: String,
+    pub local_future_refs: Vec<String>,
+    pub status: String,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub reviewer_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastGovernanceInterventionEvidenceV0 {
+    pub intervention_id: String,
+    pub intervention_kind: String,
+    pub target_path_class_ids: Vec<String>,
+    pub policy_refs: Vec<String>,
+    pub cut_action: String,
+    pub preservation_boundary: String,
+    pub source_ref_ids: Vec<String>,
+    pub reviewer_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastTypedBoundaryFailureV0 {
+    pub failure_id: String,
+    pub failure_kind: String,
+    pub affected_path_class_ids: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub reason: String,
+    pub reviewer_action: String,
     pub non_conclusions: Vec<String>,
 }
 
@@ -5020,10 +5118,39 @@ pub struct ConsequenceEnvelopeReportV0 {
     pub expected_axis_delta_ranges: Vec<ExpectedAxisDeltaRangeV0>,
     pub obstruction_witness_candidates: Vec<SelectedObstructionWitnessCandidateV0>,
     pub missing_boundary_items: Vec<ConsequenceMissingBoundaryItemV0>,
+    #[serde(default)]
+    pub typed_boundary_failures: Vec<ConsequenceTypedBoundaryFailureV0>,
+    #[serde(default)]
+    pub reviewer_actions: Vec<ConsequenceReviewerActionV0>,
     pub theorem_boundary_items: Vec<ConsequenceTheoremBoundaryItemV0>,
     pub recommendations: ConsequenceEnvelopeRecommendationsV0,
     pub summary_projection: ConsequenceEnvelopeSummaryProjectionV0,
     pub unknown_remainder: Vec<ConsequenceUnknownRemainderV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceTypedBoundaryFailureV0 {
+    pub failure_id: String,
+    pub failure_kind: String,
+    pub affected_region_ids: Vec<String>,
+    pub affected_axis_ids: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub reason: String,
+    pub next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceReviewerActionV0 {
+    pub action_id: String,
+    pub action_kind: String,
+    pub status: String,
+    pub source_item_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub message: String,
     pub non_conclusions: Vec<String>,
 }
 
@@ -5165,6 +5292,105 @@ pub struct ConsequenceEnvelopeValidationSummary {
     pub comparable_axis_count: usize,
     pub obstruction_candidate_count: usize,
     pub missing_boundary_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryV0 {
+    pub schema_version: String,
+    pub summary_id: String,
+    pub envelope_ref: SftReviewSummaryEnvelopeRefV0,
+    pub status: String,
+    pub opened_futures: Vec<SftReviewFutureV0>,
+    pub closed_futures: Vec<SftReviewFutureV0>,
+    pub boundary_failures: Vec<SftReviewBoundaryFailureV0>,
+    pub next_actions: Vec<SftReviewNextActionV0>,
+    pub llm_judgement_contract: SftReviewLlmJudgementContractV0,
+    pub reviewer_message: String,
+    pub evidence_refs: Vec<String>,
+    pub boundary_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryEnvelopeRefV0 {
+    pub envelope_schema_version: String,
+    pub envelope_id: String,
+    pub cone_id: String,
+    pub source_ref_ids: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewFutureV0 {
+    pub future_id: String,
+    pub future_kind: String,
+    pub region_refs: Vec<String>,
+    pub axis_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewBoundaryFailureV0 {
+    pub failure_id: String,
+    pub failure_kind: String,
+    pub evidence_refs: Vec<String>,
+    pub boundary_refs: Vec<String>,
+    pub reviewer_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewNextActionV0 {
+    pub action_id: String,
+    pub action_kind: String,
+    pub source_item_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewLlmJudgementContractV0 {
+    pub input_fields: Vec<String>,
+    pub output_fields: Vec<String>,
+    pub required_evidence_policy: String,
+    pub forbidden_readings: Vec<String>,
+    pub confidence_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryValidationReportV0 {
+    pub schema_version: String,
+    pub input: SftReviewSummaryValidationInput,
+    pub summary: SftReviewSummaryV0,
+    pub validation_summary: SftReviewSummaryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub summary_id: String,
+    pub envelope_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryValidationSummary {
+    pub result: String,
+    pub opened_future_count: usize,
+    pub closed_future_count: usize,
+    pub boundary_failure_count: usize,
+    pub next_action_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

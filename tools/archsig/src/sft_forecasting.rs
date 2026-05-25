@@ -9,8 +9,9 @@ use crate::{
     ConsequenceEnvelopeRecommendationsV0, ConsequenceEnvelopeReportV0,
     ConsequenceEnvelopeSummaryProjectionV0, ConsequenceEnvelopeValidationInput,
     ConsequenceEnvelopeValidationReportV0, ConsequenceEnvelopeValidationSummary,
-    ConsequenceForecastConeRefV0, ConsequenceMissingBoundaryItemV0,
-    ConsequenceTheoremBoundaryItemV0, ConsequenceUnknownRemainderV0, ExpectedAxisDeltaRangeV0,
+    ConsequenceForecastConeRefV0, ConsequenceMissingBoundaryItemV0, ConsequenceReviewerActionV0,
+    ConsequenceTheoremBoundaryItemV0, ConsequenceTypedBoundaryFailureV0,
+    ConsequenceUnknownRemainderV0, ExpectedAxisDeltaRangeV0,
     FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION,
     FORECAST_CALIBRATION_HOOK_VALIDATION_REPORT_SCHEMA_VERSION,
     FORECAST_CONE_SKELETON_SCHEMA_VERSION, FORECAST_CONE_SKELETON_VALIDATION_REPORT_SCHEMA_VERSION,
@@ -18,10 +19,16 @@ use crate::{
     ForecastCalibrationHookValidationInput, ForecastCalibrationHookValidationReportV0,
     ForecastCalibrationHookValidationSummary, ForecastConeSkeletonV0,
     ForecastConeSkeletonValidationInput, ForecastConeSkeletonValidationReportV0,
-    ForecastConeSkeletonValidationSummary, ForecastFiniteSupportRefV0,
-    ForecastOperationSupportRefV0, ForecastPathClassCandidateV0, ForecastUnknownRemainderV0,
+    ForecastConeSkeletonValidationSummary, ForecastFiniteSupportRefV0, ForecastGluingEvidenceV0,
+    ForecastGovernanceInterventionEvidenceV0, ForecastOperationSupportRefV0,
+    ForecastPathClassCandidateV0, ForecastTypedBoundaryFailureV0, ForecastUnknownRemainderV0,
     OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION, OperationSupportEstimateV0,
-    OperationSupportUnknownRemainderV0, SelectedObstructionWitnessCandidateV0, ValidationCheck,
+    OperationSupportUnknownRemainderV0, SFT_REVIEW_SUMMARY_SCHEMA_VERSION,
+    SFT_REVIEW_SUMMARY_VALIDATION_REPORT_SCHEMA_VERSION, SelectedObstructionWitnessCandidateV0,
+    SftReviewBoundaryFailureV0, SftReviewFutureV0, SftReviewLlmJudgementContractV0,
+    SftReviewNextActionV0, SftReviewSummaryEnvelopeRefV0, SftReviewSummaryV0,
+    SftReviewSummaryValidationInput, SftReviewSummaryValidationReportV0,
+    SftReviewSummaryValidationSummary, ValidationCheck,
 };
 
 const FORECAST_NON_CONCLUSIONS: [&str; 5] = [
@@ -38,6 +45,22 @@ const ENVELOPE_NON_CONCLUSIONS: [&str; 5] = [
     "consequence envelope does not prove global safety",
     "unknown remainder is not measured zero",
     "summary projection is for review and CI consumption only",
+];
+
+const REVIEW_SUMMARY_NON_CONCLUSIONS: [&str; 5] = [
+    "SFT review summary is deterministic projection, not final LLM judgement",
+    "review status is judgement-ready triage, not merge approval",
+    "opened and closed futures are bounded review items, not predictions",
+    "boundary failures require human or LLM judgement with evidence refs",
+    "summary does not promote ArchSig evidence to Lean theorem proof",
+];
+
+const REVIEW_STATUSES: [&str; 5] = [
+    "governed",
+    "risky",
+    "blocked",
+    "boundary_failure",
+    "needs_human_judgement",
 ];
 
 const CALIBRATION_NON_CONCLUSIONS: [&str; 5] = [
@@ -147,6 +170,44 @@ pub fn static_forecast_cone_skeleton() -> ForecastConeSkeletonV0 {
                 "CLI validation can expose missing boundaries while retaining unknown support.",
             ),
         ],
+        gluing_evidence: vec![ForecastGluingEvidenceV0 {
+            gluing_id: "gluing:schema-envelope-local-futures".to_string(),
+            local_future_refs: vec![
+                "path:schema-to-envelope".to_string(),
+                "path:cli-validation-feedback".to_string(),
+            ],
+            status: "missing_evidence".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            boundary: "local forecast futures are listed for review; gluing is not proved"
+                .to_string(),
+            reviewer_action:
+                "check whether schema and CLI validation futures can be reviewed together"
+                    .to_string(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        }],
+        governance_interventions: vec![ForecastGovernanceInterventionEvidenceV0 {
+            intervention_id: "governance:retain-boundary-and-open-issue".to_string(),
+            intervention_kind: "review-gate".to_string(),
+            target_path_class_ids: vec!["path:cli-validation-feedback".to_string()],
+            policy_refs: vec!["policy:sft-review-boundary".to_string()],
+            cut_action: "open downstream issue before treating runtime unknowns as closed"
+                .to_string(),
+            preservation_boundary:
+                "governance cut is a reviewer action candidate, not correctness proof".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            reviewer_action: "ask reviewer to confirm whether boundary issue is required"
+                .to_string(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        }],
+        typed_boundary_failures: vec![ForecastTypedBoundaryFailureV0 {
+            failure_id: "failure:runtime-invariant-missing".to_string(),
+            failure_kind: "missing-invariant".to_string(),
+            affected_path_class_ids: vec!["path:cli-validation-feedback".to_string()],
+            evidence_refs: source_ref_ids.clone(),
+            reason: "runtime propagation invariant is absent from the selected support".to_string(),
+            reviewer_action: "request invariant evidence or keep runtime future open".to_string(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        }],
         forecast_boundary: ForecastBoundaryV0 {
             boundary_id: "boundary:b12.3-forecast-cone-skeleton".to_string(),
             source_ref_ids: source_ref_ids.clone(),
@@ -200,6 +261,7 @@ pub fn validate_forecast_cone_skeleton(
         check_forecast_support_refs(cone),
         check_forecast_horizon(cone),
         check_forecast_path_classes(cone),
+        check_forecast_grand_theorem_evidence(cone),
         check_forecast_boundary(cone),
         check_forecast_unknown_remainder(cone),
         check_required_non_conclusions(
@@ -301,6 +363,11 @@ pub fn build_forecast_cone_skeleton_from_operation_support(
         &source_ref_ids,
         &path_ids,
     );
+    let typed_boundary_failures =
+        forecast_typed_boundary_failures(estimate, &source_ref_ids, &path_ids);
+    let gluing_evidence = forecast_gluing_evidence(&path_ids, &source_ref_ids);
+    let governance_interventions =
+        forecast_governance_interventions(estimate, &source_ref_ids, &path_ids);
 
     ForecastConeSkeletonV0 {
         schema_version: FORECAST_CONE_SKELETON_SCHEMA_VERSION.to_string(),
@@ -332,6 +399,9 @@ pub fn build_forecast_cone_skeleton_from_operation_support(
             non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
         },
         path_class_candidates,
+        gluing_evidence,
+        governance_interventions,
+        typed_boundary_failures,
         forecast_boundary: ForecastBoundaryV0 {
             boundary_id: format!("boundary:{}:forecast-cone-skeleton", estimate.estimate_id),
             source_ref_ids: source_ref_ids.clone(),
@@ -454,6 +524,27 @@ pub fn static_consequence_envelope_report() -> ConsequenceEnvelopeReportV0 {
                 .to_string(),
             non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
         }],
+        typed_boundary_failures: vec![ConsequenceTypedBoundaryFailureV0 {
+            failure_id: "failure:runtime-invariant-missing".to_string(),
+            failure_kind: "missing-invariant".to_string(),
+            affected_region_ids: vec!["region:tools-archsig-sft".to_string()],
+            affected_axis_ids: vec!["axis:unknown-remainder".to_string()],
+            evidence_refs: source_ref_ids.clone(),
+            reason: "runtime propagation invariant is absent from the selected report evidence"
+                .to_string(),
+            next_action: "request runtime invariant evidence or keep the future open".to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        }],
+        reviewer_actions: vec![ConsequenceReviewerActionV0 {
+            action_id: "action:review-runtime-boundary".to_string(),
+            action_kind: "request-evidence".to_string(),
+            status: "needs_human_judgement".to_string(),
+            source_item_refs: vec!["missing:runtime-propagation-invariant".to_string()],
+            evidence_refs: source_ref_ids.clone(),
+            message: "Review runtime propagation evidence before closing the forecast boundary"
+                .to_string(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        }],
         theorem_boundary_items: vec![ConsequenceTheoremBoundaryItemV0 {
             item_id: "theorem-boundary:no-lean-promotion".to_string(),
             theorem_or_claim_ref: "AAT theorem boundary".to_string(),
@@ -537,6 +628,14 @@ pub fn build_consequence_envelope_from_forecast_cone(
     let missing_boundary_items =
         consequence_missing_boundaries(cone, &axis_ids, &measurement_boundary_refs);
     let missing_boundary_count = missing_boundary_items.len();
+    let typed_boundary_failures =
+        consequence_typed_boundary_failures(cone, &region_ids, &axis_ids, &source_ref_ids);
+    let reviewer_actions = consequence_reviewer_actions(
+        &missing_boundary_items,
+        &typed_boundary_failures,
+        cone,
+        &source_ref_ids,
+    );
     let obstruction_witness_candidates =
         consequence_obstruction_candidates(cone, &region_ids, &axis_ids, &source_ref_ids);
     let unknown_remainder = consequence_unknown_remainder(cone, &region_ids, &axis_ids);
@@ -557,6 +656,8 @@ pub fn build_consequence_envelope_from_forecast_cone(
         expected_axis_delta_ranges,
         obstruction_witness_candidates,
         missing_boundary_items,
+        typed_boundary_failures,
+        reviewer_actions,
         theorem_boundary_items: vec![ConsequenceTheoremBoundaryItemV0 {
             item_id: format!("theorem-boundary:{}:no-lean-promotion", id_suffix(&cone.cone_id)),
             theorem_or_claim_ref: "AAT theorem boundary".to_string(),
@@ -608,6 +709,7 @@ pub fn validate_consequence_envelope_report(
         check_envelope_source_refs(envelope),
         check_envelope_regions_and_axes(envelope),
         check_envelope_boundaries(envelope),
+        check_envelope_reviewer_actions(envelope),
         check_envelope_unknown_remainder(envelope),
         check_required_non_conclusions(
             "consequence-envelope-non-conclusions-preserved",
@@ -635,6 +737,188 @@ pub fn validate_consequence_envelope_report(
         },
         envelope: envelope.clone(),
         summary,
+        checks,
+    }
+}
+
+pub fn static_sft_review_summary() -> SftReviewSummaryV0 {
+    build_sft_review_summary_from_consequence_envelope(&static_consequence_envelope_report())
+}
+
+pub fn build_sft_review_summary_from_consequence_envelope(
+    envelope: &ConsequenceEnvelopeReportV0,
+) -> SftReviewSummaryV0 {
+    let evidence_refs = envelope_source_ids(envelope)
+        .into_iter()
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+    let boundary_refs = envelope_boundary_refs(envelope);
+    let boundary_failures =
+        envelope
+            .typed_boundary_failures
+            .iter()
+            .map(|failure| SftReviewBoundaryFailureV0 {
+                failure_id: format!("summary:{}", failure.failure_id),
+                failure_kind: failure.failure_kind.clone(),
+                evidence_refs: retained_source_refs(&failure.evidence_refs, &evidence_refs),
+                boundary_refs: boundary_refs.clone(),
+                reviewer_action: failure.next_action.clone(),
+            })
+            .chain(envelope.missing_boundary_items.iter().map(|missing| {
+                SftReviewBoundaryFailureV0 {
+                    failure_id: format!("summary:{}", missing.item_id),
+                    failure_kind: missing.item_kind.clone(),
+                    evidence_refs: evidence_refs.clone(),
+                    boundary_refs: boundary_refs.clone(),
+                    reviewer_action: missing.treatment.clone(),
+                }
+            }))
+            .collect::<Vec<_>>();
+    let next_actions = envelope
+        .reviewer_actions
+        .iter()
+        .map(|action| SftReviewNextActionV0 {
+            action_id: format!("summary:{}", action.action_id),
+            action_kind: action.action_kind.clone(),
+            source_item_refs: action.source_item_refs.clone(),
+            evidence_refs: retained_source_refs(&action.evidence_refs, &evidence_refs),
+            message: action.message.clone(),
+        })
+        .chain(
+            envelope
+                .recommendations
+                .review
+                .iter()
+                .enumerate()
+                .map(|(idx, item)| SftReviewNextActionV0 {
+                    action_id: format!("summary:review-recommendation-{idx}"),
+                    action_kind: "review-recommendation".to_string(),
+                    source_item_refs: Vec::new(),
+                    evidence_refs: evidence_refs.clone(),
+                    message: item.clone(),
+                }),
+        )
+        .collect::<Vec<_>>();
+    let opened_futures = envelope
+        .affected_architecture_regions
+        .iter()
+        .map(|region| SftReviewFutureV0 {
+            future_id: format!("opened:{}", id_suffix(&region.region_id)),
+            future_kind: region.effect_kind.clone(),
+            region_refs: vec![region.region_id.clone()],
+            axis_refs: envelope
+                .comparable_signature_axes
+                .iter()
+                .map(|axis| axis.axis_id.clone())
+                .collect(),
+            evidence_refs: retained_source_refs(&region.source_ref_ids, &evidence_refs),
+            boundary: region.boundary.clone(),
+        })
+        .collect::<Vec<_>>();
+    let closed_futures = envelope
+        .missing_boundary_items
+        .iter()
+        .map(|item| SftReviewFutureV0 {
+            future_id: format!("closed:{}", id_suffix(&item.item_id)),
+            future_kind: item.item_kind.clone(),
+            region_refs: Vec::new(),
+            axis_refs: item.affected_axis_ids.clone(),
+            evidence_refs: evidence_refs.clone(),
+            boundary: item.reason.clone(),
+        })
+        .collect::<Vec<_>>();
+    let status = review_status(&boundary_failures, &next_actions);
+
+    SftReviewSummaryV0 {
+        schema_version: SFT_REVIEW_SUMMARY_SCHEMA_VERSION.to_string(),
+        summary_id: format!("summary:{}", envelope.envelope_id),
+        envelope_ref: SftReviewSummaryEnvelopeRefV0 {
+            envelope_schema_version: CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION.to_string(),
+            envelope_id: envelope.envelope_id.clone(),
+            cone_id: envelope.forecast_cone_ref.cone_id.clone(),
+            source_ref_ids: evidence_refs.clone(),
+        },
+        status,
+        opened_futures,
+        closed_futures,
+        boundary_failures,
+        next_actions,
+        llm_judgement_contract: SftReviewLlmJudgementContractV0 {
+            input_fields: strings(&[
+                "observationBoundary",
+                "operationSupport",
+                "pathClasses",
+                "affectedRegions",
+                "missingInvariantRefs",
+                "unknownRemainder",
+                "policyConstraints",
+                "sourceRefs",
+            ]),
+            output_fields: strings(&[
+                "status",
+                "openedFutures",
+                "closedFutures",
+                "evidence",
+                "reviewerMessage",
+                "nextActions",
+                "confidenceBoundary",
+            ]),
+            required_evidence_policy:
+                "every judgement item must cite evidenceRefs and boundaryRefs".to_string(),
+            forbidden_readings: strings(&[
+                "probability claim",
+                "causal proof",
+                "Lean theorem promotion",
+                "unknown remainder as measured zero",
+                "merge approval",
+            ]),
+            confidence_boundary:
+                "confidence is bounded review judgement over retained evidence refs".to_string(),
+        },
+        reviewer_message:
+            "Review opened futures, closed futures, boundary failures, and next actions before judgement"
+                .to_string(),
+        evidence_refs,
+        boundary_refs,
+        non_conclusions: strings(&REVIEW_SUMMARY_NON_CONCLUSIONS),
+    }
+}
+
+pub fn validate_sft_review_summary(
+    summary: &SftReviewSummaryV0,
+    input_path: &str,
+) -> SftReviewSummaryValidationReportV0 {
+    let checks = vec![
+        check_review_summary_schema(summary),
+        check_review_summary_status(summary),
+        check_review_summary_refs(summary),
+        check_review_summary_contract(summary),
+        check_required_non_conclusions(
+            "sft-review-summary-non-conclusions-preserved",
+            &summary.non_conclusions,
+            &REVIEW_SUMMARY_NON_CONCLUSIONS,
+        ),
+    ];
+    let validation_summary = SftReviewSummaryValidationSummary {
+        result: validation_result(&checks),
+        opened_future_count: summary.opened_futures.len(),
+        closed_future_count: summary.closed_futures.len(),
+        boundary_failure_count: summary.boundary_failures.len(),
+        next_action_count: summary.next_actions.len(),
+        failed_check_count: count_checks(&checks, "fail"),
+        warning_check_count: count_checks(&checks, "warn"),
+    };
+
+    SftReviewSummaryValidationReportV0 {
+        schema_version: SFT_REVIEW_SUMMARY_VALIDATION_REPORT_SCHEMA_VERSION.to_string(),
+        input: SftReviewSummaryValidationInput {
+            schema_version: summary.schema_version.clone(),
+            path: input_path.to_string(),
+            summary_id: summary.summary_id.clone(),
+            envelope_id: summary.envelope_ref.envelope_id.clone(),
+        },
+        summary: summary.clone(),
+        validation_summary,
         checks,
     }
 }
@@ -865,6 +1149,154 @@ fn forecast_unknown_remainder_from_estimate(
             }
         })
         .collect()
+}
+
+fn forecast_gluing_evidence(
+    path_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<ForecastGluingEvidenceV0> {
+    let status = if path_ids.len() > 1 {
+        "requires_review"
+    } else {
+        "single_local_future"
+    };
+    vec![ForecastGluingEvidenceV0 {
+        gluing_id: "gluing:local-futures".to_string(),
+        local_future_refs: path_ids.to_vec(),
+        status: status.to_string(),
+        source_ref_ids: source_ref_ids.to_vec(),
+        boundary: "local futures are listed for bounded review; gluing is not a theorem conclusion"
+            .to_string(),
+        reviewer_action: "confirm whether selected local futures can be reviewed together"
+            .to_string(),
+        non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+    }]
+}
+
+fn forecast_governance_interventions(
+    estimate: &OperationSupportEstimateV0,
+    source_ref_ids: &[String],
+    path_ids: &[String],
+) -> Vec<ForecastGovernanceInterventionEvidenceV0> {
+    let from_policy = estimate
+        .policy_constraints
+        .iter()
+        .map(|constraint| ForecastGovernanceInterventionEvidenceV0 {
+            intervention_id: format!("governance:{}", id_suffix(&constraint.constraint_id)),
+            intervention_kind: constraint_kind_to_intervention(&constraint.constraint_kind),
+            target_path_class_ids: path_ids_for_unknown_remainder(
+                &constraint.applies_to_family_ids,
+                path_ids,
+            ),
+            policy_refs: if constraint.policy_refs.is_empty() {
+                vec![constraint.constraint_id.clone()]
+            } else {
+                constraint.policy_refs.clone()
+            },
+            cut_action: if constraint.governance_action_refs.is_empty() {
+                "review policy constraint before closing this future".to_string()
+            } else {
+                format!(
+                    "apply governance actions {}",
+                    constraint.governance_action_refs.join(", ")
+                )
+            },
+            preservation_boundary: constraint.safety_claim_boundary.clone(),
+            source_ref_ids: retained_source_refs(&constraint.source_ref_ids, source_ref_ids),
+            reviewer_action:
+                "decide whether the policy constraint cuts, allows, or leaves the future unknown"
+                    .to_string(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    if from_policy.is_empty() {
+        vec![ForecastGovernanceInterventionEvidenceV0 {
+            intervention_id: "governance:policy-undefined".to_string(),
+            intervention_kind: "missing-policy".to_string(),
+            target_path_class_ids: path_ids.to_vec(),
+            policy_refs: Vec::new(),
+            cut_action: "do not treat missing policy as a safe path".to_string(),
+            preservation_boundary: "policy undefined remains review boundary".to_string(),
+            source_ref_ids: source_ref_ids.to_vec(),
+            reviewer_action: "define policy or keep affected futures open".to_string(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        }]
+    } else {
+        from_policy
+    }
+}
+
+fn forecast_typed_boundary_failures(
+    estimate: &OperationSupportEstimateV0,
+    source_ref_ids: &[String],
+    path_ids: &[String],
+) -> Vec<ForecastTypedBoundaryFailureV0> {
+    let mut failures = estimate
+        .known_forbidden_support
+        .iter()
+        .map(|forbidden| ForecastTypedBoundaryFailureV0 {
+            failure_id: format!("failure:{}", id_suffix(&forbidden.forbidden_id)),
+            failure_kind: "forbidden-future-path-class".to_string(),
+            affected_path_class_ids: path_ids.to_vec(),
+            evidence_refs: retained_source_refs(&forbidden.source_ref_ids, source_ref_ids),
+            reason: forbidden.reason.clone(),
+            reviewer_action:
+                "treat forbidden support as a closed or blocked future unless policy changes"
+                    .to_string(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    failures.extend(estimate.unknown_remainder.iter().map(|remainder| {
+        ForecastTypedBoundaryFailureV0 {
+            failure_id: format!("failure:{}", id_suffix(&remainder.remainder_id)),
+            failure_kind: boundary_failure_kind(&remainder.unknown_axes),
+            affected_path_class_ids: path_ids_for_unknown_remainder(
+                &remainder.affected_family_ids,
+                path_ids,
+            ),
+            evidence_refs: retained_source_refs(&remainder.source_ref_ids, source_ref_ids),
+            reason: remainder.reason.clone(),
+            reviewer_action: "request missing evidence or keep the future as unknown remainder"
+                .to_string(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        }
+    }));
+    if failures.is_empty() {
+        failures.push(ForecastTypedBoundaryFailureV0 {
+            failure_id: "failure:undefined-operation-support".to_string(),
+            failure_kind: "undefined-operation-support".to_string(),
+            affected_path_class_ids: path_ids.to_vec(),
+            evidence_refs: source_ref_ids.to_vec(),
+            reason: "no explicit forbidden or unknown support item was generated".to_string(),
+            reviewer_action: "review operation support boundary before judgement".to_string(),
+            non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
+        });
+    }
+    failures
+}
+
+fn constraint_kind_to_intervention(kind: &str) -> String {
+    let kind = kind.to_ascii_lowercase();
+    if kind.contains("forbidden") {
+        "future-cut".to_string()
+    } else if kind.contains("conditional") {
+        "conditional-allowance".to_string()
+    } else {
+        "review-gate".to_string()
+    }
+}
+
+fn boundary_failure_kind(axes: &[String]) -> String {
+    let joined = axes.join(" ").to_ascii_lowercase();
+    if joined.contains("invariant") {
+        "missing-invariant".to_string()
+    } else if joined.contains("operation") || joined.contains("support") {
+        "undefined-operation-support".to_string()
+    } else if joined.contains("gluing") {
+        "unglued-local-futures".to_string()
+    } else {
+        "missing-observation-boundary".to_string()
+    }
 }
 
 fn path_ids_for_unknown_remainder(
@@ -1124,6 +1556,76 @@ fn consequence_unknown_remainder(
     }
 }
 
+fn consequence_typed_boundary_failures(
+    cone: &ForecastConeSkeletonV0,
+    region_ids: &[String],
+    axis_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<ConsequenceTypedBoundaryFailureV0> {
+    cone.typed_boundary_failures
+        .iter()
+        .map(|failure| ConsequenceTypedBoundaryFailureV0 {
+            failure_id: format!("envelope:{}", failure.failure_id),
+            failure_kind: failure.failure_kind.clone(),
+            affected_region_ids: region_ids_for_paths(&failure.affected_path_class_ids, region_ids),
+            affected_axis_ids: axis_ids_for_paths(cone, &failure.affected_path_class_ids, axis_ids),
+            evidence_refs: retained_source_refs(&failure.evidence_refs, source_ref_ids),
+            reason: failure.reason.clone(),
+            next_action: failure.reviewer_action.clone(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        })
+        .collect()
+}
+
+fn consequence_reviewer_actions(
+    missing_boundary_items: &[ConsequenceMissingBoundaryItemV0],
+    typed_boundary_failures: &[ConsequenceTypedBoundaryFailureV0],
+    cone: &ForecastConeSkeletonV0,
+    source_ref_ids: &[String],
+) -> Vec<ConsequenceReviewerActionV0> {
+    let mut actions = missing_boundary_items
+        .iter()
+        .map(|item| ConsequenceReviewerActionV0 {
+            action_id: format!("action:{}", id_suffix(&item.item_id)),
+            action_kind: "resolve-boundary".to_string(),
+            status: "needs_human_judgement".to_string(),
+            source_item_refs: vec![item.item_id.clone()],
+            evidence_refs: source_ref_ids.to_vec(),
+            message: item.treatment.clone(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        })
+        .collect::<Vec<_>>();
+    actions.extend(
+        typed_boundary_failures
+            .iter()
+            .map(|failure| ConsequenceReviewerActionV0 {
+                action_id: format!("action:{}", id_suffix(&failure.failure_id)),
+                action_kind: "typed-boundary-failure".to_string(),
+                status: if failure.failure_kind.contains("forbidden") {
+                    "blocked".to_string()
+                } else {
+                    "boundary_failure".to_string()
+                },
+                source_item_refs: vec![failure.failure_id.clone()],
+                evidence_refs: retained_source_refs(&failure.evidence_refs, source_ref_ids),
+                message: failure.next_action.clone(),
+                non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+            }),
+    );
+    actions.extend(cone.governance_interventions.iter().map(|intervention| {
+        ConsequenceReviewerActionV0 {
+            action_id: format!("action:{}", id_suffix(&intervention.intervention_id)),
+            action_kind: intervention.intervention_kind.clone(),
+            status: "needs_human_judgement".to_string(),
+            source_item_refs: vec![intervention.intervention_id.clone()],
+            evidence_refs: retained_source_refs(&intervention.source_ref_ids, source_ref_ids),
+            message: intervention.reviewer_action.clone(),
+            non_conclusions: strings(&ENVELOPE_NON_CONCLUSIONS),
+        }
+    }));
+    actions
+}
+
 fn consequence_issue_recommendations(cone: &ForecastConeSkeletonV0) -> Vec<String> {
     let mut recommendations = cone
         .unknown_remainder
@@ -1364,6 +1866,91 @@ fn check_forecast_path_classes(cone: &ForecastConeSkeletonV0) -> ValidationCheck
         ));
     }
     check.count = Some(cone.path_class_candidates.len());
+    check
+}
+
+fn check_forecast_grand_theorem_evidence(cone: &ForecastConeSkeletonV0) -> ValidationCheck {
+    let sources = forecast_source_ids(cone);
+    let paths = path_ids(cone);
+    let invalid_gluing = cone
+        .gluing_evidence
+        .iter()
+        .filter(|item| {
+            item.gluing_id.trim().is_empty()
+                || item.local_future_refs.is_empty()
+                || item.status.trim().is_empty()
+                || item.boundary.trim().is_empty()
+                || item.reviewer_action.trim().is_empty()
+                || item
+                    .local_future_refs
+                    .iter()
+                    .any(|path| !paths.contains(path.as_str()))
+                || item
+                    .source_ref_ids
+                    .iter()
+                    .any(|source| !sources.contains(source.as_str()))
+        })
+        .map(|item| item.gluing_id.clone())
+        .collect::<Vec<_>>();
+    let invalid_governance = cone
+        .governance_interventions
+        .iter()
+        .filter(|item| {
+            item.intervention_id.trim().is_empty()
+                || item.target_path_class_ids.is_empty()
+                || item.cut_action.trim().is_empty()
+                || item.preservation_boundary.trim().is_empty()
+                || item.reviewer_action.trim().is_empty()
+                || item
+                    .target_path_class_ids
+                    .iter()
+                    .any(|path| !paths.contains(path.as_str()))
+                || item
+                    .source_ref_ids
+                    .iter()
+                    .any(|source| !sources.contains(source.as_str()))
+        })
+        .map(|item| item.intervention_id.clone())
+        .collect::<Vec<_>>();
+    let invalid_failures = cone
+        .typed_boundary_failures
+        .iter()
+        .filter(|item| {
+            item.failure_id.trim().is_empty()
+                || item.failure_kind.trim().is_empty()
+                || item.affected_path_class_ids.is_empty()
+                || item.reason.trim().is_empty()
+                || item.reviewer_action.trim().is_empty()
+                || item
+                    .affected_path_class_ids
+                    .iter()
+                    .any(|path| !paths.contains(path.as_str()))
+                || item
+                    .evidence_refs
+                    .iter()
+                    .any(|source| !sources.contains(source.as_str()))
+        })
+        .map(|item| item.failure_id.clone())
+        .collect::<Vec<_>>();
+    let valid = !cone.gluing_evidence.is_empty()
+        && !cone.governance_interventions.is_empty()
+        && !cone.typed_boundary_failures.is_empty()
+        && invalid_gluing.is_empty()
+        && invalid_governance.is_empty()
+        && invalid_failures.is_empty();
+    let mut check = validation_check(
+        "forecast-cone-grand-theorem-review-evidence-retained",
+        "gluing, governance, and typed boundary failure evidence are retained",
+        if valid { "pass" } else { "fail" },
+    );
+    if !valid {
+        check.reason = Some(format!(
+            "invalid gluing [{}], governance [{}], or typed failures [{}]",
+            invalid_gluing.join(", "),
+            invalid_governance.join(", "),
+            invalid_failures.join(", ")
+        ));
+    }
     check
 }
 
@@ -1611,6 +2198,213 @@ fn check_envelope_boundaries(envelope: &ConsequenceEnvelopeReportV0) -> Validati
             invalid_missing.join(", "),
             invalid_theorem.join(", ")
         ));
+    }
+    check
+}
+
+fn check_envelope_reviewer_actions(envelope: &ConsequenceEnvelopeReportV0) -> ValidationCheck {
+    let regions = region_ids(envelope);
+    let axes = axis_ids(envelope);
+    let sources = envelope_source_ids(envelope);
+    let invalid_failures = envelope
+        .typed_boundary_failures
+        .iter()
+        .filter(|failure| {
+            failure.failure_id.trim().is_empty()
+                || failure.failure_kind.trim().is_empty()
+                || failure.next_action.trim().is_empty()
+                || failure
+                    .affected_region_ids
+                    .iter()
+                    .any(|region| !regions.contains(region.as_str()))
+                || failure
+                    .affected_axis_ids
+                    .iter()
+                    .any(|axis| !axes.contains(axis.as_str()))
+                || failure
+                    .evidence_refs
+                    .iter()
+                    .any(|source| !sources.contains(source.as_str()))
+        })
+        .map(|failure| failure.failure_id.clone())
+        .collect::<Vec<_>>();
+    let invalid_actions = envelope
+        .reviewer_actions
+        .iter()
+        .filter(|action| {
+            action.action_id.trim().is_empty()
+                || action.action_kind.trim().is_empty()
+                || action.status.trim().is_empty()
+                || action.evidence_refs.is_empty()
+                || action.message.trim().is_empty()
+                || action
+                    .evidence_refs
+                    .iter()
+                    .any(|source| !sources.contains(source.as_str()))
+        })
+        .map(|action| action.action_id.clone())
+        .collect::<Vec<_>>();
+    let valid = !envelope.reviewer_actions.is_empty()
+        && invalid_failures.is_empty()
+        && invalid_actions.is_empty();
+    let mut check = validation_check(
+        "consequence-envelope-reviewer-actions-retained",
+        "typed boundary failures and reviewer next actions retain evidence refs",
+        if valid { "pass" } else { "fail" },
+    );
+    if !valid {
+        check.reason = Some(format!(
+            "invalid typed failures [{}] or reviewer actions [{}]",
+            invalid_failures.join(", "),
+            invalid_actions.join(", ")
+        ));
+    }
+    check
+}
+
+fn check_review_summary_schema(summary: &SftReviewSummaryV0) -> ValidationCheck {
+    let invalid = summary.schema_version != SFT_REVIEW_SUMMARY_SCHEMA_VERSION
+        || summary.summary_id.trim().is_empty()
+        || summary.envelope_ref.envelope_schema_version
+            != CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION
+        || summary.envelope_ref.envelope_id.trim().is_empty()
+        || summary.envelope_ref.source_ref_ids.is_empty();
+    let mut check = validation_check(
+        "sft-review-summary-schema-supported",
+        "review summary schema and consequence envelope ref are supported",
+        if invalid { "fail" } else { "pass" },
+    );
+    if invalid {
+        check.reason = Some(
+            "schemaVersion, summaryId, envelope schema, envelope id, and source refs are required"
+                .to_string(),
+        );
+    }
+    check
+}
+
+fn check_review_summary_status(summary: &SftReviewSummaryV0) -> ValidationCheck {
+    let allowed = REVIEW_STATUSES.iter().copied().collect::<BTreeSet<_>>();
+    let invalid = !allowed.contains(summary.status.as_str());
+    let mut check = validation_check(
+        "sft-review-summary-status-bounded",
+        "review status is one of the judgement-ready bounded statuses",
+        if invalid { "fail" } else { "pass" },
+    );
+    if invalid {
+        check.reason = Some(format!(
+            "unsupported review summary status: {}",
+            summary.status
+        ));
+    }
+    check
+}
+
+fn check_review_summary_refs(summary: &SftReviewSummaryV0) -> ValidationCheck {
+    let evidence = summary
+        .evidence_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let boundaries = summary
+        .boundary_refs
+        .iter()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let invalid_futures = summary
+        .opened_futures
+        .iter()
+        .chain(summary.closed_futures.iter())
+        .filter(|future| {
+            future.future_id.trim().is_empty()
+                || future.boundary.trim().is_empty()
+                || future.evidence_refs.is_empty()
+                || future
+                    .evidence_refs
+                    .iter()
+                    .any(|source| !evidence.contains(source.as_str()))
+        })
+        .map(|future| future.future_id.clone())
+        .collect::<Vec<_>>();
+    let invalid_failures = summary
+        .boundary_failures
+        .iter()
+        .filter(|failure| {
+            failure.failure_id.trim().is_empty()
+                || failure.evidence_refs.is_empty()
+                || failure.boundary_refs.is_empty()
+                || failure
+                    .evidence_refs
+                    .iter()
+                    .any(|source| !evidence.contains(source.as_str()))
+                || failure
+                    .boundary_refs
+                    .iter()
+                    .any(|boundary| !boundaries.contains(boundary.as_str()))
+        })
+        .map(|failure| failure.failure_id.clone())
+        .collect::<Vec<_>>();
+    let invalid_actions = summary
+        .next_actions
+        .iter()
+        .filter(|action| {
+            action.action_id.trim().is_empty()
+                || action.message.trim().is_empty()
+                || action.evidence_refs.is_empty()
+                || action
+                    .evidence_refs
+                    .iter()
+                    .any(|source| !evidence.contains(source.as_str()))
+        })
+        .map(|action| action.action_id.clone())
+        .collect::<Vec<_>>();
+    let valid = !summary.opened_futures.is_empty()
+        && !summary.next_actions.is_empty()
+        && invalid_futures.is_empty()
+        && invalid_failures.is_empty()
+        && invalid_actions.is_empty();
+    let mut check = validation_check(
+        "sft-review-summary-evidence-and-boundary-refs-required",
+        "futures, boundary failures, and next actions cite evidence and boundary refs",
+        if valid { "pass" } else { "fail" },
+    );
+    if !valid {
+        check.reason = Some(format!(
+            "invalid futures [{}], failures [{}], or actions [{}]",
+            invalid_futures.join(", "),
+            invalid_failures.join(", "),
+            invalid_actions.join(", ")
+        ));
+    }
+    check
+}
+
+fn check_review_summary_contract(summary: &SftReviewSummaryV0) -> ValidationCheck {
+    let contract = &summary.llm_judgement_contract;
+    let forbidden = contract.forbidden_readings.join(" ").to_ascii_lowercase();
+    let valid = contract
+        .input_fields
+        .iter()
+        .any(|field| field == "unknownRemainder")
+        && contract
+            .output_fields
+            .iter()
+            .any(|field| field == "nextActions")
+        && contract.required_evidence_policy.contains("evidenceRefs")
+        && forbidden.contains("probability")
+        && forbidden.contains("lean theorem")
+        && forbidden.contains("measured zero")
+        && !contract.confidence_boundary.trim().is_empty();
+    let mut check = validation_check(
+        "sft-review-summary-llm-judgement-contract-bounded",
+        "LLM judgement contract requires evidence refs and forbidden readings",
+        if valid { "pass" } else { "fail" },
+    );
+    if !valid {
+        check.reason = Some(
+            "contract must include unknown remainder, next actions, evidence refs, and forbidden readings"
+                .to_string(),
+        );
     }
     check
 }
@@ -1873,6 +2667,29 @@ fn envelope_source_ids(envelope: &ConsequenceEnvelopeReportV0) -> BTreeSet<&str>
         .collect()
 }
 
+fn envelope_boundary_refs(envelope: &ConsequenceEnvelopeReportV0) -> Vec<String> {
+    unique_strings(
+        envelope
+            .forecast_cone_ref
+            .forecast_boundary_refs
+            .iter()
+            .cloned()
+            .chain(
+                envelope
+                    .comparable_signature_axes
+                    .iter()
+                    .flat_map(|axis| axis.measurement_boundary_refs.clone()),
+            )
+            .chain(
+                envelope
+                    .theorem_boundary_items
+                    .iter()
+                    .map(|item| item.item_id.clone()),
+            )
+            .collect(),
+    )
+}
+
 fn region_ids(envelope: &ConsequenceEnvelopeReportV0) -> BTreeSet<&str> {
     envelope
         .affected_architecture_regions
@@ -1923,6 +2740,24 @@ fn treats_unknown_as_zero(value: &str) -> bool {
         || value.contains("treated as zero")
         || value.contains("safe")
         || value.contains("absent")
+}
+
+fn review_status(
+    boundary_failures: &[SftReviewBoundaryFailureV0],
+    next_actions: &[SftReviewNextActionV0],
+) -> String {
+    if boundary_failures
+        .iter()
+        .any(|failure| failure.failure_kind.contains("forbidden"))
+    {
+        "blocked".to_string()
+    } else if !boundary_failures.is_empty() {
+        "boundary_failure".to_string()
+    } else if !next_actions.is_empty() {
+        "needs_human_judgement".to_string()
+    } else {
+        "governed".to_string()
+    }
 }
 
 fn strings(values: &[&str]) -> Vec<String> {

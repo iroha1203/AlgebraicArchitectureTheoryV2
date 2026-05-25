@@ -91,8 +91,29 @@ formal theorem discharge
 
 ## SFT forecast report artifacts
 
+### SFT Grand theorem to ArchSig review judgement surface
+
+| SFT concept | ArchSig deterministic evidence | Missing artifact / boundary state | LLM / reviewer judgement |
+| --- | --- | --- | --- |
+| finite operation support | `operation-support-estimate-v0.candidateOperationFamilies[]`, `policyConstraints[]`, `supportDisposition` | `knownForbiddenSupport[]`, `unknownRemainder[]`, undefined support | Decide whether support is governed, risky, blocked, or still needs evidence. |
+| bounded ForecastCone | `forecast-cone-skeleton-v0.finiteSupportRefs[]`, `boundedHorizon`, `pathClassCandidates[]` | horizon refs missing, support refs dangling, probability boundary missing | Read path classes as bounded futures, not probability predictions. |
+| local future gluing | `forecast-cone-skeleton-v0.gluingEvidence[]` | `typedBoundaryFailures[].failureKind = "unglued-local-futures"` or missing gluing refs | Decide whether local futures can be reviewed together or must remain separate next actions. |
+| governance intervention | `forecast-cone-skeleton-v0.governanceInterventions[]`, `architecture-policy-v0.sftGovernance` | unsupported governance cut, missing policy refs, policy undefined | Choose reviewer action: cut future, allow conditionally, request policy, or keep unknown. |
+| typed boundary failure | `forecast-cone-skeleton-v0.typedBoundaryFailures[]`, `consequence-envelope-report-v0.typedBoundaryFailures[]` | missing observation boundary, undefined operation support, missing invariant, unsupported governance cut | Return bounded judgement with evidence refs; do not convert unknown into measured zero. |
+| consequence envelope | `consequence-envelope-report-v0.affectedArchitectureRegions[]`, `comparableSignatureAxes[]`, `missingBoundaryItems[]`, `reviewerActions[]` | missing boundary items, unknown remainder, theorem boundary items | Translate report items into opened futures, closed futures, boundary failures, and next actions. |
+| review judgement input | `sft-review-summary-v0` | evidence refs or boundary refs missing | LLM / reviewer returns judgement only with cited evidence and confidence boundary. |
+
+PR review input is diff / repository evidence plus ArchMap, AIR, theorem-check, policy, feature,
+PR quality, and optional `sft-review-summary-v0`. It produces review cues for changed code and
+must not become merge approval. PRD / SPEC review input is IntentMap, ArchMap, AlignmentMap,
+operation support, ForecastCone, ConsequenceEnvelope, and `sft-review-summary-v0`. It produces
+planning actions for opened futures, missing invariants, unresolved decisions, and governance
+interventions. Both surfaces preserve evidence refs, boundary refs, unknown remainder, and
+non-conclusions; neither surface proves future safety or Lean theorem claims.
+
 `forecast-cone-skeleton-v0` は finite support refs、bounded horizon、path class
-candidates、forecast boundary、unknown remainder を保持する tooling artifact である。
+candidates、gluing evidence、governance intervention、typed boundary failure、
+forecast boundary、unknown remainder を保持する tooling artifact である。
 `archmap-sft-input` から生成した `operation-support-estimate-v0` を入力にする場合、
 `source:archmap:*` refs、missing evidence、private / unavailable / unsupported boundary を
 そのまま cone と envelope へ渡す。ArchMap confidence は review priority であり probability ではない。
@@ -100,8 +121,13 @@ candidates、forecast boundary、unknown remainder を保持する tooling artif
 `consequence-envelope-report-v0` は、一つ以上の bounded cone skeleton から
 reviewer-facing report を作る projection artifact である。affected architecture regions、
 comparable signature axes、axis delta ranges、obstruction candidates、missing / theorem
-boundary、review / CI recommendation をまとめるが、projection 後も unknown remainder と
-forecast non-conclusions を保持する。
+boundary、typed boundary failure、reviewer action、review / CI recommendation をまとめるが、
+projection 後も unknown remainder と forecast non-conclusions を保持する。
+
+`sft-review-summary-v0` は `consequence-envelope-report-v0` から opened futures、
+closed futures、boundary failures、next actions、LLM judgement contract を生成する。
+これは judgement-ready summary であり、LLM / reviewer が evidence refs と boundary refs を
+引用して判断するための入力である。
 
 この envelope は cone family の一意復元、point prediction、probability、causal proof、
-forecast correctness、Lean theorem witness を主張しない。
+forecast correctness、Lean theorem witness、merge approval を主張しない。

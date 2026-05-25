@@ -85,6 +85,13 @@
       ],
       "rule": "Do not promote tooling estimates to Lean theorem claims.",
       "safetyClaimBoundary": "constraint is local to selected descriptor evidence",
+      "policyRefs": [
+        "policy:no-theorem-promotion"
+      ],
+      "supportDisposition": "allowed",
+      "governanceActionRefs": [
+        "governance:keep-formal-claim-boundary"
+      ],
       "nonConclusions": [
         "operation support estimate is a bounded tooling estimate, not accepted PR history",
         "operation support estimate is not actual future support",
@@ -105,6 +112,13 @@
       ],
       "rule": "Do not treat operation support estimates as causal forecasts.",
       "safetyClaimBoundary": "constraint is local to selected operation support evidence",
+      "policyRefs": [
+        "policy:no-causal-forecast"
+      ],
+      "supportDisposition": "forbidden",
+      "governanceActionRefs": [
+        "governance:require-review-summary"
+      ],
       "nonConclusions": [
         "operation support estimate is a bounded tooling estimate, not accepted PR history",
         "operation support estimate is not actual future support",

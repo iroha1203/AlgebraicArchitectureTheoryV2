@@ -16,7 +16,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | --- | --- | --- |
 | ArchSig Core | Lean / Python import graph scan、Sig0、validation、snapshot、signature diff。policy JSON と runtime edge evidence は明示入力として扱える。 | call graph、data dependency、dynamic import、plugin loading、framework convention は adapter boundary。extractor output は完全な `ComponentUniverse` ではない。 |
 | ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、AAT Observable Bundle、architecture-policy、law violation report、policy decision、PR comment summary、baseline suppression、PR quality analysis。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定。tool output は Lean theorem や merge approval ではない。 |
-| ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、validation report を生成する bounded pipeline。PRD v3 では `IntentMap`、`AlignmentMap`、`intent-forecast` を使って planning forecast を作る。 | real dataset calibration、framework semantics adapter は remaining gaps。`ForecastCone` は point prediction ではなく、`ConsequenceEnvelope` は report projection である。 |
+| ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、`SftReviewSummary`、validation report を生成する bounded pipeline。PRD v3 では `IntentMap`、`AlignmentMap`、`intent-forecast` を使って planning forecast を作る。 | real dataset calibration、framework semantics adapter は remaining gaps。`ForecastCone` は point prediction ではなく、`ConsequenceEnvelope` と `SftReviewSummary` は reviewer-facing projection である。 |
 | ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、B10 daily ledger、calibration review、team threshold、ownership boundary、repair adoption、incident correlation、hypothesis refresh artifacts。 | 実 dataset での calibration、incident / rollback / MTTR との運用接続、confounder 管理、private data boundary の組織別設計が残る。correlation は因果 theorem ではない。 |
 
 ## できること
@@ -155,7 +155,8 @@ archmap-v0
 | `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal を SFT forecasting MVP の入力境界へ正規化する。 |
 | `operation-support-estimate-v0` | `artifact-descriptor-v0` または `intent-archmap-alignment-v0` から候補 operation family、policy constraints、known forbidden support、unknown remainder を保持する。 |
 | `forecast-cone-skeleton-v0` | finite support と bounded horizon に相対化した path class candidates と forecast boundary を保持する。 |
-| `consequence-envelope-report-v0` | signature axis、obstruction candidate、missing boundary、review / CI recommendation を report projection にまとめる。 |
+| `consequence-envelope-report-v0` | signature axis、obstruction candidate、missing boundary、typed boundary failure、reviewer action、review / CI recommendation を report projection にまとめる。 |
+| `sft-review-summary-v0` | opened futures / closed futures / boundary failures / next actions と LLM judgement contract を evidence refs 付きでまとめる。 |
 | `forecast-calibration-hook-v0` | forecast item refs と B10 / B11 の observed artifact refs を対応付ける。 |
 | `intent-calibration-record-v0` | IntentMap item、forecast item、observed implementation artifact、missing decision status、forecast usefulness feedback を対応付ける。 |
 

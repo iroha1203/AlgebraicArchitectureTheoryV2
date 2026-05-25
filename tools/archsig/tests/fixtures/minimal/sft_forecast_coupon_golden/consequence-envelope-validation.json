@@ -481,6 +481,366 @@
         ]
       }
     ],
+    "typedBoundaryFailures": [
+      {
+        "failureId": "envelope:failure:causal-probability-assignment",
+        "failureKind": "forbidden-future-path-class",
+        "affectedRegionIds": [
+          "region:cli-fixture-validation",
+          "region:schema-and-validator"
+        ],
+        "affectedAxisIds": [
+          "axis:validatorcoverage",
+          "axis:unknownremainder",
+          "axis:schemacompleteness",
+          "axis:boundaryretention"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "reason": "descriptor evidence does not establish causal prediction or outcome probability",
+        "nextAction": "treat forbidden support as a closed or blocked future unless policy changes",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "failureId": "envelope:failure:descriptor-boundary-remainder",
+        "failureKind": "undefined-operation-support",
+        "affectedRegionIds": [
+          "region:cli-fixture-validation",
+          "region:schema-and-validator"
+        ],
+        "affectedAxisIds": [
+          "axis:validatorcoverage",
+          "axis:unknownremainder",
+          "axis:schemacompleteness",
+          "axis:boundaryretention"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "reason": "selected descriptor evidence does not contain complete operation support, runtime traces, or accepted PR history",
+        "nextAction": "request missing evidence or keep the future as unknown remainder",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      }
+    ],
+    "reviewerActions": [
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:probability-assignment:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:global-risk-reduction-proof:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:trajectory-level-safety-proof:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:empirical-prediction-theorem:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:accepted-pr-history-completeness:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:actual-future-operation-support:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:future-outcome-causality:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:global-policy-safety-proof:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:ground-truth-architecture-reconstruction:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:implicit-requirements-not-written-in-the-markdown-input:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:operation-support-probability:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:boundary",
+        "actionKind": "resolve-boundary",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "missing:causal-probability-assignment:boundary"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "retain as missing boundary item for reviewer and issue decomposition",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:causal-probability-assignment",
+        "actionKind": "typed-boundary-failure",
+        "status": "blocked",
+        "sourceItemRefs": [
+          "envelope:failure:causal-probability-assignment"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "treat forbidden support as a closed or blocked future unless policy changes",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:descriptor-boundary-remainder",
+        "actionKind": "typed-boundary-failure",
+        "status": "boundary_failure",
+        "sourceItemRefs": [
+          "envelope:failure:descriptor-boundary-remainder"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "request missing evidence or keep the future as unknown remainder",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:no-theorem-promotion",
+        "actionKind": "review-gate",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "governance:no-theorem-promotion"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "decide whether the policy constraint cuts, allows, or leaves the future unknown",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      },
+      {
+        "actionId": "action:no-causal-forecast",
+        "actionKind": "review-gate",
+        "status": "needs_human_judgement",
+        "sourceItemRefs": [
+          "governance:no-causal-forecast"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "message": "decide whether the policy constraint cuts, allows, or leaves the future unknown",
+        "nonConclusions": [
+          "consequence envelope is a report projection, not a Lean theorem proof",
+          "consequence envelope does not identify a unique causal artifact action",
+          "consequence envelope does not prove global safety",
+          "unknown remainder is not measured zero",
+          "summary projection is for review and CI consumption only"
+        ]
+      }
+    ],
     "theoremBoundaryItems": [
       {
         "itemId": "theorem-boundary:coupon-prd-forecast-pipeline:no-lean-promotion",
@@ -606,6 +966,11 @@
     {
       "id": "consequence-envelope-boundaries-and-summary-retained",
       "title": "missing boundaries, theorem boundaries, and summary projection are retained",
+      "result": "pass"
+    },
+    {
+      "id": "consequence-envelope-reviewer-actions-retained",
+      "title": "typed boundary failures and reviewer next actions retain evidence refs",
       "result": "pass"
     },
     {

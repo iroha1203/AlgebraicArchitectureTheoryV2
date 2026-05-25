@@ -49,6 +49,7 @@ pub fn validate_architecture_policy_report(
         check_layers(policy),
         check_dependency_rules(policy),
         check_srp_boundary(policy),
+        check_sft_governance_boundary(policy),
         check_non_conclusions(policy),
     ];
     let summary = ArchitecturePolicyValidationSummaryV0 {
@@ -435,6 +436,48 @@ fn check_srp_boundary(policy: &ArchitecturePolicyV0) -> ValidationCheck {
     check_examples(
         "architecture-policy-srp-evidence-boundary-recorded",
         "SRP semantic evidence and LLM judgment boundary are explicit",
+        invalid,
+    )
+}
+
+fn check_sft_governance_boundary(policy: &ArchitecturePolicyV0) -> ValidationCheck {
+    let governance = &policy.sft_governance;
+    let mut invalid = Vec::new();
+    for rule in governance
+        .allowed_operation_families
+        .iter()
+        .chain(governance.conditionally_allowed_support.iter())
+        .chain(governance.forbidden_future_path_classes.iter())
+    {
+        if rule.rule_id.trim().is_empty()
+            || rule.applies_to.is_empty()
+            || rule.disposition.trim().is_empty()
+            || rule.reason.trim().is_empty()
+            || rule.reviewer_action.trim().is_empty()
+        {
+            invalid.push(generic_validation_example(
+                &rule.rule_id,
+                "sftGovernance",
+                "future policy rules require ids, targets, disposition, reason, and reviewer action",
+            ));
+        }
+    }
+    for intervention in &governance.required_governance_interventions {
+        if intervention.intervention_id.trim().is_empty()
+            || intervention.applies_to.is_empty()
+            || intervention.required_before.trim().is_empty()
+            || intervention.preservation_boundary.trim().is_empty()
+        {
+            invalid.push(generic_validation_example(
+                &intervention.intervention_id,
+                "sftGovernance.requiredGovernanceInterventions",
+                "governance interventions require ids, targets, timing, and preservation boundary",
+            ));
+        }
+    }
+    check_examples(
+        "architecture-policy-sft-governance-boundary-recorded",
+        "SFT governance future policy is explicit when provided",
         invalid,
     )
 }

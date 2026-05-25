@@ -15,7 +15,7 @@ directories for `--out` and `--out-dir` paths. Keep canonical fixtures and regre
 | --- | --- | --- |
 | ArchSig Core | default scan、`validate`、`snapshot`、`signature-diff` | repository observation と revision diff。未評価軸は `metricStatus` と `metricDeltaStatus` で読む。 |
 | ArchSig Review | `air`、`archmap`、`archmap-generate`、`air-from-archmap`、`validate-air`、`theorem-check`、`feature-report`、`aat-observable-bundle`、`architecture-policy`、`law-violation-report`、`policy-decision`、`pr-comment`、`baseline-suppression`、`pr-quality-analysis` | PR / CI review 補助。tool output を formal theorem claim や merge approval に昇格しない。 |
-| ArchSig SFT | `artifact-descriptor`、`intent-map`、`intent-archmap-alignment`、`archmap-sft-input`、`operation-support-estimate`、`intent-forecast`、`forecast-cone-skeleton`、`consequence-envelope`、`forecast-calibration-hook`、`intent-calibration-record`、`ai-proposal-governance`、`sft-forecast` | bounded forecast artifact と governance / report projection。point prediction、causal proof、global safety は non-conclusions。PRD v3 planning forecast は IntentMap x ArchMap alignment を入力にする。 |
+| ArchSig SFT | `artifact-descriptor`、`intent-map`、`intent-archmap-alignment`、`archmap-sft-input`、`operation-support-estimate`、`intent-forecast`、`forecast-cone-skeleton`、`consequence-envelope`、`sft-review-summary`、`forecast-calibration-hook`、`intent-calibration-record`、`ai-proposal-governance`、`sft-forecast` | bounded forecast artifact と governance / report projection。point prediction、causal proof、global safety は non-conclusions。PRD v3 planning forecast は IntentMap x ArchMap alignment を入力にする。 |
 | ArchSig Operational | `dataset`、`pr-history-dataset`、`feature-extension-dataset`、`outcome-linkage-dataset`、B10 feedback commands | calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh 用 artifact。correlation は因果 theorem ではない。 |
 
 ## Scan
@@ -66,7 +66,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- architecture-policy \
 ```
 
 `architecture-policy-v0` は adopted laws、layer selectors、allowed / forbidden dependency、
-exception、SRP taxonomy を保持する。Layered Architecture は deterministic evaluator の対象だが、
+exception、SRP taxonomy、SFT governance / future policy を保持する。SFT governance では
+adopted invariant refs、allowed / conditionally allowed operation families、forbidden future
+path classes、required governance interventions、selected horizon、observation boundary refs を
+宣言できる。policy 未定義は safe path へ丸めず、review boundary として後段へ渡す。
+Layered Architecture は deterministic evaluator の対象だが、
 SRP は semantic role、responsibility region、reason-to-change、law refs を LLM Review Skill へ渡す
 cue であり、tool 単独の violation ではない。
 
@@ -522,7 +526,8 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-cone-skeleton \
 ```
 
 `forecast-cone-skeleton` の generator は operation support refs、finite support refs、
-bounded horizon、path class candidates、forecast boundary、unknown remainder を保持する。
+bounded horizon、path class candidates、gluing evidence、governance intervention、
+typed boundary failure、forecast boundary、unknown remainder を保持する。
 probability、global risk reduction、trajectory-level safety、empirical prediction theorem は
 non-conclusions として残す。
 
@@ -543,6 +548,21 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- consequence-envelope \
 cargo run --manifest-path tools/archsig/Cargo.toml -- consequence-envelope \
   --forecast-cone .archsig/signature/current/forecast-cone-skeleton.json \
   --out .archsig/signature/current/consequence-envelope-report.json
+```
+
+`consequence-envelope-report-v0` から reviewer-facing な
+`sft-review-summary-v0` を生成する。これは opened futures / closed futures /
+boundary failures / next actions を evidence refs と boundary refs 付きで並べる
+deterministic projection であり、LLM provider 呼び出しや merge approval ではない。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- sft-review-summary \
+  --consequence-envelope .archsig/signature/current/consequence-envelope-report.json \
+  --out .archsig/signature/current/sft-review-summary.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- sft-review-summary \
+  --input .archsig/signature/current/sft-review-summary.json \
+  --out .archsig/signature/current/sft-review-summary-validation.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-calibration-hook \
   --fixture \
@@ -557,8 +577,12 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- forecast-calibration-hook 
 path class candidates、operation support refs、source refs、forecast boundary、
 unknown remainder を保持する。`consequence-envelope-report-v0` は affected
 architecture regions、comparable signature axes、expected axis delta ranges、
-selected obstruction witness candidates、missing boundary items、theorem boundary
-items、review / CI / issue recommendation を保持する。`forecast-calibration-hook-v0`
+selected obstruction witness candidates、missing boundary items、typed boundary
+failures、reviewer actions、theorem boundary items、review / CI / issue recommendation
+を保持する。`sft-review-summary-v0` は LLM / reviewer judgement の入力契約として
+status、opened futures、closed futures、evidence、next actions、confidence boundary を固定し、
+probability claim、causal proof、Lean theorem promotion、unknown remainder の measured zero 化を禁じる。
+`forecast-calibration-hook-v0`
 は forecast item refs と observed PR / review / CI / outcome refs、B10 / B11 artifact
 boundary を対応付ける。これらは probability、global risk reduction、trajectory-level
 safety、forecast correctness、causal proof、Lean theorem claim を主張しない。
@@ -662,9 +686,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- sft-forecast \
 - `forecast-cone-skeleton-validation.json`
 - `consequence-envelope-report.json`
 - `consequence-envelope-validation.json`
+- `sft-review-summary.json`
+- `sft-review-summary-validation.json`
 
 この command の成功は、source refs、measurement boundary、forecast boundary、
-unknown remainder、non-conclusions が B13 pipeline 内で保持されたことを検査する。
+unknown remainder、reviewer-facing next actions、non-conclusions が B13 pipeline 内で保持されたことを検査する。
 probability、causal prediction、global safety、Lean theorem claim、extractor
 completeness、forecast correctness は結論しない。
 

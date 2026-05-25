@@ -385,6 +385,9 @@ pub fn build_operation_support_estimate_from_intent_alignment(
             rule: "Do not treat IntentMap x ArchMap alignment as forecast correctness.".to_string(),
             safety_claim_boundary:
                 "projection preserves alignment evidence and planning boundaries only".to_string(),
+            policy_refs: vec!["policy:intent-forecast-boundary".to_string()],
+            support_disposition: "conditionallyAllowed".to_string(),
+            governance_action_refs: vec!["governance:resolve-missing-decisions".to_string()],
             non_conclusions: strings(&FORECAST_NON_CONCLUSIONS),
         }],
         known_forbidden_support: vec![KnownForbiddenOperationSupportV0 {

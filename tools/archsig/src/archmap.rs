@@ -122,6 +122,9 @@ pub fn build_operation_support_estimate_from_archmap(
             source_ref_ids: source_ref_ids.clone(),
             rule: "ArchMap-derived SFT input is bounded evidence and must not be treated as a forecast result".to_string(),
             safety_claim_boundary: "projection preserves source refs and missing evidence, not semantic truth or probability".to_string(),
+            policy_refs: vec!["policy:archmap-sft-boundary".to_string()],
+            support_disposition: "conditionallyAllowed".to_string(),
+            governance_action_refs: vec!["governance:review-missing-evidence".to_string()],
             non_conclusions: archmap_sft_non_conclusions(),
         }],
         known_forbidden_support: vec![KnownForbiddenOperationSupportV0 {

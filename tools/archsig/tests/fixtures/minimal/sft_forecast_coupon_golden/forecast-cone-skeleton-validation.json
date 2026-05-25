@@ -151,6 +151,120 @@
         ]
       }
     ],
+    "gluingEvidence": [
+      {
+        "gluingId": "gluing:local-futures",
+        "localFutureRefs": [
+          "path:cli-fixture-validation",
+          "path:schema-and-validator"
+        ],
+        "status": "requires_review",
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "boundary": "local futures are listed for bounded review; gluing is not a theorem conclusion",
+        "reviewerAction": "confirm whether selected local futures can be reviewed together",
+        "nonConclusions": [
+          "forecast cone skeleton is bounded by selected finite support and horizon",
+          "forecast cone skeleton does not assign probabilities",
+          "forecast cone skeleton does not prove global risk reduction",
+          "forecast cone skeleton does not prove trajectory-level safety",
+          "forecast cone skeleton is not an empirical prediction theorem"
+        ]
+      }
+    ],
+    "governanceInterventions": [
+      {
+        "interventionId": "governance:no-theorem-promotion",
+        "interventionKind": "review-gate",
+        "targetPathClassIds": [
+          "path:cli-fixture-validation",
+          "path:schema-and-validator"
+        ],
+        "policyRefs": [
+          "policy:no-theorem-promotion"
+        ],
+        "cutAction": "apply governance actions governance:keep-formal-claim-boundary",
+        "preservationBoundary": "constraint is local to selected descriptor evidence",
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "reviewerAction": "decide whether the policy constraint cuts, allows, or leaves the future unknown",
+        "nonConclusions": [
+          "forecast cone skeleton is bounded by selected finite support and horizon",
+          "forecast cone skeleton does not assign probabilities",
+          "forecast cone skeleton does not prove global risk reduction",
+          "forecast cone skeleton does not prove trajectory-level safety",
+          "forecast cone skeleton is not an empirical prediction theorem"
+        ]
+      },
+      {
+        "interventionId": "governance:no-causal-forecast",
+        "interventionKind": "review-gate",
+        "targetPathClassIds": [
+          "path:cli-fixture-validation",
+          "path:schema-and-validator"
+        ],
+        "policyRefs": [
+          "policy:no-causal-forecast"
+        ],
+        "cutAction": "apply governance actions governance:require-review-summary",
+        "preservationBoundary": "constraint is local to selected operation support evidence",
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "reviewerAction": "decide whether the policy constraint cuts, allows, or leaves the future unknown",
+        "nonConclusions": [
+          "forecast cone skeleton is bounded by selected finite support and horizon",
+          "forecast cone skeleton does not assign probabilities",
+          "forecast cone skeleton does not prove global risk reduction",
+          "forecast cone skeleton does not prove trajectory-level safety",
+          "forecast cone skeleton is not an empirical prediction theorem"
+        ]
+      }
+    ],
+    "typedBoundaryFailures": [
+      {
+        "failureId": "failure:causal-probability-assignment",
+        "failureKind": "forbidden-future-path-class",
+        "affectedPathClassIds": [
+          "path:cli-fixture-validation",
+          "path:schema-and-validator"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "reason": "descriptor evidence does not establish causal prediction or outcome probability",
+        "reviewerAction": "treat forbidden support as a closed or blocked future unless policy changes",
+        "nonConclusions": [
+          "forecast cone skeleton is bounded by selected finite support and horizon",
+          "forecast cone skeleton does not assign probabilities",
+          "forecast cone skeleton does not prove global risk reduction",
+          "forecast cone skeleton does not prove trajectory-level safety",
+          "forecast cone skeleton is not an empirical prediction theorem"
+        ]
+      },
+      {
+        "failureId": "failure:descriptor-boundary-remainder",
+        "failureKind": "undefined-operation-support",
+        "affectedPathClassIds": [
+          "path:cli-fixture-validation",
+          "path:schema-and-validator"
+        ],
+        "evidenceRefs": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "reason": "selected descriptor evidence does not contain complete operation support, runtime traces, or accepted PR history",
+        "reviewerAction": "request missing evidence or keep the future as unknown remainder",
+        "nonConclusions": [
+          "forecast cone skeleton is bounded by selected finite support and horizon",
+          "forecast cone skeleton does not assign probabilities",
+          "forecast cone skeleton does not prove global risk reduction",
+          "forecast cone skeleton does not prove trajectory-level safety",
+          "forecast cone skeleton is not an empirical prediction theorem"
+        ]
+      }
+    ],
     "forecastBoundary": {
       "boundaryId": "boundary:estimate:descriptor:coupon-prd-forecast-pipeline:forecast-cone-skeleton",
       "sourceRefIds": [
@@ -262,6 +376,11 @@
       "title": "path class candidates are finite, source-bound, and non-probabilistic",
       "result": "pass",
       "count": 2
+    },
+    {
+      "id": "forecast-cone-grand-theorem-review-evidence-retained",
+      "title": "gluing, governance, and typed boundary failure evidence are retained",
+      "result": "pass"
     },
     {
       "id": "forecast-cone-boundary-retained",
