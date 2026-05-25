@@ -1,0 +1,15 @@
+{
+  "number": 878,
+  "title": "Add ArchSig-SFT JSON input adapters",
+  "body": "Add GitHub Issue JSON and AI proposal JSON adapters for artifact-descriptor-v0. Scope: tools/archsig/src/artifact_descriptor.rs and tools/archsig/docs/commands.md. Completion criteria: schema boundary, fixture, validation test, and non-conclusions are retained.",
+  "state": "open",
+  "html_url": "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/878",
+  "labels": [
+    {
+      "name": "type:tooling"
+    },
+    {
+      "name": "area:signature"
+    }
+  ]
+}

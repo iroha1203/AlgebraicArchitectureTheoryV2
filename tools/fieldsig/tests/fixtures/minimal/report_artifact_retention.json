@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "report-artifact-retention-manifest-v0",
+  "retentionId": "fixture-b7-report-artifact-retention",
+  "repository": {
+    "owner": "iroha1203",
+    "name": "AlgebraicArchitectureTheoryV2",
+    "defaultBranch": "main"
+  },
+  "pullRequest": {
+    "number": 575,
+    "url": "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/575"
+  },
+  "commitSha": "fixture-b7-retention-commit",
+  "policy": {
+    "policyId": "aat-b7-default-organization-policy",
+    "policyVersion": "2026-05-05",
+    "schemaVersion": "organization-policy-v0"
+  },
+  "generatedAt": "2026-05-05T00:00:00Z",
+  "retentionScope": "ci-pr-review-baseline-suppression",
+  "artifacts": [
+    {
+      "artifactId": "artifact-feature-extension-report",
+      "kind": "featureExtensionReport",
+      "path": "artifacts/pr-575/feature-extension-report.json",
+      "repository": {
+        "owner": "iroha1203",
+        "name": "AlgebraicArchitectureTheoryV2",
+        "defaultBranch": "main"
+      },
+      "pullRequestNumber": 575,
+      "commitSha": "fixture-b7-retention-commit",
+      "schemaVersion": "feature-extension-report-v0",
+      "policyVersion": "2026-05-05",
+      "generatedAt": "2026-05-05T00:00:00Z",
+      "retentionScope": "ci-pr-review-baseline-suppression",
+      "visibility": "repository",
+      "nonConclusions": [
+        "retained report artifacts are review evidence, not Lean theorem claims",
+        "missing or private artifacts are not measured-zero evidence"
+      ]
+    },
+    {
+      "artifactId": "artifact-theorem-check-report",
+      "kind": "theoremCheckReport",
+      "path": "artifacts/pr-575/theorem-check-report.json",
+      "repository": {
+        "owner": "iroha1203",
+        "name": "AlgebraicArchitectureTheoryV2",
+        "defaultBranch": "main"
+      },
+      "pullRequestNumber": 575,
+      "commitSha": "fixture-b7-retention-commit",
+      "schemaVersion": "theorem-precondition-check-report-v0",
+      "policyVersion": "2026-05-05",
+      "generatedAt": "2026-05-05T00:00:00Z",
+      "retentionScope": "ci-pr-review-baseline-suppression",
+      "visibility": "repository",
+      "nonConclusions": [
+        "retained report artifacts are review evidence, not Lean theorem claims",
+        "missing or private artifacts are not measured-zero evidence"
+      ]
+    },
+    {
+      "artifactId": "artifact-policy-decision-report",
+      "kind": "policyDecisionReport",
+      "path": "artifacts/pr-575/policy-decision-report.json",
+      "repository": {
+        "owner": "iroha1203",
+        "name": "AlgebraicArchitectureTheoryV2",
+        "defaultBranch": "main"
+      },
+      "pullRequestNumber": 575,
+      "commitSha": "fixture-b7-retention-commit",
+      "schemaVersion": "policy-decision-report-v0",
+      "policyVersion": "2026-05-05",
+      "generatedAt": "2026-05-05T00:00:00Z",
+      "retentionScope": "ci-pr-review-baseline-suppression",
+      "visibility": "repository",
+      "nonConclusions": [
+        "retained report artifacts are review evidence, not Lean theorem claims",
+        "missing or private artifacts are not measured-zero evidence"
+      ]
+    }
+  ],
+  "missingOrPrivateArtifacts": [
+    {
+      "kind": "prCommentSummary",
+      "reason": "fixture keeps reviewer comment storage private",
+      "visibility": "private",
+      "repository": {
+        "owner": "iroha1203",
+        "name": "AlgebraicArchitectureTheoryV2",
+        "defaultBranch": "main"
+      },
+      "pullRequestNumber": 575,
+      "commitSha": "fixture-b7-retention-commit",
+      "schemaVersion": "pr-comment-summary-v0",
+      "policyVersion": "2026-05-05",
+      "generatedAt": "2026-05-05T00:00:00Z",
+      "retentionScope": "ci-pr-review-baseline-suppression",
+      "nonConclusions": [
+        "missing or private artifacts are not measured-zero evidence",
+        "PR comment summaries are reviewer-facing summaries, not proof certificates"
+      ]
+    }
+  ],
+  "traceability": {
+    "baselineComparisonRefs": [
+      "baseline:pr-575"
+    ],
+    "suppressionWorkflowRefs": [
+      "suppression-workflow:pr-575"
+    ],
+    "driftLedgerRefs": [
+      "drift-ledger:pr-575"
+    ],
+    "reviewerOutputRefs": [
+      "github-pr-comment:575"
+    ]
+  },
+  "nonConclusions": [
+    "retained report artifacts are review evidence, not Lean theorem claims",
+    "missing or private artifacts are not measured-zero evidence",
+    "artifact retention does not conclude architecture lawfulness",
+    "PR comment summaries are reviewer-facing summaries, not proof certificates"
+  ]
+}

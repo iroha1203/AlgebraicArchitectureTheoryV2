@@ -1,0 +1,231 @@
+{
+  "schemaVersion": "calibration-review-record-v0",
+  "schemaCompatibility": {
+    "artifactId": "calibration-review-record",
+    "schemaVersionName": "calibration-review-record-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "reportFindingRefs",
+        "targetField": "reportFindingRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve report finding traceability"
+      },
+      {
+        "sourceField": "witnessRefs",
+        "targetField": "witnessRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve witness traceability without proving witness semantics"
+      },
+      {
+        "sourceField": "reviewerDecision",
+        "targetField": "reviewerDecision",
+        "mappingKind": "stable",
+        "requiredReview": "preserve false positive / false negative review decision"
+      },
+      {
+        "sourceField": "outcomeRefs",
+        "targetField": "outcomeRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve bounded outcome observation refs"
+      },
+      {
+        "sourceField": "confidence",
+        "targetField": "confidence",
+        "mappingKind": "stable",
+        "requiredReview": "preserve empirical confidence boundary"
+      },
+      {
+        "sourceField": "missingEvidence",
+        "targetField": "missingEvidence",
+        "mappingKind": "stable",
+        "requiredReview": "preserve missing / private evidence boundaries"
+      },
+      {
+        "sourceField": "calibrationInput",
+        "targetField": "calibrationInput",
+        "mappingKind": "stable",
+        "requiredReview": "preserve policy tuning inputs as empirical signal"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve empirical / formal-claim guardrails"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "report-finding-refs-are-preserved",
+        "appliesTo": "calibration-review-record",
+        "requiredFor": "metric calibration review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "reviewer-decision-boundary-is-preserved",
+        "appliesTo": "calibration-review-record",
+        "requiredFor": "metric calibration review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "missing-evidence-remains-missing-or-private",
+        "appliesTo": "calibration-review-record",
+        "requiredFor": "metric calibration review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "calibration-input-is-not-theorem-precondition-discharge",
+        "appliesTo": "calibration-review-record",
+        "requiredFor": "metric calibration review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "calibration-review.report-finding",
+        "measurementBoundary": "boundedReview",
+        "coverageAssumptions": [
+          "reportFindingRefs identify the selected report warnings",
+          "witnessRefs preserve witness traceability without re-proving them"
+        ],
+        "exactnessAssumptions": [
+          "finding review is scoped to the selected outcome refs"
+        ]
+      },
+      {
+        "axisOrLayer": "calibration-review.decision",
+        "measurementBoundary": "empiricalReview",
+        "coverageAssumptions": [
+          "reviewerDecision records false positive / false negative classification",
+          "confidence records empirical review strength"
+        ],
+        "exactnessAssumptions": [
+          "review decision can tune policy but cannot promote a formal theorem claim"
+        ]
+      },
+      {
+        "axisOrLayer": "calibration-review.missing-evidence",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "missingEvidence entries preserve unavailable and private evidence refs"
+        ],
+        "exactnessAssumptions": [
+          "missing or private evidence is never rounded to measuredZero"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "calibration review schema compatibility metadata does not prove semantic preservation",
+      "calibration review schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+      "false positive / false negative review is empirical policy input, not causal proof"
+    ]
+  },
+  "recordId": "fixture-b10-calibration-review-false-positive-v0",
+  "reviewedAt": "2026-05-05T09:00:00Z",
+  "reviewer": "architecture-reviewer@example.com",
+  "reportFindingRefs": [
+    {
+      "reportRef": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+      "findingId": "finding-runtime-private-evidence-warning",
+      "metricRef": "runtime.privateEvidenceCount",
+      "findingKind": "boundary-warning",
+      "severity": "warn",
+      "measurementBoundary": "unmeasured"
+    }
+  ],
+  "witnessRefs": [
+    "witness-hidden-runtime-edge",
+    "obstruction-witness:private-runtime-evidence"
+  ],
+  "reviewerDecision": {
+    "decision": "falsePositive",
+    "reviewedFindingStatus": "warning did not correspond to observed incident or rollback in the bounded review window",
+    "recommendedCalibrationAction": "lower CI policy from fail to advisory for this metric until more outcome evidence is available",
+    "calibrationScope": "checkout-service runtime private evidence warnings",
+    "decisionRefs": [
+      "review-thread:calibration-2026-05-05"
+    ]
+  },
+  "outcomeRefs": [
+    {
+      "kind": "pull-request",
+      "id": "example/repo#42",
+      "url": "https://github.com/example/repo/pull/42",
+      "boundary": "boundedOutcomeObservation",
+      "metricRefs": [
+        "reviewCost.approvalLatencyHours",
+        "followUpFixCount"
+      ]
+    },
+    {
+      "kind": "daily-ledger",
+      "id": "fixture-b10-report-outcome-daily-ledger",
+      "boundary": "operationalFeedback",
+      "metricRefs": [
+        "driftLedger.private_runtime_evidence_count"
+      ]
+    }
+  ],
+  "rationale": "The report finding preserved an unmeasured private runtime boundary, but the bounded outcome window did not include corroborating incident, rollback, or follow-up fix evidence.",
+  "confidence": {
+    "level": "medium",
+    "score": 0.64,
+    "evidenceBoundary": "bounded empirical review; missing private runtime traces remain unmeasured",
+    "nonConclusions": [
+      "medium confidence does not prove the warning was semantically wrong",
+      "absence of observed incident evidence is not measured-zero incident evidence"
+    ]
+  },
+  "missingEvidence": [
+    {
+      "evidenceKind": "private-runtime-trace",
+      "reason": "runtime trace is retained as a private artifact reference only",
+      "boundary": "private",
+      "followUpRef": "evidence-request:runtime-trace-redaction-policy"
+    },
+    {
+      "evidenceKind": "post-merge-observation-window",
+      "reason": "only one daily ledger window is available for this fixture",
+      "boundary": "unavailable",
+      "followUpRef": "calibration-backlog:extend-observation-window"
+    }
+  ],
+  "calibrationInput": {
+    "metricRefs": [
+      "runtime.privateEvidenceCount",
+      "driftLedger.private_runtime_evidence_count",
+      "reviewCost.approvalLatencyHours"
+    ],
+    "thresholdPolicyRefs": [
+      "ci-policy:runtime-private-evidence-advisory-v0"
+    ],
+    "sourceLedgerRefs": [
+      "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json"
+    ],
+    "downstreamIssueRefs": [
+      "#622"
+    ],
+    "nonConclusions": [
+      "calibration input is an empirical signal for policy tuning",
+      "calibration input is not theorem precondition discharge"
+    ]
+  },
+  "analysisMetadata": {
+    "leanStatus": "empirical hypothesis / tooling validation",
+    "measurementBoundary": "bounded false positive / false negative review over report findings and outcome refs",
+    "calibrationBoundary": "review decision can tune warning thresholds but cannot promote formal claims",
+    "nonConclusions": [
+      "reviewer decision does not prove or refute obstruction witness existence",
+      "metric calibration does not establish architecture lawfulness",
+      "false positive / false negative labels are bounded operational review outcomes"
+    ]
+  },
+  "nonConclusions": [
+    "calibration review record is empirical / operational signal, not a Lean theorem",
+    "false positive review does not imply absence of architecture risk",
+    "false negative review does not imply causal proof from warning to outcome",
+    "missing or private evidence is not measured-zero evidence"
+  ]
+}

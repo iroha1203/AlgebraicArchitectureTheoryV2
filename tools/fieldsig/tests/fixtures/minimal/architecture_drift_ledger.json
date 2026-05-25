@@ -1,0 +1,252 @@
+{
+  "schemaVersion": "architecture-drift-ledger-v0",
+  "schemaCompatibility": {
+    "artifactId": "architecture-drift-ledger",
+    "schemaVersionName": "architecture-drift-ledger-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "entries[].subjectRef",
+        "targetField": "entries[].subjectRef",
+        "mappingKind": "stable",
+        "requiredReview": "preserve stable grouping key"
+      },
+      {
+        "sourceField": "entries[].witnessFingerprint",
+        "targetField": "entries[].witnessFingerprint",
+        "mappingKind": "stable",
+        "requiredReview": "preserve repeated violation grouping key"
+      },
+      {
+        "sourceField": "entries[].aggregationWindow",
+        "targetField": "entries[].aggregationWindow",
+        "mappingKind": "stable",
+        "requiredReview": "preserve metric aggregation boundary"
+      },
+      {
+        "sourceField": "entries[].measurementBoundary",
+        "targetField": "entries[].measurementBoundary",
+        "mappingKind": "stable",
+        "requiredReview": "preserve measured / unmeasured / out-of-scope state"
+      },
+      {
+        "sourceField": "entries[].suppression",
+        "targetField": "entries[].suppression",
+        "mappingKind": "stable",
+        "requiredReview": "preserve suppression audit metadata"
+      },
+      {
+        "sourceField": "retentionManifestRef",
+        "targetField": "retentionManifestRef",
+        "mappingKind": "stable",
+        "requiredReview": "preserve retained artifact traceability"
+      },
+      {
+        "sourceField": "baselineRef",
+        "targetField": "baselineRef",
+        "mappingKind": "stable",
+        "requiredReview": "preserve baseline comparison link"
+      },
+      {
+        "sourceField": "suppressionWorkflowRefs",
+        "targetField": "suppressionWorkflowRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve suppression workflow links"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve ledger guardrails"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "private-and-missing-ledger-evidence-remains-unmeasured",
+        "appliesTo": "architecture-drift-ledger",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer a formal claim"
+      },
+      {
+        "assumptionId": "retention-metadata-is-present-for-retained-artifact-refs",
+        "appliesTo": "architecture-drift-ledger",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer a formal claim"
+      },
+      {
+        "assumptionId": "stable-grouping-keys-are-preserved",
+        "appliesTo": "architecture-drift-ledger",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer a formal claim"
+      },
+      {
+        "assumptionId": "suppression-metadata-is-preserved-for-suppressed-or-accepted-risk-entries",
+        "appliesTo": "architecture-drift-ledger",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer a formal claim"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "ledger.retention.baseline.suppression",
+        "measurementBoundary": "operationalMetadata",
+        "coverageAssumptions": [
+          "retentionManifestRef is present when retained reports are referenced",
+          "baselineRef is present when baseline deltas are reported",
+          "suppressionWorkflowRefs are present when suppressed status is reported"
+        ],
+        "exactnessAssumptions": [
+          "retention / baseline / suppression metadata is versioned with the ledger schema"
+        ]
+      },
+      {
+        "axisOrLayer": "ledger.private-or-missing-evidence",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "private retained artifact remains private",
+          "missing evidence ref remains missing"
+        ],
+        "exactnessAssumptions": [
+          "private / missing / unmeasured evidence is not rounded to measuredZero"
+        ]
+      },
+      {
+        "axisOrLayer": "ledger.metric.same_boundary_violation_reopened_count",
+        "measurementBoundary": "measuredNonzero",
+        "coverageAssumptions": [
+          "feature-report:pr-575",
+          "retention:fixture-b7-report-artifact-retention"
+        ],
+        "exactnessAssumptions": [
+          "ledger metric status is operational state, not formal proof state"
+        ]
+      },
+      {
+        "axisOrLayer": "ledger.metric.private_runtime_evidence_count",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "missing-private-artifact:runtime-log"
+        ],
+        "exactnessAssumptions": [
+          "ledger metric status is operational state, not formal proof state"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "architecture drift ledger schema compatibility metadata does not prove semantic preservation",
+      "architecture drift ledger schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+      "private / missing / unmeasured evidence is not measured-zero evidence"
+    ]
+  },
+  "ledgerId": "fixture-b9-architecture-drift-ledger",
+  "generatedAt": "2026-05-05T00:00:00Z",
+  "baselineRef": "baseline:pr-575",
+  "retentionManifestRef": "report-artifacts:fixture-b7-report-artifact-retention",
+  "suppressionWorkflowRefs": [
+    "suppression-workflow:pr-575"
+  ],
+  "entries": [
+    {
+      "ledgerEntryId": "ledger-entry-hidden-cache-active",
+      "observedAt": "2026-05-05T00:00:00Z",
+      "architectureId": "checkout-service",
+      "revisionRef": "main@fixture-b9-drift-current",
+      "subjectRef": "component:CouponService->PaymentAdapter",
+      "witnessFingerprint": "hidden-cache-access:CouponService:PaymentAdapter",
+      "policyRef": "boundary-policy-v0",
+      "aggregationWindow": {
+        "windowStart": "2026-05-04T00:00:00Z",
+        "windowEnd": "2026-05-05T00:00:00Z",
+        "windowKind": "daily"
+      },
+      "source": {
+        "kind": "daily_batch",
+        "ref": "batch:archsig-daily:2026-05-05"
+      },
+      "metricId": "same_boundary_violation_reopened_count",
+      "layer": "static",
+      "measuredValue": 1,
+      "measurementBoundary": "measuredNonzero",
+      "evidenceRefs": [
+        "feature-report:pr-575",
+        "retention:fixture-b7-report-artifact-retention"
+      ],
+      "confidence": "high",
+      "introducedByPr": "575",
+      "firstSeenAt": "2026-05-04T10:00:00Z",
+      "lastSeenAt": "2026-05-05T00:00:00Z",
+      "owner": "checkout-platform",
+      "status": "suppressed",
+      "suppression": {
+        "reason": "temporary review suppression for migration window",
+        "approvedBy": "architecture-reviewer",
+        "approvedAt": "2026-05-04T11:00:00Z",
+        "expiresAt": "2026-05-11T00:00:00Z",
+        "scope": "pr-575 hidden interaction witness",
+        "policyRef": "boundary-policy-v0",
+        "witnessRef": "witness-hidden-cache-access"
+      },
+      "repairCandidates": [
+        "repair-coupon-boundary"
+      ],
+      "linkedWitnessRefs": [
+        "witness-hidden-cache-access"
+      ],
+      "linkedClaimRefs": [
+        "claim-static-boundary"
+      ],
+      "nonConclusions": [
+        "suppression metadata is not repair success",
+        "ledger status is operational state, not formal proof state"
+      ]
+    },
+    {
+      "ledgerEntryId": "ledger-entry-private-runtime-unmeasured",
+      "observedAt": "2026-05-05T00:00:00Z",
+      "architectureId": "checkout-service",
+      "revisionRef": "main@fixture-b9-drift-current",
+      "subjectRef": "runtime:PaymentAdapter",
+      "witnessFingerprint": "private-runtime-log:PaymentAdapter",
+      "policyRef": "runtime-evidence-policy-v0",
+      "aggregationWindow": {
+        "windowStart": "2026-05-04T00:00:00Z",
+        "windowEnd": "2026-05-05T00:00:00Z",
+        "windowKind": "daily"
+      },
+      "source": {
+        "kind": "scheduled_scan",
+        "ref": "scan:runtime-private-fixture"
+      },
+      "metricId": "private_runtime_evidence_count",
+      "layer": "runtime",
+      "measuredValue": null,
+      "measurementBoundary": "unmeasured",
+      "evidenceRefs": [
+        "missing-private-artifact:runtime-log"
+      ],
+      "confidence": "medium",
+      "introducedByPr": null,
+      "firstSeenAt": "2026-05-05T00:00:00Z",
+      "lastSeenAt": "2026-05-05T00:00:00Z",
+      "owner": null,
+      "status": "unmeasured",
+      "suppression": null,
+      "repairCandidates": [],
+      "linkedWitnessRefs": [
+        "witness-hidden-cache-access"
+      ],
+      "linkedClaimRefs": [],
+      "nonConclusions": [
+        "private / missing runtime evidence is not measured-zero evidence",
+        "unmeasured runtime evidence does not conclude runtime risk zero"
+      ]
+    }
+  ],
+  "nonConclusions": [
+    "architecture drift ledger is empirical / operational signal, not a Lean theorem",
+    "ledger compatibility does not prove semantic preservation",
+    "ledger compatibility does not imply extractor completeness"
+  ]
+}

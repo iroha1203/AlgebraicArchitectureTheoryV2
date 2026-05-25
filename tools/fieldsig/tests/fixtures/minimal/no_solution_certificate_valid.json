@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "no-solution-certificate-v0",
+  "certificateId": "certificate-coupon-no-solution-v0",
+  "scope": "bounded no-solution certificate for selected coupon synthesis universe",
+  "constraintRefs": [
+    "constraint-static-boundary-coupon-v0",
+    "constraint-semantic-rounding-contract-v0"
+  ],
+  "refutedCandidateRefs": [
+    "candidate-direct-cache-access-v0",
+    "candidate-ignore-rounding-contract-v0"
+  ],
+  "obstructionWitnessRefs": [
+    "witness-hidden-cache-access",
+    "witness-rounding-order-difference"
+  ],
+  "requiredAssumptions": [
+    "candidate universe is finite and explicitly enumerated",
+    "each refuted candidate is interpreted inside the selected measurement universe"
+  ],
+  "coverageAssumptions": [
+    "certificate cases cover the recorded candidate refs",
+    "unsupported constructs are reported rather than discharged"
+  ],
+  "exactnessAssumptions": [
+    "constraint refs name the selected bounded synthesis package inputs",
+    "case evidence refs name the selected obstruction witnesses"
+  ],
+  "unsupportedConstructs": [
+    "unbounded candidate generation is outside no-solution-certificate-v0"
+  ],
+  "proofObligationRefs": [
+    "ValidNoSolutionCertificate",
+    "NoSolutionCertificate.sound_of_valid"
+  ],
+  "validCertificateClaimRef": "claim-valid-no-solution-certificate",
+  "cases": [
+    {
+      "caseId": "case-direct-cache-still-breaks-boundary",
+      "constraintRefs": ["constraint-static-boundary-coupon-v0"],
+      "refutedCandidateRef": "candidate-direct-cache-access-v0",
+      "evidenceRefs": ["evidence-hidden-edge"],
+      "theoremPreconditionRefs": ["ValidNoSolutionCertificate"],
+      "reason": "candidate preserves the forbidden cache dependency in the selected static universe"
+    },
+    {
+      "caseId": "case-ignore-rounding-contract-still-breaks-semantics",
+      "constraintRefs": ["constraint-semantic-rounding-contract-v0"],
+      "refutedCandidateRef": "candidate-ignore-rounding-contract-v0",
+      "evidenceRefs": ["evidence-rounding-order-difference"],
+      "theoremPreconditionRefs": ["NoSolutionCertificate.sound_of_valid"],
+      "reason": "candidate does not discharge the selected coupon / discount observation contract"
+    }
+  ],
+  "nonConclusions": [
+    "valid certificate soundness is conditional on recorded assumptions",
+    "solver completeness is not concluded",
+    "solver no-candidate result is not a no-solution certificate",
+    "candidate search exhaustion is scoped to recorded cases"
+  ]
+}

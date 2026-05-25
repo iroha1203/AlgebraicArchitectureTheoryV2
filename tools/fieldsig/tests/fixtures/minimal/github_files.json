@@ -1,0 +1,17 @@
+[
+  {
+    "filename": "Formal.lean",
+    "additions": 2,
+    "deletions": 0
+  },
+  {
+    "filename": "Formal/Arch/A.lean",
+    "additions": 18,
+    "deletions": 5
+  },
+  {
+    "filename": "README.md",
+    "additions": 4,
+    "deletions": 1
+  }
+]

@@ -1,0 +1,60 @@
+{
+  "repository": {
+    "owner": "example",
+    "name": "service",
+    "defaultBranch": "main"
+  },
+  "pullRequest": {
+    "number": 42,
+    "author": "alice",
+    "createdAt": "2026-04-01T00:00:00Z",
+    "mergedAt": "2026-04-02T00:00:00Z",
+    "baseCommit": "base-sha",
+    "headCommit": "head-sha",
+    "mergeCommit": "merge-sha",
+    "labels": ["feature", "architecture-signature"],
+    "isBotGenerated": false
+  },
+  "prMetrics": {
+    "changedFiles": 2,
+    "changedLinesAdded": 20,
+    "changedLinesDeleted": 5,
+    "changedComponents": ["Formal", "Formal.Arch.A"],
+    "reviewCommentCount": 1,
+    "reviewThreadCount": 1,
+    "reviewRoundCount": 1,
+    "firstReviewLatencyHours": 2.0,
+    "approvalLatencyHours": 6.0,
+    "mergeLatencyHours": 12.0
+  },
+  "issueIncidentLinks": [],
+  "analysisMetadata": {
+    "signatureAfterCommitRole": "head",
+    "excludedFromPrimaryAnalysis": false,
+    "exclusionReasons": [],
+    "primaryCostRecord": null,
+    "relationComplexityComponents": {
+      "constraints": 1,
+      "compensations": 1,
+      "projections": 0,
+      "failureTransitions": 1,
+      "idempotencyRequirements": 0
+    },
+    "runtimeMetrics": {
+      "runtimeGraphMeasured": true,
+      "runtimeEdgeEvidenceCount": 2,
+      "runtimePairCount": 2,
+      "runtimeFanout": 2,
+      "unprotectedRuntimePropagationRadius": null,
+      "circuitBreakerCoverageRatio": 0.5,
+      "protectedPairCount": 1,
+      "partialPairCount": 0,
+      "unprotectedPairCount": 0,
+      "unknownCoveragePairCount": 1,
+      "failureModeTaxonomyVersion": "fixture-v0",
+      "coveragePolicyVersion": "fixture-coverage-v0",
+      "confidenceThreshold": null
+    },
+    "alternateSignatureAfter": null
+  }
+}

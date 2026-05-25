@@ -29,3 +29,13 @@ jobs:
 
       - name: Test ArchSig
         run: cargo test --manifest-path tools/archsig/Cargo.toml
+
+  fieldsig:
+    name: fieldsig cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test FieldSig
+        run: cargo test --manifest-path tools/fieldsig/Cargo.toml

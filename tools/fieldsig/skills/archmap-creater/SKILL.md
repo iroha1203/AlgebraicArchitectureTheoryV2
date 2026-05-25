@@ -1,0 +1,93 @@
+---
+name: archmap-creater
+description: Create bounded ArchMap artifacts from repository evidence. Use when Codex is asked to draft, generate, update, or validate an archmap-v0 JSON file, prepare an ArchMap source inventory or prompt pack, run the archmap-generate protocol, or turn code/docs/tests/runtime hints into LLM-authored architecture mapping evidence.
+---
+
+# ArchMap Creater
+
+## Purpose
+
+Create `archmap-v0` as bounded LLM-authored architecture evidence. Treat ArchMap as a source-to-architecture mapping artifact that may feed AIR, PR / CI review, and SFT projections, not as ground truth, Lean proof, forecast correctness, or causal diagnosis.
+
+## Inputs
+
+Collect only evidence the user allows and record the boundary explicitly:
+
+- source inventory paths, included refs, excluded refs, private refs, unavailable refs, known blind spots
+- code, docs, tests, PR context, runtime hints, framework adapters, or policy files
+- the requested architecture scope and target representation
+- any prompt pack or model provenance needed for reproducibility
+
+This skill must work with only the skill bundle and a built `archsig` executable. Do not require
+the ArchSig source repository, `docs/tool`, or test fixtures to be present.
+
+Use this command form by default:
+
+```bash
+${ARCHSIG_BIN:-archsig} <command> ...
+```
+
+When working inside the ArchSig source repository, these optional source references may help:
+
+- `docs/tool/archsig_archmap_prd_v2.md`
+- `docs/tool/archmap_prd.md`
+- `tools/archsig/docs/commands.md`
+- `tools/archsig/tests/fixtures/minimal/archmap.json`
+- `tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json`
+- `tools/archsig/tests/fixtures/expressiveness/archmap_expressiveness_suite_v0.json`
+
+## Workflow
+
+1. Identify the source universe.
+   - Write down included, excluded, private, and unavailable references.
+   - Preserve blind spots instead of filling them with guesses.
+   - Do not infer evidence from files that were not read or supplied.
+   - For a new repository or unfamiliar area, read `references/repository-survey.md` first.
+   - For non-trivial authoring, read `references/mapping-guide.md` before drafting map items.
+   - When unsure about field values, read `references/schema-cheatsheet.md`.
+   - When checking output quality, compare against `references/examples.md`.
+
+2. Generate or update the protocol artifact when useful.
+
+```bash
+${ARCHSIG_BIN:-archsig} archmap-generate \
+  --source-inventory <source-inventory.json> \
+  --prompt-pack <prompt-pack.md> \
+  --provider external-agent \
+  --model-id <model-or-agent-id> \
+  --out .archsig/archmap/generation-protocol.json
+```
+
+3. Draft `archmap-v0`.
+   - Use `mapItems[]` as the unit of mapping.
+   - Keep `sourceRefs`, `targetRef`, `preserves`, `forgets`, `claimClassification`, `measurementBoundary`, `confidence`, `missingEvidence`, and `nonConclusions` explicit.
+   - Separate AAT-facing items from SFT-facing items. Shared source refs are allowed; proof claims and forecast inputs must not be conflated.
+   - Include semantic structure only when evidence supports it.
+
+4. Validate the result.
+
+```bash
+${ARCHSIG_BIN:-archsig} archmap \
+  --input <archmap.json> \
+  --out .archsig/archmap/validation.json
+
+```
+
+5. Read the validation report before handing the artifact downstream.
+   - Treat failures as schema or boundary problems to fix.
+   - Treat warnings as review cues, not automatic rejection.
+   - Check `formalPromotionGuardrailChecks`, `leanPreservationPreconditionChecklist`, `sourceInventoryChecks`, conflicts, missing evidence, and non-conclusions.
+
+## Writing Rules
+
+- Preserve uncertainty in fields; do not erase it in prose.
+- Never claim that `archmap-v0` validates architecture lawfulness.
+- Never claim that validation produces a Lean proof term.
+- Never put ForecastCone, ConsequenceEnvelope, attractor, basin, incident causality, or quality ranking into ArchMap as computed results.
+- Do not write implementation progress into PRDs. Use issues, theorem indexes, proof obligations, roadmaps, or PRs for status.
+
+## Handoff
+
+Use `$arch-pr-analyzer` after this skill when the user asks what an ArchMap or PR / CI artifact implies for PR quality or current architecture state.
+
+Use `$arch-intent-forecaster` after this skill when the user has both an ArchMap and IntentMap and asks for planning forecast.

@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "forecast-calibration-hook-v0",
+  "hookId": "fixture-forecast-calibration-hook-v0",
+  "envelopeRef": {
+    "envelopeSchemaVersion": "consequence-envelope-report-v0",
+    "envelopeId": "fixture-consequence-envelope-report-v0",
+    "coneId": "fixture-forecast-cone-skeleton-v0",
+    "sourceRefIds": [
+      "source:issue-737",
+      "source:consequence-envelope-fixture",
+      "source:b10-report-outcome-daily-ledger",
+      "source:b11-signature-trajectory-report"
+    ],
+    "nonConclusions": [
+      "calibration hook does not prove forecast correctness",
+      "calibration hook does not provide a causal proof",
+      "calibration hook is not a Lean theorem claim",
+      "calibration hook does not establish field completeness",
+      "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+    ]
+  },
+  "forecastItemRefs": [
+    {
+      "forecastItemId": "forecast-item:boundary-retention-delta",
+      "itemKind": "axis-delta-range",
+      "envelopeItemRef": "delta:boundary-retention-nonnegative",
+      "sourceRefIds": [
+        "source:issue-737",
+        "source:consequence-envelope-fixture",
+        "source:b10-report-outcome-daily-ledger",
+        "source:b11-signature-trajectory-report"
+      ],
+      "comparisonBoundary": "compare only retained report item ids and observed refs",
+      "nonConclusions": [
+        "calibration hook does not prove forecast correctness",
+        "calibration hook does not provide a causal proof",
+        "calibration hook is not a Lean theorem claim",
+        "calibration hook does not establish field completeness",
+        "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+      ]
+    },
+    {
+      "forecastItemId": "forecast-item:runtime-boundary-missing",
+      "itemKind": "missing-boundary",
+      "envelopeItemRef": "missing:runtime-propagation-invariant",
+      "sourceRefIds": [
+        "source:issue-737",
+        "source:consequence-envelope-fixture",
+        "source:b10-report-outcome-daily-ledger",
+        "source:b11-signature-trajectory-report"
+      ],
+      "comparisonBoundary": "missing boundary can remain unavailable or private",
+      "nonConclusions": [
+        "calibration hook does not prove forecast correctness",
+        "calibration hook does not provide a causal proof",
+        "calibration hook is not a Lean theorem claim",
+        "calibration hook does not establish field completeness",
+        "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+      ]
+    }
+  ],
+  "observedOutcomeRefs": [
+    {
+      "observedRefId": "observed:b10-daily-ledger",
+      "observedKind": "report-outcome-daily-ledger",
+      "pathOrUrl": "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
+      "status": "matched",
+      "b10Refs": [
+        "b10:report-outcome-daily-ledger"
+      ],
+      "b11Refs": [],
+      "evidenceBoundary": "B10 ledger is fixture evidence, not correctness proof",
+      "nonConclusions": [
+        "calibration hook does not prove forecast correctness",
+        "calibration hook does not provide a causal proof",
+        "calibration hook is not a Lean theorem claim",
+        "calibration hook does not establish field completeness",
+        "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+      ]
+    },
+    {
+      "observedRefId": "observed:b11-trajectory-private",
+      "observedKind": "signature-trajectory-report",
+      "pathOrUrl": "private-or-unavailable",
+      "status": "private",
+      "b10Refs": [],
+      "b11Refs": [
+        "b11:signature-trajectory-report"
+      ],
+      "evidenceBoundary": "private trajectory evidence is retained as private, not zero",
+      "nonConclusions": [
+        "calibration hook does not prove forecast correctness",
+        "calibration hook does not provide a causal proof",
+        "calibration hook is not a Lean theorem claim",
+        "calibration hook does not establish field completeness",
+        "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+      ]
+    }
+  ],
+  "matches": [
+    {
+      "matchId": "match:boundary-retention-ledger",
+      "forecastItemId": "forecast-item:boundary-retention-delta",
+      "observedRefId": "observed:b10-daily-ledger",
+      "status": "matched",
+      "rationale": "forecast item can be linked to a retained B10 ledger fixture",
+      "updateBoundary": "link can seed calibration review but does not prove correctness",
+      "nonConclusions": [
+        "calibration hook does not prove forecast correctness",
+        "calibration hook does not provide a causal proof",
+        "calibration hook is not a Lean theorem claim",
+        "calibration hook does not establish field completeness",
+        "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+      ]
+    },
+    {
+      "matchId": "match:runtime-boundary-private",
+      "forecastItemId": "forecast-item:runtime-boundary-missing",
+      "observedRefId": "observed:b11-trajectory-private",
+      "status": "private",
+      "rationale": "runtime trajectory evidence is outside the public fixture boundary",
+      "updateBoundary": "private evidence remains unavailable to calibration scoring",
+      "nonConclusions": [
+        "calibration hook does not prove forecast correctness",
+        "calibration hook does not provide a causal proof",
+        "calibration hook is not a Lean theorem claim",
+        "calibration hook does not establish field completeness",
+        "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+      ]
+    }
+  ],
+  "referenceBoundaries": {
+    "b10Refs": [
+      "outcome-linkage-dataset-v0",
+      "report-outcome-daily-ledger-v0"
+    ],
+    "b11Refs": [
+      "signature-trajectory-report-v0",
+      "architecture-dynamics-metrics-report-v0"
+    ],
+    "unavailableRefs": [
+      "observed:future-review-outcome"
+    ],
+    "privateRefs": [
+      "observed:b11-trajectory-private"
+    ],
+    "measurementBoundary": "calibration compares retained forecast and observed refs without treating gaps as zero",
+    "nonConclusions": [
+      "calibration hook does not prove forecast correctness",
+      "calibration hook does not provide a causal proof",
+      "calibration hook is not a Lean theorem claim",
+      "calibration hook does not establish field completeness",
+      "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+    ]
+  },
+  "nonConclusions": [
+    "calibration hook does not prove forecast correctness",
+    "calibration hook does not provide a causal proof",
+    "calibration hook is not a Lean theorem claim",
+    "calibration hook does not establish field completeness",
+    "unmatched, unavailable, private, and notComparable outcomes are not measured zero"
+  ]
+}

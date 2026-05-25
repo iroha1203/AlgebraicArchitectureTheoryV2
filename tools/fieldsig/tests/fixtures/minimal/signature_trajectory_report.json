@@ -1,0 +1,1091 @@
+{
+  "schemaVersion": "signature-trajectory-report-v0",
+  "reportId": "fixture-signature-trajectory-report-v0",
+  "repository": {
+    "owner": "iroha1203",
+    "name": "AlgebraicArchitectureTheoryV2",
+    "defaultBranch": "main"
+  },
+  "window": {
+    "windowStart": "2026-01-01T00:00:00Z",
+    "windowEnd": "2026-01-31T23:59:59Z",
+    "windowKind": "selected-trajectory-window"
+  },
+  "trajectoryPoints": [
+    {
+      "pointId": "fixture-trajectory-point-0",
+      "sequenceIndex": 0,
+      "observedAt": "2026-01-01T00:00:00Z",
+      "revision": {
+        "sha": "fixture-before-sha",
+        "ref": "refs/heads/main",
+        "branch": "main",
+        "committedAt": "2026-01-01T00:00:00Z",
+        "parentShas": []
+      },
+      "signatureSnapshotRef": {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-trajectory-before-signature"
+      },
+      "axisValues": [
+        {
+          "metricId": "signature.boundaryViolationCount",
+          "value": 3,
+          "status": "measured",
+          "sourceRefs": [
+            {
+              "kind": "signature-snapshot-store",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+              "schemaVersion": "signature-snapshot-store-v0",
+              "artifactId": "fixture-trajectory-before-signature"
+            }
+          ],
+          "measurementBoundary": {
+            "measuredLayer": "signature",
+            "measuredAxes": [
+              "boundaryViolationCount"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-snapshot-store",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+                "schemaVersion": "signature-snapshot-store-v0",
+                "artifactId": "fixture-trajectory-before-signature"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-trajectory-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-trajectory-window"
+            ],
+            "assumptions": [
+              "selected Signature snapshot is retained for the trajectory point"
+            ],
+            "unsupportedConstructs": [
+              "path safety outside the selected window"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "signature trajectory report is tooling validation, not a Lean theorem claim",
+              "finite observed trajectory does not prove a global attractor or basin theorem",
+              "selected window evidence does not conclude behavior outside the bounded operation window",
+              "endpoint safe region membership does not imply path safety"
+            ]
+          },
+          "assumptions": [
+            "axis value is read from the retained Signature snapshot"
+          ],
+          "nonConclusions": [
+            "point axis value is not a single architecture quality score"
+          ]
+        },
+        {
+          "metricId": "signature.runtimePropagationRisk",
+          "value": null,
+          "status": "unmeasured",
+          "sourceRefs": [],
+          "measurementBoundary": {
+            "measuredLayer": "signature-trajectory",
+            "measuredAxes": [],
+            "sourceArtifactRefs": [],
+            "extractorVersion": "0.1.0",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "selectedRegionRefs": [],
+            "assumptions": [
+              "runtime propagation extractor was not run for the trajectory point"
+            ],
+            "unsupportedConstructs": [],
+            "missingEvidence": [
+              {
+                "evidenceKind": "signature-trajectory-evidence",
+                "reason": "runtime propagation extractor was not run for the trajectory point",
+                "boundary": "unmeasured"
+              }
+            ],
+            "nonConclusions": [
+              "unmeasured trajectory signal is not measured-zero evidence"
+            ]
+          },
+          "assumptions": [
+            "runtime evidence is not available for this fixture point"
+          ],
+          "nonConclusions": [
+            "unmeasured runtime point value is not zero"
+          ]
+        }
+      ],
+      "regionRefs": [
+        "fixture-safe-region"
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [
+          "trajectoryPoints"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-before-signature"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "trajectory point is part of a finite selected observed path"
+        ],
+        "unsupportedConstructs": [
+          "global trajectory completion"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "nonConclusions": [
+        "trajectory point is not a complete state-space observation",
+        "point membership does not imply behavior outside the selected window"
+      ]
+    },
+    {
+      "pointId": "fixture-trajectory-point-1",
+      "sequenceIndex": 1,
+      "observedAt": "2026-01-15T12:00:00Z",
+      "revision": {
+        "sha": "fixture-middle-sha",
+        "ref": "refs/heads/main",
+        "branch": "main",
+        "committedAt": "2026-01-15T12:00:00Z",
+        "parentShas": []
+      },
+      "signatureSnapshotRef": {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-trajectory-middle-signature"
+      },
+      "axisValues": [
+        {
+          "metricId": "signature.boundaryViolationCount",
+          "value": 5,
+          "status": "measured",
+          "sourceRefs": [
+            {
+              "kind": "signature-snapshot-store",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+              "schemaVersion": "signature-snapshot-store-v0",
+              "artifactId": "fixture-trajectory-middle-signature"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            }
+          ],
+          "measurementBoundary": {
+            "measuredLayer": "signature",
+            "measuredAxes": [
+              "boundaryViolationCount"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-snapshot-store",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+                "schemaVersion": "signature-snapshot-store-v0",
+                "artifactId": "fixture-trajectory-middle-signature"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-trajectory-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-trajectory-window"
+            ],
+            "assumptions": [
+              "trajectory point records an internal excursion before the selected endpoint"
+            ],
+            "unsupportedConstructs": [
+              "endpoint-only safety conclusion"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "signature trajectory report is tooling validation, not a Lean theorem claim",
+              "finite observed trajectory does not prove a global attractor or basin theorem",
+              "selected window evidence does not conclude behavior outside the bounded operation window",
+              "endpoint safe region membership does not imply path safety"
+            ]
+          },
+          "assumptions": [
+            "internal trajectory point is retained"
+          ],
+          "nonConclusions": [
+            "transient excursion is not erased by endpoint compression"
+          ]
+        }
+      ],
+      "regionRefs": [
+        "fixture-bad-region",
+        "fixture-debt-well"
+      ],
+      "forceRef": {
+        "kind": "pr-force-report",
+        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "schemaVersion": "pr-force-report-v0",
+        "artifactId": "fixture-pr-force-report-v0"
+      },
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [
+          "trajectoryPoints"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-middle-signature"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "trajectory point is part of a finite selected observed path"
+        ],
+        "unsupportedConstructs": [
+          "global trajectory completion"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "nonConclusions": [
+        "trajectory point is not a complete state-space observation",
+        "point membership does not imply behavior outside the selected window"
+      ]
+    },
+    {
+      "pointId": "fixture-trajectory-point-2",
+      "sequenceIndex": 2,
+      "observedAt": "2026-01-31T23:59:59Z",
+      "revision": {
+        "sha": "fixture-after-sha",
+        "ref": "refs/heads/main",
+        "branch": "main",
+        "committedAt": "2026-01-31T23:59:59Z",
+        "parentShas": []
+      },
+      "signatureSnapshotRef": {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-trajectory-after-signature"
+      },
+      "axisValues": [
+        {
+          "metricId": "signature.boundaryViolationCount",
+          "value": 1,
+          "status": "measured",
+          "sourceRefs": [
+            {
+              "kind": "signature-snapshot-store",
+              "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+              "schemaVersion": "signature-snapshot-store-v0",
+              "artifactId": "fixture-trajectory-after-signature"
+            },
+            {
+              "kind": "pr-force-report",
+              "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+              "schemaVersion": "pr-force-report-v0",
+              "artifactId": "fixture-pr-force-report-v0"
+            }
+          ],
+          "measurementBoundary": {
+            "measuredLayer": "signature",
+            "measuredAxes": [
+              "boundaryViolationCount"
+            ],
+            "sourceArtifactRefs": [
+              {
+                "kind": "signature-snapshot-store",
+                "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+                "schemaVersion": "signature-snapshot-store-v0",
+                "artifactId": "fixture-trajectory-after-signature"
+              },
+              {
+                "kind": "pr-force-report",
+                "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+                "schemaVersion": "pr-force-report-v0",
+                "artifactId": "fixture-pr-force-report-v0"
+              }
+            ],
+            "extractorVersion": "0.1.0",
+            "policyVersion": "fixture-policy-v0",
+            "schemaVersion": "signature-trajectory-report-v0",
+            "aggregationWindow": {
+              "windowStart": "2026-01-01T00:00:00Z",
+              "windowEnd": "2026-01-31T23:59:59Z",
+              "windowKind": "selected-trajectory-window"
+            },
+            "selectedRegionRefs": [
+              "fixture:selected-trajectory-window"
+            ],
+            "assumptions": [
+              "selected endpoint Signature snapshot is retained"
+            ],
+            "unsupportedConstructs": [
+              "global attractor inference"
+            ],
+            "missingEvidence": [],
+            "nonConclusions": [
+              "signature trajectory report is tooling validation, not a Lean theorem claim",
+              "finite observed trajectory does not prove a global attractor or basin theorem",
+              "selected window evidence does not conclude behavior outside the bounded operation window",
+              "endpoint safe region membership does not imply path safety"
+            ]
+          },
+          "assumptions": [
+            "endpoint is inside the selected fixture safe region"
+          ],
+          "nonConclusions": [
+            "endpoint safe region membership does not imply path safety"
+          ]
+        }
+      ],
+      "regionRefs": [
+        "fixture-safe-region",
+        "fixture-attractor-candidate"
+      ],
+      "forceRef": {
+        "kind": "pr-force-report",
+        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "schemaVersion": "pr-force-report-v0",
+        "artifactId": "fixture-pr-force-report-v0"
+      },
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [
+          "trajectoryPoints"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-after-signature"
+          },
+          {
+            "kind": "pr-force-report",
+            "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+            "schemaVersion": "pr-force-report-v0",
+            "artifactId": "fixture-pr-force-report-v0"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "trajectory point is part of a finite selected observed path"
+        ],
+        "unsupportedConstructs": [
+          "global trajectory completion"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "nonConclusions": [
+        "trajectory point is not a complete state-space observation",
+        "point membership does not imply behavior outside the selected window"
+      ]
+    }
+  ],
+  "forceRefs": [
+    {
+      "kind": "pr-force-report",
+      "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+      "schemaVersion": "pr-force-report-v0",
+      "artifactId": "fixture-pr-force-report-v0"
+    }
+  ],
+  "driftSignals": [
+    {
+      "metricId": "trajectory.driftRate.boundaryViolationCount",
+      "value": -2,
+      "status": "derived",
+      "sourceRefs": [
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-before-signature"
+        },
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-after-signature"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [
+          "TrajectoryDriftRate"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-before-signature"
+          },
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-after-signature"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-trajectory-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "drift rate is derived from comparable selected endpoint snapshots"
+        ],
+        "unsupportedConstructs": [
+          "path safety claim"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "assumptions": [
+        "negative drift over endpoints does not erase internal excursion"
+      ],
+      "nonConclusions": [
+        "derived drift is a bounded-window signal, not a theorem claim"
+      ]
+    },
+    {
+      "metricId": "trajectory.drift.schemaCompatibilityBoundary",
+      "value": null,
+      "status": "notComparable",
+      "sourceRefs": [
+        {
+          "kind": "architecture-drift-ledger",
+          "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+          "schemaVersion": "architecture-drift-ledger-v0",
+          "artifactId": "fixture-architecture-drift-ledger"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "selectedRegionRefs": [],
+        "assumptions": [
+          "schema or policy changes across a trajectory require migration boundary before comparison"
+        ],
+        "unsupportedConstructs": [],
+        "missingEvidence": [
+          {
+            "evidenceKind": "signature-trajectory-evidence",
+            "reason": "schema or policy changes across a trajectory require migration boundary before comparison",
+            "boundary": "notComparable"
+          }
+        ],
+        "nonConclusions": [
+          "notComparable trajectory signal is not measured-zero evidence"
+        ]
+      },
+      "assumptions": [
+        "cross-version trajectory comparison is not performed in this fixture"
+      ],
+      "nonConclusions": [
+        "notComparable trajectory drift is not zero drift"
+      ]
+    }
+  ],
+  "stabilitySignals": [
+    {
+      "metricId": "trajectory.stability.selectedRegionRetention",
+      "value": {
+        "endRegion": "safeRegion",
+        "internalExcursion": true,
+        "startRegion": "safeRegion"
+      },
+      "status": "derived",
+      "sourceRefs": [
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-before-signature"
+        },
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-middle-signature"
+        },
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-after-signature"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [
+          "TrajectoryStability"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-before-signature"
+          },
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-middle-signature"
+          },
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-after-signature"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-trajectory-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "stability signal is scoped to the retained finite observed trajectory"
+        ],
+        "unsupportedConstructs": [
+          "global convergence proof"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "assumptions": [
+        "internal excursion is preserved instead of endpoint-compressed away"
+      ],
+      "nonConclusions": [
+        "selected region retention is not a global basin claim"
+      ]
+    }
+  ],
+  "excursionSignals": [
+    {
+      "metricId": "trajectory.excursion.selectedBadRegionVisit",
+      "value": {
+        "maxBoundaryViolationCount": 5,
+        "visited": true
+      },
+      "status": "measured",
+      "sourceRefs": [
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-middle-signature"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [
+          "TransientExcursionDebt"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-middle-signature"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-trajectory-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "bad-region visit is observed at a retained trajectory point"
+        ],
+        "unsupportedConstructs": [
+          "selected window outside behavior"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "assumptions": [
+        "middle trajectory point is retained"
+      ],
+      "nonConclusions": [
+        "endpoint compression must not erase selected bad-region visits"
+      ]
+    }
+  ],
+  "endpointCompressionSignals": [
+    {
+      "metricId": "trajectory.endpointCompression.pathCompressionLoss",
+      "value": {
+        "endpointDelta": -2,
+        "internalMaximum": 5
+      },
+      "status": "derived",
+      "sourceRefs": [
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-before-signature"
+        },
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-middle-signature"
+        },
+        {
+          "kind": "signature-snapshot-store",
+          "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+          "schemaVersion": "signature-snapshot-store-v0",
+          "artifactId": "fixture-trajectory-after-signature"
+        }
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory",
+        "measuredAxes": [
+          "PathCompressionLoss"
+        ],
+        "sourceArtifactRefs": [
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-before-signature"
+          },
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-middle-signature"
+          },
+          {
+            "kind": "signature-snapshot-store",
+            "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+            "schemaVersion": "signature-snapshot-store-v0",
+            "artifactId": "fixture-trajectory-after-signature"
+          }
+        ],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-trajectory-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "endpoint delta and internal maximum are both retained"
+        ],
+        "unsupportedConstructs": [
+          "endpoint-only architecture safety proof"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "assumptions": [
+        "path compression loss is bounded to the selected fixture trajectory"
+      ],
+      "nonConclusions": [
+        "endpoint-improving delta does not imply path safe"
+      ]
+    }
+  ],
+  "selectedRegions": [
+    {
+      "regionId": "fixture-safe-region",
+      "regionKind": "safeRegion",
+      "definingAxes": [
+        "boundaryViolationCount"
+      ],
+      "bounds": {
+        "boundaryViolationCount": {
+          "maxInclusive": 3
+        }
+      },
+      "trajectoryPointRefs": [
+        "fixture-trajectory-point-0",
+        "fixture-trajectory-point-2"
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory-region",
+        "measuredAxes": [
+          "boundaryViolationCount"
+        ],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-trajectory-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "safe region is selected by fixture policy for bounded-window analysis"
+        ],
+        "unsupportedConstructs": [
+          "global attractor inference"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "nonConclusions": [
+        "safe region membership is not a global safety theorem"
+      ]
+    },
+    {
+      "regionId": "fixture-bad-region",
+      "regionKind": "badRegion",
+      "definingAxes": [
+        "boundaryViolationCount"
+      ],
+      "bounds": {
+        "boundaryViolationCount": {
+          "minExclusive": 3
+        }
+      },
+      "trajectoryPointRefs": [
+        "fixture-trajectory-point-1"
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory-region",
+        "measuredAxes": [
+          "boundaryViolationCount"
+        ],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-trajectory-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "bad region is selected by fixture policy for excursion tracking"
+        ],
+        "unsupportedConstructs": [
+          "global attractor inference"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "nonConclusions": [
+        "bad region visit is not an incident causality proof"
+      ]
+    },
+    {
+      "regionId": "fixture-debt-well",
+      "regionKind": "debtWell",
+      "definingAxes": [
+        "boundaryViolationCount"
+      ],
+      "bounds": {
+        "boundaryViolationCount": {
+          "minInclusive": 5
+        }
+      },
+      "trajectoryPointRefs": [
+        "fixture-trajectory-point-1"
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory-region",
+        "measuredAxes": [
+          "boundaryViolationCount"
+        ],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-trajectory-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "debt well is a selected finite-region marker"
+        ],
+        "unsupportedConstructs": [
+          "global attractor inference"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "nonConclusions": [
+        "debt well label is not a proof of repair impossibility"
+      ]
+    },
+    {
+      "regionId": "fixture-attractor-candidate",
+      "regionKind": "attractorCandidate",
+      "definingAxes": [
+        "boundaryViolationCount"
+      ],
+      "bounds": {
+        "boundaryViolationCount": {
+          "maxInclusive": 1
+        }
+      },
+      "trajectoryPointRefs": [
+        "fixture-trajectory-point-2"
+      ],
+      "measurementBoundary": {
+        "measuredLayer": "signature-trajectory-region",
+        "measuredAxes": [
+          "boundaryViolationCount"
+        ],
+        "sourceArtifactRefs": [],
+        "extractorVersion": "0.1.0",
+        "policyVersion": "fixture-policy-v0",
+        "schemaVersion": "signature-trajectory-report-v0",
+        "aggregationWindow": {
+          "windowStart": "2026-01-01T00:00:00Z",
+          "windowEnd": "2026-01-31T23:59:59Z",
+          "windowKind": "selected-trajectory-window"
+        },
+        "selectedRegionRefs": [
+          "fixture:selected-trajectory-window"
+        ],
+        "assumptions": [
+          "attractor candidate is relative to finite observed trajectory and bounded operation window"
+        ],
+        "unsupportedConstructs": [
+          "global attractor inference"
+        ],
+        "missingEvidence": [],
+        "nonConclusions": [
+          "signature trajectory report is tooling validation, not a Lean theorem claim",
+          "finite observed trajectory does not prove a global attractor or basin theorem",
+          "selected window evidence does not conclude behavior outside the bounded operation window",
+          "endpoint safe region membership does not imply path safety"
+        ]
+      },
+      "nonConclusions": [
+        "attractor candidate is not a global attractor theorem"
+      ]
+    }
+  ],
+  "measurementBoundary": {
+    "measuredLayer": "signature-trajectory",
+    "measuredAxes": [
+      "trajectoryPoints",
+      "forceRefs",
+      "driftSignals",
+      "stabilitySignals",
+      "excursionSignals",
+      "endpointCompressionSignals",
+      "selectedRegions"
+    ],
+    "sourceArtifactRefs": [
+      {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-trajectory-before-signature"
+      },
+      {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_middle.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-trajectory-middle-signature"
+      },
+      {
+        "kind": "signature-snapshot-store",
+        "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_after.json",
+        "schemaVersion": "signature-snapshot-store-v0",
+        "artifactId": "fixture-trajectory-after-signature"
+      },
+      {
+        "kind": "pr-force-report",
+        "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
+        "schemaVersion": "pr-force-report-v0",
+        "artifactId": "fixture-pr-force-report-v0"
+      },
+      {
+        "kind": "architecture-drift-ledger",
+        "path": "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
+        "schemaVersion": "architecture-drift-ledger-v0",
+        "artifactId": "fixture-architecture-drift-ledger"
+      }
+    ],
+    "extractorVersion": "0.1.0",
+    "policyVersion": "fixture-policy-v0",
+    "schemaVersion": "signature-trajectory-report-v0",
+    "aggregationWindow": {
+      "windowStart": "2026-01-01T00:00:00Z",
+      "windowEnd": "2026-01-31T23:59:59Z",
+      "windowKind": "selected-trajectory-window"
+    },
+    "selectedRegionRefs": [
+      "fixture-safe-region",
+      "fixture-bad-region",
+      "fixture-debt-well",
+      "fixture-attractor-candidate"
+    ],
+    "assumptions": [
+      "fixture records a finite observed Signature trajectory over one selected window",
+      "selected regions are policy-relative analysis regions"
+    ],
+    "unsupportedConstructs": [
+      "global attractor inference",
+      "global basin theorem",
+      "behavior outside the selected bounded operation window"
+    ],
+    "missingEvidence": [
+      {
+        "evidenceKind": "migration-boundary",
+        "reason": "cross-version trajectory comparison requires explicit notComparable or migration boundary",
+        "boundary": "notComparable"
+      }
+    ],
+    "nonConclusions": [
+      "signature trajectory report is tooling validation, not a Lean theorem claim",
+      "finite observed trajectory does not prove a global attractor or basin theorem",
+      "selected window evidence does not conclude behavior outside the bounded operation window",
+      "endpoint safe region membership does not imply path safety"
+    ]
+  },
+  "nonConclusions": [
+    "signature trajectory report is tooling validation, not a Lean theorem claim",
+    "finite observed trajectory does not prove a global attractor or basin theorem",
+    "selected window evidence does not conclude behavior outside the bounded operation window",
+    "endpoint safe region membership does not imply path safety"
+  ]
+}

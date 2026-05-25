@@ -1,0 +1,181 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-unmeasured-runtime-semantic",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-unmeasured",
+    "after": "after-unmeasured"
+  },
+  "feature": {
+    "featureId": "#canonical-unmeasured",
+    "title": "Add coupon calculation",
+    "description": "Static evidence exists, runtime and semantic axes are not measured",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-sig0",
+      "kind": "sig0",
+      "schemaVersion": "archsig-sig0-v0",
+      "path": "canonical/unmeasured/sig0.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-sig0",
+      "kind": "observation_result",
+      "artifactRef": "artifact-sig0",
+      "path": "canonical/unmeasured/sig0.json",
+      "symbol": null,
+      "line": null,
+      "ruleId": "archsig-sig0-v0",
+      "confidence": "high"
+    }
+  ],
+  "components": [
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [],
+  "policies": {
+    "laws": [],
+    "boundaries": [],
+    "allowedEdges": [],
+    "forbiddenEdges": [],
+    "abstractionRules": [],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [],
+  "architecturePaths": [],
+  "homotopyGenerators": [],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "runtimePropagation",
+        "value": null,
+        "measured": false,
+        "measurementBoundary": "unmeasured",
+        "source": null,
+        "reason": "runtime edge evidence not provided"
+      },
+      {
+        "axis": "projectionSoundnessViolation",
+        "value": null,
+        "measured": false,
+        "measurementBoundary": "unmeasured",
+        "source": null,
+        "reason": "semantic extractor not implemented"
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "runtime",
+        "measurementBoundary": "unmeasured",
+        "universeRefs": [],
+        "measuredAxes": [],
+        "unmeasuredAxes": ["runtimePropagation"],
+        "extractionScope": [],
+        "exactnessAssumptions": [],
+        "unsupportedConstructs": ["runtime extractor not provided"]
+      },
+      {
+        "layer": "semantic",
+        "measurementBoundary": "unmeasured",
+        "universeRefs": [],
+        "measuredAxes": [],
+        "unmeasuredAxes": ["projectionSoundnessViolation"],
+        "extractionScope": [],
+        "exactnessAssumptions": [],
+        "unsupportedConstructs": ["semantic extractor not implemented"]
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-runtime-unmeasured",
+      "subjectRef": "signature.runtimePropagation",
+      "predicate": "runtime axis is outside current measurement boundary",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["runtime edge evidence is absent"],
+      "nonConclusions": ["runtime split is not concluded"]
+    },
+    {
+      "claimId": "claim-semantic-unmeasured",
+      "subjectRef": "signature.projectionSoundnessViolation",
+      "predicate": "semantic axis is outside current measurement boundary",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["semantic diagrams are absent"],
+      "nonConclusions": ["semantic flatness is not concluded"]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding requires theorem preconditions",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["before/after component correspondence"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["theorem precondition checker has not run"],
+      "nonConclusions": ["split extension is not concluded"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature view requires diff attribution",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["feature ownership"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["feature extension report has not run"],
+      "nonConclusions": ["feature quotient is not constructed"]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": ["claim-runtime-unmeasured", "claim-semantic-unmeasured"],
+    "splitClaimRef": null,
+    "splitStatus": "unmeasured"
+  }
+}

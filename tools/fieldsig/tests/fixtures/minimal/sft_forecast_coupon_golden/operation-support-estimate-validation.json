@@ -1,0 +1,292 @@
+{
+  "schemaVersion": "operation-support-estimate-validation-report-v0",
+  "input": {
+    "schemaVersion": "operation-support-estimate-v0",
+    "path": "tools/archsig/tests/fixtures/minimal/sft_forecast_coupon_golden/operation-support-estimate.json",
+    "estimateId": "estimate:descriptor:coupon-prd-forecast-pipeline",
+    "descriptorId": "descriptor:coupon-prd-forecast-pipeline"
+  },
+  "estimate": {
+    "schemaVersion": "operation-support-estimate-v0",
+    "estimateId": "estimate:descriptor:coupon-prd-forecast-pipeline",
+    "descriptorRef": {
+      "descriptorSchemaVersion": "artifact-descriptor-v0",
+      "descriptorId": "descriptor:coupon-prd-forecast-pipeline",
+      "artifactKind": "prd",
+      "sourceRefIds": [
+        "source:markdown:coupon-prd-forecast-pipeline"
+      ],
+      "actionClassCandidateIds": [
+        "candidate:schema-definition",
+        "candidate:tooling-validation",
+        "candidate:cli-entrypoint"
+      ],
+      "nonConclusions": [
+        "operation support estimate is a bounded tooling estimate, not accepted PR history",
+        "operation support estimate is not actual future support",
+        "unknown support is not measured zero",
+        "policy constraints do not prove global policy safety",
+        "operation support estimate does not prove future trajectory safety"
+      ]
+    },
+    "candidateOperationFamilies": [
+      {
+        "familyId": "family:cli-fixture-validation",
+        "operationFamily": "cli-fixture-validation",
+        "supportKind": "supported-by-selected-descriptor",
+        "actionClassCandidateIds": [
+          "candidate:cli-entrypoint"
+        ],
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "confidence": "medium",
+        "rationale": "Derived from descriptor action classes: cli-entrypoint.",
+        "assumptions": [
+          "operation family is inferred only from selected descriptor refs",
+          "support estimate does not assert actual future support"
+        ],
+        "nonConclusions": [
+          "operation support estimate is a bounded tooling estimate, not accepted PR history",
+          "operation support estimate is not actual future support",
+          "unknown support is not measured zero",
+          "policy constraints do not prove global policy safety",
+          "operation support estimate does not prove future trajectory safety"
+        ]
+      },
+      {
+        "familyId": "family:schema-and-validator",
+        "operationFamily": "schema-and-validator",
+        "supportKind": "supported-by-selected-descriptor",
+        "actionClassCandidateIds": [
+          "candidate:schema-definition",
+          "candidate:tooling-validation"
+        ],
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "confidence": "medium",
+        "rationale": "Derived from descriptor action classes: schema-definition, tooling-validation.",
+        "assumptions": [
+          "operation family is inferred only from selected descriptor refs",
+          "support estimate does not assert actual future support"
+        ],
+        "nonConclusions": [
+          "operation support estimate is a bounded tooling estimate, not accepted PR history",
+          "operation support estimate is not actual future support",
+          "unknown support is not measured zero",
+          "policy constraints do not prove global policy safety",
+          "operation support estimate does not prove future trajectory safety"
+        ]
+      }
+    ],
+    "policyConstraints": [
+      {
+        "constraintId": "constraint:no-theorem-promotion",
+        "constraintKind": "claim-boundary",
+        "appliesToFamilyIds": [
+          "family:cli-fixture-validation",
+          "family:schema-and-validator"
+        ],
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "rule": "Do not promote tooling estimates to Lean theorem claims.",
+        "safetyClaimBoundary": "constraint is local to selected descriptor evidence",
+        "policyRefs": [
+          "policy:no-theorem-promotion"
+        ],
+        "supportDisposition": "allowed",
+        "governanceActionRefs": [
+          "governance:keep-formal-claim-boundary"
+        ],
+        "nonConclusions": [
+          "operation support estimate is a bounded tooling estimate, not accepted PR history",
+          "operation support estimate is not actual future support",
+          "unknown support is not measured zero",
+          "policy constraints do not prove global policy safety",
+          "operation support estimate does not prove future trajectory safety"
+        ]
+      },
+      {
+        "constraintId": "constraint:no-causal-forecast",
+        "constraintKind": "forecast-boundary",
+        "appliesToFamilyIds": [
+          "family:cli-fixture-validation",
+          "family:schema-and-validator"
+        ],
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "rule": "Do not treat operation support estimates as causal forecasts.",
+        "safetyClaimBoundary": "constraint is local to selected operation support evidence",
+        "policyRefs": [
+          "policy:no-causal-forecast"
+        ],
+        "supportDisposition": "forbidden",
+        "governanceActionRefs": [
+          "governance:require-review-summary"
+        ],
+        "nonConclusions": [
+          "operation support estimate is a bounded tooling estimate, not accepted PR history",
+          "operation support estimate is not actual future support",
+          "unknown support is not measured zero",
+          "policy constraints do not prove global policy safety",
+          "operation support estimate does not prove future trajectory safety"
+        ]
+      }
+    ],
+    "knownForbiddenSupport": [
+      {
+        "forbiddenId": "forbidden:causal-probability-assignment",
+        "operationFamily": "causal-probability-assignment",
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "constraintRefs": [
+          "constraint:no-causal-forecast"
+        ],
+        "reason": "descriptor evidence does not establish causal prediction or outcome probability",
+        "boundary": "probability assignment and causal prediction remain outside operation support estimate",
+        "nonConclusions": [
+          "operation support estimate is a bounded tooling estimate, not accepted PR history",
+          "operation support estimate is not actual future support",
+          "unknown support is not measured zero",
+          "policy constraints do not prove global policy safety",
+          "operation support estimate does not prove future trajectory safety"
+        ]
+      }
+    ],
+    "unknownRemainder": [
+      {
+        "remainderId": "unknown:descriptor-boundary-remainder",
+        "affectedFamilyIds": [
+          "family:cli-fixture-validation",
+          "family:schema-and-validator"
+        ],
+        "sourceRefIds": [
+          "source:markdown:coupon-prd-forecast-pipeline"
+        ],
+        "unknownAxes": [
+          "accepted-pr-history: markdown descriptor builder does not inspect accepted PR history",
+          "future outcome causality",
+          "ground truth architecture reconstruction",
+          "implicit requirements not written in the markdown input",
+          "open-questions: markdown input contains unresolved questions or placeholders",
+          "operation support probability",
+          "runtime-evidence: markdown descriptor builder does not observe runtime traces"
+        ],
+        "reason": "selected descriptor evidence does not contain complete operation support, runtime traces, or accepted PR history",
+        "treatment": "retain as unknown support remainder under the selected descriptor boundary",
+        "nonConclusions": [
+          "operation support estimate is a bounded tooling estimate, not accepted PR history",
+          "operation support estimate is not actual future support",
+          "unknown support is not measured zero",
+          "policy constraints do not prove global policy safety",
+          "operation support estimate does not prove future trajectory safety"
+        ]
+      }
+    ],
+    "evidenceBoundary": {
+      "boundaryId": "boundary:descriptor:coupon-prd-forecast-pipeline:operation-support-estimate",
+      "sourceRefIds": [
+        "source:markdown:coupon-prd-forecast-pipeline"
+      ],
+      "measurementBoundaryRefs": [
+        "boundary:coupon-prd-forecast-pipeline",
+        "descriptor:coupon-prd-forecast-pipeline"
+      ],
+      "confidenceBoundary": "confidence values are qualitative and relative to retained descriptor source refs",
+      "evidenceKinds": [
+        "artifact-descriptor",
+        "markdown"
+      ],
+      "unsupportedConstructs": [
+        "accepted PR history completeness",
+        "actual future operation support",
+        "future outcome causality",
+        "global policy safety proof",
+        "ground truth architecture reconstruction",
+        "implicit requirements not written in the markdown input",
+        "operation support probability"
+      ],
+      "assumptions": [
+        "action class candidates are heuristic labels for downstream estimation only",
+        "artifact descriptor source refs are retained by id",
+        "markdown builder does not run repository or runtime extraction",
+        "markdown builder preserves selected source refs and boundary metadata",
+        "markdown headings and retained body text are bounded tooling evidence",
+        "operation families are candidates under selected descriptor inputs"
+      ],
+      "nonConclusions": [
+        "confidence is relative to retained descriptor source refs",
+        "evidence boundary does not complete extractor coverage",
+        "unsupported constructs remain forecast boundary items"
+      ]
+    },
+    "nonConclusions": [
+      "operation support estimate is a bounded tooling estimate, not accepted PR history",
+      "operation support estimate is not actual future support",
+      "unknown support is not measured zero",
+      "policy constraints do not prove global policy safety",
+      "operation support estimate does not prove future trajectory safety"
+    ]
+  },
+  "summary": {
+    "result": "pass",
+    "candidateOperationFamilyCount": 2,
+    "policyConstraintCount": 2,
+    "knownForbiddenSupportCount": 1,
+    "unknownRemainderCount": 1,
+    "failedCheckCount": 0,
+    "warningCheckCount": 0
+  },
+  "checks": [
+    {
+      "id": "operation-support-estimate-schema-version-supported",
+      "title": "operation support estimate schema version is supported",
+      "result": "pass"
+    },
+    {
+      "id": "operation-support-estimate-descriptor-refs-retained",
+      "title": "descriptor refs retain source refs and action class candidate ids",
+      "result": "pass",
+      "count": 1
+    },
+    {
+      "id": "operation-support-estimate-candidate-families-bounded",
+      "title": "candidate operation families are source-bound and linked to descriptor action candidates",
+      "result": "pass",
+      "count": 2
+    },
+    {
+      "id": "operation-support-estimate-policy-constraints-bounded",
+      "title": "policy constraints are local and do not promote to global or future safety claims",
+      "result": "pass",
+      "count": 2
+    },
+    {
+      "id": "operation-support-estimate-known-forbidden-support-bounded",
+      "title": "known forbidden support is source-bound and linked to policy constraints when provided",
+      "result": "pass",
+      "count": 1
+    },
+    {
+      "id": "operation-support-estimate-unknown-remainder-not-measured-zero",
+      "title": "unknown and unmodeled support remains explicit and is not treated as measured zero",
+      "result": "pass",
+      "count": 1
+    },
+    {
+      "id": "operation-support-estimate-evidence-boundary-retained",
+      "title": "evidence boundary keeps confidence and measurement boundary limits",
+      "result": "pass",
+      "count": 1
+    },
+    {
+      "id": "operation-support-estimate-non-conclusions-preserved",
+      "title": "operation support estimate preserves actual-support, policy-safety, and future-safety boundaries",
+      "result": "pass"
+    }
+  ]
+}

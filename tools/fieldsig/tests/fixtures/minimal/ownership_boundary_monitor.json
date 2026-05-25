@@ -1,0 +1,253 @@
+{
+  "schemaVersion": "ownership-boundary-monitor-v0",
+  "schemaCompatibility": {
+    "artifactId": "ownership-boundary-monitor",
+    "schemaVersionName": "ownership-boundary-monitor-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "sourceRefs",
+        "targetField": "sourceRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve operational source traceability"
+      },
+      {
+        "sourceField": "ownershipScopes",
+        "targetField": "ownershipScopes",
+        "mappingKind": "stable",
+        "requiredReview": "preserve owner, component, policy, evidence, and missing evidence refs"
+      },
+      {
+        "sourceField": "boundaryErosionSignals",
+        "targetField": "boundaryErosionSignals",
+        "mappingKind": "stable",
+        "requiredReview": "preserve boundary erosion signal identity and measurement boundary"
+      },
+      {
+        "sourceField": "missingEvidence",
+        "targetField": "missingEvidence",
+        "mappingKind": "stable",
+        "requiredReview": "preserve private / unavailable ownership evidence boundaries"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve empirical / formal-claim guardrails"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "ownership-scopes-preserve-owner-and-component-refs",
+        "appliesTo": "ownership-boundary-monitor",
+        "requiredFor": "ownership boundary monitoring",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "boundary-erosion-signals-preserve-measurement-boundary",
+        "appliesTo": "ownership-boundary-monitor",
+        "requiredFor": "ownership boundary monitoring",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "missing-ownership-evidence-remains-private-or-unavailable",
+        "appliesTo": "ownership-boundary-monitor",
+        "requiredFor": "ownership boundary monitoring",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "ownership-boundary-monitor.ownership-scope",
+        "measurementBoundary": "boundedOperationalObservation",
+        "coverageAssumptions": [
+          "ownershipScopes identify owner, component, and policy refs",
+          "missingEvidenceRefs preserve unavailable ownership evidence"
+        ],
+        "exactnessAssumptions": [
+          "bounded ownership observation is not ownership completeness"
+        ]
+      },
+      {
+        "axisOrLayer": "ownership-boundary-monitor.boundary-erosion",
+        "measurementBoundary": "unmeasuredPrivateEvidence",
+        "coverageAssumptions": [
+          "boundaryErosionSignals preserve metric refs and evidence refs"
+        ],
+        "exactnessAssumptions": [
+          "boundary erosion monitoring does not prove causal incident linkage",
+          "private evidence is not measured-zero evidence"
+        ]
+      },
+      {
+        "axisOrLayer": "ownership-boundary-monitor.missing-evidence",
+        "measurementBoundary": "unavailable",
+        "coverageAssumptions": [
+          "missingEvidence entries preserve private and unavailable boundaries"
+        ],
+        "exactnessAssumptions": [
+          "missing ownership evidence does not imply unowned or risk-free components"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "ownership boundary monitor schema compatibility metadata does not prove semantic preservation",
+      "ownership boundary monitor schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+      "boundary erosion monitoring is empirical signal, not repair correctness"
+    ]
+  },
+  "monitorId": "fixture-b10-ownership-boundary-monitor-v0",
+  "generatedAt": "2026-05-05T10:00:00Z",
+  "organizationRef": "org:example-commerce",
+  "teamRef": "team:checkout-platform",
+  "architectureId": "checkout-service",
+  "aggregationWindow": {
+    "windowStart": "2026-05-04T00:00:00Z",
+    "windowEnd": "2026-05-05T00:00:00Z",
+    "windowKind": "daily"
+  },
+  "sourceRefs": [
+    {
+      "sourceRef": "daily-ledger:fixture-b10-report-outcome-daily-ledger",
+      "sourceKind": "report-outcome-daily-ledger",
+      "path": "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
+      "boundary": "operationalFeedback",
+      "nonConclusions": [
+        "daily ledger input does not prove boundary erosion causality"
+      ]
+    },
+    {
+      "sourceRef": "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0",
+      "sourceKind": "team-threshold-policy",
+      "path": "tools/archsig/tests/fixtures/minimal/team_threshold_policy.json",
+      "boundary": "teamLocalEmpiricalCalibration",
+      "nonConclusions": [
+        "team-local thresholds are policy context, not global invariants"
+      ]
+    }
+  ],
+  "ownershipScopes": [
+    {
+      "scopeRef": "ownership-scope:checkout-api",
+      "ownerRef": "team:checkout-platform",
+      "componentRefs": [
+        "component:checkout.api",
+        "component:checkout.payment_adapter"
+      ],
+      "boundaryPolicyRefs": [
+        "policy:checkout-owned-api-surface",
+        "threshold-policy:fixture-b10-checkout-team-threshold-policy-v0"
+      ],
+      "observationBoundary": "boundedOperationalObservation",
+      "evidenceRefs": [
+        "CODEOWNERS:checkout-platform",
+        "feature-report:checkout-private-runtime-warning"
+      ],
+      "missingEvidenceRefs": [
+        "private-runtime-trace:redacted"
+      ],
+      "nonConclusions": [
+        "ownership scope observation does not prove semantic ownership completeness",
+        "private runtime trace redaction is not measured-zero boundary evidence"
+      ]
+    },
+    {
+      "scopeRef": "ownership-scope:billing-integration",
+      "ownerRef": "team:billing-platform",
+      "componentRefs": [
+        "component:billing.gateway"
+      ],
+      "boundaryPolicyRefs": [
+        "policy:billing-owned-integration"
+      ],
+      "observationBoundary": "partialObservation",
+      "evidenceRefs": [
+        "architecture-drift-ledger:billing-cross-team-edge"
+      ],
+      "missingEvidenceRefs": [
+        "CODEOWNERS:generated-client-owner"
+      ],
+      "nonConclusions": [
+        "partial ownership observation cannot infer absence of boundary erosion"
+      ]
+    }
+  ],
+  "boundaryErosionSignals": [
+    {
+      "signalId": "boundary-erosion:checkout-to-billing-runtime-edge",
+      "boundaryRef": "ownership-scope:checkout-api -> ownership-scope:billing-integration",
+      "metricRef": "runtime.privateEvidenceCount",
+      "observedValue": 1.0,
+      "severity": "watch",
+      "trend": "newlyObserved",
+      "measurementBoundary": "unmeasuredPrivateEvidence",
+      "evidenceRefs": [
+        "drift-ledger-entry:private_runtime_evidence_count",
+        "feature-report:finding-runtime-private-evidence-warning"
+      ],
+      "recommendedFollowUpRefs": [
+        "repair-suggestion:split-runtime-adapter-boundary",
+        "evidence-request:runtime-trace-redaction-policy"
+      ],
+      "nonConclusions": [
+        "new runtime edge signal is boundary erosion monitoring, not causal proof",
+        "unmeasured private evidence is not measured-zero evidence"
+      ]
+    },
+    {
+      "signalId": "boundary-erosion:generated-client-owner-gap",
+      "boundaryRef": "ownership-scope:billing-integration",
+      "metricRef": "ownership.missingOwnerEvidenceCount",
+      "observedValue": null,
+      "severity": "advisory",
+      "trend": "unavailable",
+      "measurementBoundary": "unavailable",
+      "evidenceRefs": [
+        "CODEOWNERS:generated-client-owner"
+      ],
+      "recommendedFollowUpRefs": [
+        "ownership-review:generated-client"
+      ],
+      "nonConclusions": [
+        "missing owner evidence does not imply unowned code"
+      ]
+    }
+  ],
+  "missingEvidence": [
+    {
+      "evidenceKind": "private-runtime-trace",
+      "reason": "runtime edge evidence is retained as a private artifact reference only",
+      "boundary": "private",
+      "followUpRef": "evidence-request:runtime-trace-redaction-policy"
+    },
+    {
+      "evidenceKind": "generated-client-owner",
+      "reason": "generated client ownership is not represented in the bounded fixture",
+      "boundary": "unavailable",
+      "followUpRef": "ownership-review:generated-client"
+    }
+  ],
+  "analysisMetadata": {
+    "leanStatus": "empirical hypothesis / tooling validation",
+    "measurementBoundary": "bounded ownership and boundary erosion monitoring over operational feedback artifacts",
+    "sourceJoinKeys": [
+      "organizationRef/teamRef",
+      "architectureId",
+      "component refs",
+      "aggregation window"
+    ],
+    "nonConclusions": [
+      "ownership monitoring does not prove architecture lawfulness",
+      "boundary erosion signal does not prove causal incident or rollback linkage",
+      "missing / private evidence is preserved instead of rounded to measured zero"
+    ]
+  },
+  "nonConclusions": [
+    "ownership boundary monitor is empirical / operational signal, not a Lean theorem",
+    "boundary erosion monitoring does not prove repair correctness",
+    "private or unavailable ownership evidence is not measured-zero evidence",
+    "monitor output does not imply extractor completeness"
+  ]
+}

@@ -16,8 +16,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | --- | --- | --- |
 | ArchSig Core | Lean / Python import graph scan、Sig0、validation、snapshot、signature diff。policy JSON と runtime edge evidence は明示入力として扱える。 | call graph、data dependency、dynamic import、plugin loading、framework convention は adapter boundary。extractor output は完全な `ComponentUniverse` ではない。 |
 | ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、AAT Observable Bundle、architecture-policy、law violation report、policy decision、PR comment summary、baseline suppression、PR quality analysis。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定。tool output は Lean theorem や merge approval ではない。 |
-| ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、`SftReviewSummary`、validation report を生成する bounded pipeline。PRD v3 では `IntentMap`、`AlignmentMap`、`intent-forecast` を使って planning forecast を作る。 | real dataset calibration、framework semantics adapter は remaining gaps。`ForecastCone` は point prediction ではなく、`ConsequenceEnvelope` と `SftReviewSummary` は reviewer-facing projection である。 |
-| ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、B10 daily ledger、calibration review、team threshold、ownership boundary、repair adoption、incident correlation、hypothesis refresh artifacts。 | 実 dataset での calibration、incident / rollback / MTTR との運用接続、confounder 管理、private data boundary の組織別設計が残る。correlation は因果 theorem ではない。 |
+| FieldSig boundary | SFT forecast、IntentMap、workflow evidence、operational feedback、dynamics、governance、calibration は `tools/fieldsig` が所有する。ArchSig は JSON artifact refs を FieldSig へ渡す structural observer であり、SFT forecast engine ではない。 | FieldSig validation は forecast correctness、probability、causal correctness、global safety を証明しない。 |
 
 ## できること
 
@@ -59,7 +58,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | [`intentmap-creater`](skills/intentmap-creater/SKILL.md) | Epic / PRD / Spec / Issue / proposal から bounded `intentmap-v0` を作成し、missing decision と ambiguous intent を保持して validation まで進める。 |
 | [`arch-pr-analyzer`](skills/arch-pr-analyzer/SKILL.md) | PR / CI の architecture artifact を読み、architecture risk、review cue、evidence gap、次の PR review action を分析する。planning forecast は扱わない。 |
 | [`aat-reviewer`](skills/aat-reviewer/SKILL.md) | `aat-observable-bundle-v0` を読み、invariant / witness / signature / operation / boundary / non-conclusion に沿って設計レビューへ変換する。 |
-| [`arch-intent-forecaster`](skills/arch-intent-forecaster/SKILL.md) | IntentMap x ArchMap alignment から planning forecast artifact を読み、bounded evolution pressure、missing decision、planning action を分析する。PR merge review は扱わない。 |
+| [`arch-pr-analyzer`](skills/arch-pr-analyzer/SKILL.md) | ArchSig / ArchMap / AIR / theorem-check / feature-report / policy / signature diff / PR quality evidence を読む。SFT forecast は FieldSig 側で扱う。 |
 
 skill は AI native な操作面であり、tool output を Lean proof、forecast correctness、incident causality、
 global architecture truth として読まない。生成 artifact は標準では `.archsig/` 以下に置く。
@@ -202,4 +201,4 @@ cargo test --manifest-path tools/archsig/Cargo.toml
 CARGO_INCREMENTAL=0 cargo test --manifest-path tools/archsig/Cargo.toml
 ```
 
-CI では GitHub Actions の `archsig cargo test` job が同じ test suite を実行する。
+CI では GitHub Actions の `archsig cargo test` job が ArchSig test suite を実行する。FieldSig 変更を含む場合は `cargo test --manifest-path tools/fieldsig/Cargo.toml` も実行する。

@@ -23,7 +23,8 @@
 ## PR 前チェック
 
 - Lean 変更を含む PR では、必ず `lake build` を実行する。
-- Rust tooling 変更を含む PR では、必ず `cargo test --manifest-path tools/archsig/Cargo.toml` を実行する。
+- ArchSig 変更を含む PR では、必ず `cargo test --manifest-path tools/archsig/Cargo.toml` を実行する。
+- FieldSig 変更を含む PR では、必ず `cargo test --manifest-path tools/fieldsig/Cargo.toml` を実行する。
 - website 変更を含む PR では、静的ページをグローバルインストール済み Playwright で確認し、リンク・asset path・レイアウト崩れを確認する。
 - website 動作確認では、`python3 -m http.server 8000 --directory website` のような固定ポートの常駐サーバーを原則として避ける。
 - Codex から Playwright を実行する場合、macOS のブラウザ起動権限により通常の sandbox 内実行で Chromium が固まることがあるため、原則として sandbox 外実行を使う。
@@ -44,13 +45,13 @@
 - SFT 本文は `docs/sft/software_field_theory.md`、AAT / SFT 境界は `docs/sft/aat_interface.md` で管理する。
 - tooling 仕様・schema・workflow 文書は `docs/tool` 以下に置く。
 - `docs/archive` は過去文書の退避先であり、現行の source of truth として扱わない。
-- Rust tooling は `tools/archsig` 以下に置く。`archsig` は Lean 証明器ではなく、Architecture Signature 用の telemetry / review artifact generator として扱う。
+- Rust tooling は `tools/archsig` と `tools/fieldsig` 以下に置く。`archsig` は Lean 証明器ではなく、Architecture Signature 用の AAT structural telemetry / review artifact generator として扱う。`fieldsig` は SFT-based software evolution measurement layer として扱う。
 - 公開 website は `website` 以下に置く。`docs` とは別の GitHub Pages 向け公開読書面として扱う。
 - CI / Pages 設定は `.github/workflows` 以下に置く。Lean / Rust test は `lean.yml`、Signature diff は `signature-diff.yml`、GitHub Pages deploy は `pages.yml` で管理する。
 - `Main.lean` は実行ターゲット `aatv2` を提供する。
 - build 設定は `lakefile.toml`。
 - Lean バージョンは `lean-toolchain` で固定する。
-- Rust crate 設定は `tools/archsig/Cargo.toml`、lockfile は `tools/archsig/Cargo.lock` で管理する。
+- ArchSig crate 設定は `tools/archsig/Cargo.toml`、lockfile は `tools/archsig/Cargo.lock` で管理する。FieldSig crate 設定は `tools/fieldsig/Cargo.toml`、lockfile は `tools/fieldsig/Cargo.lock` で管理する。
 
 ## Build コマンド
 
@@ -58,7 +59,8 @@
 - `lake build Formal`: Lean ライブラリだけを build する。
 - `lake exe aatv2`: 実行ターゲットを実行する。
 - `lake env lean Formal/Arch/Core/Layering.lean`: 単一ファイルを type-check する。
-- `cargo test --manifest-path tools/archsig/Cargo.toml`: Rust tooling の test suite を実行する。
+- `cargo test --manifest-path tools/archsig/Cargo.toml`: ArchSig の test suite を実行する。
+- `cargo test --manifest-path tools/fieldsig/Cargo.toml`: FieldSig の test suite を実行する。
 - `cargo run --manifest-path tools/archsig/Cargo.toml -- --root . --out .lake/sig0.json`: repository root の ArchSig scan を実行する。
 - `playwright --version`: グローバルインストール済み Playwright CLI が利用可能か確認する。
 - `NODE_PATH="$(npm root -g)" node -e "const { chromium } = require('playwright'); (async () => { const browser = await chromium.launch({ headless: true }); const page = await browser.newPage(); await page.goto('file://' + process.cwd() + '/website/index.html'); console.log(await page.title()); await browser.close(); })();"`: website の静的ページを Playwright で確認する。Codex から実行する場合は原則として sandbox 外実行を使う。
@@ -82,6 +84,13 @@
 - CLI surface を追加・変更する場合は、`tools/archsig/README.md` と `tools/archsig/docs/commands.md` を必要に応じて更新する。
 - PR / CI 向け report は、結論だけでなく `nonConclusions`, `unmeasuredAxes`, theorem precondition status, evidence boundary を読める形に保つ。
 - 実証研究用 dataset や operational feedback artifact は、相関・観測・仮説を因果 theorem と混同しない。
+
+## FieldSig Tooling ポリシー
+
+- `tools/fieldsig` は Rust で実装された SFT-based software evolution measurement CLI / library として扱う。
+- FieldSig は ArchSig output を JSON artifact ref として受け取る。Rust 型共有を cross-tool contract として扱わない。
+- FieldSig artifact は SoftwareFieldMeasurement / ForecastCone / ConsequenceEnvelope / governance / calibration / operational feedback を扱うが、forecast correctness、probability、causal correctness、global safety、CI/Test/human review の置換を主張しない。
+- CLI surface を追加・変更する場合は、`tools/fieldsig/README.md` と `tools/fieldsig/docs/commands.md` を必要に応じて更新する。
 
 ## ドキュメントポリシー
 
@@ -113,7 +122,7 @@
 - claim boundary、Lean status、Issue 管理、repository / docs の責務分離は編集時の制約として扱い、公開コピーにそのまま出さない。読者向け本文では「何を読めるか」「何を理解できるか」「どの概念へ進むか」に翻訳する。
 - 公開ページで repository、docs、Lean status、Issue、内部運用方針に触れるのは、読者の理解や検証に必要な場合に限る。landing page や section copy では、内部の根拠管理・進捗管理を説明文として書かない。
 - public release で docs や Lean status にリンクする場合は、可能な限り commit-pinned GitHub URL を使い、`blob/main` による silent drift を避ける。
-- ArchSig website では Core, Review, SFT, Operational の product surface と、research gap / calibration gap / adapter boundary を分けて書く。
+- ArchSig website では Core / Review の AAT structural surface と FieldSig 側の SFT / Operational / governance surface を分けて書く。
 - 現在の website は no-build static stack として扱う。重い frontend framework は、静的 HTML / CSS / 小さな JavaScript では足りない明確な理由がある場合だけ導入する。
 - asset path は project Pages 配下でも壊れないように相対 path を使い、root-absolute path を避ける。
 - production `sitemap.xml` や canonical host は、公開 domain または GitHub Pages base URL が確定するまで placeholder で追加しない。

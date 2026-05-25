@@ -19,6 +19,8 @@
 <!-- 実行したコマンドと結果を書く。未実施の場合は理由を書く。 -->
 
 - [ ] `lake build`
+- [ ] `cargo test --manifest-path tools/archsig/Cargo.toml`（ArchSig 変更時）
+- [ ] `cargo test --manifest-path tools/fieldsig/Cargo.toml`（FieldSig 変更時）
 - [ ] `git diff --check`
 - [ ] hidden / bidirectional Unicode scan
 - [ ] `axiom` / `admit` / `sorry` / `unsafe` scan
@@ -30,3 +32,4 @@
 - [ ] `docs` の研究主張と Lean status が矛盾していない
 - [ ] 明示的な相談なしに `axiom`, `admit`, `sorry`, `unsafe` を導入していない
 - [ ] Architecture Signature を単一スコアではなく多軸診断として扱っている
+- [ ] ArchSig と FieldSig の責務を混同していない

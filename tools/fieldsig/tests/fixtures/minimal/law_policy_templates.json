@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "law-policy-template-registry-v0",
+  "registryId": "fixture-b8-law-policy-template-registry",
+  "scope": "canonical B8 law policy template fixture",
+  "templates": [
+    {
+      "templateId": "fixture-python-boundary-template-v0",
+      "targetComponentKind": "python-module",
+      "lawPolicyFamily": "boundary",
+      "selectorSemantics": "exact-or-prefix-star",
+      "selectorAssumptions": [
+        "source roots enumerate the measured Python module universe",
+        "boundary groups are exact or prefix-star selectors"
+      ],
+      "requiredEvidenceKinds": [
+        "python_import",
+        "policy_selector"
+      ],
+      "defaultRequiredAxes": [
+        "boundaryViolationCount"
+      ],
+      "policyOutputArtifacts": [
+        "signature-policy-v0",
+        "feature-extension-report-v0"
+      ],
+      "theoremBridgePreconditions": [
+        "policy selector coverage is explicit claim-side data",
+        "AIR component and relation identifiers match the Lean theorem parameters"
+      ],
+      "nonConclusions": [
+        "law policy template registry is tooling validation, not a Lean theorem",
+        "template application does not conclude architecture lawfulness",
+        "template pass does not conclude a Lean theorem claim",
+        "unmeasured gaps are not measured-zero evidence",
+        "selector match does not prove extractor completeness"
+      ]
+    },
+    {
+      "templateId": "fixture-service-runtime-template-v0",
+      "targetComponentKind": "service",
+      "lawPolicyFamily": "runtime-protection",
+      "selectorSemantics": "adapter-provided",
+      "selectorAssumptions": [
+        "service ids are supplied by a bounded runtime adapter",
+        "private or missing telemetry stays an unmeasured gap"
+      ],
+      "requiredEvidenceKinds": [
+        "runtime_trace",
+        "policy_selector"
+      ],
+      "defaultRequiredAxes": [
+        "runtimePropagation"
+      ],
+      "policyOutputArtifacts": [
+        "aat-air-v0",
+        "feature-extension-report-v0"
+      ],
+      "theoremBridgePreconditions": [
+        "runtime zero bridge theorem preconditions are explicit claim-side data",
+        "runtime telemetry coverage is recorded separately from template selection"
+      ],
+      "nonConclusions": [
+        "law policy template registry is tooling validation, not a Lean theorem",
+        "template application does not conclude architecture lawfulness",
+        "template pass does not conclude a Lean theorem claim",
+        "unmeasured gaps are not measured-zero evidence",
+        "selector match does not prove extractor completeness"
+      ]
+    }
+  ],
+  "explicitAssumptions": [
+    "templates instantiate policy files over a selected measurement universe",
+    "adapter registry entries record the evidence boundary for policy artifacts"
+  ],
+  "nonConclusions": [
+    "law policy template registry is tooling validation, not a Lean theorem",
+    "template application does not conclude architecture lawfulness",
+    "template pass does not conclude a Lean theorem claim",
+    "unmeasured gaps are not measured-zero evidence",
+    "selector match does not prove extractor completeness"
+  ]
+}

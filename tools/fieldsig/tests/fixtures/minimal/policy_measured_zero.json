@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "signature-policy-v0",
+  "policyId": "minimal-measured-zero",
+  "componentIdKind": "lean-module",
+  "selectorSemantics": "exact-or-prefix-star",
+  "boundary": {
+    "groups": [
+      {
+        "id": "entrypoint",
+        "components": ["Formal"]
+      },
+      {
+        "id": "formal-arch",
+        "components": ["Formal.Arch.*"]
+      }
+    ],
+    "allowedDependencies": [
+      {
+        "sourceGroup": "entrypoint",
+        "targetGroup": "formal-arch"
+      },
+      {
+        "sourceGroup": "formal-arch",
+        "targetGroup": "formal-arch"
+      }
+    ],
+    "unmatchedComponent": "not-measured"
+  },
+  "abstraction": {
+    "relations": [
+      {
+        "id": "formal-api",
+        "abstraction": "Formal.Arch.A",
+        "clients": ["Formal"],
+        "implementations": ["Formal.Arch.B"],
+        "allowedDirectImplementationDependencies": ["Formal.Arch.B"]
+      }
+    ],
+    "unmatchedComponent": "ignore"
+  }
+}

@@ -1,5 +1,8 @@
 # ArchSig Command Guide
 
+> FieldSig boundary: SFT forecast, IntentMap, workflow evidence, governance, calibration, and operational feedback commands are owned by `tools/fieldsig`. ArchSig documentation below is kept for AAT structural scan, AIR, ArchMap, theorem precondition, feature report, policy, and review cue surfaces.
+
+
 この文書は `archsig` の主要 command と最小例をまとめる。研究上の解釈や非主張境界は
 [Artifacts And Boundaries](artifacts-and-boundaries.md) を参照する。
 
@@ -15,8 +18,8 @@ directories for `--out` and `--out-dir` paths. Keep canonical fixtures and regre
 | --- | --- | --- |
 | ArchSig Core | default scan、`validate`、`snapshot`、`signature-diff` | repository observation と revision diff。未評価軸は `metricStatus` と `metricDeltaStatus` で読む。 |
 | ArchSig Review | `air`、`archmap`、`archmap-generate`、`air-from-archmap`、`validate-air`、`theorem-check`、`feature-report`、`aat-observable-bundle`、`architecture-policy`、`law-violation-report`、`policy-decision`、`pr-comment`、`baseline-suppression`、`pr-quality-analysis` | PR / CI review 補助。tool output を formal theorem claim や merge approval に昇格しない。 |
-| ArchSig SFT | `artifact-descriptor`、`intent-map`、`intent-archmap-alignment`、`archmap-sft-input`、`operation-support-estimate`、`intent-forecast`、`forecast-cone-skeleton`、`consequence-envelope`、`sft-review-summary`、`forecast-calibration-hook`、`intent-calibration-record`、`ai-proposal-governance`、`sft-forecast` | bounded forecast artifact と governance / report projection。point prediction、causal proof、global safety は non-conclusions。PRD v3 planning forecast は IntentMap x ArchMap alignment を入力にする。 |
-| ArchSig Operational | `dataset`、`pr-history-dataset`、`feature-extension-dataset`、`outcome-linkage-dataset`、B10 feedback commands | calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh 用 artifact。correlation は因果 theorem ではない。 |
+| FieldSig SFT | `artifact-descriptor`、`intent-map`、`intent-archmap-alignment`、`archmap-sft-input`、`operation-support-estimate`、`intent-forecast`、`forecast-cone-skeleton`、`consequence-envelope`、`sft-review-summary`、`forecast-calibration-hook`、`intent-calibration-record`、`ai-proposal-governance`、`sft-forecast` | bounded forecast artifact と governance / report projection。point prediction、causal proof、global safety は non-conclusions。PRD v3 planning forecast は IntentMap x ArchMap alignment を入力にする。 |
+| FieldSig Operational | `dataset`、`pr-history-dataset`、`feature-extension-dataset`、`outcome-linkage-dataset`、B10 feedback commands | calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh 用 artifact。correlation は因果 theorem ではない。 |
 
 ## Scan
 
@@ -458,7 +461,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- intent-forecast \
   --out-dir .archsig/signature/current/intent-forecast
 ```
 
-`intent-forecast` は次のファイルを `--out-dir` に書く。
+FieldSig `intent-forecast` は次のファイルを `--out-dir` に書く。
 
 - `intentmap-validation.json`
 - `intent-archmap-alignment-validation.json`
@@ -676,7 +679,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- sft-forecast \
   --out-dir .archsig/signature/current/sft-forecast
 ```
 
-`sft-forecast` は次のファイルを `--out-dir` に書く。
+FieldSig `sft-forecast` は次のファイルを `--out-dir` に書く。
 
 - `artifact-descriptor.json`
 - `artifact-descriptor-validation.json`

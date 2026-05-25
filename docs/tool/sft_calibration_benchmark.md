@@ -138,3 +138,8 @@ global risk score には使わない。
 - unmeasured / private / unavailable axis の安全性。
 - ArchSig extraction が ground truth architecture object であること。
 - Lean theorem precondition discharge。
+
+
+## FieldSig boundary
+
+FieldSig lives in `tools/fieldsig` and owns SFT software evolution measurement artifacts: `software-field-measurement-v0`, forecast / intent artifacts, workflow evidence refs, operational feedback, governance candidates, unknown remainder, and calibration hooks. ArchSig remains the AAT structural telemetry generator and passes evidence through JSON artifact refs. FieldSig validation is not a Lean proof, forecast correctness proof, probability claim, causal theorem, or replacement for CI, tests, and human review.

@@ -1,0 +1,311 @@
+{
+  "schemaVersion": "incident-correlation-monitor-v0",
+  "schemaCompatibility": {
+    "artifactId": "incident-correlation-monitor",
+    "schemaVersionName": "incident-correlation-monitor-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "correlationWindow",
+        "targetField": "correlationWindow",
+        "mappingKind": "stable",
+        "requiredReview": "preserve correlation window"
+      },
+      {
+        "sourceField": "sourceRefs",
+        "targetField": "sourceRefs",
+        "mappingKind": "stable",
+        "requiredReview": "preserve source traceability"
+      },
+      {
+        "sourceField": "metricAxes",
+        "targetField": "metricAxes",
+        "mappingKind": "stable",
+        "requiredReview": "preserve report and outcome metric axes"
+      },
+      {
+        "sourceField": "correlations",
+        "targetField": "correlations",
+        "mappingKind": "stable",
+        "requiredReview": "preserve exploratory correlation observations"
+      },
+      {
+        "sourceField": "confounderNotes",
+        "targetField": "confounderNotes",
+        "mappingKind": "stable",
+        "requiredReview": "preserve confounder boundaries"
+      },
+      {
+        "sourceField": "missingPrivateData",
+        "targetField": "missingPrivateData",
+        "mappingKind": "stable",
+        "requiredReview": "preserve missing / private data boundary"
+      },
+      {
+        "sourceField": "refreshDecision",
+        "targetField": "refreshDecision",
+        "mappingKind": "stable",
+        "requiredReview": "preserve empirical hypothesis refresh decision"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve correlation non-conclusions"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "correlation-window-is-preserved",
+        "appliesTo": "incident-correlation-monitor",
+        "requiredFor": "incident correlation review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "source-refs-and-metric-axes-are-preserved",
+        "appliesTo": "incident-correlation-monitor",
+        "requiredFor": "incident correlation review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      },
+      {
+        "assumptionId": "confounder-and-missing-private-data-boundaries-are-preserved",
+        "appliesTo": "incident-correlation-monitor",
+        "requiredFor": "incident correlation review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer semantic preservation"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "incident-correlation.correlation-window",
+        "measurementBoundary": "operationalMetadata",
+        "coverageAssumptions": [
+          "windowStart and windowEnd delimit bounded correlation scope"
+        ],
+        "exactnessAssumptions": [
+          "window metadata is not causal evidence"
+        ]
+      },
+      {
+        "axisOrLayer": "incident-correlation.metric-axes",
+        "measurementBoundary": "boundedOperationalObservation",
+        "coverageAssumptions": [
+          "metric axes preserve report warning and outcome metric refs"
+        ],
+        "exactnessAssumptions": [
+          "metric axis linkage is correlation input, not theorem precondition discharge"
+        ]
+      },
+      {
+        "axisOrLayer": "incident-correlation.confounders",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "confounder notes remain explicit when causal interpretation is blocked"
+        ],
+        "exactnessAssumptions": [
+          "uncontrolled confounders prevent causal proof"
+        ]
+      },
+      {
+        "axisOrLayer": "incident-correlation.missing-private-data",
+        "measurementBoundary": "private",
+        "coverageAssumptions": [
+          "private incident and rollback data remain traceability refs"
+        ],
+        "exactnessAssumptions": [
+          "missing or private incident data is not measured-zero evidence"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "incident correlation schema compatibility metadata does not prove causality",
+      "incident correlation schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+    ]
+  },
+  "monitorId": "fixture-b10-incident-correlation-monitor-v0",
+  "generatedAt": "2026-05-05T12:00:00Z",
+  "organizationRef": "org:example",
+  "teamRef": "team:checkout-platform",
+  "architectureId": "checkout-service",
+  "correlationWindow": {
+    "windowStart": "2026-04-01T00:00:00Z",
+    "windowEnd": "2026-05-01T00:00:00Z",
+    "windowKind": "monthly"
+  },
+  "sourceRefs": [
+    {
+      "sourceRef": "report-outcome-daily-ledger:checkout-2026-04",
+      "sourceKind": "report-outcome-daily-ledger",
+      "path": "tools/archsig/tests/fixtures/minimal/report_outcome_daily_ledger.json",
+      "schemaVersion": "report-outcome-daily-ledger-v0",
+      "boundary": "operationalFeedback",
+      "nonConclusions": [
+        "daily ledger is an operational aggregation, not causal proof"
+      ]
+    },
+    {
+      "sourceRef": "calibration-review:runtime-private-evidence",
+      "sourceKind": "calibration-review-record",
+      "path": "tools/archsig/tests/fixtures/minimal/calibration_review_record.json",
+      "schemaVersion": "calibration-review-record-v0",
+      "boundary": "boundedEmpiricalReview",
+      "nonConclusions": [
+        "reviewer calibration remains empirical policy evidence"
+      ]
+    }
+  ],
+  "metricAxes": [
+    {
+      "axisRef": "signature.runtimePropagation",
+      "metricRef": "runtime.privateEvidenceCount",
+      "metricKind": "report-warning",
+      "measurementBoundary": "unmeasuredPrivateEvidence",
+      "sourceRefs": [
+        "feature-extension-report:finding-runtime-private"
+      ],
+      "nonConclusions": [
+        "private runtime evidence is not measured-zero runtime safety"
+      ]
+    },
+    {
+      "axisRef": "outcome.rollback",
+      "metricRef": "rollback",
+      "metricKind": "operational-outcome",
+      "measurementBoundary": "boundedOutcomeObservation",
+      "sourceRefs": [
+        "incident:inc-7",
+        "github:pulls/43"
+      ],
+      "nonConclusions": [
+        "rollback observation is not attributed to one obstruction by this monitor"
+      ]
+    },
+    {
+      "axisRef": "outcome.mttr",
+      "metricRef": "mttrHours",
+      "metricKind": "operational-outcome",
+      "measurementBoundary": "boundedOutcomeObservation",
+      "sourceRefs": [
+        "incident:inc-7"
+      ],
+      "nonConclusions": [
+        "MTTR is operational observation, not semantic completeness"
+      ]
+    }
+  ],
+  "correlations": [
+    {
+      "correlationId": "corr-runtime-private-vs-mttr",
+      "reportMetricRef": "runtime.privateEvidenceCount",
+      "outcomeMetricRef": "mttrHours",
+      "observedDirection": "positive",
+      "coefficient": 0.42,
+      "sampleSize": 12,
+      "confidenceBoundary": "exploratorySmallSample",
+      "sourceRefs": [
+        "report-outcome-daily-ledger:checkout-2026-04",
+        "incident:inc-7"
+      ],
+      "nonConclusions": [
+        "positive correlation is not a causal claim",
+        "small sample correlation does not promote a formal theorem claim"
+      ]
+    },
+    {
+      "correlationId": "corr-runtime-private-vs-rollback",
+      "reportMetricRef": "runtime.privateEvidenceCount",
+      "outcomeMetricRef": "rollback",
+      "observedDirection": "insufficientEvidence",
+      "coefficient": null,
+      "sampleSize": 3,
+      "confidenceBoundary": "insufficientRollbackSample",
+      "sourceRefs": [
+        "github:pulls/43"
+      ],
+      "nonConclusions": [
+        "insufficient rollback sample is not evidence of no rollback risk"
+      ]
+    }
+  ],
+  "confounderNotes": [
+    {
+      "noteId": "confounder-release-size",
+      "confounderKind": "release-size",
+      "description": "Large releases may increase incident scope independently of Architecture Signature warnings.",
+      "boundary": "knownConfounder",
+      "mitigationRefs": [
+        "analysis-plan:control-for-release-size"
+      ],
+      "nonConclusions": [
+        "uncontrolled confounders block causal interpretation"
+      ]
+    },
+    {
+      "noteId": "confounder-private-incident-redaction",
+      "confounderKind": "private-data-redaction",
+      "description": "Incident timelines are redacted in the fixture source.",
+      "boundary": "private",
+      "mitigationRefs": [
+        "evidence-request:incident-timeline-redaction"
+      ],
+      "nonConclusions": [
+        "private redaction is not absence of incident evidence"
+      ]
+    }
+  ],
+  "missingPrivateData": [
+    {
+      "evidenceKind": "incident-timeline",
+      "reason": "source incident timeline is private and represented only by a traceability ref",
+      "boundary": "private",
+      "followUpRef": "evidence-request:incident-timeline-redaction",
+      "nonConclusions": [
+        "private incident timeline cannot discharge a theorem precondition"
+      ]
+    },
+    {
+      "evidenceKind": "longitudinal-sample",
+      "reason": "fixture has one month of bounded outcome data",
+      "boundary": "unavailable",
+      "followUpRef": "b10-backlog:extend-correlation-window",
+      "nonConclusions": [
+        "missing longitudinal data is not measured-zero correlation"
+      ]
+    }
+  ],
+  "refreshDecision": {
+    "decision": "refreshHypothesis",
+    "decisionReason": "runtime exposure hypothesis should be narrowed to exploratory small-sample status",
+    "hypothesisCycleRef": "hypothesis-refresh-cycle:runtime-exposure-2026-05",
+    "decisionRefs": [
+      "analysis-review:2026-05-runtime-exposure"
+    ],
+    "nonConclusions": [
+      "refresh decision changes empirical hypothesis tracking only",
+      "refresh decision does not promote a formal claim"
+    ]
+  },
+  "analysisMetadata": {
+    "leanStatus": "empirical hypothesis / tooling validation",
+    "measurementBoundary": "bounded operational correlation monitoring over report warnings, rollback, incidents, and MTTR",
+    "correlationBoundary": "correlations are exploratory empirical signals with explicit confounder and missing-data boundaries",
+    "sourceJoinKeys": [
+      "repository owner/name",
+      "pull request number where present",
+      "incident id",
+      "correlation window"
+    ],
+    "nonConclusions": [
+      "does not infer causal effects from report warnings to incidents",
+      "does not promote empirical correlation to a Lean theorem claim",
+      "does not treat missing / private data as measured-zero evidence"
+    ]
+  },
+  "nonConclusions": [
+    "incident correlation monitor is empirical / operational signal, not a Lean theorem",
+    "correlation does not imply causation",
+    "incident / rollback / MTTR observations do not prove extractor completeness",
+    "monitor output does not rank architecture quality with a single score"
+  ]
+}

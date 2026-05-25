@@ -21,7 +21,7 @@ v3 は、PRD / Epic / Spec を直接 forecast するのではなく、LLM がそ
 
 ## Problem
 
-ArchSig SFT surface には、Markdown PRD / Spec / Issue / AI proposal を
+FieldSig SFT surface には、Markdown PRD / Spec / Issue / AI proposal を
 `artifact-descriptor-v0` へ正規化し、`operation-support-estimate-v0`、
 `forecast-cone-skeleton-v0`、`consequence-envelope-report-v0` へ接続する pipeline がある。
 
@@ -525,7 +525,7 @@ nonConclusions:
 
 - artifact 名は `IntentMap`、`PRDMap`、`RequirementMap`、`ChangeIntentMap` のどれにするか。
 - IntentMap は ArchMap schema family に含めるか、別 schema family とするか。
-- AlignmentMap は IntentMap 側 artifact として持つか、ArchSig SFT projection artifact として持つか。
+- AlignmentMap は IntentMap 側 artifact として持つか、FieldSig SFT projection artifact として持つか。
 - IntentMap validation はどこまで deterministic に行い、どこから LLM review とするか。
 - PRD から PRD を生成する Epic workflow と、既存 PRD を読む workflow を同じ command にするか。
 - IntentMap と Lean formalization の関係をどう置くか。

@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "intentmap-v0",
+  "intentMapId": "fixture-intentmap-v0",
+  "sourceUniverse": {
+    "universeId": "intent-universe:coupon-prd",
+    "sourceRefs": [
+      {
+        "sourceRefId": "source:prd:coupon",
+        "sourceKind": "prd",
+        "pathOrUrl": "tools/archsig/tests/fixtures/minimal/coupon_prd.md",
+        "stableRef": "section:requirements",
+        "evidenceRole": "intent-source",
+        "retainedFields": [
+          "operation",
+          "workflow",
+          "acceptance",
+          "open-question"
+        ],
+        "nonConclusions": [
+          "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+          "IntentMap does not provide an implementation plan completeness guarantee",
+          "IntentMap confidence is review priority, not probability",
+          "IntentMap does not compute forecast cone results",
+          "missing decisions and ambiguous intents are retained, not filled by validation"
+        ]
+      }
+    ],
+    "includedKinds": [
+      "prd",
+      "acceptance"
+    ],
+    "excludedKinds": [
+      "private-runtime-history"
+    ],
+    "boundary": "selected PRD sections only; implementation files are not inferred",
+    "nonConclusions": [
+      "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+      "IntentMap does not provide an implementation plan completeness guarantee",
+      "IntentMap confidence is review priority, not probability",
+      "IntentMap does not compute forecast cone results",
+      "missing decisions and ambiguous intents are retained, not filled by validation"
+    ]
+  },
+  "generator": {
+    "authoredBy": "llm",
+    "promptRef": "tools/archsig/skills/intentmap-creater/references/intent-extraction-guide.md",
+    "modelRef": "reviewer-supplied",
+    "extractionBoundary": "extract semantic intent with source refs; do not invent missing decisions",
+    "nonConclusions": [
+      "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+      "IntentMap does not provide an implementation plan completeness guarantee",
+      "IntentMap confidence is review priority, not probability",
+      "IntentMap does not compute forecast cone results",
+      "missing decisions and ambiguous intents are retained, not filled by validation"
+    ]
+  },
+  "items": [
+    {
+      "intentItemId": "intent:coupon-apply-operation",
+      "intentKind": "operation",
+      "sourceRefs": [
+        "source:prd:coupon"
+      ],
+      "targetIntentRef": "checkout.applyCoupon",
+      "preserves": [
+        "preserve price invariant",
+        "preserve audit trail"
+      ],
+      "forgets": [
+        "exact file list",
+        "runtime latency"
+      ],
+      "claimClassification": "measured",
+      "confidence": "high",
+      "requiredAssumptions": [
+        "selected PRD text is the intent source universe"
+      ],
+      "missingDecisions": [],
+      "missingEvidence": [],
+      "nonConclusions": [
+        "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+        "IntentMap does not provide an implementation plan completeness guarantee",
+        "IntentMap confidence is review priority, not probability",
+        "IntentMap does not compute forecast cone results",
+        "missing decisions and ambiguous intents are retained, not filled by validation"
+      ]
+    },
+    {
+      "intentItemId": "intent:coupon-acceptance-test",
+      "intentKind": "acceptance",
+      "sourceRefs": [
+        "source:prd:coupon"
+      ],
+      "targetIntentRef": "test oracle for valid and expired coupons",
+      "preserves": [
+        "observable acceptance criterion"
+      ],
+      "forgets": [
+        "implementation framework choice"
+      ],
+      "claimClassification": "assumed",
+      "confidence": "medium",
+      "requiredAssumptions": [
+        "selected PRD text is the intent source universe"
+      ],
+      "missingDecisions": [],
+      "missingEvidence": [],
+      "nonConclusions": [
+        "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+        "IntentMap does not provide an implementation plan completeness guarantee",
+        "IntentMap confidence is review priority, not probability",
+        "IntentMap does not compute forecast cone results",
+        "missing decisions and ambiguous intents are retained, not filled by validation"
+      ]
+    },
+    {
+      "intentItemId": "intent:coupon-stackable-decision",
+      "intentKind": "ambiguity",
+      "sourceRefs": [
+        "source:prd:coupon"
+      ],
+      "targetIntentRef": "whether coupons may stack",
+      "preserves": [
+        "open product decision"
+      ],
+      "forgets": [
+        "resolved behavior"
+      ],
+      "claimClassification": "decision-needed",
+      "confidence": "high",
+      "requiredAssumptions": [
+        "selected PRD text is the intent source universe"
+      ],
+      "missingDecisions": [],
+      "missingEvidence": [],
+      "nonConclusions": [
+        "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+        "IntentMap does not provide an implementation plan completeness guarantee",
+        "IntentMap confidence is review priority, not probability",
+        "IntentMap does not compute forecast cone results",
+        "missing decisions and ambiguous intents are retained, not filled by validation"
+      ]
+    }
+  ],
+  "missingDecisions": [
+    {
+      "boundaryId": "missing-decision:coupon-stacking",
+      "boundaryKind": "missingDecision",
+      "intentItemRefs": [
+        "intent:coupon-stackable-decision"
+      ],
+      "sourceRefIds": [
+        "source:prd:coupon"
+      ],
+      "reason": "PRD does not decide whether coupons may stack",
+      "treatment": "retain as planning boundary and do not choose a behavior",
+      "nonConclusions": [
+        "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+        "IntentMap does not provide an implementation plan completeness guarantee",
+        "IntentMap confidence is review priority, not probability",
+        "IntentMap does not compute forecast cone results",
+        "missing decisions and ambiguous intents are retained, not filled by validation"
+      ]
+    }
+  ],
+  "ambiguousIntents": [
+    {
+      "boundaryId": "ambiguous-intent:discount-composition",
+      "boundaryKind": "ambiguousIntent",
+      "intentItemRefs": [
+        "intent:coupon-stackable-decision"
+      ],
+      "sourceRefIds": [
+        "source:prd:coupon"
+      ],
+      "reason": "discount composition policy can change forecast branch",
+      "treatment": "route through alignment and forecast unknown remainder",
+      "nonConclusions": [
+        "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+        "IntentMap does not provide an implementation plan completeness guarantee",
+        "IntentMap confidence is review priority, not probability",
+        "IntentMap does not compute forecast cone results",
+        "missing decisions and ambiguous intents are retained, not filled by validation"
+      ]
+    }
+  ],
+  "missingEvidence": [
+    {
+      "boundaryId": "missing-evidence:runtime-coupon-traffic",
+      "boundaryKind": "missingEvidence",
+      "intentItemRefs": [
+        "intent:coupon-apply-operation"
+      ],
+      "sourceRefIds": [
+        "source:prd:coupon"
+      ],
+      "reason": "runtime coupon usage is not supplied by PRD",
+      "treatment": "retain as evidence need, not as zero load",
+      "nonConclusions": [
+        "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+        "IntentMap does not provide an implementation plan completeness guarantee",
+        "IntentMap confidence is review priority, not probability",
+        "IntentMap does not compute forecast cone results",
+        "missing decisions and ambiguous intents are retained, not filled by validation"
+      ]
+    }
+  ],
+  "nonConclusions": [
+    "IntentMap is an LLM-authored bounded semantic extraction, not implementation ground truth",
+    "IntentMap does not provide an implementation plan completeness guarantee",
+    "IntentMap confidence is review priority, not probability",
+    "IntentMap does not compute forecast cone results",
+    "missing decisions and ambiguous intents are retained, not filled by validation"
+  ]
+}

@@ -1,6 +1,6 @@
-# ArchSig Operational Feedback
+# FieldSig Operational Feedback
 
-B10 operational feedback artifact は、実運用 outcome を継続的に review するための
+B10 operational feedback artifact は FieldSig が所有し、、実運用 outcome を継続的に review するための
 schema / fixture / guardrail である。現状の command は canonical artifact 出力と bounded
 join を提供し、scheduler や外部 incident system からの自動収集までは行わない。
 
@@ -11,35 +11,35 @@ Lean status: `empirical hypothesis` / tooling output.
 Daily ledger を作る。
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- report-outcome-daily-ledger \
-  --outcome-linkage .archsig/operational/outcome-linkage-dataset.json \
-  --drift-ledger .archsig/operational/architecture-drift-ledger.json \
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- report-outcome-daily-ledger \
+  --outcome-linkage .fieldsig/operational/outcome-linkage-dataset.json \
+  --drift-ledger .fieldsig/operational/architecture-drift-ledger.json \
   --generated-at 2026-05-05T00:00:00Z \
   --window-start 2026-05-04T00:00:00Z \
   --window-end 2026-05-05T00:00:00Z \
-  --out .archsig/operational/report-outcome-daily-ledger.json
+  --out .fieldsig/operational/report-outcome-daily-ledger.json
 ```
 
 Canonical B10 artifact を出力する。
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- calibration-review-record \
-  --out .archsig/operational/calibration-review-record.json
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- calibration-review-record \
+  --out .fieldsig/operational/calibration-review-record.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- team-threshold-policy \
-  --out .archsig/operational/team-threshold-policy.json
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- team-threshold-policy \
+  --out .fieldsig/operational/team-threshold-policy.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- ownership-boundary-monitor \
-  --out .archsig/operational/ownership-boundary-monitor.json
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- ownership-boundary-monitor \
+  --out .fieldsig/operational/ownership-boundary-monitor.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- repair-adoption-record \
-  --out .archsig/operational/repair-adoption-record.json
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- repair-adoption-record \
+  --out .fieldsig/operational/repair-adoption-record.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- incident-correlation-monitor \
-  --out .archsig/operational/incident-correlation-monitor.json
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- incident-correlation-monitor \
+  --out .fieldsig/operational/incident-correlation-monitor.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- hypothesis-refresh-cycle \
-  --out .archsig/operational/hypothesis-refresh-cycle.json
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- hypothesis-refresh-cycle \
+  --out .fieldsig/operational/hypothesis-refresh-cycle.json
 ```
 
 ## Artifacts

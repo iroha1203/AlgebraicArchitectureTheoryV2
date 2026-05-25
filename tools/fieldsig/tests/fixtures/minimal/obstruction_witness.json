@@ -1,0 +1,196 @@
+{
+  "schemaVersion": "obstruction-witness-v0",
+  "schemaCompatibility": {
+    "artifactId": "obstruction-witness",
+    "schemaVersionName": "obstruction-witness-v0",
+    "compatibilityPolicyRef": "b9-compatibility-policy-v0",
+    "fieldMappings": [
+      {
+        "sourceField": "witnessId",
+        "targetField": "witnessId",
+        "mappingKind": "stable",
+        "requiredReview": "preserve stable witness identity"
+      },
+      {
+        "sourceField": "layer",
+        "targetField": "layer",
+        "mappingKind": "stable",
+        "requiredReview": "preserve architecture layer"
+      },
+      {
+        "sourceField": "kind",
+        "targetField": "kind",
+        "mappingKind": "stable",
+        "requiredReview": "preserve witness kind"
+      },
+      {
+        "sourceField": "evidence",
+        "targetField": "evidence",
+        "mappingKind": "stable",
+        "requiredReview": "preserve evidence refs and state"
+      },
+      {
+        "sourceField": "claimClassification",
+        "targetField": "claimClassification",
+        "mappingKind": "stable",
+        "requiredReview": "do not promote tooling claims"
+      },
+      {
+        "sourceField": "measurementBoundary",
+        "targetField": "measurementBoundary",
+        "mappingKind": "stable",
+        "requiredReview": "preserve measuredZero / measuredNonzero / unmeasured / outOfScope distinction"
+      },
+      {
+        "sourceField": "nonConclusions",
+        "targetField": "nonConclusions",
+        "mappingKind": "stable",
+        "requiredReview": "preserve witness guardrails"
+      }
+    ],
+    "deprecatedFields": [],
+    "requiredAssumptions": [
+      {
+        "assumptionId": "claim-classification-is-reviewed-separately-from-schema-migration",
+        "appliesTo": "obstruction-witness",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer a formal claim"
+      },
+      {
+        "assumptionId": "private-and-missing-witness-evidence-remains-unmeasured",
+        "appliesTo": "obstruction-witness",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer a formal claim"
+      },
+      {
+        "assumptionId": "witness-evidence-refs-are-traceable",
+        "appliesTo": "obstruction-witness",
+        "requiredFor": "schema compatibility review",
+        "fallbackWhenMissing": "report as missing or undischarged; do not infer a formal claim"
+      }
+    ],
+    "coverageExactnessBoundaries": [
+      {
+        "axisOrLayer": "witness.static.evidence",
+        "measurementBoundary": "measuredNonzero",
+        "coverageAssumptions": [
+          "evidence-source-coupon-cache",
+          "evidence-private-runtime-log"
+        ],
+        "exactnessAssumptions": [
+          "evidence refs are reviewed as tooling evidence",
+          "theorem refs do not discharge missing preconditions by migration"
+        ]
+      },
+      {
+        "axisOrLayer": "witness.evidence.private-or-missing",
+        "measurementBoundary": "unmeasured",
+        "coverageAssumptions": [
+          "private evidence ref remains private",
+          "missing artifact ref remains missing"
+        ],
+        "exactnessAssumptions": [
+          "private / missing / unmeasured evidence is not rounded to measuredZero"
+        ]
+      }
+    ],
+    "nonConclusions": [
+      "obstruction witness schema compatibility metadata does not prove semantic preservation",
+      "obstruction witness schema compatibility metadata does not imply extractor completeness",
+      "compatibility pass does not promote tooling evidence to a Lean theorem claim",
+      "private / missing / unmeasured evidence is not measured-zero evidence"
+    ]
+  },
+  "witness": {
+    "witnessId": "witness-hidden-cache-access",
+    "layer": "static",
+    "kind": "hidden_interaction",
+    "extensionRole": [
+      "hidden_interaction",
+      "invariant_not_preserved"
+    ],
+    "extensionClassification": [
+      "interaction"
+    ],
+    "components": [
+      "CouponService",
+      "PaymentAdapter"
+    ],
+    "edges": [
+      {
+        "relationId": "relation-coupon-payment-cache",
+        "from": "CouponService",
+        "to": "PaymentAdapter",
+        "kind": "call"
+      }
+    ],
+    "paths": [
+      "path-coupon-payment-cache"
+    ],
+    "diagrams": [],
+    "nonfillabilityWitnessRef": null,
+    "operation": "feature_addition",
+    "evidence": [
+      {
+        "evidenceRef": "evidence-source-coupon-cache",
+        "kind": "source_location",
+        "artifactRef": "artifact-current-feature-report",
+        "path": "src/coupon/CouponService.ts",
+        "symbol": "CouponService.calculate",
+        "ruleId": "typescript-static-call-fixture-v0"
+      },
+      {
+        "evidenceRef": "evidence-private-runtime-log",
+        "kind": "private_runtime_log",
+        "artifactRef": null,
+        "path": null,
+        "symbol": null,
+        "ruleId": "retention-manifest-private-evidence-v0"
+      }
+    ],
+    "theoremReference": [
+      "StaticSplitFeatureExtension"
+    ],
+    "claimLevel": "tooling",
+    "claimClassification": "MEASURED",
+    "measurementBoundary": "measuredNonzero",
+    "nonConclusions": [
+      "private runtime log evidence is not measured-zero evidence",
+      "witness compatibility does not promote tooling evidence to a Lean theorem claim"
+    ],
+    "repairCandidates": [
+      "repair-coupon-boundary"
+    ]
+  },
+  "versioning": {
+    "targetFields": [
+      "witnessId",
+      "layer",
+      "kind",
+      "extensionRole",
+      "extensionClassification",
+      "evidence",
+      "theoremReference",
+      "claimLevel",
+      "claimClassification",
+      "measurementBoundary",
+      "nonConclusions",
+      "repairCandidates"
+    ],
+    "compatibilityBoundaries": [
+      "witness evidence refs remain evidence refs, not formal proof claims",
+      "private / missing / unmeasured evidence is never rounded to measuredZero",
+      "measurementBoundary and claimClassification are versioned independently"
+    ],
+    "evidenceStatePolicy": [
+      "private evidence remains unmeasured unless an explicit public artifact ref is present",
+      "missing evidence is reported as missing, not zero",
+      "unmeasured evidence does not discharge theorem preconditions"
+    ]
+  },
+  "nonConclusions": [
+    "obstruction witness schema compatibility is not semantic preservation",
+    "obstruction witness schema compatibility does not imply extractor completeness",
+    "obstruction witness schema compatibility does not promote tooling evidence to a Lean theorem claim"
+  ]
+}

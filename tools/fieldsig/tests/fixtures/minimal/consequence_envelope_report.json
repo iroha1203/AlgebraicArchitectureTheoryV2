@@ -1,0 +1,322 @@
+{
+  "schemaVersion": "consequence-envelope-report-v0",
+  "envelopeId": "fixture-consequence-envelope-report-v0",
+  "forecastConeRef": {
+    "forecastConeSchemaVersion": "forecast-cone-skeleton-v0",
+    "coneId": "fixture-forecast-cone-skeleton-v0",
+    "operationSupportEstimateId": "fixture-operation-support-estimate-v0",
+    "sourceRefIds": [
+      "source:issue-736",
+      "source:forecast-cone-fixture",
+      "source:roadmap-b12"
+    ],
+    "forecastBoundaryRefs": [
+      "boundary:b12.3-forecast-cone-skeleton"
+    ],
+    "nonConclusions": [
+      "consequence envelope is a report projection, not a Lean theorem proof",
+      "consequence envelope does not identify a unique causal artifact action",
+      "consequence envelope does not prove global safety",
+      "unknown remainder is not measured zero",
+      "summary projection is for review and CI consumption only"
+    ]
+  },
+  "affectedArchitectureRegions": [
+    {
+      "regionId": "region:tools-archsig-sft",
+      "regionRef": "tools/archsig",
+      "effectKind": "tooling-artifact-surface",
+      "sourceRefIds": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "boundary": "region is selected by B12 tooling scope, not inferred as global architecture impact",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    },
+    {
+      "regionId": "region:docs-sft-boundary",
+      "regionRef": "docs/sft",
+      "effectKind": "claim-boundary-documentation",
+      "sourceRefIds": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "boundary": "documentation boundary tracks non-conclusions only",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "comparableSignatureAxes": [
+    {
+      "axisId": "axis:boundary-retention",
+      "axisName": "boundaryRetention",
+      "measurementBoundaryRefs": [
+        "boundary:b12.3-forecast-cone-skeleton",
+        "boundary:b12.4-consequence-envelope"
+      ],
+      "comparability": "comparable only across retained source refs and forecast boundary items",
+      "missingInvariantRefs": [
+        "missing:runtime-propagation-invariant"
+      ],
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    },
+    {
+      "axisId": "axis:unknown-remainder",
+      "axisName": "unknownRemainder",
+      "measurementBoundaryRefs": [
+        "boundary:b12.4-consequence-envelope"
+      ],
+      "comparability": "compares explicit unknown items, not absent or safe axes",
+      "missingInvariantRefs": [
+        "missing:private-feedback-boundary"
+      ],
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "expectedAxisDeltaRanges": [
+    {
+      "deltaId": "delta:boundary-retention-nonnegative",
+      "axisId": "axis:boundary-retention",
+      "rangeKind": "qualitative-nonnegative",
+      "lowerBound": "retained",
+      "upperBound": "retained-plus-report-summary",
+      "sourceRefIds": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "boundary": "expected range is qualitative and fixture-bound",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    },
+    {
+      "deltaId": "delta:unknown-remainder-explicit",
+      "axisId": "axis:unknown-remainder",
+      "rangeKind": "qualitative-explicit",
+      "lowerBound": "unknown retained",
+      "upperBound": null,
+      "sourceRefIds": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "boundary": "unknown remainder is reported, not resolved",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "obstructionWitnessCandidates": [
+    {
+      "candidateId": "obstruction:runtime-boundary-missing",
+      "obstructionKind": "missing-runtime-boundary",
+      "regionIds": [
+        "region:tools-archsig-sft"
+      ],
+      "axisIds": [
+        "axis:unknown-remainder"
+      ],
+      "evidenceRefs": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "selectionBoundary": "selected as a review candidate, not as a proved obstruction witness",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "missingBoundaryItems": [
+    {
+      "itemId": "missing:runtime-propagation-invariant",
+      "itemKind": "missing-invariant",
+      "affectedAxisIds": [
+        "axis:unknown-remainder"
+      ],
+      "reason": "runtime propagation is outside B12.4 report evidence",
+      "treatment": "report as missing boundary item for review and issue decomposition",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "typedBoundaryFailures": [
+    {
+      "failureId": "failure:runtime-invariant-missing",
+      "failureKind": "missing-invariant",
+      "affectedRegionIds": [
+        "region:tools-archsig-sft"
+      ],
+      "affectedAxisIds": [
+        "axis:unknown-remainder"
+      ],
+      "evidenceRefs": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "reason": "runtime propagation invariant is absent from the selected report evidence",
+      "nextAction": "request runtime invariant evidence or keep the future open",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "reviewerActions": [
+    {
+      "actionId": "action:review-runtime-boundary",
+      "actionKind": "request-evidence",
+      "status": "needs_human_judgement",
+      "sourceItemRefs": [
+        "missing:runtime-propagation-invariant"
+      ],
+      "evidenceRefs": [
+        "source:issue-736",
+        "source:forecast-cone-fixture",
+        "source:roadmap-b12"
+      ],
+      "message": "Review runtime propagation evidence before closing the forecast boundary",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "theoremBoundaryItems": [
+    {
+      "itemId": "theorem-boundary:no-lean-promotion",
+      "theoremOrClaimRef": "AAT theorem boundary",
+      "boundary": "report does not upgrade forecast artifacts to Lean theorem claims",
+      "requiredEvidence": [
+        "formal theorem statement",
+        "Lean proof",
+        "separate empirical validation"
+      ],
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "recommendations": {
+    "review": [
+      "review retained source refs before treating any region as affected",
+      "check missing boundary items before accepting axis deltas"
+    ],
+    "ci": [
+      "run consequence-envelope validator on report artifacts"
+    ],
+    "issueDecomposition": [
+      "split runtime propagation boundary into a downstream empirical issue"
+    ],
+    "nonConclusions": [
+      "consequence envelope is a report projection, not a Lean theorem proof",
+      "consequence envelope does not identify a unique causal artifact action",
+      "consequence envelope does not prove global safety",
+      "unknown remainder is not measured zero",
+      "summary projection is for review and CI consumption only"
+    ]
+  },
+  "summaryProjection": {
+    "summaryId": "summary:b12.4-review-projection",
+    "headline": "B12 forecast report keeps boundary and unknown remainder explicit",
+    "affectedRegionCount": 2,
+    "comparableAxisCount": 2,
+    "missingBoundaryCount": 1,
+    "reviewerNotes": [
+      "No probability or causal safety claim is emitted.",
+      "Unknown runtime and private feedback remain report items."
+    ],
+    "nonConclusions": [
+      "consequence envelope is a report projection, not a Lean theorem proof",
+      "consequence envelope does not identify a unique causal artifact action",
+      "consequence envelope does not prove global safety",
+      "unknown remainder is not measured zero",
+      "summary projection is for review and CI consumption only"
+    ]
+  },
+  "unknownRemainder": [
+    {
+      "remainderId": "unknown:private-and-runtime-outcomes",
+      "affectedRegionIds": [
+        "region:tools-archsig-sft"
+      ],
+      "affectedAxisIds": [
+        "axis:unknown-remainder"
+      ],
+      "unknownAxes": [
+        "private PRD decisions",
+        "runtime outcome evidence",
+        "future CI and review behavior"
+      ],
+      "treatment": "retain as unresolved report remainder under the selected boundary",
+      "nonConclusions": [
+        "consequence envelope is a report projection, not a Lean theorem proof",
+        "consequence envelope does not identify a unique causal artifact action",
+        "consequence envelope does not prove global safety",
+        "unknown remainder is not measured zero",
+        "summary projection is for review and CI consumption only"
+      ]
+    }
+  ],
+  "nonConclusions": [
+    "consequence envelope is a report projection, not a Lean theorem proof",
+    "consequence envelope does not identify a unique causal artifact action",
+    "consequence envelope does not prove global safety",
+    "unknown remainder is not measured zero",
+    "summary projection is for review and CI consumption only"
+  ]
+}
