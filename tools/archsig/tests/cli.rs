@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -178,6 +179,18 @@ fn cli_runs_archmap_primary_workflow() {
         ),
         "Feature report must summarize the ArchMap homomorphism boundary"
     );
+    let feature_family_names = feature_json["homomorphismSummary"]["mapFamilies"]
+        .as_array()
+        .expect("feature homomorphism families are present")
+        .iter()
+        .map(|entry| entry["mapFamily"].as_str().expect("map family"))
+        .collect::<Vec<_>>();
+    for family in ["object", "relation", "law", "obstruction", "signatureAxis"] {
+        assert!(
+            feature_family_names.contains(&family),
+            "Feature report must carry ArchMap {family} family forward"
+        );
+    }
     assert!(
         feature_json["homomorphismSummary"]["unmeasuredBoundaries"]
             .as_array()
@@ -256,6 +269,71 @@ fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
             .as_array()
             .is_some_and(|items| !items.is_empty()),
         "unmeasured AAT concept coverage must remain explicit"
+    );
+
+    let workflow_dir = temp_dir("archmap-homomorphism-expressiveness-workflow");
+    run_sig0(&[
+        "archmap-workflow",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--out-dir",
+        workflow_dir.to_str().expect("workflow dir path is utf-8"),
+    ]);
+    let feature = read_json(&workflow_dir.join("feature-report.json"));
+    let feature_family_names = feature["homomorphismSummary"]["mapFamilies"]
+        .as_array()
+        .expect("feature homomorphism families are array")
+        .iter()
+        .map(|entry| entry["mapFamily"].as_str().expect("map family"))
+        .collect::<Vec<_>>();
+    for family in ["object", "relation", "law", "obstruction", "signatureAxis"] {
+        assert!(
+            feature_family_names.contains(&family),
+            "workflow Feature Report must retain AAT {family} map family"
+        );
+    }
+    let unsupported = feature["homomorphismSummary"]["unsupportedBoundaries"]
+        .as_array()
+        .expect("unsupported boundaries are array")
+        .iter()
+        .map(|item| item.as_str().expect("unsupported boundary"))
+        .collect::<Vec<_>>();
+    let unsupported_unique = unsupported.iter().copied().collect::<BTreeSet<_>>();
+    assert_eq!(
+        unsupported.len(),
+        unsupported_unique.len(),
+        "unsupported boundaries must be deduplicated"
+    );
+
+    let bundle = read_json(&workflow_dir.join("aat-observable-bundle.json"));
+    let concept_status = |concept_id: &str, field: &str| {
+        bundle["conceptMappings"]
+            .as_array()
+            .expect("concept mappings are array")
+            .iter()
+            .find(|entry| entry["conceptId"] == concept_id)
+            .and_then(|entry| entry[field].as_str())
+            .expect("concept field is present")
+            .to_string()
+    };
+    assert_eq!(
+        concept_status("concept:semantic-diagram", "measurementStatus"),
+        "measuredNonzero",
+        "semantic diagram concept status must reflect supplied ArchMap evidence"
+    );
+    assert_eq!(
+        concept_status("concept:theorem-boundary", "reviewStatus"),
+        "blockedByFormalPromotionGuardrail",
+        "theorem boundary must expose the formal promotion guardrail"
+    );
+    let theorem_boundary = &bundle["theoremBoundaries"][0];
+    assert!(
+        theorem_boundary["missingPreconditions"]
+            .as_array()
+            .is_some_and(|items| items.iter().any(|item| item
+                .as_str()
+                .is_some_and(|text| text.contains("validation and projection do not discharge")))),
+        "Bundle theorem boundary must retain ArchMap preservation checklist blockers"
     );
 }
 

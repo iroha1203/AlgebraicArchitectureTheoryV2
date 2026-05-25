@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, Write};
@@ -30,7 +31,8 @@ use archsig::{
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TheoremPreconditionCheckReportV0, apply_architecture_policy_to_sig0,
     attach_framework_adapter_evidence, build_air_document, build_air_from_archmap,
-    build_baseline_suppression_report, build_feature_extension_report, build_law_violation_report,
+    build_baseline_suppression_report, build_feature_extension_report,
+    build_feature_extension_report_with_archmap_diagnostics, build_law_violation_report,
     build_policy_decision_report, build_schema_compatibility_check_report,
     build_signature_diff_report, build_signature_snapshot_record,
     build_theorem_precondition_check_report, extract_python_sig0,
@@ -1258,13 +1260,17 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 build_theorem_precondition_check_report(&air, &air_path.display().to_string());
             write_json(Some(theorem_check_path.clone()), &theorem_check)?;
 
-            let feature_report =
-                build_feature_extension_report(&air, &air_path.display().to_string());
+            let feature_report = build_feature_extension_report_with_archmap_diagnostics(
+                &air,
+                &air_path.display().to_string(),
+                &archmap_report.homomorphism_diagnostics,
+            );
             write_json(Some(feature_report_path.clone()), &feature_report)?;
 
             let observable_bundle = observable_bundle_from_archmap_workflow(
                 &document,
                 &air,
+                &archmap_report,
                 &theorem_check,
                 &feature_report,
                 &archmap,
@@ -1497,6 +1503,7 @@ fn build_adapter_sig0(
 fn observable_bundle_from_archmap_workflow(
     archmap: &ArchMapDocumentV0,
     air: &AirDocumentV0,
+    archmap_validation: &ArchMapValidationReportV0,
     theorem_check: &TheoremPreconditionCheckReportV0,
     feature_report: &FeatureExtensionReportV0,
     archmap_path: &Path,
@@ -1533,6 +1540,8 @@ fn observable_bundle_from_archmap_workflow(
                 "sourceInventoryChecks".to_string(),
                 "claimBoundaryChecks".to_string(),
                 "formalPromotionGuardrailChecks".to_string(),
+                "leanPreservationPreconditionChecklist".to_string(),
+                "homomorphismDiagnostics".to_string(),
             ],
             non_conclusions: vec![
                 "ArchMap validation does not prove semantic completeness".to_string(),
@@ -1590,8 +1599,9 @@ fn observable_bundle_from_archmap_workflow(
         .iter()
         .map(|source_ref| source_ref.source_ref_id.clone())
         .collect();
-    let concept_mappings = archmap_primary_concept_mappings();
-    let review_actions = archmap_primary_review_actions();
+    let concept_mappings =
+        archmap_primary_concept_mappings(archmap_validation, theorem_check, feature_report);
+    let review_actions = archmap_primary_review_actions(archmap_validation, theorem_check);
     let witness_ref = feature_report
         .introduced_obstruction_witnesses
         .first()
@@ -1841,12 +1851,14 @@ fn observable_bundle_from_archmap_workflow(
             boundary_ref: "boundary:theorem-precondition:primary".to_string(),
             claim_ref: theorem_claim_ref,
             claim_level: "tooling-validation".to_string(),
-            claim_classification: theorem_check.summary.result.clone(),
-            missing_preconditions: theorem_check
-                .checks
-                .iter()
-                .flat_map(|check| check.missing_preconditions.clone())
-                .collect(),
+            claim_classification: archmap_theorem_boundary_classification(
+                archmap_validation,
+                theorem_check,
+            ),
+            missing_preconditions: archmap_theorem_boundary_missing_preconditions(
+                archmap_validation,
+                theorem_check,
+            ),
             measured_violation_refs: vec![witness_ref],
             review_action_ref: "review:inspect-theorem-boundary".to_string(),
             non_conclusions: vec!["theorem precondition check is not a Lean proof".to_string()],
@@ -1918,86 +1930,149 @@ fn observable_bundle_from_archmap_workflow(
     }
 }
 
-fn archmap_primary_concept_mappings() -> Vec<AatConceptMappingV0> {
-    let concepts = [
-        (
+fn archmap_primary_concept_mappings(
+    validation: &ArchMapValidationReportV0,
+    theorem_check: &TheoremPreconditionCheckReportV0,
+    feature_report: &FeatureExtensionReportV0,
+) -> Vec<AatConceptMappingV0> {
+    vec![
+        archmap_concept_mapping(
             "concept:architecture-object",
             "ArchitectureObject / ComponentUniverse",
-            "partiallyMeasured",
+            archmap_family_measurement_status(validation, "object"),
+            "reviewable",
+            &["object map status is selected-source relative"],
         ),
-        (
+        archmap_concept_mapping(
             "concept:obstruction-witness",
             "ObstructionWitness",
-            "partiallyMeasured",
+            if !validation
+                .homomorphism_diagnostics
+                .obstruction_refs
+                .is_empty()
+                || !feature_report.introduced_obstruction_witnesses.is_empty()
+            {
+                "measuredNonzero"
+            } else {
+                archmap_family_measurement_status(validation, "obstruction")
+            },
+            "reviewable",
+            &["obstruction witness absence is not global lawfulness"],
         ),
-        (
+        archmap_concept_mapping(
             "concept:theorem-boundary",
             "TheoremBoundary / NonConclusion",
             "unmeasured",
+            archmap_theorem_review_status(validation, theorem_check),
+            &[
+                "theorem boundary status records blocked preconditions and guardrails",
+                "theorem check is not Lean theorem discharge",
+            ],
         ),
-        (
+        archmap_concept_mapping(
             "concept:operation",
             "ArchitectureOperation",
             "partiallyMeasured",
+            "reviewable",
+            &["operation candidate is review evidence, not theorem discharge"],
         ),
-        (
+        archmap_concept_mapping(
             "concept:projection-observation",
             "Projection / Observation / LSP / DIP",
-            "partiallyMeasured",
+            archmap_family_measurement_status(validation, "relation"),
+            "reviewable",
+            &["projection / observation evidence is bounded to selected refs"],
         ),
-        (
+        archmap_concept_mapping(
             "concept:feature-extension",
             "FeatureExtension / ExtensionObstruction",
             "partiallyMeasured",
+            "reviewable",
+            &["feature report is not a global safety guarantee"],
         ),
-        (
+        archmap_concept_mapping(
             "concept:semantic-diagram",
             "Path / Homotopy / DiagramFiller / NonFillability",
-            "unmeasured",
+            archmap_semantic_diagram_measurement_status(validation),
+            archmap_checklist_review_status(
+                validation,
+                &[
+                    "SemanticDiagramPreservation",
+                    "SemanticCommutationPreservation",
+                    "NonfillabilityWitnessPreservation",
+                ],
+            ),
+            &["semantic diagram evidence is selected-observation relative"],
         ),
-        (
+        archmap_concept_mapping(
             "concept:state-effect",
             "StateTransition / EffectBoundary",
-            "partiallyMeasured",
+            archmap_family_measurement_status(validation, "law"),
+            "reviewable",
+            &["state/effect law evidence is not event log completeness"],
         ),
-        (
+        archmap_concept_mapping(
             "concept:repair-synthesis",
             "Repair / Synthesis / ComplexityTransfer",
-            "outOfScope",
+            if !feature_report.repair_suggestions.is_empty()
+                || !feature_report.complexity_transfer_candidates.is_empty()
+            {
+                "partiallyMeasured"
+            } else {
+                "outOfScope"
+            },
+            "reviewable",
+            &["repair suggestion is not guaranteed improvement or solver completeness"],
         ),
-        (
+        archmap_concept_mapping(
             "concept:analytic-representation",
             "AnalyticRepresentation / ObstructionValuation",
-            "unmeasured",
+            archmap_family_measurement_status(validation, "signatureAxis"),
+            "reviewable",
+            &["analytic axis value is not structural flatness without reflection assumptions"],
         ),
-    ];
-    concepts
-        .into_iter()
-        .map(
-            |(concept_id, aat_concept, measurement_status)| AatConceptMappingV0 {
-                concept_id: concept_id.to_string(),
-                aat_concept: aat_concept.to_string(),
-                artifact_refs: vec![
-                    "source:archmap:primary".to_string(),
-                    "source:air:primary".to_string(),
-                ],
-                report_refs: vec![
-                    "source:theorem-check:primary".to_string(),
-                    "source:feature-report:primary".to_string(),
-                ],
-                skill_refs: vec!["tools/archsig/skills/aat-reviewer/SKILL.md".to_string()],
-                expressibility: "representable".to_string(),
-                retention_status: "retained".to_string(),
-                review_status: "reviewable".to_string(),
-                measurement_status: measurement_status.to_string(),
-                responsibility: "deterministic+LLM+human".to_string(),
-                non_conclusions: vec!["concept mapping is not a Lean theorem".to_string()],
-            },
-        )
-        .collect()
+    ]
 }
 
-fn archmap_primary_review_actions() -> Vec<AatReviewActionV0> {
+fn archmap_concept_mapping(
+    concept_id: &str,
+    aat_concept: &str,
+    measurement_status: &str,
+    review_status: &str,
+    non_conclusions: &[&str],
+) -> AatConceptMappingV0 {
+    AatConceptMappingV0 {
+        concept_id: concept_id.to_string(),
+        aat_concept: aat_concept.to_string(),
+        artifact_refs: vec![
+            "source:archmap:primary".to_string(),
+            "source:air:primary".to_string(),
+        ],
+        report_refs: vec![
+            "source:archmap-validation:primary".to_string(),
+            "source:theorem-check:primary".to_string(),
+            "source:feature-report:primary".to_string(),
+        ],
+        skill_refs: vec!["tools/archsig/skills/aat-reviewer/SKILL.md".to_string()],
+        expressibility: "representable".to_string(),
+        retention_status: "retained".to_string(),
+        review_status: review_status.to_string(),
+        measurement_status: measurement_status.to_string(),
+        responsibility: "deterministic+LLM+human".to_string(),
+        non_conclusions: non_conclusions
+            .iter()
+            .map(|non_conclusion| non_conclusion.to_string())
+            .chain(["concept mapping is not a Lean theorem".to_string()])
+            .collect(),
+    }
+}
+
+fn archmap_primary_review_actions(
+    validation: &ArchMapValidationReportV0,
+    theorem_check: &TheoremPreconditionCheckReportV0,
+) -> Vec<AatReviewActionV0> {
+    let theorem_next_evidence =
+        archmap_theorem_boundary_missing_preconditions(validation, theorem_check);
     vec![
         AatReviewActionV0 {
             review_action_id: "review:inspect-coverage-boundary".to_string(),
@@ -2020,13 +2095,172 @@ fn archmap_primary_review_actions() -> Vec<AatReviewActionV0> {
         AatReviewActionV0 {
             review_action_id: "review:inspect-theorem-boundary".to_string(),
             category: "theoremBoundary".to_string(),
-            source_refs: vec!["source:theorem-check:primary".to_string()],
-            action: "keep formal theorem claims blocked unless preconditions are explicitly discharged".to_string(),
-            next_evidence: vec!["Lean theorem package evidence".to_string()],
+            source_refs: vec![
+                "source:archmap-validation:primary".to_string(),
+                "source:theorem-check:primary".to_string(),
+            ],
+            action: format!(
+                "keep formal theorem claims blocked unless ArchMap preservation checklist and theorem preconditions are discharged ({})",
+                archmap_checklist_review_status(validation, &[
+                    "FormalPromotionGuardrail",
+                    "CoverageExactnessBoundary",
+                ])
+            ),
+            next_evidence: if theorem_next_evidence.is_empty() {
+                vec!["Lean theorem package evidence".to_string()]
+            } else {
+                theorem_next_evidence
+            },
             owner: "formal-proof".to_string(),
             non_conclusions: vec!["precondition report is not Lean theorem discharge".to_string()],
         },
     ]
+}
+
+fn archmap_family_measurement_status(
+    validation: &ArchMapValidationReportV0,
+    family: &str,
+) -> &'static str {
+    let Some(summary) = validation
+        .homomorphism_diagnostics
+        .map_family_summaries
+        .iter()
+        .find(|summary| summary.map_family == family)
+    else {
+        return "unmeasured";
+    };
+    if summary.entry_count == 0 || summary.unmeasured_count == summary.entry_count {
+        "unmeasured"
+    } else if summary.measured_count > 0 {
+        "partiallyMeasured"
+    } else {
+        "partiallyMeasured"
+    }
+}
+
+fn archmap_semantic_diagram_measurement_status(
+    validation: &ArchMapValidationReportV0,
+) -> &'static str {
+    if validation
+        .lean_preservation_precondition_checklist
+        .iter()
+        .any(|entry| {
+            matches!(
+                entry.lean_package_field.as_str(),
+                "SemanticDiagramPreservation"
+                    | "SemanticCommutationPreservation"
+                    | "NonfillabilityWitnessPreservation"
+            ) && matches!(
+                entry.status.as_str(),
+                "candidate" | "satisfiedBySuppliedAssumption"
+            )
+        })
+    {
+        "measuredNonzero"
+    } else {
+        "unmeasured"
+    }
+}
+
+fn archmap_checklist_review_status(
+    validation: &ArchMapValidationReportV0,
+    fields: &[&str],
+) -> &'static str {
+    let entries = validation
+        .lean_preservation_precondition_checklist
+        .iter()
+        .filter(|entry| fields.contains(&entry.lean_package_field.as_str()));
+    let mut saw_candidate = false;
+    for entry in entries {
+        match entry.status.as_str() {
+            "blockedByFormalPromotionGuardrail" => return "blockedByFormalPromotionGuardrail",
+            "blockedByUnmeasuredCoverage" => return "blockedByUnmeasuredCoverage",
+            "satisfiedBySuppliedAssumption" => saw_candidate = true,
+            "candidate" => saw_candidate = true,
+            _ => {}
+        }
+    }
+    if saw_candidate {
+        "candidate"
+    } else {
+        "unmeasured"
+    }
+}
+
+fn archmap_theorem_review_status(
+    validation: &ArchMapValidationReportV0,
+    theorem_check: &TheoremPreconditionCheckReportV0,
+) -> &'static str {
+    if validation
+        .lean_preservation_precondition_checklist
+        .iter()
+        .any(|entry| entry.status == "blockedByFormalPromotionGuardrail")
+    {
+        "blockedByFormalPromotionGuardrail"
+    } else if validation
+        .lean_preservation_precondition_checklist
+        .iter()
+        .any(|entry| entry.status == "blockedByUnmeasuredCoverage")
+        || theorem_check.summary.blocked_claim_count > 0
+    {
+        "blockedByUnmeasuredCoverage"
+    } else {
+        "candidate"
+    }
+}
+
+fn archmap_theorem_boundary_classification(
+    validation: &ArchMapValidationReportV0,
+    theorem_check: &TheoremPreconditionCheckReportV0,
+) -> String {
+    if validation
+        .lean_preservation_precondition_checklist
+        .iter()
+        .any(|entry| entry.status == "blockedByFormalPromotionGuardrail")
+    {
+        "blockedByFormalPromotionGuardrail".to_string()
+    } else if theorem_check.summary.result == "fail" {
+        "blockedByTheoremPrecondition".to_string()
+    } else {
+        theorem_check.summary.result.clone()
+    }
+}
+
+fn archmap_theorem_boundary_missing_preconditions(
+    validation: &ArchMapValidationReportV0,
+    theorem_check: &TheoremPreconditionCheckReportV0,
+) -> Vec<String> {
+    stable_dedup(
+        theorem_check
+            .checks
+            .iter()
+            .flat_map(|check| check.missing_preconditions.clone())
+            .chain(
+                validation
+                    .lean_preservation_precondition_checklist
+                    .iter()
+                    .flat_map(|entry| {
+                        entry
+                            .blocking_reasons
+                            .iter()
+                            .chain(entry.missing_evidence.iter())
+                            .cloned()
+                            .collect::<Vec<_>>()
+                    }),
+            )
+            .collect(),
+    )
+}
+
+fn stable_dedup(items: Vec<String>) -> Vec<String> {
+    let mut seen = BTreeSet::new();
+    let mut deduped = Vec::new();
+    for item in items {
+        if seen.insert(item.clone()) {
+            deduped.push(item);
+        }
+    }
+    deduped
 }
 
 fn archmap_source_ref_label(source_ref: &archsig::ArchMapSourceRef) -> String {

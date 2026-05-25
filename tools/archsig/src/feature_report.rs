@@ -4,9 +4,10 @@ use crate::repair_rule::static_repair_rule_registry;
 use crate::schema_versioning::feature_report_schema_compatibility_metadata;
 use crate::theorem_precondition::build_theorem_precondition_check_report;
 use crate::{
-    AirClaim, AirDocumentV0, AirEvidence, AirRelation, FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
-    FeatureExtensionReportV0, FeatureReportArchitectureSummary, FeatureReportCoverageGap,
-    FeatureReportEdgeRef, FeatureReportEvidenceRef, FeatureReportGeneratedPatchOperation,
+    AirClaim, AirDocumentV0, AirEvidence, AirRelation, ArchMapHomomorphismDiagnosticsV0,
+    FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, FeatureExtensionReportV0,
+    FeatureReportArchitectureSummary, FeatureReportCoverageGap, FeatureReportEdgeRef,
+    FeatureReportEvidenceRef, FeatureReportGeneratedPatchOperation,
     FeatureReportGeneratedPatchReviewWarning, FeatureReportGeneratedPatchSummary,
     FeatureReportHomomorphismFamily, FeatureReportHomomorphismSummary, FeatureReportInput,
     FeatureReportInterpretedExtension, FeatureReportInvariant, FeatureReportObstructionWitness,
@@ -174,6 +175,64 @@ pub fn build_feature_extension_report(
     }
 }
 
+pub fn build_feature_extension_report_with_archmap_diagnostics(
+    document: &AirDocumentV0,
+    input_path: &str,
+    diagnostics: &ArchMapHomomorphismDiagnosticsV0,
+) -> FeatureExtensionReportV0 {
+    let mut report = build_feature_extension_report(document, input_path);
+    report.homomorphism_summary =
+        feature_report_archmap_homomorphism_summary(document, diagnostics);
+    report
+}
+
+fn feature_report_archmap_homomorphism_summary(
+    document: &AirDocumentV0,
+    diagnostics: &ArchMapHomomorphismDiagnosticsV0,
+) -> FeatureReportHomomorphismSummary {
+    FeatureReportHomomorphismSummary {
+        classification: diagnostics.classification.clone(),
+        domain: diagnostics.domain_ref.clone(),
+        codomain: diagnostics.codomain_ref.clone(),
+        map_families: diagnostics
+            .map_family_summaries
+            .iter()
+            .map(|family| FeatureReportHomomorphismFamily {
+                map_family: family.map_family.clone(),
+                entry_count: family.entry_count,
+                measured_count: family.measured_count,
+                unmeasured_count: family.unmeasured_count,
+                lossy_count: family.lossy_count,
+            })
+            .collect(),
+        preserved_structure_refs: stable_dedup(
+            document
+                .claims
+                .iter()
+                .flat_map(|claim| claim.coverage_assumptions.clone())
+                .collect(),
+        ),
+        obstruction_refs: stable_dedup(diagnostics.obstruction_refs.clone()),
+        forgetful_boundaries: stable_dedup(diagnostics.forgetful_boundaries.clone()),
+        unmeasured_boundaries: stable_dedup(diagnostics.unmeasured_boundaries.clone()),
+        unsupported_boundaries: stable_dedup(diagnostics.unsupported_boundaries.clone()),
+        next_evidence: stable_dedup(diagnostics.next_evidence.clone()),
+        non_conclusions: stable_dedup(
+            diagnostics
+                .non_conclusions
+                .iter()
+                .cloned()
+                .chain([
+                    "Feature Report carries ArchMap homomorphism diagnostics as review evidence"
+                        .to_string(),
+                    "homomorphic classification is bounded to the selected source and AAT codomain"
+                        .to_string(),
+                ])
+                .collect(),
+        ),
+    }
+}
+
 fn feature_report_homomorphism_summary(
     document: &AirDocumentV0,
     coverage_gaps: &[FeatureReportCoverageGap],
@@ -189,40 +248,48 @@ fn feature_report_homomorphism_summary(
         .iter()
         .filter(|component| component.kind == "archmap-component")
         .count();
-    let unmeasured_boundaries = coverage_gaps
-        .iter()
-        .filter(|gap| gap.measurement_boundary == "unmeasured")
-        .map(|gap| gap.layer.clone())
-        .chain(
-            document
-                .coverage
-                .layers
-                .iter()
-                .filter(|layer| layer.measurement_boundary == "unmeasured")
-                .map(|layer| layer.layer.clone()),
-        )
-        .collect::<Vec<_>>();
-    let unsupported_boundaries = coverage_gaps
-        .iter()
-        .flat_map(|gap| gap.unsupported_constructs.clone())
-        .chain(
-            document
-                .coverage
-                .layers
-                .iter()
-                .flat_map(|layer| layer.unsupported_constructs.clone()),
-        )
-        .collect::<Vec<_>>();
-    let forgetful_boundaries = document
-        .claims
-        .iter()
-        .flat_map(|claim| claim.exactness_assumptions.clone())
-        .filter(|assumption| !assumption.trim().is_empty())
-        .collect::<Vec<_>>();
-    let obstruction_refs = obstruction_witnesses
-        .iter()
-        .map(|witness| witness.witness_id.clone())
-        .collect::<Vec<_>>();
+    let unmeasured_boundaries = stable_dedup(
+        coverage_gaps
+            .iter()
+            .filter(|gap| gap.measurement_boundary == "unmeasured")
+            .map(|gap| gap.layer.clone())
+            .chain(
+                document
+                    .coverage
+                    .layers
+                    .iter()
+                    .filter(|layer| layer.measurement_boundary == "unmeasured")
+                    .map(|layer| layer.layer.clone()),
+            )
+            .collect::<Vec<_>>(),
+    );
+    let unsupported_boundaries = stable_dedup(
+        coverage_gaps
+            .iter()
+            .flat_map(|gap| gap.unsupported_constructs.clone())
+            .chain(
+                document
+                    .coverage
+                    .layers
+                    .iter()
+                    .flat_map(|layer| layer.unsupported_constructs.clone()),
+            )
+            .collect::<Vec<_>>(),
+    );
+    let forgetful_boundaries = stable_dedup(
+        document
+            .claims
+            .iter()
+            .flat_map(|claim| claim.exactness_assumptions.clone())
+            .filter(|assumption| !assumption.trim().is_empty())
+            .collect::<Vec<_>>(),
+    );
+    let obstruction_refs = stable_dedup(
+        obstruction_witnesses
+            .iter()
+            .map(|witness| witness.witness_id.clone())
+            .collect::<Vec<_>>(),
+    );
     let classification = if !obstruction_refs.is_empty() {
         "nonHomomorphic"
     } else if !unmeasured_boundaries.is_empty() || !unsupported_boundaries.is_empty() {
@@ -273,7 +340,7 @@ fn feature_report_homomorphism_summary(
         forgetful_boundaries,
         unmeasured_boundaries,
         unsupported_boundaries,
-        next_evidence,
+        next_evidence: stable_dedup(next_evidence),
         non_conclusions: vec![
             "ArchMap homomorphism summary is review evidence, not architecture ground truth"
                 .to_string(),
@@ -281,6 +348,17 @@ fn feature_report_homomorphism_summary(
                 .to_string(),
         ],
     }
+}
+
+fn stable_dedup(items: Vec<String>) -> Vec<String> {
+    let mut seen = BTreeSet::new();
+    let mut deduped = Vec::new();
+    for item in items {
+        if seen.insert(item.clone()) {
+            deduped.push(item);
+        }
+    }
+    deduped
 }
 
 fn feature_report_semantic_path_summary(
