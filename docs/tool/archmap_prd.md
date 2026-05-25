@@ -129,6 +129,25 @@ evidence refs、coverage boundary、missing evidence、non-conclusions 付きで
 これは semantic preservation の自動証明ではない。ArchMap は、semantic theorem claim を直接作るのではなく、
 semantic evidence と semantic coverage gap を ArchSig の claim boundary に載せるための入口である。
 
+## Law-Aware Review Surface
+
+ArchSig / ArchMap の law-aware surface は、採用している設計原則を一つの判定器に押し込むのではなく、
+law ごとに evidence boundary を分ける。
+
+- `architecture-policy-v0` は project-local に adopted laws、layer selectors、allowed / forbidden
+  dependency、exception、SRP taxonomy を宣言する。
+- Layered Architecture は、selector が解決された component と measured import edge に対して
+  deterministic に forbidden dependency を検出できる。
+- SRP は file size や method count だけで violation としない。ArchMap map item は
+  `semanticRole`、`responsibilityRegions`、`reasonToChange`、`actorRefs`、`allowedRole`、
+  `lawRefs` を保持し、LLM Review Skill が evidence refs と policy refs を引用して
+  `probableViolation`、`risk`、`acceptableOrchestrator`、`unmeasured` を判断する。
+- `law-violation-report-v0` は deterministic Layered findings、allowed exceptions、unmeasured selector、
+  SRP review cue を分け、non-conclusions を review action / evidence gap として読む。
+
+この surface は architecture lawfulness proof ではない。policy pass は selected universe 上の
+tooling evidence であり、Lean status は empirical tooling / design tracking に留まる。
+
 ## Non-Goals
 
 この PRD は次を目標にしない。

@@ -41,6 +41,10 @@ pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const LAW_POLICY_TEMPLATE_REGISTRY_SCHEMA_VERSION: &str = "law-policy-template-registry-v0";
 pub const LAW_POLICY_TEMPLATE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "law-policy-template-registry-validation-report-v0";
+pub const ARCHITECTURE_POLICY_SCHEMA_VERSION: &str = "architecture-policy-v0";
+pub const ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "architecture-policy-validation-report-v0";
+pub const LAW_VIOLATION_REPORT_SCHEMA_VERSION: &str = "law-violation-report-v0";
 pub const CUSTOM_RULE_PLUGIN_REGISTRY_SCHEMA_VERSION: &str = "custom-rule-plugin-registry-v0";
 pub const CUSTOM_RULE_PLUGIN_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "custom-rule-plugin-registry-validation-report-v0";
@@ -2245,6 +2249,18 @@ pub struct ArchMapMapItem {
     pub non_conclusions: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub conflict_category: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub semantic_role: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub responsibility_regions: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub reason_to_change: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub actor_refs: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allowed_role: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub law_refs: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -3202,6 +3218,209 @@ pub struct LawPolicyTemplateRegistryValidationSummary {
     pub template_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyV0 {
+    pub schema_version: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub component_id_kind: String,
+    pub selector_semantics: String,
+    pub adopted_laws: Vec<ArchitectureAdoptedLawV0>,
+    pub layers: Vec<ArchitecturePolicyLayerV0>,
+    #[serde(default)]
+    pub allowed_dependencies: Vec<ArchitecturePolicyDependencyRuleV0>,
+    #[serde(default)]
+    pub forbidden_dependencies: Vec<ArchitecturePolicyDependencyRuleV0>,
+    #[serde(default)]
+    pub exceptions: Vec<ArchitecturePolicyExceptionV0>,
+    pub srp: ArchitecturePolicySrpV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureAdoptedLawV0 {
+    pub law_id: String,
+    pub law_kind: String,
+    pub enforcement: String,
+    pub review_level: String,
+    pub evidence_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyLayerV0 {
+    pub layer_id: String,
+    pub selectors: Vec<String>,
+    pub responsibility: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyDependencyRuleV0 {
+    pub rule_id: String,
+    pub law_ref: String,
+    pub source_layer: String,
+    pub target_layer: String,
+    pub severity: String,
+    pub review_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyExceptionV0 {
+    pub exception_id: String,
+    pub law_ref: String,
+    pub source_selector: String,
+    pub target_selector: String,
+    pub reason: String,
+    pub expires_at: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicySrpV0 {
+    pub responsibility_taxonomy: Vec<String>,
+    pub reason_to_change_categories: Vec<String>,
+    pub allowed_orchestrator_roles: Vec<String>,
+    pub required_evidence_fields: Vec<String>,
+    pub judgment_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArchitecturePolicyValidationInputV0,
+    pub policy: ArchitecturePolicyV0,
+    pub summary: ArchitecturePolicyValidationSummaryV0,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyValidationInputV0 {
+    pub schema_version: String,
+    pub path: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub component_id_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyValidationSummaryV0 {
+    pub result: String,
+    pub adopted_law_count: usize,
+    pub layer_count: usize,
+    pub forbidden_dependency_count: usize,
+    pub exception_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub policy_ref: LawViolationPolicyRefV0,
+    pub sig0_ref: LawViolationSig0RefV0,
+    pub summary: LawViolationSummaryV0,
+    pub deterministic_violations: Vec<LawViolationFindingV0>,
+    pub allowed_exceptions: Vec<LawViolationExceptionFindingV0>,
+    pub srp_cues: Vec<SrpReviewCueV0>,
+    pub unmeasured: Vec<LawViolationUnmeasuredV0>,
+    pub review_actions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationPolicyRefV0 {
+    pub policy_id: String,
+    pub policy_version: String,
+    pub path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationSig0RefV0 {
+    pub root: String,
+    pub component_kind: String,
+    pub path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationSummaryV0 {
+    pub result: String,
+    pub deterministic_violation_count: usize,
+    pub allowed_exception_count: usize,
+    pub srp_cue_count: usize,
+    pub unmeasured_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationFindingV0 {
+    pub finding_id: String,
+    pub law_ref: String,
+    pub law_kind: String,
+    pub source: String,
+    pub target: String,
+    pub source_layer: String,
+    pub target_layer: String,
+    pub rule_id: String,
+    pub severity: String,
+    pub evidence: String,
+    pub review_action: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationExceptionFindingV0 {
+    pub exception_id: String,
+    pub law_ref: String,
+    pub source: String,
+    pub target: String,
+    pub reason: String,
+    pub review_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SrpReviewCueV0 {
+    pub cue_id: String,
+    pub subject_ref: String,
+    pub semantic_role: Option<String>,
+    pub responsibility_regions: Vec<String>,
+    pub reason_to_change: Vec<String>,
+    pub actor_refs: Vec<String>,
+    pub allowed_role: Option<String>,
+    pub law_refs: Vec<String>,
+    pub judgment_taxonomy: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub policy_refs: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub review_level: String,
+    pub review_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationUnmeasuredV0 {
+    pub item_id: String,
+    pub category: String,
+    pub subject_ref: String,
+    pub reason: String,
+    pub review_action: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

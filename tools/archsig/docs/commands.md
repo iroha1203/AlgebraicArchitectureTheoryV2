@@ -14,7 +14,7 @@ directories for `--out` and `--out-dir` paths. Keep canonical fixtures and regre
 | Surface | Commands | 読み方 |
 | --- | --- | --- |
 | ArchSig Core | default scan、`validate`、`snapshot`、`signature-diff` | repository observation と revision diff。未評価軸は `metricStatus` と `metricDeltaStatus` で読む。 |
-| ArchSig Review | `air`、`archmap`、`archmap-generate`、`air-from-archmap`、`validate-air`、`theorem-check`、`feature-report`、`policy-decision`、`pr-comment`、`baseline-suppression`、`pr-quality-analysis` | PR / CI review 補助。tool output を formal theorem claim や merge approval に昇格しない。 |
+| ArchSig Review | `air`、`archmap`、`archmap-generate`、`air-from-archmap`、`validate-air`、`theorem-check`、`feature-report`、`architecture-policy`、`law-violation-report`、`policy-decision`、`pr-comment`、`baseline-suppression`、`pr-quality-analysis` | PR / CI review 補助。tool output を formal theorem claim や merge approval に昇格しない。 |
 | ArchSig SFT | `artifact-descriptor`、`intent-map`、`intent-archmap-alignment`、`archmap-sft-input`、`operation-support-estimate`、`intent-forecast`、`forecast-cone-skeleton`、`consequence-envelope`、`forecast-calibration-hook`、`intent-calibration-record`、`ai-proposal-governance`、`sft-forecast` | bounded forecast artifact と governance / report projection。point prediction、causal proof、global safety は non-conclusions。PRD v3 planning forecast は IntentMap x ArchMap alignment を入力にする。 |
 | ArchSig Operational | `dataset`、`pr-history-dataset`、`feature-extension-dataset`、`outcome-linkage-dataset`、B10 feedback commands | calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh 用 artifact。correlation は因果 theorem ではない。 |
 
@@ -32,6 +32,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- \
 
 `--policy` と `--runtime-edges` は任意である。省略した metric は placeholder 0 を出す場合があるが、
 `metricStatus.<axis>.measured = false` として未評価を保持する。
+`--policy` には従来の `signature-policy-v0` または law-aware な `architecture-policy-v0` を渡せる。
+`architecture-policy-v0` の場合、Layered Architecture の forbidden dependency は
+resolved layer selector と measured import edge から deterministic に `policyViolations[]` へ入る。
+selector 未解決や layer 未分類がある場合、`boundaryViolationCount=0` でも
+`metricStatus.boundaryViolationCount.measured = false` として未評価を保持する。
 
 Python repository を scan する。
 
@@ -47,6 +52,36 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- \
 Python scan は `componentKind = "python-module"` を出し、標準 `ast` parser で
 `import` / `from ... import ...` を抽出する。dynamic import、plugin loading、
 framework convention は未評価 boundary として残す。
+Python scan でも `--policy architecture-policy.json` は使える。policy selector が Python module id に
+解決できた範囲では Layered law を deterministic に測定し、解決できない selector は unmeasured として残す。
+
+## Architecture Policy / Law Violation Report
+
+project-local な採用設計原則を検査する。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- architecture-policy \
+  --input tools/archsig/tests/fixtures/minimal/architecture_policy.json \
+  --out .archsig/policy/architecture-policy-validation.json
+```
+
+`architecture-policy-v0` は adopted laws、layer selectors、allowed / forbidden dependency、
+exception、SRP taxonomy を保持する。Layered Architecture は deterministic evaluator の対象だが、
+SRP は semantic role、responsibility region、reason-to-change、law refs を LLM Review Skill へ渡す
+cue であり、tool 単独の violation ではない。
+
+Sig0 と policy から law report を作る。
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- law-violation-report \
+  --sig0 .archsig/signature/sig0.json \
+  --policy tools/archsig/tests/fixtures/minimal/architecture_policy.json \
+  --out .archsig/policy/law-violation-report.json
+```
+
+`law-violation-report-v0` は `deterministicViolations[]`、`allowedExceptions[]`、
+`unmeasured[]`、`reviewActions[]` を分けて出す。`deterministicViolations[]` は Layered law の
+review action であり、Lean proof や global architecture lawfulness ではない。
 
 ## Validate
 

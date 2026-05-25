@@ -15,6 +15,7 @@ Analyze PR / CI architecture evidence and produce review cues. This skill simpli
 - Sig0 and validation reports
 - `archmap-v0` and `archmap-validation-report-v0`
 - AIR, AIR validation, theorem-check, feature-report
+- `architecture-policy-v0` and `law-violation-report-v0`
 - policy-decision and PR comment summary
 - `pr-quality-analysis-report-v0`
 
@@ -67,6 +68,19 @@ ${ARCHSIG_BIN:-archsig} feature-report \
   --out .archsig/archmap/feature-report.json
 ```
 
+If a project-local law policy is supplied, validate it and evaluate Layered Architecture findings:
+
+```bash
+${ARCHSIG_BIN:-archsig} architecture-policy \
+  --input .archsig/policy/architecture-policy.json \
+  --out .archsig/policy/architecture-policy-validation.json
+
+${ARCHSIG_BIN:-archsig} law-violation-report \
+  --sig0 .archsig/signature/current/sig0.json \
+  --policy .archsig/policy/architecture-policy.json \
+  --out .archsig/policy/law-violation-report.json
+```
+
 Validate supplied PR quality report when present:
 
 ```bash
@@ -78,6 +92,9 @@ ${ARCHSIG_BIN:-archsig} pr-quality-analysis \
 3. Produce the review.
    - Separate measured zero from unmeasured.
    - Separate warning, failure, missing evidence, and negative evidence.
+   - Treat Layered Architecture `deterministicViolations[]` as deterministic over resolved selectors and measured edges.
+   - Treat SRP `semanticRole` / `responsibilityRegions` / `reasonToChange` / `lawRefs` as evidence for LLM judgment, not as tool-only violation.
+   - For SRP probable violation, cite both evidence refs and policy refs and distinguish `acceptableOrchestrator`, `allowedException`, and `unmeasured`.
    - Tie each finding to artifact ids or paths.
    - Keep recommendations bounded to PR review actions.
 

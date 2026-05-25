@@ -127,6 +127,96 @@
       }
     },
     {
+      "artifactId": "architecture-policy",
+      "artifactName": "Architecture policy artifact",
+      "schemaVersionName": "architecture-policy-v0",
+      "artifactRole": "law-aware-review-policy",
+      "ownerPhase": "ArchMap law-aware review",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archmap_prd.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1162"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map adopted laws, layer selectors, dependency rules, exceptions, and SRP taxonomy explicitly; do not infer policy from repository shape.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New law families must declare deterministic versus LLM-review enforcement boundary."
+        ],
+        "coverageExactnessBoundary": [
+          "Architecture policy is review evidence, not a Lean theorem or architecture lawfulness proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "architecture-policy-validation-report",
+      "artifactName": "Architecture policy validation report",
+      "schemaVersionName": "architecture-policy-validation-report-v0",
+      "artifactRole": "validation-output",
+      "ownerPhase": "ArchMap law-aware review",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1162"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Keep identity, adopted law, layer selector, dependency rule, SRP evidence, and non-conclusion checks separate.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New checks must distinguish fail, warn, and unmeasured policy evidence."
+        ],
+        "coverageExactnessBoundary": [
+          "Validation pass does not imply architecture lawfulness or SRP violation."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "law-violation-report",
+      "artifactName": "Law violation report",
+      "schemaVersionName": "law-violation-report-v0",
+      "artifactRole": "review-output",
+      "ownerPhase": "ArchMap law-aware review",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/commands.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1164",
+        "#1165"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map deterministic Layered findings, allowed exceptions, SRP cues, unmeasured selectors, review actions, and non-conclusions explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New law findings must preserve evidence refs and policy refs before review classification."
+        ],
+        "coverageExactnessBoundary": [
+          "Layered findings are selected-universe tooling evidence and SRP cues are not tool-only violations."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
       "artifactId": "archmap-generation-protocol",
       "artifactName": "ArchMap generation protocol",
       "schemaVersionName": "archmap-generation-protocol-v0",

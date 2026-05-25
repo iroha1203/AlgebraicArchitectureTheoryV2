@@ -9,7 +9,10 @@
 | AIR | normalized review representation | proof term |
 | theorem-check | formal precondition status | discharged theorem |
 | feature-report | split status, witnesses, coverage gaps | universal design judgment |
+| architecture-policy | adopted laws, layer selectors, SRP taxonomy, exceptions | architecture lawfulness |
+| law-violation-report | deterministic Layered violations, allowed exceptions, unmeasured selectors, SRP cues | SRP tool-only violation or Lean proof |
 | policy-decision | organization policy decision surface | global quality score |
 | pr-quality-analysis | review cues from artifact evidence | merge approval |
 
 Always read `metricStatus`, `metricDeltaStatus`, `unmeasuredAxes`, `missingEvidence`, and `nonConclusions` before summarizing.
+For SRP, cite `semanticRole`, `responsibilityRegions`, `reasonToChange`, evidence refs, and policy refs before saying `probableViolation`.

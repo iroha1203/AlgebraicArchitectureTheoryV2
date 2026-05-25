@@ -78,6 +78,12 @@
       "claimClassification": "measured",
       "measurementBoundary": "measuredNonzero",
       "confidence": "medium",
+      "semanticRole": "service-orchestrator",
+      "responsibilityRegions": ["user orchestration", "user persistence"],
+      "reasonToChange": ["workflow policy change", "storage schema change"],
+      "actorRefs": ["actor:product", "actor:data"],
+      "allowedRole": "thin-orchestrator",
+      "lawRefs": ["SOLID.SRP"],
       "missingEvidence": [],
       "nonConclusions": ["SRP split cue is not a formal SOLID theorem"]
     },

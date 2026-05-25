@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "architecture-policy-v0",
+  "policyId": "minimal-law-aware-review-policy",
+  "policyVersion": "2026-05-25",
+  "componentIdKind": "lean-module",
+  "selectorSemantics": "exact-or-prefix-star",
+  "adoptedLaws": [
+    {
+      "lawId": "LayeredArchitecture",
+      "lawKind": "layeredArchitecture",
+      "enforcement": "deterministic",
+      "reviewLevel": "Level 2 policy risk",
+      "evidenceBoundary": "resolved layer selectors over measured import edges"
+    },
+    {
+      "lawId": "SOLID.SRP",
+      "lawKind": "singleResponsibilityPrinciple",
+      "enforcement": "llmReview",
+      "reviewLevel": "Level 3 LLM probable violation",
+      "evidenceBoundary": "semantic role and reason-to-change evidence, not tool-only violation"
+    }
+  ],
+  "layers": [
+    {
+      "layerId": "app",
+      "selectors": ["Formal", "Formal.Arch.A"],
+      "responsibility": "entry and application-facing module"
+    },
+    {
+      "layerId": "domain",
+      "selectors": ["Formal.Arch.B"],
+      "responsibility": "domain support module"
+    }
+  ],
+  "allowedDependencies": [
+    {
+      "ruleId": "allow-app-domain",
+      "lawRef": "LayeredArchitecture",
+      "sourceLayer": "app",
+      "targetLayer": "domain",
+      "severity": "info",
+      "reviewAction": "dependency follows selected layer direction"
+    }
+  ],
+  "forbiddenDependencies": [
+    {
+      "ruleId": "forbid-domain-app",
+      "lawRef": "LayeredArchitecture",
+      "sourceLayer": "domain",
+      "targetLayer": "app",
+      "severity": "high",
+      "reviewAction": "move dependency behind an app-facing port or revise the layer policy"
+    }
+  ],
+  "exceptions": [],
+  "srp": {
+    "responsibilityTaxonomy": ["orchestration", "persistence", "policy", "adapter"],
+    "reasonToChangeCategories": ["workflow policy change", "storage schema change", "API contract change"],
+    "allowedOrchestratorRoles": ["thin-orchestrator", "transaction-script"],
+    "requiredEvidenceFields": ["semanticRole", "responsibilityRegions", "reasonToChange", "lawRefs"],
+    "judgmentBoundary": "LLM Review Skill may classify probableViolation only with evidence refs and policy refs"
+  },
+  "nonConclusions": [
+    "architecture policy is review evidence, not a Lean theorem",
+    "LayeredArchitecture findings are deterministic over the measured selector universe only",
+    "SRP findings are evidence cues for LLM review, not tool-only violation judgments",
+    "unmeasured selector coverage is not measured zero",
+    "policy pass does not conclude architecture lawfulness"
+  ]
+}
