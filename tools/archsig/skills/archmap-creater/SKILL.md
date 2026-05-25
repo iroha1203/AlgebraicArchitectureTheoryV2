@@ -19,7 +19,7 @@ Collect only evidence the user allows and record the boundary explicitly:
 - any prompt pack or model provenance needed for reproducibility
 
 This skill must work with only the skill bundle and a built `archsig` executable. Do not require
-the ArchSig source repository, `docs/tool`, or test fixtures to be present.
+the ArchSig source repository, legacy `docs/tool` documents, or test fixtures to be present.
 
 Use this command form by default:
 
@@ -29,9 +29,8 @@ ${ARCHSIG_BIN:-archsig} <command> ...
 
 When working inside the ArchSig source repository, these optional source references may help:
 
-- `docs/tool/archsig_archmap_prd_v2.md`
-- `docs/tool/archmap_prd.md`
 - `tools/archsig/docs/commands.md`
+- `tools/archsig/docs/artifacts-and-boundaries.md`
 - `tools/archsig/tests/fixtures/minimal/archmap.json`
 - `tools/archsig/tests/fixtures/minimal/archmap_source_inventory.json`
 - `tools/archsig/tests/fixtures/expressiveness/archmap_expressiveness_suite_v0.json`

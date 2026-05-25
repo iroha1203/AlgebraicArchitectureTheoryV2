@@ -12,18 +12,20 @@
       "ownerPhase": "B0-B8",
       "status": "implemented",
       "primaryDocs": [
-        "docs/aat_v2_tooling_design.md#4-architecture-signature-artifact-layer",
-        "docs/design/archsig_tooling_index.md"
+        "tools/archsig/docs/artifacts-and-boundaries.md",
+        "tools/archsig/docs/commands.md"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map component/relation/signature fields by stable camelCase names; new axes must be added with metricStatus boundary metadata.",
+        "fieldMappingPolicy": "Map component/relation/signature fields by stable camelCase names; adapter coverageBoundary, unsupportedConstructs, missingEvidence, and nonConclusions must remain explicit.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
-          "New required axes must declare measuredZero/measuredNonzero/unmeasured/outOfScope semantics."
+          "New required axes must declare measuredZero/measuredNonzero/unmeasured/outOfScope semantics.",
+          "New adapter evidence must preserve coverage and missing-evidence boundaries."
         ],
         "coverageExactnessBoundary": [
-          "metricStatus is the compatibility boundary for coverage and exactness of Sig0 axes."
+          "metricStatus is the compatibility boundary for coverage and exactness of Sig0 axes.",
+          "Sig0 is bounded adapter evidence, not the ArchSig primary review surface or extractor completeness proof."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
@@ -71,7 +73,8 @@
       "ownerPhase": "ArchMap MVP",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_prd.md"
+        "tools/archsig/docs/artifacts-and-boundaries.md",
+        "tools/archsig/docs/commands.md"
       ],
       "downstreamIssues": [
         "#1032",
@@ -103,7 +106,7 @@
       "ownerPhase": "ArchMap MVP",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_prd.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md",
         "tools/archsig/docs/commands.md"
       ],
       "downstreamIssues": [
@@ -134,7 +137,7 @@
       "ownerPhase": "ArchMap law-aware review",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archmap_prd.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md",
         "tools/archsig/docs/commands.md"
       ],
       "downstreamIssues": [
@@ -224,7 +227,7 @@
       "ownerPhase": "ArchMap v2",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_archmap_prd_v2.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md",
         "tools/archsig/docs/commands.md"
       ],
       "downstreamIssues": [
@@ -254,7 +257,7 @@
       "ownerPhase": "PRD v3",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/archsig_archmap_prd_v3.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md",
         "tools/archsig/docs/commands.md"
       ],
       "downstreamIssues": [
@@ -284,7 +287,7 @@
       "ownerPhase": "AAT observable bridge",
       "status": "implemented",
       "primaryDocs": [
-        "docs/tool/aat_archsig_reduction.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md",
         "tools/archsig/docs/artifacts-and-boundaries.md",
         "tools/archsig/docs/commands.md"
       ],

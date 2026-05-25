@@ -118,7 +118,7 @@ jobs:
             sha="$(git -C "$worktree" rev-parse HEAD)"
             committed_at="$(git -C "$worktree" show -s --format=%cI HEAD)"
 
-            cargo run --manifest-path tools/archsig/Cargo.toml -- \
+            cargo run --manifest-path tools/archsig/Cargo.toml -- adapter-scan \
               --root "$worktree" \
               --out "$out/sig0.json"
 

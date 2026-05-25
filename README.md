@@ -47,7 +47,7 @@ To answer these questions, the project keeps the following layers separate:
 | --- | --- | --- |
 | AAT | A local algebra for architecture objects, operations, invariants, obstruction witnesses, signatures, and theorem boundaries. | [AAT mathematical theory](docs/aat/mathematical_theory.md) |
 | AAT / SFT Interface | The boundary explaining how local AAT claims are read through SFT projections, observable coordinates, and governance. | [AAT / SFT Interface](docs/sft/aat_interface.md) |
-| ArchSig / FieldSig Tooling | ArchSig extracts AAT structural signatures, witnesses, and review cues. FieldSig measures SFT software evolution evidence from ArchSig refs plus workflow evidence. | [AAT Tooling Documentation](docs/tool/README.md) |
+| ArchSig / FieldSig Tooling | ArchSig reads supplied ArchMap evidence into AAT structural review artifacts; Lean / Python scans are optional bounded adapters. FieldSig measures SFT software evolution evidence from ArchSig refs plus workflow evidence. | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
 | Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) |
 | Proof / empirical ledger | Theorem boundaries, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) |

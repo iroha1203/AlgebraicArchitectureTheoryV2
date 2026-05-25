@@ -192,7 +192,22 @@ pub fn extract_sig0_with_runtime(
         policy_violations,
         runtime_edge_evidence,
         runtime_dependency_graph,
+        coverage_boundary:
+            "Lean import graph adapter covers explicit leading import declarations only; missing runtime, semantic, dynamic, generated, and framework evidence is retained as a boundary."
+                .to_string(),
         unsupported_constructs: Vec::new(),
+        missing_evidence: vec![
+            "runtime behavior not supplied unless runtime-edge-evidence is provided".to_string(),
+            "semantic architecture mapping not supplied by adapter-scan".to_string(),
+            "framework conventions, generated code, and dynamic loading are outside lean-import-graph-v0"
+                .to_string(),
+        ],
+        non_conclusions: vec![
+            "adapter-scan output is bounded evidence, not ArchMap ground truth".to_string(),
+            "adapter-scan does not prove extractor completeness".to_string(),
+            "missing evidence is not measured zero".to_string(),
+            "Sig0 validation does not prove architecture lawfulness".to_string(),
+        ],
     })
 }
 
