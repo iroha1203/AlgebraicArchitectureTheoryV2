@@ -90,4 +90,4 @@ ${ARCHSIG_BIN:-archsig} archmap \
 
 Use `$arch-pr-analyzer` after this skill when the user asks what an ArchMap or PR / CI artifact implies for PR quality or current architecture state.
 
-Use `$arch-intent-forecaster` after this skill when the user has both an ArchMap and IntentMap and asks for planning forecast.
+Use FieldSig planning skills after this skill when the user has both an ArchMap and IntentMap and asks for planning forecast.

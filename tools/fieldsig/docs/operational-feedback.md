@@ -11,7 +11,7 @@ Lean status: `empirical hypothesis` / tooling output.
 Daily ledger を作る。
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- report-outcome-daily-ledger \
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- report-outcome-daily-ledger \
   --outcome-linkage .archsig/operational/outcome-linkage-dataset.json \
   --drift-ledger .archsig/operational/architecture-drift-ledger.json \
   --generated-at 2026-05-05T00:00:00Z \
@@ -23,22 +23,22 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- report-outcome-daily-ledge
 Canonical B10 artifact を出力する。
 
 ```bash
-cargo run --manifest-path tools/archsig/Cargo.toml -- calibration-review-record \
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- calibration-review-record \
   --out .archsig/operational/calibration-review-record.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- team-threshold-policy \
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- team-threshold-policy \
   --out .archsig/operational/team-threshold-policy.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- ownership-boundary-monitor \
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- ownership-boundary-monitor \
   --out .archsig/operational/ownership-boundary-monitor.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- repair-adoption-record \
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- repair-adoption-record \
   --out .archsig/operational/repair-adoption-record.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- incident-correlation-monitor \
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- incident-correlation-monitor \
   --out .archsig/operational/incident-correlation-monitor.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- hypothesis-refresh-cycle \
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- hypothesis-refresh-cycle \
   --out .archsig/operational/hypothesis-refresh-cycle.json
 ```
 

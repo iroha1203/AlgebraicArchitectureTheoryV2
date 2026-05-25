@@ -7,7 +7,7 @@ description: Analyze PR or CI architecture quality from ArchSig, ArchMap, AIR, t
 
 ## Purpose
 
-Analyze PR / CI architecture evidence and produce review cues. This skill simplifies ArchSig's PR surface for Codex: it may run the necessary `archsig` commands, read generated artifacts, and explain architecture risks without treating tool output as merge approval, Lean proof, global architecture truth, or causal diagnosis.
+Analyze PR / CI architecture evidence and produce review cues. This skill simplifies ArchSig's PR surface for Codex: it may run the necessary `fieldsig` commands, read generated artifacts, and explain architecture risks without treating tool output as merge approval, Lean proof, global architecture truth, or causal diagnosis.
 
 ## Inputs To Prefer
 
@@ -25,9 +25,9 @@ Do not use IntentMap, AlignmentMap, or planning forecast artifacts for PR merge 
 
 ## Minimal Execution Rules
 
-- Use `${ARCHSIG_BIN:-archsig}` by default.
+- Use `${FIELDSIG_BIN:-fieldsig}` by default.
 - Keep generated files under `.archsig/` unless the user specifies another directory.
-- If `${ARCHSIG_BIN:-archsig} --help` fails, ask for `ARCHSIG_BIN=/path/to/archsig`.
+- If `${FIELDSIG_BIN:-fieldsig} --help` fails, ask for `FIELDSIG_BIN=/path/to/archsig`.
 - Stop downstream commands after an upstream failure.
 - Do not require the ArchSig source repository.
 
@@ -41,9 +41,9 @@ Do not use IntentMap, AlignmentMap, or planning forecast artifacts for PR merge 
 2. Generate missing PR artifacts when appropriate.
 
 ```bash
-${ARCHSIG_BIN:-archsig} --root . --out .archsig/signature/current/sig0.json
+${FIELDSIG_BIN:-fieldsig} --root . --out .archsig/signature/current/sig0.json
 
-${ARCHSIG_BIN:-archsig} validate \
+${FIELDSIG_BIN:-fieldsig} validate \
   --input .archsig/signature/current/sig0.json \
   --out .archsig/signature/current/validation.json \
   --universe-mode local-only
@@ -52,20 +52,20 @@ ${ARCHSIG_BIN:-archsig} validate \
 If before / after snapshots are available, use `signature-diff`. If ArchMap-side artifacts are available, validate them and project to AIR:
 
 ```bash
-${ARCHSIG_BIN:-archsig} archmap \
+${FIELDSIG_BIN:-fieldsig} archmap \
   --input .archsig/archmap/archmap.json \
   --out .archsig/archmap/validation.json
 
-${ARCHSIG_BIN:-archsig} air-from-archmap \
+${FIELDSIG_BIN:-fieldsig} air-from-archmap \
   --archmap .archsig/archmap/archmap.json \
   --validation .archsig/archmap/validation.json \
   --out .archsig/archmap/air.json
 
-${ARCHSIG_BIN:-archsig} theorem-check \
+${FIELDSIG_BIN:-fieldsig} theorem-check \
   --air .archsig/archmap/air.json \
   --out .archsig/archmap/theorem-check.json
 
-${ARCHSIG_BIN:-archsig} feature-report \
+${FIELDSIG_BIN:-fieldsig} feature-report \
   --air .archsig/archmap/air.json \
   --out .archsig/archmap/feature-report.json
 ```
@@ -73,11 +73,11 @@ ${ARCHSIG_BIN:-archsig} feature-report \
 If a project-local law policy is supplied, validate it and evaluate Layered Architecture findings:
 
 ```bash
-${ARCHSIG_BIN:-archsig} architecture-policy \
+${FIELDSIG_BIN:-fieldsig} architecture-policy \
   --input .archsig/policy/architecture-policy.json \
   --out .archsig/policy/architecture-policy-validation.json
 
-${ARCHSIG_BIN:-archsig} law-violation-report \
+${FIELDSIG_BIN:-fieldsig} law-violation-report \
   --sig0 .archsig/signature/current/sig0.json \
   --policy .archsig/policy/architecture-policy.json \
   --out .archsig/policy/law-violation-report.json
@@ -86,7 +86,7 @@ ${ARCHSIG_BIN:-archsig} law-violation-report \
 Validate supplied PR quality report when present:
 
 ```bash
-${ARCHSIG_BIN:-archsig} pr-quality-analysis \
+${FIELDSIG_BIN:-fieldsig} pr-quality-analysis \
   --input .archsig/pr/pr-quality-analysis-report.json \
   --out .archsig/pr/pr-quality-analysis-validation.json
 ```
@@ -95,7 +95,7 @@ Validate supplied AAT observable bundle when the review asks for invariant / wit
 theorem-boundary coverage:
 
 ```bash
-${ARCHSIG_BIN:-archsig} aat-observable-bundle \
+${FIELDSIG_BIN:-fieldsig} aat-observable-bundle \
   --input .archsig/aat/aat-observable-bundle.json \
   --out .archsig/aat/aat-observable-bundle-validation.json
 ```
@@ -103,7 +103,7 @@ ${ARCHSIG_BIN:-archsig} aat-observable-bundle \
 If an SFT review judgement artifact is supplied, validate it separately from deterministic PR quality analysis:
 
 ```bash
-${ARCHSIG_BIN:-archsig} sft-review-summary \
+${FIELDSIG_BIN:-fieldsig} sft-review-summary \
   --input .archsig/sft/sft-review-summary.json \
   --out .archsig/sft/sft-review-summary-validation.json
 ```

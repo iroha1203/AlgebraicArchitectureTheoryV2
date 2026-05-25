@@ -19,7 +19,7 @@ ArchMap authoring is evidence mapping, not architecture invention.
 | Runtime trace, production edge, log-derived dependency | Runtime observation candidate | `runtimeObservationCandidate` or `reviewBoundary` | `air-claim` | If trace is unavailable, mark unmeasured and list missing evidence. |
 | Framework convention such as route filename, DI registration, ORM relation | Framework boundary | `reviewBoundary` | `air-claim` | Mark framework expansion as unmeasured unless an adapter artifact is supplied. |
 | Dynamic plugin loading, reflection, generated code, private registry | Blind spot / unsupported construct | `reviewBoundary` | `air-claim` | Put it in `knownBlindSpots`, coverage, and non-conclusions. |
-| CLI workflow, observed tool workflow, user operation in repository evidence | SFT operation or workflow input candidate | `operationCandidate` or `workflowCandidate` | `sft-operation-candidate` or `sft-workflow-candidate` | This feeds FieldSig SFT projection; it is not a ForecastCone result. Use `intentmap-creater` for Epic / PRD / Spec intent. |
+| CLI workflow, observed tool workflow, user operation in repository evidence | SFT operation or workflow input candidate | `operationCandidate` or `workflowCandidate` | `sft-operation-candidate` or `sft-workflow-candidate` | This feeds FieldSig SFT projection; it is not a ForecastCone result. Use FieldSig intent skills for Epic / PRD / Spec intent. |
 | Domain event, state update, migration, lifecycle transition | SFT event / state transition candidate | `eventCandidate`, `stateCandidate`, or `stateTransitionCandidate` | `sft-event-candidate`, `sft-state-candidate`, or `sft-transition-candidate` | Preserve source refs and missing preconditions. |
 | Test oracle, acceptance criterion, invariant check | SFT test oracle candidate | `testOracleCandidate` | `sft-test-oracle-candidate` | Use as evidence for operation support, not correctness proof. |
 
@@ -47,7 +47,7 @@ SFT-facing items describe input candidates for deterministic FieldSig SFT artifa
 - `runtimeObservationCandidate`
 - `proposalForceCandidate`
 
-Do not put `ForecastCone`, `ConsequenceEnvelope`, attractor, basin, quality ranking, forecast correctness, or incident causality in ArchMap. Those are downstream ArchSig/SFT report surfaces.
+Do not put `ForecastCone`, `ConsequenceEnvelope`, attractor, basin, quality ranking, forecast correctness, or incident causality in ArchMap. Those are downstream FieldSig report surfaces.
 
 ## Evidence Strength
 

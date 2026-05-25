@@ -2,20 +2,19 @@
   "schemaVersion": "pr-quality-analysis-report-v0",
   "reportId": "fixture-pr-quality-analysis-v0",
   "archmapRef": {
+    "artifactId": "artifact:archmap",
+    "artifactKind": "archmap",
+    "path": "archmap.json",
     "schemaVersion": "archmap-v0",
-    "mapId": "fixture-archmap-v0",
-    "path": "tools/archsig/tests/fixtures/minimal/archmap.json",
-    "mapItemIds": [
-      "object-route-users",
-      "policy-layered-route-service",
-      "runtime-unmeasured-boundary"
+    "selectedMapItemIds": [
+      "object-route-users"
     ],
     "nonConclusions": [
-      "AlignmentMap does not prove implementation impact",
-      "AlignmentMap does not guarantee future outcome or quality",
-      "intentUnaligned is planning boundary, not measured zero",
-      "unsupported and ambiguous alignments remain review cues",
-      "validation pass does not prove semantic correctness of LLM-authored maps"
+      "PR quality analysis is review cue aggregation, not merge approval",
+      "PR quality analysis does not prove implementation correctness",
+      "missing evidence is retained as review context, not measured zero",
+      "policy and theorem refs remain bounded by supplied reports",
+      "human review and CI remain required evidence surfaces"
     ]
   },
   "airRef": {
@@ -24,10 +23,11 @@
     "path": "air.json",
     "schemaVersion": "aat-air-v0",
     "nonConclusions": [
-      "PR quality analysis is reviewer-facing evidence, not merge approval",
-      "PR quality analysis does not prove architecture lawfulness",
-      "missing evidence remains review boundary",
-      "quality cues are not global rankings"
+      "PR quality analysis is review cue aggregation, not merge approval",
+      "PR quality analysis does not prove implementation correctness",
+      "missing evidence is retained as review context, not measured zero",
+      "policy and theorem refs remain bounded by supplied reports",
+      "human review and CI remain required evidence surfaces"
     ]
   },
   "theoremCheckRef": {
@@ -36,10 +36,11 @@
     "path": "theorem-check.json",
     "schemaVersion": "theorem-precondition-check-report-v0",
     "nonConclusions": [
-      "PR quality analysis is reviewer-facing evidence, not merge approval",
-      "PR quality analysis does not prove architecture lawfulness",
-      "missing evidence remains review boundary",
-      "quality cues are not global rankings"
+      "PR quality analysis is review cue aggregation, not merge approval",
+      "PR quality analysis does not prove implementation correctness",
+      "missing evidence is retained as review context, not measured zero",
+      "policy and theorem refs remain bounded by supplied reports",
+      "human review and CI remain required evidence surfaces"
     ]
   },
   "featureReportRef": {
@@ -48,10 +49,11 @@
     "path": "feature-report.json",
     "schemaVersion": "feature-extension-report-v0",
     "nonConclusions": [
-      "PR quality analysis is reviewer-facing evidence, not merge approval",
-      "PR quality analysis does not prove architecture lawfulness",
-      "missing evidence remains review boundary",
-      "quality cues are not global rankings"
+      "PR quality analysis is review cue aggregation, not merge approval",
+      "PR quality analysis does not prove implementation correctness",
+      "missing evidence is retained as review context, not measured zero",
+      "policy and theorem refs remain bounded by supplied reports",
+      "human review and CI remain required evidence surfaces"
     ]
   },
   "policyDecisionRef": {
@@ -60,10 +62,11 @@
     "path": "policy-decision.json",
     "schemaVersion": "policy-decision-report-v0",
     "nonConclusions": [
-      "PR quality analysis is reviewer-facing evidence, not merge approval",
-      "PR quality analysis does not prove architecture lawfulness",
-      "missing evidence remains review boundary",
-      "quality cues are not global rankings"
+      "PR quality analysis is review cue aggregation, not merge approval",
+      "PR quality analysis does not prove implementation correctness",
+      "missing evidence is retained as review context, not measured zero",
+      "policy and theorem refs remain bounded by supplied reports",
+      "human review and CI remain required evidence surfaces"
     ]
   },
   "cues": [
@@ -77,10 +80,11 @@
       "reviewFocus": "review semantic dependency and split need before merge",
       "evidenceBoundary": "selected ArchMap/AIR/theorem-check artifacts only",
       "nonConclusions": [
-        "PR quality analysis is reviewer-facing evidence, not merge approval",
-        "PR quality analysis does not prove architecture lawfulness",
-        "missing evidence remains review boundary",
-        "quality cues are not global rankings"
+        "PR quality analysis is review cue aggregation, not merge approval",
+        "PR quality analysis does not prove implementation correctness",
+        "missing evidence is retained as review context, not measured zero",
+        "policy and theorem refs remain bounded by supplied reports",
+        "human review and CI remain required evidence surfaces"
       ]
     },
     {
@@ -93,10 +97,11 @@
       "reviewFocus": "compare runtime evidence need with static ArchMap refs",
       "evidenceBoundary": "selected ArchMap/AIR/theorem-check artifacts only",
       "nonConclusions": [
-        "PR quality analysis is reviewer-facing evidence, not merge approval",
-        "PR quality analysis does not prove architecture lawfulness",
-        "missing evidence remains review boundary",
-        "quality cues are not global rankings"
+        "PR quality analysis is review cue aggregation, not merge approval",
+        "PR quality analysis does not prove implementation correctness",
+        "missing evidence is retained as review context, not measured zero",
+        "policy and theorem refs remain bounded by supplied reports",
+        "human review and CI remain required evidence surfaces"
       ]
     },
     {
@@ -109,10 +114,11 @@
       "reviewFocus": "review policy boundary and theorem precondition report",
       "evidenceBoundary": "selected ArchMap/AIR/theorem-check artifacts only",
       "nonConclusions": [
-        "PR quality analysis is reviewer-facing evidence, not merge approval",
-        "PR quality analysis does not prove architecture lawfulness",
-        "missing evidence remains review boundary",
-        "quality cues are not global rankings"
+        "PR quality analysis is review cue aggregation, not merge approval",
+        "PR quality analysis does not prove implementation correctness",
+        "missing evidence is retained as review context, not measured zero",
+        "policy and theorem refs remain bounded by supplied reports",
+        "human review and CI remain required evidence surfaces"
       ]
     }
   ],
@@ -120,18 +126,17 @@
     {
       "boundaryId": "missing-evidence:pr-runtime",
       "boundaryKind": "missingEvidence",
-      "intentItemRefs": [],
-      "archmapItemRefs": [
+      "sourceRefs": [
         "runtime-unmeasured-boundary"
       ],
       "reason": "runtime evidence was not supplied to selected PR analysis",
       "treatment": "retain as review cue, not merge blocker by itself",
       "nonConclusions": [
-        "AlignmentMap does not prove implementation impact",
-        "AlignmentMap does not guarantee future outcome or quality",
-        "intentUnaligned is planning boundary, not measured zero",
-        "unsupported and ambiguous alignments remain review cues",
-        "validation pass does not prove semantic correctness of LLM-authored maps"
+        "PR quality analysis is review cue aggregation, not merge approval",
+        "PR quality analysis does not prove implementation correctness",
+        "missing evidence is retained as review context, not measured zero",
+        "policy and theorem refs remain bounded by supplied reports",
+        "human review and CI remain required evidence surfaces"
       ]
     }
   ],
@@ -140,20 +145,22 @@
     "cueCount": 3,
     "missingEvidenceCount": 1,
     "reviewerNotes": [
-      "ArchMap is the PR-side source; IntentMap planning flow is not required for PR quality analysis",
+      "ArchMap is the PR-side source; planning flow is not required for PR quality analysis",
       "report surfaces review cues and missing evidence without automatic merge decision"
     ],
     "nonConclusions": [
-      "PR quality analysis is reviewer-facing evidence, not merge approval",
-      "PR quality analysis does not prove architecture lawfulness",
-      "missing evidence remains review boundary",
-      "quality cues are not global rankings"
+      "PR quality analysis is review cue aggregation, not merge approval",
+      "PR quality analysis does not prove implementation correctness",
+      "missing evidence is retained as review context, not measured zero",
+      "policy and theorem refs remain bounded by supplied reports",
+      "human review and CI remain required evidence surfaces"
     ]
   },
   "nonConclusions": [
-    "PR quality analysis is reviewer-facing evidence, not merge approval",
-    "PR quality analysis does not prove architecture lawfulness",
-    "missing evidence remains review boundary",
-    "quality cues are not global rankings"
+    "PR quality analysis is review cue aggregation, not merge approval",
+    "PR quality analysis does not prove implementation correctness",
+    "missing evidence is retained as review context, not measured zero",
+    "policy and theorem refs remain bounded by supplied reports",
+    "human review and CI remain required evidence surfaces"
   ]
 }

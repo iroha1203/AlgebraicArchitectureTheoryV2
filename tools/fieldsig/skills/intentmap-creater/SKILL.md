@@ -18,12 +18,12 @@ Collect only evidence the user allows and record the boundary explicitly:
 - requested planning scope and horizon when provided
 - model or prompt provenance when reproducibility matters
 
-This skill must work with only the skill bundle and a built `archsig` executable. Do not require the ArchSig source repository, `docs/tool`, or test fixtures to be present.
+This skill must work with only the skill bundle and a built `fieldsig` executable. Do not require the ArchSig source repository, `docs/tool`, or test fixtures to be present.
 
 Use this command form by default:
 
 ```bash
-${ARCHSIG_BIN:-archsig} <command> ...
+${FIELDSIG_BIN:-fieldsig} <command> ...
 ```
 
 ## Workflow
@@ -46,7 +46,7 @@ ${ARCHSIG_BIN:-archsig} <command> ...
 3. Validate the result.
 
 ```bash
-${ARCHSIG_BIN:-archsig} intent-map \
+${FIELDSIG_BIN:-fieldsig} intent-map \
   --input <intentmap.json> \
   --out .archsig/intent/intentmap-validation.json
 ```

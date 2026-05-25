@@ -7,7 +7,7 @@ description: Analyze Epic, PRD, Spec, or proposal planning forecast from IntentM
 
 ## Purpose
 
-Analyze Epic / PRD / Spec planning forecast. This skill simplifies ArchSig's IntentMap forecast surface for Codex: it may run the necessary `archsig` commands, read generated artifacts, and describe bounded evolution pressure without treating output as forecast correctness, implementation plan completeness, probability, or causal proof.
+Analyze Epic / PRD / Spec planning forecast. This skill simplifies ArchSig's IntentMap forecast surface for Codex: it may run the necessary `fieldsig` commands, read generated artifacts, and describe bounded evolution pressure without treating output as forecast correctness, implementation plan completeness, probability, or causal proof.
 
 ## Inputs To Prefer
 
@@ -24,9 +24,9 @@ Do not use PR quality analysis as planning forecast unless the user explicitly a
 
 ## Minimal Execution Rules
 
-- Use `${ARCHSIG_BIN:-archsig}` by default.
+- Use `${FIELDSIG_BIN:-fieldsig}` by default.
 - Keep generated files under `.archsig/` unless the user specifies another directory.
-- If `${ARCHSIG_BIN:-archsig} --help` fails, ask for `ARCHSIG_BIN=/path/to/archsig`.
+- If `${FIELDSIG_BIN:-fieldsig} --help` fails, ask for `FIELDSIG_BIN=/path/to/archsig`.
 - Stop downstream commands after an upstream failure.
 - Do not require the ArchSig source repository.
 
@@ -40,11 +40,11 @@ Do not use PR quality analysis as planning forecast unless the user explicitly a
 2. Validate IntentMap and AlignmentMap.
 
 ```bash
-${ARCHSIG_BIN:-archsig} intent-map \
+${FIELDSIG_BIN:-fieldsig} intent-map \
   --input .archsig/intent/intentmap.json \
   --out .archsig/intent/intentmap-validation.json
 
-${ARCHSIG_BIN:-archsig} intent-archmap-alignment \
+${FIELDSIG_BIN:-fieldsig} intent-archmap-alignment \
   --input .archsig/intent/intent-archmap-alignment.json \
   --intent-map .archsig/intent/intentmap.json \
   --archmap .archsig/archmap/archmap.json \
@@ -54,7 +54,7 @@ ${ARCHSIG_BIN:-archsig} intent-archmap-alignment \
 3. Run bounded planning forecast when inputs are valid enough.
 
 ```bash
-${ARCHSIG_BIN:-archsig} intent-forecast \
+${FIELDSIG_BIN:-fieldsig} intent-forecast \
   --intent-map .archsig/intent/intentmap.json \
   --archmap .archsig/archmap/archmap.json \
   --alignment .archsig/intent/intent-archmap-alignment.json \
@@ -64,7 +64,7 @@ ${ARCHSIG_BIN:-archsig} intent-forecast \
 If only a ConsequenceEnvelope is available, project it to reviewer-facing SFT judgement input:
 
 ```bash
-${ARCHSIG_BIN:-archsig} sft-review-summary \
+${FIELDSIG_BIN:-fieldsig} sft-review-summary \
   --consequence-envelope .archsig/intent/forecast/consequence-envelope-report.json \
   --out .archsig/intent/forecast/sft-review-summary.json
 ```
@@ -72,7 +72,7 @@ ${ARCHSIG_BIN:-archsig} sft-review-summary \
 4. Validate or read calibration records when observed implementation refs are available.
 
 ```bash
-${ARCHSIG_BIN:-archsig} intent-calibration-record \
+${FIELDSIG_BIN:-fieldsig} intent-calibration-record \
   --input .archsig/intent/intent-calibration-record.json \
   --out .archsig/intent/intent-calibration-validation.json
 ```

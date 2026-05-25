@@ -56,7 +56,7 @@ Preferred `claimClassification` values:
 Validate with:
 
 ```bash
-${ARCHSIG_BIN:-archsig} intent-map \
+${FIELDSIG_BIN:-fieldsig} intent-map \
   --input <intentmap.json> \
   --out .archsig/intent/intentmap-validation.json
 ```
