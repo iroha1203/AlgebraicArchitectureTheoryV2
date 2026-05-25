@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "runtime-edge-evidence-v0",
+  "componentIdKind": "lean-module",
+  "edges": [
+    {
+      "source": "Formal",
+      "target": "Formal.Arch.A",
+      "label": "rpc",
+      "failureMode": "timeout",
+      "timeoutBudget": "250ms",
+      "retryPolicy": "bounded-retry",
+      "circuitBreakerCoverage": "covered",
+      "confidence": "fixture",
+      "evidenceLocation": {
+        "path": "runtime/routes.json",
+        "line": 7,
+        "symbol": "formalToA"
+      }
+    },
+    {
+      "source": "Formal.Arch.A",
+      "target": "Formal.Arch.B",
+      "label": "queue-publish",
+      "failureMode": "backlog",
+      "timeoutBudget": "not-applicable",
+      "retryPolicy": "consumer-retry",
+      "circuitBreakerCoverage": "not-applicable",
+      "confidence": "fixture",
+      "evidenceLocation": {
+        "path": "runtime/events.json",
+        "line": 12,
+        "symbol": "aPublishesB"
+      }
+    }
+  ]
+}

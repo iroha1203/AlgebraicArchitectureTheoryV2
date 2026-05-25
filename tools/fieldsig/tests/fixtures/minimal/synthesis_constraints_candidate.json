@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "synthesis-constraint-artifact-v0",
+  "scope": "fixture synthesis constraint artifact for candidate boundary",
+  "constraintRefs": [
+    "constraint-static-boundary-coupon-v0",
+    "constraint-semantic-rounding-contract-v0"
+  ],
+  "candidateRefs": [
+    "candidate-split-coupon-interface-v0"
+  ],
+  "requiredAssumptions": [
+    "selected obstruction witnesses resolve in the current Feature Extension Report",
+    "candidate operations are interpreted inside the selected measurement universe"
+  ],
+  "coverageAssumptions": [
+    "static dependency and selected semantic diagram evidence are included",
+    "unsupported constructs are reported rather than discharged"
+  ],
+  "exactnessAssumptions": [
+    "constraint refs name the selected bounded synthesis package inputs",
+    "candidate refs name produced candidates, not solver completeness evidence"
+  ],
+  "unsupportedConstructs": [
+    "unbounded search spaces are outside synthesis artifact v0"
+  ],
+  "constraints": [
+    {
+      "constraintId": "constraint-static-boundary-coupon-v0",
+      "kind": "static",
+      "subjectRef": "relation.UserService.CouponService",
+      "predicate": "candidate must route forbidden static edge through an allowed boundary",
+      "evidenceRefs": [
+        "evidence-static-boundary-violation"
+      ],
+      "theoremPreconditionRefs": [
+        "NoNewForbiddenStaticEdge",
+        "SynthesisConstraintSystem"
+      ]
+    },
+    {
+      "constraintId": "constraint-semantic-rounding-contract-v0",
+      "kind": "semantic",
+      "subjectRef": "semantic.diagram.diagram-coupon-discount-order",
+      "predicate": "candidate must preserve selected coupon / discount observation contract",
+      "evidenceRefs": [
+        "evidence-coupon-diagram",
+        "evidence-rounding-order-difference"
+      ],
+      "theoremPreconditionRefs": [
+        "SynthesisSoundnessPackage.candidate_satisfies",
+        "obstructionAsNonFillability_sound"
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "candidateId": "candidate-split-coupon-interface-v0",
+      "producedBy": "bounded synthesis prototype fixture",
+      "operationRefs": [
+        "operation.split.CouponPort"
+      ],
+      "constraintRefs": [
+        "constraint-static-boundary-coupon-v0",
+        "constraint-semantic-rounding-contract-v0"
+      ],
+      "soundnessPackageRefs": [
+        "SynthesisSoundnessPackage.candidate_satisfies",
+        "ArchitectureCalculusLaw.synthesisCandidateSoundnessLaw_conclusion"
+      ],
+      "requiredAssumptions": [
+        "interface contract covers both selected coupon paths",
+        "candidate operation refs resolve to the bounded operation package"
+      ],
+      "coverageAssumptions": [
+        "static and semantic evidence refs cover the selected constraints",
+        "runtime behavior is checked separately if runtime edges are present"
+      ],
+      "exactnessAssumptions": [
+        "selected observation equality assumptions are recorded",
+        "unsupported constructs are not silently discharged"
+      ],
+      "unsupportedConstructs": [
+        "global semantic completeness is outside this candidate"
+      ],
+      "nonConclusions": [
+        "produced candidate soundness is conditional on recorded assumptions",
+        "solver completeness is not concluded",
+        "solver no-candidate result is not a no-solution certificate",
+        "valid no-solution certificate is checked separately"
+      ]
+    }
+  ],
+  "noSolutionBoundary": {
+    "solverStatus": "candidate_produced",
+    "candidateRefs": [
+      "candidate-split-coupon-interface-v0"
+    ],
+    "noSolutionCertificateRef": null,
+    "validCertificateClaimRef": null,
+    "nonConclusions": [
+      "produced candidate soundness is conditional on recorded assumptions",
+      "solver completeness is not concluded",
+      "solver no-candidate result is not a no-solution certificate",
+      "valid no-solution certificate is checked separately"
+    ]
+  },
+  "nonConclusions": [
+    "produced candidate soundness is conditional on recorded assumptions",
+    "solver completeness is not concluded",
+    "solver no-candidate result is not a no-solution certificate",
+    "valid no-solution certificate is checked separately"
+  ]
+}

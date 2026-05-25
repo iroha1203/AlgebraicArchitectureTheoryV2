@@ -127,7 +127,7 @@ candidate として block する。
 ArchMap は SFT computation result を theorem precondition として持たない。ArchMap に保持してよいのは
 source-level candidate、たとえば operation / state / state transition / event / workflow /
 test oracle / runtime observation の候補と source refs である。field、force、attractor、basin、
-ForecastCone、ConsequenceEnvelope、calibration boundary は ArchSig-computed SFT artifact 側の
+ForecastCone、ConsequenceEnvelope、calibration boundary は FieldSig-computed SFT artifact 側の
 責務であり、ArchMap checklist では proof relation や計算結果として読まない。
 
 ## Artifact-to-AAT-supported SFT boundary reading

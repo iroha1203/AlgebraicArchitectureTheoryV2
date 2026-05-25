@@ -68,7 +68,7 @@ ArchMap 側に保持するのは source-level candidates、たとえば `operati
 `stateCandidate`、`stateTransitionCandidate`、`eventCandidate`、`workflowCandidate`、
 `testOracleCandidate`、`runtimeObservationCandidate` と source refs である。field、force、
 attractor、basin、ForecastCone、ConsequenceEnvelope、calibration boundary は、trace inventory と
-normalization 後に ArchSig / SFT projection report が決定論的に生成する artifact の責務である。
+normalization 後に FieldSig projection report が決定論的に生成する artifact の責務である。
 CLI surface では `archmap-sft-input` が ArchMap item を `operation-support-estimate-v0` に投影する。
 この投影は selected source universe に相対化され、missing / private / unavailable / unsupported evidence を
 unknown remainder として残す。
@@ -114,3 +114,8 @@ causal proof、または universal forecast validity ではない。
 - observed correlation と incident / rollback / MTTR の因果関係。
 - `SoftwareFieldEstimate` からの forecast correctness。
 - Lean theorem precondition discharge。
+
+
+## FieldSig boundary
+
+FieldSig lives in `tools/fieldsig` and owns SFT software evolution measurement artifacts: `software-field-measurement-v0`, forecast / intent artifacts, workflow evidence refs, operational feedback, governance candidates, unknown remainder, and calibration hooks. ArchSig remains the AAT structural telemetry generator and passes evidence through JSON artifact refs. FieldSig validation is not a Lean proof, forecast correctness proof, probability claim, causal theorem, or replacement for CI, tests, and human review.

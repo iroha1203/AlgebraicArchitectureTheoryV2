@@ -1,0 +1,1086 @@
+{
+  "schemaVersion": "schema-version-catalog-v0",
+  "catalogId": "archsig-b9-b10-schema-version-catalog",
+  "catalogVersion": "b10-schema-catalog-v0",
+  "phase": "B9 Schema standardization and compatibility / B10 operational feedback",
+  "artifacts": [
+    {
+      "artifactId": "signature-artifact",
+      "artifactName": "Architecture Signature artifact",
+      "schemaVersionName": "archsig-sig0-v0",
+      "artifactRole": "extractor-output",
+      "ownerPhase": "B0-B8",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#4-architecture-signature-artifact-layer",
+        "docs/design/archsig_tooling_index.md"
+      ],
+      "downstreamIssues": [],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map component/relation/signature fields by stable camelCase names; new axes must be added with metricStatus boundary metadata.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New required axes must declare measuredZero/measuredNonzero/unmeasured/outOfScope semantics."
+        ],
+        "coverageExactnessBoundary": [
+          "metricStatus is the compatibility boundary for coverage and exactness of Sig0 axes."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "air",
+      "artifactName": "Architecture Intermediate Representation",
+      "schemaVersionName": "aat-air-v0",
+      "artifactRole": "intermediate-representation",
+      "ownerPhase": "B0-B9",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#31-air-v0-schema",
+        "docs/design/archsig_tooling_index.md"
+      ],
+      "downstreamIssues": [
+        "#608",
+        "#609"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map ids, relation refs, evidence refs, claims, coverage layers, and theorem-package refs explicitly; never infer a formal claim from renamed fields.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New required theorem, coverage, projection, or exactness assumptions must be listed in claims or coverage layers."
+        ],
+        "coverageExactnessBoundary": [
+          "AIR coverage layers and claim classifications are the exactness boundary for report generation."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "archmap",
+      "artifactName": "ArchMap supplied JSON artifact",
+      "schemaVersionName": "archmap-v0",
+      "artifactRole": "semantic-observation-input",
+      "ownerPhase": "ArchMap MVP",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archmap_prd.md"
+      ],
+      "downstreamIssues": [
+        "#1032",
+        "#1033",
+        "#1035"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map source inventory, prompt/model provenance, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
+          "SFT-facing mapping kinds must remain projection input and not forecast result claims."
+        ],
+        "coverageExactnessBoundary": [
+          "ArchMap is supplied JSON evidence, not architecture ground truth or a Lean theorem claim."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "archmap-validation-report",
+      "artifactName": "ArchMap Validation Report",
+      "schemaVersionName": "archmap-validation-report-v0",
+      "artifactRole": "validation-output",
+      "ownerPhase": "ArchMap MVP",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archmap_prd.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1032",
+        "#1034"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, and formal promotion guardrail checks separate.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New checks must report whether they fail, warn, or pass without promoting uncertain mappings."
+        ],
+        "coverageExactnessBoundary": [
+          "Validation pass does not imply semantic correctness, completeness, or architecture lawfulness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "architecture-policy",
+      "artifactName": "Architecture policy artifact",
+      "schemaVersionName": "architecture-policy-v0",
+      "artifactRole": "law-aware-review-policy",
+      "ownerPhase": "ArchMap law-aware review",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archmap_prd.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1162"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map adopted laws, layer selectors, dependency rules, exceptions, and SRP taxonomy explicitly; do not infer policy from repository shape.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New law families must declare deterministic versus LLM-review enforcement boundary."
+        ],
+        "coverageExactnessBoundary": [
+          "Architecture policy is review evidence, not a Lean theorem or architecture lawfulness proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "architecture-policy-validation-report",
+      "artifactName": "Architecture policy validation report",
+      "schemaVersionName": "architecture-policy-validation-report-v0",
+      "artifactRole": "validation-output",
+      "ownerPhase": "ArchMap law-aware review",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1162"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Keep identity, adopted law, layer selector, dependency rule, SRP evidence, and non-conclusion checks separate.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New checks must distinguish fail, warn, and unmeasured policy evidence."
+        ],
+        "coverageExactnessBoundary": [
+          "Validation pass does not imply architecture lawfulness or SRP violation."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "law-violation-report",
+      "artifactName": "Law violation report",
+      "schemaVersionName": "law-violation-report-v0",
+      "artifactRole": "review-output",
+      "ownerPhase": "ArchMap law-aware review",
+      "status": "implemented",
+      "primaryDocs": [
+        "tools/archsig/docs/commands.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1164",
+        "#1165"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map deterministic Layered findings, allowed exceptions, SRP cues, unmeasured selectors, review actions, and non-conclusions explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New law findings must preserve evidence refs and policy refs before review classification."
+        ],
+        "coverageExactnessBoundary": [
+          "Layered findings are selected-universe tooling evidence and SRP cues are not tool-only violations."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "archmap-generation-protocol",
+      "artifactName": "ArchMap generation protocol",
+      "schemaVersionName": "archmap-generation-protocol-v0",
+      "artifactRole": "external-agent-protocol",
+      "ownerPhase": "ArchMap v2",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v2.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1139"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map source inventory refs, prompt pack refs, model provenance, required workflow, and private / unavailable generation boundary explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New generation workflow fields must preserve model provenance and validation boundary."
+        ],
+        "coverageExactnessBoundary": [
+          "Generation protocol does not execute the model or prove the generated ArchMap correct."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "intentmap",
+      "artifactName": "IntentMap supplied JSON artifact",
+      "schemaVersionName": "intentmap-v0",
+      "artifactRole": "planning-intent-input",
+      "ownerPhase": "PRD v3",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v3.md"
+      ],
+      "downstreamIssues": [
+        "#1149",
+        "#1150",
+        "#1156"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map intent source refs, LLM provenance, intent items, missing decisions, ambiguous intents, missing evidence, and non-conclusions by stable camelCase names.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New intent kinds must preserve source refs, claim classification, confidence boundary, missing decisions, and non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "IntentMap is LLM-authored planning evidence, not implementation truth, forecast correctness, or a complete plan."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "intent-archmap-alignment",
+      "artifactName": "IntentMap to ArchMap AlignmentMap",
+      "schemaVersionName": "intent-archmap-alignment-v0",
+      "artifactRole": "planning-alignment-input",
+      "ownerPhase": "PRD v3",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v3.md",
+        "tools/fieldsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1151",
+        "#1152",
+        "#1154",
+        "#1156"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map intent refs, ArchMap refs, alignment kind, preserves / forgets, confidence, unaligned / unsupported / ambiguous boundaries, missing evidence, and non-conclusions explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New alignment kinds must keep intentUnaligned / unsupported / ambiguous states distinct from measured zero."
+        ],
+        "coverageExactnessBoundary": [
+          "AlignmentMap validation does not prove semantic correctness, implementation impact, quality, causality, or future outcome."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "operation-support-estimate",
+      "artifactName": "Operation support estimate",
+      "schemaVersionName": "operation-support-estimate-v0",
+      "artifactRole": "bounded-forecast-input",
+      "ownerPhase": "SFT review judgement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/roadmap.md",
+        "tools/fieldsig/docs/commands.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1182",
+        "#1184",
+        "#1185"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map candidate operation families, policy constraints, support disposition, governance action refs, forbidden support, unknown remainder, and evidence boundary explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New policy fields must preserve allowed, conditionallyAllowed, forbidden, and unknown distinctions."
+        ],
+        "coverageExactnessBoundary": [
+          "Operation support is bounded evidence, not actual future support or policy safety proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "forecast-cone-skeleton",
+      "artifactName": "ForecastCone skeleton",
+      "schemaVersionName": "forecast-cone-skeleton-v0",
+      "artifactRole": "bounded-forecast-artifact",
+      "ownerPhase": "SFT review judgement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/roadmap.md",
+        "tools/fieldsig/docs/commands.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1185"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map finite support, bounded horizon, path classes, gluing evidence, governance interventions, typed boundary failures, forecast boundary, unknown remainder, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New future evidence must keep gluing, governance, and typed boundary failure refs source-bound."
+        ],
+        "coverageExactnessBoundary": [
+          "ForecastCone does not assign probability, causal prediction, global safety, or theorem proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "consequence-envelope-report",
+      "artifactName": "ConsequenceEnvelope report",
+      "schemaVersionName": "consequence-envelope-report-v0",
+      "artifactRole": "review-projection",
+      "ownerPhase": "SFT review judgement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/roadmap.md",
+        "tools/fieldsig/docs/commands.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1182",
+        "#1185"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map affected regions, axes, deltas, obstruction candidates, missing boundaries, typed failures, reviewer actions, theorem boundaries, recommendations, and unknown remainder explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New reviewer-facing fields must preserve evidence refs and boundary refs."
+        ],
+        "coverageExactnessBoundary": [
+          "ConsequenceEnvelope is report projection, not final judgement, causality proof, or Lean theorem."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "sft-review-summary",
+      "artifactName": "SFT review summary",
+      "schemaVersionName": "sft-review-summary-v0",
+      "artifactRole": "review-judgement-input",
+      "ownerPhase": "SFT review judgement",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/roadmap.md",
+        "tools/fieldsig/docs/commands.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md"
+      ],
+      "downstreamIssues": [
+        "#1182",
+        "#1183",
+        "#1186"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map opened futures, closed futures, boundary failures, next actions, evidence refs, boundary refs, and LLM judgement contract without making the LLM call.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New judgement statuses must remain bounded triage and require evidence refs."
+        ],
+        "coverageExactnessBoundary": [
+          "SFT review summary is deterministic projection, not merge approval, probability claim, or theorem proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "pr-quality-analysis",
+      "artifactName": "PR Quality Analysis report",
+      "schemaVersionName": "pr-quality-analysis-report-v0",
+      "artifactRole": "review-output",
+      "ownerPhase": "PRD v3",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v3.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1153"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map ArchMap, AIR, theorem-check, feature-report, and policy-decision refs to reviewer-facing cues and missing evidence without automatic merge approval.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New cue kinds must declare evidence boundary and avoid merge-decision or architecture-lawfulness claims."
+        ],
+        "coverageExactnessBoundary": [
+          "PR quality analysis is review evidence, not merge approval or a global architecture ranking."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "aat-observable-bundle",
+      "artifactName": "AAT Observable Bundle",
+      "schemaVersionName": "aat-observable-bundle-v0",
+      "artifactRole": "aat-observable-review-bundle",
+      "ownerPhase": "AAT observable bridge",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/aat_archsig_reduction.md",
+        "tools/archsig/docs/artifacts-and-boundaries.md",
+        "tools/archsig/docs/commands.md"
+      ],
+      "downstreamIssues": [
+        "#1166",
+        "#1167",
+        "#1168",
+        "#1169",
+        "#1170",
+        "#1171",
+        "#1172",
+        "#1173",
+        "#1174",
+        "#1175",
+        "#1176",
+        "#1177",
+        "#1178",
+        "#1179"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map AAT concepts, source refs, selected universe, witness refs, operation candidates, theorem boundaries, review actions, and responsibility splits without promoting tooling evidence to proof.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New AAT concept mappings must declare expressibility, retention, reviewability, measurement status, responsibility, and non-conclusions.",
+          "New measured axes must keep measuredZero, measuredNonzero, unmeasured, outOfScope, private, unavailable, unsupported, and dynamic boundaries distinct."
+        ],
+        "coverageExactnessBoundary": [
+          "AAT Observable Bundle is a review artifact bundle, not AAT itself, extractor completeness, global lawfulness proof, or merge approval."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "intent-calibration-record",
+      "artifactName": "Intent calibration record",
+      "schemaVersionName": "intent-calibration-record-v0",
+      "artifactRole": "empirical-feedback",
+      "ownerPhase": "PRD v3",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/archsig_archmap_prd_v3.md",
+        "docs/tool/sft_calibration_benchmark.md"
+      ],
+      "downstreamIssues": [
+        "#1157"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map IntentMap item refs, forecast item refs, observed implementation refs, missing decision statuses, and forecast usefulness feedback separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New calibration fields must distinguish observed evidence, missing decision status, and qualitative usefulness feedback."
+        ],
+        "coverageExactnessBoundary": [
+          "Calibration is empirical feedback, not causal proof or forecast correctness proof."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "feature-extension-report",
+      "artifactName": "Feature Extension Report",
+      "schemaVersionName": "feature-extension-report-v0",
+      "artifactRole": "review-output",
+      "ownerPhase": "B1-B9",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#5-feature-extension-report",
+        "docs/design/archsig_tooling_index.md"
+      ],
+      "downstreamIssues": [
+        "#608",
+        "#609"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map review summary, witness, theorem precondition, coverage gap, repair suggestion, and non-conclusion fields separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New required review assumptions must appear in discharged/undischarged assumptions or theorem precondition checks."
+        ],
+        "coverageExactnessBoundary": [
+          "Coverage gaps, runtime summary, semantic summary, and non-conclusions delimit report exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "obstruction-witness",
+      "artifactName": "Obstruction Witness",
+      "schemaVersionName": "obstruction-witness-v0",
+      "artifactRole": "embedded-witness",
+      "ownerPhase": "B1-B9",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#6-obstruction-witness-schema"
+      ],
+      "downstreamIssues": [
+        "#608",
+        "#610"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map witness id, layer, kind, extension role, classification, evidence, theorem refs, claim classification, measurement boundary, and non-conclusions independently.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New witness kinds must declare layer, evidence requirements, measurement boundary, and non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "Witness measurement boundary and claim classification distinguish measured evidence from formal theorem claims."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "architecture-drift-ledger",
+      "artifactName": "Architecture Drift Ledger",
+      "schemaVersionName": "architecture-drift-ledger-v0",
+      "artifactRole": "batch-history-output",
+      "ownerPhase": "B1-B9",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#51-architecture-drift-ledger"
+      ],
+      "downstreamIssues": [
+        "#608",
+        "#610"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map stable grouping keys, aggregation window, source, metric, status, suppression, repair, witness, claim, and non-conclusion fields separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New batch metrics must declare grouping key, aggregation window, measurement boundary, and evidence refs."
+        ],
+        "coverageExactnessBoundary": [
+          "Ledger status and suppression metadata are operational state, not formal proof state."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "detectable-values-reported-axes-catalog",
+      "artifactName": "Detectable values / reported axes catalog",
+      "schemaVersionName": "detectable-values-reported-axes-catalog-v0",
+      "artifactRole": "axis-catalog",
+      "ownerPhase": "B9",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#41-detectable-values--reported-axes",
+        "docs/design/schema_version_catalog.md#detectable-values--reported-axes-catalog"
+      ],
+      "downstreamIssues": [
+        "#608"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map axis id, layer, value type, measurement boundary, evidence requirements, theorem refs, and non-conclusions explicitly.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New reported axes must declare whether unmeasured differs from measured zero."
+        ],
+        "coverageExactnessBoundary": [
+          "Axis coverage and exactness metadata delimit what a zero or nonzero value can support."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "report-outcome-daily-ledger",
+      "artifactName": "Report outcome daily ledger",
+      "schemaVersionName": "report-outcome-daily-ledger-v0",
+      "artifactRole": "operational-feedback-output",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#report-outcome-daily-ledger-metadata"
+      ],
+      "downstreamIssues": [
+        "#620"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map aggregation window, source report refs, retention policy, outcome metric summaries, missing/private/unmeasured boundaries, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New daily batch metrics must preserve source report refs, retention policy, and missing/private/unmeasured boundary counts."
+        ],
+        "coverageExactnessBoundary": [
+          "Missing, private, unavailable, and unmeasured outcome data delimit the operational feedback exactness boundary."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "calibration-review-record",
+      "artifactName": "Calibration review record",
+      "schemaVersionName": "calibration-review-record-v0",
+      "artifactRole": "operational-feedback-input",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#calibration-review-record-metadata"
+      ],
+      "downstreamIssues": [
+        "#621"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map report finding refs, witness refs, reviewer decision, outcome refs, confidence, missing evidence, calibration input, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New calibration fields must preserve missing / private evidence boundaries and formal-claim non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "Reviewer decision, confidence, missing evidence, and calibration input delimit empirical policy tuning exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "team-threshold-policy",
+      "artifactName": "Team threshold policy",
+      "schemaVersionName": "team-threshold-policy-v0",
+      "artifactRole": "operational-feedback-policy",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#team-threshold-policy-metadata"
+      ],
+      "downstreamIssues": [
+        "#622"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map team scope, effective period, per-axis thresholds, CI modes, calibration sources, rollback policy, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New threshold axes must preserve warn / fail / advisory mode and calibration source refs."
+        ],
+        "coverageExactnessBoundary": [
+          "Team-local threshold policy and calibration source boundaries delimit empirical policy tuning exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "ownership-boundary-monitor",
+      "artifactName": "Ownership boundary monitor",
+      "schemaVersionName": "ownership-boundary-monitor-v0",
+      "artifactRole": "operational-feedback-monitor",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#ownership-boundary-monitor-metadata"
+      ],
+      "downstreamIssues": [
+        "#623"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map source refs, ownership scopes, boundary erosion signals, missing evidence, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New ownership or boundary erosion metrics must preserve measurement boundary and missing / private evidence refs."
+        ],
+        "coverageExactnessBoundary": [
+          "Ownership scope and boundary erosion signal metadata delimit empirical monitoring exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "repair-adoption-record",
+      "artifactName": "Repair adoption record",
+      "schemaVersionName": "repair-adoption-record-v0",
+      "artifactRole": "operational-feedback-record",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#repair-adoption-record-metadata"
+      ],
+      "downstreamIssues": [
+        "#623"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map suggestion refs, adopted / rejected / deferred decision, follow-up outcomes, side-effect notes, missing evidence, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New adoption fields must preserve repair suggestion traceability, workflow state, side effects, and missing / private evidence boundaries."
+        ],
+        "coverageExactnessBoundary": [
+          "Repair adoption workflow state and follow-up outcome refs delimit empirical repair tracking exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "incident-correlation-monitor",
+      "artifactName": "Incident / rollback / MTTR correlation monitor",
+      "schemaVersionName": "incident-correlation-monitor-v0",
+      "artifactRole": "operational-feedback-monitor",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#incident-correlation-monitor-metadata"
+      ],
+      "downstreamIssues": [
+        "#624"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map correlation window, source refs, metric axes, correlations, confounder notes, missing / private data, refresh decision, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New incident correlation fields must preserve source refs, metric axes, confounder notes, and missing / private evidence boundaries."
+        ],
+        "coverageExactnessBoundary": [
+          "Correlation observations, confounders, and missing / private data delimit empirical incident-monitoring exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "hypothesis-refresh-cycle",
+      "artifactName": "Empirical hypothesis refresh cycle",
+      "schemaVersionName": "hypothesis-refresh-cycle-v0",
+      "artifactRole": "operational-feedback-research-cycle",
+      "ownerPhase": "B10",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/aat_v2_tooling_design.md#phase-b10-operational-feedback-loop",
+        "docs/design/schema_version_catalog.md#hypothesis-refresh-cycle-metadata"
+      ],
+      "downstreamIssues": [
+        "#624"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map source monitor refs, versioned hypothesis refs, change reasons, refresh decision, retained / rejected hypotheses, proposed updates, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New refresh fields must preserve hypothesis version refs, disposition rationale, source refs, and formal-claim non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "Hypothesis dispositions and refresh decisions delimit empirical research tracking exactness."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "pr-force-report",
+      "artifactName": "PR Force Report",
+      "schemaVersionName": "pr-force-report-v0",
+      "artifactRole": "architecture-dynamics-output",
+      "ownerPhase": "D5-D6",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/design/architecture_dynamics_tooling_design.md#pr-force-report-v0",
+        "docs/design/architecture_signature_dynamics.md#layer-4-pr-force-model"
+      ],
+      "downstreamIssues": [
+        "#675"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map accepted PR transition refs, signed Signature deltas, observed force vector slots, decomposition components, evidence refs, measurement boundary, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New force axes must declare MeasurementStatus, source artifact refs, and whether they are observed, latent, dissipated, or advisory."
+        ],
+        "coverageExactnessBoundary": [
+          "ObservedForce excludes rejected raw proposal force; heuristic decomposition remains advisory tooling evidence."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "architecture-dynamics-metrics-report",
+      "artifactName": "Architecture Dynamics Metrics Report",
+      "schemaVersionName": "architecture-dynamics-metrics-report-v0",
+      "artifactRole": "architecture-dynamics-output",
+      "ownerPhase": "D5-D6",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/design/architecture_dynamics_tooling_design.md#architecture-dynamics-metrics-report-v0",
+        "docs/design/architecture_signature_dynamics.md#quantitative-metric-derivation"
+      ],
+      "downstreamIssues": [
+        "#671",
+        "#718"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map repository, selected window, source refs, trajectory / force / gap / field-control / AI dynamics / attractor-engineering metric groups, basin simulations, field shaping signals, readiness axes, measurement boundary, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New dynamics metrics must declare MeasurementStatus, source refs, measurement boundary, assumptions, and non-conclusions.",
+          "New basin simulations must declare selected initial states, finite operation scripts, selected regions, bounded horizon, classification status, missing evidence, and non-conclusions.",
+          "New field shaping signals must declare selected signal, source refs, confidence, measurement boundary, and non-conclusions.",
+          "VibeCodingReadiness must remain a multi-axis readiness artifact, not a single numeric score."
+        ],
+        "coverageExactnessBoundary": [
+          "Metrics report remains a multi-axis diagnostic artifact and does not promote tooling evidence to Lean theorem claims.",
+          "BasinBoundaryFragility and TrajectoryReturnTime remain bounded simulation evidence, not global basin stability or recurrence theorems.",
+          "ObservedForce, LatentForceEstimate, and DissipatedForceEstimate remain separate force classes.",
+          "FieldShapingDelta uses notComparable when before/after measurement boundaries are not comparable."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "signature-trajectory-report",
+      "artifactName": "Signature Trajectory Report",
+      "schemaVersionName": "signature-trajectory-report-v0",
+      "artifactRole": "architecture-dynamics-output",
+      "ownerPhase": "D5-D6",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/design/architecture_dynamics_tooling_design.md#signature-trajectory-report-v0",
+        "docs/design/architecture_signature_dynamics.md#signature-trajectory-metrics"
+      ],
+      "downstreamIssues": [
+        "#676"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map repository, selected window, trajectory points, force refs, drift / stability / excursion / endpoint-compression signals, selected regions, measurement boundary, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New trajectory fields must preserve MeasurementStatus, source refs, selected region refs, and bounded-window assumptions.",
+          "Extractor, policy, or schema version differences require notComparable or explicit migration boundary evidence."
+        ],
+        "coverageExactnessBoundary": [
+          "Trajectory report remains finite observed trajectory tooling evidence, not a global attractor or basin theorem.",
+          "Endpoint safe-region membership does not imply path safety."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "ai-proposal-governance",
+      "artifactName": "AI Proposal Governance",
+      "schemaVersionName": "ai-proposal-governance-v0",
+      "artifactRole": "review-governance-output",
+      "ownerPhase": "B14",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/ai_proposal_governance.md",
+        "tools/fieldsig/docs/artifacts-and-boundaries.md#sft-forecasting-input-artifacts"
+      ],
+      "downstreamIssues": [
+        "#900"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Map proposal refs, prompt / policy boundary, support taxonomy, shortcut witnesses, review / CI mediation, posterior field update, evidence boundary, and non-conclusions separately.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New support categories must remain within allowed, conditionallyAllowed, forbidden, unknown, or outOfScope unless a schema migration records the boundary.",
+          "New mediation fields must preserve that policy compliance, review pass, and CI pass are not architecture lawfulness."
+        ],
+        "coverageExactnessBoundary": [
+          "AI proposal governance is reviewer-facing process evidence, not an AI safety theorem.",
+          "Posterior field update refs are calibration hooks, not causal proofs."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    }
+  ],
+  "compatibilityPolicy": {
+    "schemaVersion": "schema-compatibility-policy-v0",
+    "policyId": "archsig-b9-schema-compatibility-policy",
+    "policyVersion": "b9-compatibility-policy-v0",
+    "appliesToCatalogVersion": "b10-schema-catalog-v0",
+    "dimensions": [
+      {
+        "dimension": "field_mapping",
+        "requiredMetadata": [
+          "sourceField",
+          "targetField",
+          "mappingKind",
+          "requiredReview"
+        ],
+        "checkerBoundary": "A checker may validate declared field mappings, but it must not infer semantic equivalence."
+      },
+      {
+        "dimension": "deprecated_fields",
+        "requiredMetadata": [
+          "field",
+          "replacement",
+          "removalPhase",
+          "readerBehavior"
+        ],
+        "checkerBoundary": "Deprecated fields remain compatibility metadata until removal; migration must preserve explicit reader behavior."
+      },
+      {
+        "dimension": "new_required_assumptions",
+        "requiredMetadata": [
+          "assumptionId",
+          "appliesTo",
+          "requiredFor",
+          "fallbackWhenMissing"
+        ],
+        "checkerBoundary": "New assumptions must be reported as missing or undischarged unless explicit evidence is present."
+      },
+      {
+        "dimension": "non_conclusions",
+        "requiredMetadata": [
+          "nonConclusion",
+          "appliesTo",
+          "reason"
+        ],
+        "checkerBoundary": "Non-conclusions are mandatory guardrails and cannot be dropped by migration."
+      },
+      {
+        "dimension": "coverage_exactness_boundary",
+        "requiredMetadata": [
+          "axisOrLayer",
+          "measurementBoundary",
+          "coverageAssumptions",
+          "exactnessAssumptions"
+        ],
+        "checkerBoundary": "Coverage and exactness metadata delimit what any reported value can support."
+      }
+    ],
+    "requiredChecks": [
+      "known schemaVersion in catalog",
+      "field mapping entries are explicit for renamed or removed fields",
+      "deprecated fields declare replacement or removal behavior",
+      "new required assumptions are surfaced as missing until discharged",
+      "non-conclusions are preserved or strengthened",
+      "coverage and exactness metadata are not dropped"
+    ],
+    "nonConclusions": [
+      "compatibility policy is not a proof of semantic preservation",
+      "compatibility policy is not evidence of extractor completeness",
+      "compatibility policy is not a Lean theorem package"
+    ]
+  },
+  "nonConclusions": [
+    "schema migration is not a semantic-preservation theorem",
+    "catalog membership does not imply extractor completeness",
+    "compatibility pass does not imply architecture lawfulness",
+    "compatibility pass does not promote tooling evidence to a Lean theorem claim"
+  ]
+}

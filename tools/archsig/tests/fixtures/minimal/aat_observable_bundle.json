@@ -151,7 +151,7 @@
       "aatConcept": "ArchitectureOperation",
       "artifactRefs": [
         "pr-quality-analysis-report-v0",
-        "operation-support-estimate-v0"
+        "fieldsig-sft-artifact-ref"
       ],
       "reportRefs": [
         "operation:coupon-feature-extension"

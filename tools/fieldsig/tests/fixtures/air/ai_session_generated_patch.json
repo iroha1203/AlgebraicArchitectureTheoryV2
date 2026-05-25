@@ -1,0 +1,278 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-ai-session-generated-patch",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-ai-session",
+    "after": "after-ai-session"
+  },
+  "feature": {
+    "featureId": "#canonical-ai-session",
+    "title": "Add coupon calculation",
+    "description": "CouponService is added by an AI-generated patch and awaits human review",
+    "source": "ai_session",
+    "aiSession": {
+      "provider": "openai",
+      "model": "gpt-5",
+      "promptRef": "prompt-log:canonical-ai-session",
+      "generatedPatch": true,
+      "humanReviewed": false
+    }
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-sig0",
+      "kind": "sig0",
+      "schemaVersion": "archsig-sig0-v0",
+      "path": "canonical/ai-session/sig0.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    },
+    {
+      "artifactId": "artifact-generated-patch",
+      "kind": "generated_patch",
+      "schemaVersion": "generated-patch-v0",
+      "path": "canonical/ai-session/generated.patch",
+      "contentHash": "sha256:canonical-generated-patch",
+      "producedBy": "aiSession:canonical-ai-session"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-sig0",
+      "kind": "observation_result",
+      "artifactRef": "artifact-sig0",
+      "path": "canonical/ai-session/sig0.json",
+      "symbol": null,
+      "line": null,
+      "ruleId": "archsig-sig0-v0",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-ai-session",
+      "kind": "ai_session",
+      "artifactRef": null,
+      "path": "prompt-log:canonical-ai-session",
+      "symbol": null,
+      "line": null,
+      "ruleId": "ai-session-metadata-v0",
+      "confidence": "medium"
+    },
+    {
+      "evidenceId": "evidence-generated-patch",
+      "kind": "generated_patch",
+      "artifactRef": "artifact-generated-patch",
+      "path": "canonical/ai-session/generated.patch",
+      "symbol": null,
+      "line": null,
+      "ruleId": "generated-patch-v0",
+      "confidence": "medium"
+    },
+    {
+      "evidenceId": "evidence-static-coupon-port",
+      "kind": "source_location",
+      "artifactRef": "artifact-sig0",
+      "path": "src/user_service.rs",
+      "symbol": "UserService",
+      "line": 12,
+      "ruleId": "declared-interface",
+      "confidence": "high"
+    }
+  ],
+  "components": [
+    {
+      "id": "UserService",
+      "kind": "service",
+      "lifecycle": "unchanged",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "CouponPort",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": ["evidence-generated-patch"]
+    },
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": ["evidence-generated-patch"]
+    }
+  ],
+  "relations": [
+    {
+      "id": "relation-static-coupon-port",
+      "layer": "static",
+      "from": "UserService",
+      "to": "CouponPort",
+      "kind": "import",
+      "lifecycle": "added",
+      "protectedBy": null,
+      "extractionRule": "lean-import",
+      "evidenceRefs": ["evidence-static-coupon-port", "evidence-generated-patch"]
+    }
+  ],
+  "policies": {
+    "laws": ["policy:canonical-layering"],
+    "boundaries": ["feature depends on declared interface"],
+    "allowedEdges": ["UserService->CouponPort"],
+    "forbiddenEdges": [],
+    "abstractionRules": ["declared-interface-only"],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [],
+  "architecturePaths": [],
+  "homotopyGenerators": [],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "boundaryViolationCount",
+        "value": 0,
+        "measured": true,
+        "measurementBoundary": "measuredZero",
+        "source": "policy:canonical-layering",
+        "reason": null
+      },
+      {
+        "axis": "runtimePropagation",
+        "value": null,
+        "measured": false,
+        "measurementBoundary": "unmeasured",
+        "source": null,
+        "reason": "runtime evidence not provided"
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "static",
+        "measurementBoundary": "measuredZero",
+        "universeRefs": ["artifact-sig0"],
+        "measuredAxes": ["boundaryViolationCount"],
+        "unmeasuredAxes": [],
+        "extractionScope": ["static dependency graph"],
+        "exactnessAssumptions": ["policy selector is complete for this fixture"],
+        "unsupportedConstructs": ["human review not completed"]
+      },
+      {
+        "layer": "runtime",
+        "measurementBoundary": "unmeasured",
+        "universeRefs": [],
+        "measuredAxes": [],
+        "unmeasuredAxes": ["runtimePropagation"],
+        "extractionScope": [],
+        "exactnessAssumptions": [],
+        "unsupportedConstructs": ["runtime extractor not provided"]
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-boundary-zero",
+      "subjectRef": "signature.boundaryViolationCount",
+      "predicate": "boundary policy has measured zero violations",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredZero",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-sig0"],
+      "requiredAssumptions": [],
+      "coverageAssumptions": ["policy selector is complete for this fixture"],
+      "exactnessAssumptions": [],
+      "missingPreconditions": [],
+      "nonConclusions": [
+        "tooling measurement is not a Lean proof",
+        "AI generated status is not evidence for architecture lawfulness"
+      ]
+    },
+    {
+      "claimId": "claim-runtime-unmeasured",
+      "subjectRef": "signature.runtimePropagation",
+      "predicate": "runtime axis is outside current measurement boundary",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": [],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["runtime evidence is absent"],
+      "nonConclusions": ["runtime split is not concluded"]
+    },
+    {
+      "claimId": "claim-ai-session-traceability",
+      "subjectRef": "feature.aiSession",
+      "predicate": "AI session metadata traces generated patch provenance for review",
+      "claimLevel": "tooling",
+      "claimClassification": "assumed",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": ["evidence-ai-session", "evidence-generated-patch"],
+      "requiredAssumptions": ["promptRef points to retained review metadata"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["human review is not completed"],
+      "nonConclusions": [
+        "AI generated status is not a positive architecture claim",
+        "AI generated status is not a negative architecture claim"
+      ]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding requires theorem preconditions",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["before/after component correspondence"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["theorem precondition checker has not run"],
+      "nonConclusions": ["split extension is not concluded"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature view requires diff attribution",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["feature ownership"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["feature extension report has not run"],
+      "nonConclusions": ["feature quotient is not constructed"]
+    }
+  ],
+  "operationTrace": {
+    "operations": [
+      "generated_patch artifact-generated-patch adds relation-static-coupon-port"
+    ]
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": [
+      "claim-boundary-zero",
+      "claim-runtime-unmeasured",
+      "claim-ai-session-traceability"
+    ],
+    "splitClaimRef": null,
+    "splitStatus": "unmeasured"
+  }
+}

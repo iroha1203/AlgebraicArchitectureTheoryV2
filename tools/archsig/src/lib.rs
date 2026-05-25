@@ -1,37 +1,26 @@
 mod aat_observable;
-mod ai_governance;
 mod air;
 mod air_validation;
-mod architecture_dynamics_metrics;
-mod architecture_field;
 mod architecture_policy;
 mod archmap;
-mod artifact_descriptor;
 mod artifact_retention;
 mod baseline_suppression;
 mod component_validation;
 mod custom_rule_plugin;
 mod dataset;
-mod dynamics_measurement;
 mod extractor;
-mod feature_dataset;
 mod feature_report;
 mod framework_adapter;
-mod github;
 mod graph;
-mod intentmap;
 mod law_policy_template;
 mod measurement_unit;
 mod no_solution_certificate;
 mod obstruction_drift;
-mod operation_support_estimate;
-mod operational_feedback;
 mod organization_policy;
-mod outcome_linkage;
 mod policy;
 mod policy_decision;
 mod pr_comment;
-mod pr_force_report;
+mod pr_quality;
 mod python_extractor;
 mod relation_complexity;
 mod repair_rule;
@@ -41,8 +30,6 @@ pub mod schema;
 mod schema_catalog;
 mod schema_compatibility;
 mod schema_versioning;
-mod sft_forecasting;
-mod signature_trajectory_report;
 mod snapshot;
 mod synthesis_constraint;
 mod theorem_precondition;
@@ -52,32 +39,13 @@ mod validation;
 mod test_support;
 
 pub use aat_observable::{static_aat_observable_bundle, validate_aat_observable_bundle};
-pub use ai_governance::{
-    build_ai_proposal_governance_from_descriptor, static_ai_proposal_governance,
-    validate_ai_proposal_governance,
-};
 pub use air::build_air_document;
 pub use air_validation::validate_air_document_report;
-pub use architecture_dynamics_metrics::{
-    static_architecture_dynamics_metrics_report, validate_architecture_dynamics_metrics_report,
-};
-pub use architecture_field::{
-    static_architecture_field_snapshot, static_operation_proposal_log,
-    validate_architecture_field_snapshot, validate_operation_proposal_log,
-};
 pub use architecture_policy::{
     apply_architecture_policy_to_sig0, build_law_violation_report, read_architecture_policy,
     srp_review_cue_from_archmap_item, validate_architecture_policy_report,
 };
-pub use archmap::{
-    ArchMapSourceInventoryInput, build_air_from_archmap,
-    build_operation_support_estimate_from_archmap, validate_archmap_report,
-};
-pub use artifact_descriptor::{
-    build_artifact_descriptor_from_ai_proposal_json,
-    build_artifact_descriptor_from_github_issue_json, build_artifact_descriptor_from_markdown,
-    static_artifact_descriptor, validate_artifact_descriptor_report,
-};
+pub use archmap::{ArchMapSourceInventoryInput, build_air_from_archmap, validate_archmap_report};
 pub use artifact_retention::{
     static_report_artifact_retention_manifest, validate_report_artifact_retention_report,
 };
@@ -86,26 +54,9 @@ pub use component_validation::validate_component_universe_report;
 pub use custom_rule_plugin::{
     static_custom_rule_plugin_registry, validate_custom_rule_plugin_registry_report,
 };
-pub use dataset::build_empirical_dataset;
-pub use dynamics_measurement::{
-    static_dynamics_measurement_contract, validate_dynamics_measurement_contract_report,
-};
 pub use extractor::{extract_sig0, extract_sig0_with_policy, extract_sig0_with_runtime};
-pub use feature_dataset::{
-    build_feature_extension_dataset, build_feature_extension_dataset_from_files,
-};
 pub use feature_report::build_feature_extension_report;
 pub use framework_adapter::attach_framework_adapter_evidence;
-pub use github::{
-    build_pr_history_dataset_from_github_files, build_pr_history_dataset_from_github_values,
-    build_pr_metadata_from_github_files, build_pr_metadata_from_github_values,
-};
-pub use intentmap::{
-    build_operation_support_estimate_from_intent_alignment, static_intent_archmap_alignment,
-    static_intent_calibration_record, static_intent_map, static_pr_quality_analysis_report,
-    validate_intent_archmap_alignment, validate_intent_calibration_record, validate_intent_map,
-    validate_pr_quality_analysis_report,
-};
 pub use law_policy_template::{
     static_law_policy_template_registry, validate_law_policy_template_registry_report,
 };
@@ -118,23 +69,10 @@ pub use no_solution_certificate::{
 pub use obstruction_drift::{
     static_architecture_drift_ledger, static_obstruction_witness_artifact,
 };
-pub use operation_support_estimate::{
-    build_operation_support_estimate_from_descriptor, static_operation_support_estimate,
-    validate_operation_support_estimate,
-};
-pub use operational_feedback::{
-    ReportOutcomeDailyLedgerInput, build_report_outcome_daily_ledger,
-    build_report_outcome_daily_ledger_from_files, static_calibration_review_record,
-    static_hypothesis_refresh_cycle, static_incident_correlation_monitor,
-    static_ownership_boundary_monitor, static_repair_adoption_record, static_team_threshold_policy,
-};
 pub use organization_policy::{static_organization_policy, validate_organization_policy_report};
-pub use outcome_linkage::{
-    build_outcome_linkage_dataset, build_outcome_linkage_dataset_from_files,
-};
 pub use policy_decision::build_policy_decision_report;
 pub use pr_comment::render_pr_comment_markdown;
-pub use pr_force_report::{static_pr_force_report, validate_pr_force_report};
+pub use pr_quality::{static_pr_quality_analysis_report, validate_pr_quality_analysis_report};
 pub use python_extractor::extract_python_sig0;
 pub use relation_complexity::{
     extract_relation_complexity_observation, extract_relation_complexity_observation_from_file,
@@ -144,17 +82,6 @@ pub use reported_axes_catalog::static_detectable_values_reported_axes_catalog;
 pub use schema::*;
 pub use schema_catalog::static_schema_version_catalog;
 pub use schema_compatibility::build_schema_compatibility_check_report;
-pub use sft_forecasting::{
-    build_consequence_envelope_from_forecast_cone,
-    build_forecast_cone_skeleton_from_operation_support,
-    build_sft_review_summary_from_consequence_envelope, static_consequence_envelope_report,
-    static_forecast_calibration_hook, static_forecast_cone_skeleton, static_sft_review_summary,
-    validate_consequence_envelope_report, validate_forecast_calibration_hook,
-    validate_forecast_cone_skeleton, validate_sft_review_summary,
-};
-pub use signature_trajectory_report::{
-    static_signature_trajectory_report, validate_signature_trajectory_report,
-};
 pub use snapshot::{build_signature_diff_report, build_signature_snapshot_record};
 pub use synthesis_constraint::{
     static_synthesis_constraint_artifact, validate_synthesis_constraint_artifact_report,

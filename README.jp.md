@@ -53,7 +53,7 @@ SFT makes software evolution computable.
 | --- | --- | --- |
 | AAT | architecture object、operation、invariant、obstruction witness、signature、theorem boundary を扱う局所代数。 | [AAT 数学理論](docs/aat/mathematical_theory.md) |
 | AAT / SFT Interface | AAT の局所主張を SFT の projection、observable coordinate、governance 側でどう読むかを定める境界。 | [AAT / SFT Interface](docs/sft/aat_interface.md) |
-| ArchSig / Tooling | 実 artifact から signature、witness、claim boundary、forecast evidence を抽出する観測層。 | [AAT Tooling Documentation](docs/tool/README.md) |
+| ArchSig / FieldSig Tooling | ArchSig は AAT structural signature、witness、review cue を抽出する。FieldSig は ArchSig refs と workflow evidence から SFT software evolution evidence を測定する。 | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | PRD、Spec、Issue、PR、review、CI、organization、AI、feedback が reachable future をどう変えるかを扱う計算理論。 | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) |
 | Lean 形式化 | 前提を明示できる構造的命題、finite universe、lawfulness bridge、bounded theorem package。 | [Lean 定義・定理索引](docs/aat/lean_theorem_index.md) |
 | Proof / empirical ledger | theorem boundary、未解決 proof obligation、empirical hypothesis、Issue との対応。 | [証明義務と実証仮説](docs/aat/proof_obligations.md) |
@@ -204,3 +204,8 @@ README には Issue 一覧を重複して持たせません。
 ## ライセンス
 
 このリポジトリは MIT License で公開します。詳細は [LICENSE](LICENSE) を参照してください。
+
+
+## FieldSig
+
+FieldSig is the SFT-based software evolution measurement crate under `tools/fieldsig`. Run `cargo test --manifest-path tools/fieldsig/Cargo.toml` for FieldSig changes. ArchSig remains the AAT structural telemetry generator under `tools/archsig`.

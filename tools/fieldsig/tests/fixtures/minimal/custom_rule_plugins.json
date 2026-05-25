@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "custom-rule-plugin-registry-v0",
+  "registryId": "fixture-b8-custom-rule-plugin-registry",
+  "scope": "canonical B8 custom rule plugin fixture",
+  "plugins": [
+    {
+      "pluginId": "fixture-boundary-tag-rule-plugin-v0",
+      "ruleId": "fixture-boundary-tag-rule-v0",
+      "pluginKind": "policy-rule",
+      "evidenceKind": "policy_rule",
+      "confidence": "medium",
+      "inputContract": [
+        "input components are measured python-module ids",
+        "boundary tags are provided by repository-local policy metadata"
+      ],
+      "outputContract": [
+        "emits advisory boundary policy evidence",
+        "records unmatched tags as unsupported plugin coverage"
+      ],
+      "coverageAssumptions": [
+        "tag metadata covers only files selected by the fixture",
+        "missing tags are not measured-zero boundary evidence"
+      ],
+      "permittedClaimLevels": [
+        "tooling",
+        "empirical"
+      ],
+      "formalClaimPromotion": "not-permitted",
+      "theoremPreconditionRefs": [],
+      "requiredTheoremPreconditions": [],
+      "outputArtifacts": [
+        "aat-air-v0",
+        "feature-extension-report-v0"
+      ],
+      "nonConclusions": [
+        "custom rule plugin registry is tooling validation, not a Lean theorem",
+        "plugin output does not conclude architecture lawfulness",
+        "plugin output does not conclude a Lean theorem claim",
+        "plugin evidence does not turn unsupported gaps into measured-zero evidence",
+        "formal claim promotion requires explicit theorem precondition checks"
+      ]
+    },
+    {
+      "pluginId": "fixture-semantic-workflow-plugin-v0",
+      "ruleId": "fixture-semantic-workflow-rule-v0",
+      "pluginKind": "semantic-evidence",
+      "evidenceKind": "semantic_diagram",
+      "confidence": "low",
+      "inputContract": [
+        "workflow diagrams are supplied as bounded manual annotations",
+        "diagram nodes are mapped to measured component ids"
+      ],
+      "outputContract": [
+        "emits semantic workflow evidence for selected paths",
+        "keeps unmapped workflow nodes as unsupported constructs"
+      ],
+      "coverageAssumptions": [
+        "manual workflow evidence covers only the selected fixture diagram",
+        "diagram commutation is not inferred for unmapped paths"
+      ],
+      "permittedClaimLevels": [
+        "tooling",
+        "empirical",
+        "formal"
+      ],
+      "formalClaimPromotion": "requires-theorem-precondition-check",
+      "theoremPreconditionRefs": [
+        "semantic-diagram-commutation-theorem-package-v0"
+      ],
+      "requiredTheoremPreconditions": [
+        "AIR semantic diagram evidence is exact for the selected workflow",
+        "theorem precondition checker reports no missing semantic diagram preconditions"
+      ],
+      "outputArtifacts": [
+        "aat-air-v0",
+        "feature-extension-report-v0",
+        "theorem-precondition-check-report-v0"
+      ],
+      "nonConclusions": [
+        "custom rule plugin registry is tooling validation, not a Lean theorem",
+        "plugin output does not conclude architecture lawfulness",
+        "plugin output does not conclude a Lean theorem claim",
+        "plugin evidence does not turn unsupported gaps into measured-zero evidence",
+        "formal claim promotion requires explicit theorem precondition checks"
+      ]
+    }
+  ],
+  "explicitAssumptions": [
+    "plugins run over a selected measurement universe",
+    "plugin outputs are AIR evidence or report metadata until theorem preconditions are checked"
+  ],
+  "nonConclusions": [
+    "custom rule plugin registry is tooling validation, not a Lean theorem",
+    "plugin output does not conclude architecture lawfulness",
+    "plugin output does not conclude a Lean theorem claim",
+    "plugin evidence does not turn unsupported gaps into measured-zero evidence",
+    "formal claim promotion requires explicit theorem precondition checks"
+  ]
+}

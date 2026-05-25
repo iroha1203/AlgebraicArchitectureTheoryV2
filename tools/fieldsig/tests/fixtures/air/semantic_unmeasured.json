@@ -1,0 +1,195 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-semantic-unmeasured",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-semantic-unmeasured",
+    "after": "after-semantic-unmeasured"
+  },
+  "feature": {
+    "featureId": "#canonical-semantic-unmeasured",
+    "title": "Add coupon and discount workflow",
+    "description": "Coupon and discount ordering has selected paths but no semantic measurement",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-semantic-plan",
+      "kind": "semantic",
+      "schemaVersion": "business-flow-plan-v0",
+      "path": "docs/diagrams/coupon_discount_unmeasured.yaml",
+      "contentHash": null,
+      "producedBy": "manual"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-unmeasured-diagram",
+      "kind": "semantic_diagram",
+      "artifactRef": "artifact-semantic-plan",
+      "path": "docs/diagrams/coupon_discount_unmeasured.yaml",
+      "symbol": "diagram-coupon-discount-unmeasured-order",
+      "line": 1,
+      "ruleId": "selected-semantic-diagram",
+      "confidence": "medium"
+    }
+  ],
+  "components": [
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "DiscountService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [],
+  "policies": {
+    "laws": [],
+    "boundaries": [],
+    "allowedEdges": [],
+    "forbiddenEdges": [],
+    "abstractionRules": [],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [
+    {
+      "id": "diagram-coupon-discount-unmeasured-order",
+      "lhsPathRef": "path-discount-then-coupon",
+      "rhsPathRef": "path-coupon-then-discount",
+      "equivalence": "observational",
+      "fillerClaimRef": null,
+      "nonfillabilityWitnessRefs": [],
+      "observationRefs": [],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-unmeasured-diagram"]
+    }
+  ],
+  "architecturePaths": [
+    {
+      "pathId": "path-discount-then-coupon",
+      "sourceState": "cart-before-pricing",
+      "targetState": "cart-priced",
+      "steps": ["apply-discount", "apply-coupon"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-unmeasured-diagram"]
+    },
+    {
+      "pathId": "path-coupon-then-discount",
+      "sourceState": "cart-before-pricing",
+      "targetState": "cart-priced",
+      "steps": ["apply-coupon", "apply-discount"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-unmeasured-diagram"]
+    }
+  ],
+  "homotopyGenerators": [
+    {
+      "generatorId": "generator-unmeasured-order",
+      "kind": "independent_square",
+      "diagramRefs": ["diagram-coupon-discount-unmeasured-order"],
+      "preservesObservationClaimRefs": ["claim-semantic-unmeasured"],
+      "evidenceRefs": ["evidence-unmeasured-diagram"]
+    }
+  ],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "projectionSoundnessViolation",
+        "value": null,
+        "measured": false,
+        "measurementBoundary": "unmeasured",
+        "source": null,
+        "reason": "semantic observations were not collected"
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "semantic",
+        "measurementBoundary": "unmeasured",
+        "universeRefs": [],
+        "measuredAxes": [],
+        "unmeasuredAxes": ["projectionSoundnessViolation"],
+        "extractionScope": [],
+        "exactnessAssumptions": [],
+        "unsupportedConstructs": ["semantic observation result evidence not provided"]
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-semantic-unmeasured",
+      "subjectRef": "signature.projectionSoundnessViolation",
+      "predicate": "selected semantic diagram is outside the current measurement boundary",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["selected observations are comparable"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["observation-result evidence is absent", "test evidence is absent"],
+      "nonConclusions": [
+        "semantic risk zero is not concluded",
+        "unmeasured diagrams are not treated as commuting"
+      ]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding requires theorem preconditions",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["before/after component correspondence"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["theorem precondition checker has not run"],
+      "nonConclusions": ["split extension is not concluded"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature view requires diff attribution",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["feature ownership"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["feature extension report has not run"],
+      "nonConclusions": ["feature quotient is not constructed"]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": ["claim-semantic-unmeasured"],
+    "splitClaimRef": null,
+    "splitStatus": "unmeasured"
+  }
+}

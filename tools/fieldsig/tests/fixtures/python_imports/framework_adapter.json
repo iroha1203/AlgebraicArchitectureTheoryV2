@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "framework-adapter-evidence-v0",
+  "adapterId": "fastapi-route-adapter-fixture-v0",
+  "framework": "fastapi",
+  "sourceLanguage": "python",
+  "componentIdKind": "python-module",
+  "projectionRule": "fastapi-route-adapter-fixture-v0",
+  "routes": [
+    {
+      "routeId": "route-list-users",
+      "source": "app.web",
+      "method": "GET",
+      "routePath": "/users",
+      "relationKind": "http_route_handler",
+      "confidence": "fixture",
+      "evidenceLocation": {
+        "path": "src/app/web.py",
+        "line": 6,
+        "symbol": "list_users"
+      }
+    }
+  ],
+  "coverageAssumptions": [
+    "fixture adapter inspects FastAPI APIRouter decorator calls in src/app/web.py"
+  ],
+  "exactnessAssumptions": [
+    "fastapi-route-adapter-fixture-v0 maps observed APIRouter method decorators to route handler relations"
+  ],
+  "unsupportedConstructs": [
+    {
+      "kind": "fastapi-dependency-injection",
+      "path": "src/app/web.py",
+      "line": 6,
+      "reason": "dependency injection and middleware effects remain outside the fixture adapter"
+    }
+  ],
+  "nonConclusions": [
+    "FastAPI runtime semantics are not fully captured",
+    "framework adapter output is not a Lean ComponentUniverse completeness proof",
+    "unmeasured FastAPI conventions are not measured-zero evidence"
+  ]
+}

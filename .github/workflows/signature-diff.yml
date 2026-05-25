@@ -91,7 +91,7 @@ jobs:
           gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
             > "$OUT_DIR/pr/github-pr-reviews.json"
 
-          cargo run --manifest-path tools/archsig/Cargo.toml -- pr-metadata \
+          cargo run --manifest-path tools/fieldsig/Cargo.toml -- pr-metadata \
             --pull-request "$OUT_DIR/pr/github-pr.json" \
             --files "$OUT_DIR/pr/github-pr-files.json" \
             --reviews "$OUT_DIR/pr/github-pr-reviews.json" \

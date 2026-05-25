@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arch PR Analyzer"
+  short_description: "Analyze PR architecture quality"
+  default_prompt: "Use $arch-pr-analyzer to analyze PR or CI architecture quality from ArchSig and ArchMap artifacts."

@@ -236,10 +236,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:operation",
             "ArchitectureOperation",
-            &[
-                "pr-quality-analysis-report-v0",
-                "operation-support-estimate-v0",
-            ],
+            &["pr-quality-analysis-report-v0", "fieldsig-sft-artifact-ref"],
             &["operation:coupon-feature-extension"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",

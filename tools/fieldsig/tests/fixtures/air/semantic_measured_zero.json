@@ -1,0 +1,235 @@
+{
+  "schemaVersion": "aat-air-v0",
+  "architectureId": "canonical-semantic-measured-zero",
+  "ids": {
+    "componentIdPolicy": "canonical component id",
+    "relationIdPolicy": "canonical relation id",
+    "evidenceIdPolicy": "canonical evidence id",
+    "claimIdPolicy": "canonical claim id"
+  },
+  "revision": {
+    "before": "before-semantic-zero",
+    "after": "after-semantic-zero"
+  },
+  "feature": {
+    "featureId": "#canonical-semantic-zero",
+    "title": "Add coupon and discount workflow",
+    "description": "Coupon and discount ordering is measured through a commuting selected semantic diagram",
+    "source": "manual",
+    "aiSession": null
+  },
+  "artifacts": [
+    {
+      "artifactId": "artifact-semantic-business-flow",
+      "kind": "semantic",
+      "schemaVersion": "business-flow-test-v0",
+      "path": "tests/coupon_discount_commuting_order.json",
+      "contentHash": null,
+      "producedBy": "archsig"
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "evidence-commuting-order",
+      "kind": "observation_result",
+      "artifactRef": "artifact-semantic-business-flow",
+      "path": "tests/coupon_discount_commuting_order.json",
+      "symbol": "couponDiscountCommutingObservation",
+      "line": 8,
+      "ruleId": "business-flow-test-v0",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-commuting-flow-test",
+      "kind": "test",
+      "artifactRef": "artifact-semantic-business-flow",
+      "path": "tests/coupon_discount_commuting_order.json",
+      "symbol": "couponDiscountCommutingTest",
+      "line": 3,
+      "ruleId": "business-flow-test-v0",
+      "confidence": "high"
+    },
+    {
+      "evidenceId": "evidence-commuting-contract",
+      "kind": "manual_annotation",
+      "artifactRef": null,
+      "path": "docs/contracts/coupon_discount_commuting.md",
+      "symbol": "selected coupon discount commuting contract",
+      "line": 1,
+      "ruleId": "selected-contract",
+      "confidence": "medium"
+    },
+    {
+      "evidenceId": "evidence-commuting-diagram",
+      "kind": "semantic_diagram",
+      "artifactRef": "artifact-semantic-business-flow",
+      "path": "docs/diagrams/coupon_discount_commuting.yaml",
+      "symbol": "diagram-coupon-discount-commuting-order",
+      "line": 1,
+      "ruleId": "selected-semantic-diagram",
+      "confidence": "medium"
+    }
+  ],
+  "components": [
+    {
+      "id": "CouponService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    },
+    {
+      "id": "DiscountService",
+      "kind": "service",
+      "lifecycle": "added",
+      "owner": null,
+      "evidenceRefs": []
+    }
+  ],
+  "relations": [],
+  "policies": {
+    "laws": [],
+    "boundaries": [],
+    "allowedEdges": [],
+    "forbiddenEdges": [],
+    "abstractionRules": [],
+    "protectionRules": []
+  },
+  "semanticDiagrams": [
+    {
+      "id": "diagram-coupon-discount-commuting-order",
+      "lhsPathRef": "path-discount-then-coupon",
+      "rhsPathRef": "path-coupon-then-discount",
+      "equivalence": "observational",
+      "fillerClaimRef": "claim-coupon-discount-commutes",
+      "nonfillabilityWitnessRefs": [],
+      "observationRefs": ["evidence-commuting-order", "evidence-commuting-flow-test"],
+      "lifecycle": "added",
+      "evidenceRefs": [
+        "evidence-commuting-order",
+        "evidence-commuting-flow-test",
+        "evidence-commuting-contract",
+        "evidence-commuting-diagram"
+      ]
+    }
+  ],
+  "architecturePaths": [
+    {
+      "pathId": "path-discount-then-coupon",
+      "sourceState": "cart-before-pricing",
+      "targetState": "cart-priced",
+      "steps": ["apply-discount", "apply-coupon"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-commuting-order", "evidence-commuting-flow-test"]
+    },
+    {
+      "pathId": "path-coupon-then-discount",
+      "sourceState": "cart-before-pricing",
+      "targetState": "cart-priced",
+      "steps": ["apply-coupon", "apply-discount"],
+      "lifecycle": "added",
+      "evidenceRefs": ["evidence-commuting-order", "evidence-commuting-flow-test"]
+    }
+  ],
+  "homotopyGenerators": [
+    {
+      "generatorId": "generator-commuting-order",
+      "kind": "independent_square",
+      "diagramRefs": ["diagram-coupon-discount-commuting-order"],
+      "preservesObservationClaimRefs": ["claim-coupon-discount-commutes"],
+      "evidenceRefs": ["evidence-commuting-order", "evidence-commuting-contract"]
+    }
+  ],
+  "nonfillabilityWitnesses": [],
+  "signature": {
+    "axes": [
+      {
+        "axis": "projectionSoundnessViolation",
+        "value": 0,
+        "measured": true,
+        "measurementBoundary": "measuredZero",
+        "source": "business-flow-test-v0",
+        "reason": null
+      }
+    ]
+  },
+  "coverage": {
+    "layers": [
+      {
+        "layer": "semantic",
+        "measurementBoundary": "measuredZero",
+        "universeRefs": ["artifact-semantic-business-flow"],
+        "measuredAxes": ["projectionSoundnessViolation"],
+        "unmeasuredAxes": [],
+        "extractionScope": ["selected coupon / discount commuting business-flow test"],
+        "exactnessAssumptions": ["fixture records matching selected workflow observations"],
+        "unsupportedConstructs": []
+      }
+    ]
+  },
+  "claims": [
+    {
+      "claimId": "claim-coupon-discount-commutes",
+      "subjectRef": "semantic.diagram.diagram-coupon-discount-commuting-order",
+      "predicate": "selected coupon / discount order diagram has measured equal observations",
+      "claimLevel": "tooling",
+      "claimClassification": "measured",
+      "measurementBoundary": "measuredZero",
+      "theoremRefs": ["diagramViolationCount_eq_zero_iff_forall_measured_DiagramCommutes"],
+      "evidenceRefs": [
+        "evidence-commuting-order",
+        "evidence-commuting-flow-test",
+        "evidence-commuting-contract",
+        "evidence-commuting-diagram"
+      ],
+      "requiredAssumptions": ["selected observations are comparable"],
+      "coverageAssumptions": ["selected business-flow test covers coupon / discount ordering"],
+      "exactnessAssumptions": ["fixture records matching selected workflow observations"],
+      "missingPreconditions": [],
+      "nonConclusions": [
+        "global semantic flatness is not concluded",
+        "unmeasured diagrams are not treated as commuting"
+      ]
+    },
+    {
+      "claimId": "claim-extension-embedding",
+      "subjectRef": "extension.embedding",
+      "predicate": "embedding requires theorem preconditions",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["before/after component correspondence"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["theorem precondition checker has not run"],
+      "nonConclusions": ["split extension is not concluded"]
+    },
+    {
+      "claimId": "claim-extension-feature-view",
+      "subjectRef": "extension.feature",
+      "predicate": "feature view requires diff attribution",
+      "claimLevel": "tooling",
+      "claimClassification": "unmeasured",
+      "measurementBoundary": "unmeasured",
+      "theoremRefs": [],
+      "evidenceRefs": [],
+      "requiredAssumptions": ["feature ownership"],
+      "coverageAssumptions": [],
+      "exactnessAssumptions": [],
+      "missingPreconditions": ["feature extension report has not run"],
+      "nonConclusions": ["feature quotient is not constructed"]
+    }
+  ],
+  "operationTrace": {
+    "operations": []
+  },
+  "extension": {
+    "embeddingClaimRef": "claim-extension-embedding",
+    "featureViewClaimRef": "claim-extension-feature-view",
+    "interactionClaimRefs": ["claim-coupon-discount-commutes"],
+    "splitClaimRef": null,
+    "splitStatus": "split"
+  }
+}

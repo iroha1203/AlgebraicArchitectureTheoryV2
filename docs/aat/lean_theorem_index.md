@@ -2700,7 +2700,7 @@ Issue [#1066](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 [#1068](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1068),
 [#1070](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1070),
 [#1069](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1069)
-では、ArchMap / ArchSig artifact boundary を theorem precondition / boundary evidence として
+では、ArchMap / FieldSig artifact boundary を theorem precondition / boundary evidence として
 `AATSupportedSFTBoundary` へ接続する helper と selected finite example を追加した。
 Issue [#1072](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1072) と子
 Issue [#1073](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1073),

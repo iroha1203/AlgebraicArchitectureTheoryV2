@@ -667,11 +667,11 @@ boundary が残るなら、envelope はそれを missing / theorem boundary item
 複数 cone をまとめる場合も、unknown remainder は相殺されない。
 
 理論家には `ForecastCone`、実務家には `ConsequenceEnvelope`、tooling には simulator output を返す。
-ArchSig の `forecast-cone-skeleton-v0` は、この formal core の有限 support refs、
+FieldSig の `forecast-cone-skeleton-v0` は、この formal core の有限 support refs、
 bounded horizon、path class candidates、forecast boundary、unknown remainder を保持する
 review artifact である。これは `ForecastCone(F, U, h)` の Lean theorem witness ではなく、
 probability、causal correctness、global safety、または calibration 済み予測を結論しない。
-ArchSig の `consequence-envelope-report-v0` は、`forecast-cone-skeleton-v0` から
+FieldSig の `consequence-envelope-report-v0` は、`forecast-cone-skeleton-v0` から
 affected regions、comparable axes、axis delta ranges、obstruction candidates、missing
 boundary / theorem boundary、review recommendation を生成する report projection である。
 Lean 側では `Formal/Arch/Evolution/SFTEnvelope.lean` が、この片方向 boundary を
@@ -1474,7 +1474,7 @@ SFT は開発者を置き換えるものではない。
 ソフトウェア進化を、観測し、計算し、統治できる対象として見えるようにする。
 
 最小の deployed closed-loop workbench は、単一の自動判断器ではなく、既存の
-ArchSig-SFT artifact と operational feedback artifact を review cycle に束ねる
+FieldSig artifact と operational feedback artifact を review cycle に束ねる
 bounded workflow である。
 
 ```text

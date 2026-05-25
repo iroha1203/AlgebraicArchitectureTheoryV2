@@ -6,7 +6,7 @@ generator として扱う。
 
 現在の scan は Lean module import graph と Python import graph に対応する。出力は JSON
 artifact として固定し、validation、diff、AIR、Feature Extension Report、policy decision、
-PR comment、dataset generation などの後段 command に渡せる。
+PR comment などの後段 command に渡せる。
 
 ## Product surface
 
@@ -16,8 +16,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | --- | --- | --- |
 | ArchSig Core | Lean / Python import graph scan、Sig0、validation、snapshot、signature diff。policy JSON と runtime edge evidence は明示入力として扱える。 | call graph、data dependency、dynamic import、plugin loading、framework convention は adapter boundary。extractor output は完全な `ComponentUniverse` ではない。 |
 | ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、AAT Observable Bundle、architecture-policy、law violation report、policy decision、PR comment summary、baseline suppression、PR quality analysis。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定。tool output は Lean theorem や merge approval ではない。 |
-| ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、`SftReviewSummary`、validation report を生成する bounded pipeline。PRD v3 では `IntentMap`、`AlignmentMap`、`intent-forecast` を使って planning forecast を作る。 | real dataset calibration、framework semantics adapter は remaining gaps。`ForecastCone` は point prediction ではなく、`ConsequenceEnvelope` と `SftReviewSummary` は reviewer-facing projection である。 |
-| ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、B10 daily ledger、calibration review、team threshold、ownership boundary、repair adoption、incident correlation、hypothesis refresh artifacts。 | 実 dataset での calibration、incident / rollback / MTTR との運用接続、confounder 管理、private data boundary の組織別設計が残る。correlation は因果 theorem ではない。 |
+| FieldSig boundary | SFT forecast、IntentMap、workflow evidence、operational feedback、dynamics、governance、calibration は `tools/fieldsig` が所有する。ArchSig は JSON artifact refs を FieldSig へ渡す structural observer であり、SFT forecast engine ではない。 | FieldSig validation は forecast correctness、probability、causal correctness、global safety を証明しない。 |
 
 ## できること
 
@@ -27,18 +26,14 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 - architecture-policy JSON がある場合、Layered Architecture の deterministic violation と SRP review cue boundary を分ける。
 - runtime edge evidence JSON がある場合、runtime dependency projection を出す。
 - Sig0 output を validation し、revision snapshot と before / after diff を作る。
-- PR metadata、AIR、theorem precondition check、Feature Extension Report、policy decision、
+- AIR、theorem precondition check、Feature Extension Report、policy decision、
   PR comment summary を生成する。
 - supplied JSON の `archmap-v0` を validation report に変換し、AIR へ loss-aware に投影する。
-- 実証研究用 dataset、B10 operational feedback artifact、B12 SFT forecasting MVP の
-  descriptor / support estimate / cone / envelope / calibration hook を JSON として出力する。
-- PRD / Epic / Spec の意図を `intentmap-v0` として保持し、`intent-archmap-alignment-v0`
-  から operation support、ForecastCone、ConsequenceEnvelope を deterministic に生成する。
 - PR diff / repository evidence から作られた ArchMap 系 artifact を、merge approval ではない
   PR quality review cue として読む `pr-quality-analysis-report-v0` を出力する。
 - AAT の主要概念を `aat-observable-bundle-v0` として束ね、witness、operation、theorem boundary、
   nonConclusion review action、deterministic / LLM / human responsibility boundary を保持する。
-- Codex skill として、ArchMap 作成、IntentMap 作成、PR / CI 分析、AAT observable review、Epic / PRD forecast の作業手順を AI agent に渡せる。
+- Codex skill として、ArchMap 作成、PR / CI 分析、AAT observable review の作業手順を AI agent に渡せる。
 
 詳細な command と artifact は次に分けている。
 
@@ -56,10 +51,9 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | Skill | 用途 |
 | --- | --- |
 | [`archmap-creater`](skills/archmap-creater/SKILL.md) | repository evidence から bounded `archmap-v0` を作成し、validation まで進める。IntentMap は扱わない。 |
-| [`intentmap-creater`](skills/intentmap-creater/SKILL.md) | Epic / PRD / Spec / Issue / proposal から bounded `intentmap-v0` を作成し、missing decision と ambiguous intent を保持して validation まで進める。 |
 | [`arch-pr-analyzer`](skills/arch-pr-analyzer/SKILL.md) | PR / CI の architecture artifact を読み、architecture risk、review cue、evidence gap、次の PR review action を分析する。planning forecast は扱わない。 |
 | [`aat-reviewer`](skills/aat-reviewer/SKILL.md) | `aat-observable-bundle-v0` を読み、invariant / witness / signature / operation / boundary / non-conclusion に沿って設計レビューへ変換する。 |
-| [`arch-intent-forecaster`](skills/arch-intent-forecaster/SKILL.md) | IntentMap x ArchMap alignment から planning forecast artifact を読み、bounded evolution pressure、missing decision、planning action を分析する。PR merge review は扱わない。 |
+| [`arch-pr-analyzer`](skills/arch-pr-analyzer/SKILL.md) | ArchSig / ArchMap / AIR / theorem-check / feature-report / policy / signature diff / PR quality evidence を読む。SFT forecast は FieldSig 側で扱う。 |
 
 skill は AI native な操作面であり、tool output を Lean proof、forecast correctness、incident causality、
 global architecture truth として読まない。生成 artifact は標準では `.archsig/` 以下に置く。
@@ -150,15 +144,6 @@ archmap-v0
 | `policy-decision-report-v0` | organization policy に基づく pass / warn / fail / advisory decision。 |
 | `pr-comment-summary-v0` | GitHub Checks / PR comment 向け Markdown summary。 |
 | `pr-quality-analysis-report-v0` | ArchMap / AIR / theorem-check / feature-report / policy-decision 由来の PR review cue。merge 可否は自動判定しない。 |
-| `intentmap-v0` | PRD / Epic / Spec の requirement、operation、workflow、state transition、acceptance、non-goal、ambiguity、missing decision を source refs とともに保持する。 |
-| `intent-archmap-alignment-v0` | IntentMap item と ArchMap item の対応、unaligned / unsupported / ambiguous intent、missing evidence を保持する。 |
-| `artifact-descriptor-v0` | PRD / Spec / Issue / AI proposal を SFT forecasting MVP の入力境界へ正規化する。 |
-| `operation-support-estimate-v0` | `artifact-descriptor-v0` または `intent-archmap-alignment-v0` から候補 operation family、policy constraints、known forbidden support、unknown remainder を保持する。 |
-| `forecast-cone-skeleton-v0` | finite support と bounded horizon に相対化した path class candidates と forecast boundary を保持する。 |
-| `consequence-envelope-report-v0` | signature axis、obstruction candidate、missing boundary、typed boundary failure、reviewer action、review / CI recommendation を report projection にまとめる。 |
-| `sft-review-summary-v0` | opened futures / closed futures / boundary failures / next actions と LLM judgement contract を evidence refs 付きでまとめる。 |
-| `forecast-calibration-hook-v0` | forecast item refs と B10 / B11 の observed artifact refs を対応付ける。 |
-| `intent-calibration-record-v0` | IntentMap item、forecast item、observed implementation artifact、missing decision status、forecast usefulness feedback を対応付ける。 |
 
 [Signature diff report workflow](../../.github/workflows/signature-diff.yml) は、PR / push /
 schedule / manual run で Sig0、validation、snapshot、`signature-diff-report-v0` を作り、
@@ -202,4 +187,4 @@ cargo test --manifest-path tools/archsig/Cargo.toml
 CARGO_INCREMENTAL=0 cargo test --manifest-path tools/archsig/Cargo.toml
 ```
 
-CI では GitHub Actions の `archsig cargo test` job が同じ test suite を実行する。
+CI では GitHub Actions の `archsig cargo test` job が ArchSig test suite を実行する。FieldSig 変更を含む場合は `cargo test --manifest-path tools/fieldsig/Cargo.toml` も実行する。

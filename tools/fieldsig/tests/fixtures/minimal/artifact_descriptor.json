@@ -1,0 +1,237 @@
+{
+  "schemaVersion": "artifact-descriptor-v0",
+  "descriptorId": "fixture-artifact-descriptor-v0",
+  "artifactKind": "issue",
+  "artifactTitle": "B12.1 ArtifactDescriptor schema",
+  "sourceRefs": [
+    {
+      "sourceRefId": "source:issue-733",
+      "sourceKind": "issue",
+      "pathOrUrl": "https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/733",
+      "stableRef": "GitHub Issue #733",
+      "evidenceRole": "primary artifact request",
+      "retainedFields": [
+        "title",
+        "body",
+        "completion criteria",
+        "Lean status",
+        "related docs"
+      ],
+      "nonConclusions": [
+        "artifact descriptor is tooling input normalization, not a Lean theorem claim",
+        "artifact descriptor is not a ground truth architecture object",
+        "artifact descriptor does not provide a causal forecast",
+        "missing evidence and unsupported constructs are not measured zero",
+        "forecast non-conclusions must be preserved by downstream SFT artifacts"
+      ]
+    },
+    {
+      "sourceRefId": "source:roadmap-b12",
+      "sourceKind": "doc",
+      "pathOrUrl": "docs/tool/roadmap.md#phase-b12-sft-forecasting-mvp",
+      "stableRef": "Phase B12 / B12.1",
+      "evidenceRole": "forecasting MVP boundary",
+      "retainedFields": [
+        "pipeline",
+        "minimal output",
+        "B12.1 milestone"
+      ],
+      "nonConclusions": [
+        "artifact descriptor is tooling input normalization, not a Lean theorem claim",
+        "artifact descriptor is not a ground truth architecture object",
+        "artifact descriptor does not provide a causal forecast",
+        "missing evidence and unsupported constructs are not measured zero",
+        "forecast non-conclusions must be preserved by downstream SFT artifacts"
+      ]
+    },
+    {
+      "sourceRefId": "source:sft-computational-problems",
+      "sourceKind": "doc",
+      "pathOrUrl": "docs/sft/software_field_theory.md#20-sft-computational-problems",
+      "stableRef": "SFT Computational Problems",
+      "evidenceRole": "theory boundary",
+      "retainedFields": [
+        "ArtifactDescriptor role",
+        "ConsequenceEnvelope simulator boundary",
+        "non-conclusions"
+      ],
+      "nonConclusions": [
+        "artifact descriptor is tooling input normalization, not a Lean theorem claim",
+        "artifact descriptor is not a ground truth architecture object",
+        "artifact descriptor does not provide a causal forecast",
+        "missing evidence and unsupported constructs are not measured zero",
+        "forecast non-conclusions must be preserved by downstream SFT artifacts"
+      ]
+    }
+  ],
+  "actionClassCandidates": [
+    {
+      "candidateId": "candidate:add-schema",
+      "actionClass": "schema-definition",
+      "confidence": "high",
+      "sourceRefIds": [
+        "source:issue-733",
+        "source:roadmap-b12"
+      ],
+      "rationale": "Issue requests a Rust schema for artifact-descriptor-v0.",
+      "assumptions": [
+        "candidate was inferred from selected source refs only",
+        "candidate does not imply an operation support estimate"
+      ],
+      "nonConclusions": [
+        "descriptor action classes are candidates, not forecasted effects",
+        "descriptor scope does not prove operation support completeness",
+        "descriptor boundary does not assign probability to future outcomes",
+        "descriptor evidence does not establish causal prediction"
+      ]
+    },
+    {
+      "candidateId": "candidate:add-validator",
+      "actionClass": "tooling-validation",
+      "confidence": "high",
+      "sourceRefIds": [
+        "source:issue-733"
+      ],
+      "rationale": "Issue requires a canonical fixture and validator.",
+      "assumptions": [
+        "candidate was inferred from selected source refs only",
+        "candidate does not imply an operation support estimate"
+      ],
+      "nonConclusions": [
+        "descriptor action classes are candidates, not forecasted effects",
+        "descriptor scope does not prove operation support completeness",
+        "descriptor boundary does not assign probability to future outcomes",
+        "descriptor evidence does not establish causal prediction"
+      ]
+    },
+    {
+      "candidateId": "candidate:add-cli-entrypoint",
+      "actionClass": "cli-entrypoint",
+      "confidence": "medium",
+      "sourceRefIds": [
+        "source:issue-733"
+      ],
+      "rationale": "Issue names a fieldsig artifact-descriptor entrypoint.",
+      "assumptions": [
+        "candidate was inferred from selected source refs only",
+        "candidate does not imply an operation support estimate"
+      ],
+      "nonConclusions": [
+        "descriptor action classes are candidates, not forecasted effects",
+        "descriptor scope does not prove operation support completeness",
+        "descriptor boundary does not assign probability to future outcomes",
+        "descriptor evidence does not establish causal prediction"
+      ]
+    }
+  ],
+  "scope": {
+    "scopeId": "scope:b12.1-artifact-descriptor",
+    "selectedRegionRefs": [
+      "tools/archsig",
+      "docs/tool/roadmap.md#phase-b12-sft-forecasting-mvp",
+      "docs/sft/software_field_theory.md#21-prd-to-consequenceenvelope-simulator"
+    ],
+    "excludedRegionRefs": [
+      "operation-support-estimate",
+      "forecast-cone-probability",
+      "causal-outcome-prediction"
+    ],
+    "targetAudience": [
+      "archsig-cli",
+      "sft-forecaster-pipeline",
+      "review-ci"
+    ],
+    "artifactBoundary": "normalizes PRD / Spec / Issue / AI proposal input before operation support",
+    "assumptions": [
+      "source refs are retained as bounded tooling evidence",
+      "action class candidates are used only as downstream estimation input"
+    ],
+    "nonConclusions": [
+      "artifact descriptor is tooling input normalization, not a Lean theorem claim",
+      "artifact descriptor is not a ground truth architecture object",
+      "artifact descriptor does not provide a causal forecast",
+      "missing evidence and unsupported constructs are not measured zero",
+      "forecast non-conclusions must be preserved by downstream SFT artifacts"
+    ]
+  },
+  "missingEvidence": [
+    {
+      "evidenceId": "missing:prd-body",
+      "evidenceKind": "prd",
+      "reason": "fixture has no full PRD body",
+      "effect": "operation support cannot be treated as complete",
+      "status": "missing",
+      "nonConclusions": [
+        "missing evidence and unsupported constructs are not measured zero",
+        "missing descriptor evidence remains a downstream forecast boundary item"
+      ]
+    },
+    {
+      "evidenceId": "missing:runtime-impact",
+      "evidenceKind": "runtime-evidence",
+      "reason": "runtime traces are outside B12.1 descriptor normalization",
+      "effect": "runtime propagation remains a downstream boundary item",
+      "status": "unmeasured",
+      "nonConclusions": [
+        "missing evidence and unsupported constructs are not measured zero",
+        "missing descriptor evidence remains a downstream forecast boundary item"
+      ]
+    }
+  ],
+  "measurementBoundary": {
+    "boundaryId": "boundary:b12.1-artifact-descriptor",
+    "measuredLayers": [
+      "artifact-normalization"
+    ],
+    "measuredAxes": [
+      "sourceRefs",
+      "actionClassCandidates",
+      "scope",
+      "missingEvidence",
+      "forecastNonConclusions"
+    ],
+    "sourceRefIds": [
+      "source:issue-733",
+      "source:roadmap-b12",
+      "source:sft-computational-problems"
+    ],
+    "selectedRegionRefs": [
+      "tools/archsig",
+      "docs/tool/roadmap.md#phase-b12-sft-forecasting-mvp",
+      "docs/sft/software_field_theory.md#21-prd-to-consequenceenvelope-simulator"
+    ],
+    "assumptions": [
+      "descriptor validation checks structure and boundary preservation only",
+      "descriptor validation does not run a repository extractor"
+    ],
+    "unsupportedConstructs": [
+      "operation support probability",
+      "ground truth architecture reconstruction",
+      "future outcome causality"
+    ],
+    "missingEvidenceIds": [
+      "missing:prd-body",
+      "missing:runtime-impact"
+    ],
+    "nonConclusions": [
+      "artifact descriptor is tooling input normalization, not a Lean theorem claim",
+      "artifact descriptor is not a ground truth architecture object",
+      "artifact descriptor does not provide a causal forecast",
+      "missing evidence and unsupported constructs are not measured zero",
+      "forecast non-conclusions must be preserved by downstream SFT artifacts"
+    ]
+  },
+  "forecastNonConclusions": [
+    "descriptor action classes are candidates, not forecasted effects",
+    "descriptor scope does not prove operation support completeness",
+    "descriptor boundary does not assign probability to future outcomes",
+    "descriptor evidence does not establish causal prediction"
+  ],
+  "nonConclusions": [
+    "artifact descriptor is tooling input normalization, not a Lean theorem claim",
+    "artifact descriptor is not a ground truth architecture object",
+    "artifact descriptor does not provide a causal forecast",
+    "missing evidence and unsupported constructs are not measured zero",
+    "forecast non-conclusions must be preserved by downstream SFT artifacts"
+  ]
+}

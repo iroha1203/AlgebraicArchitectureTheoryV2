@@ -1,0 +1,6246 @@
+use std::collections::BTreeMap;
+
+use serde::{Deserialize, Serialize};
+
+pub const SCHEMA_VERSION: &str = "archsig-sig0-v0";
+pub const COMPONENT_KIND: &str = "lean-module";
+pub const PYTHON_COMPONENT_KIND: &str = "python-module";
+pub const PYTHON_IMPORT_RULE_VERSION: &str = "python-import-graph-v0";
+pub const VALIDATION_REPORT_SCHEMA_VERSION: &str = "component-universe-validation-report-v0";
+pub const EMPIRICAL_DATASET_SCHEMA_VERSION: &str = "empirical-signature-dataset-v0";
+pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-store-v0";
+pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report-v0";
+pub const AIR_SCHEMA_VERSION: &str = "aat-air-v0";
+pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report-v0";
+pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-v0";
+pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory-v0";
+pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report-v0";
+pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report-v0";
+pub const OBSTRUCTION_WITNESS_SCHEMA_VERSION: &str = "obstruction-witness-v0";
+pub const ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION: &str = "architecture-drift-ledger-v0";
+pub const DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION: &str =
+    "detectable-values-reported-axes-catalog-v0";
+pub const SCHEMA_VERSION_CATALOG_SCHEMA_VERSION: &str = "schema-version-catalog-v0";
+pub const SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION: &str = "schema-compatibility-policy-v0";
+pub const SCHEMA_COMPATIBILITY_CHECK_REPORT_SCHEMA_VERSION: &str =
+    "schema-compatibility-check-report-v0";
+pub const THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION: &str =
+    "theorem-precondition-check-report-v0";
+pub const REPAIR_RULE_REGISTRY_SCHEMA_VERSION: &str = "repair-rule-registry-v0";
+pub const REPAIR_RULE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "repair-rule-registry-validation-report-v0";
+pub const SYNTHESIS_CONSTRAINT_ARTIFACT_SCHEMA_VERSION: &str = "synthesis-constraint-artifact-v0";
+pub const SYNTHESIS_CONSTRAINT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "synthesis-constraint-validation-report-v0";
+pub const NO_SOLUTION_CERTIFICATE_SCHEMA_VERSION: &str = "no-solution-certificate-v0";
+pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "no-solution-certificate-validation-report-v0";
+pub const ORGANIZATION_POLICY_SCHEMA_VERSION: &str = "organization-policy-v0";
+pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "organization-policy-validation-report-v0";
+pub const LAW_POLICY_TEMPLATE_REGISTRY_SCHEMA_VERSION: &str = "law-policy-template-registry-v0";
+pub const LAW_POLICY_TEMPLATE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "law-policy-template-registry-validation-report-v0";
+pub const ARCHITECTURE_POLICY_SCHEMA_VERSION: &str = "architecture-policy-v0";
+pub const ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "architecture-policy-validation-report-v0";
+pub const LAW_VIOLATION_REPORT_SCHEMA_VERSION: &str = "law-violation-report-v0";
+pub const CUSTOM_RULE_PLUGIN_REGISTRY_SCHEMA_VERSION: &str = "custom-rule-plugin-registry-v0";
+pub const CUSTOM_RULE_PLUGIN_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "custom-rule-plugin-registry-validation-report-v0";
+pub const MEASUREMENT_UNIT_REGISTRY_SCHEMA_VERSION: &str = "measurement-unit-registry-v0";
+pub const MEASUREMENT_UNIT_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "measurement-unit-registry-validation-report-v0";
+pub const DYNAMICS_MEASUREMENT_CONTRACT_SCHEMA_VERSION: &str = "dynamics-measurement-contract-v0";
+pub const DYNAMICS_MEASUREMENT_CONTRACT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "dynamics-measurement-contract-validation-report-v0";
+pub const PR_FORCE_REPORT_SCHEMA_VERSION: &str = "pr-force-report-v0";
+pub const PR_FORCE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "pr-force-report-validation-report-v0";
+pub const SIGNATURE_TRAJECTORY_REPORT_SCHEMA_VERSION: &str = "signature-trajectory-report-v0";
+pub const SIGNATURE_TRAJECTORY_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "signature-trajectory-report-validation-report-v0";
+pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION: &str =
+    "architecture-dynamics-metrics-report-v0";
+pub const ARCHITECTURE_DYNAMICS_METRICS_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "architecture-dynamics-metrics-report-validation-report-v0";
+pub const ARCHITECTURE_FIELD_SNAPSHOT_SCHEMA_VERSION: &str = "architecture-field-snapshot-v0";
+pub const ARCHITECTURE_FIELD_SNAPSHOT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "architecture-field-snapshot-validation-report-v0";
+pub const OPERATION_PROPOSAL_LOG_SCHEMA_VERSION: &str = "operation-proposal-log-v0";
+pub const OPERATION_PROPOSAL_LOG_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "operation-proposal-log-validation-report-v0";
+pub const POLICY_DECISION_REPORT_SCHEMA_VERSION: &str = "policy-decision-report-v0";
+pub const REPORT_ARTIFACT_RETENTION_MANIFEST_SCHEMA_VERSION: &str =
+    "report-artifact-retention-manifest-v0";
+pub const REPORT_ARTIFACT_RETENTION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "report-artifact-retention-validation-report-v0";
+pub const PR_COMMENT_SUMMARY_SCHEMA_VERSION: &str = "pr-comment-summary-v0";
+pub const BASELINE_SUPPRESSION_REPORT_SCHEMA_VERSION: &str = "baseline-suppression-report-v0";
+pub const PR_HISTORY_DATASET_SCHEMA_VERSION: &str = "pr-history-dataset-v0";
+pub const FEATURE_EXTENSION_DATASET_SCHEMA_VERSION: &str = "feature-extension-dataset-v0";
+pub const OUTCOME_LINKAGE_DATASET_SCHEMA_VERSION: &str = "outcome-linkage-dataset-v0";
+pub const REPORT_OUTCOME_DAILY_LEDGER_SCHEMA_VERSION: &str = "report-outcome-daily-ledger-v0";
+pub const CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION: &str = "calibration-review-record-v0";
+pub const TEAM_THRESHOLD_POLICY_SCHEMA_VERSION: &str = "team-threshold-policy-v0";
+pub const OWNERSHIP_BOUNDARY_MONITOR_SCHEMA_VERSION: &str = "ownership-boundary-monitor-v0";
+pub const REPAIR_ADOPTION_RECORD_SCHEMA_VERSION: &str = "repair-adoption-record-v0";
+pub const INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION: &str = "incident-correlation-monitor-v0";
+pub const HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION: &str = "hypothesis-refresh-cycle-v0";
+pub const ARTIFACT_DESCRIPTOR_SCHEMA_VERSION: &str = "artifact-descriptor-v0";
+pub const ARTIFACT_DESCRIPTOR_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "artifact-descriptor-validation-report-v0";
+pub const INTENTMAP_SCHEMA_VERSION: &str = "intentmap-v0";
+pub const INTENTMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "intentmap-validation-report-v0";
+pub const INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION: &str = "intent-archmap-alignment-v0";
+pub const INTENT_ARCHMAP_ALIGNMENT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "intent-archmap-alignment-validation-report-v0";
+pub const OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION: &str = "operation-support-estimate-v0";
+pub const OPERATION_SUPPORT_ESTIMATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "operation-support-estimate-validation-report-v0";
+pub const FORECAST_CONE_SKELETON_SCHEMA_VERSION: &str = "forecast-cone-skeleton-v0";
+pub const FORECAST_CONE_SKELETON_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "forecast-cone-skeleton-validation-report-v0";
+pub const CONSEQUENCE_ENVELOPE_REPORT_SCHEMA_VERSION: &str = "consequence-envelope-report-v0";
+pub const CONSEQUENCE_ENVELOPE_REPORT_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "consequence-envelope-report-validation-report-v0";
+pub const SFT_REVIEW_SUMMARY_SCHEMA_VERSION: &str = "sft-review-summary-v0";
+pub const SFT_REVIEW_SUMMARY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "sft-review-summary-validation-report-v0";
+pub const FORECAST_CALIBRATION_HOOK_SCHEMA_VERSION: &str = "forecast-calibration-hook-v0";
+pub const FORECAST_CALIBRATION_HOOK_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "forecast-calibration-hook-validation-report-v0";
+pub const PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION: &str = "pr-quality-analysis-report-v0";
+pub const PR_QUALITY_ANALYSIS_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "pr-quality-analysis-validation-report-v0";
+pub const AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION: &str = "aat-observable-bundle-v0";
+pub const AAT_OBSERVABLE_BUNDLE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "aat-observable-bundle-validation-report-v0";
+pub const INTENT_CALIBRATION_RECORD_SCHEMA_VERSION: &str = "intent-calibration-record-v0";
+pub const INTENT_CALIBRATION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "intent-calibration-validation-report-v0";
+pub const AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION: &str = "ai-proposal-governance-v0";
+pub const AI_PROPOSAL_GOVERNANCE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "ai-proposal-governance-validation-report-v0";
+pub const RUNTIME_EDGE_EVIDENCE_SCHEMA_VERSION: &str = "runtime-edge-evidence-v0";
+pub const RUNTIME_PROJECTION_RULE_VERSION: &str = "runtime-edge-projection-v0";
+pub const FRAMEWORK_ADAPTER_EVIDENCE_SCHEMA_VERSION: &str = "framework-adapter-evidence-v0";
+pub const RELATION_COMPLEXITY_CANDIDATE_SCHEMA_VERSION: &str = "relation-complexity-candidates/v0";
+pub const RELATION_COMPLEXITY_OBSERVATION_SCHEMA_VERSION: &str =
+    "relation-complexity-observation/v0";
+pub const RELATION_COMPLEXITY_RULE_SET_VERSION: &str = "relation-complexity-rules/v0";
+pub const EXTRACTOR_NAME: &str = "archsig";
+pub const EXTRACTOR_VERSION: &str = env!("CARGO_PKG_VERSION");
+pub const RULE_SET_VERSION: &str = "sig0-v0";
+pub const DEFAULT_UNIVERSE_MODE: &str = "local-only";
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaVersionCatalogV0 {
+    pub schema_version: String,
+    pub catalog_id: String,
+    pub catalog_version: String,
+    pub phase: String,
+    pub artifacts: Vec<SchemaVersionCatalogEntryV0>,
+    pub compatibility_policy: SchemaCompatibilityPolicyV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaVersionCatalogEntryV0 {
+    pub artifact_id: String,
+    pub artifact_name: String,
+    pub schema_version_name: String,
+    pub artifact_role: String,
+    pub owner_phase: String,
+    pub status: String,
+    pub primary_docs: Vec<String>,
+    pub downstream_issues: Vec<String>,
+    pub compatibility_boundary: SchemaCompatibilityBoundaryV0,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityBoundaryV0 {
+    pub field_mapping_policy: String,
+    pub deprecated_fields: Vec<String>,
+    pub new_required_assumptions: Vec<String>,
+    pub coverage_exactness_boundary: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityPolicyV0 {
+    pub schema_version: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub applies_to_catalog_version: String,
+    pub dimensions: Vec<SchemaCompatibilityDimensionV0>,
+    pub required_checks: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityDimensionV0 {
+    pub dimension: String,
+    pub required_metadata: Vec<String>,
+    pub checker_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaArtifactCompatibilityV0 {
+    pub artifact_id: String,
+    pub schema_version_name: String,
+    pub compatibility_policy_ref: String,
+    pub field_mappings: Vec<SchemaFieldMappingV0>,
+    pub deprecated_fields: Vec<SchemaDeprecatedFieldV0>,
+    pub required_assumptions: Vec<SchemaRequiredAssumptionV0>,
+    pub coverage_exactness_boundaries: Vec<SchemaCoverageExactnessBoundaryV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DetectableValuesReportedAxesCatalogV0 {
+    pub schema_version: String,
+    pub catalog_id: String,
+    pub catalog_version: String,
+    pub benchmark_suite_version: String,
+    pub frozen_fixtures: Vec<BenchmarkSuiteFixtureV0>,
+    pub update_rules: Vec<BenchmarkSuiteUpdateRuleV0>,
+    pub axes: Vec<ReportedAxisCatalogEntryV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BenchmarkSuiteFixtureV0 {
+    pub fixture_id: String,
+    pub path: String,
+    pub artifact_kind: String,
+    pub frozen_for: Vec<String>,
+    pub expected_boundaries: Vec<String>,
+    pub update_rule_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BenchmarkSuiteUpdateRuleV0 {
+    pub rule_id: String,
+    pub applies_to: String,
+    pub required_review: String,
+    pub compatibility_check: String,
+    pub non_conclusion: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportedAxisCatalogEntryV0 {
+    pub axis_id: String,
+    pub layer: String,
+    pub value_type: String,
+    pub reported_in: Vec<String>,
+    pub allowed_measurement_boundaries: Vec<String>,
+    pub default_measurement_boundary: String,
+    pub evidence_requirements: Vec<String>,
+    pub theorem_refs: Vec<String>,
+    pub compatibility_notes: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaFieldMappingV0 {
+    pub source_field: String,
+    pub target_field: String,
+    pub mapping_kind: String,
+    pub required_review: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaDeprecatedFieldV0 {
+    pub field: String,
+    pub replacement: Option<String>,
+    pub removal_phase: String,
+    pub reader_behavior: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaRequiredAssumptionV0 {
+    pub assumption_id: String,
+    pub applies_to: String,
+    pub required_for: String,
+    pub fallback_when_missing: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCoverageExactnessBoundaryV0 {
+    pub axis_or_layer: String,
+    pub measurement_boundary: String,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityCheckReportV0 {
+    pub schema_version: String,
+    pub checker_id: String,
+    pub compatibility_policy_ref: String,
+    pub before: SchemaCompatibilityArtifactRefV0,
+    pub after: SchemaCompatibilityArtifactRefV0,
+    pub summary: SchemaCompatibilityCheckSummaryV0,
+    pub checks: Vec<SchemaCompatibilityCheckV0>,
+    pub field_mappings: Vec<SchemaFieldMappingV0>,
+    pub deprecated_fields: Vec<SchemaDeprecatedFieldV0>,
+    pub new_required_assumptions: Vec<SchemaRequiredAssumptionV0>,
+    pub coverage_exactness_boundaries: Vec<SchemaCoverageExactnessBoundaryV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityArtifactRefV0 {
+    pub path: String,
+    pub artifact_id: Option<String>,
+    pub schema_version_name: Option<String>,
+    pub catalog_status: String,
+    pub has_schema_compatibility_metadata: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityCheckSummaryV0 {
+    pub result: String,
+    pub compatible_diff_count: usize,
+    pub migration_required_count: usize,
+    pub blocked_formal_claim_promotion_count: usize,
+    pub warning_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SchemaCompatibilityCheckV0 {
+    pub id: String,
+    pub dimension: String,
+    pub result: String,
+    pub severity: String,
+    pub message: String,
+    pub required_action: Option<String>,
+    pub non_conclusion: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Sig0Document {
+    pub schema_version: String,
+    pub root: String,
+    pub component_kind: String,
+    pub components: Vec<Component>,
+    pub edges: Vec<Edge>,
+    pub policies: Policies,
+    pub signature: Signature,
+    pub metric_status: BTreeMap<String, MetricStatus>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub policy_violations: Vec<PolicyViolation>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub runtime_edge_evidence: Vec<RuntimeEdgeEvidence>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub runtime_dependency_graph: Option<RuntimeDependencyGraphProjection>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub unsupported_constructs: Vec<UnsupportedConstruct>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Component {
+    pub id: String,
+    pub path: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub struct Edge {
+    pub source: String,
+    pub target: String,
+    pub kind: String,
+    pub evidence: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Policies {
+    pub boundary_allowed: Vec<String>,
+    pub abstraction_allowed: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub policy_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub boundary_group_count: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub abstraction_relation_count: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Signature {
+    pub has_cycle: usize,
+    pub scc_max_size: usize,
+    pub max_depth: usize,
+    pub fanout_risk: usize,
+    pub boundary_violation_count: usize,
+    pub abstraction_violation_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MetricStatus {
+    pub measured: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyViolation {
+    pub axis: String,
+    pub source: String,
+    pub target: String,
+    pub evidence: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_group: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_group: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub relation_ids: Option<Vec<String>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeEdgeEvidence {
+    pub source: String,
+    pub target: String,
+    pub label: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub failure_mode: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timeout_budget: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retry_policy: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub circuit_breaker_coverage: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<String>,
+    pub evidence_location: RuntimeEvidenceLocation,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeEvidenceLocation {
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeDependencyGraphProjection {
+    pub projection_rule: String,
+    pub edge_kind: String,
+    pub edges: Vec<Edge>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FrameworkAdapterEvidenceV0 {
+    pub schema_version: String,
+    pub adapter_id: String,
+    pub framework: String,
+    pub source_language: String,
+    pub component_id_kind: String,
+    pub projection_rule: String,
+    pub routes: Vec<FrameworkRouteEvidenceV0>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<FrameworkUnsupportedConstructV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FrameworkRouteEvidenceV0 {
+    pub route_id: String,
+    pub source: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target: Option<String>,
+    pub method: String,
+    pub route_path: String,
+    pub relation_kind: String,
+    pub confidence: String,
+    pub evidence_location: RuntimeEvidenceLocation,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FrameworkUnsupportedConstructV0 {
+    pub kind: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnsupportedConstruct {
+    pub kind: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<String>,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComponentUniverseValidationReport {
+    pub schema_version: String,
+    pub input: ValidationInput,
+    pub universe_mode: String,
+    pub summary: ValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub root: String,
+    pub component_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ValidationSummary {
+    pub result: String,
+    pub component_count: usize,
+    pub local_edge_count: usize,
+    pub external_edge_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+    pub not_measured_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ValidationCheck {
+    pub id: String,
+    pub title: String,
+    pub result: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub count: Option<usize>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub examples: Vec<ValidationExample>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metric: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lean_boundary: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ValidationExample {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub component_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmpiricalDatasetInput {
+    pub repository: RepositoryRef,
+    pub pull_request: PullRequestRef,
+    pub pr_metrics: PullRequestMetrics,
+    #[serde(default)]
+    pub issue_incident_links: Vec<IssueIncidentLink>,
+    #[serde(default)]
+    pub analysis_metadata: AnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmpiricalSignatureDatasetV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub pull_request: PullRequestRef,
+    pub signature_before: SignatureSnapshot,
+    pub signature_after: SignatureSnapshot,
+    pub delta_signature_signed: NullableSignatureIntVector,
+    pub metric_delta_status: BTreeMap<String, MetricDeltaStatus>,
+    pub pr_metrics: PullRequestMetrics,
+    pub issue_incident_links: Vec<IssueIncidentLink>,
+    pub analysis_metadata: AnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepositoryRef {
+    pub owner: String,
+    pub name: String,
+    pub default_branch: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PullRequestRef {
+    pub number: usize,
+    pub author: String,
+    pub created_at: String,
+    pub merged_at: Option<String>,
+    pub base_commit: String,
+    pub head_commit: String,
+    pub merge_commit: Option<String>,
+    pub labels: Vec<String>,
+    pub is_bot_generated: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PullRequestMetrics {
+    pub changed_files: usize,
+    pub changed_lines_added: usize,
+    pub changed_lines_deleted: usize,
+    pub changed_components: Vec<String>,
+    pub review_comment_count: usize,
+    pub review_thread_count: usize,
+    pub review_round_count: usize,
+    pub first_review_latency_hours: Option<f64>,
+    pub approval_latency_hours: Option<f64>,
+    pub merge_latency_hours: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IssueIncidentLink {
+    pub kind: String,
+    pub id: String,
+    pub url: Option<String>,
+    pub severity: Option<String>,
+    pub labels: Vec<String>,
+    pub opened_at: Option<String>,
+    pub closed_at: Option<String>,
+    pub affected_components: Vec<String>,
+    pub rollback: Option<bool>,
+    pub reopened: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryDatasetV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub records: Vec<PrHistoryRecordV0>,
+    pub analysis_metadata: PrHistoryAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryRecordV0 {
+    pub pull_request: PullRequestRef,
+    pub changed_file_summary: ChangedFileSummary,
+    pub review_metadata: ReviewMetadata,
+    pub artifact_refs: PrHistoryArtifactRefs,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangedFileSummary {
+    pub changed_files: usize,
+    pub additions: usize,
+    pub deletions: usize,
+    pub changed_components: Vec<String>,
+    pub files: Vec<ChangedFileEntry>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChangedFileEntry {
+    pub path: String,
+    pub additions: Option<usize>,
+    pub deletions: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewMetadata {
+    pub review_comment_count: usize,
+    pub review_thread_count: usize,
+    pub review_round_count: usize,
+    pub reviewer_count: usize,
+    pub reviewers: Vec<String>,
+    pub review_states: Vec<String>,
+    pub first_review_latency_hours: Option<f64>,
+    pub approval_latency_hours: Option<f64>,
+    pub merge_latency_hours: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryArtifactRefs {
+    pub signature_artifacts: Vec<PrHistoryArtifactRef>,
+    pub feature_extension_reports: Vec<PrHistoryArtifactRef>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryArtifactRef {
+    pub kind: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub commit_role: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrHistoryAnalysisMetadata {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub records: Vec<FeatureExtensionDatasetRecordV0>,
+    pub analysis_metadata: FeatureExtensionDatasetAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetRecordV0 {
+    pub pull_request: PullRequestRef,
+    pub pr_history_record_ref: FeatureExtensionPrHistoryRecordRef,
+    pub changed_components: Vec<String>,
+    pub feature_report_ref: PrHistoryArtifactRef,
+    pub architecture_id: String,
+    pub feature: AirFeature,
+    pub split_status: String,
+    pub claim_classification: String,
+    pub obstruction_witness_taxonomy: Vec<FeatureExtensionObstructionTaxon>,
+    pub coverage_gaps: Vec<FeatureExtensionDatasetCoverageGap>,
+    pub repair_suggestion_adoption_candidates:
+        Vec<FeatureExtensionRepairSuggestionAdoptionCandidate>,
+    pub theorem_precondition_boundary: FeatureExtensionTheoremPreconditionBoundary,
+    pub artifact_refs: FeatureExtensionDatasetArtifactRefs,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionPrHistoryRecordRef {
+    pub pr_number: usize,
+    pub base_commit: String,
+    pub head_commit: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionObstructionTaxon {
+    pub kind: String,
+    pub layer: String,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub witness_count: usize,
+    pub witness_refs: Vec<String>,
+    pub components: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetCoverageGap {
+    pub layer: String,
+    pub measurement_boundary: String,
+    pub unmeasured_axes: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionRepairSuggestionAdoptionCandidate {
+    pub suggestion_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repair_rule_id: Option<String>,
+    pub target_witness_kind: String,
+    pub proposed_operation: String,
+    pub source_witness_refs: Vec<String>,
+    pub source_coverage_gap_refs: Vec<String>,
+    pub adoption_status: String,
+    pub required_preconditions: Vec<String>,
+    pub traceability: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionTheoremPreconditionBoundary {
+    pub summary: TheoremPreconditionCheckSummary,
+    pub missing_preconditions: Vec<String>,
+    pub blocked_claim_refs: Vec<String>,
+    pub measured_witness_count: usize,
+    pub formal_proved_claim_count: usize,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetArtifactRefs {
+    pub signature_artifacts: Vec<PrHistoryArtifactRef>,
+    pub feature_extension_report: PrHistoryArtifactRef,
+    pub theorem_precondition_reports: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionDatasetAnalysisMetadata {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeLinkageInputV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub records: Vec<OutcomeObservationV0>,
+    pub analysis_metadata: OutcomeLinkageAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeLinkageDatasetV0 {
+    pub schema_version: String,
+    pub repository: RepositoryRef,
+    pub records: Vec<OutcomeLinkageDatasetRecordV0>,
+    pub analysis_metadata: OutcomeLinkageAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeLinkageDatasetRecordV0 {
+    pub pull_request: PullRequestRef,
+    pub feature_dataset_record_ref: OutcomeFeatureDatasetRecordRef,
+    pub changed_components: Vec<String>,
+    pub split_status: String,
+    pub claim_classification: String,
+    pub obstruction_witness_taxonomy: Vec<FeatureExtensionObstructionTaxon>,
+    pub outcome_observation: OutcomeObservationV0,
+    pub correlation_inputs: OutcomeCorrelationInputs,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeFeatureDatasetRecordRef {
+    pub pr_number: usize,
+    pub base_commit: String,
+    pub head_commit: String,
+    pub feature_report_path: String,
+    pub architecture_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeObservationV0 {
+    pub pr_number: usize,
+    pub review_cost: ReviewCostOutcome,
+    pub follow_up_fix_count: OutcomeMetric<usize>,
+    pub rollback: OutcomeMetric<bool>,
+    pub incident_affected_component_count: OutcomeMetric<usize>,
+    pub mttr_hours: OutcomeMetric<f64>,
+    pub traceability: OutcomeTraceabilityRefs,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReviewCostOutcome {
+    pub review_comment_count: OutcomeMetric<usize>,
+    pub review_thread_count: OutcomeMetric<usize>,
+    pub review_round_count: OutcomeMetric<usize>,
+    pub reviewer_count: OutcomeMetric<usize>,
+    pub first_review_latency_hours: OutcomeMetric<f64>,
+    pub approval_latency_hours: OutcomeMetric<f64>,
+    pub merge_latency_hours: OutcomeMetric<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeMetric<T> {
+    pub boundary: String,
+    pub value: Option<T>,
+    pub reason: Option<String>,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeTraceabilityRefs {
+    pub pr_refs: Vec<OutcomeExternalRef>,
+    pub issue_refs: Vec<OutcomeExternalRef>,
+    pub incident_refs: Vec<OutcomeExternalRef>,
+    pub artifact_refs: Vec<PrHistoryArtifactRef>,
+    pub missing_or_private_data: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeExternalRef {
+    pub kind: String,
+    pub id: String,
+    pub url: Option<String>,
+    pub visibility: Option<String>,
+    pub labels: Vec<String>,
+    pub affected_components: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeCorrelationInputs {
+    pub obstruction_witness_refs: Vec<String>,
+    pub obstruction_witness_kinds: Vec<String>,
+    pub outcome_metric_refs: Vec<String>,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OutcomeLinkageAnalysisMetadata {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeDailyLedgerV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub ledger_id: String,
+    pub generated_at: String,
+    pub aggregation_window: DriftLedgerAggregationWindowV0,
+    pub source_report_refs: Vec<ReportOutcomeSourceReportRefV0>,
+    pub retention: ReportOutcomeRetentionPolicyV0,
+    pub batches: Vec<ReportOutcomeDailyBatchV0>,
+    pub analysis_metadata: ReportOutcomeLedgerAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeSourceReportRefV0 {
+    pub kind: String,
+    pub path: String,
+    pub schema_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub report_id: Option<String>,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeRetentionPolicyV0 {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retention_manifest_ref: Option<String>,
+    pub retention_period_days: usize,
+    pub retained_artifact_refs: Vec<String>,
+    pub private_data_policy: String,
+    pub missing_data_policy: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeDailyBatchV0 {
+    pub batch_id: String,
+    pub architecture_id: String,
+    pub outcome_dataset_ref: String,
+    pub drift_ledger_ref: String,
+    pub outcome_record_count: usize,
+    pub drift_entry_count: usize,
+    pub source_report_refs: Vec<String>,
+    pub outcome_metric_summaries: Vec<ReportOutcomeMetricSummaryV0>,
+    pub missing_private_unmeasured_boundaries: Vec<ReportOutcomeBoundaryCountV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeMetricSummaryV0 {
+    pub metric_ref: String,
+    pub measured_count: usize,
+    pub unavailable_count: usize,
+    pub private_count: usize,
+    pub unmeasured_count: usize,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeBoundaryCountV0 {
+    pub boundary: String,
+    pub metric_ref: String,
+    pub count: usize,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportOutcomeLedgerAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub source_join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReviewRecordV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub record_id: String,
+    pub reviewed_at: String,
+    pub reviewer: String,
+    pub report_finding_refs: Vec<CalibrationReportFindingRefV0>,
+    pub witness_refs: Vec<String>,
+    pub reviewer_decision: CalibrationReviewerDecisionV0,
+    pub outcome_refs: Vec<CalibrationOutcomeRefV0>,
+    pub rationale: String,
+    pub confidence: CalibrationConfidenceV0,
+    pub missing_evidence: Vec<CalibrationMissingEvidenceV0>,
+    pub calibration_input: CalibrationInputV0,
+    pub analysis_metadata: CalibrationReviewAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReportFindingRefV0 {
+    pub report_ref: String,
+    pub finding_id: String,
+    pub metric_ref: String,
+    pub finding_kind: String,
+    pub severity: String,
+    pub measurement_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReviewerDecisionV0 {
+    pub decision: String,
+    pub reviewed_finding_status: String,
+    pub recommended_calibration_action: String,
+    pub calibration_scope: String,
+    pub decision_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationOutcomeRefV0 {
+    pub kind: String,
+    pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+    pub boundary: String,
+    pub metric_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationConfidenceV0 {
+    pub level: String,
+    pub score: f64,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationMissingEvidenceV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+    pub follow_up_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationInputV0 {
+    pub metric_refs: Vec<String>,
+    pub threshold_policy_refs: Vec<String>,
+    pub source_ledger_refs: Vec<String>,
+    pub downstream_issue_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReviewAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub calibration_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdPolicyV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub policy_id: String,
+    pub organization_ref: String,
+    pub team_ref: String,
+    pub effective_period: TeamThresholdEffectivePeriodV0,
+    pub axis_thresholds: Vec<TeamThresholdAxisPolicyV0>,
+    pub calibration_source_refs: Vec<TeamThresholdCalibrationSourceRefV0>,
+    pub rollback_policy: TeamThresholdRollbackPolicyV0,
+    pub analysis_metadata: TeamThresholdPolicyAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdEffectivePeriodV0 {
+    pub starts_at: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ends_at: Option<String>,
+    pub review_cadence: String,
+    pub decision_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdAxisPolicyV0 {
+    pub axis_ref: String,
+    pub metric_ref: String,
+    pub warn_threshold: Option<f64>,
+    pub fail_threshold: Option<f64>,
+    pub advisory_threshold: Option<f64>,
+    pub ci_mode: String,
+    pub calibration_boundary: String,
+    pub calibration_source_refs: Vec<String>,
+    pub rationale: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdCalibrationSourceRefV0 {
+    pub source_ref: String,
+    pub source_kind: String,
+    pub path: String,
+    pub window_ref: String,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdRollbackPolicyV0 {
+    pub rollback_trigger: String,
+    pub fallback_policy_ref: String,
+    pub approval_refs: Vec<String>,
+    pub review_after: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TeamThresholdPolicyAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub policy_boundary: String,
+    pub calibration_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipBoundaryMonitorV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub monitor_id: String,
+    pub generated_at: String,
+    pub organization_ref: String,
+    pub team_ref: String,
+    pub architecture_id: String,
+    pub aggregation_window: DriftLedgerAggregationWindowV0,
+    pub source_refs: Vec<OwnershipBoundarySourceRefV0>,
+    pub ownership_scopes: Vec<OwnershipScopeObservationV0>,
+    pub boundary_erosion_signals: Vec<BoundaryErosionSignalV0>,
+    pub missing_evidence: Vec<OwnershipBoundaryMissingEvidenceV0>,
+    pub analysis_metadata: OwnershipBoundaryAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipBoundarySourceRefV0 {
+    pub source_ref: String,
+    pub source_kind: String,
+    pub path: String,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipScopeObservationV0 {
+    pub scope_ref: String,
+    pub owner_ref: String,
+    pub component_refs: Vec<String>,
+    pub boundary_policy_refs: Vec<String>,
+    pub observation_boundary: String,
+    pub evidence_refs: Vec<String>,
+    pub missing_evidence_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BoundaryErosionSignalV0 {
+    pub signal_id: String,
+    pub boundary_ref: String,
+    pub metric_ref: String,
+    pub observed_value: Option<f64>,
+    pub severity: String,
+    pub trend: String,
+    pub measurement_boundary: String,
+    pub evidence_refs: Vec<String>,
+    pub recommended_follow_up_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipBoundaryMissingEvidenceV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+    pub follow_up_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OwnershipBoundaryAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub source_join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairAdoptionRecordV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub record_id: String,
+    pub reviewed_at: String,
+    pub reviewer: String,
+    pub suggestion_refs: Vec<RepairSuggestionRefV0>,
+    pub adoption_decision: RepairAdoptionDecisionV0,
+    pub follow_up_outcome_refs: Vec<RepairFollowUpOutcomeRefV0>,
+    pub side_effect_notes: Vec<RepairSideEffectNoteV0>,
+    pub missing_evidence: Vec<RepairAdoptionMissingEvidenceV0>,
+    pub analysis_metadata: RepairAdoptionAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairSuggestionRefV0 {
+    pub suggestion_ref: String,
+    pub source_report_ref: String,
+    pub obstruction_witness_ref: String,
+    pub repair_rule_ref: String,
+    pub target_component_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairAdoptionDecisionV0 {
+    pub decision: String,
+    pub reason: String,
+    pub decision_refs: Vec<String>,
+    pub adopted_at: Option<String>,
+    pub deferred_until: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairFollowUpOutcomeRefV0 {
+    pub outcome_ref: String,
+    pub outcome_kind: String,
+    pub boundary: String,
+    pub metric_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairSideEffectNoteV0 {
+    pub note_id: String,
+    pub affected_axis_refs: Vec<String>,
+    pub description: String,
+    pub severity: String,
+    pub evidence_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairAdoptionMissingEvidenceV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+    pub follow_up_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairAdoptionAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub adoption_boundary: String,
+    pub repair_correctness_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentCorrelationMonitorV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub monitor_id: String,
+    pub generated_at: String,
+    pub organization_ref: String,
+    pub team_ref: String,
+    pub architecture_id: String,
+    pub correlation_window: DriftLedgerAggregationWindowV0,
+    pub source_refs: Vec<IncidentCorrelationSourceRefV0>,
+    pub metric_axes: Vec<IncidentCorrelationMetricAxisV0>,
+    pub correlations: Vec<IncidentCorrelationObservationV0>,
+    pub confounder_notes: Vec<IncidentCorrelationConfounderNoteV0>,
+    pub missing_private_data: Vec<IncidentCorrelationMissingDataBoundaryV0>,
+    pub refresh_decision: IncidentCorrelationRefreshDecisionV0,
+    pub analysis_metadata: IncidentCorrelationAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentCorrelationSourceRefV0 {
+    pub source_ref: String,
+    pub source_kind: String,
+    pub path: String,
+    pub schema_version: String,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentCorrelationMetricAxisV0 {
+    pub axis_ref: String,
+    pub metric_ref: String,
+    pub metric_kind: String,
+    pub measurement_boundary: String,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentCorrelationObservationV0 {
+    pub correlation_id: String,
+    pub report_metric_ref: String,
+    pub outcome_metric_ref: String,
+    pub observed_direction: String,
+    pub coefficient: Option<f64>,
+    pub sample_size: usize,
+    pub confidence_boundary: String,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentCorrelationConfounderNoteV0 {
+    pub note_id: String,
+    pub confounder_kind: String,
+    pub description: String,
+    pub boundary: String,
+    pub mitigation_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentCorrelationMissingDataBoundaryV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+    pub follow_up_ref: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentCorrelationRefreshDecisionV0 {
+    pub decision: String,
+    pub decision_reason: String,
+    pub hypothesis_cycle_ref: String,
+    pub decision_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentCorrelationAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub measurement_boundary: String,
+    pub correlation_boundary: String,
+    pub source_join_keys: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HypothesisRefreshCycleV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub cycle_id: String,
+    pub generated_at: String,
+    pub organization_ref: String,
+    pub team_ref: String,
+    pub source_monitor_refs: Vec<HypothesisRefreshSourceMonitorRefV0>,
+    pub versioned_hypothesis_refs: Vec<VersionedHypothesisRefV0>,
+    pub change_reasons: Vec<HypothesisChangeReasonV0>,
+    pub refresh_decision: HypothesisRefreshDecisionV0,
+    pub retained_hypotheses: Vec<HypothesisDispositionV0>,
+    pub rejected_hypotheses: Vec<HypothesisDispositionV0>,
+    pub proposed_updates: Vec<HypothesisProposedUpdateV0>,
+    pub analysis_metadata: HypothesisRefreshAnalysisMetadataV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HypothesisRefreshSourceMonitorRefV0 {
+    pub monitor_ref: String,
+    pub source_kind: String,
+    pub path: String,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VersionedHypothesisRefV0 {
+    pub hypothesis_ref: String,
+    pub hypothesis_version: String,
+    pub status_before: String,
+    pub evidence_boundary: String,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HypothesisChangeReasonV0 {
+    pub reason_id: String,
+    pub reason_kind: String,
+    pub description: String,
+    pub source_refs: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HypothesisRefreshDecisionV0 {
+    pub decision: String,
+    pub decision_reason: String,
+    pub decision_refs: Vec<String>,
+    pub effective_hypothesis_version: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HypothesisDispositionV0 {
+    pub hypothesis_ref: String,
+    pub from_version: String,
+    pub to_version: Option<String>,
+    pub disposition: String,
+    pub rationale: String,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HypothesisProposedUpdateV0 {
+    pub hypothesis_ref: String,
+    pub proposed_version: String,
+    pub change_summary: String,
+    pub required_follow_up_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HypothesisRefreshAnalysisMetadataV0 {
+    pub lean_status: String,
+    pub refresh_boundary: String,
+    pub formal_claim_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AnalysisMetadata {
+    pub signature_after_commit_role: String,
+    pub excluded_from_primary_analysis: bool,
+    pub exclusion_reasons: Vec<String>,
+    pub primary_cost_record: Option<String>,
+    pub relation_complexity_components: Option<RelationComplexityComponents>,
+    pub runtime_metrics: Option<RuntimeMetrics>,
+    pub alternate_signature_after: Option<Box<SignatureSnapshot>>,
+}
+
+impl Default for AnalysisMetadata {
+    fn default() -> Self {
+        Self {
+            signature_after_commit_role: "head".to_string(),
+            excluded_from_primary_analysis: false,
+            exclusion_reasons: Vec::new(),
+            primary_cost_record: None,
+            relation_complexity_components: None,
+            runtime_metrics: None,
+            alternate_signature_after: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeMetrics {
+    pub runtime_graph_measured: bool,
+    pub runtime_edge_evidence_count: Option<usize>,
+    pub runtime_pair_count: Option<usize>,
+    pub runtime_fanout: Option<usize>,
+    pub unprotected_runtime_propagation_radius: Option<usize>,
+    pub circuit_breaker_coverage_ratio: Option<f64>,
+    pub protected_pair_count: Option<usize>,
+    pub partial_pair_count: Option<usize>,
+    pub unprotected_pair_count: Option<usize>,
+    pub unknown_coverage_pair_count: Option<usize>,
+    pub failure_mode_taxonomy_version: Option<String>,
+    pub coverage_policy_version: Option<String>,
+    pub confidence_threshold: Option<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityComponents {
+    pub constraints: usize,
+    pub compensations: usize,
+    pub projections: usize,
+    pub failure_transitions: usize,
+    pub idempotency_requirements: usize,
+}
+
+impl RelationComplexityComponents {
+    pub(crate) fn relation_complexity(&self) -> usize {
+        self.constraints
+            + self.compensations
+            + self.projections
+            + self.failure_transitions
+            + self.idempotency_requirements
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityCandidateFile {
+    pub schema_version: String,
+    pub repository: String,
+    pub revision: String,
+    pub measurement_universe: RelationComplexityMeasurementUniverse,
+    pub workflow: RelationComplexityWorkflow,
+    #[serde(default)]
+    pub evidence: Vec<RelationComplexityEvidence>,
+    #[serde(default)]
+    pub evidence_candidates: Vec<RelationComplexityEvidence>,
+    #[serde(default)]
+    pub excluded_evidence: Vec<RelationComplexityExcludedEvidence>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityObservation {
+    pub schema_version: String,
+    pub repository: String,
+    pub revision: String,
+    pub measurement_universe: RelationComplexityMeasurementUniverse,
+    pub workflow: RelationComplexityWorkflow,
+    pub counts: RelationComplexityComponents,
+    pub relation_complexity: usize,
+    pub evidence: Vec<RelationComplexityEvidence>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub excluded_evidence: Vec<RelationComplexityExcludedEvidence>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityMeasurementUniverse {
+    pub root: String,
+    pub languages: Vec<String>,
+    pub frameworks: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rule_set_version: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityWorkflow {
+    pub id: String,
+    pub name: String,
+    pub component: String,
+    pub entrypoints: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityEvidence {
+    pub id: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    pub tags: Vec<String>,
+    pub ownership: String,
+    pub review_status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelationComplexityExcludedEvidence {
+    pub path: String,
+    pub reason: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GitCommitRef {
+    pub sha: String,
+    pub role: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureSnapshot {
+    pub commit: GitCommitRef,
+    pub extractor: ExtractorRef,
+    pub signature: ArchitectureSignatureV1DatasetShape,
+    pub metric_status: BTreeMap<String, MetricStatus>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtractorRef {
+    pub name: String,
+    pub version: String,
+    pub rule_set_version: String,
+    pub policy_version: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureSignatureV1DatasetShape {
+    pub has_cycle: usize,
+    pub scc_max_size: usize,
+    pub max_depth: usize,
+    pub fanout_risk: usize,
+    pub boundary_violation_count: usize,
+    pub abstraction_violation_count: usize,
+    pub scc_excess_size: usize,
+    pub max_fanout: usize,
+    pub reachable_cone_size: usize,
+    pub weighted_scc_risk: Option<usize>,
+    pub projection_soundness_violation: Option<usize>,
+    pub lsp_violation_count: Option<usize>,
+    pub nilpotency_index: Option<usize>,
+    pub runtime_propagation: Option<usize>,
+    pub relation_complexity: Option<usize>,
+    pub empirical_change_cost: Option<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureSnapshotStoreRecordV0 {
+    pub schema_version: String,
+    pub repository: SnapshotRepositoryRef,
+    pub revision: RepositoryRevisionRef,
+    pub scan: ScanMetadata,
+    pub extractor: SnapshotExtractorMetadata,
+    pub policy: SnapshotPolicyMetadata,
+    pub signature: ArchitectureSignatureV1DatasetShape,
+    pub metric_status: BTreeMap<String, MetricStatus>,
+    pub validation_summary: SnapshotValidationSummary,
+    pub artifacts: SnapshotArtifacts,
+    pub analysis_metadata: SnapshotAnalysisMetadata,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotRepositoryRef {
+    pub owner: String,
+    pub name: String,
+    pub default_branch: String,
+    pub remote_url: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepositoryRevisionRef {
+    pub sha: String,
+    #[serde(rename = "ref")]
+    pub ref_name: Option<String>,
+    pub branch: Option<String>,
+    pub committed_at: Option<String>,
+    pub parent_shas: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ScanMetadata {
+    pub scanned_at: String,
+    pub scanner_id: Option<String>,
+    pub trigger: String,
+    pub root: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotExtractorMetadata {
+    pub name: String,
+    pub version: String,
+    pub rule_set_version: String,
+    pub input_schema_version: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotPolicyMetadata {
+    pub policy_id: Option<String>,
+    pub schema_version: Option<String>,
+    pub version: Option<String>,
+    pub source_path: Option<String>,
+    pub content_hash: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotValidationSummary {
+    pub schema_version: Option<String>,
+    pub result: String,
+    pub universe_mode: Option<String>,
+    pub failed_check_count: Option<usize>,
+    pub warning_check_count: Option<usize>,
+    pub not_measured_check_count: Option<usize>,
+    pub report_path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotArtifacts {
+    pub extractor_output_path: Option<String>,
+    pub validation_report_path: Option<String>,
+    pub policy_path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotAnalysisMetadata {
+    pub excluded_from_primary_diff: bool,
+    pub exclusion_reasons: Vec<String>,
+    pub tags: Vec<String>,
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SnapshotRecordInput {
+    pub repository: SnapshotRepositoryRef,
+    pub revision: RepositoryRevisionRef,
+    pub scan: ScanMetadata,
+    pub policy_version: Option<String>,
+    pub policy_source_path: Option<String>,
+    pub policy_content_hash: Option<String>,
+    pub extractor_output_path: Option<String>,
+    pub validation_report_path: Option<String>,
+    pub tags: Vec<String>,
+    pub notes: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureDiffReportV0 {
+    pub schema_version: String,
+    pub before: SnapshotDiffEndpoint,
+    pub after: SnapshotDiffEndpoint,
+    pub comparison_status: SnapshotComparisonStatus,
+    pub delta_signature_signed: NullableSignatureIntVector,
+    pub metric_delta_status: BTreeMap<String, MetricDeltaStatus>,
+    pub worsened_axes: Vec<SignatureAxisChange>,
+    pub improved_axes: Vec<SignatureAxisChange>,
+    pub unchanged_axes: Vec<SignatureAxisChange>,
+    pub unmeasured_axes: Vec<UnmeasuredAxisDelta>,
+    pub evidence_diff: SnapshotEvidenceDiff,
+    pub attribution: SnapshotDiffAttribution,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirDocumentV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub architecture_id: String,
+    pub ids: AirIdPolicies,
+    pub revision: AirRevision,
+    pub feature: AirFeature,
+    pub artifacts: Vec<AirArtifact>,
+    pub evidence: Vec<AirEvidence>,
+    pub components: Vec<AirComponent>,
+    pub relations: Vec<AirRelation>,
+    pub policies: AirPolicies,
+    pub semantic_diagrams: Vec<AirSemanticDiagram>,
+    pub architecture_paths: Vec<AirArchitecturePath>,
+    pub homotopy_generators: Vec<AirHomotopyGenerator>,
+    pub nonfillability_witnesses: Vec<AirNonfillabilityWitness>,
+    pub signature: AirSignature,
+    pub coverage: AirCoverage,
+    pub claims: Vec<AirClaim>,
+    pub operation_trace: AirOperationTrace,
+    pub extension: AirExtension,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirIdPolicies {
+    pub component_id_policy: String,
+    pub relation_id_policy: String,
+    pub evidence_id_policy: String,
+    pub claim_id_policy: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirRevision {
+    pub before: Option<String>,
+    pub after: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirFeature {
+    pub feature_id: Option<String>,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub source: String,
+    pub ai_session: Option<AirAiSession>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirAiSession {
+    pub provider: Option<String>,
+    pub model: Option<String>,
+    pub prompt_ref: Option<String>,
+    pub generated_patch: Option<bool>,
+    pub human_reviewed: Option<bool>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirArtifact {
+    pub artifact_id: String,
+    pub kind: String,
+    pub schema_version: Option<String>,
+    pub path: Option<String>,
+    pub content_hash: Option<String>,
+    pub produced_by: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirEvidence {
+    pub evidence_id: String,
+    pub kind: String,
+    pub artifact_ref: Option<String>,
+    pub path: Option<String>,
+    pub symbol: Option<String>,
+    pub line: Option<usize>,
+    pub rule_id: Option<String>,
+    pub confidence: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirComponent {
+    pub id: String,
+    pub kind: String,
+    pub lifecycle: String,
+    pub owner: Option<String>,
+    pub evidence_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirRelation {
+    pub id: String,
+    pub layer: String,
+    #[serde(rename = "from")]
+    pub from_component: Option<String>,
+    #[serde(rename = "to")]
+    pub to_component: Option<String>,
+    pub kind: String,
+    pub lifecycle: String,
+    pub protected_by: Option<String>,
+    pub extraction_rule: Option<String>,
+    pub evidence_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirPolicies {
+    pub laws: Vec<String>,
+    pub boundaries: Vec<String>,
+    pub allowed_edges: Vec<String>,
+    pub forbidden_edges: Vec<String>,
+    pub abstraction_rules: Vec<String>,
+    pub protection_rules: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirSemanticDiagram {
+    pub id: String,
+    pub lhs_path_ref: String,
+    pub rhs_path_ref: String,
+    pub equivalence: String,
+    pub filler_claim_ref: Option<String>,
+    pub nonfillability_witness_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub lifecycle: String,
+    pub evidence_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirArchitecturePath {
+    pub path_id: String,
+    pub source_state: String,
+    pub target_state: String,
+    pub steps: Vec<String>,
+    pub lifecycle: String,
+    pub evidence_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirHomotopyGenerator {
+    pub generator_id: String,
+    pub kind: String,
+    pub diagram_refs: Vec<String>,
+    pub preserves_observation_claim_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirNonfillabilityWitness {
+    pub witness_id: String,
+    pub diagram_ref: String,
+    pub witness_kind: String,
+    pub claim_ref: String,
+    pub evidence_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirSignature {
+    pub axes: Vec<AirSignatureAxis>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirSignatureAxis {
+    pub axis: String,
+    pub value: Option<i64>,
+    pub measured: bool,
+    pub measurement_boundary: String,
+    pub source: Option<String>,
+    pub reason: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirCoverage {
+    pub layers: Vec<AirCoverageLayer>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirCoverageLayer {
+    pub layer: String,
+    pub measurement_boundary: String,
+    pub universe_refs: Vec<String>,
+    pub measured_axes: Vec<String>,
+    pub unmeasured_axes: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub projection_rule: Option<String>,
+    pub extraction_scope: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirClaim {
+    pub claim_id: String,
+    pub subject_ref: String,
+    pub predicate: String,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub theorem_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub missing_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirOperationTrace {
+    pub operations: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapDocumentV0 {
+    pub schema_version: String,
+    pub map_id: String,
+    pub architecture_id: String,
+    pub generated_at: String,
+    pub generator: ArchMapGenerator,
+    #[serde(default)]
+    pub prompt_refs: Vec<ArchMapArtifactRef>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_inventory_ref: Option<ArchMapArtifactRef>,
+    pub generation_boundary: ArchMapGenerationBoundary,
+    pub source_universe: ArchMapSourceUniverse,
+    pub target_universe: ArchMapTargetUniverse,
+    #[serde(default)]
+    pub map_items: Vec<ArchMapMapItem>,
+    #[serde(default)]
+    pub coverage: ArchMapCoverage,
+    #[serde(default)]
+    pub conflicts: Vec<ArchMapConflict>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapGenerator {
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tool: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapArtifactRef {
+    pub artifact_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content_hash: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapGenerationBoundary {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub token_budget: Option<String>,
+    #[serde(default)]
+    pub scope: Vec<String>,
+    #[serde(default)]
+    pub excluded_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub private_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub unavailable_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapSourceUniverse {
+    pub root: String,
+    #[serde(default)]
+    pub included_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub excluded_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub unavailable_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub private_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub hashes: Vec<ArchMapArtifactRef>,
+    #[serde(default)]
+    pub known_blind_spots: Vec<String>,
+    pub selection_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapSourceInventoryV0 {
+    pub schema_version: String,
+    pub inventory_id: String,
+    pub root: String,
+    #[serde(default)]
+    pub included_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub excluded_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub unavailable_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub private_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub hashes: Vec<ArchMapArtifactRef>,
+    #[serde(default)]
+    pub known_blind_spots: Vec<String>,
+    pub selection_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapTargetUniverse {
+    #[serde(default)]
+    pub representation: String,
+    #[serde(default)]
+    pub selected_layers: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapSourceRef {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artifact_id: Option<String>,
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub section: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapMapItem {
+    pub map_item_id: String,
+    pub mapping_kind: String,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub target_ref: ArchMapTargetRef,
+    #[serde(default)]
+    pub preserves: Vec<String>,
+    #[serde(default)]
+    pub forgets: Vec<String>,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub confidence: String,
+    #[serde(default)]
+    pub evidence_refs: Vec<String>,
+    #[serde(default)]
+    pub theorem_refs: Vec<String>,
+    #[serde(default)]
+    pub required_assumptions: Vec<String>,
+    #[serde(default)]
+    pub missing_evidence: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conflict_category: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub semantic_role: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub responsibility_regions: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub reason_to_change: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub actor_refs: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allowed_role: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub law_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapTargetRef {
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layer: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub to: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subject_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub predicate: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lhs_path_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rhs_path_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub equivalence: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapCoverage {
+    #[serde(default)]
+    pub measured_layers: Vec<String>,
+    #[serde(default)]
+    pub unmeasured_layers: Vec<String>,
+    #[serde(default)]
+    pub assumed_layers: Vec<String>,
+    #[serde(default)]
+    pub unsupported_constructs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapConflict {
+    pub conflict_id: String,
+    pub category: String,
+    pub subject_ref: String,
+    pub description: String,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapValidationReportV0 {
+    pub schema_version: String,
+    pub archmap_ref: String,
+    pub lean_preservation_vocabulary: Vec<ArchMapLeanPreservationVocabularyEntry>,
+    pub lean_preservation_precondition_checklist: Vec<ArchMapLeanPreservationChecklistEntry>,
+    pub source_inventory_checks: Vec<ValidationCheck>,
+    pub source_ref_checks: Vec<ValidationCheck>,
+    pub claim_boundary_checks: Vec<ValidationCheck>,
+    pub semantic_coverage_checks: Vec<ValidationCheck>,
+    pub conflict_checks: Vec<ValidationCheck>,
+    pub formal_promotion_guardrail_checks: Vec<ValidationCheck>,
+    pub summary: ArchMapValidationSummary,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapValidationSummary {
+    pub result: String,
+    pub map_item_count: usize,
+    pub conflict_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapLeanPreservationVocabularyEntry {
+    pub vocabulary_id: String,
+    pub archmap_selector: String,
+    pub lean_package_field: String,
+    pub preservation_role: String,
+    pub report_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapLeanPreservationChecklistEntry {
+    pub checklist_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub map_item_id: Option<String>,
+    pub lean_package_field: String,
+    pub status: String,
+    pub candidate_sources: Vec<String>,
+    pub blocking_reasons: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub coverage_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirExtension {
+    pub embedding_claim_ref: Option<String>,
+    pub feature_view_claim_ref: Option<String>,
+    pub interaction_claim_refs: Vec<String>,
+    pub split_claim_ref: Option<String>,
+    pub split_status: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AirDocumentInput {
+    pub sig0_path: String,
+    pub validation_path: Option<String>,
+    pub diff_path: Option<String>,
+    pub pr_metadata_path: Option<String>,
+    pub law_policy_path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirValidationReport {
+    pub schema_version: String,
+    pub input: AirValidationInput,
+    pub summary: AirValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub architecture_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AirValidationSummary {
+    pub result: String,
+    pub component_count: usize,
+    pub relation_count: usize,
+    pub evidence_count: usize,
+    pub claim_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureExtensionReportV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub input: FeatureReportInput,
+    pub architecture_id: String,
+    pub revision: AirRevision,
+    pub feature: AirFeature,
+    pub review_summary: FeatureReportReviewSummary,
+    pub architecture_summary: FeatureReportArchitectureSummary,
+    #[serde(default)]
+    pub runtime_summary: FeatureReportRuntimeSummary,
+    pub interpreted_extension: FeatureReportInterpretedExtension,
+    pub generated_patch_summary: FeatureReportGeneratedPatchSummary,
+    pub split_status: String,
+    pub preserved_invariants: Vec<FeatureReportInvariant>,
+    pub changed_invariants: Vec<FeatureReportInvariant>,
+    pub introduced_obstruction_witnesses: Vec<FeatureReportObstructionWitness>,
+    pub eliminated_obstruction_witnesses: Vec<FeatureReportObstructionWitness>,
+    pub complexity_transfer_candidates: Vec<String>,
+    pub semantic_path_summary: FeatureReportSemanticPathSummary,
+    pub theorem_package_refs: Vec<String>,
+    pub theorem_precondition_summary: TheoremPreconditionCheckSummary,
+    pub theorem_precondition_checks: Vec<TheoremPreconditionCheck>,
+    pub discharged_assumptions: Vec<String>,
+    pub undischarged_assumptions: Vec<String>,
+    pub coverage_gaps: Vec<FeatureReportCoverageGap>,
+    pub unsupported_constructs: Vec<String>,
+    pub repair_suggestions: Vec<FeatureReportRepairSuggestion>,
+    pub empirical_annotations: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportInput {
+    pub schema_version: String,
+    pub path: String,
+    pub architecture_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportReviewSummary {
+    pub split_status: String,
+    pub claim_classification: String,
+    pub top_witnesses: Vec<String>,
+    pub required_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportArchitectureSummary {
+    pub component_count: usize,
+    pub relation_count: usize,
+    pub static_relation_count: usize,
+    pub runtime_relation_count: usize,
+    pub policy_relation_count: usize,
+    pub semantic_diagram_count: usize,
+    pub measured_axes: Vec<String>,
+    pub unmeasured_axes: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportRuntimeSummary {
+    pub relation_count: usize,
+    pub measurement_boundary: String,
+    pub runtime_propagation: Option<i64>,
+    pub interpretation: String,
+    pub measured_axes: Vec<String>,
+    pub unmeasured_axes: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub projection_rule: Option<String>,
+    pub extraction_scope: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub coverage_gaps: Vec<String>,
+    pub claim_refs: Vec<String>,
+    pub claim_classifications: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+impl Default for FeatureReportRuntimeSummary {
+    fn default() -> Self {
+        Self {
+            relation_count: 0,
+            measurement_boundary: "unmeasured".to_string(),
+            runtime_propagation: None,
+            interpretation: "runtimePropagation is unmeasured".to_string(),
+            measured_axes: Vec::new(),
+            unmeasured_axes: Vec::new(),
+            projection_rule: None,
+            extraction_scope: Vec::new(),
+            exactness_assumptions: Vec::new(),
+            coverage_gaps: Vec::new(),
+            claim_refs: Vec::new(),
+            claim_classifications: Vec::new(),
+            non_conclusions: vec!["runtime risk zero is not concluded".to_string()],
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportInterpretedExtension {
+    pub embedding_claim_ref: Option<String>,
+    pub feature_view_claim_ref: Option<String>,
+    pub interaction_claim_refs: Vec<String>,
+    pub split_claim_ref: Option<String>,
+    pub added_components: Vec<String>,
+    pub changed_components: Vec<String>,
+    pub added_relations: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportGeneratedPatchSummary {
+    pub is_ai_session: bool,
+    pub generated_patch: bool,
+    pub human_reviewed: Option<bool>,
+    pub provider: Option<String>,
+    pub model: Option<String>,
+    pub prompt_ref: Option<String>,
+    pub artifact_refs: Vec<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub operations: Vec<FeatureReportGeneratedPatchOperation>,
+    #[serde(default)]
+    pub review_warnings: Vec<FeatureReportGeneratedPatchReviewWarning>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportGeneratedPatchOperation {
+    pub operation_ref: String,
+    pub added_components: Vec<String>,
+    pub added_relations: Vec<FeatureReportEdgeRef>,
+    pub policy_touches: Vec<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportGeneratedPatchReviewWarning {
+    pub warning_id: String,
+    pub warning_kind: String,
+    pub classification: String,
+    pub review_signal: String,
+    pub measurement_boundary: String,
+    pub components: Vec<String>,
+    pub relations: Vec<FeatureReportEdgeRef>,
+    pub operation_refs: Vec<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportInvariant {
+    pub invariant: String,
+    pub axis: String,
+    pub value: Option<i64>,
+    pub measurement_boundary: String,
+    pub evidence_refs: Vec<String>,
+    pub claim_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportObstructionWitness {
+    pub witness_id: String,
+    pub layer: String,
+    pub kind: String,
+    pub extension_role: Vec<String>,
+    pub extension_classification: Vec<String>,
+    pub components: Vec<String>,
+    pub edges: Vec<FeatureReportEdgeRef>,
+    pub paths: Vec<String>,
+    pub diagrams: Vec<String>,
+    pub nonfillability_witness_ref: Option<String>,
+    pub operation: Option<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub theorem_reference: Vec<String>,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+    pub repair_candidates: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObstructionWitnessArtifactV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub witness: FeatureReportObstructionWitness,
+    pub versioning: ObstructionWitnessVersioningV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObstructionWitnessVersioningV0 {
+    pub target_fields: Vec<String>,
+    pub compatibility_boundaries: Vec<String>,
+    pub evidence_state_policy: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportRepairSuggestion {
+    pub suggestion_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repair_rule_id: Option<String>,
+    pub source_witness_refs: Vec<String>,
+    pub source_coverage_gap_refs: Vec<String>,
+    pub target_witness_kind: String,
+    pub proposed_operation: String,
+    pub required_preconditions: Vec<String>,
+    pub expected_effect: String,
+    pub preserved_invariants: Vec<String>,
+    pub possible_side_effects: Vec<String>,
+    pub proof_obligation_refs: Vec<String>,
+    pub patch_strategy: String,
+    pub confidence: String,
+    pub traceability: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportEdgeRef {
+    pub relation_id: String,
+    pub from: Option<String>,
+    pub to: Option<String>,
+    pub kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportEvidenceRef {
+    pub evidence_ref: String,
+    pub kind: Option<String>,
+    pub artifact_ref: Option<String>,
+    pub path: Option<String>,
+    pub symbol: Option<String>,
+    pub rule_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDriftLedgerV0 {
+    pub schema_version: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_compatibility: Option<SchemaArtifactCompatibilityV0>,
+    pub ledger_id: String,
+    pub generated_at: String,
+    pub baseline_ref: Option<String>,
+    pub retention_manifest_ref: Option<String>,
+    pub suppression_workflow_refs: Vec<String>,
+    pub entries: Vec<ArchitectureDriftLedgerEntryV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDriftLedgerEntryV0 {
+    pub ledger_entry_id: String,
+    pub observed_at: String,
+    pub architecture_id: String,
+    pub revision_ref: Option<String>,
+    pub subject_ref: String,
+    pub witness_fingerprint: Option<String>,
+    pub policy_ref: Option<String>,
+    pub aggregation_window: DriftLedgerAggregationWindowV0,
+    pub source: DriftLedgerSourceV0,
+    pub metric_id: String,
+    pub layer: String,
+    pub measured_value: Option<serde_json::Value>,
+    pub measurement_boundary: String,
+    pub evidence_refs: Vec<String>,
+    pub confidence: String,
+    pub introduced_by_pr: Option<String>,
+    pub first_seen_at: Option<String>,
+    pub last_seen_at: Option<String>,
+    pub owner: Option<String>,
+    pub status: String,
+    pub suppression: Option<DriftLedgerSuppressionV0>,
+    pub repair_candidates: Vec<String>,
+    pub linked_witness_refs: Vec<String>,
+    pub linked_claim_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DriftLedgerAggregationWindowV0 {
+    pub window_start: Option<String>,
+    pub window_end: Option<String>,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DriftLedgerSourceV0 {
+    pub kind: String,
+    #[serde(rename = "ref")]
+    pub reference: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DriftLedgerSuppressionV0 {
+    pub reason: Option<String>,
+    pub approved_by: Option<String>,
+    pub approved_at: Option<String>,
+    pub expires_at: Option<String>,
+    pub scope: Option<String>,
+    pub policy_ref: Option<String>,
+    pub witness_ref: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportSemanticPathSummary {
+    pub path_count: usize,
+    pub diagram_count: usize,
+    pub nonfillability_witness_count: usize,
+    pub representative_path_ids: Vec<String>,
+    pub representative_diagram_ids: Vec<String>,
+    pub representative_nonfillability_witness_ids: Vec<String>,
+    pub measurement_boundary: String,
+    pub measured_axes: Vec<String>,
+    pub unmeasured_axes: Vec<String>,
+    pub evidence_kinds: Vec<String>,
+    pub diagrams: Vec<FeatureReportSemanticDiagramSummary>,
+    pub nonfillability_witnesses: Vec<FeatureReportSemanticNonfillabilityWitnessSummary>,
+    pub extraction_scope: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub missing_preconditions: Vec<String>,
+    pub coverage_gaps: Vec<String>,
+    pub claim_refs: Vec<String>,
+    pub claim_classifications: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportSemanticDiagramSummary {
+    pub diagram_id: String,
+    pub lhs_path_ref: String,
+    pub rhs_path_ref: String,
+    pub equivalence: String,
+    pub filler_claim_ref: Option<String>,
+    pub nonfillability_witness_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub claim_refs: Vec<String>,
+    pub claim_classifications: Vec<String>,
+    pub theorem_reference: Vec<String>,
+    pub missing_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportSemanticNonfillabilityWitnessSummary {
+    pub witness_id: String,
+    pub diagram_ref: String,
+    pub witness_kind: String,
+    pub claim_ref: String,
+    pub evidence: Vec<FeatureReportEvidenceRef>,
+    pub theorem_reference: Vec<String>,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub missing_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureReportCoverageGap {
+    pub layer: String,
+    pub measurement_boundary: String,
+    pub unmeasured_axes: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TheoremPreconditionCheckReportV0 {
+    pub schema_version: String,
+    pub input: TheoremPreconditionCheckInput,
+    pub registry: TheoremPackageRegistryV0,
+    pub summary: TheoremPreconditionCheckSummary,
+    pub archmap_preservation_precondition_checklist: Vec<ArchMapLeanPreservationChecklistEntry>,
+    pub checks: Vec<TheoremPreconditionCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TheoremPreconditionCheckInput {
+    pub schema_version: String,
+    pub path: String,
+    pub architecture_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TheoremPackageRegistryV0 {
+    pub schema_version: String,
+    pub scope: String,
+    pub packages: Vec<TheoremPackageMetadataV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TheoremPackageMetadataV0 {
+    pub package_id: String,
+    pub lean_entrypoint: String,
+    pub theorem_refs: Vec<String>,
+    pub supported_subject_refs: Vec<String>,
+    pub supported_axes: Vec<String>,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub missing_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TheoremPreconditionCheckSummary {
+    pub result: String,
+    pub checked_claim_count: usize,
+    pub applicable_claim_count: usize,
+    pub formal_proved_claim_count: usize,
+    pub measured_witness_count: usize,
+    pub blocked_claim_count: usize,
+    pub unmeasured_claim_count: usize,
+    pub unknown_theorem_ref_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TheoremPreconditionCheck {
+    pub claim_id: String,
+    pub subject_ref: String,
+    pub applicable_package_refs: Vec<String>,
+    pub theorem_refs: Vec<String>,
+    pub unknown_theorem_refs: Vec<String>,
+    pub claim_level: String,
+    pub input_claim_classification: String,
+    pub resolved_claim_classification: String,
+    pub measurement_boundary: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub projection_rule: Option<String>,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub missing_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+    pub result: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRegistryV0 {
+    pub schema_version: String,
+    pub scope: String,
+    pub selected_obstruction_universe: String,
+    pub explicit_assumptions: Vec<String>,
+    pub rules: Vec<RepairRuleV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleV0 {
+    pub repair_rule_id: String,
+    pub target_witness_kind: String,
+    pub proposed_operation: String,
+    pub required_preconditions: Vec<String>,
+    pub expected_effect: String,
+    pub preserved_invariants: Vec<String>,
+    pub possible_side_effects: Vec<String>,
+    pub proof_obligation_refs: Vec<String>,
+    pub patch_strategy: String,
+    pub confidence: String,
+    pub relative_to: RepairRuleRelativeScopeV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRelativeScopeV0 {
+    pub selected_obstruction_universe: String,
+    pub explicit_assumptions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRegistryValidationReportV0 {
+    pub schema_version: String,
+    pub input: RepairRuleRegistryValidationInput,
+    pub registry: RepairRuleRegistryV0,
+    pub summary: RepairRuleRegistryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRegistryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RepairRuleRegistryValidationSummary {
+    pub result: String,
+    pub rule_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintArtifactV0 {
+    pub schema_version: String,
+    pub scope: String,
+    pub constraint_refs: Vec<String>,
+    pub candidate_refs: Vec<String>,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub constraints: Vec<SynthesisConstraintV0>,
+    pub candidates: Vec<SynthesisCandidateV0>,
+    pub no_solution_boundary: SynthesisNoSolutionBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintV0 {
+    pub constraint_id: String,
+    pub kind: String,
+    pub subject_ref: String,
+    pub predicate: String,
+    pub evidence_refs: Vec<String>,
+    pub theorem_precondition_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisCandidateV0 {
+    pub candidate_id: String,
+    pub produced_by: String,
+    pub operation_refs: Vec<String>,
+    pub constraint_refs: Vec<String>,
+    pub soundness_package_refs: Vec<String>,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisNoSolutionBoundaryV0 {
+    pub solver_status: String,
+    pub candidate_refs: Vec<String>,
+    pub no_solution_certificate_ref: Option<String>,
+    pub valid_certificate_claim_ref: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintValidationReportV0 {
+    pub schema_version: String,
+    pub input: SynthesisConstraintValidationInput,
+    pub artifact: SynthesisConstraintArtifactV0,
+    pub summary: SynthesisConstraintValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SynthesisConstraintValidationSummary {
+    pub result: String,
+    pub constraint_count: usize,
+    pub candidate_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateV0 {
+    pub schema_version: String,
+    pub certificate_id: String,
+    pub scope: String,
+    pub constraint_refs: Vec<String>,
+    pub refuted_candidate_refs: Vec<String>,
+    pub obstruction_witness_refs: Vec<String>,
+    pub required_assumptions: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub proof_obligation_refs: Vec<String>,
+    pub valid_certificate_claim_ref: Option<String>,
+    pub cases: Vec<NoSolutionCertificateCaseV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateCaseV0 {
+    pub case_id: String,
+    pub constraint_refs: Vec<String>,
+    pub refuted_candidate_ref: Option<String>,
+    pub evidence_refs: Vec<String>,
+    pub theorem_precondition_refs: Vec<String>,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateValidationReportV0 {
+    pub schema_version: String,
+    pub input: NoSolutionCertificateValidationInput,
+    pub certificate: NoSolutionCertificateV0,
+    pub summary: NoSolutionCertificateValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub certificate_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NoSolutionCertificateValidationSummary {
+    pub result: String,
+    pub case_count: usize,
+    pub refuted_candidate_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationPolicyV0 {
+    pub schema_version: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub scope: String,
+    pub required_axes: Vec<OrganizationRequiredAxisV0>,
+    pub allowed_unmeasured_gaps: Vec<OrganizationAllowedUnmeasuredGapV0>,
+    pub required_theorem_preconditions: Vec<OrganizationRequiredTheoremPreconditionV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationRequiredAxisV0 {
+    pub axis: String,
+    pub claim_level: String,
+    pub measurement_boundary: String,
+    pub max_allowed_value: Option<i64>,
+    pub required_preconditions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationAllowedUnmeasuredGapV0 {
+    pub axis: String,
+    pub claim_level: String,
+    pub layer: String,
+    pub scope: String,
+    pub reason: String,
+    pub expires_at: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationRequiredTheoremPreconditionV0 {
+    pub subject_ref: String,
+    pub claim_level: String,
+    pub theorem_refs: Vec<String>,
+    pub required_preconditions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationPolicyValidationReportV0 {
+    pub schema_version: String,
+    pub input: OrganizationPolicyValidationInput,
+    pub policy: OrganizationPolicyV0,
+    pub summary: OrganizationPolicyValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationPolicyValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrganizationPolicyValidationSummary {
+    pub result: String,
+    pub required_axis_count: usize,
+    pub allowed_unmeasured_gap_count: usize,
+    pub required_theorem_precondition_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateRegistryV0 {
+    pub schema_version: String,
+    pub registry_id: String,
+    pub scope: String,
+    pub templates: Vec<LawPolicyTemplateV0>,
+    pub explicit_assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateV0 {
+    pub template_id: String,
+    pub target_component_kind: String,
+    pub law_policy_family: String,
+    pub selector_semantics: String,
+    pub selector_assumptions: Vec<String>,
+    pub required_evidence_kinds: Vec<String>,
+    pub default_required_axes: Vec<String>,
+    pub policy_output_artifacts: Vec<String>,
+    pub theorem_bridge_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateRegistryValidationReportV0 {
+    pub schema_version: String,
+    pub input: LawPolicyTemplateRegistryValidationInput,
+    pub registry: LawPolicyTemplateRegistryV0,
+    pub summary: LawPolicyTemplateRegistryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateRegistryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub registry_id: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyTemplateRegistryValidationSummary {
+    pub result: String,
+    pub template_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyV0 {
+    pub schema_version: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub component_id_kind: String,
+    pub selector_semantics: String,
+    pub adopted_laws: Vec<ArchitectureAdoptedLawV0>,
+    pub layers: Vec<ArchitecturePolicyLayerV0>,
+    #[serde(default)]
+    pub allowed_dependencies: Vec<ArchitecturePolicyDependencyRuleV0>,
+    #[serde(default)]
+    pub forbidden_dependencies: Vec<ArchitecturePolicyDependencyRuleV0>,
+    #[serde(default)]
+    pub exceptions: Vec<ArchitecturePolicyExceptionV0>,
+    pub srp: ArchitecturePolicySrpV0,
+    #[serde(default)]
+    pub sft_governance: ArchitecturePolicySftGovernanceV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureAdoptedLawV0 {
+    pub law_id: String,
+    pub law_kind: String,
+    pub enforcement: String,
+    pub review_level: String,
+    pub evidence_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyLayerV0 {
+    pub layer_id: String,
+    pub selectors: Vec<String>,
+    pub responsibility: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyDependencyRuleV0 {
+    pub rule_id: String,
+    pub law_ref: String,
+    pub source_layer: String,
+    pub target_layer: String,
+    pub severity: String,
+    pub review_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyExceptionV0 {
+    pub exception_id: String,
+    pub law_ref: String,
+    pub source_selector: String,
+    pub target_selector: String,
+    pub reason: String,
+    pub expires_at: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicySrpV0 {
+    pub responsibility_taxonomy: Vec<String>,
+    pub reason_to_change_categories: Vec<String>,
+    pub allowed_orchestrator_roles: Vec<String>,
+    pub required_evidence_fields: Vec<String>,
+    pub judgment_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicySftGovernanceV0 {
+    #[serde(default)]
+    pub adopted_invariant_refs: Vec<String>,
+    #[serde(default)]
+    pub allowed_operation_families: Vec<ArchitecturePolicyFutureRuleV0>,
+    #[serde(default)]
+    pub conditionally_allowed_support: Vec<ArchitecturePolicyFutureRuleV0>,
+    #[serde(default)]
+    pub forbidden_future_path_classes: Vec<ArchitecturePolicyFutureRuleV0>,
+    #[serde(default)]
+    pub required_governance_interventions: Vec<ArchitecturePolicyGovernanceInterventionV0>,
+    #[serde(default)]
+    pub selected_horizon_refs: Vec<String>,
+    #[serde(default)]
+    pub observation_boundary_refs: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyFutureRuleV0 {
+    pub rule_id: String,
+    pub applies_to: Vec<String>,
+    pub disposition: String,
+    pub reason: String,
+    pub evidence_refs: Vec<String>,
+    pub reviewer_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyGovernanceInterventionV0 {
+    pub intervention_id: String,
+    pub intervention_kind: String,
+    pub applies_to: Vec<String>,
+    pub required_before: String,
+    pub preservation_boundary: String,
+    pub evidence_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArchitecturePolicyValidationInputV0,
+    pub policy: ArchitecturePolicyV0,
+    pub summary: ArchitecturePolicyValidationSummaryV0,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyValidationInputV0 {
+    pub schema_version: String,
+    pub path: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub component_id_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitecturePolicyValidationSummaryV0 {
+    pub result: String,
+    pub adopted_law_count: usize,
+    pub layer_count: usize,
+    pub forbidden_dependency_count: usize,
+    pub exception_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub policy_ref: LawViolationPolicyRefV0,
+    pub sig0_ref: LawViolationSig0RefV0,
+    pub summary: LawViolationSummaryV0,
+    pub deterministic_violations: Vec<LawViolationFindingV0>,
+    pub allowed_exceptions: Vec<LawViolationExceptionFindingV0>,
+    pub srp_cues: Vec<SrpReviewCueV0>,
+    pub unmeasured: Vec<LawViolationUnmeasuredV0>,
+    pub review_actions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationPolicyRefV0 {
+    pub policy_id: String,
+    pub policy_version: String,
+    pub path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationSig0RefV0 {
+    pub root: String,
+    pub component_kind: String,
+    pub path: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationSummaryV0 {
+    pub result: String,
+    pub deterministic_violation_count: usize,
+    pub allowed_exception_count: usize,
+    pub srp_cue_count: usize,
+    pub unmeasured_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationFindingV0 {
+    pub finding_id: String,
+    pub law_ref: String,
+    pub law_kind: String,
+    pub source: String,
+    pub target: String,
+    pub source_layer: String,
+    pub target_layer: String,
+    pub rule_id: String,
+    pub severity: String,
+    pub evidence: String,
+    pub review_action: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationExceptionFindingV0 {
+    pub exception_id: String,
+    pub law_ref: String,
+    pub source: String,
+    pub target: String,
+    pub reason: String,
+    pub review_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SrpReviewCueV0 {
+    pub cue_id: String,
+    pub subject_ref: String,
+    pub semantic_role: Option<String>,
+    pub responsibility_regions: Vec<String>,
+    pub reason_to_change: Vec<String>,
+    pub actor_refs: Vec<String>,
+    pub allowed_role: Option<String>,
+    pub law_refs: Vec<String>,
+    pub judgment_taxonomy: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub policy_refs: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub review_level: String,
+    pub review_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawViolationUnmeasuredV0 {
+    pub item_id: String,
+    pub category: String,
+    pub subject_ref: String,
+    pub reason: String,
+    pub review_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginRegistryV0 {
+    pub schema_version: String,
+    pub registry_id: String,
+    pub scope: String,
+    pub plugins: Vec<CustomRulePluginV0>,
+    pub explicit_assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginV0 {
+    pub plugin_id: String,
+    pub rule_id: String,
+    pub plugin_kind: String,
+    pub evidence_kind: String,
+    pub confidence: String,
+    pub input_contract: Vec<String>,
+    pub output_contract: Vec<String>,
+    pub coverage_assumptions: Vec<String>,
+    pub permitted_claim_levels: Vec<String>,
+    pub formal_claim_promotion: String,
+    pub theorem_precondition_refs: Vec<String>,
+    pub required_theorem_preconditions: Vec<String>,
+    pub output_artifacts: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginRegistryValidationReportV0 {
+    pub schema_version: String,
+    pub input: CustomRulePluginRegistryValidationInput,
+    pub registry: CustomRulePluginRegistryV0,
+    pub summary: CustomRulePluginRegistryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginRegistryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub registry_id: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CustomRulePluginRegistryValidationSummary {
+    pub result: String,
+    pub plugin_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitRegistryV0 {
+    pub schema_version: String,
+    pub registry_id: String,
+    pub scope: String,
+    pub units: Vec<MeasurementUnitV0>,
+    pub evidence_adapters: Vec<MeasurementEvidenceAdapterBoundaryV0>,
+    pub explicit_assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitV0 {
+    pub unit_id: String,
+    pub unit_kind: String,
+    pub repository_root: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub service_root: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deployment_unit: Option<String>,
+    pub component_id_kind: String,
+    pub selected_component_refs: Vec<String>,
+    pub runtime_evidence_sources: Vec<MeasurementEvidenceSourceV0>,
+    pub semantic_workflow_sources: Vec<MeasurementEvidenceSourceV0>,
+    pub coverage_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub output_artifacts: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementEvidenceSourceV0 {
+    pub source_id: String,
+    pub source_kind: String,
+    pub owner_unit_ref: String,
+    pub path: String,
+    pub privacy_boundary: String,
+    pub coverage_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementEvidenceAdapterBoundaryV0 {
+    pub adapter_id: String,
+    pub adapter_kind: String,
+    pub measurement_unit_refs: Vec<String>,
+    pub measured_layers: Vec<String>,
+    pub evidence_kinds: Vec<String>,
+    pub projection_rule: String,
+    pub coverage_assumptions: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub output_artifacts: Vec<String>,
+    pub theorem_bridge_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitRegistryValidationReportV0 {
+    pub schema_version: String,
+    pub input: MeasurementUnitRegistryValidationInput,
+    pub registry: MeasurementUnitRegistryV0,
+    pub summary: MeasurementUnitRegistryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitRegistryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub registry_id: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementUnitRegistryValidationSummary {
+    pub result: String,
+    pub unit_count: usize,
+    pub evidence_adapter_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasurementContractV0 {
+    pub schema_version: String,
+    pub artifact_id: String,
+    pub scope: String,
+    pub metrics: Vec<DynamicsMeasuredValueV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasuredValueV0 {
+    pub metric_id: String,
+    #[serde(default)]
+    pub value: Option<serde_json::Value>,
+    pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<String>,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsArtifactRefV0 {
+    pub kind: String,
+    pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artifact_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MeasurementBoundaryV0 {
+    pub measured_layer: String,
+    pub measured_axes: Vec<String>,
+    pub source_artifact_refs: Vec<DynamicsArtifactRefV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extractor_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub policy_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub aggregation_window: Option<DynamicsAggregationWindowV0>,
+    pub selected_region_refs: Vec<String>,
+    pub assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsAggregationWindowV0 {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub window_start: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub window_end: Option<String>,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMissingEvidenceV0 {
+    pub evidence_kind: String,
+    pub reason: String,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasurementContractValidationReportV0 {
+    pub schema_version: String,
+    pub input: DynamicsMeasurementContractValidationInput,
+    pub contract: DynamicsMeasurementContractV0,
+    pub summary: DynamicsMeasurementContractValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasurementContractValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub artifact_id: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DynamicsMeasurementContractValidationSummary {
+    pub result: String,
+    pub metric_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrForceReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub pull_request: PullRequestRefV0,
+    pub signature_before_ref: DynamicsArtifactRefV0,
+    pub signature_after_ref: DynamicsArtifactRefV0,
+    pub delta_signature_signed: Vec<SignedSignatureDeltaV0>,
+    pub observed_force: Vec<DynamicsMeasuredValueV0>,
+    pub force_decomposition: ForceDecompositionV0,
+    pub feature_extension_report_refs: Vec<DynamicsArtifactRefV0>,
+    pub theorem_precondition_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PullRequestRefV0 {
+    pub provider: String,
+    pub repository: String,
+    pub number: u64,
+    pub transition_kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub merged_at: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignedSignatureDeltaV0 {
+    pub axis_id: String,
+    #[serde(default)]
+    pub before: Option<serde_json::Value>,
+    #[serde(default)]
+    pub after: Option<serde_json::Value>,
+    #[serde(default)]
+    pub delta: Option<serde_json::Value>,
+    pub status: String,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForceDecompositionV0 {
+    pub decomposition_id: String,
+    pub components: Vec<ForceComponentV0>,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForceComponentV0 {
+    pub component_id: String,
+    pub component_kind: String,
+    pub contribution: DynamicsMeasuredValueV0,
+    pub decomposition_method: String,
+    pub evidence_refs: Vec<DynamicsArtifactRefV0>,
+    pub theorem_claim_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrForceReportValidationReportV0 {
+    pub schema_version: String,
+    pub input: PrForceReportValidationInput,
+    pub report: PrForceReportV0,
+    pub summary: PrForceReportValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrForceReportValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub report_id: String,
+    pub pull_request: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrForceReportValidationSummary {
+    pub result: String,
+    pub observed_force_count: usize,
+    pub decomposition_component_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub repository: RepositoryRef,
+    pub window: DynamicsAggregationWindowV0,
+    pub trajectory_points: Vec<SignatureTrajectoryPointV0>,
+    pub force_refs: Vec<DynamicsArtifactRefV0>,
+    pub drift_signals: Vec<DynamicsMeasuredValueV0>,
+    pub stability_signals: Vec<DynamicsMeasuredValueV0>,
+    pub excursion_signals: Vec<DynamicsMeasuredValueV0>,
+    pub endpoint_compression_signals: Vec<DynamicsMeasuredValueV0>,
+    pub selected_regions: Vec<SelectedSignatureRegionV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryPointV0 {
+    pub point_id: String,
+    pub sequence_index: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub observed_at: Option<String>,
+    pub revision: RepositoryRevisionRef,
+    pub signature_snapshot_ref: DynamicsArtifactRefV0,
+    pub axis_values: Vec<DynamicsMeasuredValueV0>,
+    pub region_refs: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub force_ref: Option<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SelectedSignatureRegionV0 {
+    pub region_id: String,
+    pub region_kind: String,
+    pub defining_axes: Vec<String>,
+    pub bounds: serde_json::Value,
+    pub trajectory_point_refs: Vec<String>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryReportValidationReportV0 {
+    pub schema_version: String,
+    pub input: SignatureTrajectoryReportValidationInput,
+    pub report: SignatureTrajectoryReportV0,
+    pub summary: SignatureTrajectoryReportValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryReportValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub report_id: String,
+    pub repository: String,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureTrajectoryReportValidationSummary {
+    pub result: String,
+    pub trajectory_point_count: usize,
+    pub force_ref_count: usize,
+    pub drift_signal_count: usize,
+    pub stability_signal_count: usize,
+    pub excursion_signal_count: usize,
+    pub endpoint_compression_signal_count: usize,
+    pub selected_region_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDynamicsMetricsReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub repository: RepositoryRef,
+    pub window: DynamicsAggregationWindowV0,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub trajectory_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub force_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub gap_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub field_control_metrics: Vec<DynamicsMeasuredValueV0>,
+    pub ai_dynamics_metrics: Vec<DynamicsMeasuredValueV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attractor_engineering: Option<AttractorEngineeringMetricsV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttractorEngineeringMetricsV0 {
+    pub selected_regions: Vec<SelectedSignatureRegionV0>,
+    pub attractor_candidates: Vec<AttractorEngineeringCandidateV0>,
+    pub basin_candidates: Vec<AttractorEngineeringCandidateV0>,
+    pub basin_simulations: Vec<BasinSimulationV0>,
+    pub support_risk_entries: Vec<SupportRiskMassEntryV0>,
+    pub design_field_signals: Vec<AttractorEngineeringSignalV0>,
+    pub seed_attractor_signals: Vec<AttractorEngineeringSignalV0>,
+    pub support_risk_mass: DynamicsMeasuredValueV0,
+    pub design_field_strength: DynamicsMeasuredValueV0,
+    pub seed_attractor_strength: DynamicsMeasuredValueV0,
+    pub field_shaping_delta: DynamicsMeasuredValueV0,
+    pub vibe_coding_readiness_axes: Vec<DynamicsMeasuredValueV0>,
+    pub basin_boundary_fragility: DynamicsMeasuredValueV0,
+    pub trajectory_return_time: DynamicsMeasuredValueV0,
+    pub observability_debt: DynamicsMeasuredValueV0,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinSimulationV0 {
+    pub simulation_id: String,
+    pub bounded_horizon: usize,
+    pub selected_initial_states: Vec<BasinSimulationInitialStateV0>,
+    pub operation_scripts: Vec<BasinSimulationScriptV0>,
+    pub basin_classifications: Vec<BasinSimulationClassificationV0>,
+    pub perturbation_evidence: Vec<BasinPerturbationEvidenceV0>,
+    pub return_evidence: Vec<TrajectoryReturnEvidenceV0>,
+    pub observability_axes: Vec<ObservabilityAxisEvidenceV0>,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinSimulationInitialStateV0 {
+    pub state_id: String,
+    pub state_kind: String,
+    pub state_weight: DynamicsMeasuredValueV0,
+    pub region_refs: Vec<String>,
+    pub evidence_status: String,
+    pub missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinSimulationScriptV0 {
+    pub script_id: String,
+    pub operation_ids: Vec<String>,
+    pub bounded_horizon: usize,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinSimulationClassificationV0 {
+    pub state_id: String,
+    pub script_id: String,
+    pub classification: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_region_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps_to_target: Option<usize>,
+    pub status: String,
+    pub missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BasinPerturbationEvidenceV0 {
+    pub evidence_id: String,
+    pub source_state_id: String,
+    pub perturbation_kind: String,
+    pub perturbation_steps: usize,
+    pub baseline_classification: String,
+    pub perturbed_classification: String,
+    pub status: String,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrajectoryReturnEvidenceV0 {
+    pub evidence_id: String,
+    pub state_id: String,
+    pub excursion_region_ref: String,
+    pub return_region_ref: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps_to_return: Option<usize>,
+    pub status: String,
+    pub missing_evidence: Vec<DynamicsMissingEvidenceV0>,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObservabilityAxisEvidenceV0 {
+    pub axis_id: String,
+    pub required_weight: DynamicsMeasuredValueV0,
+    pub evidence_status: String,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttractorEngineeringCandidateV0 {
+    pub candidate_id: String,
+    pub candidate_kind: String,
+    pub status: String,
+    pub region_refs: Vec<String>,
+    pub metric_refs: Vec<String>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttractorEngineeringSignalV0 {
+    pub signal_id: String,
+    pub signal_kind: String,
+    pub selected_signal: String,
+    pub status: String,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub confidence: Option<String>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SupportRiskMassEntryV0 {
+    pub operation_id: String,
+    pub operation_kind: String,
+    pub support_scope_refs: Vec<String>,
+    pub support_weight: DynamicsMeasuredValueV0,
+    pub preservation_precondition_status: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub theorem_precondition_refs: Vec<String>,
+    pub risk_state: String,
+    pub risk_mass_contribution: DynamicsMeasuredValueV0,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDynamicsMetricsReportValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArchitectureDynamicsMetricsReportValidationInput,
+    pub report: ArchitectureDynamicsMetricsReportV0,
+    pub summary: ArchitectureDynamicsMetricsReportValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDynamicsMetricsReportValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub report_id: String,
+    pub repository: String,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureDynamicsMetricsReportValidationSummary {
+    pub result: String,
+    pub trajectory_metric_count: usize,
+    pub force_metric_count: usize,
+    pub gap_metric_count: usize,
+    pub field_control_metric_count: usize,
+    pub ai_dynamics_metric_count: usize,
+    pub attractor_selected_region_count: usize,
+    pub attractor_candidate_count: usize,
+    pub basin_candidate_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureFieldSnapshotV0 {
+    pub schema_version: String,
+    pub snapshot_id: String,
+    pub repository: RepositoryRef,
+    pub window: DynamicsAggregationWindowV0,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub selected_context_refs: Vec<String>,
+    pub field_signals: Vec<AttractorEngineeringSignalV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureFieldSnapshotValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArchitectureFieldSnapshotValidationInput,
+    pub snapshot: ArchitectureFieldSnapshotV0,
+    pub summary: ArchitectureFieldSnapshotValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureFieldSnapshotValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub snapshot_id: String,
+    pub repository: String,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchitectureFieldSnapshotValidationSummary {
+    pub result: String,
+    pub field_signal_count: usize,
+    pub source_ref_count: usize,
+    pub selected_context_ref_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalLogV0 {
+    pub schema_version: String,
+    pub log_id: String,
+    pub repository: RepositoryRef,
+    pub window: DynamicsAggregationWindowV0,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub proposals: Vec<OperationProposalEntryV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalEntryV0 {
+    pub proposal_id: String,
+    pub operation_kind: String,
+    pub source_kind: String,
+    pub status: String,
+    #[serde(default)]
+    pub support_weight: Option<f64>,
+    pub selected_region_refs: Vec<String>,
+    pub source_refs: Vec<DynamicsArtifactRefV0>,
+    pub measurement_boundary: MeasurementBoundaryV0,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalLogValidationReportV0 {
+    pub schema_version: String,
+    pub input: OperationProposalLogValidationInput,
+    pub log: OperationProposalLogV0,
+    pub summary: OperationProposalLogValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalLogValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub log_id: String,
+    pub repository: String,
+    pub window_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationProposalLogValidationSummary {
+    pub result: String,
+    pub proposal_count: usize,
+    pub source_ref_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorV0 {
+    pub schema_version: String,
+    pub descriptor_id: String,
+    pub artifact_kind: String,
+    pub artifact_title: String,
+    pub source_refs: Vec<ArtifactDescriptorSourceRefV0>,
+    pub action_class_candidates: Vec<ArtifactActionClassCandidateV0>,
+    pub scope: ArtifactDescriptorScopeV0,
+    pub missing_evidence: Vec<ArtifactDescriptorMissingEvidenceV0>,
+    pub measurement_boundary: ArtifactDescriptorMeasurementBoundaryV0,
+    pub forecast_non_conclusions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorSourceRefV0 {
+    pub source_ref_id: String,
+    pub source_kind: String,
+    pub path_or_url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stable_ref: Option<String>,
+    pub evidence_role: String,
+    pub retained_fields: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactActionClassCandidateV0 {
+    pub candidate_id: String,
+    pub action_class: String,
+    pub confidence: String,
+    pub source_ref_ids: Vec<String>,
+    pub rationale: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorScopeV0 {
+    pub scope_id: String,
+    pub selected_region_refs: Vec<String>,
+    pub excluded_region_refs: Vec<String>,
+    pub target_audience: Vec<String>,
+    pub artifact_boundary: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorMissingEvidenceV0 {
+    pub evidence_id: String,
+    pub evidence_kind: String,
+    pub reason: String,
+    pub effect: String,
+    pub status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorMeasurementBoundaryV0 {
+    pub boundary_id: String,
+    pub measured_layers: Vec<String>,
+    pub measured_axes: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub selected_region_refs: Vec<String>,
+    pub assumptions: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub missing_evidence_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArtifactDescriptorValidationInput,
+    pub descriptor: ArtifactDescriptorV0,
+    pub summary: ArtifactDescriptorValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub descriptor_id: String,
+    pub artifact_kind: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArtifactDescriptorValidationSummary {
+    pub result: String,
+    pub source_ref_count: usize,
+    pub action_class_candidate_count: usize,
+    pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapV0 {
+    pub schema_version: String,
+    pub intent_map_id: String,
+    pub source_universe: IntentSourceUniverseV0,
+    pub generator: IntentMapGeneratorV0,
+    pub items: Vec<IntentItemV0>,
+    pub missing_decisions: Vec<IntentBoundaryItemV0>,
+    pub ambiguous_intents: Vec<IntentBoundaryItemV0>,
+    pub missing_evidence: Vec<IntentBoundaryItemV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentSourceUniverseV0 {
+    pub universe_id: String,
+    pub source_refs: Vec<IntentSourceRefV0>,
+    pub included_kinds: Vec<String>,
+    pub excluded_kinds: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentSourceRefV0 {
+    pub source_ref_id: String,
+    pub source_kind: String,
+    pub path_or_url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stable_ref: Option<String>,
+    pub evidence_role: String,
+    pub retained_fields: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapGeneratorV0 {
+    pub authored_by: String,
+    pub prompt_ref: String,
+    pub model_ref: String,
+    pub extraction_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentItemV0 {
+    pub intent_item_id: String,
+    pub intent_kind: String,
+    pub source_refs: Vec<String>,
+    pub target_intent_ref: String,
+    pub preserves: Vec<String>,
+    pub forgets: Vec<String>,
+    pub claim_classification: String,
+    pub confidence: String,
+    pub required_assumptions: Vec<String>,
+    pub missing_decisions: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentBoundaryItemV0 {
+    pub boundary_id: String,
+    pub boundary_kind: String,
+    pub intent_item_refs: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapValidationReportV0 {
+    pub schema_version: String,
+    pub input: IntentMapValidationInput,
+    pub intent_map: IntentMapV0,
+    pub summary: IntentMapValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub intent_map_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapValidationSummary {
+    pub result: String,
+    pub intent_item_count: usize,
+    pub missing_decision_count: usize,
+    pub ambiguous_intent_count: usize,
+    pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableBundleV0 {
+    pub schema_version: String,
+    pub bundle_id: String,
+    pub architecture_id: String,
+    pub source_refs: Vec<AatObservableSourceRefV0>,
+    pub selected_universe: AatSelectedUniverseV0,
+    pub concept_mappings: Vec<AatConceptMappingV0>,
+    pub observed_axes: Vec<AatObservedAxisV0>,
+    pub coverage_boundaries: Vec<AatCoverageBoundaryV0>,
+    pub witness_catalog: Vec<AatWitnessCatalogEntryV0>,
+    pub operation_candidates: Vec<AatOperationCandidateV0>,
+    pub projection_observation_evidence: Vec<AatProjectionObservationEvidenceV0>,
+    pub feature_extension_evidence: Vec<AatFeatureExtensionEvidenceV0>,
+    pub semantic_diagram_evidence: Vec<AatSemanticDiagramEvidenceV0>,
+    pub state_effect_law_evidence: Vec<AatStateEffectLawEvidenceV0>,
+    pub repair_synthesis_evidence: Vec<AatRepairSynthesisEvidenceV0>,
+    pub analytic_axes: Vec<AatAnalyticAxisV0>,
+    pub theorem_boundaries: Vec<AatTheoremBoundaryV0>,
+    pub review_actions: Vec<AatReviewActionV0>,
+    pub llm_review_surface: AatLlmReviewSurfaceV0,
+    pub responsibility_boundary: AatResponsibilityBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableSourceRefV0 {
+    pub source_ref_id: String,
+    pub artifact_kind: String,
+    pub schema_version: String,
+    pub path: String,
+    pub retained_fields: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatSelectedUniverseV0 {
+    pub universe_id: String,
+    pub included_refs: Vec<String>,
+    pub excluded_refs: Vec<String>,
+    pub private_refs: Vec<String>,
+    pub unavailable_refs: Vec<String>,
+    pub unsupported_refs: Vec<String>,
+    pub dynamic_boundary_refs: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub measurement_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatConceptMappingV0 {
+    pub concept_id: String,
+    pub aat_concept: String,
+    pub artifact_refs: Vec<String>,
+    pub report_refs: Vec<String>,
+    pub skill_refs: Vec<String>,
+    pub expressibility: String,
+    pub retention_status: String,
+    pub review_status: String,
+    pub measurement_status: String,
+    pub responsibility: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservedAxisV0 {
+    pub axis_id: String,
+    pub concept_refs: Vec<String>,
+    pub artifact_refs: Vec<String>,
+    pub measurement_status: String,
+    pub value: Option<i64>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatCoverageBoundaryV0 {
+    pub boundary_id: String,
+    pub boundary_kind: String,
+    pub affected_refs: Vec<String>,
+    pub measurement_status: String,
+    pub review_action_ref: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatWitnessCatalogEntryV0 {
+    pub witness_ref: String,
+    pub witness_kind: String,
+    pub law_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub measurement_status: String,
+    pub severity: String,
+    pub review_action_ref: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatOperationCandidateV0 {
+    pub operation_ref: String,
+    pub operation_kind: String,
+    pub role: String,
+    pub confidence: String,
+    pub deterministic_cues: Vec<String>,
+    pub llm_judgment_needed: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub preserved_invariant_refs: Vec<String>,
+    pub possible_transferred_obstruction_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatProjectionObservationEvidenceV0 {
+    pub evidence_ref: String,
+    pub evidence_kind: String,
+    pub source_ref: String,
+    pub target_ref: String,
+    pub local_contract_boundary: String,
+    pub global_layering_boundary: String,
+    pub witness_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatFeatureExtensionEvidenceV0 {
+    pub evidence_ref: String,
+    pub feature_ref: String,
+    pub operation_ref: String,
+    pub obstruction_classifications: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub missing_evidence_refs: Vec<String>,
+    pub static_boundary: String,
+    pub runtime_boundary: String,
+    pub semantic_boundary: String,
+    pub coverage_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatSemanticDiagramEvidenceV0 {
+    pub evidence_ref: String,
+    pub path_refs: Vec<String>,
+    pub homotopy_refs: Vec<String>,
+    pub diagram_refs: Vec<String>,
+    pub filler_status: String,
+    pub nonfillability_witness_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub measurement_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatStateEffectLawEvidenceV0 {
+    pub evidence_ref: String,
+    pub law_kind: String,
+    pub law_case_refs: Vec<String>,
+    pub measurement_status: String,
+    pub witness_refs: Vec<String>,
+    pub unmeasured_law_families: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatRepairSynthesisEvidenceV0 {
+    pub evidence_ref: String,
+    pub repair_step_refs: Vec<String>,
+    pub synthesis_candidate_refs: Vec<String>,
+    pub no_solution_certificate_refs: Vec<String>,
+    pub selected_obstruction_decrease_refs: Vec<String>,
+    pub transferred_risk_refs: Vec<String>,
+    pub solver_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatAnalyticAxisV0 {
+    pub axis_id: String,
+    pub metric_ref: String,
+    pub representation_strength: Vec<String>,
+    pub selected_witness_universe: Vec<String>,
+    pub aggregate_zero_reflection: String,
+    pub coverage_assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatTheoremBoundaryV0 {
+    pub boundary_ref: String,
+    pub claim_ref: String,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub missing_preconditions: Vec<String>,
+    pub measured_violation_refs: Vec<String>,
+    pub review_action_ref: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatReviewActionV0 {
+    pub review_action_id: String,
+    pub category: String,
+    pub source_refs: Vec<String>,
+    pub action: String,
+    pub next_evidence: Vec<String>,
+    pub owner: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatLlmReviewSurfaceV0 {
+    pub skill_ref: String,
+    pub input_artifact_refs: Vec<String>,
+    pub review_questions: Vec<String>,
+    pub output_categories: Vec<String>,
+    pub deterministic_inputs: Vec<String>,
+    pub llm_judgment_boundaries: Vec<String>,
+    pub human_review_boundaries: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatResponsibilityBoundaryV0 {
+    pub deterministic_tool: Vec<String>,
+    pub llm_review: Vec<String>,
+    pub human_review: Vec<String>,
+    pub formal_proof: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableBundleValidationReportV0 {
+    pub schema_version: String,
+    pub input: AatObservableBundleValidationInputV0,
+    pub bundle: AatObservableBundleV0,
+    pub summary: AatObservableBundleValidationSummaryV0,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableBundleValidationInputV0 {
+    pub schema_version: String,
+    pub path: String,
+    pub bundle_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableBundleValidationSummaryV0 {
+    pub result: String,
+    pub concept_count: usize,
+    pub witness_count: usize,
+    pub operation_candidate_count: usize,
+    pub review_action_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentV0 {
+    pub schema_version: String,
+    pub alignment_map_id: String,
+    pub intent_map_ref: IntentMapArtifactRefV0,
+    pub archmap_ref: IntentArchMapArtifactRefV0,
+    pub alignments: Vec<IntentArchMapAlignmentItemV0>,
+    pub unaligned_intents: Vec<IntentAlignmentBoundaryItemV0>,
+    pub unsupported_intents: Vec<IntentAlignmentBoundaryItemV0>,
+    pub ambiguous_alignments: Vec<IntentAlignmentBoundaryItemV0>,
+    pub missing_evidence: Vec<IntentAlignmentBoundaryItemV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentMapArtifactRefV0 {
+    pub schema_version: String,
+    pub intent_map_id: String,
+    pub path: String,
+    pub intent_item_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapArtifactRefV0 {
+    pub schema_version: String,
+    pub map_id: String,
+    pub path: String,
+    pub map_item_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentItemV0 {
+    pub alignment_id: String,
+    pub alignment_kind: String,
+    pub intent_item_ref: String,
+    pub archmap_item_refs: Vec<String>,
+    pub preserves: Vec<String>,
+    pub forgets: Vec<String>,
+    pub confidence: String,
+    pub missing_decisions: Vec<String>,
+    pub missing_evidence: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentAlignmentBoundaryItemV0 {
+    pub boundary_id: String,
+    pub boundary_kind: String,
+    pub intent_item_refs: Vec<String>,
+    pub archmap_item_refs: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentValidationReportV0 {
+    pub schema_version: String,
+    pub input: IntentArchMapAlignmentValidationInput,
+    pub alignment_map: IntentArchMapAlignmentV0,
+    pub summary: IntentArchMapAlignmentValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub alignment_map_id: String,
+    pub intent_map_id: String,
+    pub archmap_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentArchMapAlignmentValidationSummary {
+    pub result: String,
+    pub alignment_count: usize,
+    pub unaligned_intent_count: usize,
+    pub unsupported_intent_count: usize,
+    pub ambiguous_alignment_count: usize,
+    pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEstimateV0 {
+    pub schema_version: String,
+    pub estimate_id: String,
+    pub descriptor_ref: OperationSupportDescriptorRefV0,
+    pub candidate_operation_families: Vec<CandidateOperationFamilyV0>,
+    pub policy_constraints: Vec<OperationSupportPolicyConstraintV0>,
+    pub known_forbidden_support: Vec<KnownForbiddenOperationSupportV0>,
+    pub unknown_remainder: Vec<OperationSupportUnknownRemainderV0>,
+    pub evidence_boundary: OperationSupportEvidenceBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportDescriptorRefV0 {
+    pub descriptor_schema_version: String,
+    pub descriptor_id: String,
+    pub artifact_kind: String,
+    pub source_ref_ids: Vec<String>,
+    pub action_class_candidate_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CandidateOperationFamilyV0 {
+    pub family_id: String,
+    pub operation_family: String,
+    pub support_kind: String,
+    pub action_class_candidate_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub confidence: String,
+    pub rationale: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportPolicyConstraintV0 {
+    pub constraint_id: String,
+    pub constraint_kind: String,
+    pub applies_to_family_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub rule: String,
+    pub safety_claim_boundary: String,
+    #[serde(default)]
+    pub policy_refs: Vec<String>,
+    #[serde(default)]
+    pub support_disposition: String,
+    #[serde(default)]
+    pub governance_action_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KnownForbiddenOperationSupportV0 {
+    pub forbidden_id: String,
+    pub operation_family: String,
+    pub source_ref_ids: Vec<String>,
+    pub constraint_refs: Vec<String>,
+    pub reason: String,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportUnknownRemainderV0 {
+    pub remainder_id: String,
+    pub affected_family_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub unknown_axes: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEvidenceBoundaryV0 {
+    pub boundary_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub measurement_boundary_refs: Vec<String>,
+    pub confidence_boundary: String,
+    pub evidence_kinds: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEstimateValidationReportV0 {
+    pub schema_version: String,
+    pub input: OperationSupportEstimateValidationInput,
+    pub estimate: OperationSupportEstimateV0,
+    pub summary: OperationSupportEstimateValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEstimateValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub estimate_id: String,
+    pub descriptor_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OperationSupportEstimateValidationSummary {
+    pub result: String,
+    pub candidate_operation_family_count: usize,
+    pub policy_constraint_count: usize,
+    pub known_forbidden_support_count: usize,
+    pub unknown_remainder_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastConeSkeletonV0 {
+    pub schema_version: String,
+    pub cone_id: String,
+    pub operation_support_ref: ForecastOperationSupportRefV0,
+    pub finite_support_refs: Vec<ForecastFiniteSupportRefV0>,
+    pub bounded_horizon: ForecastBoundedHorizonV0,
+    pub path_class_candidates: Vec<ForecastPathClassCandidateV0>,
+    #[serde(default)]
+    pub gluing_evidence: Vec<ForecastGluingEvidenceV0>,
+    #[serde(default)]
+    pub governance_interventions: Vec<ForecastGovernanceInterventionEvidenceV0>,
+    #[serde(default)]
+    pub typed_boundary_failures: Vec<ForecastTypedBoundaryFailureV0>,
+    pub forecast_boundary: ForecastBoundaryV0,
+    pub unknown_remainder: Vec<ForecastUnknownRemainderV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastGluingEvidenceV0 {
+    pub gluing_id: String,
+    pub local_future_refs: Vec<String>,
+    pub status: String,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub reviewer_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastGovernanceInterventionEvidenceV0 {
+    pub intervention_id: String,
+    pub intervention_kind: String,
+    pub target_path_class_ids: Vec<String>,
+    pub policy_refs: Vec<String>,
+    pub cut_action: String,
+    pub preservation_boundary: String,
+    pub source_ref_ids: Vec<String>,
+    pub reviewer_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastTypedBoundaryFailureV0 {
+    pub failure_id: String,
+    pub failure_kind: String,
+    pub affected_path_class_ids: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub reason: String,
+    pub reviewer_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastOperationSupportRefV0 {
+    pub estimate_schema_version: String,
+    pub estimate_id: String,
+    pub descriptor_id: String,
+    pub candidate_operation_family_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastFiniteSupportRefV0 {
+    pub support_ref_id: String,
+    pub support_kind: String,
+    pub operation_family_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastBoundedHorizonV0 {
+    pub horizon_id: String,
+    pub horizon_kind: String,
+    pub max_steps: u32,
+    pub time_window: String,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastPathClassCandidateV0 {
+    pub path_class_id: String,
+    pub path_class: String,
+    pub support_ref_ids: Vec<String>,
+    pub operation_family_ids: Vec<String>,
+    pub horizon_ref_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub affected_axes: Vec<String>,
+    pub rationale: String,
+    pub probability_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastBoundaryV0 {
+    pub boundary_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub measurement_boundary_refs: Vec<String>,
+    pub support_ref_ids: Vec<String>,
+    pub horizon_ref_ids: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastUnknownRemainderV0 {
+    pub remainder_id: String,
+    pub affected_path_class_ids: Vec<String>,
+    pub source_ref_ids: Vec<String>,
+    pub unknown_axes: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastConeSkeletonValidationReportV0 {
+    pub schema_version: String,
+    pub input: ForecastConeSkeletonValidationInput,
+    pub cone: ForecastConeSkeletonV0,
+    pub summary: ForecastConeSkeletonValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastConeSkeletonValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub cone_id: String,
+    pub estimate_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastConeSkeletonValidationSummary {
+    pub result: String,
+    pub finite_support_ref_count: usize,
+    pub path_class_candidate_count: usize,
+    pub unknown_remainder_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeReportV0 {
+    pub schema_version: String,
+    pub envelope_id: String,
+    pub forecast_cone_ref: ConsequenceForecastConeRefV0,
+    pub affected_architecture_regions: Vec<AffectedArchitectureRegionV0>,
+    pub comparable_signature_axes: Vec<ComparableSignatureAxisV0>,
+    pub expected_axis_delta_ranges: Vec<ExpectedAxisDeltaRangeV0>,
+    pub obstruction_witness_candidates: Vec<SelectedObstructionWitnessCandidateV0>,
+    pub missing_boundary_items: Vec<ConsequenceMissingBoundaryItemV0>,
+    #[serde(default)]
+    pub typed_boundary_failures: Vec<ConsequenceTypedBoundaryFailureV0>,
+    #[serde(default)]
+    pub reviewer_actions: Vec<ConsequenceReviewerActionV0>,
+    pub theorem_boundary_items: Vec<ConsequenceTheoremBoundaryItemV0>,
+    pub recommendations: ConsequenceEnvelopeRecommendationsV0,
+    pub summary_projection: ConsequenceEnvelopeSummaryProjectionV0,
+    pub unknown_remainder: Vec<ConsequenceUnknownRemainderV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceTypedBoundaryFailureV0 {
+    pub failure_id: String,
+    pub failure_kind: String,
+    pub affected_region_ids: Vec<String>,
+    pub affected_axis_ids: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub reason: String,
+    pub next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceReviewerActionV0 {
+    pub action_id: String,
+    pub action_kind: String,
+    pub status: String,
+    pub source_item_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub message: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceForecastConeRefV0 {
+    pub forecast_cone_schema_version: String,
+    pub cone_id: String,
+    pub operation_support_estimate_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub forecast_boundary_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AffectedArchitectureRegionV0 {
+    pub region_id: String,
+    pub region_ref: String,
+    pub effect_kind: String,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComparableSignatureAxisV0 {
+    pub axis_id: String,
+    pub axis_name: String,
+    pub measurement_boundary_refs: Vec<String>,
+    pub comparability: String,
+    pub missing_invariant_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExpectedAxisDeltaRangeV0 {
+    pub delta_id: String,
+    pub axis_id: String,
+    pub range_kind: String,
+    pub lower_bound: Option<String>,
+    pub upper_bound: Option<String>,
+    pub source_ref_ids: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SelectedObstructionWitnessCandidateV0 {
+    pub candidate_id: String,
+    pub obstruction_kind: String,
+    pub region_ids: Vec<String>,
+    pub axis_ids: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub selection_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceMissingBoundaryItemV0 {
+    pub item_id: String,
+    pub item_kind: String,
+    pub affected_axis_ids: Vec<String>,
+    pub reason: String,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceTheoremBoundaryItemV0 {
+    pub item_id: String,
+    pub theorem_or_claim_ref: String,
+    pub boundary: String,
+    pub required_evidence: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeRecommendationsV0 {
+    pub review: Vec<String>,
+    pub ci: Vec<String>,
+    pub issue_decomposition: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeSummaryProjectionV0 {
+    pub summary_id: String,
+    pub headline: String,
+    pub affected_region_count: usize,
+    pub comparable_axis_count: usize,
+    pub missing_boundary_count: usize,
+    pub reviewer_notes: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceUnknownRemainderV0 {
+    pub remainder_id: String,
+    pub affected_region_ids: Vec<String>,
+    pub affected_axis_ids: Vec<String>,
+    pub unknown_axes: Vec<String>,
+    pub treatment: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeValidationReportV0 {
+    pub schema_version: String,
+    pub input: ConsequenceEnvelopeValidationInput,
+    pub envelope: ConsequenceEnvelopeReportV0,
+    pub summary: ConsequenceEnvelopeValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub envelope_id: String,
+    pub cone_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsequenceEnvelopeValidationSummary {
+    pub result: String,
+    pub affected_region_count: usize,
+    pub comparable_axis_count: usize,
+    pub obstruction_candidate_count: usize,
+    pub missing_boundary_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryV0 {
+    pub schema_version: String,
+    pub summary_id: String,
+    pub envelope_ref: SftReviewSummaryEnvelopeRefV0,
+    pub status: String,
+    pub opened_futures: Vec<SftReviewFutureV0>,
+    pub closed_futures: Vec<SftReviewFutureV0>,
+    pub boundary_failures: Vec<SftReviewBoundaryFailureV0>,
+    pub next_actions: Vec<SftReviewNextActionV0>,
+    pub llm_judgement_contract: SftReviewLlmJudgementContractV0,
+    pub reviewer_message: String,
+    pub evidence_refs: Vec<String>,
+    pub boundary_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryEnvelopeRefV0 {
+    pub envelope_schema_version: String,
+    pub envelope_id: String,
+    pub cone_id: String,
+    pub source_ref_ids: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewFutureV0 {
+    pub future_id: String,
+    pub future_kind: String,
+    pub region_refs: Vec<String>,
+    pub axis_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewBoundaryFailureV0 {
+    pub failure_id: String,
+    pub failure_kind: String,
+    pub evidence_refs: Vec<String>,
+    pub boundary_refs: Vec<String>,
+    pub reviewer_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewNextActionV0 {
+    pub action_id: String,
+    pub action_kind: String,
+    pub source_item_refs: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewLlmJudgementContractV0 {
+    pub input_fields: Vec<String>,
+    pub output_fields: Vec<String>,
+    pub required_evidence_policy: String,
+    pub forbidden_readings: Vec<String>,
+    pub confidence_boundary: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryValidationReportV0 {
+    pub schema_version: String,
+    pub input: SftReviewSummaryValidationInput,
+    pub summary: SftReviewSummaryV0,
+    pub validation_summary: SftReviewSummaryValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub summary_id: String,
+    pub envelope_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SftReviewSummaryValidationSummary {
+    pub result: String,
+    pub opened_future_count: usize,
+    pub closed_future_count: usize,
+    pub boundary_failure_count: usize,
+    pub next_action_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastCalibrationHookV0 {
+    pub schema_version: String,
+    pub hook_id: String,
+    pub envelope_ref: CalibrationEnvelopeRefV0,
+    pub forecast_item_refs: Vec<CalibrationForecastItemRefV0>,
+    pub observed_outcome_refs: Vec<CalibrationObservedOutcomeRefV0>,
+    pub matches: Vec<CalibrationMatchV0>,
+    pub reference_boundaries: CalibrationReferenceBoundariesV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationEnvelopeRefV0 {
+    pub envelope_schema_version: String,
+    pub envelope_id: String,
+    pub cone_id: String,
+    pub source_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationForecastItemRefV0 {
+    pub forecast_item_id: String,
+    pub item_kind: String,
+    pub envelope_item_ref: String,
+    pub source_ref_ids: Vec<String>,
+    pub comparison_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationObservedOutcomeRefV0 {
+    pub observed_ref_id: String,
+    pub observed_kind: String,
+    pub path_or_url: String,
+    pub status: String,
+    pub b10_refs: Vec<String>,
+    pub b11_refs: Vec<String>,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationMatchV0 {
+    pub match_id: String,
+    pub forecast_item_id: String,
+    pub observed_ref_id: Option<String>,
+    pub status: String,
+    pub rationale: String,
+    pub update_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CalibrationReferenceBoundariesV0 {
+    pub b10_refs: Vec<String>,
+    pub b11_refs: Vec<String>,
+    pub unavailable_refs: Vec<String>,
+    pub private_refs: Vec<String>,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastCalibrationHookValidationReportV0 {
+    pub schema_version: String,
+    pub input: ForecastCalibrationHookValidationInput,
+    pub hook: ForecastCalibrationHookV0,
+    pub summary: ForecastCalibrationHookValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastCalibrationHookValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub hook_id: String,
+    pub envelope_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastCalibrationHookValidationSummary {
+    pub result: String,
+    pub forecast_item_count: usize,
+    pub observed_outcome_count: usize,
+    pub match_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityAnalysisReportV0 {
+    pub schema_version: String,
+    pub report_id: String,
+    pub archmap_ref: IntentArchMapArtifactRefV0,
+    pub air_ref: Option<PrQualityArtifactRefV0>,
+    pub theorem_check_ref: Option<PrQualityArtifactRefV0>,
+    pub feature_report_ref: Option<PrQualityArtifactRefV0>,
+    pub policy_decision_ref: Option<PrQualityArtifactRefV0>,
+    pub cues: Vec<PrQualityCueV0>,
+    pub missing_evidence: Vec<IntentAlignmentBoundaryItemV0>,
+    pub review_summary: PrQualityReviewSummaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityArtifactRefV0 {
+    pub artifact_id: String,
+    pub artifact_kind: String,
+    pub path: String,
+    pub schema_version: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityCueV0 {
+    pub cue_id: String,
+    pub cue_kind: String,
+    pub source_refs: Vec<String>,
+    pub severity: String,
+    pub review_focus: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityReviewSummaryV0 {
+    pub summary_id: String,
+    pub cue_count: usize,
+    pub missing_evidence_count: usize,
+    pub reviewer_notes: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityAnalysisValidationReportV0 {
+    pub schema_version: String,
+    pub input: PrQualityAnalysisValidationInput,
+    pub report: PrQualityAnalysisReportV0,
+    pub summary: PrQualityAnalysisValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityAnalysisValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub report_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PrQualityAnalysisValidationSummary {
+    pub result: String,
+    pub cue_count: usize,
+    pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationRecordV0 {
+    pub schema_version: String,
+    pub calibration_id: String,
+    pub intent_map_ref: IntentMapArtifactRefV0,
+    pub forecast_cone_ref: ConsequenceForecastConeRefV0,
+    pub observed_artifact_refs: Vec<CalibrationObservedOutcomeRefV0>,
+    pub intent_matches: Vec<IntentCalibrationMatchV0>,
+    pub missing_decision_statuses: Vec<MissingDecisionObservedStatusV0>,
+    pub forecast_usefulness_feedback: Vec<ForecastUsefulnessFeedbackV0>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationMatchV0 {
+    pub match_id: String,
+    pub intent_item_id: String,
+    pub forecast_item_id: String,
+    pub observed_ref_id: Option<String>,
+    pub status: String,
+    pub rationale: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MissingDecisionObservedStatusV0 {
+    pub decision_id: String,
+    pub intent_item_refs: Vec<String>,
+    pub status: String,
+    pub observed_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ForecastUsefulnessFeedbackV0 {
+    pub feedback_id: String,
+    pub intent_item_refs: Vec<String>,
+    pub forecast_item_refs: Vec<String>,
+    pub feedback_kind: String,
+    pub reviewer_note: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationValidationReportV0 {
+    pub schema_version: String,
+    pub input: IntentCalibrationValidationInput,
+    pub record: IntentCalibrationRecordV0,
+    pub summary: IntentCalibrationValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub calibration_id: String,
+    pub intent_map_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IntentCalibrationValidationSummary {
+    pub result: String,
+    pub intent_match_count: usize,
+    pub observed_artifact_count: usize,
+    pub missing_decision_status_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceV0 {
+    pub schema_version: String,
+    pub governance_id: String,
+    pub proposal_ref: AiProposalGovernanceProposalRefV0,
+    pub prompt_policy_boundary: AiProposalPromptPolicyBoundaryV0,
+    pub support_assessments: Vec<AiProposalSupportAssessmentV0>,
+    pub shortcut_witnesses: Vec<AiProposalShortcutWitnessV0>,
+    pub review_ci_mediation: AiProposalReviewCiMediationV0,
+    pub posterior_field_update: AiProposalPosteriorFieldUpdateV0,
+    pub evidence_boundary: AiProposalGovernanceEvidenceBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceProposalRefV0 {
+    pub proposal_source_ref_id: String,
+    pub descriptor_id: String,
+    pub descriptor_schema_version: String,
+    pub operation_support_estimate_id: Option<String>,
+    pub consequence_envelope_id: Option<String>,
+    pub source_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalPromptPolicyBoundaryV0 {
+    pub boundary_id: String,
+    pub prompt_ref: String,
+    pub policy_ref: String,
+    pub source_ref_ids: Vec<String>,
+    pub retained_fields: Vec<String>,
+    pub unavailable_fields: Vec<String>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalSupportAssessmentV0 {
+    pub assessment_id: String,
+    pub support_category: String,
+    pub applies_to_ref: String,
+    pub source_ref_ids: Vec<String>,
+    pub rationale: String,
+    pub required_follow_up: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalShortcutWitnessV0 {
+    pub witness_id: String,
+    pub shortcut_kind: String,
+    pub affected_ref: String,
+    pub source_ref_ids: Vec<String>,
+    pub evidence_boundary: String,
+    pub mediation_ref_ids: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalReviewCiMediationV0 {
+    pub mediation_id: String,
+    pub review_refs: Vec<String>,
+    pub ci_refs: Vec<String>,
+    pub decision_boundary: String,
+    pub required_human_checks: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalPosteriorFieldUpdateV0 {
+    pub update_id: String,
+    pub update_kind: String,
+    pub calibration_refs: Vec<String>,
+    pub retained_unknown_axes: Vec<String>,
+    pub field_update_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceEvidenceBoundaryV0 {
+    pub boundary_id: String,
+    pub artifact_refs: Vec<String>,
+    pub missing_evidence_refs: Vec<String>,
+    pub unsupported_constructs: Vec<String>,
+    pub measurement_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceValidationReportV0 {
+    pub schema_version: String,
+    pub input: AiProposalGovernanceValidationInput,
+    pub governance: AiProposalGovernanceV0,
+    pub summary: AiProposalGovernanceValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub governance_id: String,
+    pub descriptor_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiProposalGovernanceValidationSummary {
+    pub result: String,
+    pub support_assessment_count: usize,
+    pub shortcut_witness_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyDecisionReportV0 {
+    pub schema_version: String,
+    pub input: PolicyDecisionInput,
+    pub summary: PolicyDecisionSummary,
+    pub required_axis_decisions: Vec<RequiredAxisPolicyDecisionV0>,
+    pub missing_precondition_decisions: Vec<MissingPreconditionPolicyDecisionV0>,
+    pub coverage_gap_decisions: Vec<CoverageGapPolicyDecisionV0>,
+    pub witness_decisions: Vec<WitnessPolicyDecisionV0>,
+    pub checks: Vec<ValidationCheck>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyDecisionInput {
+    pub feature_report_schema_version: String,
+    pub feature_report_path: String,
+    pub organization_policy_schema_version: String,
+    pub organization_policy_path: String,
+    pub policy_id: String,
+    pub policy_version: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyDecisionSummary {
+    pub decision: String,
+    pub fail_count: usize,
+    pub warn_count: usize,
+    pub advisory_count: usize,
+    pub required_axis_count: usize,
+    pub allowed_unmeasured_gap_count: usize,
+    pub missing_precondition_count: usize,
+    pub measured_nonzero_witness_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequiredAxisPolicyDecisionV0 {
+    pub axis: String,
+    pub status: String,
+    pub claim_level: String,
+    pub expected_measurement_boundary: String,
+    pub actual_measurement_boundary: String,
+    pub value: Option<i64>,
+    pub max_allowed_value: Option<i64>,
+    pub reason: String,
+    pub required_preconditions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MissingPreconditionPolicyDecisionV0 {
+    pub subject_ref: String,
+    pub claim_id: String,
+    pub status: String,
+    pub missing_preconditions: Vec<String>,
+    pub theorem_refs: Vec<String>,
+    pub reason: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoverageGapPolicyDecisionV0 {
+    pub layer: String,
+    pub axis: String,
+    pub status: String,
+    pub allowed_by_policy: bool,
+    pub measurement_boundary: String,
+    pub reason: String,
+    pub policy_scope: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WitnessPolicyDecisionV0 {
+    pub witness_id: String,
+    pub status: String,
+    pub layer: String,
+    pub kind: String,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub measurement_boundary: String,
+    pub reason: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactRetentionManifestV0 {
+    pub schema_version: String,
+    pub retention_id: String,
+    pub repository: RepositoryRef,
+    pub pull_request: ReportArtifactPullRequestRef,
+    pub commit_sha: String,
+    pub policy: ReportArtifactPolicyRef,
+    pub generated_at: String,
+    pub retention_scope: String,
+    pub artifacts: Vec<RetainedReportArtifactRefV0>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub missing_or_private_artifacts: Vec<MissingReportArtifactRefV0>,
+    pub traceability: ReportArtifactTraceabilityV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactPullRequestRef {
+    pub number: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactPolicyRef {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub policy_id: Option<String>,
+    pub policy_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_version: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RetainedReportArtifactRefV0 {
+    pub artifact_id: String,
+    pub kind: String,
+    pub path: String,
+    pub repository: RepositoryRef,
+    pub pull_request_number: usize,
+    pub commit_sha: String,
+    pub schema_version: String,
+    pub policy_version: String,
+    pub generated_at: String,
+    pub retention_scope: String,
+    pub visibility: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content_hash: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MissingReportArtifactRefV0 {
+    pub kind: String,
+    pub reason: String,
+    pub visibility: String,
+    pub repository: RepositoryRef,
+    pub pull_request_number: usize,
+    pub commit_sha: String,
+    pub schema_version: String,
+    pub policy_version: String,
+    pub generated_at: String,
+    pub retention_scope: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactTraceabilityV0 {
+    pub baseline_comparison_refs: Vec<String>,
+    pub suppression_workflow_refs: Vec<String>,
+    pub drift_ledger_refs: Vec<String>,
+    pub reviewer_output_refs: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactRetentionValidationReportV0 {
+    pub schema_version: String,
+    pub input: ReportArtifactRetentionValidationInput,
+    pub manifest: ReportArtifactRetentionManifestV0,
+    pub summary: ReportArtifactRetentionValidationSummary,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactRetentionValidationInput {
+    pub schema_version: String,
+    pub path: String,
+    pub retention_id: String,
+    pub repository: RepositoryRef,
+    pub pull_request_number: usize,
+    pub commit_sha: String,
+    pub policy_version: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportArtifactRetentionValidationSummary {
+    pub result: String,
+    pub artifact_count: usize,
+    pub missing_or_private_artifact_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BaselineSuppressionReportV0 {
+    pub schema_version: String,
+    pub input: BaselineSuppressionInput,
+    pub summary: BaselineSuppressionSummary,
+    pub witness_delta: WitnessDeltaV0,
+    pub coverage_gap_delta: CoverageGapDeltaV0,
+    pub required_axis_delta: RequiredAxisDeltaV0,
+    pub policy_decision_delta: PolicyDecisionDeltaV0,
+    pub suppressions: Vec<RiskDispositionV0>,
+    pub accepted_risks: Vec<RiskDispositionV0>,
+    pub checks: Vec<ValidationCheck>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BaselineSuppressionInput {
+    pub baseline_feature_report_schema_version: String,
+    pub baseline_feature_report_path: String,
+    pub current_feature_report_schema_version: String,
+    pub current_feature_report_path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub baseline_policy_decision_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub current_policy_decision_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retention_manifest_ref: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BaselineSuppressionSummary {
+    pub result: String,
+    pub newly_introduced_witness_count: usize,
+    pub eliminated_witness_count: usize,
+    pub new_coverage_gap_count: usize,
+    pub eliminated_coverage_gap_count: usize,
+    pub required_axis_status_change_count: usize,
+    pub policy_decision_before: Option<String>,
+    pub policy_decision_after: Option<String>,
+    pub suppressed_count: usize,
+    pub accepted_risk_count: usize,
+    pub unresolved_current_witness_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+    pub advisory_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WitnessDeltaV0 {
+    pub newly_introduced: Vec<WitnessDeltaEntryV0>,
+    pub eliminated: Vec<WitnessDeltaEntryV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WitnessDeltaEntryV0 {
+    pub witness_id: String,
+    pub layer: String,
+    pub kind: String,
+    pub status: String,
+    pub measurement_boundary: String,
+    pub claim_classification: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoverageGapDeltaV0 {
+    pub newly_introduced: Vec<CoverageGapDeltaEntryV0>,
+    pub eliminated: Vec<CoverageGapDeltaEntryV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CoverageGapDeltaEntryV0 {
+    pub gap_ref: String,
+    pub layer: String,
+    pub axis: String,
+    pub status: String,
+    pub measurement_boundary: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allowed_by_policy: Option<bool>,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequiredAxisDeltaV0 {
+    pub changes: Vec<RequiredAxisDeltaEntryV0>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequiredAxisDeltaEntryV0 {
+    pub axis: String,
+    pub before_status: Option<String>,
+    pub after_status: String,
+    pub before_measurement_boundary: Option<String>,
+    pub after_measurement_boundary: String,
+    pub before_value: Option<i64>,
+    pub after_value: Option<i64>,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyDecisionDeltaV0 {
+    pub baseline_decision: Option<String>,
+    pub current_decision: Option<String>,
+    pub fail_delta: i64,
+    pub warn_delta: i64,
+    pub advisory_delta: i64,
+    pub required_action: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RiskDispositionV0 {
+    pub disposition_id: String,
+    pub kind: String,
+    pub status: String,
+    pub reason: String,
+    pub approved_by: String,
+    pub approved_at: String,
+    pub expires_at: String,
+    pub scope: String,
+    pub policy_ref: String,
+    pub witness_ref: String,
+    pub applies_to_current_witness: bool,
+    pub reviewer_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotDiffEndpoint {
+    pub repository: SnapshotRepositoryRef,
+    pub revision: RepositoryRevisionRef,
+    pub validation_result: String,
+    pub extractor_version: String,
+    pub rule_set_version: String,
+    pub policy_id: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotComparisonStatus {
+    pub primary_diff_eligible: bool,
+    pub reasons: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SignatureAxisChange {
+    pub axis: String,
+    pub before: i64,
+    pub after: i64,
+    pub delta: i64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnmeasuredAxisDelta {
+    pub axis: String,
+    pub reason: String,
+    pub before_measured: bool,
+    pub after_measured: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotEvidenceDiff {
+    pub available: bool,
+    pub unavailable_reason: Option<String>,
+    pub component_delta: Option<ComponentSetDelta>,
+    pub edge_delta: Option<EdgeSetDelta>,
+    pub policy_violation_delta: Option<PolicyViolationSetDelta>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComponentSetDelta {
+    pub before_count: usize,
+    pub after_count: usize,
+    pub delta: i64,
+    pub added: Vec<String>,
+    pub removed: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EdgeSetDelta {
+    pub before_count: usize,
+    pub after_count: usize,
+    pub delta: i64,
+    pub added: Vec<Edge>,
+    pub removed: Vec<Edge>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PolicyViolationSetDelta {
+    pub before_count: usize,
+    pub after_count: usize,
+    pub delta: i64,
+    pub added: Vec<PolicyViolation>,
+    pub removed: Vec<PolicyViolation>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SnapshotDiffAttribution {
+    pub method: String,
+    pub shared_worsened_axes: Vec<String>,
+    pub candidates: Vec<AttributionCandidate>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttributionCandidate {
+    pub kind: String,
+    pub id: String,
+    pub confidence: f64,
+    pub confidence_level: String,
+    pub reasons: Vec<String>,
+    pub changed_components: Vec<String>,
+    pub matched_components: Vec<String>,
+    pub matched_edges: Vec<Edge>,
+    pub matched_policy_violations: Vec<PolicyViolation>,
+    pub affected_axes: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NullableSignatureIntVector {
+    pub has_cycle: Option<i64>,
+    pub scc_max_size: Option<i64>,
+    pub max_depth: Option<i64>,
+    pub fanout_risk: Option<i64>,
+    pub boundary_violation_count: Option<i64>,
+    pub abstraction_violation_count: Option<i64>,
+    pub scc_excess_size: Option<i64>,
+    pub max_fanout: Option<i64>,
+    pub reachable_cone_size: Option<i64>,
+    pub weighted_scc_risk: Option<i64>,
+    pub projection_soundness_violation: Option<i64>,
+    pub lsp_violation_count: Option<i64>,
+    pub nilpotency_index: Option<i64>,
+    pub runtime_propagation: Option<i64>,
+    pub relation_complexity: Option<i64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MetricDeltaStatus {
+    pub comparable: bool,
+    pub reason: String,
+    pub before_measured: bool,
+    pub after_measured: bool,
+}
