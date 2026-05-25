@@ -1,0 +1,790 @@
+{
+  "schemaVersion": "aat-observable-bundle-v0",
+  "bundleId": "fixture-aat-observable-bundle-v0",
+  "architectureId": "coupon-service",
+  "sourceRefs": [
+    {
+      "sourceRefId": "source:air:coupon",
+      "artifactKind": "air",
+      "schemaVersion": "aat-air-v0",
+      "path": "tools/archsig/tests/fixtures/air/good_extension.json",
+      "retainedFields": [
+        "components",
+        "relations",
+        "claims",
+        "coverage",
+        "semanticDiagrams"
+      ],
+      "nonConclusions": [
+        "source ref does not prove artifact completeness"
+      ]
+    },
+    {
+      "sourceRefId": "source:archmap:coupon",
+      "artifactKind": "archmap",
+      "schemaVersion": "archmap-v0",
+      "path": "tools/archsig/tests/fixtures/minimal/archmap.json",
+      "retainedFields": [
+        "sourceUniverse",
+        "mapItems",
+        "coverage",
+        "conflicts"
+      ],
+      "nonConclusions": [
+        "source ref does not prove artifact completeness"
+      ]
+    },
+    {
+      "sourceRefId": "source:feature-report:coupon",
+      "artifactKind": "feature-extension-report",
+      "schemaVersion": "feature-extension-report-v0",
+      "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
+      "retainedFields": [
+        "introducedObstructionWitnesses",
+        "semanticPathSummary",
+        "repairSuggestions"
+      ],
+      "nonConclusions": [
+        "source ref does not prove artifact completeness"
+      ]
+    }
+  ],
+  "selectedUniverse": {
+    "universeId": "universe:coupon-selected",
+    "includedRefs": [
+      "component:checkout",
+      "component:coupon"
+    ],
+    "excludedRefs": [
+      "component:billing-private"
+    ],
+    "privateRefs": [
+      "repo:private-observability"
+    ],
+    "unavailableRefs": [
+      "runtime:production-traces"
+    ],
+    "unsupportedRefs": [
+      "framework:dynamic-plugin-loader"
+    ],
+    "dynamicBoundaryRefs": [
+      "boundary:runtime-dispatch"
+    ],
+    "exactnessAssumptions": [
+      "static import graph is selected as structural evidence",
+      "runtime traces are unavailable unless supplied as runtime-edge-evidence"
+    ],
+    "measurementStatus": "partiallyMeasured",
+    "nonConclusions": [
+      "selected universe is not the complete deployed system",
+      "excluded refs are not measured zero"
+    ]
+  },
+  "conceptMappings": [
+    {
+      "conceptId": "concept:architecture-object",
+      "aatConcept": "ArchitectureObject / ComponentUniverse",
+      "artifactRefs": [
+        "source:archmap:coupon",
+        "source:air:coupon"
+      ],
+      "reportRefs": [
+        "coverage-boundary:dynamic-dispatch"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "partiallyMeasured",
+      "responsibility": "deterministic+human",
+      "nonConclusions": [
+        "component universe coverage is not complete extraction"
+      ]
+    },
+    {
+      "conceptId": "concept:obstruction-witness",
+      "aatConcept": "ObstructionWitness",
+      "artifactRefs": [
+        "source:feature-report:coupon"
+      ],
+      "reportRefs": [
+        "witness:projection-mismatch",
+        "witness:nonfillability"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "measuredNonzero",
+      "responsibility": "deterministic+LLM+human",
+      "nonConclusions": [
+        "witness absence does not prove lawfulness"
+      ]
+    },
+    {
+      "conceptId": "concept:theorem-boundary",
+      "aatConcept": "TheoremBoundary / NonConclusion",
+      "artifactRefs": [
+        "theorem-check-report-v0"
+      ],
+      "reportRefs": [
+        "boundary:formal-precondition-missing"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "unmeasured",
+      "responsibility": "deterministic+human",
+      "nonConclusions": [
+        "blocked formal claim is not a measured violation"
+      ]
+    },
+    {
+      "conceptId": "concept:operation",
+      "aatConcept": "ArchitectureOperation",
+      "artifactRefs": [
+        "pr-quality-analysis-report-v0",
+        "operation-support-estimate-v0"
+      ],
+      "reportRefs": [
+        "operation:coupon-feature-extension"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "partiallyMeasured",
+      "responsibility": "deterministic+LLM",
+      "nonConclusions": [
+        "operation candidate is not theorem discharge"
+      ]
+    },
+    {
+      "conceptId": "concept:projection-observation",
+      "aatConcept": "Projection / Observation / LSP / DIP",
+      "artifactRefs": [
+        "source:air:coupon"
+      ],
+      "reportRefs": [
+        "evidence:projection-abstraction"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "partiallyMeasured",
+      "responsibility": "deterministic+LLM",
+      "nonConclusions": [
+        "local contract evidence is not global layering proof"
+      ]
+    },
+    {
+      "conceptId": "concept:feature-extension",
+      "aatConcept": "FeatureExtension / ExtensionObstruction",
+      "artifactRefs": [
+        "source:feature-report:coupon"
+      ],
+      "reportRefs": [
+        "feature-evidence:coupon-extension"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "partiallyMeasured",
+      "responsibility": "deterministic+LLM+human",
+      "nonConclusions": [
+        "extension obstruction classes are not disjointness proof"
+      ]
+    },
+    {
+      "conceptId": "concept:semantic-diagram",
+      "aatConcept": "Path / Homotopy / DiagramFiller / NonFillability",
+      "artifactRefs": [
+        "source:air:coupon"
+      ],
+      "reportRefs": [
+        "semantic:evidence:coupon-noncommutation"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "measuredNonzero",
+      "responsibility": "deterministic+LLM",
+      "nonConclusions": [
+        "semantic evidence is not static edge evidence"
+      ]
+    },
+    {
+      "conceptId": "concept:state-effect",
+      "aatConcept": "StateTransition / EffectBoundary",
+      "artifactRefs": [
+        "source:air:coupon"
+      ],
+      "reportRefs": [
+        "state-effect:evidence:coupon-replay"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "partiallyMeasured",
+      "responsibility": "deterministic+LLM+human",
+      "nonConclusions": [
+        "state law evidence is not event log completeness"
+      ]
+    },
+    {
+      "conceptId": "concept:repair-synthesis",
+      "aatConcept": "Repair / Synthesis / ComplexityTransfer",
+      "artifactRefs": [
+        "source:feature-report:coupon"
+      ],
+      "reportRefs": [
+        "repair:evidence:coupon-boundary"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "partiallyMeasured",
+      "responsibility": "deterministic+LLM+human",
+      "nonConclusions": [
+        "repair suggestion is not whole-system improvement"
+      ]
+    },
+    {
+      "conceptId": "concept:analytic-representation",
+      "aatConcept": "AnalyticRepresentation / ObstructionValuation",
+      "artifactRefs": [
+        "signature-axis:projectionSoundnessViolation"
+      ],
+      "reportRefs": [
+        "analytic-axis:projection-soundness"
+      ],
+      "skillRefs": [
+        "tools/archsig/skills/aat-reviewer/SKILL.md"
+      ],
+      "expressibility": "representable",
+      "retentionStatus": "retained",
+      "reviewStatus": "reviewable",
+      "measurementStatus": "partiallyMeasured",
+      "responsibility": "deterministic+human",
+      "nonConclusions": [
+        "metric zero is not structural flatness without reflection assumptions"
+      ]
+    },
+    {
+      "conceptId": "concept:global-higher-completeness",
+      "aatConcept": "Global higher-categorical completeness",
+      "artifactRefs": [],
+      "reportRefs": [
+        "coverage-boundary:out-of-scope-hott"
+      ],
+      "skillRefs": [],
+      "expressibility": "outOfScope",
+      "retentionStatus": "notRetained",
+      "reviewStatus": "humanOnly",
+      "measurementStatus": "outOfScope",
+      "responsibility": "human",
+      "nonConclusions": [
+        "HoTT or higher category completeness is out of scope for ArchSig v0"
+      ]
+    }
+  ],
+  "observedAxes": [
+    {
+      "axisId": "axis:projectionSoundnessViolation",
+      "conceptRefs": [
+        "concept:projection-observation"
+      ],
+      "artifactRefs": [
+        "source:air:coupon"
+      ],
+      "measurementStatus": "measuredNonzero",
+      "value": 1,
+      "boundary": "selected AIR claim and witness universe",
+      "nonConclusions": [
+        "nonzero selected axis is not global architecture ranking"
+      ]
+    },
+    {
+      "axisId": "axis:runtimePropagation",
+      "conceptRefs": [
+        "concept:state-effect"
+      ],
+      "artifactRefs": [
+        "runtime-edge-evidence-v0"
+      ],
+      "measurementStatus": "unmeasured",
+      "value": null,
+      "boundary": "runtime traces unavailable",
+      "nonConclusions": [
+        "unmeasured runtime propagation is not zero"
+      ]
+    }
+  ],
+  "coverageBoundaries": [
+    {
+      "boundaryId": "coverage-boundary:dynamic-dispatch",
+      "boundaryKind": "dynamicBlindSpot",
+      "affectedRefs": [
+        "component:plugin-runtime"
+      ],
+      "measurementStatus": "unmeasured",
+      "reviewActionRef": "review:request-runtime-evidence",
+      "nonConclusions": [
+        "dynamic dispatch blind spot is not measured absence"
+      ]
+    },
+    {
+      "boundaryId": "coverage-boundary:out-of-scope-hott",
+      "boundaryKind": "outOfScope",
+      "affectedRefs": [
+        "concept:global-higher-completeness"
+      ],
+      "measurementStatus": "outOfScope",
+      "reviewActionRef": null,
+      "nonConclusions": [
+        "out-of-scope concept is not silently unsupported evidence"
+      ]
+    }
+  ],
+  "witnessCatalog": [
+    {
+      "witnessRef": "witness:projection-mismatch",
+      "witnessKind": "projectionFailure",
+      "lawRefs": [
+        "law:lsp-observation-preservation"
+      ],
+      "sourceRefs": [
+        "source:air:coupon"
+      ],
+      "measurementStatus": "measuredNonzero",
+      "severity": "high",
+      "reviewActionRef": "review:inspect-projection-mismatch",
+      "nonConclusions": [
+        "projection mismatch does not prove global undecomposability"
+      ]
+    },
+    {
+      "witnessRef": "witness:nonfillability",
+      "witnessKind": "nonFillabilityWitness",
+      "lawRefs": [
+        "law:semantic-commutation"
+      ],
+      "sourceRefs": [
+        "source:air:coupon"
+      ],
+      "measurementStatus": "measuredNonzero",
+      "severity": "medium",
+      "reviewActionRef": "review:inspect-semantic-diagram",
+      "nonConclusions": [
+        "nonfillability witness is selected-diagram evidence only"
+      ]
+    },
+    {
+      "witnessRef": "witness:effect-leakage",
+      "witnessKind": "effectLeakage",
+      "lawRefs": [
+        "law:effect-boundary"
+      ],
+      "sourceRefs": [
+        "source:air:coupon"
+      ],
+      "measurementStatus": "partiallyMeasured",
+      "severity": "medium",
+      "reviewActionRef": "review:request-effect-evidence",
+      "nonConclusions": [
+        "effect leakage cue is not operational cost theorem"
+      ]
+    },
+    {
+      "witnessRef": "witness:complexity-transfer",
+      "witnessKind": "complexityTransfer",
+      "lawRefs": [
+        "law:repair-selected-axis"
+      ],
+      "sourceRefs": [
+        "source:feature-report:coupon"
+      ],
+      "measurementStatus": "reviewNeeded",
+      "severity": "medium",
+      "reviewActionRef": "review:inspect-repair-transfer",
+      "nonConclusions": [
+        "selected repair improvement is not whole-system improvement"
+      ]
+    }
+  ],
+  "operationCandidates": [
+    {
+      "operationRef": "operation:coupon-feature-extension",
+      "operationKind": "featureExtension",
+      "role": "introduce coupon workflow while preserving checkout price invariant",
+      "confidence": "medium",
+      "deterministicCues": [
+        "added coupon component",
+        "added checkout-to-coupon relation"
+      ],
+      "llmJudgmentNeeded": [
+        "whether coupon logic is extension or policy migration",
+        "whether transferred obstruction is acceptable"
+      ],
+      "evidenceRefs": [
+        "feature-evidence:coupon-extension"
+      ],
+      "preservedInvariantRefs": [
+        "invariant:price-total-nonnegative"
+      ],
+      "possibleTransferredObstructionRefs": [
+        "witness:complexity-transfer"
+      ],
+      "nonConclusions": [
+        "operation candidate is not a semantic theorem"
+      ]
+    }
+  ],
+  "projectionObservationEvidence": [
+    {
+      "evidenceRef": "evidence:projection-abstraction",
+      "evidenceKind": "projectionMismatch",
+      "sourceRef": "component:coupon-adapter",
+      "targetRef": "interface:discount-policy",
+      "localContractBoundary": "LSP cue over selected interface methods",
+      "globalLayeringBoundary": "does not conclude global Clean Architecture compliance",
+      "witnessRefs": [
+        "witness:projection-mismatch"
+      ],
+      "nonConclusions": [
+        "DIP-compatible cue is not decomposability proof"
+      ]
+    }
+  ],
+  "featureExtensionEvidence": [
+    {
+      "evidenceRef": "feature-evidence:coupon-extension",
+      "featureRef": "feature:coupon",
+      "operationRef": "operation:coupon-feature-extension",
+      "obstructionClassifications": [
+        "inheritedCoreObstruction",
+        "interactionObstruction",
+        "residualCoverageGap"
+      ],
+      "sourceRefs": [
+        "source:feature-report:coupon"
+      ],
+      "witnessRefs": [
+        "witness:projection-mismatch"
+      ],
+      "missingEvidenceRefs": [
+        "runtime:production-traces"
+      ],
+      "staticBoundary": "static component/relation delta is retained",
+      "runtimeBoundary": "runtime law cases are unavailable unless supplied",
+      "semanticBoundary": "semantic diagrams are selected examples",
+      "coverageBoundary": "coverage gap remains residual evidence need",
+      "nonConclusions": [
+        "feature extension is not just component delta"
+      ]
+    }
+  ],
+  "semanticDiagramEvidence": [
+    {
+      "evidenceRef": "semantic:evidence:coupon-noncommutation",
+      "pathRefs": [
+        "path:apply-then-audit",
+        "path:audit-then-apply"
+      ],
+      "homotopyRefs": [
+        "homotopy:coupon-audit-order"
+      ],
+      "diagramRefs": [
+        "diagram:coupon-audit"
+      ],
+      "fillerStatus": "nonCommuting",
+      "nonfillabilityWitnessRefs": [
+        "witness:nonfillability"
+      ],
+      "observationRefs": [
+        "observation:coupon-audit-log"
+      ],
+      "measurementStatus": "measuredNonzero",
+      "nonConclusions": [
+        "selected non-commutation is not arbitrary split failure"
+      ]
+    }
+  ],
+  "stateEffectLawEvidence": [
+    {
+      "evidenceRef": "state-effect:evidence:coupon-replay",
+      "lawKind": "replayRoundtripCompensationProjection",
+      "lawCaseRefs": [
+        "case:coupon-expired-replay"
+      ],
+      "measurementStatus": "partiallyMeasured",
+      "witnessRefs": [
+        "witness:effect-leakage"
+      ],
+      "unmeasuredLawFamilies": [
+        "sagaCompensationCompleteness",
+        "migrationNaturality"
+      ],
+      "nonConclusions": [
+        "state/effect law case is not event log completeness"
+      ]
+    }
+  ],
+  "repairSynthesisEvidence": [
+    {
+      "evidenceRef": "repair:evidence:coupon-boundary",
+      "repairStepRefs": [
+        "repair:move-coupon-policy-behind-interface"
+      ],
+      "synthesisCandidateRefs": [
+        "synthesis:discount-policy-adapter"
+      ],
+      "noSolutionCertificateRefs": [
+        "no-solution:legacy-plugin-boundary"
+      ],
+      "selectedObstructionDecreaseRefs": [
+        "witness:projection-mismatch"
+      ],
+      "transferredRiskRefs": [
+        "witness:complexity-transfer"
+      ],
+      "solverStatus": "noCandidateDistinguishedFromNoSolutionCertificate",
+      "nonConclusions": [
+        "repair suggestion is not automatic patch or all-obstruction removal"
+      ]
+    }
+  ],
+  "analyticAxes": [
+    {
+      "axisId": "analytic-axis:projection-soundness",
+      "metricRef": "axis:projectionSoundnessViolation",
+      "representationStrength": [
+        "zeroPreserving",
+        "obstructionPreserving",
+        "notZeroReflecting",
+        "notObstructionReflecting"
+      ],
+      "selectedWitnessUniverse": [
+        "witness:projection-mismatch"
+      ],
+      "aggregateZeroReflection": "requires complete selected witness universe and explicit zero-reflecting claim",
+      "coverageAssumptions": [
+        "selected AIR witnesses are complete for this axis only if declared"
+      ],
+      "nonConclusions": [
+        "aggregate value 0 alone does not imply flatness"
+      ]
+    }
+  ],
+  "theoremBoundaries": [
+    {
+      "boundaryRef": "boundary:formal-precondition-missing",
+      "claimRef": "claim:coupon-extension-lawful",
+      "claimLevel": "tooling",
+      "claimClassification": "blockedFormalClaim",
+      "missingPreconditions": [
+        "complete selected runtime evidence",
+        "projection exactness"
+      ],
+      "measuredViolationRefs": [
+        "witness:projection-mismatch"
+      ],
+      "reviewActionRef": "review:block-formal-promotion",
+      "nonConclusions": [
+        "missing precondition is not measured violation by itself"
+      ]
+    }
+  ],
+  "reviewActions": [
+    {
+      "reviewActionId": "review:inspect-projection-mismatch",
+      "category": "measuredViolation",
+      "sourceRefs": [
+        "witness:projection-mismatch"
+      ],
+      "action": "inspect abstraction mapping and decide whether boundary repair is required",
+      "nextEvidence": [
+        "interface contract evidence",
+        "adapter test evidence"
+      ],
+      "owner": "human-review",
+      "nonConclusions": [
+        "measured violation is selected-universe evidence"
+      ]
+    },
+    {
+      "reviewActionId": "review:request-runtime-evidence",
+      "category": "nextEvidence",
+      "sourceRefs": [
+        "coverage-boundary:dynamic-dispatch"
+      ],
+      "action": "request runtime traces or mark runtime law family unmeasured",
+      "nextEvidence": [
+        "runtime-edge-evidence-v0"
+      ],
+      "owner": "human-review",
+      "nonConclusions": [
+        "missing runtime evidence is not zero runtime risk"
+      ]
+    },
+    {
+      "reviewActionId": "review:inspect-semantic-diagram",
+      "category": "reviewGuardrail",
+      "sourceRefs": [
+        "witness:nonfillability"
+      ],
+      "action": "keep semantic non-commutation separate from static dependency violation",
+      "nextEvidence": [
+        "semantic diagram fixture",
+        "observation refs"
+      ],
+      "owner": "llm-review",
+      "nonConclusions": [
+        "semantic witness does not prove global semantic completeness"
+      ]
+    },
+    {
+      "reviewActionId": "review:block-formal-promotion",
+      "category": "blockedFormalClaim",
+      "sourceRefs": [
+        "boundary:formal-precondition-missing"
+      ],
+      "action": "do not promote tooling evidence to Lean theorem claim",
+      "nextEvidence": [
+        "theorem-precondition-check-report-v0"
+      ],
+      "owner": "deterministic-tool",
+      "nonConclusions": [
+        "blocked formal claim is not tool failure"
+      ]
+    },
+    {
+      "reviewActionId": "review:inspect-repair-transfer",
+      "category": "evidenceGap",
+      "sourceRefs": [
+        "witness:complexity-transfer"
+      ],
+      "action": "verify selected repair does not transfer unacceptable complexity",
+      "nextEvidence": [
+        "post-repair feature report",
+        "policy decision report"
+      ],
+      "owner": "human-review",
+      "nonConclusions": [
+        "selected-axis improvement is not total quality improvement"
+      ]
+    },
+    {
+      "reviewActionId": "review:request-effect-evidence",
+      "category": "nextEvidence",
+      "sourceRefs": [
+        "witness:effect-leakage"
+      ],
+      "action": "request replay, roundtrip, compensation, or projection law case evidence",
+      "nextEvidence": [
+        "state-effect law fixture",
+        "runtime edge evidence"
+      ],
+      "owner": "human-review",
+      "nonConclusions": [
+        "effect law cue is not operational completeness"
+      ]
+    }
+  ],
+  "llmReviewSurface": {
+    "skillRef": "tools/archsig/skills/aat-reviewer/SKILL.md",
+    "inputArtifactRefs": [
+      "source:air:coupon",
+      "source:feature-report:coupon",
+      "bundle:fixture-aat-observable-bundle-v0"
+    ],
+    "reviewQuestions": [
+      "Which invariant is preserved, broken, unmeasured, or out of scope?",
+      "Which obstruction witnesses are measured, and which witness families remain unmeasured?",
+      "Which operation family is plausible, and what must stay a human judgment?",
+      "Which theorem boundary blocks a formal claim?",
+      "What next evidence would change the review decision?"
+    ],
+    "outputCategories": [
+      "violation",
+      "risk",
+      "acceptable",
+      "unmeasured",
+      "nextEvidence"
+    ],
+    "deterministicInputs": [
+      "schema validation results",
+      "dangling ref checks",
+      "measurement status and source refs"
+    ],
+    "llmJudgmentBoundaries": [
+      "semantic operation classification",
+      "review severity and next evidence prioritization"
+    ],
+    "humanReviewBoundaries": [
+      "risk acceptance",
+      "product decision resolution",
+      "merge approval"
+    ],
+    "nonConclusions": [
+      "LLM review does not prove semantic correctness",
+      "LLM review does not approve merge automatically"
+    ]
+  },
+  "responsibilityBoundary": {
+    "deterministicTool": [
+      "validate schema version and refs",
+      "preserve measurement status and nonConclusions",
+      "surface measured witnesses and dangling refs"
+    ],
+    "llmReview": [
+      "interpret operation candidates against AAT questions",
+      "translate nonConclusions into next evidence and guardrails"
+    ],
+    "humanReview": [
+      "decide acceptable residual risk",
+      "accept or reject design tradeoffs"
+    ],
+    "formalProof": [
+      "Lean theorem packages remain separate from ArchSig validation"
+    ],
+    "nonConclusions": [
+      "responsibility split does not make tooling output a proof"
+    ]
+  },
+  "nonConclusions": [
+    "AAT observable bundle is tooling evidence, not a Lean theorem proof",
+    "validation pass does not prove extractor completeness",
+    "unmeasured is not measured zero",
+    "private, unavailable, unsupported, and dynamic blind spots are retained as boundaries",
+    "absence of witness refs does not prove global lawfulness",
+    "operation candidates are review cues, not theorem discharge",
+    "analytic value zero does not imply structural flatness without zero-reflecting assumptions",
+    "LLM review output is judgment support, not automatic merge approval",
+    "human review remains responsible for accepting risk and product decisions"
+  ]
+}

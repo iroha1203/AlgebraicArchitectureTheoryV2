@@ -1,3 +1,4 @@
+mod aat_observable;
 mod ai_governance;
 mod air;
 mod air_validation;
@@ -50,6 +51,7 @@ mod validation;
 #[cfg(test)]
 mod test_support;
 
+pub use aat_observable::{static_aat_observable_bundle, validate_aat_observable_bundle};
 pub use ai_governance::{
     build_ai_proposal_governance_from_descriptor, static_ai_proposal_governance,
     validate_ai_proposal_governance,

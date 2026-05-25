@@ -15,7 +15,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | Surface | 現在使えるもの | Remaining gaps |
 | --- | --- | --- |
 | ArchSig Core | Lean / Python import graph scan、Sig0、validation、snapshot、signature diff。policy JSON と runtime edge evidence は明示入力として扱える。 | call graph、data dependency、dynamic import、plugin loading、framework convention は adapter boundary。extractor output は完全な `ComponentUniverse` ではない。 |
-| ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、architecture-policy、law violation report、policy decision、PR comment summary、baseline suppression、PR quality analysis。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定。tool output は Lean theorem や merge approval ではない。 |
+| ArchSig Review | AIR、ArchMap supplied JSON validation、ArchMap-to-AIR projection、AIR validation、theorem precondition check、Feature Extension Report、AAT Observable Bundle、architecture-policy、law violation report、policy decision、PR comment summary、baseline suppression、PR quality analysis。 | organization ごとの policy calibration、review practice との tuning、任意 invariant の自動判定。tool output は Lean theorem や merge approval ではない。 |
 | ArchSig SFT | Markdown PRD / Spec / Issue / AI proposal、GitHub Issue JSON、AI proposal JSON から `ArtifactDescriptor`、`OperationSupportEstimate`、`ForecastConeSkeleton`、`ConsequenceEnvelope`、validation report を生成する bounded pipeline。PRD v3 では `IntentMap`、`AlignmentMap`、`intent-forecast` を使って planning forecast を作る。 | real dataset calibration、framework semantics adapter は remaining gaps。`ForecastCone` は point prediction ではなく、`ConsequenceEnvelope` は report projection である。 |
 | ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、B10 daily ledger、calibration review、team threshold、ownership boundary、repair adoption、incident correlation、hypothesis refresh artifacts。 | 実 dataset での calibration、incident / rollback / MTTR との運用接続、confounder 管理、private data boundary の組織別設計が残る。correlation は因果 theorem ではない。 |
 
@@ -36,7 +36,9 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
   から operation support、ForecastCone、ConsequenceEnvelope を deterministic に生成する。
 - PR diff / repository evidence から作られた ArchMap 系 artifact を、merge approval ではない
   PR quality review cue として読む `pr-quality-analysis-report-v0` を出力する。
-- Codex skill として、ArchMap 作成、IntentMap 作成、PR / CI 分析、Epic / PRD forecast の作業手順を AI agent に渡せる。
+- AAT の主要概念を `aat-observable-bundle-v0` として束ね、witness、operation、theorem boundary、
+  nonConclusion review action、deterministic / LLM / human responsibility boundary を保持する。
+- Codex skill として、ArchMap 作成、IntentMap 作成、PR / CI 分析、AAT observable review、Epic / PRD forecast の作業手順を AI agent に渡せる。
 
 詳細な command と artifact は次に分けている。
 
@@ -56,6 +58,7 @@ ArchSig は単一の command ではなく、次の surface に分けて読む。
 | [`archmap-creater`](skills/archmap-creater/SKILL.md) | repository evidence から bounded `archmap-v0` を作成し、validation まで進める。IntentMap は扱わない。 |
 | [`intentmap-creater`](skills/intentmap-creater/SKILL.md) | Epic / PRD / Spec / Issue / proposal から bounded `intentmap-v0` を作成し、missing decision と ambiguous intent を保持して validation まで進める。 |
 | [`arch-pr-analyzer`](skills/arch-pr-analyzer/SKILL.md) | PR / CI の architecture artifact を読み、architecture risk、review cue、evidence gap、次の PR review action を分析する。planning forecast は扱わない。 |
+| [`aat-reviewer`](skills/aat-reviewer/SKILL.md) | `aat-observable-bundle-v0` を読み、invariant / witness / signature / operation / boundary / non-conclusion に沿って設計レビューへ変換する。 |
 | [`arch-intent-forecaster`](skills/arch-intent-forecaster/SKILL.md) | IntentMap x ArchMap alignment から planning forecast artifact を読み、bounded evolution pressure、missing decision、planning action を分析する。PR merge review は扱わない。 |
 
 skill は AI native な操作面であり、tool output を Lean proof、forecast correctness、incident causality、
@@ -118,6 +121,7 @@ scan
   -> air
   -> theorem-check
   -> feature-report
+  -> aat-observable-bundle
   -> policy-decision
   -> pr-comment
 ```
@@ -139,6 +143,7 @@ archmap-v0
 | --- | --- |
 | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | `feature-extension-report-v0` | split status、witness、coverage gap、theorem precondition checks。 |
+| `aat-observable-bundle-v0` | AAT concept mapping、selected universe、witness catalog、operation candidates、theorem boundaries、review actions、responsibility boundary。 |
 | `archmap-validation-report-v0` | supplied ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail。 |
 | `architecture-policy-v0` | project-local adopted laws、layer selectors、exceptions、SRP taxonomy。 |
 | `law-violation-report-v0` | Layered deterministic violation、allowed exception、unmeasured selector、SRP review cue。 |

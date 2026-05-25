@@ -12,7 +12,7 @@ non-conclusions を落とさない。
 | Surface | Artifact families | Boundary |
 | --- | --- | --- |
 | ArchSig Core | Sig0、validation report、snapshot、signature diff。 | repository observation であり、完全な architecture model 抽出ではない。 |
-| ArchSig Review | AIR、ArchMap、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression。 | review cue / CI cue であり、Lean theorem proof ではない。 |
+| ArchSig Review | AIR、ArchMap、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression、AAT Observable Bundle。 | review cue / CI cue であり、Lean theorem proof ではない。 |
 | ArchSig SFT | ArtifactDescriptor、OperationSupportEstimate、ForecastConeSkeleton、ConsequenceEnvelope、ForecastCalibrationHook と validation report。 | bounded forecast report projection であり、point prediction、causal proof、forecast correctness ではない。 |
 | ArchSig Operational | PR history dataset、feature extension dataset、outcome linkage、daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh。 | empirical / operational feedback であり、correlation を causal theorem にしない。 |
 
@@ -30,6 +30,7 @@ non-conclusions を落とさない。
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
 | Feature Extension Report | `feature-extension-report-v0` | PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を持つ。 |
+| AAT Observable Bundle | `aat-observable-bundle-v0` | AAT concept mapping、selected universe、witness catalog、operation candidates、theorem boundary、review actions、responsibility boundary を束ねる。 |
 | Policy decision report | `policy-decision-report-v0` | organization policy に基づく pass / warn / fail / advisory decision。 |
 | PR comment summary | `pr-comment-summary-v0` | Feature Extension Report と policy decision を GitHub Checks / PR comment 向け Markdown に整形する。 |
 | Baseline suppression report | `baseline-suppression-report-v0` | baseline/current report の差分、suppression / accepted risk metadata を保持する。 |
@@ -169,6 +170,26 @@ non-conclusions を保持する必要がある。envelope report は projection 
 
 AI agent は `signature` の値だけで判断せず、`metricStatus`, `metricDeltaStatus`,
 `unmeasuredAxes`, `coverageGaps`, `nonConclusions` を併読する。
+
+## AAT Observable Bundle
+
+`aat-observable-bundle-v0` は AAT の主要概念を ArchSig artifact として追跡する共通 bundle である。
+`sourceRefs`、`selectedUniverse`、`conceptMappings`、`observedAxes`、`witnessCatalog`、
+`operationCandidates`、`theoremBoundaries`、`reviewActions`、`llmReviewSurface`、
+`responsibilityBoundary` を持つ。validation は schema version、source refs、concept coverage、
+measurement status、witness / theorem boundary の review action refs、deterministic / LLM /
+human / formal proof の責務分離を検査する。
+
+この bundle は #1161 の law-aware review artifact を AAT concept coverage へ接続する。
+Layered / SRP / policy / PR quality の evidence は、`ObstructionWitness`、`TheoremBoundary`、
+`ArchitectureOperation`、`Projection / Observation` などの AAT-facing field に再配置される。
+`private`、`unavailable`、`unsupported`、`dynamicBlindSpot`、`outOfScope` は first-class
+boundary であり、measured zero へ丸めない。
+
+`reviewActions` は raw `nonConclusions` を evidence gap、non-finding、blocked formal claim、
+review guardrail、next evidence へ翻訳する。これは LLM Review Skill と human reviewer の
+作業 surface であり、validation pass、LLM judgment、review action の存在はいずれも
+Lean theorem proof、extractor completeness、merge approval ではない。
 
 ## Claim Boundary
 

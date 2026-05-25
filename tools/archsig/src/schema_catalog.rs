@@ -1,9 +1,9 @@
 use crate::{
-    AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION, AIR_SCHEMA_VERSION,
-    ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION, ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION,
-    ARCHITECTURE_POLICY_SCHEMA_VERSION, ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
-    ARCHMAP_SCHEMA_VERSION, ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
-    CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
+    AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION, AI_PROPOSAL_GOVERNANCE_SCHEMA_VERSION,
+    AIR_SCHEMA_VERSION, ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,
+    ARCHITECTURE_DYNAMICS_METRICS_REPORT_SCHEMA_VERSION, ARCHITECTURE_POLICY_SCHEMA_VERSION,
+    ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION,
+    ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, CALIBRATION_REVIEW_RECORD_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
     FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, HYPOTHESIS_REFRESH_CYCLE_SCHEMA_VERSION,
     INCIDENT_CORRELATION_MONITOR_SCHEMA_VERSION, INTENT_ARCHMAP_ALIGNMENT_SCHEMA_VERSION,
@@ -260,6 +260,34 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "PR quality analysis is review evidence, not merge approval or a global architecture ranking.",
+                    ],
+                ),
+            ),
+            artifact(
+                "aat-observable-bundle",
+                "AAT Observable Bundle",
+                AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION,
+                "aat-observable-review-bundle",
+                "AAT observable bridge",
+                "implemented",
+                vec![
+                    "docs/tool/aat_archsig_reduction.md",
+                    "tools/archsig/docs/artifacts-and-boundaries.md",
+                    "tools/archsig/docs/commands.md",
+                ],
+                vec![
+                    "#1166", "#1167", "#1168", "#1169", "#1170", "#1171", "#1172", "#1173",
+                    "#1174", "#1175", "#1176", "#1177", "#1178", "#1179",
+                ],
+                compatibility_boundary(
+                    "Map AAT concepts, source refs, selected universe, witness refs, operation candidates, theorem boundaries, review actions, and responsibility splits without promoting tooling evidence to proof.",
+                    vec![],
+                    vec![
+                        "New AAT concept mappings must declare expressibility, retention, reviewability, measurement status, responsibility, and non-conclusions.",
+                        "New measured axes must keep measuredZero, measuredNonzero, unmeasured, outOfScope, private, unavailable, unsupported, and dynamic boundaries distinct.",
+                    ],
+                    vec![
+                        "AAT Observable Bundle is a review artifact bundle, not AAT itself, extractor completeness, global lawfulness proof, or merge approval.",
                     ],
                 ),
             ),

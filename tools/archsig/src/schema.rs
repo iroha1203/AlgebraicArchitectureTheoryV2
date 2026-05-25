@@ -110,6 +110,9 @@ pub const FORECAST_CALIBRATION_HOOK_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION: &str = "pr-quality-analysis-report-v0";
 pub const PR_QUALITY_ANALYSIS_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "pr-quality-analysis-validation-report-v0";
+pub const AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION: &str = "aat-observable-bundle-v0";
+pub const AAT_OBSERVABLE_BUNDLE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "aat-observable-bundle-validation-report-v0";
 pub const INTENT_CALIBRATION_RECORD_SCHEMA_VERSION: &str = "intent-calibration-record-v0";
 pub const INTENT_CALIBRATION_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "intent-calibration-validation-report-v0";
@@ -4390,6 +4393,284 @@ pub struct IntentMapValidationSummary {
     pub missing_decision_count: usize,
     pub ambiguous_intent_count: usize,
     pub missing_evidence_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableBundleV0 {
+    pub schema_version: String,
+    pub bundle_id: String,
+    pub architecture_id: String,
+    pub source_refs: Vec<AatObservableSourceRefV0>,
+    pub selected_universe: AatSelectedUniverseV0,
+    pub concept_mappings: Vec<AatConceptMappingV0>,
+    pub observed_axes: Vec<AatObservedAxisV0>,
+    pub coverage_boundaries: Vec<AatCoverageBoundaryV0>,
+    pub witness_catalog: Vec<AatWitnessCatalogEntryV0>,
+    pub operation_candidates: Vec<AatOperationCandidateV0>,
+    pub projection_observation_evidence: Vec<AatProjectionObservationEvidenceV0>,
+    pub feature_extension_evidence: Vec<AatFeatureExtensionEvidenceV0>,
+    pub semantic_diagram_evidence: Vec<AatSemanticDiagramEvidenceV0>,
+    pub state_effect_law_evidence: Vec<AatStateEffectLawEvidenceV0>,
+    pub repair_synthesis_evidence: Vec<AatRepairSynthesisEvidenceV0>,
+    pub analytic_axes: Vec<AatAnalyticAxisV0>,
+    pub theorem_boundaries: Vec<AatTheoremBoundaryV0>,
+    pub review_actions: Vec<AatReviewActionV0>,
+    pub llm_review_surface: AatLlmReviewSurfaceV0,
+    pub responsibility_boundary: AatResponsibilityBoundaryV0,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableSourceRefV0 {
+    pub source_ref_id: String,
+    pub artifact_kind: String,
+    pub schema_version: String,
+    pub path: String,
+    pub retained_fields: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatSelectedUniverseV0 {
+    pub universe_id: String,
+    pub included_refs: Vec<String>,
+    pub excluded_refs: Vec<String>,
+    pub private_refs: Vec<String>,
+    pub unavailable_refs: Vec<String>,
+    pub unsupported_refs: Vec<String>,
+    pub dynamic_boundary_refs: Vec<String>,
+    pub exactness_assumptions: Vec<String>,
+    pub measurement_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatConceptMappingV0 {
+    pub concept_id: String,
+    pub aat_concept: String,
+    pub artifact_refs: Vec<String>,
+    pub report_refs: Vec<String>,
+    pub skill_refs: Vec<String>,
+    pub expressibility: String,
+    pub retention_status: String,
+    pub review_status: String,
+    pub measurement_status: String,
+    pub responsibility: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservedAxisV0 {
+    pub axis_id: String,
+    pub concept_refs: Vec<String>,
+    pub artifact_refs: Vec<String>,
+    pub measurement_status: String,
+    pub value: Option<i64>,
+    pub boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatCoverageBoundaryV0 {
+    pub boundary_id: String,
+    pub boundary_kind: String,
+    pub affected_refs: Vec<String>,
+    pub measurement_status: String,
+    pub review_action_ref: Option<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatWitnessCatalogEntryV0 {
+    pub witness_ref: String,
+    pub witness_kind: String,
+    pub law_refs: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub measurement_status: String,
+    pub severity: String,
+    pub review_action_ref: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatOperationCandidateV0 {
+    pub operation_ref: String,
+    pub operation_kind: String,
+    pub role: String,
+    pub confidence: String,
+    pub deterministic_cues: Vec<String>,
+    pub llm_judgment_needed: Vec<String>,
+    pub evidence_refs: Vec<String>,
+    pub preserved_invariant_refs: Vec<String>,
+    pub possible_transferred_obstruction_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatProjectionObservationEvidenceV0 {
+    pub evidence_ref: String,
+    pub evidence_kind: String,
+    pub source_ref: String,
+    pub target_ref: String,
+    pub local_contract_boundary: String,
+    pub global_layering_boundary: String,
+    pub witness_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatFeatureExtensionEvidenceV0 {
+    pub evidence_ref: String,
+    pub feature_ref: String,
+    pub operation_ref: String,
+    pub obstruction_classifications: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub witness_refs: Vec<String>,
+    pub missing_evidence_refs: Vec<String>,
+    pub static_boundary: String,
+    pub runtime_boundary: String,
+    pub semantic_boundary: String,
+    pub coverage_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatSemanticDiagramEvidenceV0 {
+    pub evidence_ref: String,
+    pub path_refs: Vec<String>,
+    pub homotopy_refs: Vec<String>,
+    pub diagram_refs: Vec<String>,
+    pub filler_status: String,
+    pub nonfillability_witness_refs: Vec<String>,
+    pub observation_refs: Vec<String>,
+    pub measurement_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatStateEffectLawEvidenceV0 {
+    pub evidence_ref: String,
+    pub law_kind: String,
+    pub law_case_refs: Vec<String>,
+    pub measurement_status: String,
+    pub witness_refs: Vec<String>,
+    pub unmeasured_law_families: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatRepairSynthesisEvidenceV0 {
+    pub evidence_ref: String,
+    pub repair_step_refs: Vec<String>,
+    pub synthesis_candidate_refs: Vec<String>,
+    pub no_solution_certificate_refs: Vec<String>,
+    pub selected_obstruction_decrease_refs: Vec<String>,
+    pub transferred_risk_refs: Vec<String>,
+    pub solver_status: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatAnalyticAxisV0 {
+    pub axis_id: String,
+    pub metric_ref: String,
+    pub representation_strength: Vec<String>,
+    pub selected_witness_universe: Vec<String>,
+    pub aggregate_zero_reflection: String,
+    pub coverage_assumptions: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatTheoremBoundaryV0 {
+    pub boundary_ref: String,
+    pub claim_ref: String,
+    pub claim_level: String,
+    pub claim_classification: String,
+    pub missing_preconditions: Vec<String>,
+    pub measured_violation_refs: Vec<String>,
+    pub review_action_ref: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatReviewActionV0 {
+    pub review_action_id: String,
+    pub category: String,
+    pub source_refs: Vec<String>,
+    pub action: String,
+    pub next_evidence: Vec<String>,
+    pub owner: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatLlmReviewSurfaceV0 {
+    pub skill_ref: String,
+    pub input_artifact_refs: Vec<String>,
+    pub review_questions: Vec<String>,
+    pub output_categories: Vec<String>,
+    pub deterministic_inputs: Vec<String>,
+    pub llm_judgment_boundaries: Vec<String>,
+    pub human_review_boundaries: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatResponsibilityBoundaryV0 {
+    pub deterministic_tool: Vec<String>,
+    pub llm_review: Vec<String>,
+    pub human_review: Vec<String>,
+    pub formal_proof: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableBundleValidationReportV0 {
+    pub schema_version: String,
+    pub input: AatObservableBundleValidationInputV0,
+    pub bundle: AatObservableBundleV0,
+    pub summary: AatObservableBundleValidationSummaryV0,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableBundleValidationInputV0 {
+    pub schema_version: String,
+    pub path: String,
+    pub bundle_id: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AatObservableBundleValidationSummaryV0 {
+    pub result: String,
+    pub concept_count: usize,
+    pub witness_count: usize,
+    pub operation_candidate_count: usize,
+    pub review_action_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

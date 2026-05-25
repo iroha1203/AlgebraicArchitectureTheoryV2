@@ -15,6 +15,7 @@ Analyze PR / CI architecture evidence and produce review cues. This skill simpli
 - Sig0 and validation reports
 - `archmap-v0` and `archmap-validation-report-v0`
 - AIR, AIR validation, theorem-check, feature-report
+- `aat-observable-bundle-v0` and validation report when the PR review asks for AAT concept coverage
 - `architecture-policy-v0` and `law-violation-report-v0`
 - policy-decision and PR comment summary
 - `pr-quality-analysis-report-v0`
@@ -89,6 +90,15 @@ ${ARCHSIG_BIN:-archsig} pr-quality-analysis \
   --out .archsig/pr/pr-quality-analysis-validation.json
 ```
 
+Validate supplied AAT observable bundle when the review asks for invariant / witness / operation /
+theorem-boundary coverage:
+
+```bash
+${ARCHSIG_BIN:-archsig} aat-observable-bundle \
+  --input .archsig/aat/aat-observable-bundle.json \
+  --out .archsig/aat/aat-observable-bundle-validation.json
+```
+
 3. Produce the review.
    - Separate measured zero from unmeasured.
    - Separate warning, failure, missing evidence, and negative evidence.
@@ -96,6 +106,8 @@ ${ARCHSIG_BIN:-archsig} pr-quality-analysis \
    - Treat SRP `semanticRole` / `responsibilityRegions` / `reasonToChange` / `lawRefs` as evidence for LLM judgment, not as tool-only violation.
    - For SRP probable violation, cite both evidence refs and policy refs and distinguish `acceptableOrchestrator`, `allowedException`, and `unmeasured`.
    - Tie each finding to artifact ids or paths.
+   - When using `aat-observable-bundle-v0`, translate `reviewActions` into evidence gap,
+     blocked formal claim, review guardrail, or next evidence without treating LLM judgment as proof.
    - Keep recommendations bounded to PR review actions.
 
 ## Output Shape
