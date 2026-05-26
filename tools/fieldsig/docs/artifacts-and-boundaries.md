@@ -25,8 +25,8 @@ non-conclusions を落とさない。
 | Snapshot | `signature-snapshot-store-v0` | repository revision ごとの保存用 signature record。 |
 | Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
-| ArchMap | `archmap-v0` | supplied JSON の architecture homomorphism map 候補。source inventory、provenance、coverage、conflict、non-conclusions を保持する。 |
-| ArchMap validation report | `archmap-validation-report-v0` | ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail の検査結果。 |
+| ArchMap | `archmap-v0` | supplied JSON の architecture homomorphism map / atomic observation 候補。source inventory、provenance、atom candidates、molecule candidates、obstruction circuit candidates、observation gaps、coverage、conflict、non-conclusions を保持する。 |
+| ArchMap validation report | `archmap-validation-report-v0` | ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail、atomic observation checks / summary の検査結果。 |
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
 | Feature Extension Report | `feature-extension-report-v0` | PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を持つ。 |
@@ -83,7 +83,7 @@ non-conclusions を落とさない。
 | IntentMap validation report | `intentmap-validation-report-v0` | source refs、claim classification、confidence boundary、missing decision / ambiguity / missing evidence、non-conclusions を検査する。 |
 | AlignmentMap | `intent-archmap-alignment-v0` | IntentMap item と ArchMap item の対応、preserves / forgets、unaligned / unsupported / ambiguous boundary、missing evidence を保持する。 |
 | AlignmentMap validation report | `intent-archmap-alignment-validation-report-v0` | IntentMap refs と ArchMap refs の dangling reference、alignment kind、measured zero への丸め、non-conclusions を検査する。 |
-| OperationSupportEstimate | `operation-support-estimate-v0` | descriptor refs、candidate operation families、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
+| OperationSupportEstimate | `operation-support-estimate-v0` | descriptor refs、candidate operation families、ArchMap atom / circuit / observation gap refs、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
 | OperationSupportEstimate validation report | `operation-support-estimate-validation-report-v0` | unknown support と measured zero の混同、global policy safety / future trajectory safety への昇格を検査する。 |
 | ForecastConeSkeleton | `forecast-cone-skeleton-v0` | finite support refs、bounded horizon、path class candidates、gluing evidence、governance interventions、typed boundary failures、forecast boundary、unknown remainder を保持する。 |
 | ForecastConeSkeleton validation report | `forecast-cone-skeleton-validation-report-v0` | probability claim、unmeasured axis の safe 扱い、support / horizon refs 欠落を検査する。 |
@@ -98,6 +98,11 @@ non-conclusions を落とさない。
 | AI Proposal Governance | `ai-proposal-governance-v0` | AI proposal の prompt / policy boundary、support taxonomy、shortcut witness、review / CI mediation、posterior field update を保持する。 |
 | AI Proposal Governance validation report | `ai-proposal-governance-validation-report-v0` | support category、shortcut witness、review / CI / posterior boundary、AI safety / forecast correctness / lawfulness non-conclusions を検査する。 |
 | Lifecycle Decision Report | planned `lifecycle-decision-report-v0` | repair / migration / contraction / deletion の selected inputs、field capacity impact、runtime / ownership boundary、non-conclusions を保持する将来候補。 |
+
+`archmap-sft-input` は ArchMap v2 の `atomCandidates`、`obstructionCircuitCandidates`、
+`observationGaps` を FieldSig 側へ observation refs / unknown remainder refs として渡す。
+これは certified universal atoms、zero curvature proof、forecast correctness、future outcome
+probability ではない。
 
 `artifact-descriptor-v0` は B12 SFT forecasting MVP の最初の入力正規化 artifact である。
 後段では `operation-support-estimate-v0`、`forecast-cone-skeleton-v0`、

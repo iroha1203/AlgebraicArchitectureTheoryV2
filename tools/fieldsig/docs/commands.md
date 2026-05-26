@@ -1,6 +1,6 @@
 # FieldSig Commands
 
-FieldSig owns SFT software evolution measurement and workflow-evidence artifacts. ArchSig artifacts enter FieldSig through JSON refs such as `archmap-v0`, `archsig-sig0-v0`, AIR, validation, and review-cue artifact paths. FieldSig does not share Rust types with ArchSig as a contract; the stable boundary is the serialized artifact ref.
+FieldSig owns SFT software evolution measurement and workflow-evidence artifacts. ArchSig artifacts enter FieldSig through JSON refs such as `archmap-v0`, `archsig-sig0-v0`, AIR, validation, and review-cue artifact paths. `archmap-sft-input` preserves ArchMap atom / circuit / observation gap refs as observation refs and unknown remainder refs; it does not consume them as certified atoms, zero-curvature proof, or forecast correctness. FieldSig does not share Rust types with ArchSig as a contract; the stable boundary is the serialized artifact ref.
 
 ## Measurement
 

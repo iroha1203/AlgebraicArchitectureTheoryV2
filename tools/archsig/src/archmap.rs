@@ -6,13 +6,13 @@ use crate::{
     ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION, AirArchitecturePath, AirArtifact, AirClaim,
     AirComponent, AirCoverage, AirCoverageLayer, AirDocumentV0, AirEvidence, AirExtension,
     AirFeature, AirIdPolicies, AirNonfillabilityWitness, AirOperationTrace, AirPolicies,
-    AirRelation, AirRevision, AirSemanticDiagram, AirSignature, ArchMapConflict, ArchMapDocumentV0,
-    ArchMapHomomorphismDiagnosticsV0, ArchMapHomomorphismFamilySummaryV0,
-    ArchMapHomomorphismMapEntryV0, ArchMapHomomorphismPreservationClaimV0,
-    ArchMapHomomorphismUniverseV0, ArchMapHomomorphismV0, ArchMapLeanPreservationChecklistEntry,
-    ArchMapLeanPreservationVocabularyEntry, ArchMapMapItem, ArchMapSourceInventoryV0,
-    ArchMapSourceRef, ArchMapValidationReportV0, ArchMapValidationSummary, Sig0Document,
-    ValidationCheck,
+    AirRelation, AirRevision, AirSemanticDiagram, AirSignature, ArchMapAtomicObservationSummary,
+    ArchMapConflict, ArchMapDocumentV0, ArchMapHomomorphismDiagnosticsV0,
+    ArchMapHomomorphismFamilySummaryV0, ArchMapHomomorphismMapEntryV0,
+    ArchMapHomomorphismPreservationClaimV0, ArchMapHomomorphismUniverseV0, ArchMapHomomorphismV0,
+    ArchMapLeanPreservationChecklistEntry, ArchMapLeanPreservationVocabularyEntry, ArchMapMapItem,
+    ArchMapSourceInventoryV0, ArchMapSourceRef, ArchMapValidationReportV0,
+    ArchMapValidationSummary, Sig0Document, ValidationCheck,
 };
 
 pub struct ArchMapSourceInventoryInput<'a> {
@@ -48,6 +48,8 @@ pub fn validate_archmap_report(
     let homomorphism = archmap_homomorphism(document);
     let homomorphism_diagnostics = archmap_homomorphism_diagnostics(document, &homomorphism, sig0);
     let homomorphism_checks = vec![check_homomorphism_diagnostics(&homomorphism_diagnostics)];
+    let atomic_observation_checks = archmap_atomic_observation_checks(document);
+    let atomic_observation_summary = archmap_atomic_observation_summary(document);
 
     let mut all_checks = Vec::new();
     all_checks.append(&mut source_inventory_checks.clone());
@@ -57,6 +59,7 @@ pub fn validate_archmap_report(
     all_checks.extend(conflict_checks.clone());
     all_checks.extend(formal_promotion_guardrail_checks.clone());
     all_checks.extend(homomorphism_checks);
+    all_checks.extend(atomic_observation_checks.clone());
 
     let failed_check_count = count_checks(&all_checks, "fail");
     let warning_check_count = count_checks(&all_checks, "warn");
@@ -80,6 +83,8 @@ pub fn validate_archmap_report(
         conflict_checks,
         formal_promotion_guardrail_checks,
         homomorphism_diagnostics: homomorphism_diagnostics.clone(),
+        atomic_observation_checks,
+        atomic_observation_summary,
         summary: ArchMapValidationSummary {
             result: result.to_string(),
             map_item_count: document.map_items.len(),
@@ -335,6 +340,264 @@ fn check_homomorphism_diagnostics(
         );
     }
     check
+}
+
+fn archmap_atomic_observation_checks(document: &ArchMapDocumentV0) -> Vec<ValidationCheck> {
+    vec![
+        check_atomic_candidate_ids_unique(document),
+        check_atom_candidates_have_source_evidence(document),
+        check_obstruction_circuit_boundary(document),
+        check_observation_gaps_are_not_measured_zero(document),
+    ]
+}
+
+fn check_atomic_candidate_ids_unique(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    examples.extend(
+        duplicates(
+            document
+                .atom_candidates
+                .iter()
+                .map(|candidate| candidate.atom_candidate_id.as_str()),
+        )
+        .iter()
+        .map(|id| {
+            generic_validation_example(
+                "atomCandidates[].atomCandidateId",
+                id,
+                "duplicate atom candidate id",
+            )
+        }),
+    );
+    examples.extend(
+        duplicates(
+            document
+                .molecule_candidates
+                .iter()
+                .map(|candidate| candidate.molecule_candidate_id.as_str()),
+        )
+        .iter()
+        .map(|id| {
+            generic_validation_example(
+                "moleculeCandidates[].moleculeCandidateId",
+                id,
+                "duplicate molecule candidate id",
+            )
+        }),
+    );
+    examples.extend(
+        duplicates(
+            document
+                .obstruction_circuit_candidates
+                .iter()
+                .map(|candidate| candidate.circuit_candidate_id.as_str()),
+        )
+        .iter()
+        .map(|id| {
+            generic_validation_example(
+                "obstructionCircuitCandidates[].circuitCandidateId",
+                id,
+                "duplicate circuit candidate id",
+            )
+        }),
+    );
+    examples.extend(
+        duplicates(
+            document
+                .observation_gaps
+                .iter()
+                .map(|gap| gap.gap_id.as_str()),
+        )
+        .iter()
+        .map(|id| {
+            generic_validation_example(
+                "observationGaps[].gapId",
+                id,
+                "duplicate observation gap id",
+            )
+        }),
+    );
+    check_from_examples(
+        "archmap-atomic-candidate-ids-unique",
+        "Atomic observation candidate ids are unique inside each candidate family",
+        examples,
+        "fail",
+    )
+}
+
+fn check_atom_candidates_have_source_evidence(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = document
+        .atom_candidates
+        .iter()
+        .filter(|candidate| {
+            candidate.measurement_boundary == "measuredNonzero" && candidate.source_refs.is_empty()
+        })
+        .map(|candidate| {
+            generic_validation_example(
+                &candidate.atom_candidate_id,
+                &candidate.atom_family,
+                "observed atom candidate must cite source refs; ArchMap does not certify unsupported atoms",
+            )
+        })
+        .collect::<Vec<_>>();
+    examples.extend(
+        document
+            .atom_candidates
+            .iter()
+            .filter(|candidate| {
+                matches!(
+                    candidate.observation_status.as_str(),
+                    "certified" | "proved" | "groundTruth"
+                )
+            })
+            .map(|candidate| {
+                generic_validation_example(
+                    &candidate.atom_candidate_id,
+                    &candidate.observation_status,
+                    "ArchMap may observe atom candidates, but must not certify universal atoms",
+                )
+            }),
+    );
+    check_from_examples(
+        "archmap-atom-candidates-are-observed-not-certified",
+        "Atom candidates preserve source evidence and are not certified as universal atoms by ArchMap",
+        examples,
+        "fail",
+    )
+}
+
+fn check_obstruction_circuit_boundary(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let mut examples = document
+        .atom_candidates
+        .iter()
+        .filter(|candidate| {
+            candidate
+                .atom_family
+                .to_ascii_lowercase()
+                .contains("obstruction")
+        })
+        .map(|candidate| {
+            generic_validation_example(
+                &candidate.atom_candidate_id,
+                &candidate.atom_family,
+                "obstruction belongs in obstructionCircuitCandidates, not atomCandidates",
+            )
+        })
+        .collect::<Vec<_>>();
+    examples.extend(
+        document
+            .obstruction_circuit_candidates
+            .iter()
+            .filter(|candidate| {
+                candidate.atom_candidate_refs.is_empty() && candidate.molecule_candidate_refs.is_empty()
+            })
+            .map(|candidate| {
+                generic_validation_example(
+                    &candidate.circuit_candidate_id,
+                    &candidate.circuit_kind,
+                    "obstruction circuit candidate should point to atom or molecule candidates when available",
+                )
+            }),
+    );
+    check_from_examples(
+        "archmap-obstruction-circuits-are-not-atoms",
+        "Obstruction circuits are composed review witnesses, not primitive architecture atoms",
+        examples,
+        "fail",
+    )
+}
+
+fn check_observation_gaps_are_not_measured_zero(document: &ArchMapDocumentV0) -> ValidationCheck {
+    let examples = document
+        .observation_gaps
+        .iter()
+        .filter(|gap| {
+            matches!(
+                gap.evidence_status.as_str(),
+                "measuredZero" | "observedAbsent" | "absent"
+            )
+        })
+        .map(|gap| {
+            generic_validation_example(
+                &gap.gap_id,
+                &gap.evidence_status,
+                "observation gap must remain unknown/private/unavailable/out-of-scope, not measured zero",
+            )
+        })
+        .collect::<Vec<_>>();
+    check_from_examples(
+        "archmap-observation-gaps-not-measured-zero",
+        "Observation gaps are retained as gaps instead of absence claims",
+        examples,
+        "fail",
+    )
+}
+
+fn archmap_atomic_observation_summary(
+    document: &ArchMapDocumentV0,
+) -> ArchMapAtomicObservationSummary {
+    let atom_candidate_count = document.atom_candidates.len();
+    let molecule_candidate_count = document.molecule_candidates.len();
+    let obstruction_circuit_candidate_count = document.obstruction_circuit_candidates.len();
+    let observation_gap_count = document.observation_gaps.len();
+    ArchMapAtomicObservationSummary {
+        atom_candidate_count,
+        observed_atom_count: document
+            .atom_candidates
+            .iter()
+            .filter(|candidate| {
+                is_observed_atomic_boundary(
+                    &candidate.observation_status,
+                    &candidate.measurement_boundary,
+                )
+            })
+            .count(),
+        molecule_candidate_count,
+        observed_molecule_count: document
+            .molecule_candidates
+            .iter()
+            .filter(|candidate| candidate.observation_status == "observed")
+            .count(),
+        obstruction_circuit_candidate_count,
+        observed_circuit_count: document
+            .obstruction_circuit_candidates
+            .iter()
+            .filter(|candidate| {
+                is_observed_atomic_boundary(
+                    &candidate.observation_status,
+                    &candidate.measurement_boundary,
+                )
+            })
+            .count(),
+        observation_gap_count,
+        sft_handoff_ref_count: atom_candidate_count
+            + obstruction_circuit_candidate_count
+            + observation_gap_count,
+        zero_curvature_reading:
+            "zero curvature is read as absence of required obstruction circuits over observed atom arrangement, not as an ArchMap definition"
+                .to_string(),
+        boundary:
+            "ArchMap records source-grounded atom, molecule, circuit, and gap candidates; AAT analysis decides theorem-facing meaning"
+                .to_string(),
+        non_conclusions: archmap_atomic_non_conclusions(),
+    }
+}
+
+fn is_observed_atomic_boundary(observation_status: &str, measurement_boundary: &str) -> bool {
+    matches!(observation_status, "observed" | "measured")
+        || measurement_boundary == "measuredNonzero"
+}
+
+fn archmap_atomic_non_conclusions() -> Vec<String> {
+    vec![
+        "ArchMap atom candidate is not a certified ArchitectureAtom".to_string(),
+        "responsibility is reported as a molecule over atom candidates, not as a primitive atom"
+            .to_string(),
+        "obstruction circuit candidate is not a primitive atom".to_string(),
+        "observation gap is not measured zero".to_string(),
+        "atomic observation summary does not prove zero curvature".to_string(),
+        "atomic observation summary does not prove SFT forecast correctness".to_string(),
+    ]
 }
 
 pub fn build_air_from_archmap(
@@ -1785,6 +2048,9 @@ fn archmap_item_non_conclusions(item: &ArchMapMapItem) -> Vec<String> {
     let mut non_conclusions = item.non_conclusions.clone();
     non_conclusions.push("ArchMap item is not architecture ground truth".to_string());
     non_conclusions.push("ArchMap item does not prove semantic preservation".to_string());
+    non_conclusions.push(
+        "ArchMap map item may support atom observation, but is not an atom certificate".to_string(),
+    );
     if item.claim_classification != "proved" {
         non_conclusions.push("LLM-authored mapping is not a Lean theorem".to_string());
     }
@@ -1808,6 +2074,7 @@ fn archmap_non_conclusions(document: &ArchMapDocumentV0) -> Vec<String> {
         "ArchMap is a bounded AAT homomorphism candidate, not architecture ground truth"
             .to_string(),
     );
+    non_conclusions.extend(archmap_atomic_non_conclusions());
     non_conclusions.push("ArchMap validation does not prove architecture lawfulness".to_string());
     non_conclusions.push("ArchMap validation does not prove semantic completeness".to_string());
     non_conclusions.sort();
@@ -1951,6 +2218,30 @@ fn all_source_refs(document: &ArchMapDocumentV0) -> Vec<&ArchMapSourceRef> {
                 .map_items
                 .iter()
                 .flat_map(|item| item.source_refs.iter()),
+        )
+        .chain(
+            document
+                .atom_candidates
+                .iter()
+                .flat_map(|candidate| candidate.source_refs.iter()),
+        )
+        .chain(
+            document
+                .molecule_candidates
+                .iter()
+                .flat_map(|candidate| candidate.source_refs.iter()),
+        )
+        .chain(
+            document
+                .obstruction_circuit_candidates
+                .iter()
+                .flat_map(|candidate| candidate.source_refs.iter()),
+        )
+        .chain(
+            document
+                .observation_gaps
+                .iter()
+                .flat_map(|gap| gap.source_refs.iter()),
         )
         .collect()
 }

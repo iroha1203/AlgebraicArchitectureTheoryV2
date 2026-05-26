@@ -95,12 +95,13 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
             ],
             "unmeasured",
             vec![
-                "ArchMap SFT-facing mapItems are projected by archmap-sft-input with retained source refs",
+                "ArchMap SFT-facing mapItems plus atom, circuit, and observation gap refs are projected by archmap-sft-input with retained source refs",
             ],
             vec![],
             vec![
                 "ArchMap-derived operation support is not a forecast result",
                 "ArchMap confidence is review priority, not probability",
+                "ArchMap atom refs are observation refs, not certified universal atoms",
             ],
         ),
         axis(

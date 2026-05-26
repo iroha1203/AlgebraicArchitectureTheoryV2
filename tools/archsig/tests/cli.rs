@@ -162,6 +162,25 @@ fn cli_runs_archmap_primary_workflow() {
         ),
         "ArchMap validation should complete without failing"
     );
+    assert_eq!(
+        validation_json["atomicObservationSummary"]["atomCandidateCount"], 4,
+        "ArchMap validation must surface observed atom candidates"
+    );
+    assert!(
+        validation_json["atomicObservationChecks"]
+            .as_array()
+            .expect("atomic observation checks are array")
+            .iter()
+            .any(|check| check["id"] == "archmap-obstruction-circuits-are-not-atoms"),
+        "validation must keep obstruction circuits separate from primitive atoms"
+    );
+    assert!(
+        validation_json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|entry| entry == "atomic observation summary does not prove zero curvature")
+    );
 
     let air_json = read_json(&out_dir.join("air.json"));
     assert_eq!(air_json["schemaVersion"], "aat-air-v0");

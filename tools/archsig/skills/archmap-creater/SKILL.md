@@ -7,7 +7,7 @@ description: Create bounded ArchMap artifacts from repository evidence. Use when
 
 ## Purpose
 
-Create `archmap-v0` as bounded LLM-authored architecture evidence. Treat ArchMap as a source-to-architecture mapping artifact that may feed AIR, PR / CI review, and SFT projections, not as ground truth, Lean proof, forecast correctness, or causal diagnosis.
+Create `archmap-v0` as bounded LLM-authored architecture evidence. Treat ArchMap as a source-to-architecture mapping and atomic observation artifact that may feed AIR, PR / CI review, and SFT projections, not as ground truth, certified atom truth, Lean proof, forecast correctness, or causal diagnosis.
 
 ## Inputs
 
@@ -59,6 +59,7 @@ ${ARCHSIG_BIN:-archsig} archmap-generate \
 
 3. Draft `archmap-v0`.
    - Use `mapItems[]` as the unit of mapping.
+   - Use `atomCandidates[]` for primitive observed facts, `moleculeCandidates[]` for roles such as responsibility, `obstructionCircuitCandidates[]` for failed filling / lifting circuits, and `observationGaps[]` for unknown/private/unavailable boundaries.
    - Keep `sourceRefs`, `targetRef`, `preserves`, `forgets`, `claimClassification`, `measurementBoundary`, `confidence`, `missingEvidence`, and `nonConclusions` explicit.
    - Separate AAT-facing items from SFT-facing items. Shared source refs are allowed; proof claims and forecast inputs must not be conflated.
    - Include semantic structure only when evidence supports it.
@@ -75,12 +76,15 @@ ${ARCHSIG_BIN:-archsig} archmap \
 5. Read the validation report before handing the artifact downstream.
    - Treat failures as schema or boundary problems to fix.
    - Treat warnings as review cues, not automatic rejection.
-   - Check `formalPromotionGuardrailChecks`, `leanPreservationPreconditionChecklist`, `sourceInventoryChecks`, conflicts, missing evidence, and non-conclusions.
+   - Check `formalPromotionGuardrailChecks`, `leanPreservationPreconditionChecklist`, `sourceInventoryChecks`, `atomicObservationChecks`, `atomicObservationSummary`, conflicts, missing evidence, and non-conclusions.
 
 ## Writing Rules
 
 - Preserve uncertainty in fields; do not erase it in prose.
 - Never claim that `archmap-v0` validates architecture lawfulness.
+- Never claim that `atomCandidates[]` certifies universal `ArchitectureAtom` truth.
+- Never put obstruction in `atomCandidates[]`; use `obstructionCircuitCandidates[]`.
+- Never treat responsibility as a primitive atom; use `moleculeCandidates[]`.
 - Never claim that validation produces a Lean proof term.
 - Never put ForecastCone, ConsequenceEnvelope, attractor, basin, incident causality, or quality ranking into ArchMap as computed results.
 - Do not write implementation progress into PRDs. Use issues, theorem indexes, proof obligations, roadmaps, or PRs for status.

@@ -1164,6 +1164,14 @@ pub struct ArchMapDocumentV0 {
     #[serde(default)]
     pub homomorphism: ArchMapHomomorphismV0,
     #[serde(default)]
+    pub atom_candidates: Vec<ArchMapAtomCandidateV0>,
+    #[serde(default)]
+    pub molecule_candidates: Vec<ArchMapMoleculeCandidateV0>,
+    #[serde(default)]
+    pub obstruction_circuit_candidates: Vec<ArchMapObstructionCircuitCandidateV0>,
+    #[serde(default)]
+    pub observation_gaps: Vec<ArchMapObservationGapV0>,
+    #[serde(default)]
     pub map_items: Vec<ArchMapMapItem>,
     #[serde(default)]
     pub coverage: ArchMapCoverage,
@@ -1399,6 +1407,77 @@ pub struct ArchMapMapItem {
     pub law_refs: Vec<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapAtomCandidateV0 {
+    pub atom_candidate_id: String,
+    pub atom_family: String,
+    pub predicate: String,
+    pub subject_ref: String,
+    #[serde(default)]
+    pub object_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub observation_status: String,
+    pub measurement_boundary: String,
+    pub confidence: String,
+    #[serde(default)]
+    pub uncertainty: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapMoleculeCandidateV0 {
+    pub molecule_candidate_id: String,
+    pub molecule_kind: String,
+    pub role_name: String,
+    #[serde(default)]
+    pub atom_candidate_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub observation_status: String,
+    pub confidence: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapObstructionCircuitCandidateV0 {
+    pub circuit_candidate_id: String,
+    pub circuit_kind: String,
+    pub law_ref: String,
+    #[serde(default)]
+    pub atom_candidate_refs: Vec<String>,
+    #[serde(default)]
+    pub molecule_candidate_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub observation_status: String,
+    pub measurement_boundary: String,
+    pub claim_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapObservationGapV0 {
+    pub gap_id: String,
+    pub gap_kind: String,
+    pub subject_ref: String,
+    pub evidence_status: String,
+    pub reason: String,
+    #[serde(default)]
+    pub expected_atom_families: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchMapTargetRef {
@@ -1463,7 +1542,27 @@ pub struct ArchMapValidationReportV0 {
     pub conflict_checks: Vec<ValidationCheck>,
     pub formal_promotion_guardrail_checks: Vec<ValidationCheck>,
     pub homomorphism_diagnostics: ArchMapHomomorphismDiagnosticsV0,
+    #[serde(default)]
+    pub atomic_observation_checks: Vec<ValidationCheck>,
+    #[serde(default)]
+    pub atomic_observation_summary: ArchMapAtomicObservationSummary,
     pub summary: ArchMapValidationSummary,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapAtomicObservationSummary {
+    pub atom_candidate_count: usize,
+    pub observed_atom_count: usize,
+    pub molecule_candidate_count: usize,
+    pub observed_molecule_count: usize,
+    pub obstruction_circuit_candidate_count: usize,
+    pub observed_circuit_count: usize,
+    pub observation_gap_count: usize,
+    pub sft_handoff_ref_count: usize,
+    pub zero_curvature_reading: String,
+    pub boundary: String,
     pub non_conclusions: Vec<String>,
 }
 

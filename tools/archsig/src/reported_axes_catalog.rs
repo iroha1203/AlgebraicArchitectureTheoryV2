@@ -95,7 +95,7 @@ pub fn static_detectable_values_reported_axes_catalog() -> DetectableValuesRepor
             ],
             "unmeasured",
             vec![
-                "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, and signature-axis map",
+                "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, signature-axis map, atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps",
                 "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit",
             ],
             vec!["ArchMapModel.AATHomomorphicRelation"],
