@@ -471,6 +471,34 @@ analysis とし、その他は必要データが揃う場合の exploratory anal
 
 補足: Issue [#714](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/714) では、`SupportRiskMass` を finite support entries からの bounded calculation として `derived` 出力する。calculation fixture は `measuredRiskMass`、`estimatedRiskMass`、unknown support weight、risk-state / preservation-precondition status 別 weight、`safePreservingProved` の theorem / theorem-index refs を保持し、unknown / unavailable / private / notComparable / outOfScope support を aggregate でも measured zero に畳み込まない。
 
+## Atomic AAT/SFT Atomization status
+
+Issue [#1220](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1220)
+と sub-issues [#1221](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1221),
+[#1222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1222),
+[#1223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1223),
+[#1224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1224),
+[#1225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1225),
+[#1234](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1234),
+[#1235](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1235),
+[#1236](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1236),
+[#1237](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1237),
+[#1238](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1238),
+[#1239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1239),
+[#1240](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1240)
+の第一波は、`Formal/Arch/Atomization.lean` と
+`Formal/Arch/Examples/AtomicExamples.lean` に Lean surface を追加した。
+
+| 対象 | 現在の扱い | 残す境界 |
+| --- | --- | --- |
+| atomization skeleton / support universe | `Axis`, `Polarity`, `AtomKind`, `MeasurementStatus`, `CoverageGapKind`, `Support`, `SupportSubset`, `FiniteSupportUniverse`, `AtomizationBoundary`, `ArchitectureAtom`, `ValidAtom` を追加済み。`SupportSubset.refl/trans/antisymm`, `FiniteSupportUniverse.contains_minimal_bad`, `bad_iff_contains_minimal`, `validAtom_antichain_sameKind` は proved。 | selected support universe / coverage / exactness assumption に相対化する。global support completeness は主張しない。 |
+| coverage / measurement boundary | `MeasurementStatus`, `CoverageGapKind`, `AtomKind.coverageGap gap`, `MinimalCoverageGap`, `coverage_unmeasured_not_signatureZero` を追加済み。`ValidAtom` は coverage gap kind つき atom を minimal coverage gap として検証する。 | `unmeasured`, `outOfScope`, `privateUnavailable`, `dynamicBlindSpot`, `rejectedCandidate`, `uncertainCandidate` は measured zero ではない。 |
+| classifier / atomizer soundness | `AtomClassifier`, `classify_sound`, `AtomizationCertificate`, boundary-fixed `Atomizer`, `atomize_sound` を追加済み。`AtomicExamples.example_atomize_sound_measuredForbiddenAtom` は実 atom を通す smoke theorem。 | classifier completeness、Rust / ArchSig extraction correctness、ArchMap candidate correctness は主張しない。 |
+| static atom v0 | `SingleEdgePolicyViolation`, `singleEdgePolicyViolation_minimal`, `StaticAtomV0Package` と accessor theorem、minimal example を追加済み。 | static atom zero は semantic / runtime safety や global decomposability を含意しない。 |
+| atom valuation / vanishing bridge | `AtomValuation`, `AtomSignature`, `HasBadAtomOn`, `SignatureZero`, `no_hasBadAtomOn_of_signatureZero`, `signatureZero_iff_no_hasBadAtomOn`, `AtomVanishingBridge` を追加済み。 | no atom は selected measured axis に限る。unmeasured axis safety、global future safety は結論しない。 |
+| repair / evolution / extension atom | `RepairAtom`, `EvolutionAtom`, `AtomDelta`, `AtomTrace`, `AtomSafeRegion`, `ExtensionAtomFormula` を skeleton として追加済み。`AtomSafeRegion.safe` は forbidden atom を含まない proof field。 | repair monotonicity は selected axis / selected atom family に限定する。all axes non-increasing は主張しない。 |
+| Phase 1/2/3 theorem package | `SolidCleanAtomPackage`, `SemanticRuntimeAtomPackage`, `AtomicSFTBridgePackage`, `FieldAtoms`, `field_atom_sound` と examples を追加済み。 | SOLID / Clean から global decomposability は出ない。static zero から semantic / runtime safety は出ない。SFT bridge は forecast correctness や global future safety を主張しない。 |
+
 ## 現在の未解決カテゴリ
 
 | カテゴリ | 扱い |
