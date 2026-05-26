@@ -9,8 +9,9 @@ AAT/SFT における原子理論の再設計メモ
 This document is a v2 design note for the atomic layer of Algebraic Architecture
 Theory (AAT) and Software Field Theory (SFT).
 
-この文書は、`aat_sft_atomic_theory.md` の直接編集ではなく、原子の足場を
-問い直した新しい設計メモである。
+この文書は、archive 済みの
+[`aat_sft_atomic_theory.md`](../archive/2026-05-27-atomic-theory-v1/aat_sft_atomic_theory.md)
+の直接編集ではなく、原子の足場を問い直した新しい設計メモである。
 
 v1 の中心的な問題は、原子を最初から次の形で置いたことだった。
 

@@ -44,6 +44,67 @@ Bad:
 
 Why bad: it has no evidence refs, overclaims semantics, and lacks boundaries.
 
+## Atomic Observation
+
+Good:
+
+```json
+{
+  "atomCandidateId": "atom-component-service-user",
+  "atomFamily": "Existence.Component",
+  "predicate": "component service.user exists",
+  "subjectRef": "service.user",
+  "objectRefs": ["service.user"],
+  "sourceRefs": [
+    {"artifactId": "src-service-user", "kind": "file", "path": "src/services/user.ts", "symbol": "UserService", "line": 12}
+  ],
+  "observationStatus": "observed",
+  "measurementBoundary": "measuredNonzero",
+  "confidence": "high",
+  "uncertainty": [],
+  "nonConclusions": ["atom candidate is not a certified ArchitectureAtom"]
+}
+```
+
+Bad:
+
+```json
+{
+  "atomCandidateId": "atom-obstruction-user-saga",
+  "atomFamily": "Obstruction.MissingCompensation",
+  "predicate": "saga is bad",
+  "subjectRef": "user_saga",
+  "objectRefs": [],
+  "sourceRefs": [],
+  "observationStatus": "certified",
+  "measurementBoundary": "measuredNonzero",
+  "confidence": "high",
+  "uncertainty": [],
+  "nonConclusions": []
+}
+```
+
+Why bad: obstruction is a circuit over observed facts, not a primitive atom, and ArchMap does not certify atoms.
+
+Good obstruction circuit:
+
+```json
+{
+  "circuitCandidateId": "circuit-user-saga-missing-compensation",
+  "circuitKind": "FailedFilling",
+  "lawRef": "law:semantic-compensation",
+  "atomCandidateRefs": ["atom-contract-create-user"],
+  "moleculeCandidateRefs": ["molecule-user-request-responsibility"],
+  "sourceRefs": [
+    {"artifactId": "test-user-contract", "kind": "test", "path": "tests/user_contract.test.ts", "symbol": "createsUser"}
+  ],
+  "observationStatus": "observed",
+  "measurementBoundary": "measuredNonzero",
+  "claimBoundary": "selected witness; not incident causality",
+  "nonConclusions": ["obstruction circuit candidate is not an ArchitectureAtom"]
+}
+```
+
 ## Semantic Relation
 
 Good:

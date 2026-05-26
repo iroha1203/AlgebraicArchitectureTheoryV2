@@ -79,16 +79,17 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "tools/archsig/docs/artifacts-and-boundaries.md",
                     "tools/archsig/docs/commands.md",
                 ],
-                vec!["#1032", "#1033", "#1035"],
+                vec!["#1032", "#1033", "#1035", "#1228", "#1246"],
                 compatibility_boundary(
-                    "Map source inventory, prompt/model provenance, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
+                    "Map source inventory, prompt/model provenance, atom candidates, molecule candidates, obstruction circuit candidates, observation gaps, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
                     vec![],
                     vec![
                         "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
+                        "New atomic observation fields must remain optional/default-compatible in archmap-v0 unless schemaVersion is deliberately bumped.",
                         "SFT-facing mapping kinds must remain projection input and not forecast result claims.",
                     ],
                     vec![
-                        "ArchMap is supplied JSON evidence, not architecture ground truth or a Lean theorem claim.",
+                        "ArchMap is supplied JSON evidence, not architecture ground truth, certified ArchitectureAtom truth, or a Lean theorem claim.",
                     ],
                 ),
             ),
@@ -103,15 +104,16 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "tools/archsig/docs/artifacts-and-boundaries.md",
                     "tools/archsig/docs/commands.md",
                 ],
-                vec!["#1032", "#1034"],
+                vec!["#1032", "#1034", "#1229", "#1245"],
                 compatibility_boundary(
-                    "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, and formal promotion guardrail checks separate.",
+                    "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, formal promotion guardrail checks, homomorphism diagnostics, and atomic observation summary separate.",
                     vec![],
                     vec![
                         "New checks must report whether they fail, warn, or pass without promoting uncertain mappings.",
+                        "Atomic observation checks must distinguish atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps.",
                     ],
                     vec![
-                        "Validation pass does not imply semantic correctness, completeness, or architecture lawfulness.",
+                        "Validation pass does not imply semantic correctness, completeness, architecture lawfulness, certified atom truth, zero curvature, or SFT forecast correctness.",
                     ],
                 ),
             ),

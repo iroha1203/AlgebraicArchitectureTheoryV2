@@ -363,6 +363,24 @@ fn cli_validates_archmap_fixture_and_guardrails() {
             .iter()
             .any(|entry| entry == "ArchMap validation does not prove architecture lawfulness")
     );
+    assert_eq!(
+        json["atomicObservationSummary"]["atomCandidateCount"], 4,
+        "ArchMap validation should expose atom candidate count"
+    );
+    assert!(
+        json["atomicObservationChecks"]
+            .as_array()
+            .expect("atomic observation checks are an array")
+            .iter()
+            .any(|check| check["id"] == "archmap-observation-gaps-not-measured-zero")
+    );
+    assert!(
+        json["nonConclusions"]
+            .as_array()
+            .expect("nonConclusions are an array")
+            .iter()
+            .any(|entry| entry == "obstruction circuit candidate is not a primitive atom")
+    );
     assert!(
         json["leanPreservationVocabulary"]
             .as_array()
@@ -622,6 +640,30 @@ fn cli_projects_archmap_to_sft_input_and_generation_protocol() {
                     .expect("treatment is a string")
                     .contains("do not round to absence or measured zero")
             })
+    );
+    assert!(
+        estimate_json["descriptorRef"]["actionClassCandidateIds"]
+            .as_array()
+            .expect("action class candidate ids are an array")
+            .iter()
+            .any(|candidate| candidate == "atom:archmap:atom-component-service-user"),
+        "FieldSig handoff must retain ArchMap atom refs as observation refs"
+    );
+    assert!(
+        estimate_json["evidenceBoundary"]["measurementBoundaryRefs"]
+            .as_array()
+            .expect("measurement boundary refs are an array")
+            .iter()
+            .any(|boundary| boundary == "archmapObservationGap:gap-runtime-user-db-trace"),
+        "FieldSig handoff must retain observation gap refs"
+    );
+    assert!(
+        estimate_json["unknownRemainder"]
+            .as_array()
+            .expect("unknown remainder is an array")
+            .iter()
+            .any(|remainder| remainder["remainderId"]
+                == "unknown:archmap:gap:gap-runtime-user-db-trace")
     );
 
     let cone_json = read_json(&cone);

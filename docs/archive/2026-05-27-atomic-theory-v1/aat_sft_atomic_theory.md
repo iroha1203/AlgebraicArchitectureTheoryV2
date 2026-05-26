@@ -6,9 +6,18 @@ AAT/SFT における原子理論の設計メモ
 
 ## 0. Status
 
+Archived on 2026-05-27. Superseded by
+[AAT/SFT Atomic Theory v2](../../note/aat_sft_atomic_theory_v2.md) for the
+definition of `ArchitectureAtom`.
+
 This document is a design note for extending Algebraic Architecture Theory (AAT) and Software Field Theory (SFT) with an atomic layer.
 
 この文書は、AAT（代数的アーキテクチャ論）と SFT（ソフトウェアの場の理論）に、**原子理論**を追加するための設計メモである。
+
+v1 の boundary-relative `obstruction atom` は、v2 では primitive atom ではなく
+`ObstructionCircuit` として読む。ArchMap / ArchSig の現行 tooling では、原子は
+`atomCandidates` として観測され、責務は `moleculeCandidates`、違反は
+`obstructionCircuitCandidates`、未観測は `observationGaps` に分離される。
 
 目的は、ソフトウェアアーキテクチャを単にグラフやスコアとして見るのではなく、選択された法則族・観測境界・witness universe の下で、有限で局所的な「原子」へ分解し、その生成・消滅・保存・転送を SFT の進化計算へ接続することである。
 

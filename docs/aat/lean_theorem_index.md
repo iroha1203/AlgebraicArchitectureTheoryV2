@@ -2128,11 +2128,15 @@ ArchSig report を SFT estimate / forecast status へ読む片方向境界を Le
 `ArchSigSFTReport` は selected `SoftwareFieldEstimate`、action class candidates、
 target regions、candidate operation families、comparable signature axes、missing invariants、
 unmeasured axes、theorem boundary、forecast boundary、report boundary、non-conclusions を
-保持する。`ArchSigSFTReportEstimateBoundary` は、report output が estimate boundary と
+保持する。tooling 側の `archmap-v0` v2 surface は atom / circuit / observation gap refs を
+FieldSig handoff に残すが、Lean 側ではまだ report boundary data として読む段階であり、
+certified `ArchitectureAtom` truth や zero curvature theorem discharge には昇格しない。
+`ArchSigSFTReportEstimateBoundary` は、report output が estimate boundary と
 SFT forecast boundary に保存されることを accessor theorem として公開する。
 
 Non-conclusions: ArchSig report は ground-truth architecture object、AAT theorem package、
-calibrated forecast correctness、extractor completeness、global future safety を結論しない。
+calibrated forecast correctness、extractor completeness、global future safety、certified
+universal atom truth を結論しない。
 
 | Name | Kind | Description | Status |
 | --- | --- | --- | --- |

@@ -7,13 +7,13 @@ ArchMap authoring is evidence mapping, not architecture invention.
 
 | Source cue | Preferred ArchMap reading | Typical `mappingKind` | Typical `targetRef.kind` | Notes |
 | --- | --- | --- | --- | --- |
-| File, module, namespace, class, service, package | Architecture object candidate | `object` | `air-component` | Preserve component identity. Forget implementation detail such as method count unless it is the measured subject. |
-| Static import, explicit dependency, constructor injection, function call used as boundary evidence | Relation candidate | `relation` | `air-relation` | Static evidence alone does not prove semantic dependency or runtime frequency. |
+| File, module, namespace, class, service, package | Architecture object candidate plus `Existence.Component` atom candidate | `object` | `air-component` | Preserve component identity. Forget implementation detail such as method count unless it is the measured subject. |
+| Static import, explicit dependency, constructor injection, function call used as boundary evidence | Relation candidate plus `Relation.Dependency` atom candidate | `relation` | `air-relation` | Static evidence alone does not prove semantic dependency or runtime frequency. |
 | Doc policy, layer rule, dependency rule, ownership rule | Law or policy boundary | `policyBoundary` | `air-claim` | Use `claimClassification=assumed` unless independently measured by tooling. |
 | Test, theorem, contract spec, golden fixture | Semantic evidence or contract observation | `semanticDiagram` or `semanticCommutationClaim` | `semantic-diagram` | Scope to the selected observation. Do not generalize to all executions. |
 | Two workflow paths with the same observed result | Commutation candidate | `semanticCommutationClaim` | `semantic-diagram` | Use `equivalence=observational` when the equality is test/spec relative. |
-| Workflow paths with different observed results, missing compensation, impossible filler | Obstruction or witness | `nonfillabilityWitness` | `nonfillability-witness` | Preserve the witness and avoid root-cause or incident-causality claims. |
-| Component with multiple responsibility regions or reasons to change | Responsibility / SRP review cue | `semanticRole` | `air-claim` | Treat SOLID as local contract-layer evidence, not a universal theorem. |
+| Workflow paths with different observed results, missing compensation, impossible filler | Obstruction circuit candidate | `nonfillabilityWitness` | `nonfillability-witness` | Put the primitive facts in `atomCandidates` and the failed filling in `obstructionCircuitCandidates`; avoid root-cause or incident-causality claims. |
+| Component with multiple responsibility regions or reasons to change | Responsibility molecule / SRP review cue | `semanticRole` | `air-claim` | Treat responsibility as a molecule over atoms, not a primitive atom. Treat SOLID as local contract-layer evidence, not a universal theorem. |
 | Event stream to read model, replay projection, CQRS projection | Event-sourcing semantic diagram | `semanticDiagram` | `semantic-diagram` | Forget event-log completeness unless the log evidence was supplied. |
 | Saga branch, rollback path, compensation handler | Compensation or missing compensation cue | `nonfillabilityWitness` or `semanticDiagram` | `nonfillability-witness` or `semantic-diagram` | Keep incident causality out of ArchMap. |
 | Runtime trace, production edge, log-derived dependency | Runtime observation candidate | `runtimeObservationCandidate` or `reviewBoundary` | `air-claim` | If trace is unavailable, mark unmeasured and list missing evidence. |
@@ -84,3 +84,4 @@ Conflicts are not automatic failures and not automatic repair instructions.
 - If a source file supports both AAT and SFT readings, create separate items with shared `sourceRefs`.
 - If the item is SFT-facing, make the downstream role clear in `preserves[]` and `targetRef.kind`.
 - If a theorem or Lean definition is referenced, record it as a candidate or assumption; do not claim proof discharge from JSON validation.
+- For v2-style artifacts, keep `atomCandidates`, `moleculeCandidates`, `obstructionCircuitCandidates`, and `observationGaps` synchronized with `mapItems`. These fields are observation surfaces; they do not certify universal atoms, zero curvature, or SFT forecast correctness.

@@ -19,6 +19,10 @@ Required top-level shape:
   "generationBoundary": {},
   "sourceUniverse": {},
   "targetUniverse": {},
+  "atomCandidates": [],
+  "moleculeCandidates": [],
+  "obstructionCircuitCandidates": [],
+  "observationGaps": [],
   "mapItems": [],
   "coverage": {},
   "conflicts": [],
@@ -27,6 +31,14 @@ Required top-level shape:
 ```
 
 Use `promptRefs` when a prompt pack was used.
+
+The atomic fields are optional for backward compatibility, but new ArchMap v2-style artifacts should
+fill them when the evidence supports it:
+
+- `atomCandidates`: source-grounded primitive architecture fact candidates.
+- `moleculeCandidates`: composed roles such as responsibility over atom candidate refs.
+- `obstructionCircuitCandidates`: failed-filling / failed-lifting / law-boundary circuits over atoms or molecules.
+- `observationGaps`: unknown, private, unavailable, or out-of-scope evidence that must not be rounded to absence.
 
 ## Source Universe
 
@@ -61,6 +73,37 @@ Each `mapItems[]` entry should include:
 - `nonConclusions`: claims this item does not make
 - `conflictCategory`: optional review cue
 - `evidenceRefs` or `theoremRefs`: optional supporting refs when available
+
+## Atomic Observation Fields
+
+Each `atomCandidates[]` entry should include:
+
+- `atomCandidateId`
+- `atomFamily`: for example `Existence.Component`, `Relation.Dependency`, `Capability.CRUD`, `Data.Table`, `Effect.DatabaseWrite`, `Observation.Contract`
+- `predicate`
+- `subjectRef`
+- `objectRefs`
+- `sourceRefs`
+- `observationStatus`: usually `observed` or `unmeasured`
+- `measurementBoundary`
+- `confidence`: review priority, not probability
+- `uncertainty`
+- `nonConclusions`
+
+Do not use atom families such as `Obstruction.*`. Obstruction belongs in
+`obstructionCircuitCandidates[]`.
+
+Each `moleculeCandidates[]` entry should list `moleculeCandidateId`, `moleculeKind`,
+`roleName`, `atomCandidateRefs`, `sourceRefs`, `observationStatus`, `confidence`, and
+`nonConclusions`. Responsibility is a molecule, not a primitive atom.
+
+Each `obstructionCircuitCandidates[]` entry should list `circuitCandidateId`, `circuitKind`,
+`lawRef`, `atomCandidateRefs`, `moleculeCandidateRefs`, `sourceRefs`, `observationStatus`,
+`measurementBoundary`, `claimBoundary`, and `nonConclusions`.
+
+Each `observationGaps[]` entry should list `gapId`, `gapKind`, `subjectRef`, `evidenceStatus`,
+`reason`, `expectedAtomFamilies`, `sourceRefs`, and `nonConclusions`. Use `unmeasured`,
+`unavailable`, `private`, or `outOfScope` for gaps; do not use `measuredZero`.
 
 ## Common `mappingKind` Values
 
@@ -161,6 +204,9 @@ Before validation:
 - missing evidence is not represented as measured zero
 - semantic items have semantic coverage
 - SFT-facing items are not presented as Lean theorem claims
+- atom candidates are source-grounded observations, not certified atoms
+- obstruction circuit candidates are not placed in `atomCandidates`
+- observation gaps are not represented as measured zero
 - non-conclusions exist at both item and top level
 
 Validate with:

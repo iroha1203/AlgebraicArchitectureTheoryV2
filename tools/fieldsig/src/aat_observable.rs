@@ -99,7 +99,7 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
             ],
             review_questions: vec![
                 "Which invariant is preserved, broken, unmeasured, or out of scope?".to_string(),
-                "Which obstruction witnesses are measured, and which witness families remain unmeasured?".to_string(),
+                "Which obstruction witnesses are typed as obstruction circuits, and which circuit families remain unmeasured?".to_string(),
                 "Which operation family is plausible, and what must stay a human judgment?".to_string(),
                 "Which theorem boundary blocks a formal claim?".to_string(),
                 "What next evidence would change the review decision?".to_string(),

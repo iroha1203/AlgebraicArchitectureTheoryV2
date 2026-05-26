@@ -317,44 +317,6 @@ ComparableAxes(S1, S2)
 measurement status coordinate は AAT 本文の対象である。
 実証的 cost や product outcome への読み替えは、AAT の required zero-axis ではない。
 
-## 5.1 Atomization Layer
-
-Atomic Theory は `ArchitectureSignature` をさらに細かく読み、selected boundary `B`
-の下で law failure / invariant support / observation difference を支える最小有限 support
-を `ArchitectureAtom` として扱う。
-
-```text
-ArchitectureAtom_B(X)
-  = finite law circuit / predicate-relative minimal support
-```
-
-原子はコード片、クラス、モジュールそのものではない。`Support` は component だけでなく、
-edge、diagram、observation、runtime trace などを含む boundary-relative witness support である。
-原子集合は architecture object の partition ではなく incidence hypergraph として読む。
-
-Lean 側では `Formal/Arch/Atomization.lean` に atomization skeleton、support inclusion、
-minimal circuit、coverage boundary、atom valuation、classifier / atomizer soundness、
-static atom v0、repair / evolution atom、SOLID / Clean、semantic / runtime、Atomic SFT bridge
-の theorem-package surface を置いている。具体的な smoke examples は
-`Formal/Arch/Examples/AtomicExamples.lean` にある。
-
-重要な境界は次である。
-
-```text
-no selected measured atom
-  does not imply global safety
-
-static atom zero
-  does not imply semantic / runtime safety
-
-CoverageAtom
-  is not measured zero
-
-RepairAtom
-  is a rewrite / transition generator,
-  not an ArchitectureAtom itself
-```
-
 ## 6. Theorem Boundary と Non-conclusions
 
 theorem boundary は、operation や theorem package がどの前提の下で何を結論するか、

@@ -385,7 +385,7 @@
       ],
       "defaultMeasurementBoundary": "unmeasured",
       "evidenceRequirements": [
-        "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, and signature-axis map",
+        "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, signature-axis map, atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps",
         "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit"
       ],
       "theoremRefs": [
@@ -519,7 +519,7 @@
         "axisOrLayer": "archMapHomomorphismClassification",
         "measurementBoundary": "unmeasured",
         "coverageAssumptions": [
-          "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, and signature-axis map",
+          "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, signature-axis map, atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps",
           "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit"
         ],
         "exactnessAssumptions": [

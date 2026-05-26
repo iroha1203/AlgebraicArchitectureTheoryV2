@@ -365,12 +365,13 @@
       ],
       "defaultMeasurementBoundary": "unmeasured",
       "evidenceRequirements": [
-        "ArchMap SFT-facing mapItems are projected by archmap-sft-input with retained source refs"
+        "ArchMap SFT-facing mapItems plus atom, circuit, and observation gap refs are projected by archmap-sft-input with retained source refs"
       ],
       "theoremRefs": [],
       "compatibilityNotes": [
         "ArchMap-derived operation support is not a forecast result",
-        "ArchMap confidence is review priority, not probability"
+        "ArchMap confidence is review priority, not probability",
+        "ArchMap atom refs are observation refs, not certified universal atoms"
       ],
       "nonConclusions": [
         "axis value compatibility does not prove semantic preservation",
@@ -528,11 +529,12 @@
         "axisOrLayer": "archMapSftOperationSupport",
         "measurementBoundary": "unmeasured",
         "coverageAssumptions": [
-          "ArchMap SFT-facing mapItems are projected by archmap-sft-input with retained source refs"
+          "ArchMap SFT-facing mapItems plus atom, circuit, and observation gap refs are projected by archmap-sft-input with retained source refs"
         ],
         "exactnessAssumptions": [
           "ArchMap-derived operation support is not a forecast result",
-          "ArchMap confidence is review priority, not probability"
+          "ArchMap confidence is review priority, not probability",
+          "ArchMap atom refs are observation refs, not certified universal atoms"
         ]
       },
       {
