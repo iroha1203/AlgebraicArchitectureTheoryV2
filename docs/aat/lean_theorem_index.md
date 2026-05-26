@@ -4031,6 +4031,60 @@ File: `Formal/Arch/Examples/SolidCounterexample.lean`
 | `StrongAbstractCycleComponent.dipCompatible_and_not_decomposable` | `theorem` | DIP compatible と `¬ Decomposable` が同時に成立すること。 | `proved` |
 | `StrongAbstractCycleComponent.strongDIPCompatible_and_not_decomposable` | `theorem` | strong DIP compatible と `¬ Decomposable` が同時に成立すること。 | `proved` |
 
+## Atomic AAT/SFT Atomization
+
+Files: `Formal/Arch/Atomization.lean`, `Formal/Arch/Examples/AtomicExamples.lean`
+
+Issue [#1220](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1220)
+と sub-issues [#1221](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1221),
+[#1222](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1222),
+[#1223](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1223),
+[#1224](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1224),
+[#1225](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1225),
+[#1234](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1234),
+[#1235](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1235),
+[#1236](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1236),
+[#1237](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1237),
+[#1238](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1238),
+[#1239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1239),
+[#1240](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1240)
+の Lean surface である。
+
+| Lean 名 | 種別 | 意味 | Status |
+| --- | --- | --- | --- |
+| `Axis`, `Polarity`, `AtomKind`, `MeasurementStatus`, `CoverageGapKind` | `inductive` | atomization boundary で使う axis / role / atom family / measurement boundary。 | `defined only` |
+| `Support` | `structure` | component / edge / diagram を持つ finite witness support の predicate representation。 | `defined only` |
+| `SupportSubset`, `ProperSubsupport`, `MinimalSupport`, `UpwardClosed` | `def` | support inclusion、proper inclusion、predicate-relative minimality、upward-closed badness。 | `defined only` |
+| `SupportSubset.refl`, `SupportSubset.trans`, `SupportSubset.antisymm` | `theorem` | support inclusion の基本性質。 | `proved` |
+| `FiniteSupportUniverse` | `structure` | selected finite support universe と minimal support search obligation、coverage / exactness / non-conclusions を束ねる。 | `defined only` |
+| `FiniteSupportUniverse.contains_minimal_bad` | `theorem` | bad support から selected minimal bad support を取り出す。 | `proved` |
+| `FiniteSupportUniverse.bad_iff_contains_minimal` | `theorem` | upward-closed badness が minimal atoms の upward closure で生成されること。 | `proved` |
+| `ArchitectureShape`, `ArchitectureCell`, `ArchitectureMolecule` | `structure` | cellular-circuit AAT へ進むための skeleton。 | `defined only` |
+| `AtomizationBoundary` | `structure` | selected axes、shape predicate、coverage gap predicate、theorem / coverage / exactness / non-conclusion boundary。 | `defined only` |
+| `Shape`, `ArchitectureCircuit`, `ObstructionCircuit`, `ConstructiveMinimalGenerator`, `MinimalCoverageGap` | `def` | law-indexed circuit / minimal generator / coverage atom の predicate surface。 | `defined only` |
+| `ArchitectureAtom`, `ValidAtom` | `structure` / `def` | atom data と、その support が selected minimal circuit または `AtomKind.coverageGap gap` の minimal coverage gap であること。 | `defined only` |
+| `validAtom_antichain_sameKind` | `theorem` | 同じ atom kind の valid atoms は proper subsupport で入れ子にならない。 | `proved` |
+| `SingleEdgePolicyViolation`, `singleEdgePolicyViolation_minimal` | `def` / `theorem` | static atom v0 の single-edge policy violation が minimal support になること。 | `proved` |
+| `StaticAtomV0Package` | `structure` | forbidden edge / boundary leak / abstraction leak / simple cycle / rank violation / coverage gap の selected static theorem package。 | `defined only` |
+| `StaticAtomV0Package.forbiddenStaticEdge_minimal`, `boundaryLeak_minimal`, `simpleCycle_obstructionCircuit`, `rankViolation_obstructionCircuit`, `coverageGap_minimal` | `theorem` | static atom v0 package から minimal witness theorem を取り出す。 | `proved` |
+| `AtomValuation`, `AtomSignature`, `HasBadAtomOn`, `SignatureZero` | `structure` / `def` | atom valuation と measured-zero/no-bad-atom bridge の signature surface。 | `defined only` |
+| `no_hasBadAtomOn_of_signatureZero`, `signatureZero_iff_no_hasBadAtomOn` | `theorem` | measured-zero status の下で signature zero と no bad atom を接続する。 | `proved` |
+| `AtomVanishingBridge` | `structure` | witness completeness / axis exactness / atom cover completeness / non-conclusions を明示した vanishing bridge。 | `defined only` |
+| `AtomClassifier`, `classify_sound`, `AtomizationCertificate`, `Atomizer`, `atomize_sound` | `structure` / `theorem` | classifier / boundary-fixed atomizer が返す atom の soundness surface。completeness は境界として残す。 | `defined only` / `proved` |
+| `RepairAtom`, `EvolutionAtom`, `AtomDelta`, `AtomTrace`, `AtomSafeRegion`, `ExtensionAtomFormula` | `structure` | repair / evolution / extension atom formula の skeleton。`AtomSafeRegion.safe` は forbidden atom を含まない proof field。 | `defined only` |
+| `SolidCleanAtomPackage`, `SemanticRuntimeAtomPackage`, `AtomicSFTBridgePackage` | `structure` | Phase 1/2/3 の theorem-package surface。 | `defined only` |
+| `SolidCleanAtomPackage.projectionSound_atom_theorem`, `lspMismatch_atom_theorem`, `dipLocal_soundness_theorem`, `solid_not_global_decomposability` | `def` | SOLID / Clean atomizer の theorem-package accessors。 | `defined only` |
+| `SemanticRuntimeAtomPackage.static_zero_not_semantic_zero`, `runtime_protection_local_theorem`, `non_commuting_square_witness`, `records_no_global_operational_safety` | `def` | semantic / runtime atomizer の theorem-package accessors。 | `defined only` |
+| `AtomicSFTBridgePackage.field_atom_sound_boundary`, `atom_trace_sound_boundary`, `atom_safe_support_boundary`, `atom_cone_narrowing_boundary`, `field_update_records_unexpected_atom_boundary`, `records_no_global_future_safety` | `def` | Atomic SFT bridge の theorem-package accessors。 | `defined only` |
+| `FieldAtoms`, `field_atom_sound` | `def` / `theorem` | SFT `SoftwareField` から AAT atom を architecture projection 経由で引き戻す。 | `defined only` / `proved` |
+| `AtomicExamples.measuredForbiddenAtom_valid`, `example_atomize_sound`, `example_atomize_sound_measuredForbiddenAtom`, `staticSignatureZero_no_static_bad_atom`, `coverage_unmeasured_not_signatureZero`, `example_static_zero_not_semantic_zero` | `theorem` | minimal examples / smoke tests。 | `proved` |
+
+Non-conclusions: `AtomizationBoundary` と `FiniteSupportUniverse` は selected boundary に相対化される。
+`SignatureZero` は selected measured axis の no measured atom であり、global safety、unmeasured
+axis safety、runtime / semantic safety、extractor completeness、LLM semantic reading correctness、
+unique factorization、disjoint atom partition は結論しない。`RepairAtom` は rewrite / transition
+generator であり、ArchitectureAtom そのものではない。
+
 ## 現在 Lean に入れていないもの
 
 次は意図的に Lean core へ混ぜていない。
