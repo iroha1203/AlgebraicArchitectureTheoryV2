@@ -15,6 +15,10 @@ inductive Diagram where
   | writePath
   deriving DecidableEq, Repr
 
+inductive Responsibility where
+  | apiResponsibility
+  deriving DecidableEq, Repr
+
 def componentAtom : ArchitectureAtom Component Edge Diagram where
   kind := AtomKind.component
   axis := Axis.static
@@ -364,6 +368,56 @@ theorem unitObservationAtomArrangement_equivalent :
       observationToUnit Component.api Component.database :=
   unitObservationAtomArrangement.observationallyEquivalent_of_lawful
     noBadAtomLaw_lawful
+
+def apiResponsibilityBoundary :
+    ResponsibilityBoundary Component Responsibility where
+  owns := fun _ role => role = Responsibility.apiResponsibility
+
+def apiResponsibilityRole :
+    ResponsibilityRole
+      (C := Component) (E := Edge) (D := Diagram) Responsibility where
+  role := Responsibility.apiResponsibility
+  molecule := componentMolecule
+  carriedBy := fun component => component = Component.api
+  roleBoundary := True
+  nonConclusions := True
+
+theorem apiResponsibilityRole_coherent :
+    ResponsibilityMoleculeCoherent
+      apiResponsibilityBoundary apiResponsibilityRole := by
+  intro component _hCarried
+  rfl
+
+theorem selectedApiResponsibility_coherent :
+    SRPResponsibilityMoleculeCoherent
+      apiResponsibilityBoundary
+      (fun role => role = apiResponsibilityRole) := by
+  intro role hRole
+  rw [hRole]
+  exact apiResponsibilityRole_coherent
+
+def apiSRPAtomArrangement :
+    SRPAtomArrangementLaw
+      noEdgeGraph apiResponsibilityBoundary noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesBoundaryTotal := by
+    intro _hLawful component
+    exact ⟨Responsibility.apiResponsibility, rfl⟩
+  lawfulnessImpliesBoundaryFunctional := by
+    intro _hLawful component r₁ r₂ h₁ h₂
+    rw [h₁, h₂]
+  lawfulnessImpliesLocalCohesion := by
+    intro _hLawful _a _b _r₁ _r₂ hEdge _h₁ _h₂
+    exact False.elim hEdge
+  responsibilityMoleculeBoundary := True
+  nonConclusions := True
+
+theorem apiSRPAtomArrangement_boundaryFunctional :
+    apiResponsibilityBoundary.Functional :=
+  apiSRPAtomArrangement.boundaryFunctional_of_lawful noBadAtomLaw_lawful
+
+theorem apiSRPAtomArrangement_localCohesion :
+    apiResponsibilityBoundary.EdgeCohesive noEdgeGraph :=
+  apiSRPAtomArrangement.localCohesion_of_lawful noBadAtomLaw_lawful
 
 def exampleSoftwareField :
     SoftwareField Unit Component Edge Unit Unit Unit where

@@ -1,6 +1,7 @@
 import Formal.Arch.Evolution.SFTField
 import Formal.Arch.Law.Projection
 import Formal.Arch.Law.Observation
+import Formal.Arch.Patterns.SRPDesignPattern
 
 namespace Formal.Arch
 
@@ -1037,6 +1038,121 @@ theorem projectionFailureCandidate_bad
     (candidate :
       ProjectionFailureObstructionCandidate
         G π GA law requiredMolecule) :
+    law.Bad candidate.molecule :=
+  obstructionCircuit_bad candidate.circuit
+
+/-- A responsibility role carried by a selected atom molecule. -/
+structure ResponsibilityRole
+    {C : Type u} {E : Type v} {D : Type w}
+    (R : Type q) where
+  role : R
+  molecule : AtomMolecule C E D
+  carriedBy : C -> Prop
+  roleBoundary : Prop
+  nonConclusions : Prop
+
+/--
+Responsibility molecule coherence against an existing selected responsibility
+boundary.
+
+The role is carried by the molecule; it is not a primitive atom and is not
+counted as one.
+-/
+def ResponsibilityMoleculeCoherent
+    {C : Type u} {E : Type v} {D : Type w} {R : Type q}
+    (boundary : ResponsibilityBoundary C R)
+    (role : ResponsibilityRole (C := C) (E := E) (D := D) R) : Prop :=
+  ∀ c, role.carriedBy c -> boundary.owns c role.role
+
+/-- SRP coherence is read as coherent responsibility molecules. -/
+def SRPResponsibilityMoleculeCoherent
+    {C : Type u} {E : Type v} {D : Type w} {R : Type q}
+    (boundary : ResponsibilityBoundary C R)
+    (selectedRole : ResponsibilityRole (C := C) (E := E) (D := D) R -> Prop) :
+    Prop :=
+  ∀ role, selectedRole role -> ResponsibilityMoleculeCoherent boundary role
+
+/--
+SRP read as an atom arrangement law.
+
+The package connects selected atom-molecule lawfulness to the existing bounded
+SRP surface: total/functional responsibility assignment and edge-local
+cohesion.
+-/
+structure SRPAtomArrangementLaw
+    {C : Type u} {E : Type v} {D : Type w} {R : Type q}
+    (G : ArchGraph C)
+    (boundary : ResponsibilityBoundary C R)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  lawfulnessImpliesBoundaryTotal :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      boundary.Total
+  lawfulnessImpliesBoundaryFunctional :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      boundary.Functional
+  lawfulnessImpliesLocalCohesion :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      boundary.EdgeCohesive G
+  responsibilityMoleculeBoundary : Prop
+  nonConclusions : Prop
+
+namespace SRPAtomArrangementLaw
+
+theorem boundaryTotal_of_lawful
+    {C : Type u} {E : Type v} {D : Type w} {R : Type q}
+    {G : ArchGraph C}
+    {boundary : ResponsibilityBoundary C R}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : SRPAtomArrangementLaw G boundary law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    boundary.Total :=
+  pkg.lawfulnessImpliesBoundaryTotal hLawful
+
+theorem boundaryFunctional_of_lawful
+    {C : Type u} {E : Type v} {D : Type w} {R : Type q}
+    {G : ArchGraph C}
+    {boundary : ResponsibilityBoundary C R}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : SRPAtomArrangementLaw G boundary law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    boundary.Functional :=
+  pkg.lawfulnessImpliesBoundaryFunctional hLawful
+
+theorem localCohesion_of_lawful
+    {C : Type u} {E : Type v} {D : Type w} {R : Type q}
+    {G : ArchGraph C}
+    {boundary : ResponsibilityBoundary C R}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : SRPAtomArrangementLaw G boundary law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    boundary.EdgeCohesive G :=
+  pkg.lawfulnessImpliesLocalCohesion hLawful
+
+end SRPAtomArrangementLaw
+
+/-- SRP failure is represented as a law-relative malformed responsibility molecule. -/
+structure SRPFailureObstructionCandidate
+    {C : Type u} {E : Type v} {D : Type w} {R : Type q}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  malformedRole : ResponsibilityRole (C := C) (E := E) (D := D) R
+  molecule : AtomMolecule C E D
+  required : requiredMolecule molecule
+  circuit : ObstructionCircuit law molecule
+  srpBoundary : Prop
+  nonConclusions : Prop
+
+theorem srpFailureCandidate_bad
+    {C : Type u} {E : Type v} {D : Type w} {R : Type q}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (candidate :
+      SRPFailureObstructionCandidate
+        (R := R) law requiredMolecule) :
     law.Bad candidate.molecule :=
   obstructionCircuit_bad candidate.circuit
 
