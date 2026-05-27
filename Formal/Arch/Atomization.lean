@@ -380,6 +380,32 @@ def IsSemanticInterpretation
     (atom : ArchitectureAtom C E D) : Prop :=
   atom.kind = AtomKind.semanticInterpretation
 
+/-- A semantic atom with a constructor-level meaning payload. -/
+def HasSemanticMeaning
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) (meaning : String) : Prop :=
+  ∃ diagram, atom.typedPredicate =
+    AtomPredicate.semanticInterpretation diagram meaning
+
+theorem isSemanticInterpretation_of_hasSemanticMeaning
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : ArchitectureAtom C E D} {meaning : String}
+    (h : atom.HasSemanticMeaning meaning) :
+    atom.IsSemanticInterpretation := by
+  rcases h with ⟨diagram, hPredicate⟩
+  unfold IsSemanticInterpretation
+  rw [← atom.typedPredicateKindAligned]
+  simp [hPredicate, AtomPredicate.kind]
+
+theorem semantic_axis_of_hasSemanticMeaning
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : ArchitectureAtom C E D} {meaning : String}
+    (h : atom.HasSemanticMeaning meaning) :
+    atom.axis = Axis.semantic := by
+  rcases h with ⟨diagram, hPredicate⟩
+  rw [← atom.typedPredicateAxisAligned]
+  simp [hPredicate, AtomPredicate.axis]
+
 /-- A primitive atom is accepted by a selected grammar policy. -/
 def AllowedBy {C : Type u} {E : Type v} {D : Type w}
     (policy : AtomGrammarExtensionPolicy)
@@ -445,6 +471,25 @@ structure AtomMolecule (C : Type u) (E : Type v) (D : Type w) where
   atoms : ArchitectureAtom C E D -> Prop
   finiteBoundary : Prop
   nonConclusions : Prop
+
+/-- A molecule whose atoms are all semantic/interpretation atoms. -/
+def SemanticAtomMolecule
+    {C : Type u} {E : Type v} {D : Type w}
+    (molecule : AtomMolecule C E D) : Prop :=
+  ∀ atom, molecule.atoms atom -> atom.IsSemanticInterpretation
+
+namespace SemanticAtomMolecule
+
+theorem atom_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {molecule : AtomMolecule C E D}
+    (hSemantic : SemanticAtomMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    atom.IsSemanticInterpretation :=
+  hSemantic atom hAtom
+
+end SemanticAtomMolecule
 
 /--
 A role assigned to an atom molecule.
@@ -516,6 +561,50 @@ structure FiniteAtomMoleculeWitness {C : Type u} {E : Type v} {D : Type w}
   moleculeFiniteBoundary : Prop
   universeFiniteBoundary : Prop
   nonConclusions : Prop
+
+/-- Proof-carrying finite witness for a semantic atom molecule. -/
+structure SemanticAtomMoleculeWitness
+    {C : Type u} {E : Type v} {D : Type w}
+    (U : SelectedAtomUniverse C E D)
+    (M : AtomMolecule C E D) where
+  moleculeWitness : FiniteAtomMoleculeWitness U M
+  semanticAtoms : SemanticAtomMolecule M
+  semanticBoundary : Prop
+  nonConclusions : Prop
+
+namespace SemanticAtomMoleculeWitness
+
+theorem atom_selected
+    {C : Type u} {E : Type v} {D : Type w}
+    {U : SelectedAtomUniverse C E D}
+    {M : AtomMolecule C E D}
+    (witness : SemanticAtomMoleculeWitness U M)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : M.atoms atom) :
+    U.selectedAtom atom :=
+  witness.moleculeWitness.supportedBy atom hAtom
+
+theorem atom_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {U : SelectedAtomUniverse C E D}
+    {M : AtomMolecule C E D}
+    (witness : SemanticAtomMoleculeWitness U M)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : M.atoms atom) :
+    atom.IsSemanticInterpretation :=
+  witness.semanticAtoms atom hAtom
+
+theorem atom_selected_and_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {U : SelectedAtomUniverse C E D}
+    {M : AtomMolecule C E D}
+    (witness : SemanticAtomMoleculeWitness U M)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : M.atoms atom) :
+    U.selectedAtom atom ∧ atom.IsSemanticInterpretation :=
+  ⟨witness.atom_selected hAtom, witness.atom_is_semantic hAtom⟩
+
+end SemanticAtomMoleculeWitness
 
 /-- Inclusion of atom molecules. -/
 def AtomMoleculeSubset {C : Type u} {E : Type v} {D : Type w}
@@ -817,6 +906,24 @@ theorem selected_molecule_supportedBy_selected_atoms
     AtomMoleculeSupportedBy surface.selectedAtomUniverse molecule := by
   intro atom hAtom
   exact surface.atom_of_selected_molecule hMolecule hAtom
+
+/-- Selected semantic molecules are selected molecules made of semantic atoms. -/
+def SemanticMoleculeOnSurface
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    (molecule : AtomMolecule C E D) : Prop :=
+  surface.molecules molecule ∧ SemanticAtomMolecule molecule
+
+theorem semantic_atom_of_selected_semantic_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    {molecule : AtomMolecule C E D}
+    (hSemanticMolecule : surface.SemanticMoleculeOnSurface molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    surface.atoms atom ∧ atom.IsSemanticInterpretation :=
+  ⟨surface.atom_of_selected_molecule hSemanticMolecule.1 hAtom,
+    hSemanticMolecule.2 atom hAtom⟩
 
 end AATPureTheorySurface
 

@@ -127,6 +127,22 @@ theorem selected_molecule_atom_is_primitive
     core.selected_molecule_atom_on_surface hMolecule hAtom
   primitiveArchitectureAtom_constructive atom
 
+/--
+Atoms in a selected semantic molecule are both selected by the pure Atom-AAT
+surface and semantic/interpretation atoms.
+-/
+theorem selected_semantic_molecule_atom_on_surface_and_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    (core : AtomAxiomatizedPureAAT C E D)
+    {molecule : AtomMolecule C E D}
+    (hSemanticMolecule :
+      core.surface.SemanticMoleculeOnSurface molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    core.surface.atoms atom ∧ atom.IsSemanticInterpretation :=
+  core.surface.semantic_atom_of_selected_semantic_molecule
+    hSemanticMolecule hAtom
+
 /-- Selected laws do not create primitive atom existence. -/
 theorem selected_law_does_not_create_atoms
     {C : Type u} {E : Type v} {D : Type w}
