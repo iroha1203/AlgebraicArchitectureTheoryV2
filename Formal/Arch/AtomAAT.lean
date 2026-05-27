@@ -109,6 +109,42 @@ theorem zeroCurvature_law_does_not_create_atoms
   AtomAxiomatizedPureAAT.selected_law_does_not_create_atoms
     suite.pureCore suite.pureCoreLawOnSurface
 
+/-- The zero-curvature law does not change primitive atom existence. -/
+theorem zeroCurvature_law_does_not_change_atom_existence
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).lawDoesNotChangeAtomExistence :=
+  AtomAxiomatizedPureAAT.selected_law_does_not_change_atom_existence
+    suite.pureCore suite.pureCoreLawOnSurface
+
+/-- The zero-curvature law evaluates atoms that already exist. -/
+theorem zeroCurvature_law_atoms_exist_before_law
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).atomsExistBeforeLaw :=
+  AtomAxiomatizedPureAAT.selected_law_atoms_exist_before_law
+    suite.pureCore suite.pureCoreLawOnSurface
+
 /-- The unified suite exposes the atom-only zero-curvature theorem package. -/
 def atomZeroCurvatureTheoremPackage
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -487,6 +523,24 @@ theorem pure_repair_law_does_not_create_atoms
   AtomAxiomatizedPureRepairPackage.law_does_not_create_atoms
     suite.pureRepairPackage
 
+/-- Repair-derived zero curvature uses a law that evaluates pre-existing atoms. -/
+theorem pure_repair_law_atoms_exist_before_law
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).atomsExistBeforeLaw :=
+  AtomAxiomatizedPureRepairPackage.law_atoms_exist_before_law
+    suite.pureRepairPackage
+
 /-- The unified suite exposes the Signature-free atom synthesis package. -/
 def pureSynthesisPackage
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -638,6 +692,24 @@ theorem pure_synthesis_law_does_not_create_atoms
       suite.aat.zeroCurvature.law
       suite.pureCoreLawOnSurface).lawDoesNotCreateAtoms :=
   AtomAxiomatizedPureSynthesisPackage.law_does_not_create_atoms
+    suite.pureSynthesisPackage
+
+/-- Synthesis-derived zero curvature uses a law that evaluates pre-existing atoms. -/
+theorem pure_synthesis_law_atoms_exist_before_law
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).atomsExistBeforeLaw :=
+  AtomAxiomatizedPureSynthesisPackage.law_atoms_exist_before_law
     suite.pureSynthesisPackage
 
 /--

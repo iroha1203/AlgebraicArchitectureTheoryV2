@@ -594,6 +594,12 @@ structure AtomLawSeparation (C : Type u) (E : Type v) (D : Type w) where
 
 namespace AtomLawSeparation
 
+theorem atoms_exist_before_law
+    {C : Type u} {E : Type v} {D : Type w}
+    (separation : AtomLawSeparation C E D) :
+    separation.atomsExistBeforeLaw :=
+  separation.atomsExistBeforeLawEvidence
+
 theorem law_does_not_create_atoms
     {C : Type u} {E : Type v} {D : Type w}
     (separation : AtomLawSeparation C E D) :

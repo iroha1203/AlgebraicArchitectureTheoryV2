@@ -412,6 +412,19 @@ theorem law_does_not_change_atom_existence
   AtomZeroCurvatureTheoremPackage.law_does_not_change_atom_existence
     pkg.atomZeroCurvatureTheoremPackage
 
+/-- Repair-derived zero curvature uses a law that evaluates pre-existing atoms. -/
+theorem law_atoms_exist_before_law
+    {C : Type u} {E : Type v} {D : Type w}
+    {core : AtomAxiomatizedPureAAT C E D}
+    {State : Type s} {Rule : Type r}
+    {source target : State}
+    (pkg :
+      AtomAxiomatizedPureRepairPackage
+        core State Rule source target) :
+    (core.lawSeparation pkg.law pkg.lawOnSurface).atomsExistBeforeLaw :=
+  AtomZeroCurvatureTheoremPackage.law_atoms_exist_before_law
+    pkg.atomZeroCurvatureTheoremPackage
+
 /-- The pure repair package remains independent of observation tooling. -/
 theorem independent_of_observation
     {C : Type u} {E : Type v} {D : Type w}

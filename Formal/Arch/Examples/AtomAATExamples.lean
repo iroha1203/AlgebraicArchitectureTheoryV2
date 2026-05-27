@@ -63,6 +63,22 @@ theorem noEdgeAtomSuite_zeroCurvatureLaw_does_not_create_atoms :
     AtomAxiomatizedTheoremSuite.zeroCurvature_law_does_not_create_atoms
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_zeroCurvatureLaw_does_not_change_atom_existence :
+    (noEdgeAtomAxiomatizedTheoremSuite.pureCore.lawSeparation
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.pureCoreLawOnSurface).lawDoesNotChangeAtomExistence := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_law_does_not_change_atom_existence
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvatureLaw_atoms_exist_before_law :
+    (noEdgeAtomAxiomatizedTheoremSuite.pureCore.lawSeparation
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.pureCoreLawOnSurface).atomsExistBeforeLaw := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_law_atoms_exist_before_law
+      noEdgeAtomAxiomatizedTheoremSuite
+
 theorem noEdgeAtomSuite_atomZeroCurvature :
     AtomZeroCurvature
       noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
@@ -153,6 +169,14 @@ theorem noEdgeAtomSuite_pure_repair_law_does_not_create_atoms :
     AtomAxiomatizedTheoremSuite.pure_repair_law_does_not_create_atoms
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_pure_repair_law_atoms_exist_before_law :
+    (noEdgeAtomAxiomatizedTheoremSuite.pureCore.lawSeparation
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.pureCoreLawOnSurface).atomsExistBeforeLaw := by
+  exact
+    AtomAxiomatizedTheoremSuite.pure_repair_law_atoms_exist_before_law
+      noEdgeAtomAxiomatizedTheoremSuite
+
 theorem noEdgeAtomSuite_pure_synthesis_independent_of_signature :
     noEdgeAtomAxiomatizedTheoremSuite.pureSynthesisPackage.noArchitectureSignatureDependency := by
   exact
@@ -181,6 +205,14 @@ theorem noEdgeAtomSuite_pure_synthesis_law_does_not_create_atoms :
       noEdgeAtomAxiomatizedTheoremSuite.pureCoreLawOnSurface).lawDoesNotCreateAtoms := by
   exact
     AtomAxiomatizedTheoremSuite.pure_synthesis_law_does_not_create_atoms
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_pure_synthesis_law_atoms_exist_before_law :
+    (noEdgeAtomAxiomatizedTheoremSuite.pureCore.lawSeparation
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.pureCoreLawOnSurface).atomsExistBeforeLaw := by
+  exact
+    AtomAxiomatizedTheoremSuite.pure_synthesis_law_atoms_exist_before_law
       noEdgeAtomAxiomatizedTheoremSuite
 
 theorem noEdgeAtomSuite_pureTheoremSuite_atomZeroCurvature :

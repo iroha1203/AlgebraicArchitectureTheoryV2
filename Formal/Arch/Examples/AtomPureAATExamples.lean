@@ -70,6 +70,13 @@ theorem noEdgePureAtomSuite_zeroCurvatureLaw_does_not_create_atoms :
     AtomAxiomatizedPureTheoremSuite.zeroCurvature_law_does_not_create_atoms
       noEdgeAtomAxiomatizedPureTheoremSuite
 
+theorem noEdgePureAtomSuite_zeroCurvatureLaw_atoms_exist_before_law :
+    (noEdgeAtomAxiomatizedPureTheoremSuite.core.lawSeparation
+      noBadAtomLaw rfl).atomsExistBeforeLaw := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.zeroCurvature_law_atoms_exist_before_law
+      noEdgeAtomAxiomatizedPureTheoremSuite
+
 theorem noEdgePureAtomSuite_atomZeroCurvature :
     AtomZeroCurvature noBadAtomLaw allSelectedMolecules := by
   exact
@@ -151,6 +158,13 @@ theorem noEdgePureAtomSuite_repair_law_does_not_create_atoms :
     AtomAxiomatizedPureTheoremSuite.repair_law_does_not_create_atoms
       noEdgeAtomAxiomatizedPureTheoremSuite
 
+theorem noEdgePureAtomSuite_repair_law_atoms_exist_before_law :
+    (noEdgeAtomAxiomatizedPureTheoremSuite.core.lawSeparation
+      noBadAtomLaw rfl).atomsExistBeforeLaw := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.repair_law_atoms_exist_before_law
+      noEdgeAtomAxiomatizedPureTheoremSuite
+
 theorem noEdgePureAtomSuite_synthesis_candidate_satisfies :
     ArchitectureSatisfies
       noEdgeAtomAxiomatizedPureTheoremSuite.synthesisPackage.system
@@ -176,6 +190,13 @@ theorem noEdgePureAtomSuite_synthesis_law_does_not_create_atoms :
       noBadAtomLaw rfl).lawDoesNotCreateAtoms := by
   exact
     AtomAxiomatizedPureTheoremSuite.synthesis_law_does_not_create_atoms
+      noEdgeAtomAxiomatizedPureTheoremSuite
+
+theorem noEdgePureAtomSuite_synthesis_law_atoms_exist_before_law :
+    (noEdgeAtomAxiomatizedPureTheoremSuite.core.lawSeparation
+      noBadAtomLaw rfl).atomsExistBeforeLaw := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.synthesis_law_atoms_exist_before_law
       noEdgeAtomAxiomatizedPureTheoremSuite
 
 def noEdgePureAtomSuiteDerivedZeroCurvaturePackage :

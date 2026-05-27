@@ -152,7 +152,7 @@ theorem selected_law_atoms_exist_before_law
     {law : DesignLaw C E D}
     (hLaw : core.surface.laws law) :
     (core.lawSeparation law hLaw).atomsExistBeforeLaw :=
-  (core.lawSeparation law hLaw).atomsExistBeforeLawEvidence
+  (core.lawSeparation law hLaw).atoms_exist_before_law
 
 /--
 Every selected law/molecule obstruction circuit is selected by the pure atom
@@ -320,6 +320,15 @@ theorem law_does_not_change_atom_existence
     (pkg : AtomZeroCurvatureTheoremPackage core) :
     (core.lawSeparation pkg.law pkg.lawOnSurface).lawDoesNotChangeAtomExistence :=
   AtomAxiomatizedPureAAT.selected_law_does_not_change_atom_existence
+    core pkg.lawOnSurface
+
+/-- The selected zero-curvature law evaluates atoms that already exist. -/
+theorem law_atoms_exist_before_law
+    {C : Type u} {E : Type v} {D : Type w}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (pkg : AtomZeroCurvatureTheoremPackage core) :
+    (core.lawSeparation pkg.law pkg.lawOnSurface).atomsExistBeforeLaw :=
+  AtomAxiomatizedPureAAT.selected_law_atoms_exist_before_law
     core pkg.lawOnSurface
 
 end AtomZeroCurvatureTheoremPackage

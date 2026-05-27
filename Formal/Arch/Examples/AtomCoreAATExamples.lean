@@ -189,6 +189,12 @@ theorem noEdgePureAtomCore_noBadLaw_does_not_create_atoms :
     AtomAxiomatizedPureAAT.selected_law_does_not_create_atoms
       noEdgePureAtomAxiomatizedAATCore rfl
 
+theorem noEdgePureAtomCore_noBadLaw_atoms_exist_before_law :
+    (noEdgePureAtomAxiomatizedAATCore.lawSeparation noBadAtomLaw rfl).atomsExistBeforeLaw := by
+  exact
+    AtomAxiomatizedPureAAT.selected_law_atoms_exist_before_law
+      noEdgePureAtomAxiomatizedAATCore rfl
+
 theorem noEdgePureAtomCore_componentMolecule_atom_is_primitive :
     PrimitiveArchitectureAtom componentAtom := by
   exact
@@ -228,6 +234,12 @@ theorem noEdgePureAtomZeroCurvature_law_does_not_create_atoms :
     (noEdgePureAtomAxiomatizedAATCore.lawSeparation noBadAtomLaw rfl).lawDoesNotCreateAtoms := by
   exact
     AtomZeroCurvatureTheoremPackage.law_does_not_create_atoms
+      noEdgePureAtomZeroCurvatureTheoremPackage
+
+theorem noEdgePureAtomZeroCurvature_law_atoms_exist_before_law :
+    (noEdgePureAtomAxiomatizedAATCore.lawSeparation noBadAtomLaw rfl).atomsExistBeforeLaw := by
+  exact
+    AtomZeroCurvatureTheoremPackage.law_atoms_exist_before_law
       noEdgePureAtomZeroCurvatureTheoremPackage
 
 end Formal.Arch.AtomicExamples
