@@ -62,6 +62,9 @@ FieldAtoms_B(F)
 `AATPureTheorySurface` を SFT が local algebra として読む。
 Lean 側では `Formal/Arch/Evolution/SFTInterfaceBoundary.lean` の
 `AATLocalAlgebraForSFT` が、SFT が Atom / AAT を再定義しない境界を記録する。
+さらに `Formal/Arch/Evolution/SFTEnvelope.lean` の
+`AATPremisedConsequenceEnvelope` が、この local algebra premise を
+`AtomTraceForecastBoundary` と `ConsequenceEnvelope` projection boundary へ接続する。
 
 その上で、観測済み atom presentation との接続は `Formal/Arch/Atomization.lean` の
 `AtomPresentation` / `FieldAtomsFromPresentation` /
@@ -364,6 +367,9 @@ Atom foundation bridge では、validated `AtomTrace` と law-relative
 membership に添える。これにより SFT は atom-level change と obstruction-circuit
 change を forecast boundary の入力として読めるが、forecast correctness、
 probability、calibration、global future safety は結論しない。
+`AATPremisedConsequenceEnvelope` は、この trace boundary と AAT local algebra premise を
+reviewer-facing envelope に添えるための Lean-facing package であり、
+AAT premise だけで forecast claim を強めるものではない。
 FieldSig / ArchSig report 側の接続も同じ境界に従い、ArchSig-derived premise は
 SFT forecast correctness へ昇格しない。
 

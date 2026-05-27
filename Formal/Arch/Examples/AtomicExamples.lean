@@ -1,4 +1,5 @@
 import Formal.Arch.Atomization
+import Formal.Arch.Evolution.SFTEnvelope
 
 namespace Formal.Arch.AtomicExamples
 
@@ -583,6 +584,137 @@ theorem exampleAtomTraceForecastBoundary_governed_or_typedFailure :
     exampleAtomTraceForecastBoundary.governedTraceBoundary ∨
       exampleAtomTraceForecastBoundary.typedBoundaryFailure :=
   exampleAtomTraceForecastBoundary.governed_or_typedBoundaryFailure
+
+def exampleAATLocalAlgebraForSFT :
+    AATLocalAlgebraForSFT Component Edge Diagram where
+  aatSurface := pureAATSurface
+  usedAsLocalAlgebra := True
+  usedAsLocalAlgebraEvidence := trivial
+  sftDoesNotRedefineAtoms := True
+  sftDoesNotRedefineAtomsEvidence := trivial
+  sftDoesNotRedefineAAT := True
+  sftDoesNotRedefineAATEvidence := trivial
+  noForecastCorrectnessFromAATAlone := True
+  noForecastCorrectnessFromAATAloneEvidence := trivial
+  nonConclusions := True
+
+theorem exampleAATLocalAlgebra_no_forecast_correctness :
+    exampleAATLocalAlgebraForSFT.noForecastCorrectnessFromAATAlone := by
+  exact
+    exampleAATLocalAlgebraForSFT
+      |>.aat_alone_does_not_prove_forecast_correctness
+
+def exampleForecastRecord :
+    ForecastRecord unitOperationSupport unitStepRelation () 0 where
+  target := ()
+  path := ArchitecturePath.nil ()
+  coneMember := ForecastCone.nil_mem ()
+  forecastBoundary := True
+  nonConclusions := True
+
+def exampleConeFamily :
+    ConeFamily unitOperationSupport unitStepRelation () 0 where
+  records := [exampleForecastRecord]
+  nonempty := by
+    simp
+  familyBoundary := True
+  unknownRemainder := True
+  nonConclusions := True
+
+def exampleEnvelopeObservationBoundary : ObservationBoundary Unit where
+  pathClassesVisible := True
+  affectedRegionsVisible := True
+  comparableAxes := True
+  observedProjectionBoundary := True
+  missingBoundary := True
+  theoremBoundary := True
+  unknownRemainder := True
+  nonConclusions := True
+
+def exampleConsequenceEnvelope :
+    ConsequenceEnvelope unitOperationSupport unitStepRelation () 0 where
+  selectedConeCount := 1
+  pathClasses := True
+  affectedRegions := True
+  comparableAxes := True
+  axisDeltaRanges := True
+  obstructionCandidates := True
+  missingBoundaryItems := True
+  theoremBoundaryItems := True
+  unknownRemainder := True
+  forecastBoundary := True
+  nonConclusions := True
+  projectionBoundary := True
+
+def exampleEnvelopeProjection :
+    EnvelopeProjection
+      exampleConeFamily
+      exampleEnvelopeObservationBoundary
+      exampleConsequenceEnvelope where
+  recordsSelectedConeCount := by
+    rfl
+  preservesPathClasses := by
+    intro h
+    exact h
+  preservesAffectedRegions := by
+    intro h
+    exact h
+  preservesComparableAxes := by
+    intro h
+    exact h
+  preservesMissingBoundary := by
+    intro h
+    exact h
+  preservesTheoremBoundary := by
+    intro h
+    exact h
+  preservesFamilyUnknownRemainder := by
+    intro h
+    exact h
+  preservesBoundaryUnknownRemainder := by
+    intro h
+    exact h
+  preservesForecastNonConclusions := by
+    intro _h
+    trivial
+  preservesBoundaryNonConclusions := by
+    intro h
+    exact h
+  recordsForecastBoundary := trivial
+  recordsProjectionBoundary := trivial
+  recordsNonConclusions := trivial
+
+def exampleAATPremisedConsequenceEnvelope :
+    AATPremisedConsequenceEnvelope
+      exampleAATLocalAlgebraForSFT
+      exampleAtomTraceForecastBoundary
+      exampleConeFamily
+      exampleEnvelopeObservationBoundary
+      exampleConsequenceEnvelope where
+  projection := exampleEnvelopeProjection
+  readsAATLocalAlgebra := trivial
+  atomTraceBoundary := trivial
+  circuitTraceBoundary := trivial
+  forecastConeBoundary := ForecastCone.nil_mem ()
+  noForecastCorrectnessFromAAT := trivial
+  traceRecordsNoForecastCorrectness :=
+    exampleAtomTraceForecastBoundary.records_no_forecast_correctness
+  envelopeForecastBoundary := trivial
+  envelopeProjectionBoundary := trivial
+  nonConclusions := trivial
+
+theorem exampleAATPremisedEnvelope_records_boundaries :
+    exampleConsequenceEnvelope.RecordsForecastBoundary ∧
+      exampleConsequenceEnvelope.RecordsProjectionBoundary ∧
+      exampleConsequenceEnvelope.RecordsNonConclusions :=
+  exampleAATPremisedConsequenceEnvelope.records_envelope_boundaries
+
+theorem exampleAATPremisedEnvelope_no_forecast_correctness :
+    exampleAATLocalAlgebraForSFT.noForecastCorrectnessFromAATAlone ∧
+      ¬ AtomTraceForecastBoundary.ForecastCorrectnessClaim
+        exampleAtomTraceForecastBoundary :=
+  exampleAATPremisedConsequenceEnvelope
+    |>.aat_premise_does_not_prove_forecast_correctness
 
 def exampleSoftwareField :
     SoftwareField Unit Component Edge Unit Unit Unit where

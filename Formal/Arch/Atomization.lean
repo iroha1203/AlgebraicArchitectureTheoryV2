@@ -526,7 +526,7 @@ theorem law_does_not_change_atom_existence
 
 end AtomLawSeparation
 
-/-- Atom v2 obstruction circuit: a law-relative minimal bad molecule. -/
+/-- Atom Core obstruction circuit: a law-relative minimal bad molecule. -/
 def ObstructionCircuit {C : Type u} {E : Type v} {D : Type w}
     (law : DesignLaw C E D) (M : AtomMolecule C E D) : Prop :=
   MinimalAtomMolecule law.Bad M
