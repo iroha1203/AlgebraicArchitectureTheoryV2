@@ -84,10 +84,12 @@ import Formal.Arch.Evolution.SFTArtifactBoundaryBridge
 import Formal.Arch.Evolution.SFTAATArtifactBoundaryExamples
 import Formal.Arch.Evolution.SFTTheoremPackages
 import Formal.Arch.Atomization
+import Formal.Arch.AtomCoreAAT
 import Formal.Arch.Signature.AtomZeroCurvature
 import Formal.Arch.Operation.AtomOperation
 import Formal.Arch.AtomAAT
 import Formal.Arch.Examples.AtomicExamples
+import Formal.Arch.Examples.AtomCoreAATExamples
 import Formal.Arch.Examples.AtomZeroCurvatureExamples
 import Formal.Arch.Examples.AtomOperationExamples
 import Formal.Arch.Examples.AtomRepairExamples

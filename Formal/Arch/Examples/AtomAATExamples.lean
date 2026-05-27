@@ -1,4 +1,5 @@
 import Formal.Arch.AtomAAT
+import Formal.Arch.Examples.AtomCoreAATExamples
 import Formal.Arch.Examples.AtomOperationExamples
 import Formal.Arch.Examples.AtomRepairExamples
 import Formal.Arch.Examples.AtomSynthesisExamples
@@ -13,7 +14,10 @@ def noEdgeAtomAxiomatizedTheoremSuite :
       AtomSynthesisState
       AtomRepairState.withForbiddenEdge
       AtomRepairState.repaired where
+  pureCore := noEdgePureAtomAxiomatizedAATCore
   aat := noEdgeAtomAxiomatizedAAT
+  pureCoreSurfaceMatches := rfl
+  pureCoreLawOnSurface := rfl
   operation := noEdgeAtomPresentationOperation
   repair := noBadAtomFiniteRepairPackage
   synthesisSpec := noEdgeAtomSynthesisSpec
@@ -43,6 +47,20 @@ theorem noEdgeAtomSuite_independent_of_sft :
     noEdgeAtomAxiomatizedTheoremSuite.aat.surface.noSFTDependency := by
   exact
     AtomAxiomatizedTheoremSuite.independent_of_sft
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_independent_of_architecture_signature :
+    noEdgeAtomAxiomatizedTheoremSuite.pureCore.noArchitectureSignatureDependency := by
+  exact
+    AtomAxiomatizedTheoremSuite.independent_of_architecture_signature
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvatureLaw_does_not_create_atoms :
+    (noEdgeAtomAxiomatizedTheoremSuite.pureCore.lawSeparation
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.pureCoreLawOnSurface).lawDoesNotCreateAtoms := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_law_does_not_create_atoms
       noEdgeAtomAxiomatizedTheoremSuite
 
 theorem noEdgeAtomSuite_operation_preservesSurfaceInvariant :

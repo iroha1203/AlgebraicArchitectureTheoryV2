@@ -1,3 +1,4 @@
+import Formal.Arch.AtomCoreAAT
 import Formal.Arch.Operation.AtomOperation
 import Formal.Arch.Repair.AtomRepair
 import Formal.Arch.Repair.AtomSynthesis
@@ -20,7 +21,11 @@ structure AtomAxiomatizedTheoremSuite
     (RepairState : Type s) (RepairRule : Type t)
     (SynthesisState : Type m)
     (repairSource repairTarget : RepairState) where
+  pureCore : AtomAxiomatizedPureAAT C E D
   aat : ArchitectureSignature.AtomAxiomatizedAAT X E D
+  pureCoreSurfaceMatches : pureCore.surface = aat.surface
+  pureCoreLawOnSurface :
+    pureCore.surface.laws aat.zeroCurvature.law
   operation : AtomPresentationOperation aat.surface
   repair :
     AtomFiniteRepairPackage
@@ -54,6 +59,55 @@ structure AtomAxiomatizedTheoremSuite
   nonConclusions : Prop
 
 namespace AtomAxiomatizedTheoremSuite
+
+/-- The unified suite carries the pure Atom-AAT core before Signature reading. -/
+theorem pure_core_surface_matches
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    suite.pureCore.surface = suite.aat.surface :=
+  suite.pureCoreSurfaceMatches
+
+/-- The pure core carried by the suite is independent of ArchitectureSignature. -/
+theorem independent_of_architecture_signature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    suite.pureCore.noArchitectureSignatureDependency :=
+  AtomAxiomatizedPureAAT.independent_of_architecture_signature
+    suite.pureCore
+
+/-- The zero-curvature law is a selected pure-core law and does not create atoms. -/
+theorem zeroCurvature_law_does_not_create_atoms
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).lawDoesNotCreateAtoms :=
+  AtomAxiomatizedPureAAT.selected_law_does_not_create_atoms
+    suite.pureCore suite.pureCoreLawOnSurface
 
 /-- The operation component as the existing operation package. -/
 def operationPackage
