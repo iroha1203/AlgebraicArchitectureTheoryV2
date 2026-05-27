@@ -1,4 +1,6 @@
 import Formal.Arch.Evolution.SFTField
+import Formal.Arch.Law.Projection
+import Formal.Arch.Law.Observation
 
 namespace Formal.Arch
 
@@ -854,6 +856,189 @@ theorem nonConclusions_recorded
   pkg.nonConclusions
 
 end AtomPresentationAATPackage
+
+/--
+Layering read as an atom arrangement law.
+
+This package does not redefine `StrictLayered`; it records the selected
+AtomMolecule law whose lawfulness is sufficient to recover the existing AAT
+layering invariant.
+-/
+structure LayeringAtomArrangementLaw
+    {C : Type u} {E : Type v} {D : Type w}
+    (G : ArchGraph C)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  lawfulnessImpliesStrictLayered :
+    LawfulWithinAtomConfiguration law requiredMolecule -> StrictLayered G
+  obstructionCircuitBoundary : Prop
+  nonConclusions : Prop
+
+namespace LayeringAtomArrangementLaw
+
+theorem strictLayered_of_lawful
+    {C : Type u} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : LayeringAtomArrangementLaw G law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    StrictLayered G :=
+  pkg.lawfulnessImpliesStrictLayered hLawful
+
+theorem acyclic_of_lawful
+    {C : Type u} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : LayeringAtomArrangementLaw G law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    Acyclic G :=
+  strictLayered_acyclic (pkg.strictLayered_of_lawful hLawful)
+
+end LayeringAtomArrangementLaw
+
+/-- Projection soundness read as an atom arrangement law. -/
+structure ProjectionAtomArrangementLaw
+    {C : Type u} {A : Type q} {E : Type v} {D : Type w}
+    (G : ArchGraph C)
+    (π : InterfaceProjection C A)
+    (GA : AbstractGraph A)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  lawfulnessImpliesProjectionSound :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      ProjectionSound G π GA
+  projectionFailureExposesBadMolecule :
+    ∀ edge, ProjectionObstruction G π GA edge ->
+      ∃ M, requiredMolecule M ∧ law.Bad M
+  obstructionCircuitBoundary : Prop
+  nonConclusions : Prop
+
+namespace ProjectionAtomArrangementLaw
+
+theorem projectionSound_of_lawful
+    {C : Type u} {A : Type q} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {π : InterfaceProjection C A}
+    {GA : AbstractGraph A}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : ProjectionAtomArrangementLaw G π GA law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    ProjectionSound G π GA :=
+  pkg.lawfulnessImpliesProjectionSound hLawful
+
+theorem noProjectionObstruction_of_lawful
+    {C : Type u} {A : Type q} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {π : InterfaceProjection C A}
+    {GA : AbstractGraph A}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : ProjectionAtomArrangementLaw G π GA law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    NoProjectionObstruction G π GA :=
+  (projectionSound_iff_noProjectionObstruction.mp
+    (pkg.projectionSound_of_lawful hLawful))
+
+end ProjectionAtomArrangementLaw
+
+/-- Observation equivalence read as an atom arrangement law. -/
+structure ObservationAtomArrangementLaw
+    {Impl : Type u} {Obs : Type q} {C : Type v} {E : Type w} {D : Type r}
+    (O : Observation Impl Obs)
+    (x y : Impl)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  lawfulnessImpliesObservationEquivalence :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      ObservationallyEquivalent O x y
+  observationBoundary : Prop
+  nonConclusions : Prop
+
+namespace ObservationAtomArrangementLaw
+
+theorem observationallyEquivalent_of_lawful
+    {Impl : Type u} {Obs : Type q} {C : Type v} {E : Type w} {D : Type r}
+    {O : Observation Impl Obs}
+    {x y : Impl}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : ObservationAtomArrangementLaw O x y law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    ObservationallyEquivalent O x y :=
+  pkg.lawfulnessImpliesObservationEquivalence hLawful
+
+end ObservationAtomArrangementLaw
+
+/-- A boundary leak is represented as a law-relative obstruction circuit candidate. -/
+structure BoundaryLeakObstructionCandidate
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  molecule : AtomMolecule C E D
+  required : requiredMolecule molecule
+  circuit : ObstructionCircuit law molecule
+  boundaryEvidence : Prop
+  nonConclusions : Prop
+
+/-- A concrete bypass is represented as a law-relative obstruction circuit candidate. -/
+structure ConcreteBypassObstructionCandidate
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  molecule : AtomMolecule C E D
+  required : requiredMolecule molecule
+  circuit : ObstructionCircuit law molecule
+  bypassEvidence : Prop
+  nonConclusions : Prop
+
+/-- A projection failure is represented as a law-relative obstruction circuit candidate. -/
+structure ProjectionFailureObstructionCandidate
+    {C : Type u} {A : Type q} {E : Type v} {D : Type w}
+    (G : ArchGraph C)
+    (π : InterfaceProjection C A)
+    (GA : AbstractGraph A)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  edge : C × C
+  projectionFailure : ProjectionObstruction G π GA edge
+  molecule : AtomMolecule C E D
+  required : requiredMolecule molecule
+  circuit : ObstructionCircuit law molecule
+  nonConclusions : Prop
+
+theorem boundaryLeakCandidate_bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (candidate :
+      BoundaryLeakObstructionCandidate law requiredMolecule) :
+    law.Bad candidate.molecule :=
+  obstructionCircuit_bad candidate.circuit
+
+theorem concreteBypassCandidate_bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (candidate :
+      ConcreteBypassObstructionCandidate law requiredMolecule) :
+    law.Bad candidate.molecule :=
+  obstructionCircuit_bad candidate.circuit
+
+theorem projectionFailureCandidate_bad
+    {C : Type u} {A : Type q} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {π : InterfaceProjection C A}
+    {GA : AbstractGraph A}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (candidate :
+      ProjectionFailureObstructionCandidate
+        G π GA law requiredMolecule) :
+    law.Bad candidate.molecule :=
+  obstructionCircuit_bad candidate.circuit
 
 /-- Atom presentation bundled with its selected signature. -/
 structure PresentedAtomSignature (C : Type u) (E : Type v) (D : Type w) where

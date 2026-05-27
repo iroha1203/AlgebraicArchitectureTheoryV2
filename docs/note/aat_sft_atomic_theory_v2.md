@@ -1911,14 +1911,18 @@ Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 [#1259](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1259),
 [#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262),
 [#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265),
-[#1266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1266)
+[#1266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1266),
+[#1261](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1261)
 では、この surface をさらに進め、`AtomGrammarExtensionPolicy`、
 `SelectedAtomUniverse` / `FiniteAtomMoleculeWitness`、`AtomVanishingBridge`
-`AtomLawfulnessBridge`、`AtomPresentationAATPackage` を追加した。これにより、
+`AtomLawfulnessBridge`、`AtomPresentationAATPackage`、
+`LayeringAtomArrangementLaw` / `ProjectionAtomArrangementLaw` /
+`ObservationAtomArrangementLaw` を追加した。これにより、
 新しい atom kind / axis の追加方針、selected finite molecule witness、
 required-axis zero reading、coverage / exactness assumptions 下の lawfulness と
 no required circuit の bridge、validated presentation を AAT theorem package
-入力として読む境界を Lean 側で明示できる。
+入力として読む境界、既存 AAT invariant の主要 subset を atom arrangement law
+として読む theorem surface を Lean 側で明示できる。
 
 ### 15.1 First Core: Atoms as Abstract Finite Facts
 
@@ -2035,6 +2039,15 @@ candidate boundary を同時に持つ。したがって ArchMap から来る sur
 `ArchMapAtomObservationModel.promotedPresentation` を通じて AAT theorem package
 の入力になるが、raw candidate や validation pass 自体は certified atom truth
 や Lean theorem discharge にはならない。
+
+Issue #1261 では、既存の `StrictLayered`、`ProjectionSound`、
+`ObservationallyEquivalent` を直接置き換えず、`LayeringAtomArrangementLaw`、
+`ProjectionAtomArrangementLaw`、`ObservationAtomArrangementLaw` から読む bridge を
+追加した。boundary leak、concrete bypass、projection failure は primitive atom
+ではなく、`BoundaryLeakObstructionCandidate` /
+`ConcreteBypassObstructionCandidate` /
+`ProjectionFailureObstructionCandidate` として law-relative obstruction circuit
+candidate に留める。
 
 ### 15.4 Responsibility as Molecule
 

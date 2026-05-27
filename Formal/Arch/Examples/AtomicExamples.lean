@@ -288,6 +288,83 @@ theorem exampleAtomPresentationAATPackage_records_raw_guardrail :
       exampleAtomPresentationAATPackage := by
   exact exampleAtomPresentationAATPackage.noRawCandidateTheoremClaim_recorded
 
+def noBadAtomLaw : DesignLaw Component Edge Diagram where
+  Bad := fun _ => False
+  selectedBoundary := True
+  nonConclusions := True
+
+def allSelectedMolecules (_molecule : AtomMolecule Component Edge Diagram) : Prop :=
+  True
+
+def noEdgeGraph : ArchGraph Component where
+  edge := fun _ _ => False
+
+def identityProjection : InterfaceProjection Component Component where
+  expose := id
+
+def observationToUnit : Observation Component Unit where
+  observe := fun _ => ()
+
+theorem noBadAtomLaw_lawful :
+    LawfulWithinAtomConfiguration noBadAtomLaw allSelectedMolecules := by
+  intro M _hRequired hBad
+  exact hBad
+
+def noEdgeLayeringAtomArrangement :
+    LayeringAtomArrangementLaw noEdgeGraph noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesStrictLayered := by
+    intro _hLawful
+    exact ⟨fun _ => 0, by
+      intro c d hEdge
+      exact False.elim hEdge⟩
+  obstructionCircuitBoundary := True
+  nonConclusions := True
+
+theorem noEdgeLayeringAtomArrangement_strictLayered :
+    StrictLayered noEdgeGraph :=
+  noEdgeLayeringAtomArrangement.strictLayered_of_lawful noBadAtomLaw_lawful
+
+theorem noEdgeLayeringAtomArrangement_acyclic :
+    Acyclic noEdgeGraph :=
+  noEdgeLayeringAtomArrangement.acyclic_of_lawful noBadAtomLaw_lawful
+
+def identityProjectionAtomArrangement :
+    ProjectionAtomArrangementLaw
+      noEdgeGraph identityProjection noEdgeGraph noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesProjectionSound := by
+    intro _hLawful c d hEdge
+    exact False.elim hEdge
+  projectionFailureExposesBadMolecule := by
+    intro edge hFailure
+    exact False.elim hFailure.1
+  obstructionCircuitBoundary := True
+  nonConclusions := True
+
+theorem identityProjectionAtomArrangement_projectionSound :
+    ProjectionSound noEdgeGraph identityProjection noEdgeGraph :=
+  identityProjectionAtomArrangement.projectionSound_of_lawful noBadAtomLaw_lawful
+
+theorem identityProjectionAtomArrangement_noProjectionObstruction :
+    NoProjectionObstruction noEdgeGraph identityProjection noEdgeGraph :=
+  identityProjectionAtomArrangement.noProjectionObstruction_of_lawful
+    noBadAtomLaw_lawful
+
+def unitObservationAtomArrangement :
+    ObservationAtomArrangementLaw
+      observationToUnit Component.api Component.database
+      noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesObservationEquivalence := by
+    intro _hLawful
+    rfl
+  observationBoundary := True
+  nonConclusions := True
+
+theorem unitObservationAtomArrangement_equivalent :
+    ObservationallyEquivalent
+      observationToUnit Component.api Component.database :=
+  unitObservationAtomArrangement.observationallyEquivalent_of_lawful
+    noBadAtomLaw_lawful
+
 def exampleSoftwareField :
     SoftwareField Unit Component Edge Unit Unit Unit where
   state := ()
