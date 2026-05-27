@@ -242,6 +242,56 @@ theorem atomLawful
       pkg.lawfulnessBridge).mpr
       pkg.noRequiredObstructionCircuit
 
+/-- Required molecules selected by the zero-curvature package are on the pure surface. -/
+theorem requiredMolecule_on_surface
+    {C : Type u} {E : Type v} {D : Type w}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (pkg : AtomZeroCurvatureTheoremPackage core)
+    {molecule : AtomMolecule C E D}
+    (hRequired : pkg.requiredMolecule molecule) :
+    core.surface.molecules molecule :=
+  pkg.requiredMoleculesOnSurface molecule hRequired
+
+/--
+Atoms occurring in required zero-curvature molecules are selected by the same
+pure surface.
+-/
+theorem atom_of_requiredMolecule
+    {C : Type u} {E : Type v} {D : Type w}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (pkg : AtomZeroCurvatureTheoremPackage core)
+    {molecule : AtomMolecule C E D}
+    (hRequired : pkg.requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    core.surface.atoms atom :=
+  core.surface.atom_of_selected_molecule
+    (pkg.requiredMolecule_on_surface hRequired) hAtom
+
+/-- Required zero-curvature molecules are supported by the pure surface atoms. -/
+theorem requiredMolecule_supportedBy_surface_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (pkg : AtomZeroCurvatureTheoremPackage core)
+    {molecule : AtomMolecule C E D}
+    (hRequired : pkg.requiredMolecule molecule) :
+    AtomMoleculeSupportedBy core.surface.selectedAtomUniverse molecule :=
+  core.surface.selected_molecule_supportedBy_selected_atoms
+    (pkg.requiredMolecule_on_surface hRequired)
+
+/-- Atoms in required zero-curvature molecules are primitive Atom Core facts. -/
+theorem requiredMolecule_atom_is_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (pkg : AtomZeroCurvatureTheoremPackage core)
+    {molecule : AtomMolecule C E D}
+    (hRequired : pkg.requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    PrimitiveArchitectureAtom atom :=
+  AtomAxiomatizedPureAAT.selected_molecule_atom_is_primitive
+    core (pkg.requiredMolecule_on_surface hRequired) hAtom
+
 /-- Required atom obstruction circuits are selected by the pure atom surface. -/
 theorem requiredCircuit_on_surface
     {C : Type u} {E : Type v} {D : Type w}

@@ -174,6 +174,75 @@ theorem atomLawful_from_atomZeroCurvature
       suite.zeroCurvature.requiredMolecule :=
   AtomZeroCurvatureTheoremPackage.atomLawful suite.zeroCurvature
 
+/-- Required molecules in the pure theorem suite are selected by the pure surface. -/
+theorem requiredMolecule_on_surface
+    {C : Type u} {E : Type v} {D : Type w}
+    {RepairState : Type r} {RepairRule : Type s}
+    {SynthesisState : Type t}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.zeroCurvature.requiredMolecule molecule) :
+    suite.core.surface.molecules molecule :=
+  suite.zeroCurvature.requiredMolecule_on_surface hRequired
+
+/--
+Atoms in required suite molecules are selected by the same pure Atom-AAT
+surface.
+-/
+theorem atom_of_requiredMolecule
+    {C : Type u} {E : Type v} {D : Type w}
+    {RepairState : Type r} {RepairRule : Type s}
+    {SynthesisState : Type t}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.zeroCurvature.requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    suite.core.surface.atoms atom :=
+  suite.zeroCurvature.atom_of_requiredMolecule hRequired hAtom
+
+/-- Required suite molecules are supported by the pure surface atoms. -/
+theorem requiredMolecule_supportedBy_surface_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    {RepairState : Type r} {RepairRule : Type s}
+    {SynthesisState : Type t}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.zeroCurvature.requiredMolecule molecule) :
+    AtomMoleculeSupportedBy
+      suite.core.surface.selectedAtomUniverse molecule :=
+  suite.zeroCurvature.requiredMolecule_supportedBy_surface_atoms hRequired
+
+/-- Atoms in required suite molecules remain primitive Atom Core facts. -/
+theorem requiredMolecule_atom_is_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    {RepairState : Type r} {RepairRule : Type s}
+    {SynthesisState : Type t}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.zeroCurvature.requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    PrimitiveArchitectureAtom atom :=
+  suite.zeroCurvature.requiredMolecule_atom_is_primitive
+    hRequired hAtom
+
 /-- The suite operation preserves its selected atom surface. -/
 theorem operation_preservesSurfaceInvariant
     {C : Type u} {E : Type v} {D : Type w}

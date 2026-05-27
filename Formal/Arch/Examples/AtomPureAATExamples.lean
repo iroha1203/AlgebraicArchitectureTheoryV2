@@ -82,6 +82,23 @@ theorem noEdgePureAtomSuite_atomLawful_from_atomZeroCurvature :
     AtomAxiomatizedPureTheoremSuite.atomLawful_from_atomZeroCurvature
       noEdgeAtomAxiomatizedPureTheoremSuite
 
+theorem noEdgePureAtomSuite_requiredMolecule_supported :
+    AtomMoleculeSupportedBy
+      noEdgeAtomAxiomatizedPureTheoremSuite.core.surface.selectedAtomUniverse
+      componentMolecule := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.requiredMolecule_supportedBy_surface_atoms
+      noEdgeAtomAxiomatizedPureTheoremSuite
+      componentMoleculeWitness.supportedBy
+
+theorem noEdgePureAtomSuite_requiredMolecule_atom_is_primitive :
+    PrimitiveArchitectureAtom componentAtom := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.requiredMolecule_atom_is_primitive
+      noEdgeAtomAxiomatizedPureTheoremSuite
+      componentMoleculeWitness.supportedBy
+      (by rfl)
+
 theorem noEdgePureAtomSuite_operation_preservesSurfaceInvariant :
     PreservesInvariant
       (AtomPresentationOperation.source
