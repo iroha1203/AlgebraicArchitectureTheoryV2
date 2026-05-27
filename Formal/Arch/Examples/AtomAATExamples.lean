@@ -79,6 +79,32 @@ theorem noEdgeAtomSuite_atomLawful_from_atomZeroCurvature :
     AtomAxiomatizedTheoremSuite.atomLawful_from_atomZeroCurvature
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_requiredMolecule_supported_on_aat_surface :
+    AtomMoleculeSupportedBy
+      noEdgeAtomAxiomatizedTheoremSuite.aat.surface.selectedAtomUniverse
+      componentMolecule := by
+  exact
+    AtomAxiomatizedTheoremSuite.requiredMolecule_supportedBy_aat_surface_atoms
+      noEdgeAtomAxiomatizedTheoremSuite
+      componentMoleculeWitness.supportedBy
+
+theorem noEdgeAtomSuite_requiredMolecule_supported_on_pureCore_surface :
+    AtomMoleculeSupportedBy
+      noEdgeAtomAxiomatizedTheoremSuite.pureCore.surface.selectedAtomUniverse
+      componentMolecule := by
+  exact
+    AtomAxiomatizedTheoremSuite.requiredMolecule_supportedBy_pureCore_surface_atoms
+      noEdgeAtomAxiomatizedTheoremSuite
+      componentMoleculeWitness.supportedBy
+
+theorem noEdgeAtomSuite_requiredMolecule_atom_is_primitive :
+    PrimitiveArchitectureAtom componentAtom := by
+  exact
+    AtomAxiomatizedTheoremSuite.requiredMolecule_atom_is_primitive
+      noEdgeAtomAxiomatizedTheoremSuite
+      componentMoleculeWitness.supportedBy
+      (by rfl)
+
 theorem noEdgeAtomSuite_operation_preservesSurfaceInvariant :
     PreservesInvariant
       (AtomPresentationOperation.source

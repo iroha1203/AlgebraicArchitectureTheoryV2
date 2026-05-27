@@ -186,6 +186,140 @@ theorem atomLawful_from_atomZeroCurvature
   AtomZeroCurvatureTheoremPackage.atomLawful
     suite.atomZeroCurvatureTheoremPackage
 
+/-- Required molecules are selected by the Signature-connected atom surface. -/
+theorem requiredMolecule_on_aat_surface
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.aat.zeroCurvature.requiredMolecule molecule) :
+    suite.aat.surface.molecules molecule :=
+  ArchitectureSignature.AtomAxiomatizedAAT.requiredMolecule_on_surface
+    suite.aat hRequired
+
+/-- Required molecules are also selected by the carried pure core surface. -/
+theorem requiredMolecule_on_pureCore_surface
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.aat.zeroCurvature.requiredMolecule molecule) :
+    suite.pureCore.surface.molecules molecule :=
+  suite.atomZeroCurvatureTheoremPackage.requiredMolecule_on_surface
+    hRequired
+
+/-- Atoms in required molecules remain selected by the Signature-connected surface. -/
+theorem atom_of_requiredMolecule_on_aat_surface
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.aat.zeroCurvature.requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    suite.aat.surface.atoms atom :=
+  ArchitectureSignature.AtomAxiomatizedAAT.atom_of_requiredMolecule
+    suite.aat hRequired hAtom
+
+/-- Atoms in required molecules remain selected by the carried pure core surface. -/
+theorem atom_of_requiredMolecule_on_pureCore_surface
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.aat.zeroCurvature.requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    suite.pureCore.surface.atoms atom :=
+  suite.atomZeroCurvatureTheoremPackage.atom_of_requiredMolecule
+    hRequired hAtom
+
+/-- Required molecules are supported by the Signature-connected selected atom universe. -/
+theorem requiredMolecule_supportedBy_aat_surface_atoms
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.aat.zeroCurvature.requiredMolecule molecule) :
+    AtomMoleculeSupportedBy
+      suite.aat.surface.selectedAtomUniverse molecule :=
+  ArchitectureSignature.AtomAxiomatizedAAT.requiredMolecule_supportedBy_surface_atoms
+    suite.aat hRequired
+
+/-- Required molecules are supported by the carried pure core selected atom universe. -/
+theorem requiredMolecule_supportedBy_pureCore_surface_atoms
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.aat.zeroCurvature.requiredMolecule molecule) :
+    AtomMoleculeSupportedBy
+      suite.pureCore.surface.selectedAtomUniverse molecule :=
+  suite.atomZeroCurvatureTheoremPackage.requiredMolecule_supportedBy_surface_atoms
+    hRequired
+
+/-- Atoms in required molecules remain primitive through the unified suite. -/
+theorem requiredMolecule_atom_is_primitive
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    {molecule : AtomMolecule C E D}
+    (hRequired : suite.aat.zeroCurvature.requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    PrimitiveArchitectureAtom atom :=
+  suite.atomZeroCurvatureTheoremPackage.requiredMolecule_atom_is_primitive
+    hRequired hAtom
+
 /-- The unified suite exposes the Signature-free atom operation package. -/
 def pureOperationPackage
     {C : Type u} {A : Type v} {Obs : Type w}
