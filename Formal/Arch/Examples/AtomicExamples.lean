@@ -182,6 +182,14 @@ theorem uncertainPrimitiveCandidate_not_measured :
     ¬ uncertainPrimitiveCandidate.measurementStatus.SupportsMeasurement := by
   exact observedAtom_uncertain_not_measured uncertainPrimitiveCandidate rfl
 
+def promotedComponentObservation : ObservedAtom Component Edge Diagram where
+  atom := componentAtom
+  observationStatus := ObservationStatus.observed
+  measurementStatus := MeasurementStatus.measuredZero
+  evidenceRef := "archmap:promoted:component-api"
+  sourceBoundary := True
+  nonConclusions := True
+
 def runtimeObservationGap : ObservationGap Component Edge Diagram where
   expectedKind := AtomKind.runtimeInteraction
   expectedAxis := Axis.runtime
@@ -198,7 +206,9 @@ theorem runtimeObservationGap_not_measuredZero :
   exact observationGap_not_measuredZero runtimeObservationGap
 
 def exampleAtomPresentation : AtomPresentation Component Edge Diagram where
-  observed := fun observed => observed = rejectedPrimitiveCandidate
+  observed := fun observed =>
+    observed = promotedComponentObservation ∨
+      observed = rejectedPrimitiveCandidate
   gaps := fun gap => gap = runtimeObservationGap
   promotionBoundary := True
   validationBoundary := True
@@ -239,6 +249,44 @@ theorem exampleAtomVanishingBridge_no_required_bad_atom
     (hRequired : RequiredAtomAxis staticRequiredAxis atom) :
     ¬ HasBadAtomOn exampleAtomSignature atom := by
   exact exampleAtomVanishingBridge.no_hasBadAtomOn_of_requiredAxis atom hRequired
+
+def exampleAtomPresentationAATPackage :
+    AtomPresentationAATPackage
+      exampleAtomPresentation
+      forbiddenEdgeLaw
+      selectedForbiddenEdgeUniverse.selected
+      exampleAtomSignature
+      staticRequiredAxis where
+  selectedAtoms := fun atom => atom = componentAtom
+  selectedGaps := fun gap => gap = runtimeObservationGap
+  selectedAtomsSound := by
+    intro atom hAtom
+    refine ⟨promotedComponentObservation, ?_, ?_, ?_⟩
+    · exact Or.inl rfl
+    · exact hAtom.symm
+    · trivial
+  selectedGapsSound := by
+    intro gap hGap
+    exact hGap
+  lawfulnessBridge := forbiddenEdgeLawfulnessBridge
+  vanishingBridge := exampleAtomVanishingBridge
+  promotionBoundary := trivial
+  validationBoundary := trivial
+  rawCandidateBoundary := trivial
+  nonConclusions := trivial
+
+theorem exampleAtomPresentationAATPackage_reads_selected_atom :
+    ∃ observed,
+      exampleAtomPresentation.observed observed ∧
+      observed.atom = componentAtom ∧
+      observed.measurementStatus.SupportsMeasurement := by
+  exact
+    exampleAtomPresentationAATPackage.selectedAtom_from_presentation rfl
+
+theorem exampleAtomPresentationAATPackage_records_raw_guardrail :
+    ¬ AtomPresentationAATPackage.RawCandidateTheoremClaim
+      exampleAtomPresentationAATPackage := by
+  exact exampleAtomPresentationAATPackage.noRawCandidateTheoremClaim_recorded
 
 def exampleSoftwareField :
     SoftwareField Unit Component Edge Unit Unit Unit where

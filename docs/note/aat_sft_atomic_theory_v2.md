@@ -1910,13 +1910,15 @@ SFT は `ValidatedFieldAtomPresentation` / `PresentedAtomDelta` /
 Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1268),
 [#1259](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1259),
 [#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262),
-[#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265)
+[#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265),
+[#1266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1266)
 では、この surface をさらに進め、`AtomGrammarExtensionPolicy`、
 `SelectedAtomUniverse` / `FiniteAtomMoleculeWitness`、`AtomVanishingBridge`
-`AtomLawfulnessBridge` を追加した。これにより、新しい atom kind / axis の
-追加方針、selected finite molecule witness、required-axis zero reading、
-coverage / exactness assumptions 下の lawfulness と no required circuit の bridge
-を Lean 側で明示できる。
+`AtomLawfulnessBridge`、`AtomPresentationAATPackage` を追加した。これにより、
+新しい atom kind / axis の追加方針、selected finite molecule witness、
+required-axis zero reading、coverage / exactness assumptions 下の lawfulness と
+no required circuit の bridge、validated presentation を AAT theorem package
+入力として読む境界を Lean 側で明示できる。
 
 ### 15.1 First Core: Atoms as Abstract Finite Facts
 
@@ -2025,6 +2027,14 @@ Issue #1265 では、`LawfulWithinAtomConfiguration` と
 assumption で接続する。これにより、lawfulness を obstruction absence と
 定義しただけではなく、selected bad molecule が selected obstruction circuit を
 露出するという bridge theorem として扱う。
+
+Issue #1266 では、validated `AtomPresentation` を AAT 側へ渡す
+`AtomPresentationAATPackage` を追加した。この package は selected atoms /
+gaps、lawfulness bridge、vanishing bridge、promotion / validation / raw
+candidate boundary を同時に持つ。したがって ArchMap から来る surface は
+`ArchMapAtomObservationModel.promotedPresentation` を通じて AAT theorem package
+の入力になるが、raw candidate や validation pass 自体は certified atom truth
+や Lean theorem discharge にはならない。
 
 ### 15.4 Responsibility as Molecule
 

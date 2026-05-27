@@ -4064,10 +4064,11 @@ ArchSig promotion / SFT trace bridge を追加した。
 Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1268),
 [#1259](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1259),
 [#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262),
-[#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265)
+[#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265),
+[#1266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1266)
 では、Atom grammar extension policy、selected finite atom universe / molecule witness、
-required-axis vanishing bridge、selected atom lawfulness / no required circuit bridge
-を追加した。
+required-axis vanishing bridge、selected atom lawfulness / no required circuit bridge、
+AtomPresentation-to-AAT theorem package bridge を追加した。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -4085,8 +4086,11 @@ required-axis vanishing bridge、selected atom lawfulness / no required circuit 
 | `AtomLawfulnessBridge.lawful_iff_no_obstructionCircuit` | `theorem` | selected bad-witness completeness と circuit-bad soundness の下で、lawfulness と no required obstruction circuit を接続する。 | `proved` |
 | `ObservationStatus`, `ObservedAtom`, `ObservationGap`, `AtomPresentation` | `inductive` / `structure` | observed atom / rejected / uncertain / private unavailable / observation gap を atom existence から分離する presentation layer。 | `defined only` |
 | `rejectedCandidate_not_supportsMeasurement`, `uncertainCandidate_not_supportsMeasurement`, `observedAtom_rejected_not_measured`, `observedAtom_uncertain_not_measured`, `observationGap_not_measuredZero` | `theorem` | rejected / uncertain candidate と observation gap は measured-zero atom evidence ではない。 | `proved` |
+| `AtomPresentationAATPackage`, `AtomPresentationAATPackage.RawCandidateTheoremClaim`, `ValidationPassTheoremClaim` | `structure` / `def` | validated `AtomPresentation` を selected atoms / gaps、lawfulness bridge、vanishing bridge、raw candidate / validation guardrail とともに AAT theorem package 入力として束ねる。 | `defined only` |
+| `AtomPresentationAATPackage.selectedAtom_from_presentation`, `selectedGap_from_presentation`, `lawful_iff_no_required_obstructionCircuit`, `no_hasBadAtomOn_of_requiredAxis`, `rawCandidateBoundary_recorded`, `noRawCandidateTheoremClaim_recorded`, `noValidationPassTheoremClaim_recorded`, `nonConclusions_recorded` | `theorem` | presentation 由来の selected atom / gap と、raw candidate / validation pass が theorem claim ではない boundary を accessor theorem として読む。 | `proved` |
 | `PresentedAtomSignature` | `structure` | `AtomPresentation` と `AtomSignature` の valuation boundary を束ねる。 | `defined only` |
-| `ArchMapAtomObservationModel`, `PromotionBoundary`, `promotedPresentation`, `noLeanTheoremDischarge`, `noCertifiedAtomTruth` | `structure` / `def` | Rust `archmap-v0` atomic observation surface を Lean-facing `AtomPresentation` boundary として読む。 | `defined only` |
+| `ArchMapAtomObservationModel`, `PromotionBoundary`, `promotedPresentation`, `noLeanTheoremDischarge`, `noCertifiedAtomTruth`, `AATPackageInputBoundary`, `RawCandidateCertificationClaim`, `ValidationPassTheoremDischargeClaim` | `structure` / `def` | Rust `archmap-v0` atomic observation surface を Lean-facing `AtomPresentation` / AAT package input boundary として読む。 | `defined only` |
+| `ArchMapAtomObservationModel.promotedPresentation_available_to_aat`, `rawCandidate_not_certifiedAtomTruth`, `validationPass_not_leanTheoremDischarge`, `aatPackageInputBoundary_recorded` | `theorem` | ArchMap promoted presentation を AAT package input として使えること、raw candidate / validation pass が theorem claim ではないことを記録する。 | `proved` |
 | `FieldAtomsFromPresentation`, `ValidatedFieldAtomPresentation`, `PresentedAtomDelta`, `AtomicSFTPresentationBridgePackage` | `def` / `structure` | SFT が raw candidate ではなく validated atom presentation から field atoms / atom delta を読む bridge。 | `defined only` |
 | `Support` | `structure` | component / edge / diagram を持つ finite witness support の predicate representation。 | `defined only` |
 | `SupportSubset`, `ProperSubsupport` | `def` | support inclusion と proper inclusion。 | `defined only` |
@@ -4097,7 +4101,7 @@ required-axis vanishing bridge、selected atom lawfulness / no required circuit 
 | `AtomVanishingBridge.ofSignatureZero` | `def` | selected signature zero から required-axis vanishing bridge を構成する。 | `defined only` |
 | `validatedFieldAtomPresentation_excludes_raw_candidates`, `AtomicSFTPresentationBridgePackage.records_raw_candidate_exclusion`, `records_no_forecast_correctness` | `def` | SFT bridge が raw candidate exclusion と forecast non-conclusion を記録する。 | `defined only` |
 | `AtomDelta`, `PresentedAtomDelta`, `AtomTrace` | `structure` | validated atom presentation 間の atom-level change と trace。 | `defined only` |
-| `AtomicExamples.primitiveComponentAtom_primitive`, `primitiveRelationAtom_primitive`, `semanticContractAtom_allowedBy_current`, `semanticContractAtom_primitive_of_policy`, `singletonForbiddenMolecule_obstruction`, `selectedForbiddenEdgeUniverse_contains_minimal_bad`, `forbiddenEdge_lawful_iff_no_required_circuit`, `rejectedPrimitiveCandidate_not_measured`, `uncertainPrimitiveCandidate_not_measured`, `runtimeObservationGap_not_measuredZero`, `exampleAtomPresentation_recordsPromotionBoundary`, `staticSignatureZero_no_static_bad_atom`, `exampleAtomVanishingBridge_no_required_bad_atom`, `example_validatedPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_records_no_forecast_correctness` | `theorem` | Atom v2 primitive / grammar policy / finite molecule witness / circuit / lawfulness / observation / vanishing / presentation bridge smoke tests。 | `proved` |
+| `AtomicExamples.primitiveComponentAtom_primitive`, `primitiveRelationAtom_primitive`, `semanticContractAtom_allowedBy_current`, `semanticContractAtom_primitive_of_policy`, `singletonForbiddenMolecule_obstruction`, `selectedForbiddenEdgeUniverse_contains_minimal_bad`, `forbiddenEdge_lawful_iff_no_required_circuit`, `rejectedPrimitiveCandidate_not_measured`, `uncertainPrimitiveCandidate_not_measured`, `runtimeObservationGap_not_measuredZero`, `exampleAtomPresentation_recordsPromotionBoundary`, `exampleAtomPresentationAATPackage_reads_selected_atom`, `exampleAtomPresentationAATPackage_records_raw_guardrail`, `staticSignatureZero_no_static_bad_atom`, `exampleAtomVanishingBridge_no_required_bad_atom`, `example_validatedPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_records_no_forecast_correctness` | `theorem` | Atom v2 primitive / grammar policy / finite molecule witness / circuit / lawfulness / observation / AAT package / vanishing / presentation bridge smoke tests。 | `proved` |
 
 Non-conclusions: `AtomPresentation` は validated Lean-facing presentation boundary であり、
 raw ArchMap candidate、Rust validation pass、LLM semantic reading、extractor completeness、

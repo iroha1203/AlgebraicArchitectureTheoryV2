@@ -677,6 +677,184 @@ theorem no_hasBadAtomOn_of_requiredAxis
 
 end AtomVanishingBridge
 
+/--
+AAT-facing theorem package read from a validated atom presentation.
+
+The package separates three surfaces:
+
+* observed atoms and gaps that AAT may read from the presentation,
+* selected lawfulness / signature bridges used by AAT statements,
+* guardrails saying that raw candidates or validation passes are not theorem
+  claims by themselves.
+-/
+structure AtomPresentationAATPackage
+    {C : Type u} {E : Type v} {D : Type w}
+    (presentation : AtomPresentation C E D)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop)
+    (signature : AtomSignature C E D)
+    (requiredAxis : Axis -> Prop) where
+  selectedAtoms : ArchitectureAtom C E D -> Prop
+  selectedGaps : ObservationGap C E D -> Prop
+  selectedAtomsSound :
+    ∀ atom, selectedAtoms atom ->
+      ∃ observed,
+        presentation.observed observed ∧
+        observed.atom = atom ∧
+        observed.measurementStatus.SupportsMeasurement
+  selectedGapsSound :
+    ∀ gap, selectedGaps gap -> presentation.gaps gap
+  lawfulnessBridge : AtomLawfulnessBridge law requiredMolecule
+  vanishingBridge : AtomVanishingBridge signature requiredAxis
+  promotionBoundary : presentation.promotionBoundary
+  validationBoundary : presentation.validationBoundary
+  rawCandidateBoundary : presentation.rawCandidateBoundary
+  nonConclusions : presentation.nonConclusions
+
+namespace AtomPresentationAATPackage
+
+def RawCandidateTheoremClaim
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (_pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis) : Prop :=
+  False
+
+def ValidationPassTheoremClaim
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (_pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis) : Prop :=
+  False
+
+theorem selectedAtom_from_presentation
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : pkg.selectedAtoms atom) :
+    ∃ observed,
+      presentation.observed observed ∧
+      observed.atom = atom ∧
+      observed.measurementStatus.SupportsMeasurement :=
+  pkg.selectedAtomsSound atom hAtom
+
+theorem selectedGap_from_presentation
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis)
+    {gap : ObservationGap C E D}
+    (hGap : pkg.selectedGaps gap) :
+    presentation.gaps gap :=
+  pkg.selectedGapsSound gap hGap
+
+theorem lawful_iff_no_required_obstructionCircuit
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis) :
+    LawfulWithinAtomConfiguration law requiredMolecule ↔
+      NoRequiredObstructionCircuit law requiredMolecule :=
+  pkg.lawfulnessBridge.lawful_iff_no_obstructionCircuit
+
+theorem no_hasBadAtomOn_of_requiredAxis
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis)
+    (atom : ArchitectureAtom C E D)
+    (hRequired : RequiredAtomAxis requiredAxis atom) :
+    ¬ HasBadAtomOn signature atom :=
+  pkg.vanishingBridge.no_hasBadAtomOn_of_requiredAxis atom hRequired
+
+theorem rawCandidateBoundary_recorded
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis) :
+    presentation.rawCandidateBoundary :=
+  pkg.rawCandidateBoundary
+
+theorem noRawCandidateTheoremClaim_recorded
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis) :
+    ¬ RawCandidateTheoremClaim pkg := by
+  intro h
+  exact h
+
+theorem noValidationPassTheoremClaim_recorded
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis) :
+    ¬ ValidationPassTheoremClaim pkg := by
+  intro h
+  exact h
+
+theorem nonConclusions_recorded
+    {C : Type u} {E : Type v} {D : Type w}
+    {presentation : AtomPresentation C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        presentation law requiredMolecule signature requiredAxis) :
+    presentation.nonConclusions :=
+  pkg.nonConclusions
+
+end AtomPresentationAATPackage
+
 /-- Atom presentation bundled with its selected signature. -/
 structure PresentedAtomSignature (C : Type u) (E : Type v) (D : Type w) where
   presentation : AtomPresentation C E D
