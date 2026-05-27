@@ -1,5 +1,6 @@
 import Formal.Arch.AtomPureAAT
 import Formal.Arch.Examples.AtomCoreAATExamples
+import Formal.Arch.Examples.AtomZeroCurvatureExamples
 import Formal.Arch.Examples.AtomOperationExamples
 import Formal.Arch.Examples.AtomRepairExamples
 import Formal.Arch.Examples.AtomSynthesisExamples
@@ -159,5 +160,107 @@ theorem noEdgePureAtomSuite_synthesis_law_does_not_create_atoms :
   exact
     AtomAxiomatizedPureTheoremSuite.synthesis_law_does_not_create_atoms
       noEdgeAtomAxiomatizedPureTheoremSuite
+
+def noEdgePureAtomSuiteDerivedZeroCurvaturePackage :
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage
+      noEdgeArchitectureLawModel Edge Diagram :=
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofPureTheoremSuite
+    (X := noEdgeArchitectureLawModel)
+    noEdgeAtomAxiomatizedPureTheoremSuite
+    noEdgeLayeringAtomArrangement
+    identityProjectionAtomArrangement
+    (by
+      intro _hLawful x y _hSame
+      rfl)
+    (by
+      intro _hLawful _c _d _hEdge
+      trivial)
+    (by
+      intro _hLawful _c _d _hEdge
+      trivial)
+    True True True True True
+
+theorem noEdgePureAtomSuite_architectureLawful :
+    ArchitectureSignature.ArchitectureLawful noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureLawful_of_pureTheoremSuite
+      (X := noEdgeArchitectureLawModel)
+      noEdgeAtomAxiomatizedPureTheoremSuite
+      noEdgeLayeringAtomArrangement
+      identityProjectionAtomArrangement
+      (by
+        intro _hLawful x y _hSame
+        rfl)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+
+theorem noEdgePureAtomSuite_requiredSignatureAxesZero :
+    ArchitectureSignature.RequiredSignatureAxesZero
+      (ArchitectureSignature.ArchitectureLawModel.signatureOf
+        noEdgeArchitectureLawModel) := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.requiredSignatureAxesZero_of_pureTheoremSuite
+      (X := noEdgeArchitectureLawModel)
+      noEdgeAtomAxiomatizedPureTheoremSuite
+      noEdgeLayeringAtomArrangement
+      identityProjectionAtomArrangement
+      (by
+        intro _hLawful x y _hSame
+        rfl)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+
+theorem noEdgePureAtomSuite_architectureZeroCurvatureTheoremPackage :
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
+      noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
+      (X := noEdgeArchitectureLawModel)
+      noEdgeAtomAxiomatizedPureTheoremSuite
+      noEdgeLayeringAtomArrangement
+      identityProjectionAtomArrangement
+      (by
+        intro _hLawful x y _hSame
+        rfl)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+
+def noEdgePureAtomSuiteAxiomatizedAAT :
+    ArchitectureSignature.AtomAxiomatizedAAT
+      noEdgeArchitectureLawModel Edge Diagram :=
+  ArchitectureSignature.AtomAxiomatizedAAT.ofPureTheoremSuite
+    (X := noEdgeArchitectureLawModel)
+    noEdgeAtomAxiomatizedPureTheoremSuite
+    noEdgeLayeringAtomArrangement
+    identityProjectionAtomArrangement
+    (by
+      intro _hLawful x y _hSame
+      rfl)
+    (by
+      intro _hLawful _c _d _hEdge
+      trivial)
+    (by
+      intro _hLawful _c _d _hEdge
+      trivial)
+    True True True
+
+theorem noEdgePureAtomSuite_axiomatizedAAT_zeroCurvatureTheoremPackage :
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
+      noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.architectureZeroCurvatureTheoremPackage
+      noEdgePureAtomSuiteAxiomatizedAAT
 
 end Formal.Arch.AtomicExamples
