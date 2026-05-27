@@ -835,6 +835,110 @@ theorem lawful_iff_no_obstructionCircuit
 end AtomLawfulnessBridge
 
 /--
+Semantic atom arrangement law.
+
+This records that every required molecule for the selected law is made of
+semantic/interpretation atoms.  Semantic mismatch or conflict is still evaluated
+by the law on molecules; it is not introduced as a new primitive atom kind.
+-/
+structure SemanticAtomArrangementLaw
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  requiredSemantic :
+    ∀ molecule, requiredMolecule molecule -> SemanticAtomMolecule molecule
+  lawBoundary : Prop
+  semanticBoundary : Prop
+  nonConclusions : Prop
+
+namespace SemanticAtomArrangementLaw
+
+theorem semantic_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (arrangement : SemanticAtomArrangementLaw law requiredMolecule)
+    {molecule : AtomMolecule C E D}
+    (hRequired : requiredMolecule molecule) :
+    SemanticAtomMolecule molecule :=
+  arrangement.requiredSemantic molecule hRequired
+
+theorem atom_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (arrangement : SemanticAtomArrangementLaw law requiredMolecule)
+    {molecule : AtomMolecule C E D}
+    (hRequired : requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    atom.IsSemanticInterpretation :=
+  arrangement.semantic_molecule hRequired atom hAtom
+
+end SemanticAtomArrangementLaw
+
+/--
+A semantic obstruction candidate is a law-relative obstruction circuit over a
+required semantic atom molecule.
+
+The candidate is derived from a selected semantic arrangement law.  It is not an
+Atom Core fact and does not add a new atom family.
+-/
+structure SemanticObstructionCandidate
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (arrangement : SemanticAtomArrangementLaw law requiredMolecule) where
+  molecule : AtomMolecule C E D
+  required : requiredMolecule molecule
+  obstruction : ObstructionCircuit law molecule
+  evidenceBoundary : Prop
+  nonConclusions : Prop
+
+namespace SemanticObstructionCandidate
+
+theorem semantic_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {arrangement : SemanticAtomArrangementLaw law requiredMolecule}
+    (candidate : SemanticObstructionCandidate arrangement) :
+    SemanticAtomMolecule candidate.molecule :=
+  arrangement.semantic_molecule candidate.required
+
+theorem atom_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {arrangement : SemanticAtomArrangementLaw law requiredMolecule}
+    (candidate : SemanticObstructionCandidate arrangement)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : candidate.molecule.atoms atom) :
+    atom.IsSemanticInterpretation :=
+  candidate.semantic_molecule atom hAtom
+
+theorem bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {arrangement : SemanticAtomArrangementLaw law requiredMolecule}
+    (candidate : SemanticObstructionCandidate arrangement) :
+    law.Bad candidate.molecule :=
+  obstructionCircuit_bad candidate.obstruction
+
+theorem no_candidate_of_lawful
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {arrangement : SemanticAtomArrangementLaw law requiredMolecule}
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule)
+    (candidate : SemanticObstructionCandidate arrangement) :
+    False :=
+  hLawful candidate.molecule candidate.required candidate.bad
+
+end SemanticObstructionCandidate
+
+/--
 Pure AAT surface built from Atom Core.
 
 This package intentionally has no ArchMap, ArchSig, FieldSig, observation

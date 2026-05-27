@@ -239,6 +239,87 @@ theorem semanticAtomMoleculeWitness_selected_and_semantic :
       semanticInterpretationAtom.IsSemanticInterpretation := by
   exact semanticAtomMoleculeWitness.atom_selected_and_semantic rfl
 
+def requiredSemanticMolecule
+    (molecule : AtomMolecule Component Edge Diagram) : Prop :=
+  molecule = semanticMolecule
+
+def semanticMismatchLaw : DesignLaw Component Edge Diagram where
+  Bad := fun molecule => molecule.atoms semanticInterpretationAtom
+  selectedBoundary := True
+  nonConclusions := True
+
+def semanticArrangementLaw :
+    SemanticAtomArrangementLaw semanticMismatchLaw requiredSemanticMolecule where
+  requiredSemantic := by
+    intro molecule hRequired
+    rw [hRequired]
+    exact semanticMolecule_all_semantic
+  lawBoundary := True
+  semanticBoundary := True
+  nonConclusions := True
+
+theorem semanticArrangementLaw_atom_is_semantic :
+    semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact
+    semanticArrangementLaw.atom_is_semantic
+      (molecule := semanticMolecule)
+      rfl
+      rfl
+
+theorem singletonSemanticMolecule_obstruction :
+    ObstructionCircuit semanticMismatchLaw semanticMolecule := by
+  constructor
+  · rfl
+  · intro N hProper hBad
+    apply hProper.2
+    intro atom hAtom
+    have hEq : atom = semanticInterpretationAtom := by
+      simpa [semanticMolecule] using hAtom
+    rw [hEq]
+    exact hBad
+
+def semanticObstructionCandidate :
+    SemanticObstructionCandidate semanticArrangementLaw where
+  molecule := semanticMolecule
+  required := rfl
+  obstruction := singletonSemanticMolecule_obstruction
+  evidenceBoundary := True
+  nonConclusions := True
+
+theorem semanticObstructionCandidate_bad :
+    semanticMismatchLaw.Bad semanticObstructionCandidate.molecule := by
+  exact semanticObstructionCandidate.bad
+
+theorem semanticObstructionCandidate_atom_is_semantic :
+    semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact semanticObstructionCandidate.atom_is_semantic rfl
+
+def semanticNoBadLaw : DesignLaw Component Edge Diagram where
+  Bad := fun _molecule => False
+  selectedBoundary := True
+  nonConclusions := True
+
+def semanticNoBadArrangementLaw :
+    SemanticAtomArrangementLaw semanticNoBadLaw requiredSemanticMolecule where
+  requiredSemantic := by
+    intro molecule hRequired
+    rw [hRequired]
+    exact semanticMolecule_all_semantic
+  lawBoundary := True
+  semanticBoundary := True
+  nonConclusions := True
+
+theorem semanticNoBadLaw_lawful :
+    LawfulWithinAtomConfiguration semanticNoBadLaw requiredSemanticMolecule := by
+  intro _molecule _hRequired hBad
+  exact hBad
+
+theorem semanticNoBadLaw_no_semantic_obstruction
+    (candidate : SemanticObstructionCandidate semanticNoBadArrangementLaw) :
+    False := by
+  exact SemanticObstructionCandidate.no_candidate_of_lawful
+    semanticNoBadLaw_lawful candidate
+
 def forbiddenEdgeLaw : DesignLaw Component Edge Diagram where
   Bad := fun molecule => molecule.atoms relationAtom
   selectedBoundary := True
@@ -361,16 +442,18 @@ theorem pureAATSurface_independent_of_sft :
 
 def semanticAATSurface : AATPureTheorySurface Component Edge Diagram where
   atoms := selectedAtomUniverse.selectedAtom
-  molecules := fun molecule => molecule = semanticMolecule
+  molecules := requiredSemanticMolecule
   moleculeAtomsOnSurface := by
     intro molecule hMolecule atom hAtom
     have hEq : atom = semanticInterpretationAtom := by
       rw [hMolecule] at hAtom
       simpa [semanticMolecule] using hAtom
     exact Or.inr (Or.inr (Or.inr hEq))
-  laws := fun _law => False
-  circuits := fun {law} {_molecule} hLaw _hMolecule _hCircuit =>
-    False.elim hLaw
+  laws := fun law => law = semanticNoBadLaw
+  circuits := fun {law} {molecule} hLaw hMolecule hCircuit =>
+    law = semanticNoBadLaw ∧
+      requiredSemanticMolecule molecule ∧
+      ObstructionCircuit law molecule
   atomCoreBoundary := True
   moleculeBoundary := True
   lawBoundary := True
@@ -381,6 +464,14 @@ def semanticAATSurface : AATPureTheorySurface Component Edge Diagram where
   noSFTDependencyEvidence := trivial
   nonConclusions := True
 
+theorem semanticAATSurface_semantic_law_selected :
+    semanticAATSurface.laws semanticNoBadLaw := by
+  rfl
+
+theorem semanticAATSurface_semantic_required_molecule :
+    semanticAATSurface.molecules semanticMolecule := by
+  rfl
+
 theorem semanticAATSurface_semantic_atom_on_surface :
     semanticAATSurface.atoms semanticInterpretationAtom ∧
       semanticInterpretationAtom.IsSemanticInterpretation := by
@@ -390,21 +481,33 @@ theorem semanticAATSurface_semantic_atom_on_surface :
       ⟨rfl, semanticMolecule_all_semantic⟩
       rfl
 
+def semanticLawSeparation :
+    AtomLawSeparation Component Edge Diagram where
+  law := semanticNoBadLaw
+  selectedMolecule := requiredSemanticMolecule
+  atomsExistBeforeLaw := True
+  atomsExistBeforeLawEvidence := trivial
+  lawDoesNotCreateAtoms := True
+  lawDoesNotCreateAtomsEvidence := trivial
+  lawDoesNotChangeAtomExistence := True
+  lawDoesNotChangeAtomExistenceEvidence := trivial
+  nonConclusions := True
+
 def semanticPureAtomCore :
     AtomAxiomatizedPureAAT Component Edge Diagram where
   surface := semanticAATSurface
   lawSeparation := by
-    intro _law hLaw
-    exact False.elim hLaw
+    intro _law _hLaw
+    exact semanticLawSeparation
   lawSeparationMatches := by
-    intro _law hLaw
-    exact False.elim hLaw
+    intro law hLaw
+    exact hLaw.symm
   lawEvaluatesSurfaceMolecules := by
-    intro _law hLaw
-    exact False.elim hLaw
+    intro _law _hLaw _molecule hMolecule
+    exact hMolecule
   circuitClosure := by
-    intro _law _molecule hLaw
-    exact False.elim hLaw
+    intro _law _molecule hLaw hMolecule hCircuit
+    exact ⟨hLaw, hMolecule, hCircuit⟩
   noArchitectureSignatureDependency := True
   noArchitectureSignatureDependencyEvidence := trivial
   atomAxiomBoundary := True
