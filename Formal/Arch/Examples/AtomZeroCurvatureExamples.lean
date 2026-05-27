@@ -96,6 +96,51 @@ def noEdgeAtomDerivedZeroCurvaturePackage :
   zeroCurvatureBoundary := True
   nonConclusions := True
 
+def noEdgePureAATSurface : AATPureTheorySurface Component Edge Diagram where
+  atoms := selectedAtomUniverse.selectedAtom
+  molecules := allSelectedMolecules
+  laws := fun law => law = noBadAtomLaw
+  circuits := fun {law} {molecule} _hLaw _hMolecule _hCircuit =>
+    law = noBadAtomLaw ∧ allSelectedMolecules molecule ∧
+      ObstructionCircuit law molecule
+  atomCoreBoundary := True
+  moleculeBoundary := True
+  lawBoundary := True
+  patternInterpretationBoundary := True
+  noObservationDependency := True
+  noObservationDependencyEvidence := trivial
+  noSFTDependency := True
+  noSFTDependencyEvidence := trivial
+  nonConclusions := True
+
+def noEdgeAtomAxiomatizedAAT :
+    ArchitectureSignature.AtomAxiomatizedAAT
+      noEdgeArchitectureLawModel Edge Diagram where
+  surface := noEdgePureAATSurface
+  zeroCurvature := noEdgeAtomDerivedZeroCurvaturePackage
+  lawOnSurface := rfl
+  requiredMoleculesOnSurface := by
+    intro molecule _hRequired
+    trivial
+  requiredCircuitsOnSurface := by
+    intro molecule hRequired hCircuit
+    exact ⟨rfl, hRequired, hCircuit⟩
+  atomAxiomBoundary := True
+  theoremPackageBoundary := True
+  nonConclusions := True
+
+theorem noEdgeAtomAxiomatized_independent_of_observation :
+    noEdgeAtomAxiomatizedAAT.surface.noObservationDependency := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.independent_of_observation
+      noEdgeAtomAxiomatizedAAT
+
+theorem noEdgeAtomAxiomatized_independent_of_sft :
+    noEdgeAtomAxiomatizedAAT.surface.noSFTDependency := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.independent_of_sft
+      noEdgeAtomAxiomatizedAAT
+
 theorem noEdgeAtomDerived_architectureLawful :
     ArchitectureSignature.ArchitectureLawful noEdgeArchitectureLawModel := by
   exact
@@ -116,5 +161,12 @@ theorem noEdgeAtomDerived_zeroCurvatureTheoremPackage :
   exact
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage
       noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomAxiomatized_zeroCurvatureTheoremPackage :
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
+      noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.architectureZeroCurvatureTheoremPackage
+      noEdgeAtomAxiomatizedAAT
 
 end Formal.Arch.AtomicExamples

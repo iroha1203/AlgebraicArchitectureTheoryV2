@@ -110,6 +110,104 @@ theorem architectureZeroCurvatureTheoremPackage
 
 end AtomDerivedZeroCurvaturePackage
 
+/--
+AAT read as an atom-axiomatized pure theory surface.
+
+This package connects the pure atom surface to the selected zero-curvature
+bridge: laws, required molecules, and required obstruction circuits are read
+from the atom surface, while the current static theorem package is recovered
+through `AtomDerivedZeroCurvaturePackage`.
+-/
+structure AtomAxiomatizedAAT
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs) (E : Type q) (D : Type r) where
+  surface : AATPureTheorySurface C E D
+  zeroCurvature : AtomDerivedZeroCurvaturePackage X E D
+  lawOnSurface : surface.laws zeroCurvature.law
+  requiredMoleculesOnSurface :
+    ∀ molecule, zeroCurvature.requiredMolecule molecule ->
+      surface.molecules molecule
+  requiredCircuitsOnSurface :
+    ∀ {molecule},
+      (hRequired : zeroCurvature.requiredMolecule molecule) ->
+      (hCircuit : ObstructionCircuit zeroCurvature.law molecule) ->
+        surface.circuits lawOnSurface
+          (requiredMoleculesOnSurface molecule hRequired) hCircuit
+  atomAxiomBoundary : Prop
+  theoremPackageBoundary : Prop
+  nonConclusions : Prop
+
+namespace AtomAxiomatizedAAT
+
+/-- The atom-axiomatized AAT surface is independent of observation tooling. -/
+theorem independent_of_observation
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    pkg.surface.noObservationDependency :=
+  pkg.surface.independent_of_observation
+
+/-- The atom-axiomatized AAT surface is independent of SFT forecasting. -/
+theorem independent_of_sft
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    pkg.surface.noSFTDependency :=
+  pkg.surface.independent_of_sft
+
+/-- Required atom obstruction circuits are selected by the pure atom surface. -/
+theorem requiredCircuit_on_surface
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D)
+    {molecule : AtomMolecule C E D}
+    (hRequired : pkg.zeroCurvature.requiredMolecule molecule)
+    (hCircuit : ObstructionCircuit pkg.zeroCurvature.law molecule) :
+    pkg.surface.circuits pkg.lawOnSurface
+      (pkg.requiredMoleculesOnSurface molecule hRequired) hCircuit :=
+  pkg.requiredCircuitsOnSurface hRequired hCircuit
+
+/-- The atom-axiomatized package gives atom-configuration lawfulness. -/
+theorem atomLawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    LawfulWithinAtomConfiguration
+      pkg.zeroCurvature.law pkg.zeroCurvature.requiredMolecule :=
+  pkg.zeroCurvature.atomLawful
+
+/-- The atom-axiomatized package gives existing Signature-level lawfulness. -/
+theorem architectureLawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    ArchitectureLawful X :=
+  pkg.zeroCurvature.architectureLawful
+
+/-- The atom-axiomatized package gives selected required Signature axes zero. -/
+theorem requiredSignatureAxesZero
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (pkg : AtomAxiomatizedAAT X E D) :
+    RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X) :=
+  pkg.zeroCurvature.requiredSignatureAxesZero
+
+/-- The atom-axiomatized package gives the current zero-curvature theorem package. -/
+theorem architectureZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (pkg : AtomAxiomatizedAAT X E D) :
+    ArchitectureZeroCurvatureTheoremPackage X :=
+  pkg.zeroCurvature.architectureZeroCurvatureTheoremPackage
+
+end AtomAxiomatizedAAT
+
 end ArchitectureSignature
 
 end Formal.Arch
