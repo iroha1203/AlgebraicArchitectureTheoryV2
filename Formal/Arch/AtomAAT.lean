@@ -222,6 +222,121 @@ theorem atomLawful_from_atomZeroCurvature
   AtomZeroCurvatureTheoremPackage.atomLawful
     suite.atomZeroCurvatureTheoremPackage
 
+/-- The zero-curvature package recovers strict layering from atom lawfulness. -/
+theorem zeroCurvature_strictLayered
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    StrictLayered X.G :=
+  ArchitectureSignature.AtomAxiomatizedAAT.strictLayered
+    suite.aat
+
+/-- The zero-curvature package recovers walk acyclicity from atom lawfulness. -/
+theorem zeroCurvature_walkAcyclic
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    WalkAcyclic X.G :=
+  ArchitectureSignature.AtomAxiomatizedAAT.walkAcyclic
+    suite.aat
+
+/-- The zero-curvature package recovers projection soundness from atom lawfulness. -/
+theorem zeroCurvature_projectionSound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ProjectionSound X.G X.π X.GA :=
+  ArchitectureSignature.AtomAxiomatizedAAT.projectionSound
+    suite.aat
+
+/--
+The zero-curvature package rules out selected projection obstruction witnesses
+from atom lawfulness.
+-/
+theorem zeroCurvature_noProjectionObstruction
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    NoProjectionObstruction X.G X.π X.GA :=
+  ArchitectureSignature.AtomAxiomatizedAAT.noProjectionObstruction
+    suite.aat
+
+/-- The zero-curvature package recovers LSP compatibility from atom lawfulness. -/
+theorem zeroCurvature_lspCompatible
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    LSPCompatible X.π X.O :=
+  ArchitectureSignature.AtomAxiomatizedAAT.lspCompatible
+    suite.aat
+
+/-- The zero-curvature package recovers boundary-policy soundness from atom lawfulness. -/
+theorem zeroCurvature_boundaryPolicySound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ArchitectureSignature.BoundaryPolicySound X.G X.boundaryAllowed :=
+  ArchitectureSignature.AtomAxiomatizedAAT.boundaryPolicySound
+    suite.aat
+
+/-- The zero-curvature package recovers abstraction-policy soundness from atom lawfulness. -/
+theorem zeroCurvature_abstractionPolicySound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ArchitectureSignature.AbstractionPolicySound X.G X.abstractionAllowed :=
+  ArchitectureSignature.AtomAxiomatizedAAT.abstractionPolicySound
+    suite.aat
+
 /-- Required molecules are selected by the Signature-connected atom surface. -/
 theorem requiredMolecule_on_aat_surface
     {C : Type u} {A : Type v} {Obs : Type w}

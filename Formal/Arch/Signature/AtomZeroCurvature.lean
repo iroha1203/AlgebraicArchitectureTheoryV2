@@ -116,6 +116,72 @@ theorem atomLawful
       pkg.noRequiredObstructionCircuit
 
 /--
+Atom-derived lawfulness recovers the selected strict layering invariant.
+-/
+theorem strictLayered
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    StrictLayered X.G :=
+  pkg.layering.strictLayered_of_lawful pkg.atomLawful
+
+/-- Atom-derived lawfulness recovers graph acyclicity. -/
+theorem acyclic
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    Acyclic X.G :=
+  pkg.layering.acyclic_of_lawful pkg.atomLawful
+
+/-- Atom-derived lawfulness recovers walk acyclicity. -/
+theorem walkAcyclic
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    WalkAcyclic X.G :=
+  walkAcyclic_of_acyclic pkg.acyclic
+
+/-- Atom-derived lawfulness recovers projection soundness. -/
+theorem projectionSound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    ProjectionSound X.G X.π X.GA :=
+  pkg.projection.projectionSound_of_lawful pkg.atomLawful
+
+/-- Atom-derived lawfulness rules out selected projection obstruction witnesses. -/
+theorem noProjectionObstruction
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    NoProjectionObstruction X.G X.π X.GA :=
+  pkg.projection.noProjectionObstruction_of_lawful pkg.atomLawful
+
+/-- Atom-derived lawfulness recovers LSP compatibility. -/
+theorem lspCompatible
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    LSPCompatible X.π X.O :=
+  pkg.lspCompatibleFromLawful pkg.atomLawful
+
+/-- Atom-derived lawfulness recovers boundary-policy soundness. -/
+theorem boundaryPolicySound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    BoundaryPolicySound X.G X.boundaryAllowed :=
+  pkg.boundaryPolicySoundFromLawful pkg.atomLawful
+
+/-- Atom-derived lawfulness recovers abstraction-policy soundness. -/
+theorem abstractionPolicySound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    AbstractionPolicySound X.G X.abstractionAllowed :=
+  pkg.abstractionPolicySoundFromLawful pkg.atomLawful
+
+/--
 The selected atom package entails the existing Signature-level architecture
 lawfulness predicate.
 -/
@@ -124,17 +190,12 @@ theorem architectureLawful
     {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
     (pkg : AtomDerivedZeroCurvaturePackage X E D) :
     ArchitectureLawful X := by
-  have hAtomLawful :
-      LawfulWithinAtomConfiguration pkg.law pkg.requiredMolecule :=
-    pkg.atomLawful
-  have hAcyclic : Acyclic X.G :=
-    pkg.layering.acyclic_of_lawful hAtomLawful
   exact
-    ⟨walkAcyclic_of_acyclic hAcyclic,
-      pkg.projection.projectionSound_of_lawful hAtomLawful,
-      pkg.lspCompatibleFromLawful hAtomLawful,
-      pkg.boundaryPolicySoundFromLawful hAtomLawful,
-      pkg.abstractionPolicySoundFromLawful hAtomLawful⟩
+    ⟨pkg.walkAcyclic,
+      pkg.projectionSound,
+      pkg.lspCompatible,
+      pkg.boundaryPolicySound,
+      pkg.abstractionPolicySound⟩
 
 /--
 Atom-derived lawfulness gives selected required Signature axes zero.
@@ -712,6 +773,73 @@ theorem atomLawful
     LawfulWithinAtomConfiguration
       pkg.zeroCurvature.law pkg.zeroCurvature.requiredMolecule :=
   pkg.zeroCurvature.atomLawful
+
+/-- The atom-axiomatized package recovers the selected strict layering invariant. -/
+theorem strictLayered
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    StrictLayered X.G :=
+  pkg.zeroCurvature.strictLayered
+
+/-- The atom-axiomatized package recovers graph acyclicity. -/
+theorem acyclic
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    Acyclic X.G :=
+  pkg.zeroCurvature.acyclic
+
+/-- The atom-axiomatized package recovers walk acyclicity. -/
+theorem walkAcyclic
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    WalkAcyclic X.G :=
+  pkg.zeroCurvature.walkAcyclic
+
+/-- The atom-axiomatized package recovers projection soundness. -/
+theorem projectionSound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    ProjectionSound X.G X.π X.GA :=
+  pkg.zeroCurvature.projectionSound
+
+/--
+The atom-axiomatized package rules out selected projection obstruction
+witnesses.
+-/
+theorem noProjectionObstruction
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    NoProjectionObstruction X.G X.π X.GA :=
+  pkg.zeroCurvature.noProjectionObstruction
+
+/-- The atom-axiomatized package recovers LSP compatibility. -/
+theorem lspCompatible
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    LSPCompatible X.π X.O :=
+  pkg.zeroCurvature.lspCompatible
+
+/-- The atom-axiomatized package recovers boundary-policy soundness. -/
+theorem boundaryPolicySound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    BoundaryPolicySound X.G X.boundaryAllowed :=
+  pkg.zeroCurvature.boundaryPolicySound
+
+/-- The atom-axiomatized package recovers abstraction-policy soundness. -/
+theorem abstractionPolicySound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    AbstractionPolicySound X.G X.abstractionAllowed :=
+  pkg.zeroCurvature.abstractionPolicySound
 
 /-- The atom-axiomatized package gives existing Signature-level lawfulness. -/
 theorem architectureLawful

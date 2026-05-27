@@ -141,10 +141,70 @@ theorem noEdgeAtomAxiomatized_atomZeroCurvature :
     ArchitectureSignature.AtomAxiomatizedAAT.atomZeroCurvature
       noEdgeAtomAxiomatizedAAT
 
+theorem noEdgeAtomAxiomatized_strictLayered :
+    StrictLayered noEdgeGraph := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.strictLayered
+      noEdgeAtomAxiomatizedAAT
+
+theorem noEdgeAtomAxiomatized_projectionSound :
+    ProjectionSound noEdgeGraph identityProjection noEdgeGraph := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.projectionSound
+      noEdgeAtomAxiomatizedAAT
+
+theorem noEdgeAtomAxiomatized_lspCompatible :
+    LSPCompatible identityProjection observationToUnit := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.lspCompatible
+      noEdgeAtomAxiomatizedAAT
+
 theorem noEdgeAtomDerived_architectureLawful :
     ArchitectureSignature.ArchitectureLawful noEdgeArchitectureLawModel := by
   exact
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureLawful
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomDerived_strictLayered :
+    StrictLayered noEdgeGraph := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.strictLayered
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomDerived_walkAcyclic :
+    WalkAcyclic noEdgeGraph := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.walkAcyclic
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomDerived_projectionSound :
+    ProjectionSound noEdgeGraph identityProjection noEdgeGraph := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.projectionSound
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomDerived_noProjectionObstruction :
+    NoProjectionObstruction noEdgeGraph identityProjection noEdgeGraph := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.noProjectionObstruction
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomDerived_lspCompatible :
+    LSPCompatible identityProjection observationToUnit := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.lspCompatible
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomDerived_boundaryPolicySound :
+    ArchitectureSignature.BoundaryPolicySound noEdgeGraph (fun _ _ => True) := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.boundaryPolicySound
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomDerived_abstractionPolicySound :
+    ArchitectureSignature.AbstractionPolicySound noEdgeGraph (fun _ _ => True) := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.abstractionPolicySound
       noEdgeAtomDerivedZeroCurvaturePackage
 
 theorem noEdgeAtomDerived_matrixDiagnosticCorollaries :

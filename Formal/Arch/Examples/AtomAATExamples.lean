@@ -95,6 +95,51 @@ theorem noEdgeAtomSuite_atomLawful_from_atomZeroCurvature :
     AtomAxiomatizedTheoremSuite.atomLawful_from_atomZeroCurvature
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_zeroCurvature_strictLayered :
+    StrictLayered noEdgeArchitectureLawModel.G := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_strictLayered
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvature_walkAcyclic :
+    WalkAcyclic noEdgeArchitectureLawModel.G := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_walkAcyclic
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvature_projectionSound :
+    ProjectionSound
+      noEdgeArchitectureLawModel.G
+      noEdgeArchitectureLawModel.π
+      noEdgeArchitectureLawModel.GA := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_projectionSound
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvature_lspCompatible :
+    LSPCompatible
+      noEdgeArchitectureLawModel.π
+      noEdgeArchitectureLawModel.O := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_lspCompatible
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvature_boundaryPolicySound :
+    ArchitectureSignature.BoundaryPolicySound
+      noEdgeArchitectureLawModel.G
+      noEdgeArchitectureLawModel.boundaryAllowed := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_boundaryPolicySound
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvature_abstractionPolicySound :
+    ArchitectureSignature.AbstractionPolicySound
+      noEdgeArchitectureLawModel.G
+      noEdgeArchitectureLawModel.abstractionAllowed := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_abstractionPolicySound
+      noEdgeAtomAxiomatizedTheoremSuite
+
 theorem noEdgeAtomSuite_requiredMolecule_supported_on_aat_surface :
     AtomMoleculeSupportedBy
       noEdgeAtomAxiomatizedTheoremSuite.aat.surface.selectedAtomUniverse
