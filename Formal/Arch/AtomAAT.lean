@@ -909,6 +909,23 @@ theorem zeroCurvatureTheoremPackage
   ArchitectureSignature.AtomAxiomatizedAAT.architectureZeroCurvatureTheoremPackage
     suite.aat
 
+/-- The base atom theorem package gives the matrix diagnostic corollaries. -/
+theorem matrixDiagnosticCorollaries
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    [DecidableEq C] [DecidableRel X.G.edge]
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ArchitectureSignature.MatrixDiagnosticCorollaries X :=
+  ArchitectureSignature.AtomAxiomatizedAAT.matrixDiagnosticCorollaries
+    suite.aat
+
 /-- Repair clearing gives zero curvature through the same atom suite. -/
 theorem zeroCurvatureTheoremPackage_of_repair
     {C : Type u} {A : Type v} {Obs : Type w}

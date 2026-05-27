@@ -91,6 +91,17 @@ def ofAtomZeroCurvatureTheoremPackage
   nonConclusions := nonConclusions
 
 /--
+The Signature-level atom-derived package still carries atom-level zero
+curvature as its primitive theorem source.
+-/
+theorem atomZeroCurvature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    AtomZeroCurvature pkg.law pkg.requiredMolecule :=
+  pkg.noRequiredObstructionCircuit
+
+/--
 Absence of required atom obstruction circuits gives atom-configuration
 lawfulness via the selected atom lawfulness bridge.
 -/
@@ -155,6 +166,19 @@ theorem architectureZeroCurvatureTheoremPackage
   exact
     architectureZeroCurvatureTheoremPackage_of_architectureLawful X
       pkg.architectureLawful
+
+/--
+Atom-derived lawfulness also gives the matrix diagnostics carried by the
+zero-curvature theorem package.
+-/
+theorem matrixDiagnosticCorollaries
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    [DecidableEq C] [DecidableRel X.G.edge]
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    MatrixDiagnosticCorollaries X :=
+  matrixDiagnosticCorollaries_of_architectureLawful X
+    pkg.architectureLawful
 
 /--
 Pure Atom-AAT zero curvature, interpreted through Signature arrangement
@@ -671,6 +695,15 @@ theorem requiredCircuit_on_surface
       (pkg.requiredMoleculesOnSurface molecule hRequired) hCircuit :=
   pkg.requiredCircuitsOnSurface hRequired hCircuit
 
+/-- The atom-axiomatized package exposes atom-level zero curvature. -/
+theorem atomZeroCurvature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomAxiomatizedAAT X E D) :
+    AtomZeroCurvature
+      pkg.zeroCurvature.law pkg.zeroCurvature.requiredMolecule :=
+  pkg.zeroCurvature.atomZeroCurvature
+
 /-- The atom-axiomatized package gives atom-configuration lawfulness. -/
 theorem atomLawful
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -709,6 +742,15 @@ theorem architectureZeroCurvatureTheoremPackage
     (pkg : AtomAxiomatizedAAT X E D) :
     ArchitectureZeroCurvatureTheoremPackage X :=
   pkg.zeroCurvature.architectureZeroCurvatureTheoremPackage
+
+/-- The atom-axiomatized package gives the matrix diagnostic corollaries. -/
+theorem matrixDiagnosticCorollaries
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    [DecidableEq C] [DecidableRel X.G.edge]
+    (pkg : AtomAxiomatizedAAT X E D) :
+    MatrixDiagnosticCorollaries X :=
+  pkg.zeroCurvature.matrixDiagnosticCorollaries
 
 end AtomAxiomatizedAAT
 

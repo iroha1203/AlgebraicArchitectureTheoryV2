@@ -224,6 +224,13 @@ theorem noEdgeAtomSuite_zeroCurvatureTheoremPackage :
     AtomAxiomatizedTheoremSuite.zeroCurvatureTheoremPackage
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_matrixDiagnosticCorollaries :
+    ArchitectureSignature.MatrixDiagnosticCorollaries
+      noEdgeArchitectureLawModel := by
+  exact
+    AtomAxiomatizedTheoremSuite.matrixDiagnosticCorollaries
+      noEdgeAtomAxiomatizedTheoremSuite
+
 theorem noEdgeAtomSuite_zeroCurvatureTheoremPackage_of_repair :
     ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
       noEdgeArchitectureLawModel := by

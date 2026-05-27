@@ -127,10 +127,31 @@ theorem noEdgeAtomAxiomatized_independent_of_sft :
     ArchitectureSignature.AtomAxiomatizedAAT.independent_of_sft
       noEdgeAtomAxiomatizedAAT
 
+theorem noEdgeAtomDerived_atomZeroCurvature :
+    AtomZeroCurvature noBadAtomLaw allSelectedMolecules := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.atomZeroCurvature
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomAxiomatized_atomZeroCurvature :
+    AtomZeroCurvature
+      noEdgeAtomAxiomatizedAAT.zeroCurvature.law
+      noEdgeAtomAxiomatizedAAT.zeroCurvature.requiredMolecule := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.atomZeroCurvature
+      noEdgeAtomAxiomatizedAAT
+
 theorem noEdgeAtomDerived_architectureLawful :
     ArchitectureSignature.ArchitectureLawful noEdgeArchitectureLawModel := by
   exact
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureLawful
+      noEdgeAtomDerivedZeroCurvaturePackage
+
+theorem noEdgeAtomDerived_matrixDiagnosticCorollaries :
+    ArchitectureSignature.MatrixDiagnosticCorollaries
+      noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.matrixDiagnosticCorollaries
       noEdgeAtomDerivedZeroCurvaturePackage
 
 theorem noEdgeAtomDerived_requiredSignatureAxesZero :
@@ -153,6 +174,13 @@ theorem noEdgeAtomAxiomatized_zeroCurvatureTheoremPackage :
       noEdgeArchitectureLawModel := by
   exact
     ArchitectureSignature.AtomAxiomatizedAAT.architectureZeroCurvatureTheoremPackage
+      noEdgeAtomAxiomatizedAAT
+
+theorem noEdgeAtomAxiomatized_matrixDiagnosticCorollaries :
+    ArchitectureSignature.MatrixDiagnosticCorollaries
+      noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomAxiomatizedAAT.matrixDiagnosticCorollaries
       noEdgeAtomAxiomatizedAAT
 
 end Formal.Arch.AtomicExamples
