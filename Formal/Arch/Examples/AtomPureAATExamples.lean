@@ -237,6 +237,25 @@ theorem noEdgePureAtomSuite_architectureZeroCurvatureTheoremPackage :
         intro _hLawful _c _d _hEdge
         trivial)
 
+theorem noEdgePureAtomSuite_matrixDiagnosticCorollaries :
+    ArchitectureSignature.MatrixDiagnosticCorollaries
+      noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.matrixDiagnosticCorollaries_of_pureTheoremSuite
+      (X := noEdgeArchitectureLawModel)
+      noEdgeAtomAxiomatizedPureTheoremSuite
+      noEdgeLayeringAtomArrangement
+      identityProjectionAtomArrangement
+      (by
+        intro _hLawful x y _hSame
+        rfl)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+
 def noEdgePureAtomSuiteAxiomatizedAAT :
     ArchitectureSignature.AtomAxiomatizedAAT
       noEdgeArchitectureLawModel Edge Diagram :=

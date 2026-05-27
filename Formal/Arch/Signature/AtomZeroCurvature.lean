@@ -403,6 +403,56 @@ theorem architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
       abstractionPolicySoundFromLawful
       True True True True True).architectureZeroCurvatureTheoremPackage
 
+/--
+Pure Atom-AAT theorem suite zero curvature, interpreted through Signature
+arrangement readings, gives the matrix diagnostic corollaries carried by the
+zero-curvature theorem package.
+-/
+theorem matrixDiagnosticCorollaries_of_pureTheoremSuite
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    [DecidableEq C] [DecidableRel X.G.edge]
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    (layering :
+      LayeringAtomArrangementLaw X.G
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule)
+    (projection :
+      ProjectionAtomArrangementLaw X.G X.π X.GA
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule)
+    (lspCompatibleFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        LSPCompatible X.π X.O)
+    (boundaryPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        BoundaryPolicySound X.G X.boundaryAllowed)
+    (abstractionPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        AbstractionPolicySound X.G X.abstractionAllowed) :
+    MatrixDiagnosticCorollaries X :=
+  matrixDiagnosticCorollaries_of_architectureLawful X
+    (architectureLawful_of_pureTheoremSuite
+      (X := X)
+      suite
+      layering
+      projection
+      lspCompatibleFromLawful
+      boundaryPolicySoundFromLawful
+      abstractionPolicySoundFromLawful)
+
 end AtomDerivedZeroCurvaturePackage
 
 /--
