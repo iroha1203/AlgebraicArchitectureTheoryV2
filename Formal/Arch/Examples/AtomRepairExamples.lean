@@ -299,6 +299,35 @@ theorem noEdgeAtomRepair_architectureLawful :
     AtomAxiomatizedRepairPackage.architectureLawful_of_repair
       noEdgeAtomAxiomatizedRepairPackage
 
+theorem noEdgeAtomRepair_target_strictLayered :
+    StrictLayered noEdgeArchitectureLawModel.G := by
+  exact
+    AtomAxiomatizedRepairPackage.target_strictLayered
+      noEdgeAtomAxiomatizedRepairPackage
+
+theorem noEdgeAtomRepair_target_walkAcyclic :
+    WalkAcyclic noEdgeArchitectureLawModel.G := by
+  exact
+    AtomAxiomatizedRepairPackage.target_walkAcyclic
+      noEdgeAtomAxiomatizedRepairPackage
+
+theorem noEdgeAtomRepair_target_projectionSound :
+    ProjectionSound
+      noEdgeArchitectureLawModel.G
+      noEdgeArchitectureLawModel.π
+      noEdgeArchitectureLawModel.GA := by
+  exact
+    AtomAxiomatizedRepairPackage.target_projectionSound
+      noEdgeAtomAxiomatizedRepairPackage
+
+theorem noEdgeAtomRepair_target_lspCompatible :
+    LSPCompatible
+      noEdgeArchitectureLawModel.π
+      noEdgeArchitectureLawModel.O := by
+  exact
+    AtomAxiomatizedRepairPackage.target_lspCompatible
+      noEdgeAtomAxiomatizedRepairPackage
+
 theorem noEdgeAtomRepair_requiredSignatureAxesZero :
     ArchitectureSignature.RequiredSignatureAxesZero
       (ArchitectureSignature.ArchitectureLawModel.signatureOf

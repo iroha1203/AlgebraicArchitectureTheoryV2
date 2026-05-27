@@ -136,6 +136,35 @@ theorem noEdgeAtomSynthesis_architectureLawful :
     AtomAxiomatizedSynthesisPackage.architectureLawful_of_synthesis
       noEdgeAtomAxiomatizedSynthesisPackage
 
+theorem noEdgeAtomSynthesis_candidate_strictLayered :
+    StrictLayered noEdgeArchitectureLawModel.G := by
+  exact
+    AtomAxiomatizedSynthesisPackage.candidate_strictLayered
+      noEdgeAtomAxiomatizedSynthesisPackage
+
+theorem noEdgeAtomSynthesis_candidate_walkAcyclic :
+    WalkAcyclic noEdgeArchitectureLawModel.G := by
+  exact
+    AtomAxiomatizedSynthesisPackage.candidate_walkAcyclic
+      noEdgeAtomAxiomatizedSynthesisPackage
+
+theorem noEdgeAtomSynthesis_candidate_projectionSound :
+    ProjectionSound
+      noEdgeArchitectureLawModel.G
+      noEdgeArchitectureLawModel.π
+      noEdgeArchitectureLawModel.GA := by
+  exact
+    AtomAxiomatizedSynthesisPackage.candidate_projectionSound
+      noEdgeAtomAxiomatizedSynthesisPackage
+
+theorem noEdgeAtomSynthesis_candidate_lspCompatible :
+    LSPCompatible
+      noEdgeArchitectureLawModel.π
+      noEdgeArchitectureLawModel.O := by
+  exact
+    AtomAxiomatizedSynthesisPackage.candidate_lspCompatible
+      noEdgeAtomAxiomatizedSynthesisPackage
+
 theorem noEdgeAtomSynthesis_requiredSignatureAxesZero :
     ArchitectureSignature.RequiredSignatureAxesZero
       (ArchitectureSignature.ArchitectureLawModel.signatureOf

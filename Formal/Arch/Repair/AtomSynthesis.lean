@@ -120,6 +120,79 @@ theorem candidate_atomLawful
     pkg.aat.zeroCurvature.lawfulnessBridge.lawful_iff_no_obstructionCircuit.mpr
       pkg.candidate_noRequiredObstructionCircuit
 
+/-- Atom synthesis soundness recovers strict layering. -/
+theorem candidate_strictLayered
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r} {State : Type s}
+    (pkg : AtomAxiomatizedSynthesisPackage X E D State) :
+    StrictLayered X.G :=
+  pkg.aat.zeroCurvature.layering.strictLayered_of_lawful
+    pkg.candidate_atomLawful
+
+/-- Atom synthesis soundness recovers walk acyclicity. -/
+theorem candidate_walkAcyclic
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r} {State : Type s}
+    (pkg : AtomAxiomatizedSynthesisPackage X E D State) :
+    WalkAcyclic X.G :=
+  walkAcyclic_of_acyclic
+    (pkg.aat.zeroCurvature.layering.acyclic_of_lawful
+      pkg.candidate_atomLawful)
+
+/-- Atom synthesis soundness recovers projection soundness. -/
+theorem candidate_projectionSound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r} {State : Type s}
+    (pkg : AtomAxiomatizedSynthesisPackage X E D State) :
+    ProjectionSound X.G X.π X.GA :=
+  pkg.aat.zeroCurvature.projection.projectionSound_of_lawful
+    pkg.candidate_atomLawful
+
+/--
+Atom synthesis soundness rules out selected projection obstruction witnesses.
+-/
+theorem candidate_noProjectionObstruction
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r} {State : Type s}
+    (pkg : AtomAxiomatizedSynthesisPackage X E D State) :
+    NoProjectionObstruction X.G X.π X.GA :=
+  pkg.aat.zeroCurvature.projection.noProjectionObstruction_of_lawful
+    pkg.candidate_atomLawful
+
+/-- Atom synthesis soundness recovers LSP compatibility. -/
+theorem candidate_lspCompatible
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r} {State : Type s}
+    (pkg : AtomAxiomatizedSynthesisPackage X E D State) :
+    LSPCompatible X.π X.O :=
+  pkg.aat.zeroCurvature.lspCompatibleFromLawful
+    pkg.candidate_atomLawful
+
+/-- Atom synthesis soundness recovers boundary-policy soundness. -/
+theorem candidate_boundaryPolicySound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r} {State : Type s}
+    (pkg : AtomAxiomatizedSynthesisPackage X E D State) :
+    ArchitectureSignature.BoundaryPolicySound X.G X.boundaryAllowed :=
+  pkg.aat.zeroCurvature.boundaryPolicySoundFromLawful
+    pkg.candidate_atomLawful
+
+/-- Atom synthesis soundness recovers abstraction-policy soundness. -/
+theorem candidate_abstractionPolicySound
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r} {State : Type s}
+    (pkg : AtomAxiomatizedSynthesisPackage X E D State) :
+    ArchitectureSignature.AbstractionPolicySound X.G X.abstractionAllowed :=
+  pkg.aat.zeroCurvature.abstractionPolicySoundFromLawful
+    pkg.candidate_atomLawful
+
 /-- Atom synthesis soundness yields the existing architecture lawfulness package. -/
 theorem architectureLawful_of_synthesis
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -127,20 +200,12 @@ theorem architectureLawful_of_synthesis
     {E : Type q} {D : Type r} {State : Type s}
     (pkg : AtomAxiomatizedSynthesisPackage X E D State) :
     ArchitectureSignature.ArchitectureLawful X := by
-  have hAtomLawful :
-      LawfulWithinAtomConfiguration
-        pkg.aat.zeroCurvature.law
-        pkg.aat.zeroCurvature.requiredMolecule :=
-    pkg.candidate_atomLawful
-  have hAcyclic : Acyclic X.G :=
-    pkg.aat.zeroCurvature.layering.acyclic_of_lawful hAtomLawful
   exact
-    ⟨walkAcyclic_of_acyclic hAcyclic,
-      pkg.aat.zeroCurvature.projection.projectionSound_of_lawful
-        hAtomLawful,
-      pkg.aat.zeroCurvature.lspCompatibleFromLawful hAtomLawful,
-      pkg.aat.zeroCurvature.boundaryPolicySoundFromLawful hAtomLawful,
-      pkg.aat.zeroCurvature.abstractionPolicySoundFromLawful hAtomLawful⟩
+    ⟨pkg.candidate_walkAcyclic,
+      pkg.candidate_projectionSound,
+      pkg.candidate_lspCompatible,
+      pkg.candidate_boundaryPolicySound,
+      pkg.candidate_abstractionPolicySound⟩
 
 /-- Atom synthesis soundness yields selected required Signature axes zero. -/
 theorem requiredSignatureAxesZero_of_synthesis
