@@ -9,9 +9,11 @@ namespace Formal.Arch
 universe u v w q r s
 
 /--
-Atom axes are selected coordinates of architectural observation.
+Atom axes are coordinates used to organize architectural facts.
 
-They are not scores, theorem discharges, or extractor completeness claims.
+Axes help later AAT / ArchSig readings select views over already-existing
+atoms.  They are not observation boundaries, scores, theorem discharges, or
+extractor completeness claims.
 -/
 inductive Axis where
   | static
@@ -25,27 +27,28 @@ inductive Axis where
   deriving DecidableEq, Repr
 
 /--
-Atom v2 uses only primitive atom families here.  Obstructions, gaps, repairs,
-and SFT deltas are separate structures, not atom kinds.
+Core atom families selected for the boundary-free Atom foundation.
+
+This is the initial Lean-facing grammar for primitive typed architectural
+facts.  It is not a claim that the taxonomy is globally complete.  Obstructions,
+observation artifacts, roles, patterns, repairs, and SFT deltas are separate
+structures, not atom kinds.
 -/
 inductive AtomKind where
-  | component
+  | existence
   | relation
   | capability
   | dataState
   | effect
   | boundaryAuthority
-  | observationContract
+  | contractSemantic
   | runtimeInteraction
-  | evolutionHistory
-  | policy
-  | semantic
   deriving DecidableEq, Repr
 
 namespace AtomKind
 
 /--
-In Atom v2 every `AtomKind` constructor in this file is primitive.
+In the current Atom Core every `AtomKind` constructor in this file is primitive.
 
 This predicate is intentionally small: it records the current Lean-facing atom
 grammar, not a claim that the taxonomy is globally complete.
@@ -70,6 +73,7 @@ structure AtomGrammarExtensionPolicy where
   permittedAxis : Axis -> Prop
   primitiveKindBoundary :
     ∀ kind, permittedKind kind -> kind.IsPrimitive
+  openGrammarBoundary : Prop
   derivedWitnessesSeparated : Prop
   toolingSchemaBoundary : Prop
   noGlobalTaxonomyCompleteness : Prop
@@ -81,6 +85,7 @@ def current : AtomGrammarExtensionPolicy where
   permittedKind := fun _ => True
   permittedAxis := fun _ => True
   primitiveKindBoundary := fun kind _ => AtomKind.isPrimitive kind
+  openGrammarBoundary := True
   derivedWitnessesSeparated := True
   toolingSchemaBoundary := True
   noGlobalTaxonomyCompleteness := True
@@ -250,28 +255,46 @@ end SupportSubset
 /--
 Primitive architecture atom.
 
-This is a typed architectural fact with support and explicit evidence
-boundaries.  It is not an observation gap, atomizer output certificate, repair
-step, or SFT forecast.
+This is a boundary-free typed architectural fact.  It is not created by an
+observation boundary, a selected design law, a tool output, or an SFT event.
+The `evidenceBoundary` field records proof / documentation discipline for this
+Lean surface; it is not an existence condition for the atom.
 -/
 structure ArchitectureAtom (C : Type u) (E : Type v) (D : Type w) where
   kind : AtomKind
   axis : Axis
   support : Support C E D
   predicate : String
+  singleFact : Prop
+  singleFactEvidence : singleFact
+  predicatePreservation : Prop
+  predicatePreservationEvidence : predicatePreservation
+  boundaryIndependent : Prop
+  boundaryIndependentEvidence : boundaryIndependent
+  lawIndependent : Prop
+  lawIndependentEvidence : lawIndependent
   evidenceBoundary : Prop
   nonConclusions : Prop
 
-/-- Predicate spelling for primitive atoms. -/
+/-- Predicate spelling for primitive boundary-free atoms. -/
 def PrimitiveArchitectureAtom {C : Type u} {E : Type v} {D : Type w}
     (atom : ArchitectureAtom C E D) : Prop :=
-  atom.kind.IsPrimitive
+  atom.kind.IsPrimitive ∧
+  atom.singleFact ∧
+  atom.predicatePreservation ∧
+  atom.boundaryIndependent ∧
+  atom.lawIndependent
 
 theorem primitiveArchitectureAtom_constructive
     {C : Type u} {E : Type v} {D : Type w}
     (atom : ArchitectureAtom C E D) :
     PrimitiveArchitectureAtom atom := by
-  exact AtomKind.isPrimitive atom.kind
+  exact
+    ⟨AtomKind.isPrimitive atom.kind,
+      atom.singleFactEvidence,
+      atom.predicatePreservationEvidence,
+      atom.boundaryIndependentEvidence,
+      atom.lawIndependentEvidence⟩
 
 namespace ArchitectureAtom
 
@@ -295,7 +318,43 @@ theorem primitive_of_allowedBy
     {atom : ArchitectureAtom C E D}
     (h : atom.AllowedBy policy) :
     PrimitiveArchitectureAtom atom :=
-  policy.primitiveKindBoundary atom.kind h.1
+  ⟨policy.primitiveKindBoundary atom.kind h.1,
+    atom.singleFactEvidence,
+    atom.predicatePreservationEvidence,
+    atom.boundaryIndependentEvidence,
+    atom.lawIndependentEvidence⟩
+
+/-- Primitive Atom Core facts are independent of observation boundaries. -/
+theorem boundaryIndependent_of_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : ArchitectureAtom C E D}
+    (h : PrimitiveArchitectureAtom atom) :
+    atom.boundaryIndependent :=
+  h.2.2.2.1
+
+/-- Primitive Atom Core facts are independent of selected design laws. -/
+theorem lawIndependent_of_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : ArchitectureAtom C E D}
+    (h : PrimitiveArchitectureAtom atom) :
+    atom.lawIndependent :=
+  h.2.2.2.2
+
+/-- Primitive Atom Core facts are single typed predicate instances. -/
+theorem singleFact_of_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : ArchitectureAtom C E D}
+    (h : PrimitiveArchitectureAtom atom) :
+    atom.singleFact :=
+  h.2.1
+
+/-- Primitive Atom Core facts preserve their predicate when read as atomic. -/
+theorem predicatePreservation_of_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : ArchitectureAtom C E D}
+    (h : PrimitiveArchitectureAtom atom) :
+    atom.predicatePreservation :=
+  h.2.2.1
 
 end ArchitectureAtom
 
@@ -304,6 +363,49 @@ structure AtomMolecule (C : Type u) (E : Type v) (D : Type w) where
   atoms : ArchitectureAtom C E D -> Prop
   finiteBoundary : Prop
   nonConclusions : Prop
+
+/--
+A role assigned to an atom molecule.
+
+Roles such as repository, service, aggregate, adapter, controller, or gateway
+are interpretations over a finite atom configuration.  They are not primitive
+Atom Core facts.
+-/
+structure RoleAssignment (C : Type u) (E : Type v) (D : Type w)
+    (Role : Type q) where
+  molecule : AtomMolecule C E D
+  role : Role
+  assigned : Prop
+  roleBoundary : Prop
+  nonConclusions : Prop
+
+/--
+A design pattern interpretation over an atom molecule.
+
+The pattern name classifies a configuration; it does not add a new primitive
+atom family.
+-/
+structure PatternInterpretation (C : Type u) (E : Type v) (D : Type w)
+    (Pattern : Type q) where
+  molecule : AtomMolecule C E D
+  pattern : Pattern
+  interprets : Prop
+  interpretationBoundary : Prop
+  nonConclusions : Prop
+
+/-- Role assignments are molecule interpretations, not Atom Core facts. -/
+def RoleAssignment.toMolecule
+    {C : Type u} {E : Type v} {D : Type w} {Role : Type q}
+    (assignment : RoleAssignment C E D Role) :
+    AtomMolecule C E D :=
+  assignment.molecule
+
+/-- Pattern interpretations are molecule interpretations, not Atom Core facts. -/
+def PatternInterpretation.toMolecule
+    {C : Type u} {E : Type v} {D : Type w} {Pattern : Type q}
+    (interpretation : PatternInterpretation C E D Pattern) :
+    AtomMolecule C E D :=
+  interpretation.molecule
 
 /--
 Selected atom universe for finite molecule reasoning.
@@ -391,7 +493,40 @@ structure DesignLaw (C : Type u) (E : Type v) (D : Type w) where
   selectedBoundary : Prop
   nonConclusions : Prop
 
-/-- Atom v2 obstruction circuit: a law-relative minimal bad molecule. -/
+/--
+Explicit separation between Atom Core existence and law-relative evaluation.
+
+A design law evaluates already-existing atom molecules; it does not create
+primitive atoms and does not make atom existence depend on law selection.
+-/
+structure AtomLawSeparation (C : Type u) (E : Type v) (D : Type w) where
+  law : DesignLaw C E D
+  selectedMolecule : AtomMolecule C E D -> Prop
+  atomsExistBeforeLaw : Prop
+  atomsExistBeforeLawEvidence : atomsExistBeforeLaw
+  lawDoesNotCreateAtoms : Prop
+  lawDoesNotCreateAtomsEvidence : lawDoesNotCreateAtoms
+  lawDoesNotChangeAtomExistence : Prop
+  lawDoesNotChangeAtomExistenceEvidence : lawDoesNotChangeAtomExistence
+  nonConclusions : Prop
+
+namespace AtomLawSeparation
+
+theorem law_does_not_create_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    (separation : AtomLawSeparation C E D) :
+    separation.lawDoesNotCreateAtoms :=
+  separation.lawDoesNotCreateAtomsEvidence
+
+theorem law_does_not_change_atom_existence
+    {C : Type u} {E : Type v} {D : Type w}
+    (separation : AtomLawSeparation C E D) :
+    separation.lawDoesNotChangeAtomExistence :=
+  separation.lawDoesNotChangeAtomExistenceEvidence
+
+end AtomLawSeparation
+
+/-- Atom Core obstruction circuit: a law-relative minimal bad molecule. -/
 def ObstructionCircuit {C : Type u} {E : Type v} {D : Type w}
     (law : DesignLaw C E D) (M : AtomMolecule C E D) : Prop :=
   MinimalAtomMolecule law.Bad M
@@ -521,6 +656,46 @@ theorem lawful_iff_no_obstructionCircuit
     exact hNoCircuit Ckt hRequiredCkt hCircuit
 
 end AtomLawfulnessBridge
+
+/--
+Pure AAT surface built from Atom Core.
+
+This package intentionally has no ArchMap, ArchSig, FieldSig, observation
+candidate, or SFT forecast field.  Those later layers may consume or observe
+this surface, but they do not define it.
+-/
+structure AATPureTheorySurface (C : Type u) (E : Type v) (D : Type w) where
+  atoms : ArchitectureAtom C E D -> Prop
+  molecules : AtomMolecule C E D -> Prop
+  laws : DesignLaw C E D -> Prop
+  circuits :
+    ∀ {law : DesignLaw C E D} {molecule : AtomMolecule C E D},
+      laws law -> molecules molecule -> ObstructionCircuit law molecule -> Prop
+  atomCoreBoundary : Prop
+  moleculeBoundary : Prop
+  lawBoundary : Prop
+  patternInterpretationBoundary : Prop
+  noObservationDependency : Prop
+  noObservationDependencyEvidence : noObservationDependency
+  noSFTDependency : Prop
+  noSFTDependencyEvidence : noSFTDependency
+  nonConclusions : Prop
+
+namespace AATPureTheorySurface
+
+theorem independent_of_observation
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D) :
+    surface.noObservationDependency :=
+  surface.noObservationDependencyEvidence
+
+theorem independent_of_sft
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D) :
+    surface.noSFTDependency :=
+  surface.noSFTDependencyEvidence
+
+end AATPureTheorySurface
 
 /-- Tool-facing observation of a primitive atom. -/
 structure ObservedAtom (C : Type u) (E : Type v) (D : Type w) where

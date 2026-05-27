@@ -1,8 +1,10 @@
 import Formal.Arch.Evolution.SFTFieldUpdate
+import Formal.Arch.Atomization
+import Formal.Arch.Evolution.SFTInterfaceBoundary
 
 namespace Formal.Arch
 
-universe u v
+universe u v w q r
 
 /--
 A selected family of SFT forecast records.
@@ -296,5 +298,114 @@ theorem envelope_does_not_strengthen_forecast_claim
     hProjection.recordsNonConclusions⟩
 
 end EnvelopeProjection
+
+/--
+ConsequenceEnvelope boundary carrying AAT local algebra and atom/circuit traces.
+
+This package is the Lean-facing connection used by FieldSig-style SFT analysis:
+an AAT pure surface is read as local algebra, selected AtomTrace /
+CircuitTrace evidence is attached to a ForecastCone boundary, and the
+review-facing ConsequenceEnvelope keeps forecast and projection boundaries
+explicit.
+-/
+structure AATPremisedConsequenceEnvelope
+    {Field : Type u} {Operation : Type v}
+    {C : Type w} {E : Type q} {D : Type r}
+    {support : OperationSupport Field Operation}
+    {relation : StepRelation Field Operation}
+    {source : Field} {horizon : Nat}
+    {target : Field}
+    {path : FieldPath support relation source target}
+    {law : DesignLaw C E D}
+    (localAlgebra : AATLocalAlgebraForSFT C E D)
+    (traceBoundary :
+      AtomTraceForecastBoundary
+        support relation source horizon target path law)
+    (family : ConeFamily support relation source horizon)
+    (boundary : ObservationBoundary Field)
+    (envelope : ConsequenceEnvelope support relation source horizon) :
+    Prop where
+  projection : EnvelopeProjection family boundary envelope
+  readsAATLocalAlgebra : localAlgebra.usedAsLocalAlgebra
+  atomTraceBoundary : traceBoundary.atomTraceBoundary
+  circuitTraceBoundary : traceBoundary.circuitTraceBoundary
+  forecastConeBoundary :
+    ForecastCone support relation source horizon target path
+  noForecastCorrectnessFromAAT :
+    localAlgebra.noForecastCorrectnessFromAATAlone
+  traceRecordsNoForecastCorrectness :
+    ¬ AtomTraceForecastBoundary.ForecastCorrectnessClaim traceBoundary
+  envelopeForecastBoundary : envelope.RecordsForecastBoundary
+  envelopeProjectionBoundary : envelope.RecordsProjectionBoundary
+  nonConclusions : envelope.RecordsNonConclusions
+
+namespace AATPremisedConsequenceEnvelope
+
+variable {Field : Type u} {Operation : Type v}
+variable {C : Type w} {E : Type q} {D : Type r}
+variable {support : OperationSupport Field Operation}
+variable {relation : StepRelation Field Operation}
+variable {source : Field} {horizon : Nat}
+variable {target : Field}
+variable {path : FieldPath support relation source target}
+variable {law : DesignLaw C E D}
+variable {localAlgebra : AATLocalAlgebraForSFT C E D}
+variable
+  {traceBoundary :
+    AtomTraceForecastBoundary
+      support relation source horizon target path law}
+variable {family : ConeFamily support relation source horizon}
+variable {boundary : ObservationBoundary Field}
+variable {envelope : ConsequenceEnvelope support relation source horizon}
+
+theorem forecast_cone
+    (package :
+      AATPremisedConsequenceEnvelope
+        localAlgebra traceBoundary family boundary envelope) :
+    ForecastCone support relation source horizon target path :=
+  package.forecastConeBoundary
+
+theorem reads_aat_local_algebra
+    (package :
+      AATPremisedConsequenceEnvelope
+        localAlgebra traceBoundary family boundary envelope) :
+    localAlgebra.usedAsLocalAlgebra :=
+  package.readsAATLocalAlgebra
+
+theorem records_atom_trace_boundary
+    (package :
+      AATPremisedConsequenceEnvelope
+        localAlgebra traceBoundary family boundary envelope) :
+    traceBoundary.atomTraceBoundary :=
+  package.atomTraceBoundary
+
+theorem records_circuit_trace_boundary
+    (package :
+      AATPremisedConsequenceEnvelope
+        localAlgebra traceBoundary family boundary envelope) :
+    traceBoundary.circuitTraceBoundary :=
+  package.circuitTraceBoundary
+
+theorem records_envelope_boundaries
+    (package :
+      AATPremisedConsequenceEnvelope
+        localAlgebra traceBoundary family boundary envelope) :
+    envelope.RecordsForecastBoundary ∧
+      envelope.RecordsProjectionBoundary ∧
+      envelope.RecordsNonConclusions :=
+  ⟨package.envelopeForecastBoundary,
+    package.envelopeProjectionBoundary,
+    package.nonConclusions⟩
+
+theorem aat_premise_does_not_prove_forecast_correctness
+    (package :
+      AATPremisedConsequenceEnvelope
+        localAlgebra traceBoundary family boundary envelope) :
+    localAlgebra.noForecastCorrectnessFromAATAlone ∧
+      ¬ AtomTraceForecastBoundary.ForecastCorrectnessClaim traceBoundary :=
+  ⟨package.noForecastCorrectnessFromAAT,
+    package.traceRecordsNoForecastCorrectness⟩
+
+end AATPremisedConsequenceEnvelope
 
 end Formal.Arch

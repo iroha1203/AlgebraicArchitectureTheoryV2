@@ -1,4 +1,5 @@
 import Formal.Arch.Atomization
+import Formal.Arch.Evolution.SFTEnvelope
 
 namespace Formal.Arch.AtomicExamples
 
@@ -19,11 +20,24 @@ inductive Responsibility where
   | apiResponsibility
   deriving DecidableEq, Repr
 
+inductive Pattern where
+  | repositoryRole
+  | simpleLayering
+  deriving DecidableEq, Repr
+
 def componentAtom : ArchitectureAtom Component Edge Diagram where
-  kind := AtomKind.component
+  kind := AtomKind.existence
   axis := Axis.static
   support := Support.component Edge Diagram Component.api
   predicate := "component api exists"
+  singleFact := True
+  singleFactEvidence := trivial
+  predicatePreservation := True
+  predicatePreservationEvidence := trivial
+  boundaryIndependent := True
+  boundaryIndependentEvidence := trivial
+  lawIndependent := True
+  lawIndependentEvidence := trivial
   evidenceBoundary := True
   nonConclusions := True
 
@@ -32,14 +46,30 @@ def relationAtom : ArchitectureAtom Component Edge Diagram where
   axis := Axis.static
   support := Support.edge Component Diagram Edge.apiToDatabase
   predicate := "api depends on database"
+  singleFact := True
+  singleFactEvidence := trivial
+  predicatePreservation := True
+  predicatePreservationEvidence := trivial
+  boundaryIndependent := True
+  boundaryIndependentEvidence := trivial
+  lawIndependent := True
+  lawIndependentEvidence := trivial
   evidenceBoundary := True
   nonConclusions := True
 
 def semanticContractAtom : ArchitectureAtom Component Edge Diagram where
-  kind := AtomKind.semantic
+  kind := AtomKind.contractSemantic
   axis := Axis.semantic
   support := Support.diagram Component Edge Diagram.writePath
   predicate := "write path satisfies selected semantic contract"
+  singleFact := True
+  singleFactEvidence := trivial
+  predicatePreservation := True
+  predicatePreservationEvidence := trivial
+  boundaryIndependent := True
+  boundaryIndependentEvidence := trivial
+  lawIndependent := True
+  lawIndependentEvidence := trivial
   evidenceBoundary := True
   nonConclusions := True
 
@@ -73,6 +103,30 @@ def componentMolecule : AtomMolecule Component Edge Diagram where
   finiteBoundary := True
   nonConclusions := True
 
+def repositoryRoleAssignment :
+    RoleAssignment Component Edge Diagram Pattern where
+  molecule := componentMolecule
+  role := Pattern.repositoryRole
+  assigned := True
+  roleBoundary := True
+  nonConclusions := True
+
+def simpleLayeringPattern :
+    PatternInterpretation Component Edge Diagram Pattern where
+  molecule := componentMolecule
+  pattern := Pattern.simpleLayering
+  interprets := True
+  interpretationBoundary := True
+  nonConclusions := True
+
+theorem repositoryRoleAssignment_reads_molecule :
+    repositoryRoleAssignment.toMolecule = componentMolecule := by
+  rfl
+
+theorem simpleLayeringPattern_reads_molecule :
+    simpleLayeringPattern.toMolecule = componentMolecule := by
+  rfl
+
 def forbiddenEdgeMolecule : AtomMolecule Component Edge Diagram where
   atoms := fun atom => atom = relationAtom
   finiteBoundary := True
@@ -100,6 +154,23 @@ def forbiddenEdgeLaw : DesignLaw Component Edge Diagram where
   Bad := fun molecule => molecule.atoms relationAtom
   selectedBoundary := True
   nonConclusions := True
+
+def forbiddenEdgeLawSeparation :
+    AtomLawSeparation Component Edge Diagram where
+  law := forbiddenEdgeLaw
+  selectedMolecule := fun molecule =>
+    molecule = forbiddenEdgeMolecule ∨ molecule = componentMolecule
+  atomsExistBeforeLaw := True
+  atomsExistBeforeLawEvidence := trivial
+  lawDoesNotCreateAtoms := True
+  lawDoesNotCreateAtomsEvidence := trivial
+  lawDoesNotChangeAtomExistence := True
+  lawDoesNotChangeAtomExistenceEvidence := trivial
+  nonConclusions := True
+
+theorem forbiddenEdgeLaw_does_not_create_atoms :
+    forbiddenEdgeLawSeparation.lawDoesNotCreateAtoms := by
+  exact forbiddenEdgeLawSeparation.law_does_not_create_atoms
 
 theorem singletonForbiddenMolecule_obstruction :
     ObstructionCircuit forbiddenEdgeLaw forbiddenEdgeMolecule := by
@@ -161,6 +232,32 @@ theorem forbiddenEdge_lawful_iff_no_required_circuit :
       NoRequiredObstructionCircuit
         forbiddenEdgeLaw selectedForbiddenEdgeUniverse.selected := by
   exact forbiddenEdgeLawfulnessBridge.lawful_iff_no_obstructionCircuit
+
+def pureAATSurface : AATPureTheorySurface Component Edge Diagram where
+  atoms := selectedAtomUniverse.selectedAtom
+  molecules := selectedForbiddenEdgeUniverse.selected
+  laws := fun law => law = forbiddenEdgeLaw
+  circuits := fun {law} {molecule} _hLaw _hMolecule _hCircuit =>
+    law = forbiddenEdgeLaw ∧
+      selectedForbiddenEdgeUniverse.selected molecule ∧
+      ObstructionCircuit law molecule
+  atomCoreBoundary := True
+  moleculeBoundary := True
+  lawBoundary := True
+  patternInterpretationBoundary := True
+  noObservationDependency := True
+  noObservationDependencyEvidence := trivial
+  noSFTDependency := True
+  noSFTDependencyEvidence := trivial
+  nonConclusions := True
+
+theorem pureAATSurface_independent_of_observation :
+    pureAATSurface.noObservationDependency := by
+  exact pureAATSurface.independent_of_observation
+
+theorem pureAATSurface_independent_of_sft :
+    pureAATSurface.noSFTDependency := by
+  exact pureAATSurface.independent_of_sft
 
 def rejectedPrimitiveCandidate : ObservedAtom Component Edge Diagram where
   atom := relationAtom
@@ -487,6 +584,137 @@ theorem exampleAtomTraceForecastBoundary_governed_or_typedFailure :
     exampleAtomTraceForecastBoundary.governedTraceBoundary ∨
       exampleAtomTraceForecastBoundary.typedBoundaryFailure :=
   exampleAtomTraceForecastBoundary.governed_or_typedBoundaryFailure
+
+def exampleAATLocalAlgebraForSFT :
+    AATLocalAlgebraForSFT Component Edge Diagram where
+  aatSurface := pureAATSurface
+  usedAsLocalAlgebra := True
+  usedAsLocalAlgebraEvidence := trivial
+  sftDoesNotRedefineAtoms := True
+  sftDoesNotRedefineAtomsEvidence := trivial
+  sftDoesNotRedefineAAT := True
+  sftDoesNotRedefineAATEvidence := trivial
+  noForecastCorrectnessFromAATAlone := True
+  noForecastCorrectnessFromAATAloneEvidence := trivial
+  nonConclusions := True
+
+theorem exampleAATLocalAlgebra_no_forecast_correctness :
+    exampleAATLocalAlgebraForSFT.noForecastCorrectnessFromAATAlone := by
+  exact
+    exampleAATLocalAlgebraForSFT
+      |>.aat_alone_does_not_prove_forecast_correctness
+
+def exampleForecastRecord :
+    ForecastRecord unitOperationSupport unitStepRelation () 0 where
+  target := ()
+  path := ArchitecturePath.nil ()
+  coneMember := ForecastCone.nil_mem ()
+  forecastBoundary := True
+  nonConclusions := True
+
+def exampleConeFamily :
+    ConeFamily unitOperationSupport unitStepRelation () 0 where
+  records := [exampleForecastRecord]
+  nonempty := by
+    simp
+  familyBoundary := True
+  unknownRemainder := True
+  nonConclusions := True
+
+def exampleEnvelopeObservationBoundary : ObservationBoundary Unit where
+  pathClassesVisible := True
+  affectedRegionsVisible := True
+  comparableAxes := True
+  observedProjectionBoundary := True
+  missingBoundary := True
+  theoremBoundary := True
+  unknownRemainder := True
+  nonConclusions := True
+
+def exampleConsequenceEnvelope :
+    ConsequenceEnvelope unitOperationSupport unitStepRelation () 0 where
+  selectedConeCount := 1
+  pathClasses := True
+  affectedRegions := True
+  comparableAxes := True
+  axisDeltaRanges := True
+  obstructionCandidates := True
+  missingBoundaryItems := True
+  theoremBoundaryItems := True
+  unknownRemainder := True
+  forecastBoundary := True
+  nonConclusions := True
+  projectionBoundary := True
+
+def exampleEnvelopeProjection :
+    EnvelopeProjection
+      exampleConeFamily
+      exampleEnvelopeObservationBoundary
+      exampleConsequenceEnvelope where
+  recordsSelectedConeCount := by
+    rfl
+  preservesPathClasses := by
+    intro h
+    exact h
+  preservesAffectedRegions := by
+    intro h
+    exact h
+  preservesComparableAxes := by
+    intro h
+    exact h
+  preservesMissingBoundary := by
+    intro h
+    exact h
+  preservesTheoremBoundary := by
+    intro h
+    exact h
+  preservesFamilyUnknownRemainder := by
+    intro h
+    exact h
+  preservesBoundaryUnknownRemainder := by
+    intro h
+    exact h
+  preservesForecastNonConclusions := by
+    intro _h
+    trivial
+  preservesBoundaryNonConclusions := by
+    intro h
+    exact h
+  recordsForecastBoundary := trivial
+  recordsProjectionBoundary := trivial
+  recordsNonConclusions := trivial
+
+def exampleAATPremisedConsequenceEnvelope :
+    AATPremisedConsequenceEnvelope
+      exampleAATLocalAlgebraForSFT
+      exampleAtomTraceForecastBoundary
+      exampleConeFamily
+      exampleEnvelopeObservationBoundary
+      exampleConsequenceEnvelope where
+  projection := exampleEnvelopeProjection
+  readsAATLocalAlgebra := trivial
+  atomTraceBoundary := trivial
+  circuitTraceBoundary := trivial
+  forecastConeBoundary := ForecastCone.nil_mem ()
+  noForecastCorrectnessFromAAT := trivial
+  traceRecordsNoForecastCorrectness :=
+    exampleAtomTraceForecastBoundary.records_no_forecast_correctness
+  envelopeForecastBoundary := trivial
+  envelopeProjectionBoundary := trivial
+  nonConclusions := trivial
+
+theorem exampleAATPremisedEnvelope_records_boundaries :
+    exampleConsequenceEnvelope.RecordsForecastBoundary ∧
+      exampleConsequenceEnvelope.RecordsProjectionBoundary ∧
+      exampleConsequenceEnvelope.RecordsNonConclusions :=
+  exampleAATPremisedConsequenceEnvelope.records_envelope_boundaries
+
+theorem exampleAATPremisedEnvelope_no_forecast_correctness :
+    exampleAATLocalAlgebraForSFT.noForecastCorrectnessFromAATAlone ∧
+      ¬ AtomTraceForecastBoundary.ForecastCorrectnessClaim
+        exampleAtomTraceForecastBoundary :=
+  exampleAATPremisedConsequenceEnvelope
+    |>.aat_premise_does_not_prove_forecast_correctness
 
 def exampleSoftwareField :
     SoftwareField Unit Component Edge Unit Unit Unit where
