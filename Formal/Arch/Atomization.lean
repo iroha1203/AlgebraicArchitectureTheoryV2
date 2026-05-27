@@ -40,13 +40,66 @@ inductive AtomKind where
 
 namespace AtomKind
 
-/-- In Atom v2 every `AtomKind` constructor in this file is primitive. -/
+/--
+In Atom v2 every `AtomKind` constructor in this file is primitive.
+
+This predicate is intentionally small: it records the current Lean-facing atom
+grammar, not a claim that the taxonomy is globally complete.
+-/
 def IsPrimitive (_kind : AtomKind) : Prop := True
 
 theorem isPrimitive (kind : AtomKind) : kind.IsPrimitive := by
   trivial
 
 end AtomKind
+
+/--
+Lean-facing policy for extending the atom grammar.
+
+The policy records which currently declared `AtomKind` / `Axis` coordinates are
+allowed in a selected presentation and keeps that extension boundary separate
+from derived witnesses such as obstruction circuits, observation gaps, repair
+steps, and SFT forecasts.
+-/
+structure AtomGrammarExtensionPolicy where
+  permittedKind : AtomKind -> Prop
+  permittedAxis : Axis -> Prop
+  primitiveKindBoundary :
+    ∀ kind, permittedKind kind -> kind.IsPrimitive
+  derivedWitnessesSeparated : Prop
+  toolingSchemaBoundary : Prop
+  noGlobalTaxonomyCompleteness : Prop
+
+namespace AtomGrammarExtensionPolicy
+
+/-- The current policy permits all atom kinds and axes declared in this file. -/
+def current : AtomGrammarExtensionPolicy where
+  permittedKind := fun _ => True
+  permittedAxis := fun _ => True
+  primitiveKindBoundary := fun kind _ => AtomKind.isPrimitive kind
+  derivedWitnessesSeparated := True
+  toolingSchemaBoundary := True
+  noGlobalTaxonomyCompleteness := True
+
+theorem current_permits_kind (kind : AtomKind) :
+    current.permittedKind kind := by
+  trivial
+
+theorem current_permits_axis (axis : Axis) :
+    current.permittedAxis axis := by
+  trivial
+
+theorem primitive_of_permitted
+    (policy : AtomGrammarExtensionPolicy) {kind : AtomKind}
+    (h : policy.permittedKind kind) :
+    kind.IsPrimitive :=
+  policy.primitiveKindBoundary kind h
+
+theorem current_permittedKind_isPrimitive (kind : AtomKind) :
+    kind.IsPrimitive :=
+  primitive_of_permitted current (current_permits_kind kind)
+
+end AtomGrammarExtensionPolicy
 
 /--
 Measurement status of an observation.
@@ -216,16 +269,106 @@ theorem primitiveArchitectureAtom_constructive
     PrimitiveArchitectureAtom atom := by
   exact AtomKind.isPrimitive atom.kind
 
+namespace ArchitectureAtom
+
+/-- A primitive atom is accepted by a selected grammar policy. -/
+def AllowedBy {C : Type u} {E : Type v} {D : Type w}
+    (policy : AtomGrammarExtensionPolicy)
+    (atom : ArchitectureAtom C E D) : Prop :=
+  policy.permittedKind atom.kind ∧ policy.permittedAxis atom.axis
+
+theorem allowedBy_current
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    atom.AllowedBy AtomGrammarExtensionPolicy.current := by
+  exact
+    ⟨AtomGrammarExtensionPolicy.current_permits_kind atom.kind,
+      AtomGrammarExtensionPolicy.current_permits_axis atom.axis⟩
+
+theorem primitive_of_allowedBy
+    {C : Type u} {E : Type v} {D : Type w}
+    {policy : AtomGrammarExtensionPolicy}
+    {atom : ArchitectureAtom C E D}
+    (h : atom.AllowedBy policy) :
+    PrimitiveArchitectureAtom atom :=
+  policy.primitiveKindBoundary atom.kind h.1
+
+end ArchitectureAtom
+
 /-- A finite selected molecule/configuration of primitive atoms. -/
 structure AtomMolecule (C : Type u) (E : Type v) (D : Type w) where
   atoms : ArchitectureAtom C E D -> Prop
   finiteBoundary : Prop
   nonConclusions : Prop
 
+/--
+Selected atom universe for finite molecule reasoning.
+
+This is a proof-carrying boundary for selected atoms, not an extractor
+completeness statement.
+-/
+structure SelectedAtomUniverse (C : Type u) (E : Type v) (D : Type w) where
+  selectedAtom : ArchitectureAtom C E D -> Prop
+  finiteBoundary : Prop
+  coverageBoundary : Prop
+  exactnessBoundary : Prop
+  nonConclusions : Prop
+
+/-- A molecule is supported by a selected atom universe. -/
+def AtomMoleculeSupportedBy {C : Type u} {E : Type v} {D : Type w}
+    (U : SelectedAtomUniverse C E D)
+    (M : AtomMolecule C E D) : Prop :=
+  ∀ atom, M.atoms atom -> U.selectedAtom atom
+
+/-- Proof-carrying finite witness for a selected molecule. -/
+structure FiniteAtomMoleculeWitness {C : Type u} {E : Type v} {D : Type w}
+    (U : SelectedAtomUniverse C E D)
+    (M : AtomMolecule C E D) where
+  supportedBy : AtomMoleculeSupportedBy U M
+  moleculeFiniteBoundary : Prop
+  universeFiniteBoundary : Prop
+  nonConclusions : Prop
+
 /-- Inclusion of atom molecules. -/
 def AtomMoleculeSubset {C : Type u} {E : Type v} {D : Type w}
     (M N : AtomMolecule C E D) : Prop :=
   ∀ atom, M.atoms atom -> N.atoms atom
+
+namespace AtomMoleculeSubset
+
+theorem refl {C : Type u} {E : Type v} {D : Type w}
+    (M : AtomMolecule C E D) :
+    AtomMoleculeSubset M M := by
+  intro atom hAtom
+  exact hAtom
+
+theorem trans {C : Type u} {E : Type v} {D : Type w}
+    {M N P : AtomMolecule C E D}
+    (hMN : AtomMoleculeSubset M N)
+    (hNP : AtomMoleculeSubset N P) :
+    AtomMoleculeSubset M P := by
+  intro atom hAtom
+  exact hNP atom (hMN atom hAtom)
+
+end AtomMoleculeSubset
+
+namespace FiniteAtomMoleculeWitness
+
+def ofSubmolecule
+    {C : Type u} {E : Type v} {D : Type w}
+    {U : SelectedAtomUniverse C E D}
+    {M N : AtomMolecule C E D}
+    (w : FiniteAtomMoleculeWitness U M)
+    (hSub : AtomMoleculeSubset N M) :
+    FiniteAtomMoleculeWitness U N where
+  supportedBy := by
+    intro atom hAtom
+    exact w.supportedBy atom (hSub atom hAtom)
+  moleculeFiniteBoundary := N.finiteBoundary
+  universeFiniteBoundary := w.universeFiniteBoundary
+  nonConclusions := w.nonConclusions
+
+end FiniteAtomMoleculeWitness
 
 /-- Proper molecule inclusion. -/
 def ProperAtomSubmolecule {C : Type u} {E : Type v} {D : Type w}
@@ -397,6 +540,35 @@ def SignatureZero {C : Type u} {E : Type v} {D : Type w}
     (signature : AtomSignature C E D) : Prop :=
   ∀ atom, ¬ HasBadAtomOn signature atom
 
+/-- A selected required axis predicate lifted to atoms. -/
+def RequiredAtomAxis {C : Type u} {E : Type v} {D : Type w}
+    (requiredAxis : Axis -> Prop)
+    (atom : ArchitectureAtom C E D) : Prop :=
+  requiredAxis atom.axis
+
+/--
+Required atom signature zero means no selected required atom is measured as a
+bad nonzero atom.
+-/
+def RequiredAtomSignatureZero {C : Type u} {E : Type v} {D : Type w}
+    (signature : AtomSignature C E D)
+    (requiredAxis : Axis -> Prop) : Prop :=
+  ∀ atom, RequiredAtomAxis requiredAxis atom -> ¬ HasBadAtomOn signature atom
+
+/--
+Bridge package from a selected atom signature to required-axis vanishing.
+
+This is a measured selected-axis statement.  It does not prove unmeasured axis
+safety, global future safety, or zero curvature without the later lawfulness
+and observation-coverage bridges.
+-/
+structure AtomVanishingBridge {C : Type u} {E : Type v} {D : Type w}
+    (signature : AtomSignature C E D)
+    (requiredAxis : Axis -> Prop) where
+  requiredAxisZero : RequiredAtomSignatureZero signature requiredAxis
+  measuredBoundary : Prop
+  nonConclusions : Prop
+
 theorem no_hasBadAtomOn_of_signatureZero
     {C : Type u} {E : Type v} {D : Type w}
     {signature : AtomSignature C E D}
@@ -411,6 +583,39 @@ theorem signatureZero_iff_no_hasBadAtomOn
     SignatureZero signature ↔
       ∀ atom, ¬ HasBadAtomOn signature atom :=
   Iff.rfl
+
+theorem requiredAtomSignatureZero_of_signatureZero
+    {C : Type u} {E : Type v} {D : Type w}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (hZero : SignatureZero signature) :
+    RequiredAtomSignatureZero signature requiredAxis := by
+  intro atom _hRequired
+  exact hZero atom
+
+namespace AtomVanishingBridge
+
+def ofSignatureZero
+    {C : Type u} {E : Type v} {D : Type w}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (hZero : SignatureZero signature) :
+    AtomVanishingBridge signature requiredAxis where
+  requiredAxisZero := requiredAtomSignatureZero_of_signatureZero hZero
+  measuredBoundary := signature.measuredBoundary
+  nonConclusions := signature.nonConclusions
+
+theorem no_hasBadAtomOn_of_requiredAxis
+    {C : Type u} {E : Type v} {D : Type w}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (bridge : AtomVanishingBridge signature requiredAxis)
+    (atom : ArchitectureAtom C E D)
+    (hRequired : RequiredAtomAxis requiredAxis atom) :
+    ¬ HasBadAtomOn signature atom :=
+  bridge.requiredAxisZero atom hRequired
+
+end AtomVanishingBridge
 
 /-- Atom presentation bundled with its selected signature. -/
 structure PresentedAtomSignature (C : Type u) (E : Type v) (D : Type w) where

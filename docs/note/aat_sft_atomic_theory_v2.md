@@ -1907,6 +1907,13 @@ ArchMap / ArchSig は raw candidate から直接 theorem を作らず、
 Lean-facing `AtomPresentation` への promotion boundary を持つ。
 SFT は `ValidatedFieldAtomPresentation` / `PresentedAtomDelta` /
 `AtomicSFTPresentationBridgePackage` から field atoms と atom trace を読む。
+Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1268),
+[#1259](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1259),
+[#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262)
+では、この surface をさらに進め、`AtomGrammarExtensionPolicy`、
+`SelectedAtomUniverse` / `FiniteAtomMoleculeWitness`、`AtomVanishingBridge`
+を追加した。これにより、新しい atom kind / axis の追加方針、selected finite
+molecule witness、required-axis zero reading を Lean 側で明示できる。
 
 ### 15.1 First Core: Atoms as Abstract Finite Facts
 
@@ -1990,6 +1997,24 @@ valuation
 ```
 
 を先に安定させる。
+
+Issue #1268 以降の Lean surface では、constructor 追加そのものとは別に
+`AtomGrammarExtensionPolicy` を置く。これは、現在宣言されている
+`AtomKind` / `Axis` のうち、選択した presentation で許可する座標と、
+derived witness を primitive atom と混同しない境界を記録する。
+したがって、new atom family / axis を追加するときは、global taxonomy
+completeness を主張するのではなく、selected grammar policy と
+non-conclusion を更新する。
+
+Issue #1259 では、`SelectedAtomUniverse` と `FiniteAtomMoleculeWitness`
+を追加した。`AtomMolecule` は引き続き proof-carrying boundary を持つ
+predicate representation だが、selected universe に supported であることを
+別 witness として渡せる。
+
+Issue #1262 では、`SignatureZero` を required axis に制限して読む
+`AtomVanishingBridge` を追加した。これは selected measured required axis 上の
+no bad atom reading であり、zero curvature theorem 全体や unmeasured axis
+safety を結論しない。
 
 ### 15.4 Responsibility as Molecule
 

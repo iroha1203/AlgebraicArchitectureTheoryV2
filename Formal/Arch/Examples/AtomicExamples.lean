@@ -31,6 +31,14 @@ def relationAtom : ArchitectureAtom Component Edge Diagram where
   evidenceBoundary := True
   nonConclusions := True
 
+def semanticContractAtom : ArchitectureAtom Component Edge Diagram where
+  kind := AtomKind.semantic
+  axis := Axis.semantic
+  support := Support.diagram Component Edge Diagram.writePath
+  predicate := "write path satisfies selected semantic contract"
+  evidenceBoundary := True
+  nonConclusions := True
+
 theorem primitiveComponentAtom_primitive :
     PrimitiveArchitectureAtom componentAtom := by
   exact primitiveArchitectureAtom_constructive componentAtom
@@ -38,6 +46,23 @@ theorem primitiveComponentAtom_primitive :
 theorem primitiveRelationAtom_primitive :
     PrimitiveArchitectureAtom relationAtom := by
   exact primitiveArchitectureAtom_constructive relationAtom
+
+theorem semanticContractAtom_allowedBy_current :
+    semanticContractAtom.AllowedBy AtomGrammarExtensionPolicy.current := by
+  exact ArchitectureAtom.allowedBy_current semanticContractAtom
+
+theorem semanticContractAtom_primitive_of_policy :
+    PrimitiveArchitectureAtom semanticContractAtom := by
+  exact ArchitectureAtom.primitive_of_allowedBy
+    semanticContractAtom_allowedBy_current
+
+def selectedAtomUniverse : SelectedAtomUniverse Component Edge Diagram where
+  selectedAtom := fun atom =>
+    atom = componentAtom ∨ atom = relationAtom ∨ atom = semanticContractAtom
+  finiteBoundary := True
+  coverageBoundary := True
+  exactnessBoundary := True
+  nonConclusions := True
 
 def componentMolecule : AtomMolecule Component Edge Diagram where
   atoms := fun atom => atom = componentAtom
@@ -47,6 +72,24 @@ def componentMolecule : AtomMolecule Component Edge Diagram where
 def forbiddenEdgeMolecule : AtomMolecule Component Edge Diagram where
   atoms := fun atom => atom = relationAtom
   finiteBoundary := True
+  nonConclusions := True
+
+def componentMoleculeWitness :
+    FiniteAtomMoleculeWitness selectedAtomUniverse componentMolecule where
+  supportedBy := by
+    intro atom hAtom
+    exact Or.inl hAtom
+  moleculeFiniteBoundary := componentMolecule.finiteBoundary
+  universeFiniteBoundary := selectedAtomUniverse.finiteBoundary
+  nonConclusions := True
+
+def forbiddenEdgeMoleculeWitness :
+    FiniteAtomMoleculeWitness selectedAtomUniverse forbiddenEdgeMolecule where
+  supportedBy := by
+    intro atom hAtom
+    exact Or.inr (Or.inl hAtom)
+  moleculeFiniteBoundary := forbiddenEdgeMolecule.finiteBoundary
+  universeFiniteBoundary := selectedAtomUniverse.finiteBoundary
   nonConclusions := True
 
 def forbiddenEdgeLaw : DesignLaw Component Edge Diagram where
@@ -65,6 +108,34 @@ theorem singletonForbiddenMolecule_obstruction :
       simpa [forbiddenEdgeMolecule] using hAtom
     rw [hEq]
     exact hBad
+
+def selectedForbiddenEdgeUniverse :
+    FiniteAtomMoleculeUniverse forbiddenEdgeLaw where
+  selected := fun molecule =>
+    molecule = forbiddenEdgeMolecule ∨ molecule = componentMolecule
+  minimalOf := by
+    intro M hSel hBad
+    exact
+      ⟨forbiddenEdgeMolecule,
+        ⟨Or.inl rfl, singletonForbiddenMolecule_obstruction, by
+          intro atom hAtom
+          have hEq : atom = relationAtom := by
+            simpa [forbiddenEdgeMolecule] using hAtom
+          rw [hEq]
+          exact hBad⟩⟩
+  coverageBoundary := True
+  exactnessBoundary := True
+  nonConclusions := True
+
+theorem selectedForbiddenEdgeUniverse_contains_minimal_bad
+    {M : AtomMolecule Component Edge Diagram}
+    (hSel : selectedForbiddenEdgeUniverse.selected M)
+    (hBad : forbiddenEdgeLaw.Bad M) :
+    ∃ N,
+      selectedForbiddenEdgeUniverse.selected N ∧
+      ObstructionCircuit forbiddenEdgeLaw N ∧
+      AtomMoleculeSubset N M := by
+  exact selectedForbiddenEdgeUniverse.contains_minimal_bad hSel hBad
 
 def rejectedPrimitiveCandidate : ObservedAtom Component Edge Diagram where
   atom := relationAtom
@@ -123,6 +194,9 @@ def exampleAtomSignature : AtomSignature Component Edge Diagram where
   measuredBoundary := True
   nonConclusions := True
 
+def staticRequiredAxis (axis : Axis) : Prop :=
+  axis = Axis.static
+
 def examplePresentedAtomSignature :
     PresentedAtomSignature Component Edge Diagram where
   presentation := exampleAtomPresentation
@@ -134,6 +208,16 @@ theorem staticSignatureZero_no_static_bad_atom :
     SignatureZero exampleAtomSignature := by
   intro atom hBad
   exact hBad.1
+
+def exampleAtomVanishingBridge :
+    AtomVanishingBridge exampleAtomSignature staticRequiredAxis :=
+  AtomVanishingBridge.ofSignatureZero staticSignatureZero_no_static_bad_atom
+
+theorem exampleAtomVanishingBridge_no_required_bad_atom
+    (atom : ArchitectureAtom Component Edge Diagram)
+    (hRequired : RequiredAtomAxis staticRequiredAxis atom) :
+    ¬ HasBadAtomOn exampleAtomSignature atom := by
+  exact exampleAtomVanishingBridge.no_hasBadAtomOn_of_requiredAxis atom hRequired
 
 def exampleSoftwareField :
     SoftwareField Unit Component Edge Unit Unit Unit where
