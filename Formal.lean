@@ -99,4 +99,5 @@ import Formal.Arch.Examples.AtomOperationExamples
 import Formal.Arch.Examples.AtomRepairExamples
 import Formal.Arch.Examples.AtomSynthesisExamples
 import Formal.Arch.Examples.AtomPureAATExamples
+import Formal.Arch.Examples.AtomSFTInterfaceExamples
 import Formal.Arch.Examples.AtomAATExamples

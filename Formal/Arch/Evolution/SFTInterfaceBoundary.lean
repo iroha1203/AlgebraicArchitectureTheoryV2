@@ -1,10 +1,10 @@
 import Formal.Arch.Evolution.SFTField
-import Formal.Arch.Signature.SignatureLawfulness
+import Formal.Arch.Signature.AtomZeroCurvature
 import Formal.Arch.Atomization
 
 namespace Formal.Arch
 
-universe u v w
+universe u v w q r s t m
 
 /--
 A selected AAT theorem-status package as it is exposed to SFT.
@@ -82,6 +82,129 @@ theorem records_theoremPackage_of_architectureZeroCurvatureTheoremPackage
       theoremBoundary unmeasuredAxisBoundary toolingBoundary
       nonConclusions).RecordsTheoremPackage :=
   hPackage
+
+/--
+Read a pure Atom-AAT theorem suite, interpreted through Signature arrangement
+readings, as an AAT theorem-status item for SFT interface purposes.
+-/
+noncomputable def ofPureAtomTheoremSuite
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureSignature.ArchitectureLawModel C A Obs)
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    (layering :
+      LayeringAtomArrangementLaw X.G
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule)
+    (projection :
+      ProjectionAtomArrangementLaw X.G X.π X.GA
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule)
+    (lspCompatibleFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        LSPCompatible X.π X.O)
+    (boundaryPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        ArchitectureSignature.BoundaryPolicySound X.G
+          X.boundaryAllowed)
+    (abstractionPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        ArchitectureSignature.AbstractionPolicySound X.G
+          X.abstractionAllowed)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (measuredZeroEvidence theoremBoundary unmeasuredAxisBoundary
+      toolingBoundary nonConclusions : Prop) :
+    AATTheoremStatus where
+  theoremPackage :=
+    have _hPackage :
+        ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage X :=
+      ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
+        (X := X)
+        suite
+        layering
+        projection
+        lspCompatibleFromLawful
+        boundaryPolicySoundFromLawful
+        abstractionPolicySoundFromLawful
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage X
+  measuredZeroEvidence := measuredZeroEvidence
+  theoremBoundary := theoremBoundary
+  unmeasuredAxisBoundary := unmeasuredAxisBoundary
+  toolingBoundary := toolingBoundary
+  nonConclusions := nonConclusions
+
+/--
+The pure Atom theorem-suite constructor exposes the stored theorem package
+when the required Signature arrangement readings are supplied.
+-/
+theorem records_theoremPackage_of_pureAtomTheoremSuite
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureSignature.ArchitectureLawModel C A Obs)
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    (layering :
+      LayeringAtomArrangementLaw X.G
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule)
+    (projection :
+      ProjectionAtomArrangementLaw X.G X.π X.GA
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule)
+    (lspCompatibleFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        LSPCompatible X.π X.O)
+    (boundaryPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        ArchitectureSignature.BoundaryPolicySound X.G
+          X.boundaryAllowed)
+    (abstractionPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          suite.zeroCurvature.law
+          suite.zeroCurvature.requiredMolecule ->
+        ArchitectureSignature.AbstractionPolicySound X.G
+          X.abstractionAllowed)
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    {measuredZeroEvidence theoremBoundary unmeasuredAxisBoundary
+      toolingBoundary nonConclusions : Prop} :
+    (ofPureAtomTheoremSuite X suite layering projection
+      lspCompatibleFromLawful boundaryPolicySoundFromLawful
+      abstractionPolicySoundFromLawful measuredZeroEvidence
+      theoremBoundary unmeasuredAxisBoundary toolingBoundary
+      nonConclusions).RecordsTheoremPackage :=
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
+    (X := X)
+    suite
+    layering
+    projection
+    lspCompatibleFromLawful
+    boundaryPolicySoundFromLawful
+    abstractionPolicySoundFromLawful
 
 end AATTheoremStatus
 
