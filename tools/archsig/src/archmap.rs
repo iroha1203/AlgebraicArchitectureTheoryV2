@@ -540,6 +540,24 @@ fn archmap_atomic_observation_summary(
     let molecule_candidate_count = document.molecule_candidates.len();
     let obstruction_circuit_candidate_count = document.obstruction_circuit_candidates.len();
     let observation_gap_count = document.observation_gaps.len();
+    let promotable_atom_candidate_count = document
+        .atom_candidates
+        .iter()
+        .filter(|candidate| atom_candidate_promotable_to_presentation(candidate))
+        .count();
+    let rejected_or_uncertain_candidate_count = document
+        .atom_candidates
+        .iter()
+        .filter(|candidate| {
+            matches!(
+                candidate.observation_status.as_str(),
+                "rejected" | "rejectedCandidate" | "uncertain" | "uncertainCandidate" | "ambiguous"
+            )
+        })
+        .count();
+    let lean_presentation_candidate_count = promotable_atom_candidate_count
+        + molecule_candidate_count
+        + obstruction_circuit_candidate_count;
     ArchMapAtomicObservationSummary {
         atom_candidate_count,
         observed_atom_count: document
@@ -552,6 +570,8 @@ fn archmap_atomic_observation_summary(
                 )
             })
             .count(),
+        promotable_atom_candidate_count,
+        rejected_or_uncertain_candidate_count,
         molecule_candidate_count,
         observed_molecule_count: document
             .molecule_candidates
@@ -570,17 +590,28 @@ fn archmap_atomic_observation_summary(
             })
             .count(),
         observation_gap_count,
+        lean_presentation_candidate_count,
         sft_handoff_ref_count: atom_candidate_count
             + obstruction_circuit_candidate_count
             + observation_gap_count,
         zero_curvature_reading:
             "zero curvature is read as absence of required obstruction circuits over observed atom arrangement, not as an ArchMap definition"
                 .to_string(),
+        promotion_boundary:
+            "Lean-facing AtomPresentation contains promotable observed atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps with source evidence; validation does not certify universal ArchitectureAtom truth"
+                .to_string(),
         boundary:
             "ArchMap records source-grounded atom, molecule, circuit, and gap candidates; AAT analysis decides theorem-facing meaning"
                 .to_string(),
         non_conclusions: archmap_atomic_non_conclusions(),
     }
+}
+
+fn atom_candidate_promotable_to_presentation(candidate: &crate::ArchMapAtomCandidateV0) -> bool {
+    is_observed_atomic_boundary(
+        &candidate.observation_status,
+        &candidate.measurement_boundary,
+    ) && !candidate.source_refs.is_empty()
 }
 
 fn is_observed_atomic_boundary(observation_status: &str, measurement_boundary: &str) -> bool {
@@ -595,6 +626,8 @@ fn archmap_atomic_non_conclusions() -> Vec<String> {
             .to_string(),
         "obstruction circuit candidate is not a primitive atom".to_string(),
         "observation gap is not measured zero".to_string(),
+        "Lean-facing AtomPresentation boundary does not certify universal ArchitectureAtom truth"
+            .to_string(),
         "atomic observation summary does not prove zero curvature".to_string(),
         "atomic observation summary does not prove SFT forecast correctness".to_string(),
     ]

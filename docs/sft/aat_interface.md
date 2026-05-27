@@ -58,11 +58,14 @@ FieldAtoms_B(F)
   := Atom_B(arch(F))
 ```
 
-この読みは `Formal/Arch/Atomization.lean` の `FieldAtoms` /
-`field_atom_sound` / `AtomicSFTBridgePackage` に Lean surface として追加している。
+この読みは Atom v2 では `Formal/Arch/Atomization.lean` の
+`AtomPresentation` / `FieldAtomsFromPresentation` /
+`ValidatedFieldAtomPresentation` / `PresentedAtomDelta` /
+`AtomicSFTPresentationBridgePackage` として Lean surface に追加している。
+SFT が validated atom presentation から field atoms と atom delta を読む境界を明示する。
 ただし、raw ArchMap candidate から `FieldAtoms_B` へ直接飛ばない。SFT が使うのは、
-AAT / ArchSig boundary で validated atom または coverage gap として扱われた observable
-coordinate である。
+AAT / ArchSig boundary で validated atom または `ObservationGap` として扱われた
+observable coordinate である。
 
 ## 3. SFT 側で導入するもの
 

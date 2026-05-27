@@ -4053,41 +4053,43 @@ Issue [#1220](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 [#1239](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1239),
 [#1240](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1240)
 の Lean surface である。
+Issue [#1250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1250)
+と sub-issues [#1251](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1251),
+[#1252](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1252),
+[#1254](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1254),
+[#1255](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1255),
+[#1256](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1256)
+では、Atom v2 の primitive fact / obstruction circuit / observation presentation /
+ArchSig promotion / SFT trace bridge を追加した。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
-| `Axis`, `Polarity`, `AtomKind`, `MeasurementStatus`, `CoverageGapKind` | `inductive` | atomization boundary で使う axis / role / atom family / measurement boundary。 | `defined only` |
+| `Axis`, `AtomKind`, `MeasurementStatus`, `ObservationStatus` | `inductive` | Atom v2 の axis、primitive atom family、measurement boundary、observation state。 | `defined only` |
+| `AtomKind.IsPrimitive`, `PrimitiveArchitectureAtom` | `def` | primitive architecture fact と law-relative failure / observation gap を分離する predicate。 | `defined only` |
+| `AtomKind.isPrimitive`, `primitiveArchitectureAtom_constructive` | `theorem` | Atom v2 の `AtomKind` は primitive architecture fact として扱われる。 | `proved` |
+| `AtomMolecule`, `AtomMoleculeSubset`, `ProperAtomSubmolecule`, `MinimalAtomMolecule` | `structure` / `def` | primitive atoms の finite molecule / configuration とその inclusion / minimality。 | `defined only` |
+| `DesignLaw`, `ObstructionCircuit`, `obstructionCircuit_bad`, `obstructionCircuit_antichain` | `structure` / `def` / `theorem` | design law を atom molecule 上の bad predicate とし、obstruction circuit を minimal bad molecule として扱う。 | `defined only` / `proved` |
+| `AtomBadUpwardClosed`, `FiniteAtomMoleculeUniverse`, `FiniteAtomMoleculeUniverse.contains_minimal_bad`, `bad_iff_contains_obstruction_circuit` | `def` / `structure` / `theorem` | selected finite atom-molecule universe 上で badness が obstruction circuit から生成されること。 | `defined only` / `proved` |
+| `ObservationStatus`, `ObservedAtom`, `ObservationGap`, `AtomPresentation` | `inductive` / `structure` | observed atom / rejected / uncertain / private unavailable / observation gap を atom existence から分離する presentation layer。 | `defined only` |
+| `rejectedCandidate_not_supportsMeasurement`, `uncertainCandidate_not_supportsMeasurement`, `observedAtom_rejected_not_measured`, `observedAtom_uncertain_not_measured`, `observationGap_not_measuredZero` | `theorem` | rejected / uncertain candidate と observation gap は measured-zero atom evidence ではない。 | `proved` |
+| `PresentedAtomSignature` | `structure` | `AtomPresentation` と `AtomSignature` の valuation boundary を束ねる。 | `defined only` |
+| `ArchMapAtomObservationModel`, `PromotionBoundary`, `promotedPresentation`, `noLeanTheoremDischarge`, `noCertifiedAtomTruth` | `structure` / `def` | Rust `archmap-v0` atomic observation surface を Lean-facing `AtomPresentation` boundary として読む。 | `defined only` |
+| `FieldAtomsFromPresentation`, `ValidatedFieldAtomPresentation`, `PresentedAtomDelta`, `AtomicSFTPresentationBridgePackage` | `def` / `structure` | SFT が raw candidate ではなく validated atom presentation から field atoms / atom delta を読む bridge。 | `defined only` |
 | `Support` | `structure` | component / edge / diagram を持つ finite witness support の predicate representation。 | `defined only` |
-| `SupportSubset`, `ProperSubsupport`, `MinimalSupport`, `UpwardClosed` | `def` | support inclusion、proper inclusion、predicate-relative minimality、upward-closed badness。 | `defined only` |
-| `SupportSubset.refl`, `SupportSubset.trans`, `SupportSubset.antisymm` | `theorem` | support inclusion の基本性質。 | `proved` |
-| `FiniteSupportUniverse` | `structure` | selected finite support universe と minimal support search obligation、coverage / exactness / non-conclusions を束ねる。 | `defined only` |
-| `FiniteSupportUniverse.contains_minimal_bad` | `theorem` | bad support から selected minimal bad support を取り出す。 | `proved` |
-| `FiniteSupportUniverse.bad_iff_contains_minimal` | `theorem` | upward-closed badness が minimal atoms の upward closure で生成されること。 | `proved` |
-| `ArchitectureShape`, `ArchitectureCell`, `ArchitectureMolecule` | `structure` | cellular-circuit AAT へ進むための skeleton。 | `defined only` |
-| `AtomizationBoundary` | `structure` | selected axes、shape predicate、coverage gap predicate、theorem / coverage / exactness / non-conclusion boundary。 | `defined only` |
-| `Shape`, `ArchitectureCircuit`, `ObstructionCircuit`, `ConstructiveMinimalGenerator`, `MinimalCoverageGap` | `def` | law-indexed circuit / minimal generator / coverage atom の predicate surface。 | `defined only` |
-| `ArchitectureAtom`, `ValidAtom` | `structure` / `def` | atom data と、その support が selected minimal circuit または `AtomKind.coverageGap gap` の minimal coverage gap であること。 | `defined only` |
-| `validAtom_antichain_sameKind` | `theorem` | 同じ atom kind の valid atoms は proper subsupport で入れ子にならない。 | `proved` |
-| `SingleEdgePolicyViolation`, `singleEdgePolicyViolation_minimal` | `def` / `theorem` | static atom v0 の single-edge policy violation が minimal support になること。 | `proved` |
-| `StaticAtomV0Package` | `structure` | forbidden edge / boundary leak / abstraction leak / simple cycle / rank violation / coverage gap の selected static theorem package。 | `defined only` |
-| `StaticAtomV0Package.forbiddenStaticEdge_minimal`, `boundaryLeak_minimal`, `simpleCycle_obstructionCircuit`, `rankViolation_obstructionCircuit`, `coverageGap_minimal` | `theorem` | static atom v0 package から minimal witness theorem を取り出す。 | `proved` |
+| `SupportSubset`, `ProperSubsupport` | `def` | support inclusion と proper inclusion。 | `defined only` |
+| `SupportSubset.refl`, `SupportSubset.trans` | `theorem` | support inclusion の基本性質。 | `proved` |
+| `ArchitectureAtom` | `structure` | kind、axis、support、predicate、evidence boundary、non-conclusion を持つ primitive typed fact。 | `defined only` |
 | `AtomValuation`, `AtomSignature`, `HasBadAtomOn`, `SignatureZero` | `structure` / `def` | atom valuation と measured-zero/no-bad-atom bridge の signature surface。 | `defined only` |
 | `no_hasBadAtomOn_of_signatureZero`, `signatureZero_iff_no_hasBadAtomOn` | `theorem` | measured-zero status の下で signature zero と no bad atom を接続する。 | `proved` |
-| `AtomVanishingBridge` | `structure` | witness completeness / axis exactness / atom cover completeness / non-conclusions を明示した vanishing bridge。 | `defined only` |
-| `AtomClassifier`, `classify_sound`, `AtomizationCertificate`, `Atomizer`, `atomize_sound` | `structure` / `theorem` | classifier / boundary-fixed atomizer が返す atom の soundness surface。completeness は境界として残す。 | `defined only` / `proved` |
-| `RepairAtom`, `EvolutionAtom`, `AtomDelta`, `AtomTrace`, `AtomSafeRegion`, `ExtensionAtomFormula` | `structure` | repair / evolution / extension atom formula の skeleton。`AtomSafeRegion.safe` は forbidden atom を含まない proof field。 | `defined only` |
-| `SolidCleanAtomPackage`, `SemanticRuntimeAtomPackage`, `AtomicSFTBridgePackage` | `structure` | Phase 1/2/3 の theorem-package surface。 | `defined only` |
-| `SolidCleanAtomPackage.projectionSound_atom_theorem`, `lspMismatch_atom_theorem`, `dipLocal_soundness_theorem`, `solid_not_global_decomposability` | `def` | SOLID / Clean atomizer の theorem-package accessors。 | `defined only` |
-| `SemanticRuntimeAtomPackage.static_zero_not_semantic_zero`, `runtime_protection_local_theorem`, `non_commuting_square_witness`, `records_no_global_operational_safety` | `def` | semantic / runtime atomizer の theorem-package accessors。 | `defined only` |
-| `AtomicSFTBridgePackage.field_atom_sound_boundary`, `atom_trace_sound_boundary`, `atom_safe_support_boundary`, `atom_cone_narrowing_boundary`, `field_update_records_unexpected_atom_boundary`, `records_no_global_future_safety` | `def` | Atomic SFT bridge の theorem-package accessors。 | `defined only` |
-| `FieldAtoms`, `field_atom_sound` | `def` / `theorem` | SFT `SoftwareField` から AAT atom を architecture projection 経由で引き戻す。 | `defined only` / `proved` |
-| `AtomicExamples.measuredForbiddenAtom_valid`, `example_atomize_sound`, `example_atomize_sound_measuredForbiddenAtom`, `staticSignatureZero_no_static_bad_atom`, `coverage_unmeasured_not_signatureZero`, `example_static_zero_not_semantic_zero` | `theorem` | minimal examples / smoke tests。 | `proved` |
+| `validatedFieldAtomPresentation_excludes_raw_candidates`, `AtomicSFTPresentationBridgePackage.records_raw_candidate_exclusion`, `records_no_forecast_correctness` | `def` | SFT bridge が raw candidate exclusion と forecast non-conclusion を記録する。 | `defined only` |
+| `AtomDelta`, `PresentedAtomDelta`, `AtomTrace` | `structure` | validated atom presentation 間の atom-level change と trace。 | `defined only` |
+| `AtomicExamples.primitiveComponentAtom_primitive`, `primitiveRelationAtom_primitive`, `singletonForbiddenMolecule_obstruction`, `rejectedPrimitiveCandidate_not_measured`, `uncertainPrimitiveCandidate_not_measured`, `runtimeObservationGap_not_measuredZero`, `exampleAtomPresentation_recordsPromotionBoundary`, `staticSignatureZero_no_static_bad_atom`, `example_validatedPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_records_no_forecast_correctness` | `theorem` | Atom v2 primitive / circuit / observation / presentation bridge smoke tests。 | `proved` |
 
-Non-conclusions: `AtomizationBoundary` と `FiniteSupportUniverse` は selected boundary に相対化される。
-`SignatureZero` は selected measured axis の no measured atom であり、global safety、unmeasured
-axis safety、runtime / semantic safety、extractor completeness、LLM semantic reading correctness、
-unique factorization、disjoint atom partition は結論しない。`RepairAtom` は rewrite / transition
-generator であり、ArchitectureAtom そのものではない。
+Non-conclusions: `AtomPresentation` は validated Lean-facing presentation boundary であり、
+raw ArchMap candidate、Rust validation pass、LLM semantic reading、extractor completeness、
+zero-curvature proof、forecast correctness、global future safety は結論しない。
+`SignatureZero` は selected measured axis の no measured bad atom であり、unmeasured axis safety、
+unique factorization、disjoint atom partition は結論しない。
 
 ## 現在 Lean に入れていないもの
 

@@ -1,4 +1,5 @@
 import Formal.Arch.Extension.Flatness
+import Formal.Arch.Atomization
 
 namespace Formal.Arch
 
@@ -338,6 +339,53 @@ theorem aatHomomorphicRelation_of_archMapPreservationPackage
     (pkg : ArchMapPreservationPackage M) :
     AATHomomorphicRelation M :=
   pkg.aatHomomorphicRelation
+
+/--
+ArchMap atom-observation bridge.
+
+This is the Lean-side model of a Rust `archmap-v0` atomic observation surface.
+It does not parse JSON and does not certify source candidates as universal atom
+truth.  It states the boundary under which a validated `AtomPresentation` is
+available to AAT/SFT theorem packages.
+-/
+structure ArchMapAtomObservationModel (C : Type u) (E : Type v) (D : Type w) where
+  candidateCount : Nat
+  presentation : AtomPresentation C E D
+  promotedAtomCount : Nat
+  rejectedOrUncertainCount : Nat
+  observationGapCount : Nat
+  promotionBoundary : Prop
+  sourceEvidenceBoundary : Prop
+  noCertifiedAtomTruthConclusion : Prop
+  noLeanTheoremDischargeConclusion : Prop
+  nonConclusions : Prop
+
+namespace ArchMapAtomObservationModel
+
+variable {C : Type u} {E : Type v} {D : Type w}
+
+/-- ArchMap-to-AAT promotion is explicit evidence boundary, not raw candidate trust. -/
+def PromotionBoundary (M : ArchMapAtomObservationModel C E D) : Prop :=
+  M.promotionBoundary ∧ M.sourceEvidenceBoundary
+
+/-- A promoted ArchMap atom presentation records no Lean theorem discharge. -/
+def noLeanTheoremDischarge
+    (M : ArchMapAtomObservationModel C E D) :
+    Prop :=
+  M.noLeanTheoremDischargeConclusion
+
+/-- A promoted ArchMap atom presentation records no certified universal atom truth. -/
+def noCertifiedAtomTruth
+    (M : ArchMapAtomObservationModel C E D) :
+    Prop :=
+  M.noCertifiedAtomTruthConclusion
+
+/-- Access the promoted atom presentation used by AAT/SFT packages. -/
+def promotedPresentation
+    (M : ArchMapAtomObservationModel C E D) : AtomPresentation C E D :=
+  M.presentation
+
+end ArchMapAtomObservationModel
 
 namespace Examples
 

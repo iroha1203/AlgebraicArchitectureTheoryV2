@@ -488,16 +488,25 @@ Issue [#1220](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 [#1240](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1240)
 の第一波は、`Formal/Arch/Atomization.lean` と
 `Formal/Arch/Examples/AtomicExamples.lean` に Lean surface を追加した。
+Issue [#1250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1250)
+と sub-issues [#1251](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1251),
+[#1252](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1252),
+[#1254](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1254),
+[#1255](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1255),
+[#1256](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1256)
+では、Atom v2 の方針に合わせて primitive atom、law-relative obstruction circuit、
+observation presentation、ArchSig promotion boundary、SFT presentation bridge を追加する。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
-| atomization skeleton / support universe | `Axis`, `Polarity`, `AtomKind`, `MeasurementStatus`, `CoverageGapKind`, `Support`, `SupportSubset`, `FiniteSupportUniverse`, `AtomizationBoundary`, `ArchitectureAtom`, `ValidAtom` を追加済み。`SupportSubset.refl/trans/antisymm`, `FiniteSupportUniverse.contains_minimal_bad`, `bad_iff_contains_minimal`, `validAtom_antichain_sameKind` は proved。 | selected support universe / coverage / exactness assumption に相対化する。global support completeness は主張しない。 |
-| coverage / measurement boundary | `MeasurementStatus`, `CoverageGapKind`, `AtomKind.coverageGap gap`, `MinimalCoverageGap`, `coverage_unmeasured_not_signatureZero` を追加済み。`ValidAtom` は coverage gap kind つき atom を minimal coverage gap として検証する。 | `unmeasured`, `outOfScope`, `privateUnavailable`, `dynamicBlindSpot`, `rejectedCandidate`, `uncertainCandidate` は measured zero ではない。 |
-| classifier / atomizer soundness | `AtomClassifier`, `classify_sound`, `AtomizationCertificate`, boundary-fixed `Atomizer`, `atomize_sound` を追加済み。`AtomicExamples.example_atomize_sound_measuredForbiddenAtom` は実 atom を通す smoke theorem。 | classifier completeness、Rust / ArchSig extraction correctness、ArchMap candidate correctness は主張しない。 |
-| static atom v0 | `SingleEdgePolicyViolation`, `singleEdgePolicyViolation_minimal`, `StaticAtomV0Package` と accessor theorem、minimal example を追加済み。 | static atom zero は semantic / runtime safety や global decomposability を含意しない。 |
+| primitive atom v2 | `Axis`, `AtomKind`, `AtomKind.IsPrimitive`, `ArchitectureAtom`, `PrimitiveArchitectureAtom`, `primitiveArchitectureAtom_constructive` を追加済み。`AtomicExamples.primitiveComponentAtom_primitive` と `primitiveRelationAtom_primitive` は component / relation fact を primitive atom として通す。 | primitive atom は law-relative obstruction circuit でも observation gap でもない。global atom taxonomy completeness は主張しない。 |
+| atom molecule / design law / obstruction circuit v2 | `AtomMolecule`, `DesignLaw`, `ObstructionCircuit`, `obstructionCircuit_bad`, `obstructionCircuit_antichain`, `FiniteAtomMoleculeUniverse.bad_iff_contains_obstruction_circuit` を追加済み。 | obstruction は atom ではなく law-relative minimal molecule。unique factorization / disjoint partition は主張しない。 |
+| observation / presentation v2 | `ObservationStatus`, `ObservedAtom`, `ObservationGap`, `AtomPresentation`, `PresentedAtomSignature`, `observedAtom_rejected_not_measured`, `observedAtom_uncertain_not_measured`, `observationGap_not_measuredZero` を追加済み。 | rejected / uncertain / private / out-of-scope は measured zero ではない。raw ArchMap candidate は certified atom ではない。 |
+| ArchMap promotion boundary v2 | `ArchMapAtomObservationModel` と accessor を `Formal/Arch/Signature/ArchMap.lean` に追加済み。Rust validation report は Lean-facing AtomPresentation promotion boundary を summary として出す。 | ArchMap validation pass は Lean theorem discharge、certified universal atom truth、zero curvature proof ではない。 |
+| SFT presentation bridge v2 | `FieldAtomsFromPresentation`, `ValidatedFieldAtomPresentation`, `PresentedAtomDelta`, `AtomicSFTPresentationBridgePackage` を追加済み。 | SFT は raw candidate ではなく validated presentation を読む。forecast correctness と global future safety は主張しない。 |
 | atom valuation / vanishing bridge | `AtomValuation`, `AtomSignature`, `HasBadAtomOn`, `SignatureZero`, `no_hasBadAtomOn_of_signatureZero`, `signatureZero_iff_no_hasBadAtomOn`, `AtomVanishingBridge` を追加済み。 | no atom は selected measured axis に限る。unmeasured axis safety、global future safety は結論しない。 |
-| repair / evolution / extension atom | `RepairAtom`, `EvolutionAtom`, `AtomDelta`, `AtomTrace`, `AtomSafeRegion`, `ExtensionAtomFormula` を skeleton として追加済み。`AtomSafeRegion.safe` は forbidden atom を含まない proof field。 | repair monotonicity は selected axis / selected atom family に限定する。all axes non-increasing は主張しない。 |
-| Phase 1/2/3 theorem package | `SolidCleanAtomPackage`, `SemanticRuntimeAtomPackage`, `AtomicSFTBridgePackage`, `FieldAtoms`, `field_atom_sound` と examples を追加済み。 | SOLID / Clean から global decomposability は出ない。static zero から semantic / runtime safety は出ない。SFT bridge は forecast correctness や global future safety を主張しない。 |
+| support / measurement boundary v2 | `Support`, `SupportSubset`, `ProperSubsupport`, `MeasurementStatus`, `ObservationStatus`, `ObservationGap` を追加済み。`SupportSubset.refl/trans`, `observedAtom_rejected_not_measured`, `observedAtom_uncertain_not_measured`, `observationGap_not_measuredZero` は proved。 | support は primitive atom の typed witness boundary であり、coverage gap や rejected candidate を atom として保存しない。 |
+| atom delta / trace v2 | `AtomDelta`, `PresentedAtomDelta`, `AtomTrace` を validated `AtomPresentation` 間の変化として追加済み。 | SFT の evolution は atom presentation の変化を読む。repair step や extension formula を atom として扱わない。 |
 
 ## 現在の未解決カテゴリ
 

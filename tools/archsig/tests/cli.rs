@@ -166,6 +166,21 @@ fn cli_runs_archmap_primary_workflow() {
         validation_json["atomicObservationSummary"]["atomCandidateCount"], 4,
         "ArchMap validation must surface observed atom candidates"
     );
+    assert_eq!(
+        validation_json["atomicObservationSummary"]["promotableAtomCandidateCount"], 4,
+        "ArchMap validation must count atom candidates promotable to Lean-facing presentation"
+    );
+    assert_eq!(
+        validation_json["atomicObservationSummary"]["leanPresentationCandidateCount"], 6,
+        "ArchMap validation must retain atom, molecule, and circuit presentation candidates"
+    );
+    assert!(
+        validation_json["atomicObservationSummary"]["promotionBoundary"]
+            .as_str()
+            .expect("promotion boundary is present")
+            .contains("does not certify universal ArchitectureAtom truth"),
+        "promotion boundary must keep ArchMap candidates separate from certified atoms"
+    );
     assert!(
         validation_json["atomicObservationChecks"]
             .as_array()
