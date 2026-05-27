@@ -1907,6 +1907,28 @@ ArchMap / ArchSig は raw candidate から直接 theorem を作らず、
 Lean-facing `AtomPresentation` への promotion boundary を持つ。
 SFT は `ValidatedFieldAtomPresentation` / `PresentedAtomDelta` /
 `AtomicSFTPresentationBridgePackage` から field atoms と atom trace を読む。
+Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1268),
+[#1259](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1259),
+[#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262),
+[#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265),
+[#1266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1266),
+[#1261](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1261),
+[#1269](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1269),
+[#1264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1264),
+[#1270](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1270)
+では、この surface をさらに進め、`AtomGrammarExtensionPolicy`、
+`SelectedAtomUniverse` / `FiniteAtomMoleculeWitness`、`AtomVanishingBridge`
+`AtomLawfulnessBridge`、`AtomPresentationAATPackage`、
+`LayeringAtomArrangementLaw` / `ProjectionAtomArrangementLaw` /
+`ObservationAtomArrangementLaw`、`ResponsibilityRole` / `SRPAtomArrangementLaw`
+`CircuitDelta` / `CircuitTrace` / `AtomTraceForecastBoundary` を追加した。これにより、
+新しい atom kind / axis の追加方針、selected finite molecule witness、
+required-axis zero reading、coverage / exactness assumptions 下の lawfulness と
+no required circuit の bridge、validated presentation を AAT theorem package
+入力として読む境界、既存 AAT invariant の主要 subset を atom arrangement law
+として読む theorem surface、SRP を role-bearing responsibility molecule として読む
+surface、AtomTrace / CircuitTrace を SFT forecast boundary の入力として読む surface
+を Lean 側で明示できる。
 
 ### 15.1 First Core: Atoms as Abstract Finite Facts
 
@@ -1990,6 +2012,69 @@ valuation
 ```
 
 を先に安定させる。
+
+Issue #1268 以降の Lean surface では、constructor 追加そのものとは別に
+`AtomGrammarExtensionPolicy` を置く。これは、現在宣言されている
+`AtomKind` / `Axis` のうち、選択した presentation で許可する座標と、
+derived witness を primitive atom と混同しない境界を記録する。
+したがって、new atom family / axis を追加するときは、global taxonomy
+completeness を主張するのではなく、selected grammar policy と
+non-conclusion を更新する。
+
+Issue #1259 では、`SelectedAtomUniverse` と `FiniteAtomMoleculeWitness`
+を追加した。`AtomMolecule` は引き続き proof-carrying boundary を持つ
+predicate representation だが、selected universe に supported であることを
+別 witness として渡せる。
+
+Issue #1262 では、`SignatureZero` を required axis に制限して読む
+`AtomVanishingBridge` を追加した。これは selected measured required axis 上の
+no bad atom reading であり、zero curvature theorem 全体や unmeasured axis
+safety を結論しない。
+
+Issue #1265 では、`LawfulWithinAtomConfiguration` と
+`NoRequiredObstructionCircuit` を別 predicate として置き、その間を
+`AtomLawfulnessBridge` の bad witness completeness / coverage / exactness
+assumption で接続する。これにより、lawfulness を obstruction absence と
+定義しただけではなく、selected bad molecule が selected obstruction circuit を
+露出するという bridge theorem として扱う。
+
+Issue #1266 では、validated `AtomPresentation` を AAT 側へ渡す
+`AtomPresentationAATPackage` を追加した。この package は selected atoms /
+gaps、lawfulness bridge、vanishing bridge、promotion / validation / raw
+candidate boundary を同時に持つ。したがって ArchMap から来る surface は
+`ArchMapAtomObservationModel.promotedPresentation` を通じて AAT theorem package
+の入力になるが、raw candidate や validation pass 自体は certified atom truth
+や Lean theorem discharge にはならない。
+
+Issue #1261 では、既存の `StrictLayered`、`ProjectionSound`、
+`ObservationallyEquivalent` を直接置き換えず、`LayeringAtomArrangementLaw`、
+`ProjectionAtomArrangementLaw`、`ObservationAtomArrangementLaw` から読む bridge を
+追加した。boundary leak、concrete bypass、projection failure は primitive atom
+ではなく、`BoundaryLeakObstructionCandidate` /
+`ConcreteBypassObstructionCandidate` /
+`ProjectionFailureObstructionCandidate` として law-relative obstruction circuit
+candidate に留める。
+
+Issue #1269 では、`ResponsibilityRole` を atom ではなく `AtomMolecule` に
+付く role として置き、`ResponsibilityMoleculeCoherent` /
+`SRPResponsibilityMoleculeCoherent` で selected responsibility boundary との
+整合を読む。`SRPAtomArrangementLaw` は selected atom-molecule lawfulness から
+bounded SRP surface の total / functional assignment / local cohesion を復元する
+bridge であり、SRP failure は `SRPFailureObstructionCandidate` として
+law-relative malformed molecule に留める。
+
+Issue #1264 では、`CircuitDelta` / `CircuitTrace` を law-relative
+obstruction circuit の trace surface として追加し、`AtomTraceForecastBoundary`
+で `AtomTrace` と `CircuitTrace` を selected `ForecastCone` membership に添える。
+この bridge は horizon bound と governed-or-typed-boundary-failure branch を
+取り出せるが、forecast correctness、probability、calibration、global future
+safety は結論しない。
+
+Issue #1270 では、`docs/tool/atom_handoff.md` を追加し、ArchMap / ArchSig、
+Lean AAT、SFT / FieldSig の handoff checklist を同期した。これにより、
+`atomCandidates`、`moleculeCandidates`、`obstructionCircuitCandidates`、
+`observationGaps`、`nonConclusions` が同じ境界語彙で読まれ、raw candidate /
+validation pass が theorem claim へ昇格しないことを tooling docs 側にも固定する。
 
 ### 15.4 Responsibility as Molecule
 

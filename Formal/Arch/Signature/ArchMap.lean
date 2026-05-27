@@ -385,6 +385,73 @@ def promotedPresentation
     (M : ArchMapAtomObservationModel C E D) : AtomPresentation C E D :=
   M.presentation
 
+/-- The forbidden claim that raw ArchMap candidates certify universal atom truth. -/
+def RawCandidateCertificationClaim
+    (_M : ArchMapAtomObservationModel C E D) : Prop :=
+  False
+
+/-- The forbidden claim that an ArchMap validation pass discharges Lean theorems. -/
+def ValidationPassTheoremDischargeClaim
+    (_M : ArchMapAtomObservationModel C E D) : Prop :=
+  False
+
+/-- AAT package input boundary exposed by an ArchMap atom observation model. -/
+def AATPackageInputBoundary
+    (M : ArchMapAtomObservationModel C E D)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop)
+    (signature : AtomSignature C E D)
+    (requiredAxis : Axis -> Prop) :
+    AtomPresentationAATPackage
+      (promotedPresentation M) law requiredMolecule signature requiredAxis ->
+      Prop :=
+  fun _pkg =>
+    PromotionBoundary M ∧
+    ¬ RawCandidateCertificationClaim M ∧
+    ¬ ValidationPassTheoremDischargeClaim M
+
+/-- ArchMap exposes the promoted presentation as the AAT package input. -/
+theorem promotedPresentation_available_to_aat
+    (M : ArchMapAtomObservationModel C E D) :
+    promotedPresentation M = M.presentation :=
+  rfl
+
+/--
+The ArchMap atom observation surface records that raw candidates are not
+certified universal atom truth.
+-/
+theorem rawCandidate_not_certifiedAtomTruth
+    (M : ArchMapAtomObservationModel C E D) :
+    ¬ RawCandidateCertificationClaim M := by
+  intro h
+  exact h
+
+/--
+The ArchMap atom observation surface records that validation does not discharge
+Lean theorem claims.
+-/
+theorem validationPass_not_leanTheoremDischarge
+    (M : ArchMapAtomObservationModel C E D) :
+    ¬ ValidationPassTheoremDischargeClaim M := by
+  intro h
+  exact h
+
+/-- A concrete AAT package over the promoted presentation records the ArchMap boundary. -/
+theorem aatPackageInputBoundary_recorded
+    {M : ArchMapAtomObservationModel C E D}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {signature : AtomSignature C E D}
+    {requiredAxis : Axis -> Prop}
+    (pkg :
+      AtomPresentationAATPackage
+        (promotedPresentation M) law requiredMolecule signature requiredAxis)
+    (hPromotion : PromotionBoundary M) :
+    AATPackageInputBoundary M law requiredMolecule signature requiredAxis pkg :=
+  ⟨hPromotion,
+    rawCandidate_not_certifiedAtomTruth M,
+    validationPass_not_leanTheoremDischarge M⟩
+
 end ArchMapAtomObservationModel
 
 namespace Examples
