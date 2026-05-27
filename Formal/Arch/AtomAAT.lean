@@ -353,6 +353,159 @@ theorem pure_repair_law_does_not_create_atoms
   AtomAxiomatizedPureRepairPackage.law_does_not_create_atoms
     suite.pureRepairPackage
 
+/-- The unified suite exposes the Signature-free atom synthesis package. -/
+def pureSynthesisPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomAxiomatizedPureSynthesisPackage suite.pureCore SynthesisState where
+  law := suite.aat.zeroCurvature.law
+  requiredMolecule := suite.aat.zeroCurvature.requiredMolecule
+  lawOnSurface := suite.pureCoreLawOnSurface
+  requiredMoleculesOnSurface := by
+    intro molecule hRequired
+    have hMolecule :
+        suite.aat.surface.molecules molecule :=
+      suite.aat.requiredMoleculesOnSurface molecule hRequired
+    simpa [suite.pureCoreSurfaceMatches] using hMolecule
+  spec := {
+    stateHasAtom := suite.synthesisSpec.stateHasAtom
+    stateHasMolecule := suite.synthesisSpec.stateHasMolecule
+    stateHasLaw := suite.synthesisSpec.stateHasLaw
+    stateNoRequiredObstructionCircuit :=
+      suite.synthesisSpec.stateNoRequiredObstructionCircuit
+    stateNoRequiredObstructionCircuitSound :=
+      suite.synthesisSpec.stateNoRequiredObstructionCircuitSound
+    interpretationBoundary := suite.synthesisSpec.interpretationBoundary
+    nonConclusions := suite.synthesisSpec.nonConclusions }
+  candidate := suite.synthesisCandidate
+  candidateAtoms := by
+    intro atom hAtom
+    have hAtomAAT :
+        suite.aat.surface.atoms atom := by
+      simpa [suite.pureCoreSurfaceMatches] using hAtom
+    exact suite.synthesisCandidateAtoms atom hAtomAAT
+  candidateMolecules := by
+    intro molecule hMolecule
+    have hMoleculeAAT :
+        suite.aat.surface.molecules molecule := by
+      simpa [suite.pureCoreSurfaceMatches] using hMolecule
+    exact suite.synthesisCandidateMolecules molecule hMoleculeAAT
+  candidateLaws := by
+    intro law hLaw
+    have hLawAAT :
+        suite.aat.surface.laws law := by
+      simpa [suite.pureCoreSurfaceMatches] using hLaw
+    exact suite.synthesisCandidateLaws law hLawAAT
+  candidateNoRequiredObstructionCircuit :=
+    suite.synthesisCandidateNoRequiredObstructionCircuit
+  lawfulnessBridge := suite.aat.zeroCurvature.lawfulnessBridge
+  noArchitectureSignatureDependency := True
+  noArchitectureSignatureDependencyEvidence := trivial
+  coverageAssumptions := suite.coverageAssumptions
+  exactnessAssumptions := suite.exactnessAssumptions
+  synthesisBoundary := suite.suiteBoundary
+  nonConclusions := suite.nonConclusions
+
+/-- The pure synthesis component is independent of ArchitectureSignature. -/
+theorem pure_synthesis_independent_of_architecture_signature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    suite.pureSynthesisPackage.noArchitectureSignatureDependency :=
+  AtomAxiomatizedPureSynthesisPackage.independent_of_architecture_signature
+    suite.pureSynthesisPackage
+
+/--
+The central suite's synthesis candidate satisfies atom-generated constraints
+before Signature reading.
+-/
+theorem pure_synthesis_candidate_satisfies
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ArchitectureSatisfies
+      suite.pureSynthesisPackage.system
+      suite.synthesisCandidate :=
+  AtomAxiomatizedPureSynthesisPackage.candidate_satisfies
+    suite.pureSynthesisPackage
+
+/-- The central suite's synthesis candidate gives atom-level zero curvature. -/
+theorem pure_synthesis_candidate_atomZeroCurvature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomZeroCurvature
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  AtomAxiomatizedPureSynthesisPackage.candidate_atomZeroCurvature
+    suite.pureSynthesisPackage
+
+/-- Synthesis-derived zero curvature is available as an atom-only theorem package. -/
+def pureSynthesisZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomZeroCurvatureTheoremPackage suite.pureCore :=
+  AtomAxiomatizedPureSynthesisPackage.atomZeroCurvatureTheoremPackage
+    suite.pureSynthesisPackage
+
+/--
+Synthesis-derived zero curvature uses the same selected law that does not
+create atom existence.
+-/
+theorem pure_synthesis_law_does_not_create_atoms
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).lawDoesNotCreateAtoms :=
+  AtomAxiomatizedPureSynthesisPackage.law_does_not_create_atoms
+    suite.pureSynthesisPackage
+
 /-- The operation component as the existing operation package. -/
 def operationPackage
     {C : Type u} {A : Type v} {Obs : Type w}

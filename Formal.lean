@@ -18,6 +18,7 @@ import Formal.Arch.Repair.RepairSynthesis
 import Formal.Arch.Repair.RepairSynthesisExamples
 import Formal.Arch.Repair.AtomPureRepair
 import Formal.Arch.Repair.AtomRepair
+import Formal.Arch.Repair.AtomPureSynthesis
 import Formal.Arch.Repair.AtomSynthesis
 import Formal.Arch.Extension.SplitExtensionLifting
 import Formal.Arch.Evolution.ArchitecturePath

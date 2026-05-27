@@ -24,6 +24,67 @@ def noEdgeAtomSynthesisSpec :
   interpretationBoundary := True
   nonConclusions := True
 
+def noEdgePureAtomSynthesisPackage :
+    AtomAxiomatizedPureSynthesisPackage
+      noEdgePureAtomAxiomatizedAATCore AtomSynthesisState where
+  law := noBadAtomLaw
+  requiredMolecule := allSelectedMolecules
+  lawOnSurface := rfl
+  requiredMoleculesOnSurface := by
+    intro molecule _hRequired
+    trivial
+  spec := noEdgeAtomSynthesisSpec
+  candidate := AtomSynthesisState.candidate
+  candidateAtoms := by
+    intro atom hAtom
+    exact hAtom
+  candidateMolecules := by
+    intro molecule hMolecule
+    exact hMolecule
+  candidateLaws := by
+    intro law hLaw
+    exact hLaw
+  candidateNoRequiredObstructionCircuit := trivial
+  lawfulnessBridge := noBadAtomLawfulnessBridge
+  noArchitectureSignatureDependency := True
+  noArchitectureSignatureDependencyEvidence := trivial
+  coverageAssumptions := True
+  exactnessAssumptions := True
+  synthesisBoundary := True
+  nonConclusions := True
+
+theorem noEdgePureAtomSynthesis_independent_of_signature :
+    noEdgePureAtomSynthesisPackage.noArchitectureSignatureDependency := by
+  exact
+    AtomAxiomatizedPureSynthesisPackage.independent_of_architecture_signature
+      noEdgePureAtomSynthesisPackage
+
+theorem noEdgePureAtomSynthesis_candidate_satisfies :
+    ArchitectureSatisfies
+      noEdgePureAtomSynthesisPackage.system
+      noEdgePureAtomSynthesisPackage.candidate := by
+  exact
+    AtomAxiomatizedPureSynthesisPackage.candidate_satisfies
+      noEdgePureAtomSynthesisPackage
+
+theorem noEdgePureAtomSynthesis_candidate_atomZeroCurvature :
+    AtomZeroCurvature noBadAtomLaw allSelectedMolecules := by
+  exact
+    AtomAxiomatizedPureSynthesisPackage.candidate_atomZeroCurvature
+      noEdgePureAtomSynthesisPackage
+
+theorem noEdgePureAtomSynthesis_candidate_atomLawful :
+    LawfulWithinAtomConfiguration noBadAtomLaw allSelectedMolecules := by
+  exact
+    AtomAxiomatizedPureSynthesisPackage.candidate_atomLawful
+      noEdgePureAtomSynthesisPackage
+
+theorem noEdgePureAtomSynthesis_law_does_not_create_atoms :
+    (noEdgePureAtomAxiomatizedAATCore.lawSeparation noBadAtomLaw rfl).lawDoesNotCreateAtoms := by
+  exact
+    AtomAxiomatizedPureSynthesisPackage.law_does_not_create_atoms
+      noEdgePureAtomSynthesisPackage
+
 def noEdgeAtomAxiomatizedSynthesisPackage :
     AtomAxiomatizedSynthesisPackage
       noEdgeArchitectureLawModel Edge Diagram AtomSynthesisState where

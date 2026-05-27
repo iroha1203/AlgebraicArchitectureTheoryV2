@@ -127,6 +127,36 @@ theorem noEdgeAtomSuite_pure_repair_law_does_not_create_atoms :
     AtomAxiomatizedTheoremSuite.pure_repair_law_does_not_create_atoms
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_pure_synthesis_independent_of_signature :
+    noEdgeAtomAxiomatizedTheoremSuite.pureSynthesisPackage.noArchitectureSignatureDependency := by
+  exact
+    AtomAxiomatizedTheoremSuite.pure_synthesis_independent_of_architecture_signature
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_pure_synthesis_candidate_satisfies :
+    ArchitectureSatisfies
+      noEdgeAtomAxiomatizedTheoremSuite.pureSynthesisPackage.system
+      noEdgeAtomAxiomatizedTheoremSuite.synthesisCandidate := by
+  exact
+    AtomAxiomatizedTheoremSuite.pure_synthesis_candidate_satisfies
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_pure_synthesis_candidate_atomZeroCurvature :
+    AtomZeroCurvature
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.requiredMolecule := by
+  exact
+    AtomAxiomatizedTheoremSuite.pure_synthesis_candidate_atomZeroCurvature
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_pure_synthesis_law_does_not_create_atoms :
+    (noEdgeAtomAxiomatizedTheoremSuite.pureCore.lawSeparation
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.pureCoreLawOnSurface).lawDoesNotCreateAtoms := by
+  exact
+    AtomAxiomatizedTheoremSuite.pure_synthesis_law_does_not_create_atoms
+      noEdgeAtomAxiomatizedTheoremSuite
+
 theorem noEdgeAtomSuite_repair_architectureLawful :
     ArchitectureSignature.ArchitectureLawful
       noEdgeArchitectureLawModel := by
