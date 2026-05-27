@@ -857,6 +857,13 @@ reachability、support safety、`FieldUpdate`、`ConsequenceEnvelope`、AAT / Ar
 counterexample package の代表 declaration と non-conclusion boundary を束ねる metadata であり、
 calibration、extractor completeness、global future safety を theorem claim に昇格しない。
 
+Atom foundation との接続では、`AtomTrace` が validated atom presentation 間の変化を、
+`CircuitTrace` が law-relative obstruction-circuit delta を保持する。
+`AtomTraceForecastBoundary` はこれらを selected `ForecastCone` membership と合わせて
+読む bridge であり、horizon bound と governed-or-typed-boundary-failure branch を
+記録する。これは SFT forecast boundary の入力 surface であって、確率的予測、
+calibration、global future safety の theorem ではない。
+
 ### 17. Proposal Accounting and Review Mediation（proposal accounting と review mediation）
 
 Claim Level:

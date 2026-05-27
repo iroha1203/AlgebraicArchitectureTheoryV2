@@ -1,4 +1,5 @@
 import Formal.Arch.Evolution.SFTField
+import Formal.Arch.Evolution.SFTForecastCone
 import Formal.Arch.Law.Projection
 import Formal.Arch.Law.Observation
 import Formal.Arch.Patterns.SRPDesignPattern
@@ -1221,6 +1222,171 @@ structure AtomTrace (C : Type u) (E : Type v) (D : Type w) where
   finiteBoundary : Prop
   orderingBoundary : Prop
   nonConclusions : Prop
+
+/-- Law-relative obstruction-circuit delta between selected atom presentations. -/
+structure CircuitDelta
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D) where
+  created : AtomMolecule C E D -> Prop
+  removed : AtomMolecule C E D -> Prop
+  preserved : AtomMolecule C E D -> Prop
+  transformed :
+    AtomMolecule C E D -> AtomMolecule C E D -> Prop
+  createdCircuit :
+    ∀ molecule, created molecule -> ObstructionCircuit law molecule
+  removedCircuit :
+    ∀ molecule, removed molecule -> ObstructionCircuit law molecule
+  preservedCircuit :
+    ∀ molecule, preserved molecule -> ObstructionCircuit law molecule
+  evidenceBoundary : Prop
+  nonConclusions : Prop
+
+namespace CircuitDelta
+
+theorem created_bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    (delta : CircuitDelta law)
+    {molecule : AtomMolecule C E D}
+    (hCreated : delta.created molecule) :
+    law.Bad molecule :=
+  obstructionCircuit_bad (delta.createdCircuit molecule hCreated)
+
+theorem removed_bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    (delta : CircuitDelta law)
+    {molecule : AtomMolecule C E D}
+    (hRemoved : delta.removed molecule) :
+    law.Bad molecule :=
+  obstructionCircuit_bad (delta.removedCircuit molecule hRemoved)
+
+theorem preserved_bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    (delta : CircuitDelta law)
+    {molecule : AtomMolecule C E D}
+    (hPreserved : delta.preserved molecule) :
+    law.Bad molecule :=
+  obstructionCircuit_bad (delta.preservedCircuit molecule hPreserved)
+
+end CircuitDelta
+
+/-- Selected trace of law-relative obstruction-circuit deltas. -/
+structure CircuitTrace
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D) where
+  step : Nat -> CircuitDelta law -> Prop
+  finiteBoundary : Prop
+  lawRelativeBoundary : Prop
+  nonConclusions : Prop
+
+/--
+Bridge from AtomTrace / CircuitTrace into a selected SFT ForecastCone boundary.
+
+The bridge records that the SFT cone is read together with atom and circuit
+traces. It does not assert forecast correctness, probability, calibration, or
+global future safety.
+-/
+structure AtomTraceForecastBoundary
+    {Field : Type s} {Operation : Type q}
+    {C : Type u} {E : Type v} {D : Type w}
+    (support : OperationSupport Field Operation)
+    (relation : StepRelation Field Operation)
+    (source : Field) (horizon : Nat)
+    (target : Field)
+    (path : FieldPath support relation source target)
+    (law : DesignLaw C E D) where
+  coneMember :
+    ForecastCone support relation source horizon target path
+  atomTrace : AtomTrace C E D
+  circuitTrace : CircuitTrace law
+  atomTraceBoundary : Prop
+  circuitTraceBoundary : Prop
+  governedTraceBoundary : Prop
+  typedBoundaryFailure : Prop
+  governed_or_typedBoundaryFailure :
+    governedTraceBoundary ∨ typedBoundaryFailure
+  nonConclusions : Prop
+
+namespace AtomTraceForecastBoundary
+
+def ForecastCorrectnessClaim
+    {Field : Type s} {Operation : Type q}
+    {C : Type u} {E : Type v} {D : Type w}
+    {support : OperationSupport Field Operation}
+    {relation : StepRelation Field Operation}
+    {source : Field} {horizon : Nat}
+    {target : Field}
+    {path : FieldPath support relation source target}
+    {law : DesignLaw C E D}
+    (_bridge :
+      AtomTraceForecastBoundary
+        support relation source horizon target path law) : Prop :=
+  False
+
+theorem forecastCone
+    {Field : Type s} {Operation : Type q}
+    {C : Type u} {E : Type v} {D : Type w}
+    {support : OperationSupport Field Operation}
+    {relation : StepRelation Field Operation}
+    {source : Field} {horizon : Nat}
+    {target : Field}
+    {path : FieldPath support relation source target}
+    {law : DesignLaw C E D}
+    (bridge :
+      AtomTraceForecastBoundary
+        support relation source horizon target path law) :
+    ForecastCone support relation source horizon target path :=
+  bridge.coneMember
+
+theorem length_le_horizon
+    {Field : Type s} {Operation : Type q}
+    {C : Type u} {E : Type v} {D : Type w}
+    {support : OperationSupport Field Operation}
+    {relation : StepRelation Field Operation}
+    {source : Field} {horizon : Nat}
+    {target : Field}
+    {path : FieldPath support relation source target}
+    {law : DesignLaw C E D}
+    (bridge :
+      AtomTraceForecastBoundary
+        support relation source horizon target path law) :
+    ArchitecturePath.length path <= horizon :=
+  ForecastCone.length_le_horizon bridge.coneMember
+
+theorem governed_or_typedBoundaryFailure_recorded
+    {Field : Type s} {Operation : Type q}
+    {C : Type u} {E : Type v} {D : Type w}
+    {support : OperationSupport Field Operation}
+    {relation : StepRelation Field Operation}
+    {source : Field} {horizon : Nat}
+    {target : Field}
+    {path : FieldPath support relation source target}
+    {law : DesignLaw C E D}
+    (bridge :
+      AtomTraceForecastBoundary
+        support relation source horizon target path law) :
+    bridge.governedTraceBoundary ∨ bridge.typedBoundaryFailure :=
+  bridge.governed_or_typedBoundaryFailure
+
+theorem records_no_forecast_correctness
+    {Field : Type s} {Operation : Type q}
+    {C : Type u} {E : Type v} {D : Type w}
+    {support : OperationSupport Field Operation}
+    {relation : StepRelation Field Operation}
+    {source : Field} {horizon : Nat}
+    {target : Field}
+    {path : FieldPath support relation source target}
+    {law : DesignLaw C E D}
+    (bridge :
+      AtomTraceForecastBoundary
+        support relation source horizon target path law) :
+    ¬ ForecastCorrectnessClaim bridge := by
+  intro h
+  exact h
+
+end AtomTraceForecastBoundary
 
 /-- SFT package reading validated atom presentations and traces. -/
 structure AtomicSFTPresentationBridgePackage

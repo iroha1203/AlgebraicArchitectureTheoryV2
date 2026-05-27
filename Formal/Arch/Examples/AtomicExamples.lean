@@ -419,6 +419,75 @@ theorem apiSRPAtomArrangement_localCohesion :
     apiResponsibilityBoundary.EdgeCohesive noEdgeGraph :=
   apiSRPAtomArrangement.localCohesion_of_lawful noBadAtomLaw_lawful
 
+def unitOperationSupport : OperationSupport Unit Unit where
+  supports := fun _ _ => True
+  coverageAssumptions := True
+  supportBoundary := True
+  nonConclusions := True
+
+def unitStepRelation : StepRelation Unit Unit where
+  step := fun _ _ _ => True
+  coverageAssumptions := True
+  theoremBoundary := True
+  nonConclusions := True
+
+def emptyCircuitDelta : CircuitDelta noBadAtomLaw where
+  created := fun _ => False
+  removed := fun _ => False
+  preserved := fun _ => False
+  transformed := fun _ _ => False
+  createdCircuit := by
+    intro molecule hCreated
+    exact False.elim hCreated
+  removedCircuit := by
+    intro molecule hRemoved
+    exact False.elim hRemoved
+  preservedCircuit := by
+    intro molecule hPreserved
+    exact False.elim hPreserved
+  evidenceBoundary := True
+  nonConclusions := True
+
+def emptyCircuitTrace : CircuitTrace noBadAtomLaw where
+  step := fun _ delta => delta = emptyCircuitDelta
+  finiteBoundary := True
+  lawRelativeBoundary := True
+  nonConclusions := True
+
+def exampleAtomTraceForecastBoundary :
+    AtomTraceForecastBoundary
+      unitOperationSupport
+      unitStepRelation
+      ()
+      0
+      ()
+      (ArchitecturePath.nil ())
+      noBadAtomLaw where
+  coneMember := ForecastCone.nil_mem ()
+  atomTrace :=
+    { step := fun _ _ => False
+      finiteBoundary := True
+      orderingBoundary := True
+      nonConclusions := True }
+  circuitTrace := emptyCircuitTrace
+  atomTraceBoundary := True
+  circuitTraceBoundary := True
+  governedTraceBoundary := True
+  typedBoundaryFailure := False
+  governed_or_typedBoundaryFailure := Or.inl trivial
+  nonConclusions := True
+
+theorem exampleAtomTraceForecastBoundary_length_le_horizon :
+    ArchitecturePath.length
+      (@ArchitecturePath.nil Unit
+        (SupportedFieldStep unitOperationSupport unitStepRelation) ()) <= 0 :=
+  exampleAtomTraceForecastBoundary.length_le_horizon
+
+theorem exampleAtomTraceForecastBoundary_governed_or_typedFailure :
+    exampleAtomTraceForecastBoundary.governedTraceBoundary ∨
+      exampleAtomTraceForecastBoundary.typedBoundaryFailure :=
+  exampleAtomTraceForecastBoundary.governed_or_typedBoundaryFailure
+
 def exampleSoftwareField :
     SoftwareField Unit Component Edge Unit Unit Unit where
   state := ()

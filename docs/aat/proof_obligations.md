@@ -502,12 +502,14 @@ Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 [#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265),
 [#1266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1266),
 [#1261](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1261),
-[#1269](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1269)
+[#1269](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1269),
+[#1264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1264)
 では、Atom foundation の第一段階として grammar extension policy、selected finite
 atom universe / molecule witness、required-axis vanishing bridge、selected atom
 lawfulness / no required circuit bridge、AtomPresentation-to-AAT theorem package
 bridge、既存 AAT invariant の atom arrangement law reading、responsibility / SRP
-の role-bearing molecule reading を追加する。
+の role-bearing molecule reading、AtomTrace / CircuitTrace forecast boundary bridge
+を追加する。
 
 | 対象 | 現在の扱い | 残す境界 |
 | --- | --- | --- |
@@ -521,7 +523,7 @@ bridge、既存 AAT invariant の atom arrangement law reading、responsibility 
 | SFT presentation bridge v2 | `FieldAtomsFromPresentation`, `ValidatedFieldAtomPresentation`, `PresentedAtomDelta`, `AtomicSFTPresentationBridgePackage` を追加済み。 | SFT は raw candidate ではなく validated presentation を読む。forecast correctness と global future safety は主張しない。 |
 | atom valuation / vanishing bridge | `AtomValuation`, `AtomSignature`, `HasBadAtomOn`, `SignatureZero`, `RequiredAtomAxis`, `RequiredAtomSignatureZero`, `AtomVanishingBridge`, `no_hasBadAtomOn_of_signatureZero`, `signatureZero_iff_no_hasBadAtomOn`, `requiredAtomSignatureZero_of_signatureZero`, `AtomVanishingBridge.ofSignatureZero`, `AtomVanishingBridge.no_hasBadAtomOn_of_requiredAxis` を追加済み。 | no bad atom は selected measured required axis に限る。unmeasured axis safety、zero curvature theorem 全体、global future safety は結論しない。 |
 | support / measurement boundary v2 | `Support`, `SupportSubset`, `ProperSubsupport`, `MeasurementStatus`, `ObservationStatus`, `ObservationGap` を追加済み。`SupportSubset.refl/trans`, `observedAtom_rejected_not_measured`, `observedAtom_uncertain_not_measured`, `observationGap_not_measuredZero` は proved。 | support は primitive atom の typed witness boundary であり、coverage gap や rejected candidate を atom として保存しない。 |
-| atom delta / trace v2 | `AtomDelta`, `PresentedAtomDelta`, `AtomTrace` を validated `AtomPresentation` 間の変化として追加済み。 | SFT の evolution は atom presentation の変化を読む。repair step や extension formula を atom として扱わない。 |
+| atom delta / trace v2 | `AtomDelta`, `PresentedAtomDelta`, `AtomTrace`, `CircuitDelta`, `CircuitTrace`, `AtomTraceForecastBoundary`, `CircuitDelta.created_bad`, `removed_bad`, `preserved_bad`, `AtomTraceForecastBoundary.forecastCone`, `length_le_horizon`, `governed_or_typedBoundaryFailure_recorded`, `records_no_forecast_correctness` を追加済み。 | SFT の evolution は atom presentation / circuit trace の変化を forecast boundary の入力として読む。forecast correctness、probability、global future safety、raw candidate 由来の SFT theorem input は主張しない。 |
 
 ## 現在の未解決カテゴリ
 
