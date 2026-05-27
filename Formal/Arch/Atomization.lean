@@ -307,12 +307,160 @@ def axis {C : Type u} {E : Type v} {D : Type w} :
 end AtomPredicate
 
 /--
-Primitive architecture atom.
+Pure ontological atom.
 
-This is a boundary-free typed architectural fact.  It is not created by an
-observation boundary, a selected design law, a tool output, or an SFT event.
-The `evidenceBoundary` field records proof / documentation discipline for this
-Lean surface; it is not an existence condition for the atom.
+This is the theory object AAT begins from.  It has no support witness,
+evidence boundary, presentation status, tool output, or SFT forecast field.
+-/
+structure OntologicalAtom (C : Type u) (E : Type v) (D : Type w) where
+  kind : AtomKind
+  axis : Axis
+  typedPredicate : AtomPredicate C E D
+  typedPredicateKindAligned : typedPredicate.kind = kind
+  typedPredicateAxisAligned : typedPredicate.axis = axis
+  predicate : String
+  singleFact : Prop
+  singleFactEvidence : singleFact
+  predicatePreservation : Prop
+  predicatePreservationEvidence : predicatePreservation
+  boundaryIndependent : Prop
+  boundaryIndependentEvidence : boundaryIndependent
+  lawIndependent : Prop
+  lawIndependentEvidence : lawIndependent
+
+/-- Predicate spelling for primitive boundary-free ontology atoms. -/
+def PrimitiveOntologicalAtom {C : Type u} {E : Type v} {D : Type w}
+    (atom : OntologicalAtom C E D) : Prop :=
+  atom.kind.IsPrimitive ∧
+  atom.singleFact ∧
+  atom.predicatePreservation ∧
+  atom.boundaryIndependent ∧
+  atom.lawIndependent
+
+theorem primitiveOntologicalAtom_constructive
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : OntologicalAtom C E D) :
+    PrimitiveOntologicalAtom atom := by
+  exact
+    ⟨AtomKind.isPrimitive atom.kind,
+      atom.singleFactEvidence,
+      atom.predicatePreservationEvidence,
+      atom.boundaryIndependentEvidence,
+      atom.lawIndependentEvidence⟩
+
+namespace OntologicalAtom
+
+/-- A pure ontological atom's typed predicate determines its atom family. -/
+theorem typedPredicate_kind
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : OntologicalAtom C E D) :
+    atom.typedPredicate.kind = atom.kind :=
+  atom.typedPredicateKindAligned
+
+/-- A pure ontological atom's typed predicate determines its axis. -/
+theorem typedPredicate_axis
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : OntologicalAtom C E D) :
+    atom.typedPredicate.axis = atom.axis :=
+  atom.typedPredicateAxisAligned
+
+/-- Ontological atoms are independent of observation boundaries. -/
+theorem boundaryIndependent_of_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : OntologicalAtom C E D}
+    (h : PrimitiveOntologicalAtom atom) :
+    atom.boundaryIndependent :=
+  h.2.2.2.1
+
+/-- Ontological atoms are independent of selected design laws. -/
+theorem lawIndependent_of_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : OntologicalAtom C E D}
+    (h : PrimitiveOntologicalAtom atom) :
+    atom.lawIndependent :=
+  h.2.2.2.2
+
+end OntologicalAtom
+
+/--
+Atom ontology selected by a pure AAT reading.
+
+This is a premise-system surface over already-existing ontological atoms.  It is
+not an observation model and carries no support, evidence, validation, or
+forecast fields.
+-/
+structure AtomOntology (C : Type u) (E : Type v) (D : Type w) where
+  atoms : OntologicalAtom C E D -> Prop
+  atomIsPrimitive :
+    ∀ atom, atoms atom -> PrimitiveOntologicalAtom atom
+  atomBoundaryIndependent :
+    ∀ atom, atoms atom -> atom.boundaryIndependent
+  atomLawIndependent :
+    ∀ atom, atoms atom -> atom.lawIndependent
+  noObservationBoundaryDependency : Prop
+  noObservationBoundaryDependencyEvidence : noObservationBoundaryDependency
+  noLawCreatesAtoms : Prop
+  noLawCreatesAtomsEvidence : noLawCreatesAtoms
+  noToolOutputCreatesAtoms : Prop
+  noToolOutputCreatesAtomsEvidence : noToolOutputCreatesAtoms
+  noSFTForecastCreatesAtoms : Prop
+  noSFTForecastCreatesAtomsEvidence : noSFTForecastCreatesAtoms
+  openTaxonomyBoundary : Prop
+
+namespace AtomOntology
+
+theorem independent_of_observation
+    {C : Type u} {E : Type v} {D : Type w}
+    (ontology : AtomOntology C E D) :
+    ontology.noObservationBoundaryDependency :=
+  ontology.noObservationBoundaryDependencyEvidence
+
+theorem law_does_not_create_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    (ontology : AtomOntology C E D) :
+    ontology.noLawCreatesAtoms :=
+  ontology.noLawCreatesAtomsEvidence
+
+theorem tool_output_does_not_create_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    (ontology : AtomOntology C E D) :
+    ontology.noToolOutputCreatesAtoms :=
+  ontology.noToolOutputCreatesAtomsEvidence
+
+theorem sft_forecast_does_not_create_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    (ontology : AtomOntology C E D) :
+    ontology.noSFTForecastCreatesAtoms :=
+  ontology.noSFTForecastCreatesAtomsEvidence
+
+theorem selected_atom_is_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    (ontology : AtomOntology C E D)
+    {atom : OntologicalAtom C E D}
+    (hAtom : ontology.atoms atom) :
+    PrimitiveOntologicalAtom atom :=
+  ontology.atomIsPrimitive atom hAtom
+
+end AtomOntology
+
+/--
+Observation boundary attached to a compatibility `ArchitectureAtom` wrapper.
+
+This boundary records how an ontology atom is presented or supported by a
+selected surface.  It is not part of the atom ontology itself.
+-/
+structure AtomObservationBoundary (C : Type u) (E : Type v) (D : Type w) where
+  support : Support C E D
+  evidenceBoundary : Prop
+  nonConclusions : Prop
+
+/--
+Compatibility wrapper for an ontological atom plus observation boundary.
+
+The pure theory object is `ArchitectureAtom.ontology`.  The support and
+boundary fields are kept here for existing presentation and finite-witness APIs;
+they should be read as observation/presentation metadata, not as atom existence
+conditions.
 -/
 structure ArchitectureAtom (C : Type u) (E : Type v) (D : Type w) where
   kind : AtomKind
@@ -354,6 +502,56 @@ theorem primitiveArchitectureAtom_constructive
       atom.lawIndependentEvidence⟩
 
 namespace ArchitectureAtom
+
+/-- The boundary-free ontology atom carried by this compatibility wrapper. -/
+def ontology
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    OntologicalAtom C E D where
+  kind := atom.kind
+  axis := atom.axis
+  typedPredicate := atom.typedPredicate
+  typedPredicateKindAligned := atom.typedPredicateKindAligned
+  typedPredicateAxisAligned := atom.typedPredicateAxisAligned
+  predicate := atom.predicate
+  singleFact := atom.singleFact
+  singleFactEvidence := atom.singleFactEvidence
+  predicatePreservation := atom.predicatePreservation
+  predicatePreservationEvidence := atom.predicatePreservationEvidence
+  boundaryIndependent := atom.boundaryIndependent
+  boundaryIndependentEvidence := atom.boundaryIndependentEvidence
+  lawIndependent := atom.lawIndependent
+  lawIndependentEvidence := atom.lawIndependentEvidence
+
+/-- The presentation/evidence boundary carried outside the ontology atom. -/
+def observationBoundary
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    AtomObservationBoundary C E D where
+  support := atom.support
+  evidenceBoundary := atom.evidenceBoundary
+  nonConclusions := atom.nonConclusions
+
+/-- Compatibility wrappers expose primitive ontology atoms. -/
+theorem ontology_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    PrimitiveOntologicalAtom atom.ontology :=
+  primitiveOntologicalAtom_constructive atom.ontology
+
+/-- Observation boundaries do not create the ontology atom carried by a wrapper. -/
+theorem ontology_independent_of_observation_boundary
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    atom.ontology.boundaryIndependent :=
+  atom.boundaryIndependentEvidence
+
+/-- Design laws do not create the ontology atom carried by a wrapper. -/
+theorem ontology_independent_of_law
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    atom.ontology.lawIndependent :=
+  atom.lawIndependentEvidence
 
 /-- A primitive atom's typed predicate determines the atom family it declares. -/
 theorem typedPredicate_kind
@@ -1032,6 +1230,180 @@ theorem semantic_atom_of_selected_semantic_molecule
 
 end AATPureTheorySurface
 
+/--
+AAT surface whose first-class input is an atom ontology.
+
+This successor surface makes the dependency order explicit: AAT starts from an
+`AtomOntology`; compatibility `ArchitectureAtom` wrappers and presentations are
+only later readings of those ontology atoms.
+-/
+structure AATAtomOntologySurface (C : Type u) (E : Type v) (D : Type w) where
+  ontology : AtomOntology C E D
+  atoms : ArchitectureAtom C E D -> Prop
+  atomReadsOntology :
+    ∀ atom, atoms atom -> ontology.atoms atom.ontology
+  molecules : AtomMolecule C E D -> Prop
+  moleculeAtomsOnSurface :
+    ∀ molecule, molecules molecule ->
+      ∀ atom, molecule.atoms atom -> atoms atom
+  laws : DesignLaw C E D -> Prop
+  circuits :
+    ∀ {law : DesignLaw C E D} {molecule : AtomMolecule C E D},
+      laws law -> molecules molecule -> ObstructionCircuit law molecule -> Prop
+  moleculeBoundary : Prop
+  lawBoundary : Prop
+  patternInterpretationBoundary : Prop
+  noObservationDependency : Prop
+  noObservationDependencyEvidence : noObservationDependency
+  noSFTDependency : Prop
+  noSFTDependencyEvidence : noSFTDependency
+  nonConclusions : Prop
+
+namespace AATAtomOntologySurface
+
+/-- Selected wrappers read selected ontology atoms. -/
+theorem selected_atom_reads_ontology
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATAtomOntologySurface C E D)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : surface.atoms atom) :
+    surface.ontology.atoms atom.ontology :=
+  surface.atomReadsOntology atom hAtom
+
+/-- Selected ontology atoms are primitive. -/
+theorem selected_atom_ontology_is_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATAtomOntologySurface C E D)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : surface.atoms atom) :
+    PrimitiveOntologicalAtom atom.ontology :=
+  surface.ontology.selected_atom_is_primitive
+    (surface.selected_atom_reads_ontology hAtom)
+
+/-- The ontology surface is independent of observation boundaries. -/
+theorem independent_of_observation
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATAtomOntologySurface C E D) :
+    surface.noObservationDependency :=
+  surface.noObservationDependencyEvidence
+
+/-- The ontology surface is independent of SFT forecasting. -/
+theorem independent_of_sft
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATAtomOntologySurface C E D) :
+    surface.noSFTDependency :=
+  surface.noSFTDependencyEvidence
+
+/-- Selected molecules are closed over selected atoms on the ontology surface. -/
+theorem atom_of_selected_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATAtomOntologySurface C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : surface.molecules molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    surface.atoms atom :=
+  surface.moleculeAtomsOnSurface molecule hMolecule atom hAtom
+
+/--
+Selected molecules are supported by wrappers whose ontology atoms are selected
+by the first-class ontology.
+-/
+theorem selected_molecule_atoms_read_ontology
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATAtomOntologySurface C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : surface.molecules molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    surface.ontology.atoms atom.ontology :=
+  surface.selected_atom_reads_ontology
+    (surface.atom_of_selected_molecule hMolecule hAtom)
+
+end AATAtomOntologySurface
+
+namespace AATPureTheorySurface
+
+/--
+The ontology selected by an existing pure AAT surface.
+
+This preserves the existing `AATPureTheorySurface` API while making explicit
+that the selected ArchitectureAtom wrappers are readings of boundary-free
+ontology atoms.
+-/
+def atomOntology
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D) :
+    AtomOntology C E D where
+  atoms := fun ontologyAtom =>
+    ∃ atom, surface.atoms atom ∧ ontologyAtom = atom.ontology
+  atomIsPrimitive := by
+    intro ontologyAtom hAtom
+    rcases hAtom with ⟨atom, _hSelected, rfl⟩
+    exact ArchitectureAtom.ontology_primitive atom
+  atomBoundaryIndependent := by
+    intro ontologyAtom hAtom
+    rcases hAtom with ⟨atom, _hSelected, rfl⟩
+    exact ArchitectureAtom.ontology_independent_of_observation_boundary atom
+  atomLawIndependent := by
+    intro ontologyAtom hAtom
+    rcases hAtom with ⟨atom, _hSelected, rfl⟩
+    exact ArchitectureAtom.ontology_independent_of_law atom
+  noObservationBoundaryDependency := surface.noObservationDependency
+  noObservationBoundaryDependencyEvidence :=
+    surface.noObservationDependencyEvidence
+  noLawCreatesAtoms := True
+  noLawCreatesAtomsEvidence := trivial
+  noToolOutputCreatesAtoms := surface.noObservationDependency
+  noToolOutputCreatesAtomsEvidence := surface.noObservationDependencyEvidence
+  noSFTForecastCreatesAtoms := surface.noSFTDependency
+  noSFTForecastCreatesAtomsEvidence := surface.noSFTDependencyEvidence
+  openTaxonomyBoundary := surface.atomCoreBoundary
+
+/-- Existing pure surfaces can be read as ontology-first AAT surfaces. -/
+def atomOntologySurface
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D) :
+    AATAtomOntologySurface C E D where
+  ontology := surface.atomOntology
+  atoms := surface.atoms
+  atomReadsOntology := by
+    intro atom hAtom
+    exact ⟨atom, hAtom, rfl⟩
+  molecules := surface.molecules
+  moleculeAtomsOnSurface := surface.moleculeAtomsOnSurface
+  laws := surface.laws
+  circuits := surface.circuits
+  moleculeBoundary := surface.moleculeBoundary
+  lawBoundary := surface.lawBoundary
+  patternInterpretationBoundary := surface.patternInterpretationBoundary
+  noObservationDependency := surface.noObservationDependency
+  noObservationDependencyEvidence := surface.noObservationDependencyEvidence
+  noSFTDependency := surface.noSFTDependency
+  noSFTDependencyEvidence := surface.noSFTDependencyEvidence
+  nonConclusions := surface.nonConclusions
+
+/-- Pure AAT surfaces now expose a first-class Atom ontology. -/
+theorem selected_atom_reads_ontology
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : surface.atoms atom) :
+    surface.atomOntology.atoms atom.ontology :=
+  ⟨atom, hAtom, rfl⟩
+
+/-- Selected atoms on a pure surface are primitive as ontology atoms. -/
+theorem selected_atom_ontology_is_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : surface.atoms atom) :
+    PrimitiveOntologicalAtom atom.ontology :=
+  surface.atomOntology.selected_atom_is_primitive
+    (surface.selected_atom_reads_ontology hAtom)
+
+end AATPureTheorySurface
+
 /-- Tool-facing observation of a primitive atom. -/
 structure ObservedAtom (C : Type u) (E : Type v) (D : Type w) where
   atom : ArchitectureAtom C E D
@@ -1040,6 +1412,34 @@ structure ObservedAtom (C : Type u) (E : Type v) (D : Type w) where
   evidenceRef : String
   sourceBoundary : Prop
   nonConclusions : Prop
+
+namespace ObservedAtom
+
+/-- Observation reads the ontology atom carried by its wrapper. -/
+def observedOntology
+    {C : Type u} {E : Type v} {D : Type w}
+    (observed : ObservedAtom C E D) :
+    OntologicalAtom C E D :=
+  observed.atom.ontology
+
+/--
+An observation status is not an existence condition for the ontology atom it
+observes.
+-/
+theorem observes_boundary_free_ontology
+    {C : Type u} {E : Type v} {D : Type w}
+    (observed : ObservedAtom C E D) :
+    observed.observedOntology.boundaryIndependent :=
+  ArchitectureAtom.ontology_independent_of_observation_boundary observed.atom
+
+/-- Observation metadata does not turn a tool reading into a law-created atom. -/
+theorem observed_ontology_law_independent
+    {C : Type u} {E : Type v} {D : Type w}
+    (observed : ObservedAtom C E D) :
+    observed.observedOntology.lawIndependent :=
+  ArchitectureAtom.ontology_independent_of_law observed.atom
+
+end ObservedAtom
 
 /-- Observation gap, kept separate from atom existence. -/
 structure ObservationGap (C : Type u) (E : Type v) (D : Type w) where
@@ -1072,6 +1472,23 @@ theorem observationGap_not_measuredZero
     (gap : ObservationGap C E D) :
     gap.measurementStatus ≠ MeasurementStatus.measuredZero :=
   gap.notMeasuredZero
+
+namespace ObservationGap
+
+/-- Observation gaps record missing presentation, not atom non-existence. -/
+def AtomExistenceClaim
+    {C : Type u} {E : Type v} {D : Type w}
+    (_gap : ObservationGap C E D) : Prop :=
+  False
+
+theorem no_atom_existence_claim
+    {C : Type u} {E : Type v} {D : Type w}
+    (gap : ObservationGap C E D) :
+    ¬ gap.AtomExistenceClaim := by
+  intro h
+  exact h
+
+end ObservationGap
 
 /--
 Validated Lean-facing atom presentation.
