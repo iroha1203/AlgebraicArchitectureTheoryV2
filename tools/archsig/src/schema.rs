@@ -1555,13 +1555,17 @@ pub struct ArchMapValidationReportV0 {
 pub struct ArchMapAtomicObservationSummary {
     pub atom_candidate_count: usize,
     pub observed_atom_count: usize,
+    pub promotable_atom_candidate_count: usize,
+    pub rejected_or_uncertain_candidate_count: usize,
     pub molecule_candidate_count: usize,
     pub observed_molecule_count: usize,
     pub obstruction_circuit_candidate_count: usize,
     pub observed_circuit_count: usize,
     pub observation_gap_count: usize,
+    pub lean_presentation_candidate_count: usize,
     pub sft_handoff_ref_count: usize,
     pub zero_curvature_reading: String,
+    pub promotion_boundary: String,
     pub boundary: String,
     pub non_conclusions: Vec<String>,
 }

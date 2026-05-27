@@ -1,282 +1,229 @@
 import Formal.Arch.Atomization
-import Formal.Arch.Examples.StaticSemanticCounterexample
 
-namespace Formal.Arch
-
-namespace AtomicExamples
+namespace Formal.Arch.AtomicExamples
 
 inductive Component where
-  | core
-  | adapter
+  | api
+  | database
   deriving DecidableEq, Repr
 
 inductive Edge where
-  | directAdapter
+  | apiToDatabase
   deriving DecidableEq, Repr
 
 inductive Diagram where
-  | roundingSquare
+  | writePath
   deriving DecidableEq, Repr
 
-def badDirectAdapter : Edge -> Prop
-  | .directAdapter => True
-
-def supportDirectAdapter : Support Component Edge Diagram :=
-  Support.edge Edge.directAdapter
-
-theorem directAdapter_forbidden_minimal :
-    MinimalSupport
-      (SingleEdgePolicyViolation (C := Component) (D := Diagram)
-        badDirectAdapter Edge.directAdapter)
-      supportDirectAdapter := by
-  exact singleEdgePolicyViolation_minimal badDirectAdapter trivial
-
-def measuredForbiddenAtom : ArchitectureAtom Component Edge Diagram where
-  kind := AtomKind.forbiddenStaticEdge
+def componentAtom : ArchitectureAtom Component Edge Diagram where
+  kind := AtomKind.component
   axis := Axis.static
-  polarity := Polarity.obstruction
-  support := supportDirectAdapter
-  status := MeasurementStatus.measuredNonzero
+  support := Support.component Edge Diagram Component.api
+  predicate := "component api exists"
   evidenceBoundary := True
   nonConclusions := True
 
-def exampleBoundary :
-    AtomizationBoundary Unit Component Edge Diagram where
-  requiredAxes := [Axis.static, Axis.coverage]
-  selectedAxis := fun axis => axis = Axis.static ∨ axis = Axis.coverage
-  atomKindAxis := fun
-    | AtomKind.forbiddenStaticEdge => Axis.static
-    | AtomKind.coverageGap _ => Axis.coverage
-    | _ => Axis.static
-  shapePredicate := fun _ kind support =>
-    kind = AtomKind.forbiddenStaticEdge ∧
-      SingleEdgePolicyViolation (C := Component) (D := Diagram)
-        badDirectAdapter Edge.directAdapter support
-  coverageGapPredicate := fun _ gap support =>
-    gap = CoverageGapKind.missingEvidence ∧ support = Support.diagram Diagram.roundingSquare
-  theoremBoundary := True
-  coverageAssumptions := True
-  exactnessAssumptions := True
-  classificationPriorityBoundary := True
+def relationAtom : ArchitectureAtom Component Edge Diagram where
+  kind := AtomKind.relation
+  axis := Axis.static
+  support := Support.edge Component Diagram Edge.apiToDatabase
+  predicate := "api depends on database"
+  evidenceBoundary := True
   nonConclusions := True
 
-theorem measuredForbiddenAtom_valid :
-    ValidAtom exampleBoundary () measuredForbiddenAtom := by
+theorem primitiveComponentAtom_primitive :
+    PrimitiveArchitectureAtom componentAtom := by
+  exact primitiveArchitectureAtom_constructive componentAtom
+
+theorem primitiveRelationAtom_primitive :
+    PrimitiveArchitectureAtom relationAtom := by
+  exact primitiveArchitectureAtom_constructive relationAtom
+
+def componentMolecule : AtomMolecule Component Edge Diagram where
+  atoms := fun atom => atom = componentAtom
+  finiteBoundary := True
+  nonConclusions := True
+
+def forbiddenEdgeMolecule : AtomMolecule Component Edge Diagram where
+  atoms := fun atom => atom = relationAtom
+  finiteBoundary := True
+  nonConclusions := True
+
+def forbiddenEdgeLaw : DesignLaw Component Edge Diagram where
+  Bad := fun molecule => molecule.atoms relationAtom
+  selectedBoundary := True
+  nonConclusions := True
+
+theorem singletonForbiddenMolecule_obstruction :
+    ObstructionCircuit forbiddenEdgeLaw forbiddenEdgeMolecule := by
   constructor
   · rfl
-  · constructor
-    · exact ⟨rfl, directAdapter_forbidden_minimal.1⟩
-    · intro T hProper hShape
-      exact directAdapter_forbidden_minimal.2 T hProper hShape.2
+  · intro N hProper hBad
+    apply hProper.2
+    intro atom hAtom
+    have hEq : atom = relationAtom := by
+      simpa [forbiddenEdgeMolecule] using hAtom
+    rw [hEq]
+    exact hBad
 
-def exampleCertificate :
-    AtomizationCertificate Unit Component Edge Diagram exampleBoundary () where
-  atoms := [measuredForbiddenAtom]
-  allValid := by
-    intro a hMem
-    simp [measuredForbiddenAtom] at hMem
-    cases hMem
-    exact measuredForbiddenAtom_valid
-  rejectedCandidateBoundary := True
-  coverageGapBoundary := True
+def rejectedPrimitiveCandidate : ObservedAtom Component Edge Diagram where
+  atom := relationAtom
+  observationStatus := ObservationStatus.rejectedCandidate
+  measurementStatus := MeasurementStatus.rejectedCandidate
+  evidenceRef := "archmap:candidate:rejected"
+  sourceBoundary := True
   nonConclusions := True
 
-def exampleAtomizer : Atomizer Unit Component Edge Diagram exampleBoundary where
-  atomize := fun X => by
-    cases X
-    exact exampleCertificate
-  sound := by
-    intro X a hMem
-    cases X
-    exact exampleCertificate.allValid a hMem
-  completenessBoundary := True
+theorem rejectedPrimitiveCandidate_not_measured :
+    ¬ rejectedPrimitiveCandidate.measurementStatus.SupportsMeasurement := by
+  exact observedAtom_rejected_not_measured rejectedPrimitiveCandidate rfl
+
+def uncertainPrimitiveCandidate : ObservedAtom Component Edge Diagram where
+  atom := relationAtom
+  observationStatus := ObservationStatus.uncertainCandidate
+  measurementStatus := MeasurementStatus.uncertainCandidate
+  evidenceRef := "archmap:candidate:uncertain"
+  sourceBoundary := True
   nonConclusions := True
 
-theorem example_atomize_sound :
-    ∀ a, a ∈ (exampleAtomizer.atomize ()).atoms ->
-      ValidAtom exampleBoundary () a := by
-  intro a hMem
-  exact atomize_sound exampleAtomizer hMem
+theorem uncertainPrimitiveCandidate_not_measured :
+    ¬ uncertainPrimitiveCandidate.measurementStatus.SupportsMeasurement := by
+  exact observedAtom_uncertain_not_measured uncertainPrimitiveCandidate rfl
 
-theorem example_atomize_sound_measuredForbiddenAtom :
-    ValidAtom exampleBoundary () measuredForbiddenAtom := by
-  exact example_atomize_sound measuredForbiddenAtom (by simp [exampleAtomizer, exampleCertificate])
-
-def staticSignatureWithForbidden : AtomSignature where
-  valuation := {
-    count := fun axis =>
-      match axis with
-      | Axis.static => 1
-      | _ => 0
-    status := fun axis =>
-      match axis with
-      | Axis.static => MeasurementStatus.measuredNonzero
-      | Axis.coverage => MeasurementStatus.unmeasured
-      | _ => MeasurementStatus.measuredZero
-    evidenceBoundary := fun _ => True
-    nonConclusions := True
-  }
-  theoremBoundary := True
-  coverageBoundary := True
-  exactnessBoundary := True
-  atomCoverCompleteness := True
+def runtimeObservationGap : ObservationGap Component Edge Diagram where
+  expectedKind := AtomKind.runtimeInteraction
+  expectedAxis := Axis.runtime
+  support := Support.diagram Component Edge Diagram.writePath
+  measurementStatus := MeasurementStatus.dynamicBlindSpot
+  notMeasuredZero := by
+    intro h
+    cases h
+  sourceBoundary := True
   nonConclusions := True
 
-def staticSignatureZero : AtomSignature where
-  valuation := {
-    count := fun _ => 0
-    status := fun
-      | Axis.coverage => MeasurementStatus.unmeasured
-      | _ => MeasurementStatus.measuredZero
-    evidenceBoundary := fun _ => True
-    nonConclusions := True
-  }
-  theoremBoundary := True
-  coverageBoundary := True
-  exactnessBoundary := True
-  atomCoverCompleteness := True
+theorem runtimeObservationGap_not_measuredZero :
+    runtimeObservationGap.measurementStatus ≠ MeasurementStatus.measuredZero := by
+  exact observationGap_not_measuredZero runtimeObservationGap
+
+def exampleAtomPresentation : AtomPresentation Component Edge Diagram where
+  observed := fun observed => observed = rejectedPrimitiveCandidate
+  gaps := fun gap => gap = runtimeObservationGap
+  promotionBoundary := True
+  validationBoundary := True
+  rawCandidateBoundary := True
+  nonConclusions := True
+
+theorem exampleAtomPresentation_recordsPromotionBoundary :
+    exampleAtomPresentation.promotionBoundary := by
+  trivial
+
+def exampleAtomSignature : AtomSignature Component Edge Diagram where
+  valuation := fun _ => MeasurementStatus.measuredZero
+  badOn := fun _ => False
+  measuredBoundary := True
+  nonConclusions := True
+
+def examplePresentedAtomSignature :
+    PresentedAtomSignature Component Edge Diagram where
+  presentation := exampleAtomPresentation
+  signature := exampleAtomSignature
+  valuationBoundary := True
   nonConclusions := True
 
 theorem staticSignatureZero_no_static_bad_atom :
-    ¬ HasBadAtomOn staticSignatureZero Axis.static := by
-  exact no_hasBadAtomOn_of_signatureZero ⟨rfl, rfl⟩
+    SignatureZero exampleAtomSignature := by
+  intro atom hBad
+  exact hBad.1
 
-theorem coverage_unmeasured_not_signatureZero :
-    ¬ SignatureZero staticSignatureZero Axis.coverage := by
-  intro hZero
-  cases hZero.1
-
-def exampleStaticAtomPackage :
-    StaticAtomV0Package Component Edge Diagram where
-  forbiddenEdgeBad := badDirectAdapter
-  boundaryLeakBad := badDirectAdapter
-  abstractionLeakBad := badDirectAdapter
-  simpleCycleBad := fun _ => False
-  rankViolationBad := fun _ => False
-  coverageGapBad := fun S => S = Support.diagram Diagram.roundingSquare
-  forbiddenEdgeMinimal := by
-    intro e hBad
-    cases e
-    exact singleEdgePolicyViolation_minimal badDirectAdapter hBad
-  boundaryLeakMinimal := by
-    intro e hBad
-    cases e
-    exact singleEdgePolicyViolation_minimal badDirectAdapter hBad
-  abstractionLeakMinimal := by
-    intro e hBad
-    cases e
-    exact singleEdgePolicyViolation_minimal badDirectAdapter hBad
-  simpleCycleMinimal := by
-    intro S h
-    cases h
-  rankViolationMinimal := by
-    intro S h
-    cases h
-  coverageGapMinimal := by
-    intro S h
-    subst h
-    constructor
-    · rfl
-    · intro T hProper hEq
-      subst hEq
-      exact hProper.2 (SupportSubset.refl _)
-  staticZeroNonConclusion := True
-  noMatroidOrUniqueFactorizationConclusion := True
-
-theorem example_forbiddenStaticEdge_minimal :
-    MinimalSupport
-      (SingleEdgePolicyViolation (C := Component) (D := Diagram)
-        exampleStaticAtomPackage.forbiddenEdgeBad Edge.directAdapter)
-      (Support.edge Edge.directAdapter) :=
-  StaticAtomV0Package.forbiddenStaticEdge_minimal
-    exampleStaticAtomPackage trivial
-
-def exampleSolidCleanPackage :
-    SolidCleanAtomPackage Component Edge Diagram where
-  portAtoms := []
-  adapterAtoms := []
-  pureRuleAtoms := []
-  coordinatorAtoms := []
-  fatInterfaceAtoms := []
-  lspMismatchAtoms := []
-  projectionFailureAtoms := []
-  projectionSoundAtomTheorem := True
-  lspMismatchAtomTheorem := True
-  dipLocalSoundnessTheorem := True
-  solidNotGlobalDecomposability := True
+def exampleSoftwareField :
+    SoftwareField Unit Component Edge Unit Unit Unit where
+  state := ()
+  architectureProjection :=
+    { static :=
+        { edge := fun _ _ => False }
+      runtime :=
+        { edge := fun _ _ => False }
+      projection :=
+        { expose := fun _ => Edge.apiToDatabase }
+      abstractStatic :=
+        { edge := fun _ _ => False }
+      staticObservation :=
+        { observe := fun _ => () }
+      boundaryAllowed := fun _ _ => True
+      abstractionAllowed := fun _ _ => True
+      runtimeAllowed := fun _ _ => True
+      semantic :=
+        { eval := fun _ => () }
+      requiredSemantic := fun _ => False
+      measuredSemantic := [] }
+  observedSignatureRecord := True
+  historyBoundary := True
+  operationSupportBoundary := True
+  operationPolicyBoundary := True
+  constraintEnvironmentBoundary := True
+  observationModelBoundary := True
+  governanceInterventionBoundary := True
+  exogenousArtifactInputBoundary := True
+  fieldBoundary := True
   nonConclusions := True
 
-theorem example_solid_not_global_decomposability :
-    SolidCleanAtomPackage.solid_not_global_decomposability
-      exampleSolidCleanPackage := by
-  trivial
-
-def exampleSemanticRuntimePackage :
-    SemanticRuntimeAtomPackage Component Edge Diagram where
-  runtimeEdgeAtoms := []
-  guardAtoms := []
-  runtimeExposureAtoms := []
-  nonCommutingSquareAtoms := []
-  effectLeakAtoms := []
-  replayViolationAtoms := []
-  compensationGapAtoms := []
-  staticZeroNotSemanticZero :=
-    StaticFlatWithin StaticSemanticCounterexample.canonicalFlatnessModel
-        StaticSemanticCounterexample.repairedUniverse ∧
-      ¬ ArchitectureFlat StaticSemanticCounterexample.canonicalFlatnessModel
-  runtimeProtectionLocalTheorem := True
-  nonCommutingSquareWitnessTheorem := True
-  noGlobalOperationalSafetyConclusion := True
-
-theorem example_static_zero_not_semantic_zero :
-    SemanticRuntimeAtomPackage.static_zero_not_semantic_zero
-      exampleSemanticRuntimePackage := by
-  exact StaticSemanticCounterexample.staticFlat_not_architectureFlat
-
-def exampleSafeRegion : AtomSafeRegion Component Edge Diagram where
-  forbidden := fun kind => kind = AtomKind.forbiddenStaticEdge
-  atoms := []
-  safe := by
-    intro a hMem
-    cases hMem
-  boundary := True
+def exampleValidatedFieldAtomPresentation :
+    ValidatedFieldAtomPresentation Unit Component Edge Unit Unit Unit Diagram where
+  field := exampleSoftwareField
+  presentation := exampleAtomPresentation
+  rawCandidateExcluded := True
+  validationBoundary := True
   nonConclusions := True
 
-def exampleAtomicSFTBridgePackage :
-    AtomicSFTBridgePackage Unit Unit Component Edge Diagram where
-  fieldAtoms := fun _ => [measuredForbiddenAtom]
-  atomDelta := fun _ _ _ => {
-    created := []
-    removed := []
-    preserved := [measuredForbiddenAtom]
-    transformed := []
-    hidden := []
-    exposed := []
-    unknown := []
-    forecastBoundary := True
-    nonConclusions := True
-  }
-  atomTrace := fun states => {
-    states := states
-    deltas := []
-    wellTyped := True
-    boundary := True
-    nonConclusions := True
-  }
-  safeRegion := exampleSafeRegion
-  fieldAtomSound := True
-  atomTraceSound := True
-  atomSafeSupport := True
-  atomConeNarrowingBoundary := True
-  fieldUpdateRecordsUnexpectedAtomBoundary := True
-  noGlobalFutureSafetyConclusion := True
-  noForecastCorrectnessConclusion := True
-
-theorem example_atomicSFT_records_no_global_future_safety :
-    AtomicSFTBridgePackage.records_no_global_future_safety
-      exampleAtomicSFTBridgePackage := by
+theorem example_validatedPresentation_excludes_raw_candidates :
+    exampleValidatedFieldAtomPresentation.rawCandidateExcluded := by
   trivial
 
-end AtomicExamples
+def exampleAtomDelta : AtomDelta Component Edge Diagram where
+  created := fun _ => False
+  removed := fun _ => False
+  preserved := fun atom => atom = componentAtom
+  transformed := fun _ _ => False
+  hidden := fun gap => gap = runtimeObservationGap
+  exposed := fun observed => observed = rejectedPrimitiveCandidate
+  unknown := fun _ => False
+  evidenceBoundary := True
+  nonConclusions := True
 
-end Formal.Arch
+def examplePresentedAtomDelta : PresentedAtomDelta Component Edge Diagram where
+  before := exampleAtomPresentation
+  after := exampleAtomPresentation
+  delta := exampleAtomDelta
+  validationBoundary := True
+  nonConclusions := True
+
+def exampleAtomTrace : AtomTrace Component Edge Diagram where
+  step := fun n delta => n = 0 ∧ delta = examplePresentedAtomDelta
+  finiteBoundary := True
+  orderingBoundary := True
+  nonConclusions := True
+
+def exampleAtomicSFTPresentationBridgePackage :
+    AtomicSFTPresentationBridgePackage Unit Component Edge Unit Unit Unit Diagram where
+  validatedPresentation := exampleValidatedFieldAtomPresentation
+  fieldAtoms := FieldAtomsFromPresentation
+    exampleValidatedFieldAtomPresentation.field
+    exampleValidatedFieldAtomPresentation.presentation
+  fieldAtomsSound := by
+    intro atom hAtom
+    exact hAtom
+  atomTrace := exampleAtomTrace
+  rawCandidateExcluded := True
+  forecastCorrectnessNonConclusion := True
+  globalFutureSafetyNonConclusion := True
+  nonConclusions := True
+
+theorem example_atomicSFTPresentation_excludes_raw_candidates :
+    exampleAtomicSFTPresentationBridgePackage.rawCandidateExcluded := by
+  trivial
+
+theorem example_atomicSFTPresentation_records_no_forecast_correctness :
+    exampleAtomicSFTPresentationBridgePackage.forecastCorrectnessNonConclusion := by
+  trivial
+
+end Formal.Arch.AtomicExamples

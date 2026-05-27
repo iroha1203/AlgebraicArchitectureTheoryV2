@@ -9,9 +9,9 @@ AAT/SFT における原子理論の再設計メモ
 This document is a v2 design note for the atomic layer of Algebraic Architecture
 Theory (AAT) and Software Field Theory (SFT).
 
-この文書は、archive 済みの
-[`aat_sft_atomic_theory.md`](../archive/2026-05-27-atomic-theory-v1/aat_sft_atomic_theory.md)
-の直接編集ではなく、原子の足場を問い直した新しい設計メモである。
+この文書は、v1 との互換性を保つための移行メモではなく、原子の足場を
+問い直した新しい設計メモである。実装側も v1 surface を保存せず、
+Atom v2 の primitive fact surface へ置き換える。
 
 v1 の中心的な問題は、原子を最初から次の形で置いたことだった。
 
@@ -1897,6 +1897,16 @@ Observation(actualTotal, ...)
 ---
 
 ## 15. Lean Formalization Plan
+
+Status: Issue [#1250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1250)
+で Atom v2 の Lean surface を実装した。`Formal/Arch/Atomization.lean` は
+`ArchitectureAtom` を primitive typed fact として置き、`ObstructionCircuit`
+を `DesignLaw` に相対化された minimal `AtomMolecule` として定義する。
+観測は `ObservedAtom` / `ObservationGap` / `AtomPresentation` に分離し、
+ArchMap / ArchSig は raw candidate から直接 theorem を作らず、
+Lean-facing `AtomPresentation` への promotion boundary を持つ。
+SFT は `ValidatedFieldAtomPresentation` / `PresentedAtomDelta` /
+`AtomicSFTPresentationBridgePackage` から field atoms と atom trace を読む。
 
 ### 15.1 First Core: Atoms as Abstract Finite Facts
 

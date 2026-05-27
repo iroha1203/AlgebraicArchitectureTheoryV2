@@ -1,83 +1,58 @@
-import Formal.Arch.Extension.Flatness
 import Formal.Arch.Evolution.SFTField
-import Formal.Arch.Evolution.SFTForecastCone
 
 namespace Formal.Arch
 
-universe u v w x y z
+universe u v w q r s
 
 /--
-Atom signature axes.
+Atom axes are selected coordinates of architectural observation.
 
-These axes are coordinates of a selected atomization boundary.  They are not a
-global taxonomy of all possible software phenomena.
+They are not scores, theorem discharges, or extractor completeness claims.
 -/
 inductive Axis where
   | static
-  | boundary
-  | abstraction
-  | lsp
-  | runtime
   | semantic
-  | state
-  | security
-  | resource
-  | field
-  | coverage
-  deriving DecidableEq, Repr
-
-/-- The role an atom plays inside the selected atomization boundary. -/
-inductive Polarity where
-  | constructive
-  | obstruction
-  | coverage
-  | repair
-  deriving DecidableEq, Repr
-
-/-- Boundary tags explaining why a coverage atom exists. -/
-inductive CoverageGapKind where
-  | missingEvidence
-  | unmeasuredAxis
-  | privateUnavailable
-  | dynamicBlindSpot
-  | outOfScope
-  | unknownUnmodeledRemainder
-  deriving DecidableEq, Repr
-
-/-- The atom families used by the AAT/SFT atomic layer. -/
-inductive AtomKind where
-  | component
-  | staticEdge
-  | runtimeEdge
-  | effectEdge
-  | port
-  | adapter
-  | pureRule
-  | coordinator
-  | stateCell
-  | guard
-  | forbiddenStaticEdge
-  | boundaryLeak
-  | abstractionLeak
-  | concreteBypass
-  | simpleCycle : Nat -> AtomKind
-  | projectionFailure
-  | lspMismatch
-  | fatInterface
-  | nonCommutingSquare
-  | runtimeExposure
-  | effectLeak
-  | replayViolation
-  | compensationGap
-  | complexityTransfer
-  | coverageGap : CoverageGapKind -> AtomKind
+  | runtime
+  | boundary
+  | dataflow
+  | governance
+  | evolution
+  | policy
   deriving DecidableEq, Repr
 
 /--
-Measurement status for one atom/signature axis.
+Atom v2 uses only primitive atom families here.  Obstructions, gaps, repairs,
+and SFT deltas are separate structures, not atom kinds.
+-/
+inductive AtomKind where
+  | component
+  | relation
+  | capability
+  | dataState
+  | effect
+  | boundaryAuthority
+  | observationContract
+  | runtimeInteraction
+  | evolutionHistory
+  | policy
+  | semantic
+  deriving DecidableEq, Repr
 
-`measuredZero` is deliberately different from `unmeasured`, rejected, or
-out-of-scope evidence.
+namespace AtomKind
+
+/-- In Atom v2 every `AtomKind` constructor in this file is primitive. -/
+def IsPrimitive (_kind : AtomKind) : Prop := True
+
+theorem isPrimitive (kind : AtomKind) : kind.IsPrimitive := by
+  trivial
+
+end AtomKind
+
+/--
+Measurement status of an observation.
+
+Rejected, uncertain, private, out-of-scope, and blind-spot states are not
+measured-zero evidence.
 -/
 inductive MeasurementStatus where
   | measuredZero
@@ -90,700 +65,461 @@ inductive MeasurementStatus where
   | uncertainCandidate
   deriving DecidableEq, Repr
 
-/--
-Finite witness support for an atom.
+namespace MeasurementStatus
 
-The fields are predicates rather than lists so the same API covers concrete
-components, relation/effect edges, and semantic diagrams.  Finiteness is
-supplied by `FiniteSupportUniverse`.
+/-- Statuses that carry a measurement rather than a boundary/gap marker. -/
+def SupportsMeasurement : MeasurementStatus -> Prop
+  | measuredZero => True
+  | measuredNonzero => True
+  | _ => False
+
+theorem rejectedCandidate_not_supportsMeasurement :
+    ¬ SupportsMeasurement rejectedCandidate := by
+  intro h
+  exact h
+
+theorem uncertainCandidate_not_supportsMeasurement :
+    ¬ SupportsMeasurement uncertainCandidate := by
+  intro h
+  exact h
+
+theorem unmeasured_not_measuredZero :
+    unmeasured ≠ measuredZero := by
+  intro h
+  cases h
+
+end MeasurementStatus
+
+/--
+Observation status is intentionally separate from atom existence.
+
+An architecture atom may exist as a primitive typed fact while a concrete
+tooling surface only observes, infers, rejects, or leaves it missing.
+-/
+inductive ObservationStatus where
+  | observed
+  | inferred
+  | approximated
+  | ambiguous
+  | missing
+  | contradicted
+  | privateUnavailable
+  | outOfScope
+  | rejectedCandidate
+  | uncertainCandidate
+  deriving DecidableEq, Repr
+
+/--
+Selected finite-support predicate for an atom.
+
+The support is a typed witness boundary.  It does not claim repository-wide
+extractor completeness.
 -/
 structure Support (C : Type u) (E : Type v) (D : Type w) where
-  comps : C -> Prop
+  components : C -> Prop
   edges : E -> Prop
   diagrams : D -> Prop
-
-namespace Support
-
-variable {C : Type u} {E : Type v} {D : Type w}
-
-/-- Empty support. -/
-def empty : Support C E D where
-  comps := fun _ => False
-  edges := fun _ => False
-  diagrams := fun _ => False
-
-/-- Single selected component support. -/
-def component (c : C) : Support C E D where
-  comps := fun x => x = c
-  edges := fun _ => False
-  diagrams := fun _ => False
-
-/-- Single selected edge support. -/
-def edge (e : E) : Support C E D where
-  comps := fun _ => False
-  edges := fun x => x = e
-  diagrams := fun _ => False
-
-/-- Single selected diagram / observation support. -/
-def diagram (d : D) : Support C E D where
-  comps := fun _ => False
-  edges := fun _ => False
-  diagrams := fun x => x = d
-
-end Support
-
-/-- Inclusion between supports. -/
-def SupportSubset {C : Type u} {E : Type v} {D : Type w}
-    (S T : Support C E D) : Prop :=
-  (∀ c, S.comps c -> T.comps c) ∧
-  (∀ e, S.edges e -> T.edges e) ∧
-  (∀ d, S.diagrams d -> T.diagrams d)
-
-namespace SupportSubset
-
-variable {C : Type u} {E : Type v} {D : Type w}
-
-/-- Support inclusion is reflexive. -/
-theorem refl (S : Support C E D) : SupportSubset S S :=
-  ⟨fun _ h => h, fun _ h => h, fun _ h => h⟩
-
-/-- Support inclusion is transitive. -/
-theorem trans {R S T : Support C E D}
-    (hRS : SupportSubset R S) (hST : SupportSubset S T) :
-    SupportSubset R T :=
-  ⟨fun c h => hST.1 c (hRS.1 c h),
-   fun e h => hST.2.1 e (hRS.2.1 e h),
-   fun d h => hST.2.2 d (hRS.2.2 d h)⟩
-
-/-- Support inclusion is antisymmetric up to predicate extensionality. -/
-theorem antisymm {S T : Support C E D}
-    (hST : SupportSubset S T) (hTS : SupportSubset T S) : S = T := by
-  rcases S with ⟨Sc, Se, Sd⟩
-  rcases T with ⟨Tc, Te, Td⟩
-  have hc : Sc = Tc := by
-    funext c
-    exact propext ⟨fun h => hST.1 c h, fun h => hTS.1 c h⟩
-  have he : Se = Te := by
-    funext e
-    exact propext ⟨fun h => hST.2.1 e h, fun h => hTS.2.1 e h⟩
-  have hd : Sd = Td := by
-    funext d
-    exact propext ⟨fun h => hST.2.2 d h, fun h => hTS.2.2 d h⟩
-  cases hc
-  cases he
-  cases hd
-  rfl
-
-end SupportSubset
-
-/-- Proper support inclusion. -/
-def ProperSubsupport {C : Type u} {E : Type v} {D : Type w}
-    (T S : Support C E D) : Prop :=
-  SupportSubset T S ∧ ¬ SupportSubset S T
-
-/-- Predicate-relative minimality on supports. -/
-def MinimalSupport {C : Type u} {E : Type v} {D : Type w}
-    (P : Support C E D -> Prop) (S : Support C E D) : Prop :=
-  P S ∧ ∀ T, ProperSubsupport T S -> ¬ P T
-
-/-- Boundary-relative upward closure for badness predicates. -/
-def UpwardClosed {C : Type u} {E : Type v} {D : Type w}
-    (P : Support C E D -> Prop) : Prop :=
-  ∀ {A S}, SupportSubset A S -> P A -> P S
-
-/--
-A finite selected support universe used by atomization theorems.
-
-The `minimalOf` field is the finite-search obligation: every selected support
-with property `P` contains a minimal selected support for `P`.
--/
-structure FiniteSupportUniverse (C : Type u) (E : Type v) (D : Type w) where
-  supports : List (Support C E D)
-  minimalOf :
-    ∀ (P : Support C E D -> Prop) {S : Support C E D},
-      P S -> ∃ A, A ∈ supports ∧ SupportSubset A S ∧ MinimalSupport P A
-  coverageBoundary : Prop
-  exactnessBoundary : Prop
-  nonConclusions : Prop
-
-namespace FiniteSupportUniverse
-
-variable {C : Type u} {E : Type v} {D : Type w}
-
-/-- A bad selected support contains a predicate-relative minimal bad support. -/
-theorem contains_minimal_bad
-    (U : FiniteSupportUniverse C E D)
-    (Bad : Support C E D -> Prop) {S : Support C E D}
-    (hBad : Bad S) :
-    ∃ A, A ∈ U.supports ∧ SupportSubset A S ∧ MinimalSupport Bad A :=
-  U.minimalOf Bad hBad
-
-/--
-For upward-closed badness, the selected bad region is generated by minimal
-atoms in the finite support universe.
--/
-theorem bad_iff_contains_minimal
-    (U : FiniteSupportUniverse C E D)
-    (Bad : Support C E D -> Prop) (hUp : UpwardClosed Bad)
-    (S : Support C E D) :
-    Bad S ↔
-      ∃ A, A ∈ U.supports ∧ SupportSubset A S ∧ MinimalSupport Bad A := by
-  constructor
-  · exact U.contains_minimal_bad Bad
-  · rintro ⟨A, _hMem, hSub, hMin⟩
-    exact hUp hSub hMin.1
-
-end FiniteSupportUniverse
-
-/-- Future cellular-circuit shape names. -/
-structure ArchitectureShape where
-  name : String
-  axis : Axis
-  boundary : Prop
-  nonConclusions : Prop
-  deriving Repr
-
-/-- A representable carrier cell occurrence. -/
-structure ArchitectureCell (C : Type u) (E : Type v) (D : Type w) where
-  shape : ArchitectureShape
-  support : Support C E D
-
-/-- A finite molecule assembled from selected cells. -/
-structure ArchitectureMolecule (C : Type u) (E : Type v) (D : Type w) where
-  cells : List (ArchitectureCell C E D)
-  support : Support C E D
-  incidenceBoundary : Prop
-
-/-- Atomization boundary for one selected architecture-object type. -/
-structure AtomizationBoundary
-    (Obj : Type x) (C : Type u) (E : Type v) (D : Type w) where
-  requiredAxes : List Axis
-  selectedAxis : Axis -> Prop
-  atomKindAxis : AtomKind -> Axis
-  shapePredicate : Obj -> AtomKind -> Support C E D -> Prop
-  coverageGapPredicate : Obj -> CoverageGapKind -> Support C E D -> Prop
-  theoremBoundary : Prop
-  coverageAssumptions : Prop
-  exactnessAssumptions : Prop
-  classificationPriorityBoundary : Prop
-  nonConclusions : Prop
-
-/-- Shape predicate selected by an atomization boundary. -/
-def Shape {Obj : Type x} {C : Type u} {E : Type v} {D : Type w}
-    (B : AtomizationBoundary Obj C E D) (X : Obj)
-    (k : AtomKind) (S : Support C E D) : Prop :=
-  B.shapePredicate X k S
-
-/-- A law-indexed circuit is a predicate-relative minimal support. -/
-def ArchitectureCircuit {Obj : Type x} {C : Type u} {E : Type v} {D : Type w}
-    (B : AtomizationBoundary Obj C E D) (X : Obj)
-    (k : AtomKind) (S : Support C E D) : Prop :=
-  MinimalSupport (Shape B X k) S
-
-/-- Obstruction circuit spelling for badness predicates. -/
-def ObstructionCircuit {C : Type u} {E : Type v} {D : Type w}
-    (Bad : Support C E D -> Prop) (S : Support C E D) : Prop :=
-  MinimalSupport Bad S
-
-/-- Constructive atom spelling for good-shape predicates. -/
-def ConstructiveMinimalGenerator {C : Type u} {E : Type v} {D : Type w}
-    (GoodShape : Support C E D -> Prop) (S : Support C E D) : Prop :=
-  MinimalSupport GoodShape S
-
-/-- Coverage atoms are minimal coverage gaps, not measured-zero claims. -/
-def MinimalCoverageGap {Obj : Type x} {C : Type u} {E : Type v} {D : Type w}
-    (B : AtomizationBoundary Obj C E D) (X : Obj)
-    (gap : CoverageGapKind) (S : Support C E D) : Prop :=
-  MinimalSupport (B.coverageGapPredicate X gap) S
-
-/-- Architecture atom data returned by an atomization surface. -/
-structure ArchitectureAtom (C : Type u) (E : Type v) (D : Type w) where
-  kind : AtomKind
-  axis : Axis
-  polarity : Polarity
-  support : Support C E D
-  status : MeasurementStatus
   evidenceBoundary : Prop
   nonConclusions : Prop
 
-/-- A valid atom is one whose support is a selected minimal circuit or coverage gap. -/
-def ValidAtom {Obj : Type x} {C : Type u} {E : Type v} {D : Type w}
-    (B : AtomizationBoundary Obj C E D) (X : Obj)
-    (a : ArchitectureAtom C E D) : Prop :=
-  a.axis = B.atomKindAxis a.kind ∧
-    match a.kind with
-    | AtomKind.coverageGap gap => MinimalCoverageGap B X gap a.support
-    | _ => ArchitectureCircuit B X a.kind a.support
+namespace Support
 
-/-- Valid atoms of the same kind form an antichain under proper subsupport. -/
-theorem validAtom_antichain_sameKind
-    {Obj : Type x} {C : Type u} {E : Type v} {D : Type w}
-    {B : AtomizationBoundary Obj C E D} {X : Obj}
-    {a b : ArchitectureAtom C E D}
-    (hKind : a.kind = b.kind)
-    (ha : ValidAtom B X a) (hb : ValidAtom B X b) :
-    ¬ ProperSubsupport a.support b.support := by
-  intro hProper
-  rcases ha with ⟨_haAxis, haMin⟩
-  rcases hb with ⟨_hbAxis, hbMin⟩
-  rw [hKind] at haMin
-  cases hAtomKind : b.kind <;>
-    simp [ArchitectureCircuit, MinimalCoverageGap, hAtomKind] at haMin hbMin
-  all_goals exact hbMin.2 a.support hProper haMin.1
+/-- Empty selected support. -/
+def empty (C : Type u) (E : Type v) (D : Type w) : Support C E D where
+  components := fun _ => False
+  edges := fun _ => False
+  diagrams := fun _ => False
+  evidenceBoundary := True
+  nonConclusions := True
 
-/-- Single-edge policy violation predicate used by static atom v0. -/
-def SingleEdgePolicyViolation {C : Type u} {E : Type v} {D : Type w}
-    (edgeBad : E -> Prop) (edge : E) (S : Support C E D) : Prop :=
-  S = Support.edge edge ∧ edgeBad edge
+/-- Component-only support. -/
+def component {C : Type u} (E : Type v) (D : Type w) (c : C) :
+    Support C E D where
+  components := fun x => x = c
+  edges := fun _ => False
+  diagrams := fun _ => False
+  evidenceBoundary := True
+  nonConclusions := True
 
-/-- A single bad edge is a minimal support for the single-edge predicate. -/
-theorem singleEdgePolicyViolation_minimal
-    {C : Type u} {E : Type v} {D : Type w}
-    (edgeBad : E -> Prop) {edge : E} (hBad : edgeBad edge) :
-    MinimalSupport (SingleEdgePolicyViolation (C := C) (D := D) edgeBad edge)
-      (Support.edge edge) := by
-  constructor
-  · exact ⟨rfl, hBad⟩
-  · intro T hProper hViolation
-    rcases hViolation with ⟨hEq, _⟩
-    subst hEq
-    exact hProper.2 (SupportSubset.refl _)
+/-- Edge-only support. -/
+def edge (C : Type u) {E : Type v} (D : Type w) (e : E) :
+    Support C E D where
+  components := fun _ => False
+  edges := fun x => x = e
+  diagrams := fun _ => False
+  evidenceBoundary := True
+  nonConclusions := True
 
-/-- Static atom v0 theorem package. -/
-structure StaticAtomV0Package (C : Type u) (E : Type v) (D : Type w) where
-  forbiddenEdgeBad : E -> Prop
-  boundaryLeakBad : E -> Prop
-  abstractionLeakBad : E -> Prop
-  simpleCycleBad : Support C E D -> Prop
-  rankViolationBad : Support C E D -> Prop
-  coverageGapBad : Support C E D -> Prop
-  forbiddenEdgeMinimal :
-    ∀ {e}, forbiddenEdgeBad e ->
-      MinimalSupport (SingleEdgePolicyViolation (C := C) (D := D)
-        forbiddenEdgeBad e) (Support.edge e)
-  boundaryLeakMinimal :
-    ∀ {e}, boundaryLeakBad e ->
-      MinimalSupport (SingleEdgePolicyViolation (C := C) (D := D)
-        boundaryLeakBad e) (Support.edge e)
-  abstractionLeakMinimal :
-    ∀ {e}, abstractionLeakBad e ->
-      MinimalSupport (SingleEdgePolicyViolation (C := C) (D := D)
-        abstractionLeakBad e) (Support.edge e)
-  simpleCycleMinimal :
-    ∀ {S}, simpleCycleBad S -> ObstructionCircuit simpleCycleBad S
-  rankViolationMinimal :
-    ∀ {S}, rankViolationBad S -> ObstructionCircuit rankViolationBad S
-  coverageGapMinimal :
-    ∀ {S}, coverageGapBad S -> MinimalSupport coverageGapBad S
-  staticZeroNonConclusion : Prop
-  noMatroidOrUniqueFactorizationConclusion : Prop
+/-- Diagram-only support. -/
+def diagram (C : Type u) (E : Type v) {D : Type w} (d : D) :
+    Support C E D where
+  components := fun _ => False
+  edges := fun _ => False
+  diagrams := fun x => x = d
+  evidenceBoundary := True
+  nonConclusions := True
 
-namespace StaticAtomV0Package
+end Support
 
-variable {C : Type u} {E : Type v} {D : Type w}
+/-- Inclusion of selected support predicates. -/
+def SupportSubset {C : Type u} {E : Type v} {D : Type w}
+    (S T : Support C E D) : Prop :=
+  (∀ c, S.components c -> T.components c) ∧
+  (∀ e, S.edges e -> T.edges e) ∧
+  (∀ d, S.diagrams d -> T.diagrams d)
 
-/-- Forbidden static edge atoms are minimal single-edge supports. -/
-theorem forbiddenStaticEdge_minimal
-    (package : StaticAtomV0Package C E D) {e : E}
-    (hBad : package.forbiddenEdgeBad e) :
-    MinimalSupport (SingleEdgePolicyViolation (C := C) (D := D)
-      package.forbiddenEdgeBad e) (Support.edge e) :=
-  package.forbiddenEdgeMinimal hBad
+/-- Proper inclusion of selected support predicates. -/
+def ProperSubsupport {C : Type u} {E : Type v} {D : Type w}
+    (S T : Support C E D) : Prop :=
+  SupportSubset S T ∧ ¬ SupportSubset T S
 
-/-- Boundary-leak atoms are minimal single-edge supports when the policy is edge-local. -/
-theorem boundaryLeak_minimal
-    (package : StaticAtomV0Package C E D) {e : E}
-    (hBad : package.boundaryLeakBad e) :
-    MinimalSupport (SingleEdgePolicyViolation (C := C) (D := D)
-      package.boundaryLeakBad e) (Support.edge e) :=
-  package.boundaryLeakMinimal hBad
+namespace SupportSubset
 
-/-- Simple-cycle atoms are obstruction circuits in the selected static universe. -/
-theorem simpleCycle_obstructionCircuit
-    (package : StaticAtomV0Package C E D) {S : Support C E D}
-    (hBad : package.simpleCycleBad S) :
-    ObstructionCircuit package.simpleCycleBad S :=
-  package.simpleCycleMinimal hBad
+theorem refl {C : Type u} {E : Type v} {D : Type w}
+    (S : Support C E D) : SupportSubset S S := by
+  exact ⟨fun _ h => h, fun _ h => h, fun _ h => h⟩
 
-/-- Rank-violation atoms are obstruction circuits in the selected static universe. -/
-theorem rankViolation_obstructionCircuit
-    (package : StaticAtomV0Package C E D) {S : Support C E D}
-    (hBad : package.rankViolationBad S) :
-    ObstructionCircuit package.rankViolationBad S :=
-  package.rankViolationMinimal hBad
+theorem trans {C : Type u} {E : Type v} {D : Type w}
+    {S T U : Support C E D}
+    (hST : SupportSubset S T) (hTU : SupportSubset T U) :
+    SupportSubset S U := by
+  exact
+    ⟨fun c h => hTU.1 c (hST.1 c h),
+      fun e h => hTU.2.1 e (hST.2.1 e h),
+      fun d h => hTU.2.2 d (hST.2.2 d h)⟩
 
-/-- Static coverage gaps are minimal supports for the selected coverage predicate. -/
-theorem coverageGap_minimal
-    (package : StaticAtomV0Package C E D) {S : Support C E D}
-    (hBad : package.coverageGapBad S) :
-    MinimalSupport package.coverageGapBad S :=
-  package.coverageGapMinimal hBad
+end SupportSubset
 
-/-- The package records that static zero is not semantic or runtime safety. -/
-def records_staticZeroNonConclusion
-    (package : StaticAtomV0Package C E D) :
-    Prop :=
-  package.staticZeroNonConclusion
+/--
+Primitive architecture atom.
 
-end StaticAtomV0Package
-
-/-- Atom valuation on selected axes. -/
-structure AtomValuation where
-  count : Axis -> Nat
-  status : Axis -> MeasurementStatus
-  evidenceBoundary : Axis -> Prop
+This is a typed architectural fact with support and explicit evidence
+boundaries.  It is not an observation gap, atomizer output certificate, repair
+step, or SFT forecast.
+-/
+structure ArchitectureAtom (C : Type u) (E : Type v) (D : Type w) where
+  kind : AtomKind
+  axis : Axis
+  support : Support C E D
+  predicate : String
+  evidenceBoundary : Prop
   nonConclusions : Prop
 
-/-- Atom signature is the valuation plus theorem-boundary evidence. -/
-structure AtomSignature where
-  valuation : AtomValuation
-  theoremBoundary : Prop
+/-- Predicate spelling for primitive atoms. -/
+def PrimitiveArchitectureAtom {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) : Prop :=
+  atom.kind.IsPrimitive
+
+theorem primitiveArchitectureAtom_constructive
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    PrimitiveArchitectureAtom atom := by
+  exact AtomKind.isPrimitive atom.kind
+
+/-- A finite selected molecule/configuration of primitive atoms. -/
+structure AtomMolecule (C : Type u) (E : Type v) (D : Type w) where
+  atoms : ArchitectureAtom C E D -> Prop
+  finiteBoundary : Prop
+  nonConclusions : Prop
+
+/-- Inclusion of atom molecules. -/
+def AtomMoleculeSubset {C : Type u} {E : Type v} {D : Type w}
+    (M N : AtomMolecule C E D) : Prop :=
+  ∀ atom, M.atoms atom -> N.atoms atom
+
+/-- Proper molecule inclusion. -/
+def ProperAtomSubmolecule {C : Type u} {E : Type v} {D : Type w}
+    (M N : AtomMolecule C E D) : Prop :=
+  AtomMoleculeSubset M N ∧ ¬ AtomMoleculeSubset N M
+
+/-- Minimal molecule for a badness predicate. -/
+def MinimalAtomMolecule {C : Type u} {E : Type v} {D : Type w}
+    (Bad : AtomMolecule C E D -> Prop)
+    (M : AtomMolecule C E D) : Prop :=
+  Bad M ∧ ∀ N, ProperAtomSubmolecule N M -> ¬ Bad N
+
+/-- A design law marks bad atom configurations relative to selected boundaries. -/
+structure DesignLaw (C : Type u) (E : Type v) (D : Type w) where
+  Bad : AtomMolecule C E D -> Prop
+  selectedBoundary : Prop
+  nonConclusions : Prop
+
+/-- Atom v2 obstruction circuit: a law-relative minimal bad molecule. -/
+def ObstructionCircuit {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D) (M : AtomMolecule C E D) : Prop :=
+  MinimalAtomMolecule law.Bad M
+
+theorem obstructionCircuit_bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D} {M : AtomMolecule C E D}
+    (h : ObstructionCircuit law M) :
+    law.Bad M :=
+  h.1
+
+theorem obstructionCircuit_antichain
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D} {M N : AtomMolecule C E D}
+    (h : ObstructionCircuit law M)
+    (hProper : ProperAtomSubmolecule N M) :
+    ¬ law.Bad N :=
+  h.2 N hProper
+
+/-- Upward-closed selected badness for molecule search. -/
+def AtomBadUpwardClosed {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D) : Prop :=
+  ∀ {M N}, AtomMoleculeSubset M N -> law.Bad M -> law.Bad N
+
+/--
+Selected finite molecule universe.
+
+This is a proof-carrying search boundary, not a claim that every possible
+architecture fact has been extracted.
+-/
+structure FiniteAtomMoleculeUniverse {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D) where
+  selected : AtomMolecule C E D -> Prop
+  minimalOf :
+    ∀ M, selected M -> law.Bad M ->
+      { N // selected N ∧ ObstructionCircuit law N ∧ AtomMoleculeSubset N M }
   coverageBoundary : Prop
   exactnessBoundary : Prop
-  atomCoverCompleteness : Prop
   nonConclusions : Prop
 
-/-- There is a measured bad atom on an axis when its valuation count is positive. -/
-def HasBadAtomOn (signature : AtomSignature) (axis : Axis) : Prop :=
-  0 < signature.valuation.count axis
+namespace FiniteAtomMoleculeUniverse
 
-/-- Selected signature zero is measured-zero status plus zero atom valuation. -/
-def SignatureZero (signature : AtomSignature) (axis : Axis) : Prop :=
-  signature.valuation.status axis = MeasurementStatus.measuredZero ∧
-    signature.valuation.count axis = 0
+theorem contains_minimal_bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    (U : FiniteAtomMoleculeUniverse law)
+    {M : AtomMolecule C E D}
+    (hSel : U.selected M) (hBad : law.Bad M) :
+    ∃ N, U.selected N ∧ ObstructionCircuit law N ∧ AtomMoleculeSubset N M := by
+  rcases U.minimalOf M hSel hBad with ⟨N, hN⟩
+  exact ⟨N, hN⟩
 
-/-- A zero-valued measured axis has no bad atom on that axis. -/
-theorem no_hasBadAtomOn_of_signatureZero
-    {signature : AtomSignature} {axis : Axis}
-    (hZero : SignatureZero signature axis) :
-    ¬ HasBadAtomOn signature axis := by
-  intro hBad
-  rw [HasBadAtomOn, hZero.2] at hBad
-  exact Nat.lt_irrefl 0 hBad
-
-/-- Under measured-zero status, no bad atom is equivalent to signature zero. -/
-theorem signatureZero_iff_no_hasBadAtomOn
-    {signature : AtomSignature} {axis : Axis}
-    (hMeasured : signature.valuation.status axis = MeasurementStatus.measuredZero) :
-    SignatureZero signature axis ↔ ¬ HasBadAtomOn signature axis := by
+theorem bad_iff_contains_obstruction_circuit
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    (U : FiniteAtomMoleculeUniverse law)
+    (hUp : AtomBadUpwardClosed law)
+    {M : AtomMolecule C E D}
+    (hSel : U.selected M) :
+    law.Bad M ↔
+      ∃ N, U.selected N ∧ ObstructionCircuit law N ∧ AtomMoleculeSubset N M := by
   constructor
-  · exact no_hasBadAtomOn_of_signatureZero
-  · intro hNo
-    refine ⟨hMeasured, ?_⟩
-    exact Nat.eq_zero_of_not_pos (by
-      intro hPos
-      exact hNo hPos)
+  · intro hBad
+    exact U.contains_minimal_bad hSel hBad
+  · intro h
+    rcases h with ⟨N, _hSelN, hCircuit, hSub⟩
+    exact hUp hSub hCircuit.1
 
-/-- Atom vanishing bridge with all required exactness boundaries explicit. -/
-structure AtomVanishingBridge (signature : AtomSignature) (axis : Axis) where
-  witnessComplete : Prop
-  axisExact : Prop
-  atomCoverComplete : Prop
-  measuredStatus : signature.valuation.status axis = MeasurementStatus.measuredZero
-  zeroIffNoAtom : SignatureZero signature axis ↔ ¬ HasBadAtomOn signature axis
-  noGlobalSafetyConclusion : Prop
-  noUnmeasuredAxisConclusion : Prop
+end FiniteAtomMoleculeUniverse
 
-/-- Build the measured-zero/no-atom bridge from the measured status hypothesis. -/
-def AtomVanishingBridge.ofMeasuredZero
-    (signature : AtomSignature) (axis : Axis)
-    (hMeasured : signature.valuation.status axis = MeasurementStatus.measuredZero)
-    (hWitnessComplete hAxisExact hAtomCoverComplete : Prop)
-    (hNoGlobalSafety hNoUnmeasured : Prop) :
-    AtomVanishingBridge signature axis where
-  witnessComplete := hWitnessComplete
-  axisExact := hAxisExact
-  atomCoverComplete := hAtomCoverComplete
-  measuredStatus := hMeasured
-  zeroIffNoAtom := signatureZero_iff_no_hasBadAtomOn hMeasured
-  noGlobalSafetyConclusion := hNoGlobalSafety
-  noUnmeasuredAxisConclusion := hNoUnmeasured
-
-/-- Classifier abstraction for a selected atomization boundary. -/
-structure AtomClassifier
-    (Obj : Type x) (C : Type u) (E : Type v) (D : Type w) where
-  classify :
-    AtomizationBoundary Obj C E D -> Obj -> Support C E D ->
-      Option (ArchitectureAtom C E D)
-  sound :
-    ∀ {B X S a}, classify B X S = some a -> ValidAtom B X a
-  rejectedCandidateNotMeasuredZero : Prop
-  completenessBoundary : Prop
+/-- Tool-facing observation of a primitive atom. -/
+structure ObservedAtom (C : Type u) (E : Type v) (D : Type w) where
+  atom : ArchitectureAtom C E D
+  observationStatus : ObservationStatus
+  measurementStatus : MeasurementStatus
+  evidenceRef : String
+  sourceBoundary : Prop
   nonConclusions : Prop
 
-/-- Classifier soundness theorem. -/
-theorem classify_sound
-    {Obj : Type x} {C : Type u} {E : Type v} {D : Type w}
-    (classifier : AtomClassifier Obj C E D)
-    {B : AtomizationBoundary Obj C E D} {X : Obj}
-    {S : Support C E D} {a : ArchitectureAtom C E D}
-    (h : classifier.classify B X S = some a) :
-    ValidAtom B X a :=
-  classifier.sound h
-
-/-- Certificate carrying atomization output and its soundness proof. -/
-structure AtomizationCertificate
-    (Obj : Type x) (C : Type u) (E : Type v) (D : Type w)
-    (B : AtomizationBoundary Obj C E D) (X : Obj) where
-  atoms : List (ArchitectureAtom C E D)
-  allValid : ∀ a, a ∈ atoms -> ValidAtom B X a
-  rejectedCandidateBoundary : Prop
-  coverageGapBoundary : Prop
-  nonConclusions : Prop
-
-/-- Atomizer abstraction returning a sound certificate. -/
-structure Atomizer
-    (Obj : Type x) (C : Type u) (E : Type v) (D : Type w)
-    (B : AtomizationBoundary Obj C E D) where
-  atomize :
-    (X : Obj) -> AtomizationCertificate Obj C E D B X
-  sound :
-    ∀ {X a}, a ∈ (atomize X).atoms -> ValidAtom B X a
-  completenessBoundary : Prop
-  nonConclusions : Prop
-
-/-- Atomizer soundness theorem. -/
-theorem atomize_sound
-    {Obj : Type x} {C : Type u} {E : Type v} {D : Type w}
-    {B : AtomizationBoundary Obj C E D} {X : Obj}
-    (atomizer : Atomizer Obj C E D B)
-    {a : ArchitectureAtom C E D}
-    (hMem : a ∈ (atomizer.atomize X).atoms) :
-    ValidAtom B X a :=
-  atomizer.sound hMem
-
-/-- Repair atoms are rewrite generators, not `ArchitectureAtom`s. -/
-structure RepairAtom (C : Type u) (E : Type v) (D : Type w) where
-  name : String
-  consumes : ArchitectureAtom C E D -> Prop
-  produces : ArchitectureAtom C E D -> Prop
-  selectedAxis : Axis
-  monotonicityBoundary : Prop
-  nonConclusions : Prop
-
-/-- Evolution atoms describe atom changes along a field transition. -/
-structure EvolutionAtom
-    (Field : Type x) (Operation : Type y)
-    (C : Type u) (E : Type v) (D : Type w) where
-  source : Field
-  operation : Operation
-  target : Field
+/-- Observation gap, kept separate from atom existence. -/
+structure ObservationGap (C : Type u) (E : Type v) (D : Type w) where
+  expectedKind : AtomKind
+  expectedAxis : Axis
   support : Support C E D
-  created : List (ArchitectureAtom C E D)
-  removed : List (ArchitectureAtom C E D)
-  preserved : List (ArchitectureAtom C E D)
-  exposed : List (ArchitectureAtom C E D)
-  hidden : List (ArchitectureAtom C E D)
-  unknownBoundary : Prop
+  measurementStatus : MeasurementStatus
+  notMeasuredZero : measurementStatus ≠ MeasurementStatus.measuredZero
+  sourceBoundary : Prop
   nonConclusions : Prop
 
-/-- Atom delta for one transition. -/
+theorem observedAtom_rejected_not_measured
+    {C : Type u} {E : Type v} {D : Type w}
+    (observed : ObservedAtom C E D)
+    (h : observed.measurementStatus = MeasurementStatus.rejectedCandidate) :
+    ¬ observed.measurementStatus.SupportsMeasurement := by
+  rw [h]
+  exact MeasurementStatus.rejectedCandidate_not_supportsMeasurement
+
+theorem observedAtom_uncertain_not_measured
+    {C : Type u} {E : Type v} {D : Type w}
+    (observed : ObservedAtom C E D)
+    (h : observed.measurementStatus = MeasurementStatus.uncertainCandidate) :
+    ¬ observed.measurementStatus.SupportsMeasurement := by
+  rw [h]
+  exact MeasurementStatus.uncertainCandidate_not_supportsMeasurement
+
+theorem observationGap_not_measuredZero
+    {C : Type u} {E : Type v} {D : Type w}
+    (gap : ObservationGap C E D) :
+    gap.measurementStatus ≠ MeasurementStatus.measuredZero :=
+  gap.notMeasuredZero
+
+/--
+Validated Lean-facing atom presentation.
+
+ArchSig/ArchMap may supply candidates, but only this presentation surface is
+read by AAT/SFT theorem packages.
+-/
+structure AtomPresentation (C : Type u) (E : Type v) (D : Type w) where
+  observed : ObservedAtom C E D -> Prop
+  gaps : ObservationGap C E D -> Prop
+  promotionBoundary : Prop
+  validationBoundary : Prop
+  rawCandidateBoundary : Prop
+  nonConclusions : Prop
+
+/-- Per-atom valuation used by selected signatures. -/
+structure AtomValuation (C : Type u) (E : Type v) (D : Type w) where
+  atom : ArchitectureAtom C E D
+  measurementStatus : MeasurementStatus
+  bad : Prop
+  evidenceBoundary : Prop
+  nonConclusions : Prop
+
+/-- Selected atom signature over a presentation. -/
+structure AtomSignature (C : Type u) (E : Type v) (D : Type w) where
+  valuation : ArchitectureAtom C E D -> MeasurementStatus
+  badOn : ArchitectureAtom C E D -> Prop
+  measuredBoundary : Prop
+  nonConclusions : Prop
+
+/-- A bad atom measured as nonzero on the selected signature. -/
+def HasBadAtomOn {C : Type u} {E : Type v} {D : Type w}
+    (signature : AtomSignature C E D)
+    (atom : ArchitectureAtom C E D) : Prop :=
+  signature.badOn atom ∧
+    signature.valuation atom = MeasurementStatus.measuredNonzero
+
+/-- Signature zero means no selected bad atom is measured nonzero. -/
+def SignatureZero {C : Type u} {E : Type v} {D : Type w}
+    (signature : AtomSignature C E D) : Prop :=
+  ∀ atom, ¬ HasBadAtomOn signature atom
+
+theorem no_hasBadAtomOn_of_signatureZero
+    {C : Type u} {E : Type v} {D : Type w}
+    {signature : AtomSignature C E D}
+    (hZero : SignatureZero signature)
+    (atom : ArchitectureAtom C E D) :
+    ¬ HasBadAtomOn signature atom :=
+  hZero atom
+
+theorem signatureZero_iff_no_hasBadAtomOn
+    {C : Type u} {E : Type v} {D : Type w}
+    (signature : AtomSignature C E D) :
+    SignatureZero signature ↔
+      ∀ atom, ¬ HasBadAtomOn signature atom :=
+  Iff.rfl
+
+/-- Atom presentation bundled with its selected signature. -/
+structure PresentedAtomSignature (C : Type u) (E : Type v) (D : Type w) where
+  presentation : AtomPresentation C E D
+  signature : AtomSignature C E D
+  valuationBoundary : Prop
+  nonConclusions : Prop
+
+/-- SFT reads field atoms from validated presentation coordinates. -/
+def FieldAtomsFromPresentation
+    {FieldState : Type s} {C : Type u} {E : Type v}
+    {StaticObs : Type w} {SemanticExpr : Type q} {SemanticObs : Type r}
+    {D : Type w}
+    (_field : SoftwareField FieldState C E StaticObs SemanticExpr SemanticObs)
+    (presentation : AtomPresentation C E D) :
+    ArchitectureAtom C E D -> Prop :=
+  fun atom =>
+    ∃ observed, presentation.observed observed ∧ observed.atom = atom
+
+/-- Validated bridge from an SFT field to a Lean-facing atom presentation. -/
+structure ValidatedFieldAtomPresentation
+    (FieldState : Type s) (C : Type u) (E : Type v)
+    (StaticObs : Type w) (SemanticExpr : Type q) (SemanticObs : Type r)
+    (D : Type w) where
+  field : SoftwareField FieldState C E StaticObs SemanticExpr SemanticObs
+  presentation : AtomPresentation C E D
+  rawCandidateExcluded : Prop
+  validationBoundary : Prop
+  nonConclusions : Prop
+
+def validatedFieldAtomPresentation_excludes_raw_candidates
+    {FieldState : Type s} {C : Type u} {E : Type v}
+    {StaticObs : Type w} {SemanticExpr : Type q} {SemanticObs : Type r}
+    {D : Type w}
+    (validated :
+      ValidatedFieldAtomPresentation
+        FieldState C E StaticObs SemanticExpr SemanticObs D) :
+    Prop :=
+  validated.rawCandidateExcluded
+
+/-- Atom-level delta between selected presentations. -/
 structure AtomDelta (C : Type u) (E : Type v) (D : Type w) where
-  created : List (ArchitectureAtom C E D)
-  removed : List (ArchitectureAtom C E D)
-  preserved : List (ArchitectureAtom C E D)
-  transformed : List (ArchitectureAtom C E D × ArchitectureAtom C E D)
-  hidden : List (ArchitectureAtom C E D)
-  exposed : List (ArchitectureAtom C E D)
-  unknown : List (CoverageGapKind × Support C E D)
-  forecastBoundary : Prop
+  created : ArchitectureAtom C E D -> Prop
+  removed : ArchitectureAtom C E D -> Prop
+  preserved : ArchitectureAtom C E D -> Prop
+  transformed : ArchitectureAtom C E D -> ArchitectureAtom C E D -> Prop
+  hidden : ObservationGap C E D -> Prop
+  exposed : ObservedAtom C E D -> Prop
+  unknown : ObservationGap C E D -> Prop
+  evidenceBoundary : Prop
   nonConclusions : Prop
 
-/-- Atom trace along a selected field path. -/
-structure AtomTrace (Field : Type x) (C : Type u) (E : Type v) (D : Type w) where
-  states : List Field
-  deltas : List (AtomDelta C E D)
-  wellTyped : Prop
-  boundary : Prop
+/-- Atom presentation delta with source/target presentation boundary. -/
+structure PresentedAtomDelta (C : Type u) (E : Type v) (D : Type w) where
+  before : AtomPresentation C E D
+  after : AtomPresentation C E D
+  delta : AtomDelta C E D
+  validationBoundary : Prop
   nonConclusions : Prop
 
-/-- Safe region determined by forbidding selected atom families. -/
-structure AtomSafeRegion (C : Type u) (E : Type v) (D : Type w) where
-  forbidden : AtomKind -> Prop
-  atoms : List (ArchitectureAtom C E D)
-  safe : ∀ a, a ∈ atoms -> ¬ forbidden a.kind
-  boundary : Prop
+/-- A selected trace of atom presentation deltas. -/
+structure AtomTrace (C : Type u) (E : Type v) (D : Type w) where
+  step : Nat -> PresentedAtomDelta C E D -> Prop
+  finiteBoundary : Prop
+  orderingBoundary : Prop
   nonConclusions : Prop
 
-/-- Extension atom formula as incidence refinement, not disjoint factorization. -/
-structure ExtensionAtomFormula (C : Type u) (E : Type v) (D : Type w) where
-  inherited : List (ArchitectureAtom C E D)
-  featureLocal : List (ArchitectureAtom C E D)
-  interaction : List (ArchitectureAtom C E D)
-  liftingOrFilling : List (ArchitectureAtom C E D)
-  complexityTransfer : List (ArchitectureAtom C E D)
-  residualCoverage : List (ArchitectureAtom C E D)
-  incidenceRefinementBoundary : Prop
-  noDisjointPartitionConclusion : Prop
-
-/-- Phase 1 SOLID / Clean atom theorem package. -/
-structure SolidCleanAtomPackage (C : Type u) (E : Type v) (D : Type w) where
-  portAtoms : List (ArchitectureAtom C E D)
-  adapterAtoms : List (ArchitectureAtom C E D)
-  pureRuleAtoms : List (ArchitectureAtom C E D)
-  coordinatorAtoms : List (ArchitectureAtom C E D)
-  fatInterfaceAtoms : List (ArchitectureAtom C E D)
-  lspMismatchAtoms : List (ArchitectureAtom C E D)
-  projectionFailureAtoms : List (ArchitectureAtom C E D)
-  projectionSoundAtomTheorem : Prop
-  lspMismatchAtomTheorem : Prop
-  dipLocalSoundnessTheorem : Prop
-  solidNotGlobalDecomposability : Prop
+/-- SFT package reading validated atom presentations and traces. -/
+structure AtomicSFTPresentationBridgePackage
+    (FieldState : Type s) (C : Type u) (E : Type v)
+    (StaticObs : Type w) (SemanticExpr : Type q) (SemanticObs : Type r)
+    (D : Type w) where
+  validatedPresentation :
+    ValidatedFieldAtomPresentation
+      FieldState C E StaticObs SemanticExpr SemanticObs D
+  fieldAtoms :
+    ArchitectureAtom C E D -> Prop
+  fieldAtomsSound :
+    ∀ atom, fieldAtoms atom ->
+      FieldAtomsFromPresentation
+        validatedPresentation.field validatedPresentation.presentation atom
+  atomTrace : AtomTrace C E D
+  rawCandidateExcluded : Prop
+  forecastCorrectnessNonConclusion : Prop
+  globalFutureSafetyNonConclusion : Prop
   nonConclusions : Prop
 
-namespace SolidCleanAtomPackage
+namespace AtomicSFTPresentationBridgePackage
 
-variable {C : Type u} {E : Type v} {D : Type w}
-
-def projectionSound_atom_theorem
-    (package : SolidCleanAtomPackage C E D) :
+def records_raw_candidate_exclusion
+    {FieldState : Type s} {C : Type u} {E : Type v}
+    {StaticObs : Type w} {SemanticExpr : Type q} {SemanticObs : Type r}
+    {D : Type w}
+    (package :
+      AtomicSFTPresentationBridgePackage
+        FieldState C E StaticObs SemanticExpr SemanticObs D) :
     Prop :=
-  package.projectionSoundAtomTheorem
+  package.rawCandidateExcluded
 
-def solid_not_global_decomposability
-    (package : SolidCleanAtomPackage C E D) :
+def records_no_forecast_correctness
+    {FieldState : Type s} {C : Type u} {E : Type v}
+    {StaticObs : Type w} {SemanticExpr : Type q} {SemanticObs : Type r}
+    {D : Type w}
+    (package :
+      AtomicSFTPresentationBridgePackage
+        FieldState C E StaticObs SemanticExpr SemanticObs D) :
     Prop :=
-  package.solidNotGlobalDecomposability
+  package.forecastCorrectnessNonConclusion
 
-def lspMismatch_atom_theorem
-    (package : SolidCleanAtomPackage C E D) :
-    Prop :=
-  package.lspMismatchAtomTheorem
-
-def dipLocal_soundness_theorem
-    (package : SolidCleanAtomPackage C E D) :
-    Prop :=
-  package.dipLocalSoundnessTheorem
-
-end SolidCleanAtomPackage
-
-/-- Phase 2 semantic / runtime atom theorem package. -/
-structure SemanticRuntimeAtomPackage (C : Type u) (E : Type v) (D : Type w) where
-  runtimeEdgeAtoms : List (ArchitectureAtom C E D)
-  guardAtoms : List (ArchitectureAtom C E D)
-  runtimeExposureAtoms : List (ArchitectureAtom C E D)
-  nonCommutingSquareAtoms : List (ArchitectureAtom C E D)
-  effectLeakAtoms : List (ArchitectureAtom C E D)
-  replayViolationAtoms : List (ArchitectureAtom C E D)
-  compensationGapAtoms : List (ArchitectureAtom C E D)
-  staticZeroNotSemanticZero : Prop
-  runtimeProtectionLocalTheorem : Prop
-  nonCommutingSquareWitnessTheorem : Prop
-  noGlobalOperationalSafetyConclusion : Prop
-
-namespace SemanticRuntimeAtomPackage
-
-variable {C : Type u} {E : Type v} {D : Type w}
-
-def static_zero_not_semantic_zero
-    (package : SemanticRuntimeAtomPackage C E D) :
-    Prop :=
-  package.staticZeroNotSemanticZero
-
-def non_commuting_square_witness
-    (package : SemanticRuntimeAtomPackage C E D) :
-    Prop :=
-  package.nonCommutingSquareWitnessTheorem
-
-def runtime_protection_local_theorem
-    (package : SemanticRuntimeAtomPackage C E D) :
-    Prop :=
-  package.runtimeProtectionLocalTheorem
-
-def records_no_global_operational_safety
-    (package : SemanticRuntimeAtomPackage C E D) :
-    Prop :=
-  package.noGlobalOperationalSafetyConclusion
-
-end SemanticRuntimeAtomPackage
-
-/-- AAT atoms pulled back to a selected `SoftwareField`. -/
-def FieldAtoms
-    {FieldState : Type z} {C : Type u} {A : Type v}
-    {StaticObs : Type w} {SemanticExpr : Type x} {SemanticObs : Type y}
-    {Edge Diagram : Type}
-    (B :
-      AtomizationBoundary
-        (ArchitectureObject C A StaticObs SemanticExpr SemanticObs)
-        C Edge Diagram)
-    (atomizer :
-      Atomizer
-        (ArchitectureObject C A StaticObs SemanticExpr SemanticObs)
-        C Edge Diagram B)
-    (field : SoftwareField FieldState C A StaticObs SemanticExpr SemanticObs) :
-    List (ArchitectureAtom C Edge Diagram) :=
-  (atomizer.atomize field.arch).atoms
-
-/-- Soundness of field atoms follows through the architecture projection. -/
-theorem field_atom_sound
-    {FieldState : Type z} {C : Type u} {A : Type v}
-    {StaticObs : Type w} {SemanticExpr : Type x} {SemanticObs : Type y}
-    {Edge Diagram : Type}
-    (B :
-      AtomizationBoundary
-        (ArchitectureObject C A StaticObs SemanticExpr SemanticObs)
-        C Edge Diagram)
-    (atomizer :
-      Atomizer
-        (ArchitectureObject C A StaticObs SemanticExpr SemanticObs)
-        C Edge Diagram B)
-    (field : SoftwareField FieldState C A StaticObs SemanticExpr SemanticObs)
-    {a : ArchitectureAtom C Edge Diagram}
-    (hMem : a ∈ FieldAtoms B atomizer field) :
-    ValidAtom B field.arch a := by
-  exact atomize_sound atomizer hMem
-
-/-- Atomic SFT bridge theorem package. -/
-structure AtomicSFTBridgePackage
-    (Field : Type z) (Operation : Type y)
-    (C : Type u) (E : Type v) (D : Type w) where
-  fieldAtoms : Field -> List (ArchitectureAtom C E D)
-  atomDelta : Field -> Operation -> Field -> AtomDelta C E D
-  atomTrace : List Field -> AtomTrace Field C E D
-  safeRegion : AtomSafeRegion C E D
-  fieldAtomSound : Prop
-  atomTraceSound : Prop
-  atomSafeSupport : Prop
-  atomConeNarrowingBoundary : Prop
-  fieldUpdateRecordsUnexpectedAtomBoundary : Prop
-  noGlobalFutureSafetyConclusion : Prop
-  noForecastCorrectnessConclusion : Prop
-
-namespace AtomicSFTBridgePackage
-
-variable {Field : Type z} {Operation : Type y}
-variable {C : Type u} {E : Type v} {D : Type w}
-
-def field_atom_sound_boundary
-    (package : AtomicSFTBridgePackage Field Operation C E D) :
-    Prop :=
-  package.fieldAtomSound
-
-def atom_safe_support_boundary
-    (package : AtomicSFTBridgePackage Field Operation C E D) :
-    Prop :=
-  package.atomSafeSupport
-
-def atom_trace_sound_boundary
-    (package : AtomicSFTBridgePackage Field Operation C E D) :
-    Prop :=
-  package.atomTraceSound
-
-def atom_cone_narrowing_boundary
-    (package : AtomicSFTBridgePackage Field Operation C E D) :
-    Prop :=
-  package.atomConeNarrowingBoundary
-
-def field_update_records_unexpected_atom_boundary
-    (package : AtomicSFTBridgePackage Field Operation C E D) :
-    Prop :=
-  package.fieldUpdateRecordsUnexpectedAtomBoundary
-
-def records_no_global_future_safety
-    (package : AtomicSFTBridgePackage Field Operation C E D) :
-    Prop :=
-  package.noGlobalFutureSafetyConclusion
-
-end AtomicSFTBridgePackage
+end AtomicSFTPresentationBridgePackage
 
 end Formal.Arch
