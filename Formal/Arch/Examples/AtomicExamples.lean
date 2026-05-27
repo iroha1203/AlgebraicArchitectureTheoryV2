@@ -57,11 +57,27 @@ def relationAtom : ArchitectureAtom Component Edge Diagram where
   evidenceBoundary := True
   nonConclusions := True
 
-def semanticContractAtom : ArchitectureAtom Component Edge Diagram where
-  kind := AtomKind.contractSemantic
+def contractSpecificationAtom : ArchitectureAtom Component Edge Diagram where
+  kind := AtomKind.contractSpecification
+  axis := Axis.specification
+  support := Support.diagram Component Edge Diagram.writePath
+  predicate := "write path satisfies selected contract"
+  singleFact := True
+  singleFactEvidence := trivial
+  predicatePreservation := True
+  predicatePreservationEvidence := trivial
+  boundaryIndependent := True
+  boundaryIndependentEvidence := trivial
+  lawIndependent := True
+  lawIndependentEvidence := trivial
+  evidenceBoundary := True
+  nonConclusions := True
+
+def semanticInterpretationAtom : ArchitectureAtom Component Edge Diagram where
+  kind := AtomKind.semanticInterpretation
   axis := Axis.semantic
   support := Support.diagram Component Edge Diagram.writePath
-  predicate := "write path satisfies selected semantic contract"
+  predicate := "write path means account registration"
   singleFact := True
   singleFactEvidence := trivial
   predicatePreservation := True
@@ -81,18 +97,30 @@ theorem primitiveRelationAtom_primitive :
     PrimitiveArchitectureAtom relationAtom := by
   exact primitiveArchitectureAtom_constructive relationAtom
 
-theorem semanticContractAtom_allowedBy_current :
-    semanticContractAtom.AllowedBy AtomGrammarExtensionPolicy.current := by
-  exact ArchitectureAtom.allowedBy_current semanticContractAtom
+theorem contractSpecificationAtom_allowedBy_current :
+    contractSpecificationAtom.AllowedBy AtomGrammarExtensionPolicy.current := by
+  exact ArchitectureAtom.allowedBy_current contractSpecificationAtom
 
-theorem semanticContractAtom_primitive_of_policy :
-    PrimitiveArchitectureAtom semanticContractAtom := by
+theorem contractSpecificationAtom_primitive_of_policy :
+    PrimitiveArchitectureAtom contractSpecificationAtom := by
   exact ArchitectureAtom.primitive_of_allowedBy
-    semanticContractAtom_allowedBy_current
+    contractSpecificationAtom_allowedBy_current
+
+theorem semanticInterpretationAtom_allowedBy_current :
+    semanticInterpretationAtom.AllowedBy AtomGrammarExtensionPolicy.current := by
+  exact ArchitectureAtom.allowedBy_current semanticInterpretationAtom
+
+theorem semanticInterpretationAtom_primitive_of_policy :
+    PrimitiveArchitectureAtom semanticInterpretationAtom := by
+  exact ArchitectureAtom.primitive_of_allowedBy
+    semanticInterpretationAtom_allowedBy_current
 
 def selectedAtomUniverse : SelectedAtomUniverse Component Edge Diagram where
   selectedAtom := fun atom =>
-    atom = componentAtom ∨ atom = relationAtom ∨ atom = semanticContractAtom
+    atom = componentAtom ∨
+      atom = relationAtom ∨
+      atom = contractSpecificationAtom ∨
+      atom = semanticInterpretationAtom
   finiteBoundary := True
   coverageBoundary := True
   exactnessBoundary := True
@@ -770,6 +798,32 @@ def exampleAtomDelta : AtomDelta Component Edge Diagram where
   unknown := fun _ => False
   evidenceBoundary := True
   nonConclusions := True
+
+def exampleSemanticDelta : SemanticDelta Component Edge Diagram where
+  created := fun atom => atom = semanticInterpretationAtom
+  removed := fun _ => False
+  preserved := fun atom => atom = semanticInterpretationAtom
+  transformed := fun _ _ => False
+  createdSemantic := by
+    intro atom hAtom
+    rw [hAtom]
+    rfl
+  removedSemantic := by
+    intro _atom hAtom
+    exact False.elim hAtom
+  preservedSemantic := by
+    intro atom hAtom
+    rw [hAtom]
+    rfl
+  transformedSemantic := by
+    intro _before _after hTransform
+    exact False.elim hTransform
+  evidenceBoundary := True
+  nonConclusions := True
+
+theorem exampleSemanticDelta_created_is_semantic :
+    semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact exampleSemanticDelta.created_is_semantic rfl
 
 def examplePresentedAtomDelta : PresentedAtomDelta Component Edge Diagram where
   before := exampleAtomPresentation

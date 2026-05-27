@@ -18,6 +18,7 @@ extractor completeness claims.
 inductive Axis where
   | static
   | semantic
+  | specification
   | runtime
   | boundary
   | dataflow
@@ -41,7 +42,8 @@ inductive AtomKind where
   | dataState
   | effect
   | boundaryAuthority
-  | contractSemantic
+  | contractSpecification
+  | semanticInterpretation
   | runtimeInteraction
   deriving DecidableEq, Repr
 
@@ -297,6 +299,18 @@ theorem primitiveArchitectureAtom_constructive
       atom.lawIndependentEvidence⟩
 
 namespace ArchitectureAtom
+
+/-- Contract/specification atoms record what must be satisfied. -/
+def IsContractSpecification
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) : Prop :=
+  atom.kind = AtomKind.contractSpecification
+
+/-- Semantic/interpretation atoms record what an architectural fact means. -/
+def IsSemanticInterpretation
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) : Prop :=
+  atom.kind = AtomKind.semanticInterpretation
 
 /-- A primitive atom is accepted by a selected grammar policy. -/
 def AllowedBy {C : Type u} {E : Type v} {D : Type w}
@@ -1382,6 +1396,58 @@ structure AtomDelta (C : Type u) (E : Type v) (D : Type w) where
   unknown : ObservationGap C E D -> Prop
   evidenceBoundary : Prop
   nonConclusions : Prop
+
+/--
+Semantic atom delta between selected presentations.
+
+This isolates meaning-level change from generic structural atom change.  Every
+created, removed, preserved, and transformed endpoint is explicitly a
+semantic/interpretation atom.
+-/
+structure SemanticDelta (C : Type u) (E : Type v) (D : Type w) where
+  created : ArchitectureAtom C E D -> Prop
+  removed : ArchitectureAtom C E D -> Prop
+  preserved : ArchitectureAtom C E D -> Prop
+  transformed : ArchitectureAtom C E D -> ArchitectureAtom C E D -> Prop
+  createdSemantic :
+    ∀ atom, created atom -> atom.IsSemanticInterpretation
+  removedSemantic :
+    ∀ atom, removed atom -> atom.IsSemanticInterpretation
+  preservedSemantic :
+    ∀ atom, preserved atom -> atom.IsSemanticInterpretation
+  transformedSemantic :
+    ∀ before after, transformed before after ->
+      before.IsSemanticInterpretation ∧ after.IsSemanticInterpretation
+  evidenceBoundary : Prop
+  nonConclusions : Prop
+
+namespace SemanticDelta
+
+theorem created_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    (delta : SemanticDelta C E D)
+    {atom : ArchitectureAtom C E D}
+    (h : delta.created atom) :
+    atom.IsSemanticInterpretation :=
+  delta.createdSemantic atom h
+
+theorem transformed_source_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    (delta : SemanticDelta C E D)
+    {before after : ArchitectureAtom C E D}
+    (h : delta.transformed before after) :
+    before.IsSemanticInterpretation :=
+  (delta.transformedSemantic before after h).1
+
+theorem transformed_target_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    (delta : SemanticDelta C E D)
+    {before after : ArchitectureAtom C E D}
+    (h : delta.transformed before after) :
+    after.IsSemanticInterpretation :=
+  (delta.transformedSemantic before after h).2
+
+end SemanticDelta
 
 /-- Atom presentation delta with source/target presentation boundary. -/
 structure PresentedAtomDelta (C : Type u) (E : Type v) (D : Type w) where
