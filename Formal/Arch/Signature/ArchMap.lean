@@ -454,6 +454,53 @@ theorem aatPackageInputBoundary_recorded
 
 end ArchMapAtomObservationModel
 
+/--
+ArchSig reads an ArchMap atom-observation model through AAT.
+
+This boundary records the direction:
+ArchMap observes atoms; ArchSig analyzes that observation using an already
+available AAT surface.  Neither layer creates Atom Core facts or defines AAT.
+-/
+structure ArchSigAATAnalysisBoundary
+    (C : Type u) (E : Type v) (D : Type w) where
+  archMap : ArchMapAtomObservationModel C E D
+  aatSurface : AATPureTheorySurface C E D
+  analyzesArchMapUsingAAT : Prop
+  analyzesArchMapUsingAATEvidence : analyzesArchMapUsingAAT
+  archMapDoesNotCreateAtoms : Prop
+  archMapDoesNotCreateAtomsEvidence : archMapDoesNotCreateAtoms
+  archSigDoesNotDefineAAT : Prop
+  archSigDoesNotDefineAATEvidence : archSigDoesNotDefineAAT
+  rawCandidateBoundary : Prop
+  validationBoundary : Prop
+  nonConclusions : Prop
+
+namespace ArchSigAATAnalysisBoundary
+
+variable {C : Type u} {E : Type v} {D : Type w}
+
+theorem analyzes_using_aat
+    (B : ArchSigAATAnalysisBoundary C E D) :
+    B.analyzesArchMapUsingAAT :=
+  B.analyzesArchMapUsingAATEvidence
+
+theorem archmap_does_not_create_atoms
+    (B : ArchSigAATAnalysisBoundary C E D) :
+    B.archMapDoesNotCreateAtoms :=
+  B.archMapDoesNotCreateAtomsEvidence
+
+theorem archsig_does_not_define_aat
+    (B : ArchSigAATAnalysisBoundary C E D) :
+    B.archSigDoesNotDefineAAT :=
+  B.archSigDoesNotDefineAATEvidence
+
+theorem preserves_aat_observation_independence
+    (B : ArchSigAATAnalysisBoundary C E D) :
+    B.aatSurface.noObservationDependency :=
+  B.aatSurface.independent_of_observation
+
+end ArchSigAATAnalysisBoundary
+
 namespace Examples
 
 /-- One-component source/target graph used by the bounded positive example. -/

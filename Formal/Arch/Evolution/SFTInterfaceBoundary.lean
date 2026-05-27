@@ -1,5 +1,6 @@
 import Formal.Arch.Evolution.SFTField
 import Formal.Arch.Signature.SignatureLawfulness
+import Formal.Arch.Atomization
 
 namespace Formal.Arch
 
@@ -83,6 +84,56 @@ theorem records_theoremPackage_of_architectureZeroCurvatureTheoremPackage
   hPackage
 
 end AATTheoremStatus
+
+/--
+SFT reads a pure AAT surface as local algebra.
+
+The package records the one-way dependency: AAT supplies local algebraic
+structure over atoms; SFT consumes it to model evolution.  SFT does not redefine
+Atom, Molecule, DesignLaw, or ObstructionCircuit.
+-/
+structure AATLocalAlgebraForSFT (C : Type u) (E : Type v) (D : Type w) where
+  aatSurface : AATPureTheorySurface C E D
+  usedAsLocalAlgebra : Prop
+  usedAsLocalAlgebraEvidence : usedAsLocalAlgebra
+  sftDoesNotRedefineAtoms : Prop
+  sftDoesNotRedefineAtomsEvidence : sftDoesNotRedefineAtoms
+  sftDoesNotRedefineAAT : Prop
+  sftDoesNotRedefineAATEvidence : sftDoesNotRedefineAAT
+  noForecastCorrectnessFromAATAlone : Prop
+  noForecastCorrectnessFromAATAloneEvidence : noForecastCorrectnessFromAATAlone
+  nonConclusions : Prop
+
+namespace AATLocalAlgebraForSFT
+
+variable {C : Type u} {E : Type v} {D : Type w}
+
+theorem reads_aat_as_local_algebra
+    (boundary : AATLocalAlgebraForSFT C E D) :
+    boundary.usedAsLocalAlgebra :=
+  boundary.usedAsLocalAlgebraEvidence
+
+theorem sft_does_not_redefine_atoms
+    (boundary : AATLocalAlgebraForSFT C E D) :
+    boundary.sftDoesNotRedefineAtoms :=
+  boundary.sftDoesNotRedefineAtomsEvidence
+
+theorem sft_does_not_redefine_aat
+    (boundary : AATLocalAlgebraForSFT C E D) :
+    boundary.sftDoesNotRedefineAAT :=
+  boundary.sftDoesNotRedefineAATEvidence
+
+theorem aat_alone_does_not_prove_forecast_correctness
+    (boundary : AATLocalAlgebraForSFT C E D) :
+    boundary.noForecastCorrectnessFromAATAlone :=
+  boundary.noForecastCorrectnessFromAATAloneEvidence
+
+theorem preserves_aat_sft_independence
+    (boundary : AATLocalAlgebraForSFT C E D) :
+    boundary.aatSurface.noSFTDependency :=
+  boundary.aatSurface.independent_of_sft
+
+end AATLocalAlgebraForSFT
 
 /--
 SFT-side forecast status exposed at the AAT/SFT interface.
