@@ -16,6 +16,7 @@ import Formal.Arch.Operation.OperationInvariant
 import Formal.Arch.Repair.Repair
 import Formal.Arch.Repair.RepairSynthesis
 import Formal.Arch.Repair.RepairSynthesisExamples
+import Formal.Arch.Repair.AtomRepair
 import Formal.Arch.Extension.SplitExtensionLifting
 import Formal.Arch.Evolution.ArchitecturePath
 import Formal.Arch.Evolution.ArchitectureEvolution
@@ -87,3 +88,4 @@ import Formal.Arch.Operation.AtomOperation
 import Formal.Arch.Examples.AtomicExamples
 import Formal.Arch.Examples.AtomZeroCurvatureExamples
 import Formal.Arch.Examples.AtomOperationExamples
+import Formal.Arch.Examples.AtomRepairExamples
