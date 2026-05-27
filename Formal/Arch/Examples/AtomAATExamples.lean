@@ -92,6 +92,19 @@ theorem noEdgeAtomSuite_operation_preservesSurfaceInvariant :
     AtomAxiomatizedTheoremSuite.operation_preservesSurfaceInvariant
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_pure_operation_preservesSurfaceInvariant :
+    PreservesInvariant
+      (AtomPresentationOperation.source
+        (surface := noEdgeAtomAxiomatizedTheoremSuite.aat.surface))
+      (AtomPresentationOperation.target
+        (surface := noEdgeAtomAxiomatizedTheoremSuite.aat.surface))
+      (AtomPresentationOperation.atomSurfacePresentedHolds
+        noEdgeAtomAxiomatizedTheoremSuite.aat.surface)
+      noEdgeAtomAxiomatizedTheoremSuite.operation () := by
+  exact
+    AtomAxiomatizedTheoremSuite.pure_operation_preservesSurfaceInvariant
+      noEdgeAtomAxiomatizedTheoremSuite
+
 theorem noEdgeAtomSuite_repair_architectureLawful :
     ArchitectureSignature.ArchitectureLawful
       noEdgeArchitectureLawModel := by

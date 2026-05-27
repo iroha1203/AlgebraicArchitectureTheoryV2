@@ -186,6 +186,50 @@ theorem atomLawful_from_atomZeroCurvature
   AtomZeroCurvatureTheoremPackage.atomLawful
     suite.atomZeroCurvatureTheoremPackage
 
+/-- The unified suite exposes the Signature-free atom operation package. -/
+def pureOperationPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomAxiomatizedPureOperationPackage C E D where
+  surface := suite.aat.surface
+  operation := suite.operation
+  noArchitectureSignatureDependency := True
+  noArchitectureSignatureDependencyEvidence := trivial
+  operationAxiomBoundary := suite.suiteBoundary
+  theoremPackageBoundary := suite.suiteBoundary
+  nonConclusions := suite.nonConclusions
+
+/--
+The central suite's operation preservation is already a pure atom operation
+theorem before Signature reading.
+-/
+theorem pure_operation_preservesSurfaceInvariant
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    PreservesInvariant
+      (AtomPresentationOperation.source (surface := suite.aat.surface))
+      (AtomPresentationOperation.target (surface := suite.aat.surface))
+      (AtomPresentationOperation.atomSurfacePresentedHolds suite.aat.surface)
+      suite.operation () :=
+  AtomAxiomatizedPureOperationPackage.preservesSurfaceInvariant
+    suite.pureOperationPackage
+
 /-- The operation component as the existing operation package. -/
 def operationPackage
     {C : Type u} {A : Type v} {Obs : Type w}

@@ -86,6 +86,7 @@ import Formal.Arch.Evolution.SFTTheoremPackages
 import Formal.Arch.Atomization
 import Formal.Arch.AtomCoreAAT
 import Formal.Arch.Signature.AtomZeroCurvature
+import Formal.Arch.Operation.AtomPureOperation
 import Formal.Arch.Operation.AtomOperation
 import Formal.Arch.AtomAAT
 import Formal.Arch.Examples.AtomicExamples

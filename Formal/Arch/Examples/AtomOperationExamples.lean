@@ -66,6 +66,16 @@ def noEdgeAtomPresentationOperation :
   operationBoundary := True
   nonConclusions := True
 
+def noEdgePureAtomOperationPackage :
+    AtomAxiomatizedPureOperationPackage Component Edge Diagram where
+  surface := noEdgePureAATSurface
+  operation := noEdgeAtomPresentationOperation
+  noArchitectureSignatureDependency := True
+  noArchitectureSignatureDependencyEvidence := trivial
+  operationAxiomBoundary := True
+  theoremPackageBoundary := True
+  nonConclusions := True
+
 def noEdgeAtomAxiomatizedOperationPackage :
     AtomAxiomatizedOperationPackage
       noEdgeArchitectureLawModel Edge Diagram where
@@ -108,6 +118,25 @@ theorem noEdgeAtomOperation_ops_mem_surfaceInvariant :
   exact
     AtomPresentationOperation.ops_mem_surfaceInvariant
       noEdgeAtomPresentationOperation
+
+theorem noEdgePureAtomOperation_preservesSurfaceInvariant :
+    PreservesInvariant
+      (AtomPresentationOperation.source
+        (surface := noEdgePureAtomOperationPackage.surface))
+      (AtomPresentationOperation.target
+        (surface := noEdgePureAtomOperationPackage.surface))
+      (AtomPresentationOperation.atomSurfacePresentedHolds
+        noEdgePureAtomOperationPackage.surface)
+      noEdgePureAtomOperationPackage.operation () := by
+  exact
+    AtomAxiomatizedPureOperationPackage.preservesSurfaceInvariant
+      noEdgePureAtomOperationPackage
+
+theorem noEdgePureAtomOperation_independent_of_signature :
+    noEdgePureAtomOperationPackage.noArchitectureSignatureDependency := by
+  exact
+    AtomAxiomatizedPureOperationPackage.independent_of_architecture_signature
+      noEdgePureAtomOperationPackage
 
 theorem noEdgeAtomAxiomatizedOperation_zeroCurvature :
     ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
