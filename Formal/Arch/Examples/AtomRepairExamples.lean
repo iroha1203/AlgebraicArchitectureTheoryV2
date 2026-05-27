@@ -219,6 +219,60 @@ def noBadAtomFiniteRepairPackage :
   exactnessBoundary := True
   nonConclusions := True
 
+def noEdgePureAtomRepairPackage :
+    AtomAxiomatizedPureRepairPackage
+      noEdgePureAtomAxiomatizedAATCore
+      AtomRepairState AtomRepairRule
+      AtomRepairState.withForbiddenEdge AtomRepairState.repaired where
+  law := noBadAtomLaw
+  requiredMolecule := allSelectedMolecules
+  lawOnSurface := rfl
+  requiredMoleculesOnSurface := by
+    intro molecule _hRequired
+    trivial
+  repair := noBadAtomFiniteRepairPackage
+  lawfulnessBridge := noBadAtomLawfulnessBridge
+  noArchitectureSignatureDependency := True
+  noArchitectureSignatureDependencyEvidence := trivial
+  repairAxiomBoundary := True
+  theoremPackageBoundary := True
+  nonConclusions := True
+
+theorem noEdgePureAtomRepair_independent_of_signature :
+    noEdgePureAtomRepairPackage.noArchitectureSignatureDependency := by
+  exact
+    AtomAxiomatizedPureRepairPackage.independent_of_architecture_signature
+      noEdgePureAtomRepairPackage
+
+theorem noEdgePureAtomRepair_target_noRequiredCircuit :
+    NoRequiredObstructionCircuit noBadAtomLaw allSelectedMolecules := by
+  exact
+    AtomAxiomatizedPureRepairPackage.target_noRequiredObstructionCircuit
+      noEdgePureAtomRepairPackage
+
+theorem noEdgePureAtomRepair_target_atomZeroCurvature :
+    AtomZeroCurvature noBadAtomLaw allSelectedMolecules := by
+  exact
+    AtomAxiomatizedPureRepairPackage.target_atomZeroCurvature
+      noEdgePureAtomRepairPackage
+
+def noEdgePureAtomRepairZeroCurvatureTheoremPackage :
+    AtomZeroCurvatureTheoremPackage noEdgePureAtomAxiomatizedAATCore :=
+  AtomAxiomatizedPureRepairPackage.atomZeroCurvatureTheoremPackage
+    noEdgePureAtomRepairPackage
+
+theorem noEdgePureAtomRepair_target_atomLawful :
+    LawfulWithinAtomConfiguration noBadAtomLaw allSelectedMolecules := by
+  exact
+    AtomAxiomatizedPureRepairPackage.target_atomLawful
+      noEdgePureAtomRepairPackage
+
+theorem noEdgePureAtomRepair_law_does_not_create_atoms :
+    (noEdgePureAtomAxiomatizedAATCore.lawSeparation noBadAtomLaw rfl).lawDoesNotCreateAtoms := by
+  exact
+    AtomAxiomatizedPureRepairPackage.law_does_not_create_atoms
+      noEdgePureAtomRepairPackage
+
 def noEdgeAtomAxiomatizedRepairPackage :
     AtomAxiomatizedRepairPackage
       noEdgeArchitectureLawModel Edge Diagram

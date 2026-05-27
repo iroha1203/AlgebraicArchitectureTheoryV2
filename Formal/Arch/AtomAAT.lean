@@ -230,6 +230,129 @@ theorem pure_operation_preservesSurfaceInvariant
   AtomAxiomatizedPureOperationPackage.preservesSurfaceInvariant
     suite.pureOperationPackage
 
+/-- The unified suite exposes the Signature-free atom repair package. -/
+def pureRepairPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomAxiomatizedPureRepairPackage
+      suite.pureCore RepairState RepairRule repairSource repairTarget where
+  law := suite.aat.zeroCurvature.law
+  requiredMolecule := suite.aat.zeroCurvature.requiredMolecule
+  lawOnSurface := suite.pureCoreLawOnSurface
+  requiredMoleculesOnSurface := by
+    intro molecule hRequired
+    have hMolecule :
+        suite.aat.surface.molecules molecule :=
+      suite.aat.requiredMoleculesOnSurface molecule hRequired
+    simpa [suite.pureCoreSurfaceMatches] using hMolecule
+  repair := suite.repair
+  lawfulnessBridge := suite.aat.zeroCurvature.lawfulnessBridge
+  noArchitectureSignatureDependency := True
+  noArchitectureSignatureDependencyEvidence := trivial
+  repairAxiomBoundary := suite.suiteBoundary
+  theoremPackageBoundary := suite.suiteBoundary
+  nonConclusions := suite.nonConclusions
+
+/-- The pure repair component is independent of ArchitectureSignature. -/
+theorem pure_repair_independent_of_architecture_signature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    suite.pureRepairPackage.noArchitectureSignatureDependency :=
+  AtomAxiomatizedPureRepairPackage.independent_of_architecture_signature
+    suite.pureRepairPackage
+
+/--
+The central suite's repair clearing is already a pure atom repair theorem
+before Signature reading.
+-/
+theorem pure_repair_target_noRequiredObstructionCircuit
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    NoRequiredObstructionCircuit
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  AtomAxiomatizedPureRepairPackage.target_noRequiredObstructionCircuit
+    suite.pureRepairPackage
+
+/-- The central suite's repair clearing is atom-level zero curvature. -/
+theorem pure_repair_target_atomZeroCurvature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomZeroCurvature
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  AtomAxiomatizedPureRepairPackage.target_atomZeroCurvature
+    suite.pureRepairPackage
+
+/-- Repair-derived zero curvature is available as an atom-only theorem package. -/
+def pureRepairZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomZeroCurvatureTheoremPackage suite.pureCore :=
+  AtomAxiomatizedPureRepairPackage.atomZeroCurvatureTheoremPackage
+    suite.pureRepairPackage
+
+/--
+Repair-derived zero curvature uses the same selected law that does not create
+atom existence.
+-/
+theorem pure_repair_law_does_not_create_atoms
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).lawDoesNotCreateAtoms :=
+  AtomAxiomatizedPureRepairPackage.law_does_not_create_atoms
+    suite.pureRepairPackage
+
 /-- The operation component as the existing operation package. -/
 def operationPackage
     {C : Type u} {A : Type v} {Obs : Type w}

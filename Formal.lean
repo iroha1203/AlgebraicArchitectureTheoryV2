@@ -16,6 +16,7 @@ import Formal.Arch.Operation.OperationInvariant
 import Formal.Arch.Repair.Repair
 import Formal.Arch.Repair.RepairSynthesis
 import Formal.Arch.Repair.RepairSynthesisExamples
+import Formal.Arch.Repair.AtomPureRepair
 import Formal.Arch.Repair.AtomRepair
 import Formal.Arch.Repair.AtomSynthesis
 import Formal.Arch.Extension.SplitExtensionLifting
