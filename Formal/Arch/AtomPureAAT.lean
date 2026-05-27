@@ -393,6 +393,25 @@ theorem repair_law_does_not_create_atoms
   AtomAxiomatizedPureRepairPackage.law_does_not_create_atoms
     suite.repairPackage
 
+/--
+Repair-derived zero curvature uses a law that does not change primitive atom
+existence.
+-/
+theorem repair_law_does_not_change_atom_existence
+    {C : Type u} {E : Type v} {D : Type w}
+    {RepairState : Type r} {RepairRule : Type s}
+    {SynthesisState : Type t}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.core.lawSeparation
+      suite.zeroCurvature.law
+      suite.zeroCurvature.lawOnSurface).lawDoesNotChangeAtomExistence :=
+  AtomAxiomatizedPureRepairPackage.law_does_not_change_atom_existence
+    suite.repairPackage
+
 /-- Repair-derived zero curvature uses a law that evaluates pre-existing atoms. -/
 theorem repair_law_atoms_exist_before_law
     {C : Type u} {E : Type v} {D : Type w}
@@ -504,6 +523,25 @@ theorem synthesis_law_does_not_create_atoms
       suite.zeroCurvature.law
       suite.zeroCurvature.lawOnSurface).lawDoesNotCreateAtoms :=
   AtomAxiomatizedPureSynthesisPackage.law_does_not_create_atoms
+    suite.synthesisPackage
+
+/--
+Synthesis-derived zero curvature uses a law that does not change primitive atom
+existence.
+-/
+theorem synthesis_law_does_not_change_atom_existence
+    {C : Type u} {E : Type v} {D : Type w}
+    {RepairState : Type r} {RepairRule : Type s}
+    {SynthesisState : Type t}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.core.lawSeparation
+      suite.zeroCurvature.law
+      suite.zeroCurvature.lawOnSurface).lawDoesNotChangeAtomExistence :=
+  AtomAxiomatizedPureSynthesisPackage.law_does_not_change_atom_existence
     suite.synthesisPackage
 
 /-- Synthesis-derived zero curvature uses a law that evaluates pre-existing atoms. -/

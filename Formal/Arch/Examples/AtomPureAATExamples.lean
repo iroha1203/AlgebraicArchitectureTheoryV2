@@ -158,6 +158,13 @@ theorem noEdgePureAtomSuite_repair_law_does_not_create_atoms :
     AtomAxiomatizedPureTheoremSuite.repair_law_does_not_create_atoms
       noEdgeAtomAxiomatizedPureTheoremSuite
 
+theorem noEdgePureAtomSuite_repair_law_does_not_change_atom_existence :
+    (noEdgeAtomAxiomatizedPureTheoremSuite.core.lawSeparation
+      noBadAtomLaw rfl).lawDoesNotChangeAtomExistence := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.repair_law_does_not_change_atom_existence
+      noEdgeAtomAxiomatizedPureTheoremSuite
+
 theorem noEdgePureAtomSuite_repair_law_atoms_exist_before_law :
     (noEdgeAtomAxiomatizedPureTheoremSuite.core.lawSeparation
       noBadAtomLaw rfl).atomsExistBeforeLaw := by
@@ -190,6 +197,13 @@ theorem noEdgePureAtomSuite_synthesis_law_does_not_create_atoms :
       noBadAtomLaw rfl).lawDoesNotCreateAtoms := by
   exact
     AtomAxiomatizedPureTheoremSuite.synthesis_law_does_not_create_atoms
+      noEdgeAtomAxiomatizedPureTheoremSuite
+
+theorem noEdgePureAtomSuite_synthesis_law_does_not_change_atom_existence :
+    (noEdgeAtomAxiomatizedPureTheoremSuite.core.lawSeparation
+      noBadAtomLaw rfl).lawDoesNotChangeAtomExistence := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.synthesis_law_does_not_change_atom_existence
       noEdgeAtomAxiomatizedPureTheoremSuite
 
 theorem noEdgePureAtomSuite_synthesis_law_atoms_exist_before_law :

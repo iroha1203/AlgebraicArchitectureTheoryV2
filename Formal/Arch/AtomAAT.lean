@@ -638,6 +638,27 @@ theorem pure_repair_law_does_not_create_atoms
   AtomAxiomatizedPureRepairPackage.law_does_not_create_atoms
     suite.pureRepairPackage
 
+/--
+Repair-derived zero curvature uses the same selected law that does not change
+primitive atom existence.
+-/
+theorem pure_repair_law_does_not_change_atom_existence
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).lawDoesNotChangeAtomExistence :=
+  AtomAxiomatizedPureRepairPackage.law_does_not_change_atom_existence
+    suite.pureRepairPackage
+
 /-- Repair-derived zero curvature uses a law that evaluates pre-existing atoms. -/
 theorem pure_repair_law_atoms_exist_before_law
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -807,6 +828,27 @@ theorem pure_synthesis_law_does_not_create_atoms
       suite.aat.zeroCurvature.law
       suite.pureCoreLawOnSurface).lawDoesNotCreateAtoms :=
   AtomAxiomatizedPureSynthesisPackage.law_does_not_create_atoms
+    suite.pureSynthesisPackage
+
+/--
+Synthesis-derived zero curvature uses the same selected law that does not
+change primitive atom existence.
+-/
+theorem pure_synthesis_law_does_not_change_atom_existence
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    (suite.pureCore.lawSeparation
+      suite.aat.zeroCurvature.law
+      suite.pureCoreLawOnSurface).lawDoesNotChangeAtomExistence :=
+  AtomAxiomatizedPureSynthesisPackage.law_does_not_change_atom_existence
     suite.pureSynthesisPackage
 
 /-- Synthesis-derived zero curvature uses a law that evaluates pre-existing atoms. -/
