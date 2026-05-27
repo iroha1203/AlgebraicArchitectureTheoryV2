@@ -4063,9 +4063,11 @@ Issue [#1250](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 ArchSig promotion / SFT trace bridge を追加した。
 Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1268),
 [#1259](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1259),
-[#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262)
+[#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262),
+[#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265)
 では、Atom grammar extension policy、selected finite atom universe / molecule witness、
-required-axis vanishing bridge を追加した。
+required-axis vanishing bridge、selected atom lawfulness / no required circuit bridge
+を追加した。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
@@ -4079,6 +4081,8 @@ required-axis vanishing bridge を追加した。
 | `AtomMoleculeSubset.refl`, `AtomMoleculeSubset.trans`, `FiniteAtomMoleculeWitness.ofSubmolecule` | `theorem` / `def` | molecule inclusion の基本性質と、selected universe witness を submolecule に制限する API。 | `proved` / `defined only` |
 | `DesignLaw`, `ObstructionCircuit`, `obstructionCircuit_bad`, `obstructionCircuit_antichain` | `structure` / `def` / `theorem` | design law を atom molecule 上の bad predicate とし、obstruction circuit を minimal bad molecule として扱う。 | `defined only` / `proved` |
 | `AtomBadUpwardClosed`, `FiniteAtomMoleculeUniverse`, `FiniteAtomMoleculeUniverse.contains_minimal_bad`, `bad_iff_contains_obstruction_circuit` | `def` / `structure` / `theorem` | selected finite atom-molecule universe 上で badness が obstruction circuit から生成されること。 | `defined only` / `proved` |
+| `LawfulWithinAtomConfiguration`, `NoRequiredObstructionCircuit`, `AtomLawfulnessBridge` | `def` / `structure` | selected molecule boundary 上の lawfulness と no required obstruction circuit を分離し、bad witness completeness / coverage / exactness assumptions を束ねる。 | `defined only` |
+| `AtomLawfulnessBridge.lawful_iff_no_obstructionCircuit` | `theorem` | selected bad-witness completeness と circuit-bad soundness の下で、lawfulness と no required obstruction circuit を接続する。 | `proved` |
 | `ObservationStatus`, `ObservedAtom`, `ObservationGap`, `AtomPresentation` | `inductive` / `structure` | observed atom / rejected / uncertain / private unavailable / observation gap を atom existence から分離する presentation layer。 | `defined only` |
 | `rejectedCandidate_not_supportsMeasurement`, `uncertainCandidate_not_supportsMeasurement`, `observedAtom_rejected_not_measured`, `observedAtom_uncertain_not_measured`, `observationGap_not_measuredZero` | `theorem` | rejected / uncertain candidate と observation gap は measured-zero atom evidence ではない。 | `proved` |
 | `PresentedAtomSignature` | `structure` | `AtomPresentation` と `AtomSignature` の valuation boundary を束ねる。 | `defined only` |
@@ -4093,7 +4097,7 @@ required-axis vanishing bridge を追加した。
 | `AtomVanishingBridge.ofSignatureZero` | `def` | selected signature zero から required-axis vanishing bridge を構成する。 | `defined only` |
 | `validatedFieldAtomPresentation_excludes_raw_candidates`, `AtomicSFTPresentationBridgePackage.records_raw_candidate_exclusion`, `records_no_forecast_correctness` | `def` | SFT bridge が raw candidate exclusion と forecast non-conclusion を記録する。 | `defined only` |
 | `AtomDelta`, `PresentedAtomDelta`, `AtomTrace` | `structure` | validated atom presentation 間の atom-level change と trace。 | `defined only` |
-| `AtomicExamples.primitiveComponentAtom_primitive`, `primitiveRelationAtom_primitive`, `semanticContractAtom_allowedBy_current`, `semanticContractAtom_primitive_of_policy`, `singletonForbiddenMolecule_obstruction`, `selectedForbiddenEdgeUniverse_contains_minimal_bad`, `rejectedPrimitiveCandidate_not_measured`, `uncertainPrimitiveCandidate_not_measured`, `runtimeObservationGap_not_measuredZero`, `exampleAtomPresentation_recordsPromotionBoundary`, `staticSignatureZero_no_static_bad_atom`, `exampleAtomVanishingBridge_no_required_bad_atom`, `example_validatedPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_records_no_forecast_correctness` | `theorem` | Atom v2 primitive / grammar policy / finite molecule witness / circuit / observation / vanishing / presentation bridge smoke tests。 | `proved` |
+| `AtomicExamples.primitiveComponentAtom_primitive`, `primitiveRelationAtom_primitive`, `semanticContractAtom_allowedBy_current`, `semanticContractAtom_primitive_of_policy`, `singletonForbiddenMolecule_obstruction`, `selectedForbiddenEdgeUniverse_contains_minimal_bad`, `forbiddenEdge_lawful_iff_no_required_circuit`, `rejectedPrimitiveCandidate_not_measured`, `uncertainPrimitiveCandidate_not_measured`, `runtimeObservationGap_not_measuredZero`, `exampleAtomPresentation_recordsPromotionBoundary`, `staticSignatureZero_no_static_bad_atom`, `exampleAtomVanishingBridge_no_required_bad_atom`, `example_validatedPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_excludes_raw_candidates`, `example_atomicSFTPresentation_records_no_forecast_correctness` | `theorem` | Atom v2 primitive / grammar policy / finite molecule witness / circuit / lawfulness / observation / vanishing / presentation bridge smoke tests。 | `proved` |
 
 Non-conclusions: `AtomPresentation` は validated Lean-facing presentation boundary であり、
 raw ArchMap candidate、Rust validation pass、LLM semantic reading、extractor completeness、

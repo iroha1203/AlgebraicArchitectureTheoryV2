@@ -137,6 +137,27 @@ theorem selectedForbiddenEdgeUniverse_contains_minimal_bad
       AtomMoleculeSubset N M := by
   exact selectedForbiddenEdgeUniverse.contains_minimal_bad hSel hBad
 
+def forbiddenEdgeLawfulnessBridge :
+    AtomLawfulnessBridge forbiddenEdgeLaw selectedForbiddenEdgeUniverse.selected where
+  badWitnessComplete := by
+    intro M hSel hBad
+    rcases selectedForbiddenEdgeUniverse.contains_minimal_bad hSel hBad with
+      ⟨Ckt, hSelCkt, hCircuit, _hSub⟩
+    exact ⟨Ckt, hSelCkt, hCircuit⟩
+  circuitBad := by
+    intro M _hSel hCircuit
+    exact obstructionCircuit_bad hCircuit
+  coverageBoundary := True
+  exactnessBoundary := True
+  nonConclusions := True
+
+theorem forbiddenEdge_lawful_iff_no_required_circuit :
+    LawfulWithinAtomConfiguration
+        forbiddenEdgeLaw selectedForbiddenEdgeUniverse.selected ↔
+      NoRequiredObstructionCircuit
+        forbiddenEdgeLaw selectedForbiddenEdgeUniverse.selected := by
+  exact forbiddenEdgeLawfulnessBridge.lawful_iff_no_obstructionCircuit
+
 def rejectedPrimitiveCandidate : ObservedAtom Component Edge Diagram where
   atom := relationAtom
   observationStatus := ObservationStatus.rejectedCandidate

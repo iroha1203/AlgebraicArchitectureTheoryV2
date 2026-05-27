@@ -458,6 +458,66 @@ theorem bad_iff_contains_obstruction_circuit
 
 end FiniteAtomMoleculeUniverse
 
+/--
+Selected atom-configuration lawfulness.
+
+This is not defined as circuit absence.  It says that every selected molecule is
+not bad for the design law.
+-/
+def LawfulWithinAtomConfiguration
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) : Prop :=
+  ∀ M, requiredMolecule M -> ¬ law.Bad M
+
+/-- No required obstruction circuit is observed inside the selected boundary. -/
+def NoRequiredObstructionCircuit
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) : Prop :=
+  ∀ M, requiredMolecule M -> ¬ ObstructionCircuit law M
+
+/--
+Bridge assumptions connecting selected lawfulness to obstruction-circuit
+absence.
+
+The first field is the substantive witness-completeness assumption: selected
+bad molecules must expose a selected minimal obstruction circuit.  Without that
+coverage/exactness boundary, no-circuit observations are not promoted to global
+lawfulness.
+-/
+structure AtomLawfulnessBridge
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  badWitnessComplete :
+    ∀ M, requiredMolecule M -> law.Bad M ->
+      ∃ Ckt, requiredMolecule Ckt ∧ ObstructionCircuit law Ckt
+  circuitBad :
+    ∀ M, requiredMolecule M -> ObstructionCircuit law M -> law.Bad M
+  coverageBoundary : Prop
+  exactnessBoundary : Prop
+  nonConclusions : Prop
+
+namespace AtomLawfulnessBridge
+
+theorem lawful_iff_no_obstructionCircuit
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (bridge : AtomLawfulnessBridge law requiredMolecule) :
+    LawfulWithinAtomConfiguration law requiredMolecule ↔
+      NoRequiredObstructionCircuit law requiredMolecule := by
+  constructor
+  · intro hLawful M hRequired hCircuit
+    exact hLawful M hRequired (bridge.circuitBad M hRequired hCircuit)
+  · intro hNoCircuit M hRequired hBad
+    rcases bridge.badWitnessComplete M hRequired hBad with
+      ⟨Ckt, hRequiredCkt, hCircuit⟩
+    exact hNoCircuit Ckt hRequiredCkt hCircuit
+
+end AtomLawfulnessBridge
+
 /-- Tool-facing observation of a primitive atom. -/
 structure ObservedAtom (C : Type u) (E : Type v) (D : Type w) where
   atom : ArchitectureAtom C E D

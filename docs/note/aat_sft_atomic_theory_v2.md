@@ -1909,11 +1909,14 @@ SFT は `ValidatedFieldAtomPresentation` / `PresentedAtomDelta` /
 `AtomicSFTPresentationBridgePackage` から field atoms と atom trace を読む。
 Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1268),
 [#1259](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1259),
-[#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262)
+[#1262](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1262),
+[#1265](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1265)
 では、この surface をさらに進め、`AtomGrammarExtensionPolicy`、
 `SelectedAtomUniverse` / `FiniteAtomMoleculeWitness`、`AtomVanishingBridge`
-を追加した。これにより、新しい atom kind / axis の追加方針、selected finite
-molecule witness、required-axis zero reading を Lean 側で明示できる。
+`AtomLawfulnessBridge` を追加した。これにより、新しい atom kind / axis の
+追加方針、selected finite molecule witness、required-axis zero reading、
+coverage / exactness assumptions 下の lawfulness と no required circuit の bridge
+を Lean 側で明示できる。
 
 ### 15.1 First Core: Atoms as Abstract Finite Facts
 
@@ -2015,6 +2018,13 @@ Issue #1262 では、`SignatureZero` を required axis に制限して読む
 `AtomVanishingBridge` を追加した。これは selected measured required axis 上の
 no bad atom reading であり、zero curvature theorem 全体や unmeasured axis
 safety を結論しない。
+
+Issue #1265 では、`LawfulWithinAtomConfiguration` と
+`NoRequiredObstructionCircuit` を別 predicate として置き、その間を
+`AtomLawfulnessBridge` の bad witness completeness / coverage / exactness
+assumption で接続する。これにより、lawfulness を obstruction absence と
+定義しただけではなく、selected bad molecule が selected obstruction circuit を
+露出するという bridge theorem として扱う。
 
 ### 15.4 Responsibility as Molecule
 
