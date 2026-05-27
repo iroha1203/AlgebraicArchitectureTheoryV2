@@ -144,6 +144,19 @@ theorem semanticInterpretationAtom_axis_from_meaning :
   exact ArchitectureAtom.semantic_axis_of_hasSemanticMeaning
     semanticInterpretationAtom_has_meaning
 
+theorem componentAtom_ontology_primitive :
+    PrimitiveOntologicalAtom componentAtom.ontology := by
+  exact ArchitectureAtom.ontology_primitive componentAtom
+
+theorem componentAtom_ontology_boundary_independent :
+    componentAtom.ontology.boundaryIndependent := by
+  exact ArchitectureAtom.ontology_independent_of_observation_boundary
+    componentAtom
+
+theorem componentAtom_observation_boundary_separated :
+    componentAtom.observationBoundary.evidenceBoundary := by
+  trivial
+
 def selectedAtomUniverse : SelectedAtomUniverse Component Edge Diagram where
   selectedAtom := fun atom =>
     atom = componentAtom ∨
@@ -440,6 +453,34 @@ theorem pureAATSurface_independent_of_sft :
     pureAATSurface.noSFTDependency := by
   exact pureAATSurface.independent_of_sft
 
+def pureAATAtomOntology :
+    AtomOntology Component Edge Diagram :=
+  pureAATSurface.atomOntology
+
+def pureAATAtomOntologySurface :
+    AATAtomOntologySurface Component Edge Diagram :=
+  pureAATSurface.atomOntologySurface
+
+theorem pureAATSurface_reads_component_ontology :
+    pureAATSurface.atomOntology.atoms componentAtom.ontology := by
+  exact pureAATSurface.selected_atom_reads_ontology (Or.inl rfl)
+
+theorem pureAATSurface_component_ontology_primitive :
+    PrimitiveOntologicalAtom componentAtom.ontology := by
+  exact pureAATSurface.selected_atom_ontology_is_primitive (Or.inl rfl)
+
+theorem pureAATOntologySurface_independent_of_observation :
+    pureAATAtomOntologySurface.noObservationDependency := by
+  exact pureAATAtomOntologySurface.independent_of_observation
+
+theorem pureAATOntologySurface_molecule_atom_reads_ontology :
+    pureAATAtomOntologySurface.ontology.atoms componentAtom.ontology := by
+  exact
+    pureAATAtomOntologySurface.selected_molecule_atoms_read_ontology
+      (molecule := componentMolecule)
+      (Or.inr rfl)
+      rfl
+
 def semanticAATSurface : AATPureTheorySurface Component Edge Diagram where
   atoms := selectedAtomUniverse.selectedAtom
   molecules := requiredSemanticMolecule
@@ -539,6 +580,10 @@ theorem rejectedPrimitiveCandidate_not_measured :
     ¬ rejectedPrimitiveCandidate.measurementStatus.SupportsMeasurement := by
   exact observedAtom_rejected_not_measured rejectedPrimitiveCandidate rfl
 
+theorem rejectedPrimitiveCandidate_observes_ontology_not_existence :
+    rejectedPrimitiveCandidate.observedOntology.boundaryIndependent := by
+  exact rejectedPrimitiveCandidate.observes_boundary_free_ontology
+
 def uncertainPrimitiveCandidate : ObservedAtom Component Edge Diagram where
   atom := relationAtom
   observationStatus := ObservationStatus.uncertainCandidate
@@ -573,6 +618,10 @@ def runtimeObservationGap : ObservationGap Component Edge Diagram where
 theorem runtimeObservationGap_not_measuredZero :
     runtimeObservationGap.measurementStatus ≠ MeasurementStatus.measuredZero := by
   exact observationGap_not_measuredZero runtimeObservationGap
+
+theorem runtimeObservationGap_no_atom_existence_claim :
+    ¬ runtimeObservationGap.AtomExistenceClaim := by
+  exact runtimeObservationGap.no_atom_existence_claim
 
 def exampleAtomPresentation : AtomPresentation Component Edge Diagram where
   observed := fun observed =>
