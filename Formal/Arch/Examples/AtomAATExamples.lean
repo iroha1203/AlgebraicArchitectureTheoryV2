@@ -95,6 +95,28 @@ theorem noEdgeAtomSuite_atomLawful_from_atomZeroCurvature :
     AtomAxiomatizedTheoremSuite.atomLawful_from_atomZeroCurvature
       noEdgeAtomAxiomatizedTheoremSuite
 
+def noEdgeAtomSuite_staticArrangementLawPackage :
+    ArchitectureSignature.StaticAtomArrangementLawPackage
+      noEdgeArchitectureLawModel
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.requiredMolecule :=
+  AtomAxiomatizedTheoremSuite.staticArrangementLawPackage
+    noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvature_architectureLawful :
+    ArchitectureSignature.ArchitectureLawful noEdgeArchitectureLawModel := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_architectureLawful
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvature_requiredSignatureAxesZero :
+    ArchitectureSignature.RequiredSignatureAxesZero
+      (ArchitectureSignature.ArchitectureLawModel.signatureOf
+        noEdgeArchitectureLawModel) := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvature_requiredSignatureAxesZero
+      noEdgeAtomAxiomatizedTheoremSuite
+
 theorem noEdgeAtomSuite_zeroCurvature_strictLayered :
     StrictLayered noEdgeArchitectureLawModel.G := by
   exact
@@ -315,6 +337,13 @@ theorem noEdgeAtomSuite_zeroCurvatureTheoremPackage :
       noEdgeArchitectureLawModel := by
   exact
     AtomAxiomatizedTheoremSuite.zeroCurvatureTheoremPackage
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_zeroCurvatureTheoremPackage_from_staticArrangement :
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
+      noEdgeArchitectureLawModel := by
+  exact
+    AtomAxiomatizedTheoremSuite.zeroCurvatureTheoremPackage_from_staticArrangement
       noEdgeAtomAxiomatizedTheoremSuite
 
 theorem noEdgeAtomSuite_matrixDiagnosticCorollaries :

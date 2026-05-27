@@ -222,6 +222,154 @@ theorem atomLawful_from_atomZeroCurvature
   AtomZeroCurvatureTheoremPackage.atomLawful
     suite.atomZeroCurvatureTheoremPackage
 
+/--
+The central suite carries the full static atom arrangement package used by the
+Signature reading.
+-/
+def staticArrangementLawPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ArchitectureSignature.StaticAtomArrangementLawPackage X
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.staticArrangementLawPackage
+    suite.aat.zeroCurvature
+
+/-- The suite exposes the layering arrangement law selected by its atom package. -/
+def zeroCurvature_layeringArrangement
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    LayeringAtomArrangementLaw X.G
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  (suite.staticArrangementLawPackage).layering
+
+/-- The suite exposes the projection arrangement law selected by its atom package. -/
+def zeroCurvature_projectionArrangement
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ProjectionAtomArrangementLaw X.G X.π X.GA
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  (suite.staticArrangementLawPackage).projection
+
+/-- The suite exposes the LSP arrangement law selected by its atom package. -/
+def zeroCurvature_lspArrangement
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    LSPAtomArrangementLaw X.π X.O
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  (suite.staticArrangementLawPackage).lsp
+
+/-- The suite exposes the boundary-policy arrangement law selected by its atom package. -/
+def zeroCurvature_boundaryPolicyArrangement
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    EdgePolicyAtomArrangementLaw X.G X.boundaryAllowed
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  (suite.staticArrangementLawPackage).boundaryPolicy
+
+/-- The suite exposes the abstraction-policy arrangement law selected by its atom package. -/
+def zeroCurvature_abstractionPolicyArrangement
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    EdgePolicyAtomArrangementLaw X.G X.abstractionAllowed
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  (suite.staticArrangementLawPackage).abstractionPolicy
+
+/--
+Atom lawfulness plus the suite's carried static arrangement package recovers
+the existing static architecture lawfulness predicate.
+-/
+theorem zeroCurvature_architectureLawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ArchitectureSignature.ArchitectureLawful X :=
+  (suite.staticArrangementLawPackage).architectureLawful_of_lawful
+    suite.atomLawful_from_atomZeroCurvature
+
+/--
+Atom-derived architecture lawfulness gives the selected required Signature axes
+zero.
+-/
+theorem zeroCurvature_requiredSignatureAxesZero
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ArchitectureSignature.RequiredSignatureAxesZero
+      (ArchitectureSignature.ArchitectureLawModel.signatureOf X) :=
+  (ArchitectureSignature.architectureLawful_iff_requiredSignatureAxesZero X).mp
+    suite.zeroCurvature_architectureLawful
+
 /-- The zero-curvature package recovers strict layering from atom lawfulness. -/
 theorem zeroCurvature_strictLayered
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -1119,6 +1267,30 @@ theorem architectureLawful_of_synthesis
   AtomAxiomatizedSynthesisPackage.architectureLawful_of_synthesis
     suite.synthesisPackage
 
+/--
+The pure atom zero-curvature theorem package and the carried static arrangement
+package give the Signature-level zero-curvature theorem package.
+-/
+theorem zeroCurvatureTheoremPackage_from_staticArrangement
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage X :=
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_atomZeroCurvatureTheoremPackage
+    (X := X)
+    suite.atomZeroCurvatureTheoremPackage
+    suite.staticArrangementLawPackage
+
 /-- The base atom theorem package gives zero curvature. -/
 theorem zeroCurvatureTheoremPackage
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -1135,8 +1307,7 @@ theorem zeroCurvatureTheoremPackage
         X E D RepairState RepairRule SynthesisState
         repairSource repairTarget) :
     ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage X :=
-  ArchitectureSignature.AtomAxiomatizedAAT.architectureZeroCurvatureTheoremPackage
-    suite.aat
+  suite.zeroCurvatureTheoremPackage_from_staticArrangement
 
 /-- The base atom theorem package gives the matrix diagnostic corollaries. -/
 theorem matrixDiagnosticCorollaries
