@@ -88,17 +88,7 @@ theorem noEdgeAtomDerived_from_pure_atom_zero_curvature :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_atomZeroCurvatureTheoremPackage
       (X := noEdgeArchitectureLawModel)
       noEdgePureAtomZeroCurvatureTheoremPackage
-      noEdgeLayeringAtomArrangement
-      identityProjectionAtomArrangement
-      (by
-        intro _hLawful x y _hSame
-        rfl)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
+      noEdgeStaticAtomArrangementPackage
 
 theorem noEdgeAtomDerived_from_full_atom_arrangements :
     ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage

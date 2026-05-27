@@ -114,17 +114,8 @@ structure AtomDerivedZeroCurvaturePackage
   lawfulnessBridge : AtomLawfulnessBridge law requiredMolecule
   noRequiredObstructionCircuit :
     NoRequiredObstructionCircuit law requiredMolecule
-  layering : LayeringAtomArrangementLaw X.G law requiredMolecule
-  projection : ProjectionAtomArrangementLaw X.G X.π X.GA law requiredMolecule
-  lspCompatibleFromLawful :
-    LawfulWithinAtomConfiguration law requiredMolecule ->
-      LSPCompatible X.π X.O
-  boundaryPolicySoundFromLawful :
-    LawfulWithinAtomConfiguration law requiredMolecule ->
-      BoundaryPolicySound X.G X.boundaryAllowed
-  abstractionPolicySoundFromLawful :
-    LawfulWithinAtomConfiguration law requiredMolecule ->
-      AbstractionPolicySound X.G X.abstractionAllowed
+  staticArrangements :
+    StaticAtomArrangementLawPackage X law requiredMolecule
   atomBoundary : Prop
   moleculeBoundary : Prop
   obstructionCircuitBoundary : Prop
@@ -135,31 +126,17 @@ namespace AtomDerivedZeroCurvaturePackage
 
 /--
 Build the Signature-level atom-derived zero-curvature bridge from the pure
-Atom-AAT zero-curvature theorem package plus Signature arrangement readings.
+Atom-AAT zero-curvature theorem package plus a Signature static arrangement
+package.
 -/
 def ofAtomZeroCurvatureTheoremPackage
     {C : Type u} {A : Type v} {Obs : Type w}
     {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
     {core : AtomAxiomatizedPureAAT C E D}
     (atomPkg : AtomZeroCurvatureTheoremPackage core)
-    (layering :
-      LayeringAtomArrangementLaw X.G
+    (arrangements :
+      StaticAtomArrangementLawPackage X
         atomPkg.law atomPkg.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        atomPkg.law atomPkg.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed)
     (atomBoundary : Prop)
     (moleculeBoundary : Prop)
     (obstructionCircuitBoundary : Prop)
@@ -170,11 +147,7 @@ def ofAtomZeroCurvatureTheoremPackage
   requiredMolecule := atomPkg.requiredMolecule
   lawfulnessBridge := atomPkg.lawfulnessBridge
   noRequiredObstructionCircuit := atomPkg.noRequiredObstructionCircuit
-  layering := layering
-  projection := projection
-  lspCompatibleFromLawful := lspCompatibleFromLawful
-  boundaryPolicySoundFromLawful := boundaryPolicySoundFromLawful
-  abstractionPolicySoundFromLawful := abstractionPolicySoundFromLawful
+  staticArrangements := arrangements
   atomBoundary := atomBoundary
   moleculeBoundary := moleculeBoundary
   obstructionCircuitBoundary := obstructionCircuitBoundary
@@ -214,11 +187,13 @@ def ofAtomArrangementLaws
   ofAtomZeroCurvatureTheoremPackage
     (X := X)
     atomPkg
-    layering
-    projection
-    lsp.lspCompatible_of_lawful
-    boundaryPolicy.policySound_of_lawful
-    abstractionPolicy.policySound_of_lawful
+    { layering := layering
+      projection := projection
+      lsp := lsp
+      boundaryPolicy := boundaryPolicy
+      abstractionPolicy := abstractionPolicy
+      arrangementBoundary := atomBoundary
+      nonConclusions := nonConclusions }
     atomBoundary
     moleculeBoundary
     obstructionCircuitBoundary
@@ -243,14 +218,10 @@ def ofStaticAtomArrangementPackage
     (zeroCurvatureBoundary : Prop)
     (nonConclusions : Prop) :
     AtomDerivedZeroCurvaturePackage X E D :=
-  ofAtomArrangementLaws
+  ofAtomZeroCurvatureTheoremPackage
     (X := X)
     atomPkg
-    arrangements.layering
-    arrangements.projection
-    arrangements.lsp
-    arrangements.boundaryPolicy
-    arrangements.abstractionPolicy
+    arrangements
     atomBoundary
     moleculeBoundary
     obstructionCircuitBoundary
@@ -281,6 +252,83 @@ theorem atomLawful
     (AtomLawfulnessBridge.lawful_iff_no_obstructionCircuit
       pkg.lawfulnessBridge).mpr
       pkg.noRequiredObstructionCircuit
+
+/-- The grouped static arrangement laws carried by the atom-derived package. -/
+def staticArrangementLawPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    StaticAtomArrangementLawPackage X pkg.law pkg.requiredMolecule :=
+  pkg.staticArrangements
+
+/-- Layering arrangement law carried by the grouped static arrangement package. -/
+def layering
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    LayeringAtomArrangementLaw X.G pkg.law pkg.requiredMolecule :=
+  pkg.staticArrangements.layering
+
+/-- Projection arrangement law carried by the grouped static arrangement package. -/
+def projection
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    ProjectionAtomArrangementLaw X.G X.π X.GA pkg.law pkg.requiredMolecule :=
+  pkg.staticArrangements.projection
+
+/-- LSP arrangement law carried by the grouped static arrangement package. -/
+def lsp
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    LSPAtomArrangementLaw X.π X.O pkg.law pkg.requiredMolecule :=
+  pkg.staticArrangements.lsp
+
+/-- Boundary-policy arrangement law carried by the grouped static package. -/
+def boundaryPolicy
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    EdgePolicyAtomArrangementLaw X.G X.boundaryAllowed
+      pkg.law pkg.requiredMolecule :=
+  pkg.staticArrangements.boundaryPolicy
+
+/-- Abstraction-policy arrangement law carried by the grouped static package. -/
+def abstractionPolicy
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D) :
+    EdgePolicyAtomArrangementLaw X.G X.abstractionAllowed
+      pkg.law pkg.requiredMolecule :=
+  pkg.staticArrangements.abstractionPolicy
+
+/-- Compatibility accessor retained for callers that read LSP from lawfulness. -/
+theorem lspCompatibleFromLawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D)
+    (hLawful : LawfulWithinAtomConfiguration pkg.law pkg.requiredMolecule) :
+    LSPCompatible X.π X.O :=
+  pkg.staticArrangements.lspCompatible_of_lawful hLawful
+
+/-- Compatibility accessor retained for callers that read boundary policy from lawfulness. -/
+theorem boundaryPolicySoundFromLawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D)
+    (hLawful : LawfulWithinAtomConfiguration pkg.law pkg.requiredMolecule) :
+    BoundaryPolicySound X.G X.boundaryAllowed :=
+  pkg.staticArrangements.boundaryPolicySound_of_lawful hLawful
+
+/-- Compatibility accessor retained for callers that read abstraction policy from lawfulness. -/
+theorem abstractionPolicySoundFromLawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    (pkg : AtomDerivedZeroCurvaturePackage X E D)
+    (hLawful : LawfulWithinAtomConfiguration pkg.law pkg.requiredMolecule) :
+    AbstractionPolicySound X.G X.abstractionAllowed :=
+  pkg.staticArrangements.abstractionPolicySound_of_lawful hLawful
 
 /--
 Atom-derived lawfulness recovers the selected strict layering invariant.
@@ -420,34 +468,15 @@ theorem architectureZeroCurvatureTheoremPackage_of_atomZeroCurvatureTheoremPacka
     [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
     [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
     (atomPkg : AtomZeroCurvatureTheoremPackage core)
-    (layering :
-      LayeringAtomArrangementLaw X.G
-        atomPkg.law atomPkg.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        atomPkg.law atomPkg.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed) :
+    (arrangements :
+      StaticAtomArrangementLawPackage X
+        atomPkg.law atomPkg.requiredMolecule) :
     ArchitectureZeroCurvatureTheoremPackage X := by
   exact
-    (ofAtomZeroCurvatureTheoremPackage
+    (ofStaticAtomArrangementPackage
       (X := X)
       atomPkg
-      layering
-      projection
-      lspCompatibleFromLawful
-      boundaryPolicySoundFromLawful
-      abstractionPolicySoundFromLawful
+      arrangements
       True True True True True).architectureZeroCurvatureTheoremPackage
 
 /--
@@ -514,7 +543,7 @@ theorem architectureZeroCurvatureTheoremPackage_of_staticAtomArrangementPackage
 
 /--
 Build the Signature-level atom-derived bridge from the pure Atom-AAT theorem
-suite plus Signature arrangement readings.
+suite plus a grouped static atom arrangement-law package.
 -/
 def ofPureTheoremSuite
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -526,43 +555,20 @@ def ofPureTheoremSuite
       AtomAxiomatizedPureTheoremSuite
         C E D RepairState RepairRule SynthesisState
         repairSource repairTarget)
-    (layering :
-      LayeringAtomArrangementLaw X.G
+    (arrangements :
+      StaticAtomArrangementLawPackage X
         suite.zeroCurvature.law
         suite.zeroCurvature.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed)
     (atomBoundary : Prop)
     (moleculeBoundary : Prop)
     (obstructionCircuitBoundary : Prop)
     (zeroCurvatureBoundary : Prop)
     (nonConclusions : Prop) :
     AtomDerivedZeroCurvaturePackage X E D :=
-  ofAtomZeroCurvatureTheoremPackage
+  ofStaticAtomArrangementPackage
     (X := X)
     suite.zeroCurvature
-    layering
-    projection
-    lspCompatibleFromLawful
-    boundaryPolicySoundFromLawful
-    abstractionPolicySoundFromLawful
+    arrangements
     atomBoundary
     moleculeBoundary
     obstructionCircuitBoundary
@@ -647,9 +653,9 @@ def ofPureTheoremSuiteStaticArrangementPackage
     (zeroCurvatureBoundary : Prop)
     (nonConclusions : Prop) :
     AtomDerivedZeroCurvaturePackage X E D :=
-  ofStaticAtomArrangementPackage
+  ofPureTheoremSuite
     (X := X)
-    suite.zeroCurvature
+    suite
     arrangements
     atomBoundary
     moleculeBoundary
@@ -657,7 +663,10 @@ def ofPureTheoremSuiteStaticArrangementPackage
     zeroCurvatureBoundary
     nonConclusions
 
-/-- A pure Atom-AAT theorem suite, interpreted by Signature arrangement readings, gives lawfulness. -/
+/--
+A pure Atom-AAT theorem suite, interpreted by a grouped static atom arrangement
+law package, gives lawfulness.
+-/
 theorem architectureLawful_of_pureTheoremSuite
     {C : Type u} {A : Type v} {Obs : Type w}
     {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
@@ -668,43 +677,20 @@ theorem architectureLawful_of_pureTheoremSuite
       AtomAxiomatizedPureTheoremSuite
         C E D RepairState RepairRule SynthesisState
         repairSource repairTarget)
-    (layering :
-      LayeringAtomArrangementLaw X.G
+    (arrangements :
+      StaticAtomArrangementLawPackage X
         suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed) :
+        suite.zeroCurvature.requiredMolecule) :
     ArchitectureLawful X :=
   (ofPureTheoremSuite
       (X := X)
       suite
-      layering
-      projection
-      lspCompatibleFromLawful
-      boundaryPolicySoundFromLawful
-      abstractionPolicySoundFromLawful
+      arrangements
       True True True True True).architectureLawful
 
 /--
 Pure Atom-AAT theorem suite zero curvature, interpreted through Signature
-arrangement readings, gives selected required Signature axes zero.
+static arrangement readings, gives selected required Signature axes zero.
 -/
 theorem requiredSignatureAxesZero_of_pureTheoremSuite
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -719,44 +705,21 @@ theorem requiredSignatureAxesZero_of_pureTheoremSuite
       AtomAxiomatizedPureTheoremSuite
         C E D RepairState RepairRule SynthesisState
         repairSource repairTarget)
-    (layering :
-      LayeringAtomArrangementLaw X.G
+    (arrangements :
+      StaticAtomArrangementLawPackage X
         suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed) :
+        suite.zeroCurvature.requiredMolecule) :
     RequiredSignatureAxesZero (ArchitectureLawModel.signatureOf X) :=
   (ofPureTheoremSuite
       (X := X)
       suite
-      layering
-      projection
-      lspCompatibleFromLawful
-      boundaryPolicySoundFromLawful
-      abstractionPolicySoundFromLawful
+      arrangements
       True True True True True).requiredSignatureAxesZero
 
 /--
 Pure Atom-AAT theorem suite zero curvature, interpreted through Signature
-arrangement readings, gives the existing Signature-level zero-curvature
-theorem package.
+static arrangement readings, gives the existing Signature-level
+zero-curvature theorem package.
 -/
 theorem architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -771,38 +734,15 @@ theorem architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
       AtomAxiomatizedPureTheoremSuite
         C E D RepairState RepairRule SynthesisState
         repairSource repairTarget)
-    (layering :
-      LayeringAtomArrangementLaw X.G
+    (arrangements :
+      StaticAtomArrangementLawPackage X
         suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed) :
+        suite.zeroCurvature.requiredMolecule) :
     ArchitectureZeroCurvatureTheoremPackage X :=
   (ofPureTheoremSuite
       (X := X)
       suite
-      layering
-      projection
-      lspCompatibleFromLawful
-      boundaryPolicySoundFromLawful
-      abstractionPolicySoundFromLawful
+      arrangements
       True True True True True).architectureZeroCurvatureTheoremPackage
 
 /--
@@ -884,7 +824,7 @@ theorem architectureZeroCurvatureTheoremPackage_of_pureTheoremSuiteStaticArrange
 
 /--
 Pure Atom-AAT theorem suite zero curvature, interpreted through Signature
-arrangement readings, gives the matrix diagnostic corollaries carried by the
+static arrangement readings, gives the matrix diagnostic corollaries carried by the
 zero-curvature theorem package.
 -/
 theorem matrixDiagnosticCorollaries_of_pureTheoremSuite
@@ -898,39 +838,16 @@ theorem matrixDiagnosticCorollaries_of_pureTheoremSuite
       AtomAxiomatizedPureTheoremSuite
         C E D RepairState RepairRule SynthesisState
         repairSource repairTarget)
-    (layering :
-      LayeringAtomArrangementLaw X.G
+    (arrangements :
+      StaticAtomArrangementLawPackage X
         suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed) :
+        suite.zeroCurvature.requiredMolecule) :
     MatrixDiagnosticCorollaries X :=
   matrixDiagnosticCorollaries_of_architectureLawful X
     (architectureLawful_of_pureTheoremSuite
       (X := X)
       suite
-      layering
-      projection
-      lspCompatibleFromLawful
-      boundaryPolicySoundFromLawful
-      abstractionPolicySoundFromLawful)
+      arrangements)
 
 end AtomDerivedZeroCurvaturePackage
 
@@ -965,31 +882,17 @@ namespace AtomAxiomatizedAAT
 
 /--
 Build an atom-axiomatized AAT package from a pure Atom-AAT core, its
-atom-only zero-curvature theorem package, and Signature arrangement readings.
+atom-only zero-curvature theorem package, and a grouped static atom
+arrangement-law package.
 -/
 def ofPureAtomZeroCurvature
     {C : Type u} {A : Type v} {Obs : Type w}
     {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
     {core : AtomAxiomatizedPureAAT C E D}
     (atomPkg : AtomZeroCurvatureTheoremPackage core)
-    (layering :
-      LayeringAtomArrangementLaw X.G
+    (arrangements :
+      StaticAtomArrangementLawPackage X
         atomPkg.law atomPkg.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        atomPkg.law atomPkg.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          atomPkg.law atomPkg.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed)
     (atomAxiomBoundary : Prop)
     (theoremPackageBoundary : Prop)
     (nonConclusions : Prop) :
@@ -999,11 +902,7 @@ def ofPureAtomZeroCurvature
     AtomDerivedZeroCurvaturePackage.ofAtomZeroCurvatureTheoremPackage
       (X := X)
       atomPkg
-      layering
-      projection
-      lspCompatibleFromLawful
-      boundaryPolicySoundFromLawful
-      abstractionPolicySoundFromLawful
+      arrangements
       atomAxiomBoundary
       atomAxiomBoundary
       theoremPackageBoundary
@@ -1050,11 +949,13 @@ def ofPureAtomArrangementLaws
   ofPureAtomZeroCurvature
     (X := X)
     atomPkg
-    layering
-    projection
-    lsp.lspCompatible_of_lawful
-    boundaryPolicy.policySound_of_lawful
-    abstractionPolicy.policySound_of_lawful
+    { layering := layering
+      projection := projection
+      lsp := lsp
+      boundaryPolicy := boundaryPolicy
+      abstractionPolicy := abstractionPolicy
+      arrangementBoundary := atomAxiomBoundary
+      nonConclusions := nonConclusions }
     atomAxiomBoundary
     theoremPackageBoundary
     nonConclusions
@@ -1075,21 +976,17 @@ def ofPureAtomStaticArrangementPackage
     (theoremPackageBoundary : Prop)
     (nonConclusions : Prop) :
     AtomAxiomatizedAAT X E D :=
-  ofPureAtomArrangementLaws
+  ofPureAtomZeroCurvature
     (X := X)
     atomPkg
-    arrangements.layering
-    arrangements.projection
-    arrangements.lsp
-    arrangements.boundaryPolicy
-    arrangements.abstractionPolicy
+    arrangements
     atomAxiomBoundary
     theoremPackageBoundary
     nonConclusions
 
 /--
 Build an atom-axiomatized AAT package from the pure Atom-AAT theorem suite and
-Signature arrangement readings.
+a grouped static atom arrangement-law package.
 -/
 def ofPureTheoremSuite
     {C : Type u} {A : Type v} {Obs : Type w}
@@ -1101,29 +998,10 @@ def ofPureTheoremSuite
       AtomAxiomatizedPureTheoremSuite
         C E D RepairState RepairRule SynthesisState
         repairSource repairTarget)
-    (layering :
-      LayeringAtomArrangementLaw X.G
+    (arrangements :
+      StaticAtomArrangementLawPackage X
         suite.zeroCurvature.law
         suite.zeroCurvature.requiredMolecule)
-    (projection :
-      ProjectionAtomArrangementLaw X.G X.π X.GA
-        suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    (lspCompatibleFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        LSPCompatible X.π X.O)
-    (boundaryPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        BoundaryPolicySound X.G X.boundaryAllowed)
-    (abstractionPolicySoundFromLawful :
-      LawfulWithinAtomConfiguration
-          suite.zeroCurvature.law
-          suite.zeroCurvature.requiredMolecule ->
-        AbstractionPolicySound X.G X.abstractionAllowed)
     (atomAxiomBoundary : Prop)
     (theoremPackageBoundary : Prop)
     (nonConclusions : Prop) :
@@ -1131,11 +1009,7 @@ def ofPureTheoremSuite
   ofPureAtomZeroCurvature
     (X := X)
     suite.zeroCurvature
-    layering
-    projection
-    lspCompatibleFromLawful
-    boundaryPolicySoundFromLawful
-    abstractionPolicySoundFromLawful
+    arrangements
     atomAxiomBoundary
     theoremPackageBoundary
     nonConclusions
@@ -1212,9 +1086,9 @@ def ofPureTheoremSuiteStaticArrangementPackage
     (theoremPackageBoundary : Prop)
     (nonConclusions : Prop) :
     AtomAxiomatizedAAT X E D :=
-  ofPureAtomStaticArrangementPackage
+  ofPureTheoremSuite
     (X := X)
-    suite.zeroCurvature
+    suite
     arrangements
     atomAxiomBoundary
     theoremPackageBoundary

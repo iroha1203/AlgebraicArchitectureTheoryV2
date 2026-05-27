@@ -228,17 +228,7 @@ theorem noEdgePureAtomSuite_architectureLawful :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureLawful_of_pureTheoremSuite
       (X := noEdgeArchitectureLawModel)
       noEdgeAtomAxiomatizedPureTheoremSuite
-      noEdgeLayeringAtomArrangement
-      identityProjectionAtomArrangement
-      (by
-        intro _hLawful x y _hSame
-        rfl)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
+      noEdgeStaticAtomArrangementPackage
 
 theorem noEdgePureAtomSuite_requiredSignatureAxesZero :
     ArchitectureSignature.RequiredSignatureAxesZero
@@ -248,17 +238,7 @@ theorem noEdgePureAtomSuite_requiredSignatureAxesZero :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage.requiredSignatureAxesZero_of_pureTheoremSuite
       (X := noEdgeArchitectureLawModel)
       noEdgeAtomAxiomatizedPureTheoremSuite
-      noEdgeLayeringAtomArrangement
-      identityProjectionAtomArrangement
-      (by
-        intro _hLawful x y _hSame
-        rfl)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
+      noEdgeStaticAtomArrangementPackage
 
 theorem noEdgePureAtomSuite_architectureZeroCurvatureTheoremPackage :
     ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
@@ -276,17 +256,7 @@ theorem noEdgePureAtomSuite_matrixDiagnosticCorollaries :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage.matrixDiagnosticCorollaries_of_pureTheoremSuite
       (X := noEdgeArchitectureLawModel)
       noEdgeAtomAxiomatizedPureTheoremSuite
-      noEdgeLayeringAtomArrangement
-      identityProjectionAtomArrangement
-      (by
-        intro _hLawful x y _hSame
-        rfl)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
+      noEdgeStaticAtomArrangementPackage
 
 def noEdgePureAtomSuiteAxiomatizedAAT :
     ArchitectureSignature.AtomAxiomatizedAAT
