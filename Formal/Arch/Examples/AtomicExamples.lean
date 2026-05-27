@@ -734,6 +734,61 @@ theorem unitObservationAtomArrangement_equivalent :
   unitObservationAtomArrangement.observationallyEquivalent_of_lawful
     noBadAtomLaw_lawful
 
+def identityLSPAtomArrangement :
+    LSPAtomArrangementLaw
+      identityProjection observationToUnit noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesLSPCompatible := by
+    intro _hLawful _x _y _hSame
+    rfl
+  lspFailureExposesBadMolecule := by
+    intro pair hFailure
+    exact False.elim (hFailure.2 rfl)
+  observationBoundary := True
+  nonConclusions := True
+
+theorem identityLSPAtomArrangement_lspCompatible :
+    LSPCompatible identityProjection observationToUnit :=
+  identityLSPAtomArrangement.lspCompatible_of_lawful noBadAtomLaw_lawful
+
+theorem identityLSPAtomArrangement_noLSPObstruction :
+    NoLSPObstruction identityProjection observationToUnit :=
+  identityLSPAtomArrangement.noLSPObstruction_of_lawful noBadAtomLaw_lawful
+
+def allowAllBoundaryPolicyAtomArrangement :
+    EdgePolicyAtomArrangementLaw
+      noEdgeGraph (fun _ _ => True) noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesPolicySound := by
+    intro _hLawful _c _d _hEdge
+    trivial
+  policyViolationExposesBadMolecule := by
+    intro _pair _hEdge hNotAllowed
+    exact False.elim (hNotAllowed trivial)
+  policyBoundary := True
+  nonConclusions := True
+
+def allowAllAbstractionPolicyAtomArrangement :
+    EdgePolicyAtomArrangementLaw
+      noEdgeGraph (fun _ _ => True) noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesPolicySound := by
+    intro _hLawful _c _d _hEdge
+    trivial
+  policyViolationExposesBadMolecule := by
+    intro _pair _hEdge hNotAllowed
+    exact False.elim (hNotAllowed trivial)
+  policyBoundary := True
+  nonConclusions := True
+
+theorem allowAllBoundaryPolicyAtomArrangement_policySound :
+    ∀ {c d : Component}, noEdgeGraph.edge c d -> True :=
+  allowAllBoundaryPolicyAtomArrangement.policySound_of_lawful
+    noBadAtomLaw_lawful
+
+theorem allowAllAbstractionPolicyAtomArrangement_noViolation :
+    ∀ pair : Component × Component,
+      ¬ (noEdgeGraph.edge pair.1 pair.2 ∧ ¬ True) :=
+  allowAllAbstractionPolicyAtomArrangement.noPolicyViolation_of_lawful
+    noBadAtomLaw_lawful
+
 def apiResponsibilityBoundary :
     ResponsibilityBoundary Component Responsibility where
   owns := fun _ role => role = Responsibility.apiResponsibility

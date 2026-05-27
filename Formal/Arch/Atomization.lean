@@ -1,5 +1,6 @@
 import Formal.Arch.Evolution.SFTField
 import Formal.Arch.Evolution.SFTForecastCone
+import Formal.Arch.Law.LSP
 import Formal.Arch.Law.Projection
 import Formal.Arch.Law.Observation
 import Formal.Arch.Patterns.SRPDesignPattern
@@ -1482,6 +1483,95 @@ theorem observationallyEquivalent_of_lawful
   pkg.lawfulnessImpliesObservationEquivalence hLawful
 
 end ObservationAtomArrangementLaw
+
+/-- LSP compatibility read as an atom arrangement law. -/
+structure LSPAtomArrangementLaw
+    {Impl : Type u} {Abs : Type q} {Obs : Type r}
+    {C : Type v} {E : Type w} {D : Type s}
+    (π : InterfaceProjection Impl Abs)
+    (O : Observation Impl Obs)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  lawfulnessImpliesLSPCompatible :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      LSPCompatible π O
+  lspFailureExposesBadMolecule :
+    ∀ pair, LSPObstruction π O pair ->
+      ∃ M, requiredMolecule M ∧ law.Bad M
+  observationBoundary : Prop
+  nonConclusions : Prop
+
+namespace LSPAtomArrangementLaw
+
+theorem lspCompatible_of_lawful
+    {Impl : Type u} {Abs : Type q} {Obs : Type r}
+    {C : Type v} {E : Type w} {D : Type s}
+    {π : InterfaceProjection Impl Abs}
+    {O : Observation Impl Obs}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : LSPAtomArrangementLaw π O law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    LSPCompatible π O :=
+  pkg.lawfulnessImpliesLSPCompatible hLawful
+
+theorem noLSPObstruction_of_lawful
+    {Impl : Type u} {Abs : Type q} {Obs : Type r}
+    {C : Type v} {E : Type w} {D : Type s}
+    {π : InterfaceProjection Impl Abs}
+    {O : Observation Impl Obs}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : LSPAtomArrangementLaw π O law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    NoLSPObstruction π O :=
+  lspCompatible_iff_noLSPObstruction.mp
+    (pkg.lspCompatible_of_lawful hLawful)
+
+end LSPAtomArrangementLaw
+
+/-- Local edge-policy soundness read as an atom arrangement law. -/
+structure EdgePolicyAtomArrangementLaw
+    {C : Type u} {E : Type v} {D : Type w}
+    (G : ArchGraph C)
+    (allowed : C -> C -> Prop)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  lawfulnessImpliesPolicySound :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      ∀ {c d : C}, G.edge c d -> allowed c d
+  policyViolationExposesBadMolecule :
+    ∀ pair : C × C, G.edge pair.1 pair.2 -> ¬ allowed pair.1 pair.2 ->
+      ∃ M, requiredMolecule M ∧ law.Bad M
+  policyBoundary : Prop
+  nonConclusions : Prop
+
+namespace EdgePolicyAtomArrangementLaw
+
+theorem policySound_of_lawful
+    {C : Type u} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {allowed : C -> C -> Prop}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : EdgePolicyAtomArrangementLaw G allowed law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    ∀ {c d : C}, G.edge c d -> allowed c d :=
+  pkg.lawfulnessImpliesPolicySound hLawful
+
+theorem noPolicyViolation_of_lawful
+    {C : Type u} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {allowed : C -> C -> Prop}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : EdgePolicyAtomArrangementLaw G allowed law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    ∀ pair : C × C, ¬ (G.edge pair.1 pair.2 ∧ ¬ allowed pair.1 pair.2) := by
+  intro pair hBad
+  exact hBad.2 (pkg.policySound_of_lawful hLawful hBad.1)
+
+end EdgePolicyAtomArrangementLaw
 
 /-- A boundary leak is represented as a law-relative obstruction circuit candidate. -/
 structure BoundaryLeakObstructionCandidate

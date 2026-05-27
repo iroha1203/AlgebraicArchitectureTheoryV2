@@ -58,20 +58,14 @@ instance instDecidableRelNoEdgeArchitectureLawModelAbstractionAllowed :
 def noEdgeAtomDerivedZeroCurvaturePackage :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage
       noEdgeArchitectureLawModel Edge Diagram :=
-  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofAtomZeroCurvatureTheoremPackage
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofAtomArrangementLaws
       (X := noEdgeArchitectureLawModel)
       noEdgePureAtomZeroCurvatureTheoremPackage
       noEdgeLayeringAtomArrangement
       identityProjectionAtomArrangement
-      (by
-        intro _hLawful x y _hSame
-        rfl)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
+      identityLSPAtomArrangement
+      allowAllBoundaryPolicyAtomArrangement
+      allowAllAbstractionPolicyAtomArrangement
       True True True True True
 
 theorem noEdgeAtomDerived_from_pure_atom_zero_curvature :
@@ -93,26 +87,30 @@ theorem noEdgeAtomDerived_from_pure_atom_zero_curvature :
         intro _hLawful _c _d _hEdge
         trivial)
 
+theorem noEdgeAtomDerived_from_full_atom_arrangements :
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
+      noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_atomArrangementLaws
+      (X := noEdgeArchitectureLawModel)
+      noEdgePureAtomZeroCurvatureTheoremPackage
+      noEdgeLayeringAtomArrangement
+      identityProjectionAtomArrangement
+      identityLSPAtomArrangement
+      allowAllBoundaryPolicyAtomArrangement
+      allowAllAbstractionPolicyAtomArrangement
+
 def noEdgeAtomAxiomatizedAAT :
     ArchitectureSignature.AtomAxiomatizedAAT
       noEdgeArchitectureLawModel Edge Diagram :=
-  ArchitectureSignature.AtomAxiomatizedAAT.ofPureAtomZeroCurvature
+  ArchitectureSignature.AtomAxiomatizedAAT.ofPureAtomArrangementLaws
     (X := noEdgeArchitectureLawModel)
     noEdgePureAtomZeroCurvatureTheoremPackage
     noEdgeLayeringAtomArrangement
     identityProjectionAtomArrangement
-    (by
-      intro _hLawful x y _hSame
-      rfl
-    )
-    (by
-      intro _hLawful _c _d _hEdge
-      trivial
-    )
-    (by
-      intro _hLawful _c _d _hEdge
-      trivial
-    )
+    identityLSPAtomArrangement
+    allowAllBoundaryPolicyAtomArrangement
+    allowAllAbstractionPolicyAtomArrangement
     True True True
 
 theorem noEdgeAtomAxiomatized_independent_of_observation :

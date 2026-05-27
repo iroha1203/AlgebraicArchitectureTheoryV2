@@ -216,20 +216,14 @@ theorem noEdgePureAtomSuite_synthesis_law_atoms_exist_before_law :
 def noEdgePureAtomSuiteDerivedZeroCurvaturePackage :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage
       noEdgeArchitectureLawModel Edge Diagram :=
-  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofPureTheoremSuite
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofPureTheoremSuiteArrangementLaws
     (X := noEdgeArchitectureLawModel)
     noEdgeAtomAxiomatizedPureTheoremSuite
     noEdgeLayeringAtomArrangement
     identityProjectionAtomArrangement
-    (by
-      intro _hLawful x y _hSame
-      rfl)
-    (by
-      intro _hLawful _c _d _hEdge
-      trivial)
-    (by
-      intro _hLawful _c _d _hEdge
-      trivial)
+    identityLSPAtomArrangement
+    allowAllBoundaryPolicyAtomArrangement
+    allowAllAbstractionPolicyAtomArrangement
     True True True True True
 
 theorem noEdgePureAtomSuite_architectureLawful :
@@ -274,20 +268,14 @@ theorem noEdgePureAtomSuite_architectureZeroCurvatureTheoremPackage :
     ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
       noEdgeArchitectureLawModel := by
   exact
-    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuiteArrangementLaws
       (X := noEdgeArchitectureLawModel)
       noEdgeAtomAxiomatizedPureTheoremSuite
       noEdgeLayeringAtomArrangement
       identityProjectionAtomArrangement
-      (by
-        intro _hLawful x y _hSame
-        rfl)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
-      (by
-        intro _hLawful _c _d _hEdge
-        trivial)
+      identityLSPAtomArrangement
+      allowAllBoundaryPolicyAtomArrangement
+      allowAllAbstractionPolicyAtomArrangement
 
 theorem noEdgePureAtomSuite_matrixDiagnosticCorollaries :
     ArchitectureSignature.MatrixDiagnosticCorollaries
@@ -311,20 +299,14 @@ theorem noEdgePureAtomSuite_matrixDiagnosticCorollaries :
 def noEdgePureAtomSuiteAxiomatizedAAT :
     ArchitectureSignature.AtomAxiomatizedAAT
       noEdgeArchitectureLawModel Edge Diagram :=
-  ArchitectureSignature.AtomAxiomatizedAAT.ofPureTheoremSuite
+  ArchitectureSignature.AtomAxiomatizedAAT.ofPureTheoremSuiteArrangementLaws
     (X := noEdgeArchitectureLawModel)
     noEdgeAtomAxiomatizedPureTheoremSuite
     noEdgeLayeringAtomArrangement
     identityProjectionAtomArrangement
-    (by
-      intro _hLawful x y _hSame
-      rfl)
-    (by
-      intro _hLawful _c _d _hEdge
-      trivial)
-    (by
-      intro _hLawful _c _d _hEdge
-      trivial)
+    identityLSPAtomArrangement
+    allowAllBoundaryPolicyAtomArrangement
+    allowAllAbstractionPolicyAtomArrangement
     True True True
 
 theorem noEdgePureAtomSuite_axiomatizedAAT_zeroCurvatureTheoremPackage :
