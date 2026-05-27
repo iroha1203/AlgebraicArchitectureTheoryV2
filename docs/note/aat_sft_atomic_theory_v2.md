@@ -279,6 +279,60 @@ right:
   boundary determines observation, evidence, valuation, and claim scope
 ```
 
+### 2.7 Theory Layer and Observation Layer
+
+Atom v2 では、理論層と観測層を明確に分ける。
+
+物理学に理論物理と実験物理があるように、AAT/SFT でも
+architecture atom の存在論と、実コードから atom を観測する装置は分離する。
+
+```text
+Theory layer:
+  ArchitectureAtom
+  ArchitectureMolecule
+  DesignLaw
+  ObstructionCircuit
+  AAT theorem
+  SFT atom trace / forecast
+
+Observation layer:
+  ArchMap
+  ArchSig
+  ObservedAtom
+  AtomCandidate
+  EvidenceBundle
+  ObservationBoundary
+  Confidence / uncertainty
+  MissingEvidence
+```
+
+`ArchitectureAtom` は、境界の取り方に依存しない。
+それはソフトウェアアーキテクチャを構成する不変的な最小事実であり、
+これ以上分解すると同じ typed architectural fact として意味を保てないもの
+である。
+
+`ArchMap` は atom そのものではない。
+`ArchMap` は、実コードや関連 artifact から atom を観測した map である。
+したがって、boundary、confidence、missing evidence、non-conclusion は
+atom の存在条件ではなく、観測装置が返す品質情報である。
+
+```text
+wrong:
+  selected boundary produces atoms
+
+right:
+  architecture contains atoms
+  ArchMap observes atoms
+  ArchSig validates observations
+  AAT reasons over atom configurations
+  SFT studies atom-configuration dynamics
+```
+
+この分離により、AAT は boundary-relative candidate theory ではなく、
+atom を基底にした architecture theory になる。
+同時に、ArchMap / ArchSig は現場での測定装置として、観測条件、誤差、
+信頼度、未観測領域を明示できる。
+
 ---
 
 ## 3. Atomicity Criteria
@@ -1277,6 +1331,23 @@ AAT
 ArchSig は原子を作らない。
 ArchSig は原子を観測する。
 
+ここでの境界は、Atom 理論の境界ではない。
+境界は、観測装置としての ArchMap / ArchSig がどの artifact、どの evidence、
+どの validation rule から atom を見たかを表す実験条件である。
+
+```text
+ArchitectureAtom
+  = boundary-free primitive architectural fact
+
+ArchMap entry
+  = observation of an atom-like fact under explicit evidence conditions
+```
+
+したがって、現場で返すべき主文は
+「この境界では non conclusion である」ではない。
+主文は「どの atom が観測され、それが AAT/SFT 上どう効くか」であり、
+境界、confidence、missing evidence は測定品質として添える。
+
 ### 9.2 ArchMap
 
 ArchMap は LLM-authored source-grounded presentation candidate である。
@@ -1907,6 +1978,12 @@ ArchMap / ArchSig は raw candidate から直接 theorem を作らず、
 Lean-facing `AtomPresentation` への promotion boundary を持つ。
 SFT は `ValidatedFieldAtomPresentation` / `PresentedAtomDelta` /
 `AtomicSFTPresentationBridgePackage` から field atoms と atom trace を読む。
+
+Follow-up: Issue
+[#1272](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1272)
+では、この surface をさらに修正し、`ArchitectureAtom` を boundary-free な
+Atom Core として読み、`ArchMap` / `ArchSig` / `AtomPresentation` を
+Atom の観測 map / measurement layer として分離する。
 
 ### 15.1 First Core: Atoms as Abstract Finite Facts
 
