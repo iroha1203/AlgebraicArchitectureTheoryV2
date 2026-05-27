@@ -1,4 +1,4 @@
-import Formal.Arch.AtomCoreAAT
+import Formal.Arch.AtomPureAAT
 import Formal.Arch.Operation.AtomOperation
 import Formal.Arch.Repair.AtomRepair
 import Formal.Arch.Repair.AtomSynthesis
@@ -505,6 +505,50 @@ theorem pure_synthesis_law_does_not_create_atoms
       suite.pureCoreLawOnSurface).lawDoesNotCreateAtoms :=
   AtomAxiomatizedPureSynthesisPackage.law_does_not_create_atoms
     suite.pureSynthesisPackage
+
+/--
+Forget the Signature-connected central suite back to the pure Atom-AAT theorem
+suite.
+-/
+def pureTheoremSuite
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomAxiomatizedPureTheoremSuite
+      C E D RepairState RepairRule SynthesisState
+      repairSource repairTarget where
+  core := suite.pureCore
+  zeroCurvature := suite.atomZeroCurvatureTheoremPackage
+  operation := suite.pureOperationPackage
+  operationSurfaceMatches := by
+    simpa [AtomAxiomatizedTheoremSuite.pureOperationPackage]
+      using suite.pureCoreSurfaceMatches.symm
+  repair := suite.repair
+  synthesisSpec := suite.pureSynthesisPackage.spec
+  synthesisCandidate := suite.synthesisCandidate
+  synthesisCandidateAtoms :=
+    suite.pureSynthesisPackage.candidateAtoms
+  synthesisCandidateMolecules :=
+    suite.pureSynthesisPackage.candidateMolecules
+  synthesisCandidateLaws :=
+    suite.pureSynthesisPackage.candidateLaws
+  synthesisCandidateNoRequiredObstructionCircuit :=
+    suite.pureSynthesisPackage.candidateNoRequiredObstructionCircuit
+  noArchitectureSignatureDependency :=
+    suite.pureCore.noArchitectureSignatureDependency
+  noArchitectureSignatureDependencyEvidence :=
+    suite.pureCore.noArchitectureSignatureDependencyEvidence
+  coverageAssumptions := suite.coverageAssumptions
+  exactnessAssumptions := suite.exactnessAssumptions
+  suiteBoundary := suite.suiteBoundary
+  nonConclusions := suite.nonConclusions
 
 /-- The operation component as the existing operation package. -/
 def operationPackage

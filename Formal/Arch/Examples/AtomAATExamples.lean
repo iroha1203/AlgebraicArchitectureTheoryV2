@@ -157,6 +157,18 @@ theorem noEdgeAtomSuite_pure_synthesis_law_does_not_create_atoms :
     AtomAxiomatizedTheoremSuite.pure_synthesis_law_does_not_create_atoms
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_pureTheoremSuite_atomZeroCurvature :
+    AtomZeroCurvature noBadAtomLaw allSelectedMolecules := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.atomZeroCurvature
+      noEdgeAtomAxiomatizedTheoremSuite.pureTheoremSuite
+
+theorem noEdgeAtomSuite_pureTheoremSuite_independent_of_signature :
+    noEdgeAtomAxiomatizedTheoremSuite.pureTheoremSuite.noArchitectureSignatureDependency := by
+  exact
+    AtomAxiomatizedPureTheoremSuite.independent_of_architecture_signature
+      noEdgeAtomAxiomatizedTheoremSuite.pureTheoremSuite
+
 theorem noEdgeAtomSuite_repair_architectureLawful :
     ArchitectureSignature.ArchitectureLawful
       noEdgeArchitectureLawModel := by

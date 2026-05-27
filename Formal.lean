@@ -90,6 +90,7 @@ import Formal.Arch.AtomCoreAAT
 import Formal.Arch.Signature.AtomZeroCurvature
 import Formal.Arch.Operation.AtomPureOperation
 import Formal.Arch.Operation.AtomOperation
+import Formal.Arch.AtomPureAAT
 import Formal.Arch.AtomAAT
 import Formal.Arch.Examples.AtomicExamples
 import Formal.Arch.Examples.AtomCoreAATExamples
@@ -97,4 +98,5 @@ import Formal.Arch.Examples.AtomZeroCurvatureExamples
 import Formal.Arch.Examples.AtomOperationExamples
 import Formal.Arch.Examples.AtomRepairExamples
 import Formal.Arch.Examples.AtomSynthesisExamples
+import Formal.Arch.Examples.AtomPureAATExamples
 import Formal.Arch.Examples.AtomAATExamples
