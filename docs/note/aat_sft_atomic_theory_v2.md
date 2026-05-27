@@ -35,6 +35,10 @@ Atom は、観測されたから存在するのではない。
 Atom は、設計原則に違反したから存在するのでもない。
 Atom は、ソフトウェアアーキテクチャが構造を持つ限り、常に存在する本質的な事実である。
 
+ここで本質的とは、Atom が独立した実体であるという意味ではない。
+Atom は、同じ typed fact としての意味を保ったままではこれ以上分解できない、
+理論上の分析単位である。
+
 この文書では、次を AAT/SFT の基礎決定として採用する。
 
 ```text
@@ -194,6 +198,24 @@ Contract(CreateUser, RequiresValidEmail)
 
 Atom は単なる名前、単なる文字列、単なる source span ではない。
 source span は Atom を観測する証拠であり、Atom そのものではない。
+
+### 3.5 Analytic Primitive, Not Substance
+
+Atom は、architecture を構成する物質的な粒子ではない。
+Atom は、AAT/SFT が architecture を読むときに採用する analytic primitive である。
+
+```text
+Atom:
+  irreducible as the same typed fact
+  not an independently self-subsisting substance
+```
+
+Atom の存在は、観測境界、design law、tool output によって作られない。
+しかし、Atom がなぜそこに現れ、なぜその配置で安定しているかは、
+要求、歴史、組織、実装上の制約、governance input などに条件づけられる。
+
+この区別により、Atom を primitive として使いながら、
+Atom を独立実体として実体化しない。
 
 ---
 
@@ -785,7 +807,7 @@ RuntimeMetricSample
 これらは FieldSig / SFT の入力になるが、architecture object 内の
 primitive architectural fact そのものではない。
 
-### 6.6 Rationale / Dependent Origin
+### 6.6 Rationale / Conditioning Context
 
 `Decision`、`Rationale`、`Tradeoff` は Atom Core ではない。
 
@@ -806,7 +828,7 @@ governance input として扱うのが自然である。
 Semantic:
   what the atom means
 
-Rationale / dependent origin:
+Rationale / conditioning context:
   why the atom is there
 ```
 
