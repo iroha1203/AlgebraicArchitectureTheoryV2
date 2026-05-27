@@ -1,5 +1,5 @@
 import Formal.Arch.Signature.AtomZeroCurvature
-import Formal.Arch.Examples.AtomicExamples
+import Formal.Arch.Examples.AtomCoreAATExamples
 
 namespace Formal.Arch.AtomicExamples
 
@@ -55,79 +55,65 @@ instance instDecidableRelNoEdgeArchitectureLawModelAbstractionAllowed :
   intro src dst
   exact isTrue trivial
 
-def noBadAtomLawfulnessBridge :
-    AtomLawfulnessBridge noBadAtomLaw allSelectedMolecules where
-  badWitnessComplete := by
-    intro M _hRequired hBad
-    exact False.elim hBad
-  circuitBad := by
-    intro M _hRequired hCircuit
-    exact obstructionCircuit_bad hCircuit
-  coverageBoundary := True
-  exactnessBoundary := True
-  nonConclusions := True
-
-theorem noBadNoRequiredObstructionCircuit :
-    NoRequiredObstructionCircuit noBadAtomLaw allSelectedMolecules := by
-  intro M _hRequired hCircuit
-  exact obstructionCircuit_bad hCircuit
-
 def noEdgeAtomDerivedZeroCurvaturePackage :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage
-      noEdgeArchitectureLawModel Edge Diagram where
-  law := noBadAtomLaw
-  requiredMolecule := allSelectedMolecules
-  lawfulnessBridge := noBadAtomLawfulnessBridge
-  noRequiredObstructionCircuit := noBadNoRequiredObstructionCircuit
-  layering := noEdgeLayeringAtomArrangement
-  projection := identityProjectionAtomArrangement
-  lspCompatibleFromLawful := by
-    intro _hLawful x y _hSame
-    rfl
-  boundaryPolicySoundFromLawful := by
-    intro _hLawful _c _d _hEdge
-    trivial
-  abstractionPolicySoundFromLawful := by
-    intro _hLawful _c _d _hEdge
-    trivial
-  atomBoundary := True
-  moleculeBoundary := True
-  obstructionCircuitBoundary := True
-  zeroCurvatureBoundary := True
-  nonConclusions := True
+      noEdgeArchitectureLawModel Edge Diagram :=
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofAtomZeroCurvatureTheoremPackage
+      (X := noEdgeArchitectureLawModel)
+      noEdgePureAtomZeroCurvatureTheoremPackage
+      noEdgeLayeringAtomArrangement
+      identityProjectionAtomArrangement
+      (by
+        intro _hLawful x y _hSame
+        rfl)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+      True True True True True
 
-def noEdgePureAATSurface : AATPureTheorySurface Component Edge Diagram where
-  atoms := selectedAtomUniverse.selectedAtom
-  molecules := allSelectedMolecules
-  laws := fun law => law = noBadAtomLaw
-  circuits := fun {law} {molecule} _hLaw _hMolecule _hCircuit =>
-    law = noBadAtomLaw ∧ allSelectedMolecules molecule ∧
-      ObstructionCircuit law molecule
-  atomCoreBoundary := True
-  moleculeBoundary := True
-  lawBoundary := True
-  patternInterpretationBoundary := True
-  noObservationDependency := True
-  noObservationDependencyEvidence := trivial
-  noSFTDependency := True
-  noSFTDependencyEvidence := trivial
-  nonConclusions := True
+theorem noEdgeAtomDerived_from_pure_atom_zero_curvature :
+    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
+      noEdgeArchitectureLawModel := by
+  exact
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_atomZeroCurvatureTheoremPackage
+      (X := noEdgeArchitectureLawModel)
+      noEdgePureAtomZeroCurvatureTheoremPackage
+      noEdgeLayeringAtomArrangement
+      identityProjectionAtomArrangement
+      (by
+        intro _hLawful x y _hSame
+        rfl)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
+      (by
+        intro _hLawful _c _d _hEdge
+        trivial)
 
 def noEdgeAtomAxiomatizedAAT :
     ArchitectureSignature.AtomAxiomatizedAAT
-      noEdgeArchitectureLawModel Edge Diagram where
-  surface := noEdgePureAATSurface
-  zeroCurvature := noEdgeAtomDerivedZeroCurvaturePackage
-  lawOnSurface := rfl
-  requiredMoleculesOnSurface := by
-    intro molecule _hRequired
-    trivial
-  requiredCircuitsOnSurface := by
-    intro molecule hRequired hCircuit
-    exact ⟨rfl, hRequired, hCircuit⟩
-  atomAxiomBoundary := True
-  theoremPackageBoundary := True
-  nonConclusions := True
+      noEdgeArchitectureLawModel Edge Diagram :=
+  ArchitectureSignature.AtomAxiomatizedAAT.ofPureAtomZeroCurvature
+    (X := noEdgeArchitectureLawModel)
+    noEdgePureAtomZeroCurvatureTheoremPackage
+    noEdgeLayeringAtomArrangement
+    identityProjectionAtomArrangement
+    (by
+      intro _hLawful x y _hSame
+      rfl
+    )
+    (by
+      intro _hLawful _c _d _hEdge
+      trivial
+    )
+    (by
+      intro _hLawful _c _d _hEdge
+      trivial
+    )
+    True True True
 
 theorem noEdgeAtomAxiomatized_independent_of_observation :
     noEdgeAtomAxiomatizedAAT.surface.noObservationDependency := by

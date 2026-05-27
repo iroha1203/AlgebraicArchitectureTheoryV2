@@ -1,6 +1,5 @@
 import Formal.Arch.AtomCoreAAT
 import Formal.Arch.Examples.AtomicExamples
-import Formal.Arch.Examples.AtomZeroCurvatureExamples
 
 namespace Formal.Arch.AtomicExamples
 
@@ -80,6 +79,40 @@ theorem pureAtomCore_forbiddenCircuit_on_surface :
     AtomAxiomatizedPureAAT.circuit_on_surface
       pureAtomAxiomatizedAATCore rfl (Or.inl rfl)
       singletonForbiddenMolecule_obstruction
+
+def noBadAtomLawfulnessBridge :
+    AtomLawfulnessBridge noBadAtomLaw allSelectedMolecules where
+  badWitnessComplete := by
+    intro M _hRequired hBad
+    exact False.elim hBad
+  circuitBad := by
+    intro M _hRequired hCircuit
+    exact obstructionCircuit_bad hCircuit
+  coverageBoundary := True
+  exactnessBoundary := True
+  nonConclusions := True
+
+theorem noBadNoRequiredObstructionCircuit :
+    NoRequiredObstructionCircuit noBadAtomLaw allSelectedMolecules := by
+  intro M _hRequired hCircuit
+  exact obstructionCircuit_bad hCircuit
+
+def noEdgePureAATSurface : AATPureTheorySurface Component Edge Diagram where
+  atoms := selectedAtomUniverse.selectedAtom
+  molecules := allSelectedMolecules
+  laws := fun law => law = noBadAtomLaw
+  circuits := fun {law} {molecule} _hLaw _hMolecule _hCircuit =>
+    law = noBadAtomLaw ∧ allSelectedMolecules molecule ∧
+      ObstructionCircuit law molecule
+  atomCoreBoundary := True
+  moleculeBoundary := True
+  lawBoundary := True
+  patternInterpretationBoundary := True
+  noObservationDependency := True
+  noObservationDependencyEvidence := trivial
+  noSFTDependency := True
+  noSFTDependencyEvidence := trivial
+  nonConclusions := True
 
 /-- Law-separation witness for the no-edge pure Atom-AAT core. -/
 def noEdgePureAtomCoreLawSeparation

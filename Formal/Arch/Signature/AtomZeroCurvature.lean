@@ -1,4 +1,4 @@
-import Formal.Arch.Atomization
+import Formal.Arch.AtomCoreAAT
 import Formal.Arch.Signature.SignatureLawfulness
 
 namespace Formal.Arch
@@ -41,6 +41,54 @@ structure AtomDerivedZeroCurvaturePackage
   nonConclusions : Prop
 
 namespace AtomDerivedZeroCurvaturePackage
+
+/--
+Build the Signature-level atom-derived zero-curvature bridge from the pure
+Atom-AAT zero-curvature theorem package plus Signature arrangement readings.
+-/
+def ofAtomZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (atomPkg : AtomZeroCurvatureTheoremPackage core)
+    (layering :
+      LayeringAtomArrangementLaw X.G
+        atomPkg.law atomPkg.requiredMolecule)
+    (projection :
+      ProjectionAtomArrangementLaw X.G X.π X.GA
+        atomPkg.law atomPkg.requiredMolecule)
+    (lspCompatibleFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        LSPCompatible X.π X.O)
+    (boundaryPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        BoundaryPolicySound X.G X.boundaryAllowed)
+    (abstractionPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        AbstractionPolicySound X.G X.abstractionAllowed)
+    (atomBoundary : Prop)
+    (moleculeBoundary : Prop)
+    (obstructionCircuitBoundary : Prop)
+    (zeroCurvatureBoundary : Prop)
+    (nonConclusions : Prop) :
+    AtomDerivedZeroCurvaturePackage X E D where
+  law := atomPkg.law
+  requiredMolecule := atomPkg.requiredMolecule
+  lawfulnessBridge := atomPkg.lawfulnessBridge
+  noRequiredObstructionCircuit := atomPkg.noRequiredObstructionCircuit
+  layering := layering
+  projection := projection
+  lspCompatibleFromLawful := lspCompatibleFromLawful
+  boundaryPolicySoundFromLawful := boundaryPolicySoundFromLawful
+  abstractionPolicySoundFromLawful := abstractionPolicySoundFromLawful
+  atomBoundary := atomBoundary
+  moleculeBoundary := moleculeBoundary
+  obstructionCircuitBoundary := obstructionCircuitBoundary
+  zeroCurvatureBoundary := zeroCurvatureBoundary
+  nonConclusions := nonConclusions
 
 /--
 Absence of required atom obstruction circuits gives atom-configuration
@@ -108,6 +156,48 @@ theorem architectureZeroCurvatureTheoremPackage
     architectureZeroCurvatureTheoremPackage_of_architectureLawful X
       pkg.architectureLawful
 
+/--
+Pure Atom-AAT zero curvature, interpreted through Signature arrangement
+readings, gives the existing Signature-level zero-curvature theorem package.
+-/
+theorem architectureZeroCurvatureTheoremPackage_of_atomZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {core : AtomAxiomatizedPureAAT C E D}
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (atomPkg : AtomZeroCurvatureTheoremPackage core)
+    (layering :
+      LayeringAtomArrangementLaw X.G
+        atomPkg.law atomPkg.requiredMolecule)
+    (projection :
+      ProjectionAtomArrangementLaw X.G X.π X.GA
+        atomPkg.law atomPkg.requiredMolecule)
+    (lspCompatibleFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        LSPCompatible X.π X.O)
+    (boundaryPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        BoundaryPolicySound X.G X.boundaryAllowed)
+    (abstractionPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        AbstractionPolicySound X.G X.abstractionAllowed) :
+    ArchitectureZeroCurvatureTheoremPackage X := by
+  exact
+    (ofAtomZeroCurvatureTheoremPackage
+      (X := X)
+      atomPkg
+      layering
+      projection
+      lspCompatibleFromLawful
+      boundaryPolicySoundFromLawful
+      abstractionPolicySoundFromLawful
+      True True True True True).architectureZeroCurvatureTheoremPackage
+
 end AtomDerivedZeroCurvaturePackage
 
 /--
@@ -138,6 +228,61 @@ structure AtomAxiomatizedAAT
   nonConclusions : Prop
 
 namespace AtomAxiomatizedAAT
+
+/--
+Build an atom-axiomatized AAT package from a pure Atom-AAT core, its
+atom-only zero-curvature theorem package, and Signature arrangement readings.
+-/
+def ofPureAtomZeroCurvature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (atomPkg : AtomZeroCurvatureTheoremPackage core)
+    (layering :
+      LayeringAtomArrangementLaw X.G
+        atomPkg.law atomPkg.requiredMolecule)
+    (projection :
+      ProjectionAtomArrangementLaw X.G X.π X.GA
+        atomPkg.law atomPkg.requiredMolecule)
+    (lspCompatibleFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        LSPCompatible X.π X.O)
+    (boundaryPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        BoundaryPolicySound X.G X.boundaryAllowed)
+    (abstractionPolicySoundFromLawful :
+      LawfulWithinAtomConfiguration
+          atomPkg.law atomPkg.requiredMolecule ->
+        AbstractionPolicySound X.G X.abstractionAllowed)
+    (atomAxiomBoundary : Prop)
+    (theoremPackageBoundary : Prop)
+    (nonConclusions : Prop) :
+    AtomAxiomatizedAAT X E D where
+  surface := core.surface
+  zeroCurvature :=
+    AtomDerivedZeroCurvaturePackage.ofAtomZeroCurvatureTheoremPackage
+      (X := X)
+      atomPkg
+      layering
+      projection
+      lspCompatibleFromLawful
+      boundaryPolicySoundFromLawful
+      abstractionPolicySoundFromLawful
+      atomAxiomBoundary
+      atomAxiomBoundary
+      theoremPackageBoundary
+      theoremPackageBoundary
+      nonConclusions
+  lawOnSurface := atomPkg.lawOnSurface
+  requiredMoleculesOnSurface := atomPkg.requiredMoleculesOnSurface
+  requiredCircuitsOnSurface := by
+    intro molecule hRequired hCircuit
+    exact atomPkg.requiredCircuit_on_surface hRequired hCircuit
+  atomAxiomBoundary := atomAxiomBoundary
+  theoremPackageBoundary := theoremPackageBoundary
+  nonConclusions := nonConclusions
 
 /-- The atom-axiomatized AAT surface is independent of observation tooling. -/
 theorem independent_of_observation
