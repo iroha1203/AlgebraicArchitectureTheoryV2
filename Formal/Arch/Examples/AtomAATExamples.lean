@@ -63,6 +63,22 @@ theorem noEdgeAtomSuite_zeroCurvatureLaw_does_not_create_atoms :
     AtomAxiomatizedTheoremSuite.zeroCurvature_law_does_not_create_atoms
       noEdgeAtomAxiomatizedTheoremSuite
 
+theorem noEdgeAtomSuite_atomZeroCurvature :
+    AtomZeroCurvature
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.requiredMolecule := by
+  exact
+    AtomAxiomatizedTheoremSuite.atomZeroCurvature
+      noEdgeAtomAxiomatizedTheoremSuite
+
+theorem noEdgeAtomSuite_atomLawful_from_atomZeroCurvature :
+    LawfulWithinAtomConfiguration
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.law
+      noEdgeAtomAxiomatizedTheoremSuite.aat.zeroCurvature.requiredMolecule := by
+  exact
+    AtomAxiomatizedTheoremSuite.atomLawful_from_atomZeroCurvature
+      noEdgeAtomAxiomatizedTheoremSuite
+
 theorem noEdgeAtomSuite_operation_preservesSurfaceInvariant :
     PreservesInvariant
       (AtomPresentationOperation.source

@@ -109,6 +109,83 @@ theorem zeroCurvature_law_does_not_create_atoms
   AtomAxiomatizedPureAAT.selected_law_does_not_create_atoms
     suite.pureCore suite.pureCoreLawOnSurface
 
+/-- The unified suite exposes the atom-only zero-curvature theorem package. -/
+def atomZeroCurvatureTheoremPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomZeroCurvatureTheoremPackage suite.pureCore where
+  law := suite.aat.zeroCurvature.law
+  requiredMolecule := suite.aat.zeroCurvature.requiredMolecule
+  lawOnSurface := suite.pureCoreLawOnSurface
+  requiredMoleculesOnSurface := by
+    intro molecule hRequired
+    have hMolecule :
+        suite.aat.surface.molecules molecule :=
+      suite.aat.requiredMoleculesOnSurface molecule hRequired
+    simpa [suite.pureCoreSurfaceMatches] using hMolecule
+  requiredCircuitsOnSurface := by
+    intro molecule hRequired hCircuit
+    exact
+      suite.pureCore.circuitClosure
+        suite.pureCoreLawOnSurface
+        (by
+          have hMolecule :
+              suite.aat.surface.molecules molecule :=
+            suite.aat.requiredMoleculesOnSurface molecule hRequired
+          simpa [suite.pureCoreSurfaceMatches] using hMolecule)
+        hCircuit
+  lawfulnessBridge := suite.aat.zeroCurvature.lawfulnessBridge
+  atomZeroCurvature := suite.aat.zeroCurvature.noRequiredObstructionCircuit
+  atomZeroCurvatureBoundary := suite.suiteBoundary
+  theoremPackageBoundary := suite.suiteBoundary
+  nonConclusions := suite.nonConclusions
+
+/-- The central suite records atom-level zero curvature before Signature reading. -/
+theorem atomZeroCurvature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    AtomZeroCurvature
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  (suite.atomZeroCurvatureTheoremPackage).atomZeroCurvature
+
+/--
+The atom-only zero-curvature theorem package gives atom-configuration
+lawfulness.
+-/
+theorem atomLawful_from_atomZeroCurvature
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+    {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedTheoremSuite
+        X E D RepairState RepairRule SynthesisState
+        repairSource repairTarget) :
+    LawfulWithinAtomConfiguration
+      suite.aat.zeroCurvature.law
+      suite.aat.zeroCurvature.requiredMolecule :=
+  AtomZeroCurvatureTheoremPackage.atomLawful
+    suite.atomZeroCurvatureTheoremPackage
+
 /-- The operation component as the existing operation package. -/
 def operationPackage
     {C : Type u} {A : Type v} {Obs : Type w}

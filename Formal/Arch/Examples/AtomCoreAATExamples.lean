@@ -146,4 +146,37 @@ theorem noEdgePureAtomCore_noBadLaw_does_not_create_atoms :
     AtomAxiomatizedPureAAT.selected_law_does_not_create_atoms
       noEdgePureAtomAxiomatizedAATCore rfl
 
+def noEdgePureAtomZeroCurvatureTheoremPackage :
+    AtomZeroCurvatureTheoremPackage noEdgePureAtomAxiomatizedAATCore where
+  law := noBadAtomLaw
+  requiredMolecule := allSelectedMolecules
+  lawOnSurface := rfl
+  requiredMoleculesOnSurface := by
+    intro molecule _hRequired
+    trivial
+  requiredCircuitsOnSurface := by
+    intro molecule hRequired hCircuit
+    exact ⟨rfl, hRequired, hCircuit⟩
+  lawfulnessBridge := noBadAtomLawfulnessBridge
+  atomZeroCurvature := noBadNoRequiredObstructionCircuit
+  atomZeroCurvatureBoundary := True
+  theoremPackageBoundary := True
+  nonConclusions := True
+
+theorem noEdgePureAtomZeroCurvature :
+    AtomZeroCurvature noBadAtomLaw allSelectedMolecules := by
+  exact noEdgePureAtomZeroCurvatureTheoremPackage.atomZeroCurvature
+
+theorem noEdgePureAtomZeroCurvature_atomLawful :
+    LawfulWithinAtomConfiguration noBadAtomLaw allSelectedMolecules := by
+  exact
+    AtomZeroCurvatureTheoremPackage.atomLawful
+      noEdgePureAtomZeroCurvatureTheoremPackage
+
+theorem noEdgePureAtomZeroCurvature_law_does_not_create_atoms :
+    (noEdgePureAtomAxiomatizedAATCore.lawSeparation noBadAtomLaw rfl).lawDoesNotCreateAtoms := by
+  exact
+    AtomZeroCurvatureTheoremPackage.law_does_not_create_atoms
+      noEdgePureAtomZeroCurvatureTheoremPackage
+
 end Formal.Arch.AtomicExamples
