@@ -100,6 +100,9 @@ theorem noBadNoRequiredObstructionCircuit :
 def noEdgePureAATSurface : AATPureTheorySurface Component Edge Diagram where
   atoms := selectedAtomUniverse.selectedAtom
   molecules := allSelectedMolecules
+  moleculeAtomsOnSurface := by
+    intro molecule hMolecule atom hAtom
+    exact hMolecule atom hAtom
   laws := fun law => law = noBadAtomLaw
   circuits := fun {law} {molecule} _hLaw _hMolecule _hCircuit =>
     law = noBadAtomLaw ∧ allSelectedMolecules molecule ∧
@@ -113,6 +116,13 @@ def noEdgePureAATSurface : AATPureTheorySurface Component Edge Diagram where
   noSFTDependency := True
   noSFTDependencyEvidence := trivial
   nonConclusions := True
+
+theorem noEdgePureAATSurface_selected_molecule_supported :
+    AtomMoleculeSupportedBy
+      noEdgePureAATSurface.selectedAtomUniverse componentMolecule := by
+  exact
+    noEdgePureAATSurface.selected_molecule_supportedBy_selected_atoms
+      componentMoleculeWitness.supportedBy
 
 /-- Law-separation witness for the no-edge pure Atom-AAT core. -/
 def noEdgePureAtomCoreLawSeparation
@@ -179,14 +189,22 @@ theorem noEdgePureAtomCore_noBadLaw_does_not_create_atoms :
     AtomAxiomatizedPureAAT.selected_law_does_not_create_atoms
       noEdgePureAtomAxiomatizedAATCore rfl
 
+theorem noEdgePureAtomCore_componentMolecule_atom_is_primitive :
+    PrimitiveArchitectureAtom componentAtom := by
+  exact
+    AtomAxiomatizedPureAAT.selected_molecule_atom_is_primitive
+      noEdgePureAtomAxiomatizedAATCore
+      componentMoleculeWitness.supportedBy
+      (by rfl)
+
 def noEdgePureAtomZeroCurvatureTheoremPackage :
     AtomZeroCurvatureTheoremPackage noEdgePureAtomAxiomatizedAATCore where
   law := noBadAtomLaw
   requiredMolecule := allSelectedMolecules
   lawOnSurface := rfl
   requiredMoleculesOnSurface := by
-    intro molecule _hRequired
-    trivial
+    intro molecule hRequired
+    exact hRequired
   requiredCircuitsOnSurface := by
     intro molecule hRequired hCircuit
     exact ⟨rfl, hRequired, hCircuit⟩

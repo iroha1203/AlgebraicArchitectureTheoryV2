@@ -31,8 +31,8 @@ def noEdgePureAtomSynthesisPackage :
   requiredMolecule := allSelectedMolecules
   lawOnSurface := rfl
   requiredMoleculesOnSurface := by
-    intro molecule _hRequired
-    trivial
+    intro molecule hRequired
+    exact hRequired
   spec := noEdgeAtomSynthesisSpec
   candidate := AtomSynthesisState.candidate
   candidateAtoms := by

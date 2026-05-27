@@ -228,8 +228,8 @@ def noEdgePureAtomRepairPackage :
   requiredMolecule := allSelectedMolecules
   lawOnSurface := rfl
   requiredMoleculesOnSurface := by
-    intro molecule _hRequired
-    trivial
+    intro molecule hRequired
+    exact hRequired
   repair := noBadAtomFiniteRepairPackage
   lawfulnessBridge := noBadAtomLawfulnessBridge
   noArchitectureSignatureDependency := True

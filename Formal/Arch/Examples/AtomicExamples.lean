@@ -278,6 +278,17 @@ theorem forbiddenEdge_lawful_iff_no_required_circuit :
 def pureAATSurface : AATPureTheorySurface Component Edge Diagram where
   atoms := selectedAtomUniverse.selectedAtom
   molecules := selectedForbiddenEdgeUniverse.selected
+  moleculeAtomsOnSurface := by
+    intro molecule hMolecule atom hAtom
+    rcases hMolecule with hForbidden | hComponent
+    · have hEq : atom = relationAtom := by
+        rw [hForbidden] at hAtom
+        simpa [forbiddenEdgeMolecule] using hAtom
+      exact Or.inr (Or.inl hEq)
+    · have hEq : atom = componentAtom := by
+        rw [hComponent] at hAtom
+        simpa [componentMolecule] using hAtom
+      exact Or.inl hEq
   laws := fun law => law = forbiddenEdgeLaw
   circuits := fun {law} {molecule} _hLaw _hMolecule _hCircuit =>
     law = forbiddenEdgeLaw ∧
@@ -436,8 +447,8 @@ def noBadAtomLaw : DesignLaw Component Edge Diagram where
   selectedBoundary := True
   nonConclusions := True
 
-def allSelectedMolecules (_molecule : AtomMolecule Component Edge Diagram) : Prop :=
-  True
+def allSelectedMolecules (molecule : AtomMolecule Component Edge Diagram) : Prop :=
+  AtomMoleculeSupportedBy selectedAtomUniverse molecule
 
 def noEdgeGraph : ArchGraph Component where
   edge := fun _ _ => False

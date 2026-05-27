@@ -749,6 +749,9 @@ this surface, but they do not define it.
 structure AATPureTheorySurface (C : Type u) (E : Type v) (D : Type w) where
   atoms : ArchitectureAtom C E D -> Prop
   molecules : AtomMolecule C E D -> Prop
+  moleculeAtomsOnSurface :
+    ∀ molecule, molecules molecule ->
+      ∀ atom, molecule.atoms atom -> atoms atom
   laws : DesignLaw C E D -> Prop
   circuits :
     ∀ {law : DesignLaw C E D} {molecule : AtomMolecule C E D},
@@ -765,6 +768,17 @@ structure AATPureTheorySurface (C : Type u) (E : Type v) (D : Type w) where
 
 namespace AATPureTheorySurface
 
+/-- The selected atom universe induced by a pure AAT surface. -/
+def selectedAtomUniverse
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D) :
+    SelectedAtomUniverse C E D where
+  selectedAtom := surface.atoms
+  finiteBoundary := surface.atomCoreBoundary
+  coverageBoundary := surface.atomCoreBoundary
+  exactnessBoundary := surface.moleculeBoundary
+  nonConclusions := surface.nonConclusions
+
 theorem independent_of_observation
     {C : Type u} {E : Type v} {D : Type w}
     (surface : AATPureTheorySurface C E D) :
@@ -776,6 +790,27 @@ theorem independent_of_sft
     (surface : AATPureTheorySurface C E D) :
     surface.noSFTDependency :=
   surface.noSFTDependencyEvidence
+
+/-- Selected molecules are closed over selected atoms on the same pure surface. -/
+theorem atom_of_selected_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : surface.molecules molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    surface.atoms atom :=
+  surface.moleculeAtomsOnSurface molecule hMolecule atom hAtom
+
+/-- Selected molecules are supported by the selected atom universe of the surface. -/
+theorem selected_molecule_supportedBy_selected_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : surface.molecules molecule) :
+    AtomMoleculeSupportedBy surface.selectedAtomUniverse molecule := by
+  intro atom hAtom
+  exact surface.atom_of_selected_molecule hMolecule hAtom
 
 end AATPureTheorySurface
 

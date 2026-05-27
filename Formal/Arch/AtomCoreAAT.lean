@@ -91,6 +91,42 @@ theorem selected_law_evaluates_surface_molecule
     (core.lawSeparation law hLaw).selectedMolecule molecule :=
   core.lawEvaluatesSurfaceMolecules law hLaw molecule hMolecule
 
+/-- Selected molecules are made only from selected atoms on the pure surface. -/
+theorem selected_molecule_atom_on_surface
+    {C : Type u} {E : Type v} {D : Type w}
+    (core : AtomAxiomatizedPureAAT C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : core.surface.molecules molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    core.surface.atoms atom :=
+  core.surface.atom_of_selected_molecule hMolecule hAtom
+
+/-- Selected molecules are supported by the pure core's selected atom universe. -/
+theorem selected_molecule_supportedBy_surface_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    (core : AtomAxiomatizedPureAAT C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : core.surface.molecules molecule) :
+    AtomMoleculeSupportedBy core.surface.selectedAtomUniverse molecule :=
+  core.surface.selected_molecule_supportedBy_selected_atoms hMolecule
+
+/--
+Every atom occurring in a selected molecule is still a primitive Atom Core
+fact.
+-/
+theorem selected_molecule_atom_is_primitive
+    {C : Type u} {E : Type v} {D : Type w}
+    (core : AtomAxiomatizedPureAAT C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : core.surface.molecules molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    PrimitiveArchitectureAtom atom :=
+  have _hSelected : core.surface.atoms atom :=
+    core.selected_molecule_atom_on_surface hMolecule hAtom
+  primitiveArchitectureAtom_constructive atom
+
 /-- Selected laws do not create primitive atom existence. -/
 theorem selected_law_does_not_create_atoms
     {C : Type u} {E : Type v} {D : Type w}
