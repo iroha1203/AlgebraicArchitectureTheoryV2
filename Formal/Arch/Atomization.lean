@@ -1,5 +1,6 @@
 import Formal.Arch.Evolution.SFTField
 import Formal.Arch.Evolution.SFTForecastCone
+import Formal.Arch.Law.LSP
 import Formal.Arch.Law.Projection
 import Formal.Arch.Law.Observation
 import Formal.Arch.Patterns.SRPDesignPattern
@@ -18,6 +19,7 @@ extractor completeness claims.
 inductive Axis where
   | static
   | semantic
+  | specification
   | runtime
   | boundary
   | dataflow
@@ -41,7 +43,8 @@ inductive AtomKind where
   | dataState
   | effect
   | boundaryAuthority
-  | contractSemantic
+  | contractSpecification
+  | semanticInterpretation
   | runtimeInteraction
   deriving DecidableEq, Repr
 
@@ -253,6 +256,57 @@ theorem trans {C : Type u} {E : Type v} {D : Type w}
 end SupportSubset
 
 /--
+Machine-readable predicate grammar for primitive atoms.
+
+The human-readable `ArchitectureAtom.predicate` string remains a label for
+documentation and reports.  `AtomPredicate` is the Lean-facing predicate
+constructor that records which primitive fact shape is being asserted.
+-/
+inductive AtomPredicate (C : Type u) (E : Type v) (D : Type w) where
+  | component (component : C)
+  | relation (edge : E)
+  | capability (subject : C) (capability : String)
+  | dataState (diagram : D) (state : String)
+  | effect (diagram : D) (effect : String)
+  | boundaryAuthority (subject : C) (authority : String)
+  | contractSpecification (diagram : D) (contract : String)
+  | semanticInterpretation (diagram : D) (meaning : String)
+  | runtimeInteraction (edge : E) (interaction : String)
+  | custom (kind : AtomKind) (axis : Axis) (name : String)
+
+namespace AtomPredicate
+
+/-- The atom family determined by a typed predicate constructor. -/
+def kind {C : Type u} {E : Type v} {D : Type w} :
+    AtomPredicate C E D -> AtomKind
+  | component _ => AtomKind.existence
+  | relation _ => AtomKind.relation
+  | capability _ _ => AtomKind.capability
+  | dataState _ _ => AtomKind.dataState
+  | effect _ _ => AtomKind.effect
+  | boundaryAuthority _ _ => AtomKind.boundaryAuthority
+  | contractSpecification _ _ => AtomKind.contractSpecification
+  | semanticInterpretation _ _ => AtomKind.semanticInterpretation
+  | runtimeInteraction _ _ => AtomKind.runtimeInteraction
+  | custom kind _ _ => kind
+
+/-- The atom axis determined by a typed predicate constructor. -/
+def axis {C : Type u} {E : Type v} {D : Type w} :
+    AtomPredicate C E D -> Axis
+  | component _ => Axis.static
+  | relation _ => Axis.static
+  | capability _ _ => Axis.static
+  | dataState _ _ => Axis.dataflow
+  | effect _ _ => Axis.semantic
+  | boundaryAuthority _ _ => Axis.boundary
+  | contractSpecification _ _ => Axis.specification
+  | semanticInterpretation _ _ => Axis.semantic
+  | runtimeInteraction _ _ => Axis.runtime
+  | custom _ axis _ => axis
+
+end AtomPredicate
+
+/--
 Primitive architecture atom.
 
 This is a boundary-free typed architectural fact.  It is not created by an
@@ -264,6 +318,9 @@ structure ArchitectureAtom (C : Type u) (E : Type v) (D : Type w) where
   kind : AtomKind
   axis : Axis
   support : Support C E D
+  typedPredicate : AtomPredicate C E D
+  typedPredicateKindAligned : typedPredicate.kind = kind
+  typedPredicateAxisAligned : typedPredicate.axis = axis
   predicate : String
   singleFact : Prop
   singleFactEvidence : singleFact
@@ -297,6 +354,58 @@ theorem primitiveArchitectureAtom_constructive
       atom.lawIndependentEvidence⟩
 
 namespace ArchitectureAtom
+
+/-- A primitive atom's typed predicate determines the atom family it declares. -/
+theorem typedPredicate_kind
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    atom.typedPredicate.kind = atom.kind :=
+  atom.typedPredicateKindAligned
+
+/-- A primitive atom's typed predicate determines the atom axis it declares. -/
+theorem typedPredicate_axis
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    atom.typedPredicate.axis = atom.axis :=
+  atom.typedPredicateAxisAligned
+
+/-- Contract/specification atoms record what must be satisfied. -/
+def IsContractSpecification
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) : Prop :=
+  atom.kind = AtomKind.contractSpecification
+
+/-- Semantic/interpretation atoms record what an architectural fact means. -/
+def IsSemanticInterpretation
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) : Prop :=
+  atom.kind = AtomKind.semanticInterpretation
+
+/-- A semantic atom with a constructor-level meaning payload. -/
+def HasSemanticMeaning
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) (meaning : String) : Prop :=
+  ∃ diagram, atom.typedPredicate =
+    AtomPredicate.semanticInterpretation diagram meaning
+
+theorem isSemanticInterpretation_of_hasSemanticMeaning
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : ArchitectureAtom C E D} {meaning : String}
+    (h : atom.HasSemanticMeaning meaning) :
+    atom.IsSemanticInterpretation := by
+  rcases h with ⟨diagram, hPredicate⟩
+  unfold IsSemanticInterpretation
+  rw [← atom.typedPredicateKindAligned]
+  simp [hPredicate, AtomPredicate.kind]
+
+theorem semantic_axis_of_hasSemanticMeaning
+    {C : Type u} {E : Type v} {D : Type w}
+    {atom : ArchitectureAtom C E D} {meaning : String}
+    (h : atom.HasSemanticMeaning meaning) :
+    atom.axis = Axis.semantic := by
+  rcases h with ⟨diagram, hPredicate⟩
+  rw [← atom.typedPredicateAxisAligned]
+  simp [hPredicate, AtomPredicate.axis]
 
 /-- A primitive atom is accepted by a selected grammar policy. -/
 def AllowedBy {C : Type u} {E : Type v} {D : Type w}
@@ -363,6 +472,25 @@ structure AtomMolecule (C : Type u) (E : Type v) (D : Type w) where
   atoms : ArchitectureAtom C E D -> Prop
   finiteBoundary : Prop
   nonConclusions : Prop
+
+/-- A molecule whose atoms are all semantic/interpretation atoms. -/
+def SemanticAtomMolecule
+    {C : Type u} {E : Type v} {D : Type w}
+    (molecule : AtomMolecule C E D) : Prop :=
+  ∀ atom, molecule.atoms atom -> atom.IsSemanticInterpretation
+
+namespace SemanticAtomMolecule
+
+theorem atom_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {molecule : AtomMolecule C E D}
+    (hSemantic : SemanticAtomMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    atom.IsSemanticInterpretation :=
+  hSemantic atom hAtom
+
+end SemanticAtomMolecule
 
 /--
 A role assigned to an atom molecule.
@@ -434,6 +562,50 @@ structure FiniteAtomMoleculeWitness {C : Type u} {E : Type v} {D : Type w}
   moleculeFiniteBoundary : Prop
   universeFiniteBoundary : Prop
   nonConclusions : Prop
+
+/-- Proof-carrying finite witness for a semantic atom molecule. -/
+structure SemanticAtomMoleculeWitness
+    {C : Type u} {E : Type v} {D : Type w}
+    (U : SelectedAtomUniverse C E D)
+    (M : AtomMolecule C E D) where
+  moleculeWitness : FiniteAtomMoleculeWitness U M
+  semanticAtoms : SemanticAtomMolecule M
+  semanticBoundary : Prop
+  nonConclusions : Prop
+
+namespace SemanticAtomMoleculeWitness
+
+theorem atom_selected
+    {C : Type u} {E : Type v} {D : Type w}
+    {U : SelectedAtomUniverse C E D}
+    {M : AtomMolecule C E D}
+    (witness : SemanticAtomMoleculeWitness U M)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : M.atoms atom) :
+    U.selectedAtom atom :=
+  witness.moleculeWitness.supportedBy atom hAtom
+
+theorem atom_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {U : SelectedAtomUniverse C E D}
+    {M : AtomMolecule C E D}
+    (witness : SemanticAtomMoleculeWitness U M)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : M.atoms atom) :
+    atom.IsSemanticInterpretation :=
+  witness.semanticAtoms atom hAtom
+
+theorem atom_selected_and_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {U : SelectedAtomUniverse C E D}
+    {M : AtomMolecule C E D}
+    (witness : SemanticAtomMoleculeWitness U M)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : M.atoms atom) :
+    U.selectedAtom atom ∧ atom.IsSemanticInterpretation :=
+  ⟨witness.atom_selected hAtom, witness.atom_is_semantic hAtom⟩
+
+end SemanticAtomMoleculeWitness
 
 /-- Inclusion of atom molecules. -/
 def AtomMoleculeSubset {C : Type u} {E : Type v} {D : Type w}
@@ -511,6 +683,12 @@ structure AtomLawSeparation (C : Type u) (E : Type v) (D : Type w) where
   nonConclusions : Prop
 
 namespace AtomLawSeparation
+
+theorem atoms_exist_before_law
+    {C : Type u} {E : Type v} {D : Type w}
+    (separation : AtomLawSeparation C E D) :
+    separation.atomsExistBeforeLaw :=
+  separation.atomsExistBeforeLawEvidence
 
 theorem law_does_not_create_atoms
     {C : Type u} {E : Type v} {D : Type w}
@@ -658,6 +836,110 @@ theorem lawful_iff_no_obstructionCircuit
 end AtomLawfulnessBridge
 
 /--
+Semantic atom arrangement law.
+
+This records that every required molecule for the selected law is made of
+semantic/interpretation atoms.  Semantic mismatch or conflict is still evaluated
+by the law on molecules; it is not introduced as a new primitive atom kind.
+-/
+structure SemanticAtomArrangementLaw
+    {C : Type u} {E : Type v} {D : Type w}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  requiredSemantic :
+    ∀ molecule, requiredMolecule molecule -> SemanticAtomMolecule molecule
+  lawBoundary : Prop
+  semanticBoundary : Prop
+  nonConclusions : Prop
+
+namespace SemanticAtomArrangementLaw
+
+theorem semantic_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (arrangement : SemanticAtomArrangementLaw law requiredMolecule)
+    {molecule : AtomMolecule C E D}
+    (hRequired : requiredMolecule molecule) :
+    SemanticAtomMolecule molecule :=
+  arrangement.requiredSemantic molecule hRequired
+
+theorem atom_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (arrangement : SemanticAtomArrangementLaw law requiredMolecule)
+    {molecule : AtomMolecule C E D}
+    (hRequired : requiredMolecule molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    atom.IsSemanticInterpretation :=
+  arrangement.semantic_molecule hRequired atom hAtom
+
+end SemanticAtomArrangementLaw
+
+/--
+A semantic obstruction candidate is a law-relative obstruction circuit over a
+required semantic atom molecule.
+
+The candidate is derived from a selected semantic arrangement law.  It is not an
+Atom Core fact and does not add a new atom family.
+-/
+structure SemanticObstructionCandidate
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (arrangement : SemanticAtomArrangementLaw law requiredMolecule) where
+  molecule : AtomMolecule C E D
+  required : requiredMolecule molecule
+  obstruction : ObstructionCircuit law molecule
+  evidenceBoundary : Prop
+  nonConclusions : Prop
+
+namespace SemanticObstructionCandidate
+
+theorem semantic_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {arrangement : SemanticAtomArrangementLaw law requiredMolecule}
+    (candidate : SemanticObstructionCandidate arrangement) :
+    SemanticAtomMolecule candidate.molecule :=
+  arrangement.semantic_molecule candidate.required
+
+theorem atom_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {arrangement : SemanticAtomArrangementLaw law requiredMolecule}
+    (candidate : SemanticObstructionCandidate arrangement)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : candidate.molecule.atoms atom) :
+    atom.IsSemanticInterpretation :=
+  candidate.semantic_molecule atom hAtom
+
+theorem bad
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {arrangement : SemanticAtomArrangementLaw law requiredMolecule}
+    (candidate : SemanticObstructionCandidate arrangement) :
+    law.Bad candidate.molecule :=
+  obstructionCircuit_bad candidate.obstruction
+
+theorem no_candidate_of_lawful
+    {C : Type u} {E : Type v} {D : Type w}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    {arrangement : SemanticAtomArrangementLaw law requiredMolecule}
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule)
+    (candidate : SemanticObstructionCandidate arrangement) :
+    False :=
+  hLawful candidate.molecule candidate.required candidate.bad
+
+end SemanticObstructionCandidate
+
+/--
 Pure AAT surface built from Atom Core.
 
 This package intentionally has no ArchMap, ArchSig, FieldSig, observation
@@ -667,6 +949,9 @@ this surface, but they do not define it.
 structure AATPureTheorySurface (C : Type u) (E : Type v) (D : Type w) where
   atoms : ArchitectureAtom C E D -> Prop
   molecules : AtomMolecule C E D -> Prop
+  moleculeAtomsOnSurface :
+    ∀ molecule, molecules molecule ->
+      ∀ atom, molecule.atoms atom -> atoms atom
   laws : DesignLaw C E D -> Prop
   circuits :
     ∀ {law : DesignLaw C E D} {molecule : AtomMolecule C E D},
@@ -683,6 +968,17 @@ structure AATPureTheorySurface (C : Type u) (E : Type v) (D : Type w) where
 
 namespace AATPureTheorySurface
 
+/-- The selected atom universe induced by a pure AAT surface. -/
+def selectedAtomUniverse
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D) :
+    SelectedAtomUniverse C E D where
+  selectedAtom := surface.atoms
+  finiteBoundary := surface.atomCoreBoundary
+  coverageBoundary := surface.atomCoreBoundary
+  exactnessBoundary := surface.moleculeBoundary
+  nonConclusions := surface.nonConclusions
+
 theorem independent_of_observation
     {C : Type u} {E : Type v} {D : Type w}
     (surface : AATPureTheorySurface C E D) :
@@ -694,6 +990,45 @@ theorem independent_of_sft
     (surface : AATPureTheorySurface C E D) :
     surface.noSFTDependency :=
   surface.noSFTDependencyEvidence
+
+/-- Selected molecules are closed over selected atoms on the same pure surface. -/
+theorem atom_of_selected_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : surface.molecules molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    surface.atoms atom :=
+  surface.moleculeAtomsOnSurface molecule hMolecule atom hAtom
+
+/-- Selected molecules are supported by the selected atom universe of the surface. -/
+theorem selected_molecule_supportedBy_selected_atoms
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    {molecule : AtomMolecule C E D}
+    (hMolecule : surface.molecules molecule) :
+    AtomMoleculeSupportedBy surface.selectedAtomUniverse molecule := by
+  intro atom hAtom
+  exact surface.atom_of_selected_molecule hMolecule hAtom
+
+/-- Selected semantic molecules are selected molecules made of semantic atoms. -/
+def SemanticMoleculeOnSurface
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    (molecule : AtomMolecule C E D) : Prop :=
+  surface.molecules molecule ∧ SemanticAtomMolecule molecule
+
+theorem semantic_atom_of_selected_semantic_molecule
+    {C : Type u} {E : Type v} {D : Type w}
+    (surface : AATPureTheorySurface C E D)
+    {molecule : AtomMolecule C E D}
+    (hSemanticMolecule : surface.SemanticMoleculeOnSurface molecule)
+    {atom : ArchitectureAtom C E D}
+    (hAtom : molecule.atoms atom) :
+    surface.atoms atom ∧ atom.IsSemanticInterpretation :=
+  ⟨surface.atom_of_selected_molecule hSemanticMolecule.1 hAtom,
+    hSemanticMolecule.2 atom hAtom⟩
 
 end AATPureTheorySurface
 
@@ -1149,6 +1484,95 @@ theorem observationallyEquivalent_of_lawful
 
 end ObservationAtomArrangementLaw
 
+/-- LSP compatibility read as an atom arrangement law. -/
+structure LSPAtomArrangementLaw
+    {Impl : Type u} {Abs : Type q} {Obs : Type r}
+    {C : Type v} {E : Type w} {D : Type s}
+    (π : InterfaceProjection Impl Abs)
+    (O : Observation Impl Obs)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  lawfulnessImpliesLSPCompatible :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      LSPCompatible π O
+  lspFailureExposesBadMolecule :
+    ∀ pair, LSPObstruction π O pair ->
+      ∃ M, requiredMolecule M ∧ law.Bad M
+  observationBoundary : Prop
+  nonConclusions : Prop
+
+namespace LSPAtomArrangementLaw
+
+theorem lspCompatible_of_lawful
+    {Impl : Type u} {Abs : Type q} {Obs : Type r}
+    {C : Type v} {E : Type w} {D : Type s}
+    {π : InterfaceProjection Impl Abs}
+    {O : Observation Impl Obs}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : LSPAtomArrangementLaw π O law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    LSPCompatible π O :=
+  pkg.lawfulnessImpliesLSPCompatible hLawful
+
+theorem noLSPObstruction_of_lawful
+    {Impl : Type u} {Abs : Type q} {Obs : Type r}
+    {C : Type v} {E : Type w} {D : Type s}
+    {π : InterfaceProjection Impl Abs}
+    {O : Observation Impl Obs}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : LSPAtomArrangementLaw π O law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    NoLSPObstruction π O :=
+  lspCompatible_iff_noLSPObstruction.mp
+    (pkg.lspCompatible_of_lawful hLawful)
+
+end LSPAtomArrangementLaw
+
+/-- Local edge-policy soundness read as an atom arrangement law. -/
+structure EdgePolicyAtomArrangementLaw
+    {C : Type u} {E : Type v} {D : Type w}
+    (G : ArchGraph C)
+    (allowed : C -> C -> Prop)
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  lawfulnessImpliesPolicySound :
+    LawfulWithinAtomConfiguration law requiredMolecule ->
+      ∀ {c d : C}, G.edge c d -> allowed c d
+  policyViolationExposesBadMolecule :
+    ∀ pair : C × C, G.edge pair.1 pair.2 -> ¬ allowed pair.1 pair.2 ->
+      ∃ M, requiredMolecule M ∧ law.Bad M
+  policyBoundary : Prop
+  nonConclusions : Prop
+
+namespace EdgePolicyAtomArrangementLaw
+
+theorem policySound_of_lawful
+    {C : Type u} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {allowed : C -> C -> Prop}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : EdgePolicyAtomArrangementLaw G allowed law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    ∀ {c d : C}, G.edge c d -> allowed c d :=
+  pkg.lawfulnessImpliesPolicySound hLawful
+
+theorem noPolicyViolation_of_lawful
+    {C : Type u} {E : Type v} {D : Type w}
+    {G : ArchGraph C}
+    {allowed : C -> C -> Prop}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : EdgePolicyAtomArrangementLaw G allowed law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    ∀ pair : C × C, ¬ (G.edge pair.1 pair.2 ∧ ¬ allowed pair.1 pair.2) := by
+  intro pair hBad
+  exact hBad.2 (pkg.policySound_of_lawful hLawful hBad.1)
+
+end EdgePolicyAtomArrangementLaw
+
 /-- A boundary leak is represented as a law-relative obstruction circuit candidate. -/
 structure BoundaryLeakObstructionCandidate
     {C : Type u} {E : Type v} {D : Type w}
@@ -1382,6 +1806,58 @@ structure AtomDelta (C : Type u) (E : Type v) (D : Type w) where
   unknown : ObservationGap C E D -> Prop
   evidenceBoundary : Prop
   nonConclusions : Prop
+
+/--
+Semantic atom delta between selected presentations.
+
+This isolates meaning-level change from generic structural atom change.  Every
+created, removed, preserved, and transformed endpoint is explicitly a
+semantic/interpretation atom.
+-/
+structure SemanticDelta (C : Type u) (E : Type v) (D : Type w) where
+  created : ArchitectureAtom C E D -> Prop
+  removed : ArchitectureAtom C E D -> Prop
+  preserved : ArchitectureAtom C E D -> Prop
+  transformed : ArchitectureAtom C E D -> ArchitectureAtom C E D -> Prop
+  createdSemantic :
+    ∀ atom, created atom -> atom.IsSemanticInterpretation
+  removedSemantic :
+    ∀ atom, removed atom -> atom.IsSemanticInterpretation
+  preservedSemantic :
+    ∀ atom, preserved atom -> atom.IsSemanticInterpretation
+  transformedSemantic :
+    ∀ before after, transformed before after ->
+      before.IsSemanticInterpretation ∧ after.IsSemanticInterpretation
+  evidenceBoundary : Prop
+  nonConclusions : Prop
+
+namespace SemanticDelta
+
+theorem created_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    (delta : SemanticDelta C E D)
+    {atom : ArchitectureAtom C E D}
+    (h : delta.created atom) :
+    atom.IsSemanticInterpretation :=
+  delta.createdSemantic atom h
+
+theorem transformed_source_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    (delta : SemanticDelta C E D)
+    {before after : ArchitectureAtom C E D}
+    (h : delta.transformed before after) :
+    before.IsSemanticInterpretation :=
+  (delta.transformedSemantic before after h).1
+
+theorem transformed_target_is_semantic
+    {C : Type u} {E : Type v} {D : Type w}
+    (delta : SemanticDelta C E D)
+    {before after : ArchitectureAtom C E D}
+    (h : delta.transformed before after) :
+    after.IsSemanticInterpretation :=
+  (delta.transformedSemantic before after h).2
+
+end SemanticDelta
 
 /-- Atom presentation delta with source/target presentation boundary. -/
 structure PresentedAtomDelta (C : Type u) (E : Type v) (D : Type w) where

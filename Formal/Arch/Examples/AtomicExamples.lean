@@ -1,4 +1,4 @@
-import Formal.Arch.Atomization
+import Formal.Arch.AtomCoreAAT
 import Formal.Arch.Evolution.SFTEnvelope
 
 namespace Formal.Arch.AtomicExamples
@@ -29,6 +29,9 @@ def componentAtom : ArchitectureAtom Component Edge Diagram where
   kind := AtomKind.existence
   axis := Axis.static
   support := Support.component Edge Diagram Component.api
+  typedPredicate := AtomPredicate.component Component.api
+  typedPredicateKindAligned := rfl
+  typedPredicateAxisAligned := rfl
   predicate := "component api exists"
   singleFact := True
   singleFactEvidence := trivial
@@ -45,6 +48,9 @@ def relationAtom : ArchitectureAtom Component Edge Diagram where
   kind := AtomKind.relation
   axis := Axis.static
   support := Support.edge Component Diagram Edge.apiToDatabase
+  typedPredicate := AtomPredicate.relation Edge.apiToDatabase
+  typedPredicateKindAligned := rfl
+  typedPredicateAxisAligned := rfl
   predicate := "api depends on database"
   singleFact := True
   singleFactEvidence := trivial
@@ -57,11 +63,35 @@ def relationAtom : ArchitectureAtom Component Edge Diagram where
   evidenceBoundary := True
   nonConclusions := True
 
-def semanticContractAtom : ArchitectureAtom Component Edge Diagram where
-  kind := AtomKind.contractSemantic
+def contractSpecificationAtom : ArchitectureAtom Component Edge Diagram where
+  kind := AtomKind.contractSpecification
+  axis := Axis.specification
+  support := Support.diagram Component Edge Diagram.writePath
+  typedPredicate :=
+    AtomPredicate.contractSpecification Diagram.writePath "selected contract"
+  typedPredicateKindAligned := rfl
+  typedPredicateAxisAligned := rfl
+  predicate := "write path satisfies selected contract"
+  singleFact := True
+  singleFactEvidence := trivial
+  predicatePreservation := True
+  predicatePreservationEvidence := trivial
+  boundaryIndependent := True
+  boundaryIndependentEvidence := trivial
+  lawIndependent := True
+  lawIndependentEvidence := trivial
+  evidenceBoundary := True
+  nonConclusions := True
+
+def semanticInterpretationAtom : ArchitectureAtom Component Edge Diagram where
+  kind := AtomKind.semanticInterpretation
   axis := Axis.semantic
   support := Support.diagram Component Edge Diagram.writePath
-  predicate := "write path satisfies selected semantic contract"
+  typedPredicate :=
+    AtomPredicate.semanticInterpretation Diagram.writePath "account registration"
+  typedPredicateKindAligned := rfl
+  typedPredicateAxisAligned := rfl
+  predicate := "write path means account registration"
   singleFact := True
   singleFactEvidence := trivial
   predicatePreservation := True
@@ -81,18 +111,45 @@ theorem primitiveRelationAtom_primitive :
     PrimitiveArchitectureAtom relationAtom := by
   exact primitiveArchitectureAtom_constructive relationAtom
 
-theorem semanticContractAtom_allowedBy_current :
-    semanticContractAtom.AllowedBy AtomGrammarExtensionPolicy.current := by
-  exact ArchitectureAtom.allowedBy_current semanticContractAtom
+theorem contractSpecificationAtom_allowedBy_current :
+    contractSpecificationAtom.AllowedBy AtomGrammarExtensionPolicy.current := by
+  exact ArchitectureAtom.allowedBy_current contractSpecificationAtom
 
-theorem semanticContractAtom_primitive_of_policy :
-    PrimitiveArchitectureAtom semanticContractAtom := by
+theorem contractSpecificationAtom_primitive_of_policy :
+    PrimitiveArchitectureAtom contractSpecificationAtom := by
   exact ArchitectureAtom.primitive_of_allowedBy
-    semanticContractAtom_allowedBy_current
+    contractSpecificationAtom_allowedBy_current
+
+theorem semanticInterpretationAtom_allowedBy_current :
+    semanticInterpretationAtom.AllowedBy AtomGrammarExtensionPolicy.current := by
+  exact ArchitectureAtom.allowedBy_current semanticInterpretationAtom
+
+theorem semanticInterpretationAtom_primitive_of_policy :
+    PrimitiveArchitectureAtom semanticInterpretationAtom := by
+  exact ArchitectureAtom.primitive_of_allowedBy
+    semanticInterpretationAtom_allowedBy_current
+
+theorem semanticInterpretationAtom_has_meaning :
+    semanticInterpretationAtom.HasSemanticMeaning
+      "account registration" := by
+  exact ⟨Diagram.writePath, rfl⟩
+
+theorem semanticInterpretationAtom_is_semantic_from_meaning :
+    semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact ArchitectureAtom.isSemanticInterpretation_of_hasSemanticMeaning
+    semanticInterpretationAtom_has_meaning
+
+theorem semanticInterpretationAtom_axis_from_meaning :
+    semanticInterpretationAtom.axis = Axis.semantic := by
+  exact ArchitectureAtom.semantic_axis_of_hasSemanticMeaning
+    semanticInterpretationAtom_has_meaning
 
 def selectedAtomUniverse : SelectedAtomUniverse Component Edge Diagram where
   selectedAtom := fun atom =>
-    atom = componentAtom ∨ atom = relationAtom ∨ atom = semanticContractAtom
+    atom = componentAtom ∨
+      atom = relationAtom ∨
+      atom = contractSpecificationAtom ∨
+      atom = semanticInterpretationAtom
   finiteBoundary := True
   coverageBoundary := True
   exactnessBoundary := True
@@ -102,6 +159,17 @@ def componentMolecule : AtomMolecule Component Edge Diagram where
   atoms := fun atom => atom = componentAtom
   finiteBoundary := True
   nonConclusions := True
+
+def semanticMolecule : AtomMolecule Component Edge Diagram where
+  atoms := fun atom => atom = semanticInterpretationAtom
+  finiteBoundary := True
+  nonConclusions := True
+
+theorem semanticMolecule_all_semantic :
+    SemanticAtomMolecule semanticMolecule := by
+  intro atom hAtom
+  rw [hAtom]
+  rfl
 
 def repositoryRoleAssignment :
     RoleAssignment Component Edge Diagram Pattern where
@@ -149,6 +217,108 @@ def forbiddenEdgeMoleculeWitness :
   moleculeFiniteBoundary := forbiddenEdgeMolecule.finiteBoundary
   universeFiniteBoundary := selectedAtomUniverse.finiteBoundary
   nonConclusions := True
+
+def semanticMoleculeWitness :
+    FiniteAtomMoleculeWitness selectedAtomUniverse semanticMolecule where
+  supportedBy := by
+    intro atom hAtom
+    exact Or.inr (Or.inr (Or.inr hAtom))
+  moleculeFiniteBoundary := semanticMolecule.finiteBoundary
+  universeFiniteBoundary := selectedAtomUniverse.finiteBoundary
+  nonConclusions := True
+
+def semanticAtomMoleculeWitness :
+    SemanticAtomMoleculeWitness selectedAtomUniverse semanticMolecule where
+  moleculeWitness := semanticMoleculeWitness
+  semanticAtoms := semanticMolecule_all_semantic
+  semanticBoundary := True
+  nonConclusions := True
+
+theorem semanticAtomMoleculeWitness_selected_and_semantic :
+    selectedAtomUniverse.selectedAtom semanticInterpretationAtom ∧
+      semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact semanticAtomMoleculeWitness.atom_selected_and_semantic rfl
+
+def requiredSemanticMolecule
+    (molecule : AtomMolecule Component Edge Diagram) : Prop :=
+  molecule = semanticMolecule
+
+def semanticMismatchLaw : DesignLaw Component Edge Diagram where
+  Bad := fun molecule => molecule.atoms semanticInterpretationAtom
+  selectedBoundary := True
+  nonConclusions := True
+
+def semanticArrangementLaw :
+    SemanticAtomArrangementLaw semanticMismatchLaw requiredSemanticMolecule where
+  requiredSemantic := by
+    intro molecule hRequired
+    rw [hRequired]
+    exact semanticMolecule_all_semantic
+  lawBoundary := True
+  semanticBoundary := True
+  nonConclusions := True
+
+theorem semanticArrangementLaw_atom_is_semantic :
+    semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact
+    semanticArrangementLaw.atom_is_semantic
+      (molecule := semanticMolecule)
+      rfl
+      rfl
+
+theorem singletonSemanticMolecule_obstruction :
+    ObstructionCircuit semanticMismatchLaw semanticMolecule := by
+  constructor
+  · rfl
+  · intro N hProper hBad
+    apply hProper.2
+    intro atom hAtom
+    have hEq : atom = semanticInterpretationAtom := by
+      simpa [semanticMolecule] using hAtom
+    rw [hEq]
+    exact hBad
+
+def semanticObstructionCandidate :
+    SemanticObstructionCandidate semanticArrangementLaw where
+  molecule := semanticMolecule
+  required := rfl
+  obstruction := singletonSemanticMolecule_obstruction
+  evidenceBoundary := True
+  nonConclusions := True
+
+theorem semanticObstructionCandidate_bad :
+    semanticMismatchLaw.Bad semanticObstructionCandidate.molecule := by
+  exact semanticObstructionCandidate.bad
+
+theorem semanticObstructionCandidate_atom_is_semantic :
+    semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact semanticObstructionCandidate.atom_is_semantic rfl
+
+def semanticNoBadLaw : DesignLaw Component Edge Diagram where
+  Bad := fun _molecule => False
+  selectedBoundary := True
+  nonConclusions := True
+
+def semanticNoBadArrangementLaw :
+    SemanticAtomArrangementLaw semanticNoBadLaw requiredSemanticMolecule where
+  requiredSemantic := by
+    intro molecule hRequired
+    rw [hRequired]
+    exact semanticMolecule_all_semantic
+  lawBoundary := True
+  semanticBoundary := True
+  nonConclusions := True
+
+theorem semanticNoBadLaw_lawful :
+    LawfulWithinAtomConfiguration semanticNoBadLaw requiredSemanticMolecule := by
+  intro _molecule _hRequired hBad
+  exact hBad
+
+theorem semanticNoBadLaw_no_semantic_obstruction
+    (candidate : SemanticObstructionCandidate semanticNoBadArrangementLaw) :
+    False := by
+  exact SemanticObstructionCandidate.no_candidate_of_lawful
+    semanticNoBadLaw_lawful candidate
 
 def forbiddenEdgeLaw : DesignLaw Component Edge Diagram where
   Bad := fun molecule => molecule.atoms relationAtom
@@ -236,6 +406,17 @@ theorem forbiddenEdge_lawful_iff_no_required_circuit :
 def pureAATSurface : AATPureTheorySurface Component Edge Diagram where
   atoms := selectedAtomUniverse.selectedAtom
   molecules := selectedForbiddenEdgeUniverse.selected
+  moleculeAtomsOnSurface := by
+    intro molecule hMolecule atom hAtom
+    rcases hMolecule with hForbidden | hComponent
+    · have hEq : atom = relationAtom := by
+        rw [hForbidden] at hAtom
+        simpa [forbiddenEdgeMolecule] using hAtom
+      exact Or.inr (Or.inl hEq)
+    · have hEq : atom = componentAtom := by
+        rw [hComponent] at hAtom
+        simpa [componentMolecule] using hAtom
+      exact Or.inl hEq
   laws := fun law => law = forbiddenEdgeLaw
   circuits := fun {law} {molecule} _hLaw _hMolecule _hCircuit =>
     law = forbiddenEdgeLaw ∧
@@ -258,6 +439,93 @@ theorem pureAATSurface_independent_of_observation :
 theorem pureAATSurface_independent_of_sft :
     pureAATSurface.noSFTDependency := by
   exact pureAATSurface.independent_of_sft
+
+def semanticAATSurface : AATPureTheorySurface Component Edge Diagram where
+  atoms := selectedAtomUniverse.selectedAtom
+  molecules := requiredSemanticMolecule
+  moleculeAtomsOnSurface := by
+    intro molecule hMolecule atom hAtom
+    have hEq : atom = semanticInterpretationAtom := by
+      rw [hMolecule] at hAtom
+      simpa [semanticMolecule] using hAtom
+    exact Or.inr (Or.inr (Or.inr hEq))
+  laws := fun law => law = semanticNoBadLaw
+  circuits := fun {law} {molecule} hLaw hMolecule hCircuit =>
+    law = semanticNoBadLaw ∧
+      requiredSemanticMolecule molecule ∧
+      ObstructionCircuit law molecule
+  atomCoreBoundary := True
+  moleculeBoundary := True
+  lawBoundary := True
+  patternInterpretationBoundary := True
+  noObservationDependency := True
+  noObservationDependencyEvidence := trivial
+  noSFTDependency := True
+  noSFTDependencyEvidence := trivial
+  nonConclusions := True
+
+theorem semanticAATSurface_semantic_law_selected :
+    semanticAATSurface.laws semanticNoBadLaw := by
+  rfl
+
+theorem semanticAATSurface_semantic_required_molecule :
+    semanticAATSurface.molecules semanticMolecule := by
+  rfl
+
+theorem semanticAATSurface_semantic_atom_on_surface :
+    semanticAATSurface.atoms semanticInterpretationAtom ∧
+      semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact
+    semanticAATSurface.semantic_atom_of_selected_semantic_molecule
+      (molecule := semanticMolecule)
+      ⟨rfl, semanticMolecule_all_semantic⟩
+      rfl
+
+def semanticLawSeparation :
+    AtomLawSeparation Component Edge Diagram where
+  law := semanticNoBadLaw
+  selectedMolecule := requiredSemanticMolecule
+  atomsExistBeforeLaw := True
+  atomsExistBeforeLawEvidence := trivial
+  lawDoesNotCreateAtoms := True
+  lawDoesNotCreateAtomsEvidence := trivial
+  lawDoesNotChangeAtomExistence := True
+  lawDoesNotChangeAtomExistenceEvidence := trivial
+  nonConclusions := True
+
+def semanticPureAtomCore :
+    AtomAxiomatizedPureAAT Component Edge Diagram where
+  surface := semanticAATSurface
+  lawSeparation := by
+    intro _law _hLaw
+    exact semanticLawSeparation
+  lawSeparationMatches := by
+    intro law hLaw
+    exact hLaw.symm
+  lawEvaluatesSurfaceMolecules := by
+    intro _law _hLaw _molecule hMolecule
+    exact hMolecule
+  circuitClosure := by
+    intro _law _molecule hLaw hMolecule hCircuit
+    exact ⟨hLaw, hMolecule, hCircuit⟩
+  noArchitectureSignatureDependency := True
+  noArchitectureSignatureDependencyEvidence := trivial
+  atomAxiomBoundary := True
+  moleculeAxiomBoundary := True
+  lawAxiomBoundary := True
+  circuitAxiomBoundary := True
+  pureTheoryBoundary := True
+  nonConclusions := True
+
+theorem semanticPureAtomCore_semantic_atom_on_surface :
+    semanticPureAtomCore.surface.atoms semanticInterpretationAtom ∧
+      semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact
+    AtomAxiomatizedPureAAT.selected_semantic_molecule_atom_on_surface_and_semantic
+      semanticPureAtomCore
+      (molecule := semanticMolecule)
+      ⟨rfl, semanticMolecule_all_semantic⟩
+      rfl
 
 def rejectedPrimitiveCandidate : ObservedAtom Component Edge Diagram where
   atom := relationAtom
@@ -394,8 +662,8 @@ def noBadAtomLaw : DesignLaw Component Edge Diagram where
   selectedBoundary := True
   nonConclusions := True
 
-def allSelectedMolecules (_molecule : AtomMolecule Component Edge Diagram) : Prop :=
-  True
+def allSelectedMolecules (molecule : AtomMolecule Component Edge Diagram) : Prop :=
+  AtomMoleculeSupportedBy selectedAtomUniverse molecule
 
 def noEdgeGraph : ArchGraph Component where
   edge := fun _ _ => False
@@ -464,6 +732,61 @@ theorem unitObservationAtomArrangement_equivalent :
     ObservationallyEquivalent
       observationToUnit Component.api Component.database :=
   unitObservationAtomArrangement.observationallyEquivalent_of_lawful
+    noBadAtomLaw_lawful
+
+def identityLSPAtomArrangement :
+    LSPAtomArrangementLaw
+      identityProjection observationToUnit noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesLSPCompatible := by
+    intro _hLawful _x _y _hSame
+    rfl
+  lspFailureExposesBadMolecule := by
+    intro pair hFailure
+    exact False.elim (hFailure.2 rfl)
+  observationBoundary := True
+  nonConclusions := True
+
+theorem identityLSPAtomArrangement_lspCompatible :
+    LSPCompatible identityProjection observationToUnit :=
+  identityLSPAtomArrangement.lspCompatible_of_lawful noBadAtomLaw_lawful
+
+theorem identityLSPAtomArrangement_noLSPObstruction :
+    NoLSPObstruction identityProjection observationToUnit :=
+  identityLSPAtomArrangement.noLSPObstruction_of_lawful noBadAtomLaw_lawful
+
+def allowAllBoundaryPolicyAtomArrangement :
+    EdgePolicyAtomArrangementLaw
+      noEdgeGraph (fun _ _ => True) noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesPolicySound := by
+    intro _hLawful _c _d _hEdge
+    trivial
+  policyViolationExposesBadMolecule := by
+    intro _pair _hEdge hNotAllowed
+    exact False.elim (hNotAllowed trivial)
+  policyBoundary := True
+  nonConclusions := True
+
+def allowAllAbstractionPolicyAtomArrangement :
+    EdgePolicyAtomArrangementLaw
+      noEdgeGraph (fun _ _ => True) noBadAtomLaw allSelectedMolecules where
+  lawfulnessImpliesPolicySound := by
+    intro _hLawful _c _d _hEdge
+    trivial
+  policyViolationExposesBadMolecule := by
+    intro _pair _hEdge hNotAllowed
+    exact False.elim (hNotAllowed trivial)
+  policyBoundary := True
+  nonConclusions := True
+
+theorem allowAllBoundaryPolicyAtomArrangement_policySound :
+    ∀ {c d : Component}, noEdgeGraph.edge c d -> True :=
+  allowAllBoundaryPolicyAtomArrangement.policySound_of_lawful
+    noBadAtomLaw_lawful
+
+theorem allowAllAbstractionPolicyAtomArrangement_noViolation :
+    ∀ pair : Component × Component,
+      ¬ (noEdgeGraph.edge pair.1 pair.2 ∧ ¬ True) :=
+  allowAllAbstractionPolicyAtomArrangement.noPolicyViolation_of_lawful
     noBadAtomLaw_lawful
 
 def apiResponsibilityBoundary :
@@ -770,6 +1093,32 @@ def exampleAtomDelta : AtomDelta Component Edge Diagram where
   unknown := fun _ => False
   evidenceBoundary := True
   nonConclusions := True
+
+def exampleSemanticDelta : SemanticDelta Component Edge Diagram where
+  created := fun atom => atom = semanticInterpretationAtom
+  removed := fun _ => False
+  preserved := fun atom => atom = semanticInterpretationAtom
+  transformed := fun _ _ => False
+  createdSemantic := by
+    intro atom hAtom
+    rw [hAtom]
+    rfl
+  removedSemantic := by
+    intro _atom hAtom
+    exact False.elim hAtom
+  preservedSemantic := by
+    intro atom hAtom
+    rw [hAtom]
+    rfl
+  transformedSemantic := by
+    intro _before _after hTransform
+    exact False.elim hTransform
+  evidenceBoundary := True
+  nonConclusions := True
+
+theorem exampleSemanticDelta_created_is_semantic :
+    semanticInterpretationAtom.IsSemanticInterpretation := by
+  exact exampleSemanticDelta.created_is_semantic rfl
 
 def examplePresentedAtomDelta : PresentedAtomDelta Component Edge Diagram where
   before := exampleAtomPresentation
