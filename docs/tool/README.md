@@ -16,4 +16,8 @@ Current source-of-truth boundaries:
 - ArchSig validation does not prove extractor completeness, semantic correctness, architecture lawfulness, global safety, certified universal atom truth, zero curvature, SFT forecast correctness, or Lean theorem discharge.
 - FieldSig / SFT forecast and governance surfaces are not owned by ArchSig. FieldSig consumes ArchMap atom / circuit / observation gap refs as boundary-preserving observation refs, not as raw ground-truth guesses.
 
+Atom handoff checklist:
+
+- [Atom Handoff Checklist](atom_handoff.md)
+
 New ArchMap-homomorphism-first specification documents should be added here only when they match the implementation and keep those boundaries explicit.

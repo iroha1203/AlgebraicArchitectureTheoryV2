@@ -1914,7 +1914,8 @@ Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 [#1266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1266),
 [#1261](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1261),
 [#1269](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1269),
-[#1264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1264)
+[#1264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1264),
+[#1270](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1270)
 では、この surface をさらに進め、`AtomGrammarExtensionPolicy`、
 `SelectedAtomUniverse` / `FiniteAtomMoleculeWitness`、`AtomVanishingBridge`
 `AtomLawfulnessBridge`、`AtomPresentationAATPackage`、
@@ -2068,6 +2069,12 @@ obstruction circuit の trace surface として追加し、`AtomTraceForecastBou
 この bridge は horizon bound と governed-or-typed-boundary-failure branch を
 取り出せるが、forecast correctness、probability、calibration、global future
 safety は結論しない。
+
+Issue #1270 では、`docs/tool/atom_handoff.md` を追加し、ArchMap / ArchSig、
+Lean AAT、SFT / FieldSig の handoff checklist を同期した。これにより、
+`atomCandidates`、`moleculeCandidates`、`obstructionCircuitCandidates`、
+`observationGaps`、`nonConclusions` が同じ境界語彙で読まれ、raw candidate /
+validation pass が theorem claim へ昇格しないことを tooling docs 側にも固定する。
 
 ### 15.4 Responsibility as Molecule
 

@@ -4068,12 +4068,13 @@ Issue [#1268](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/
 [#1266](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1266),
 [#1261](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1261),
 [#1269](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1269),
-[#1264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1264)
+[#1264](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1264),
+[#1270](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/1270)
 では、Atom grammar extension policy、selected finite atom universe / molecule witness、
 required-axis vanishing bridge、selected atom lawfulness / no required circuit bridge、
 AtomPresentation-to-AAT theorem package bridge、既存 AAT invariant の atom arrangement
 law reading、responsibility / SRP の role-bearing molecule reading、AtomTrace /
-CircuitTrace forecast boundary bridge を追加した。
+CircuitTrace forecast boundary bridge を追加し、tooling / docs handoff を同期した。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
