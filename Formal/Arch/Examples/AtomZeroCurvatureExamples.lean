@@ -55,17 +55,30 @@ instance instDecidableRelNoEdgeArchitectureLawModelAbstractionAllowed :
   intro src dst
   exact isTrue trivial
 
+def noEdgeStaticAtomArrangementPackage :
+    ArchitectureSignature.StaticAtomArrangementLawPackage
+      noEdgeArchitectureLawModel noBadAtomLaw allSelectedMolecules where
+  layering := noEdgeLayeringAtomArrangement
+  projection := identityProjectionAtomArrangement
+  lsp := identityLSPAtomArrangement
+  boundaryPolicy := allowAllBoundaryPolicyAtomArrangement
+  abstractionPolicy := allowAllAbstractionPolicyAtomArrangement
+  arrangementBoundary := True
+  nonConclusions := True
+
+theorem noEdgeStaticAtomArrangementPackage_architectureLawful :
+    ArchitectureSignature.ArchitectureLawful noEdgeArchitectureLawModel := by
+  exact
+    noEdgeStaticAtomArrangementPackage.architectureLawful_of_lawful
+      noBadAtomLaw_lawful
+
 def noEdgeAtomDerivedZeroCurvaturePackage :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage
       noEdgeArchitectureLawModel Edge Diagram :=
-  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofAtomArrangementLaws
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofStaticAtomArrangementPackage
       (X := noEdgeArchitectureLawModel)
       noEdgePureAtomZeroCurvatureTheoremPackage
-      noEdgeLayeringAtomArrangement
-      identityProjectionAtomArrangement
-      identityLSPAtomArrangement
-      allowAllBoundaryPolicyAtomArrangement
-      allowAllAbstractionPolicyAtomArrangement
+      noEdgeStaticAtomArrangementPackage
       True True True True True
 
 theorem noEdgeAtomDerived_from_pure_atom_zero_curvature :
@@ -91,26 +104,18 @@ theorem noEdgeAtomDerived_from_full_atom_arrangements :
     ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
       noEdgeArchitectureLawModel := by
   exact
-    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_atomArrangementLaws
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_staticAtomArrangementPackage
       (X := noEdgeArchitectureLawModel)
       noEdgePureAtomZeroCurvatureTheoremPackage
-      noEdgeLayeringAtomArrangement
-      identityProjectionAtomArrangement
-      identityLSPAtomArrangement
-      allowAllBoundaryPolicyAtomArrangement
-      allowAllAbstractionPolicyAtomArrangement
+      noEdgeStaticAtomArrangementPackage
 
 def noEdgeAtomAxiomatizedAAT :
     ArchitectureSignature.AtomAxiomatizedAAT
       noEdgeArchitectureLawModel Edge Diagram :=
-  ArchitectureSignature.AtomAxiomatizedAAT.ofPureAtomArrangementLaws
+  ArchitectureSignature.AtomAxiomatizedAAT.ofPureAtomStaticArrangementPackage
     (X := noEdgeArchitectureLawModel)
     noEdgePureAtomZeroCurvatureTheoremPackage
-    noEdgeLayeringAtomArrangement
-    identityProjectionAtomArrangement
-    identityLSPAtomArrangement
-    allowAllBoundaryPolicyAtomArrangement
-    allowAllAbstractionPolicyAtomArrangement
+    noEdgeStaticAtomArrangementPackage
     True True True
 
 theorem noEdgeAtomAxiomatized_independent_of_observation :

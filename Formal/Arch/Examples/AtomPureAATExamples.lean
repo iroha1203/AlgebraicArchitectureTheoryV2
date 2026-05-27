@@ -216,14 +216,10 @@ theorem noEdgePureAtomSuite_synthesis_law_atoms_exist_before_law :
 def noEdgePureAtomSuiteDerivedZeroCurvaturePackage :
     ArchitectureSignature.AtomDerivedZeroCurvaturePackage
       noEdgeArchitectureLawModel Edge Diagram :=
-  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofPureTheoremSuiteArrangementLaws
+  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.ofPureTheoremSuiteStaticArrangementPackage
     (X := noEdgeArchitectureLawModel)
     noEdgeAtomAxiomatizedPureTheoremSuite
-    noEdgeLayeringAtomArrangement
-    identityProjectionAtomArrangement
-    identityLSPAtomArrangement
-    allowAllBoundaryPolicyAtomArrangement
-    allowAllAbstractionPolicyAtomArrangement
+    noEdgeStaticAtomArrangementPackage
     True True True True True
 
 theorem noEdgePureAtomSuite_architectureLawful :
@@ -268,14 +264,10 @@ theorem noEdgePureAtomSuite_architectureZeroCurvatureTheoremPackage :
     ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage
       noEdgeArchitectureLawModel := by
   exact
-    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuiteArrangementLaws
+    ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuiteStaticArrangementPackage
       (X := noEdgeArchitectureLawModel)
       noEdgeAtomAxiomatizedPureTheoremSuite
-      noEdgeLayeringAtomArrangement
-      identityProjectionAtomArrangement
-      identityLSPAtomArrangement
-      allowAllBoundaryPolicyAtomArrangement
-      allowAllAbstractionPolicyAtomArrangement
+      noEdgeStaticAtomArrangementPackage
 
 theorem noEdgePureAtomSuite_matrixDiagnosticCorollaries :
     ArchitectureSignature.MatrixDiagnosticCorollaries
@@ -299,14 +291,10 @@ theorem noEdgePureAtomSuite_matrixDiagnosticCorollaries :
 def noEdgePureAtomSuiteAxiomatizedAAT :
     ArchitectureSignature.AtomAxiomatizedAAT
       noEdgeArchitectureLawModel Edge Diagram :=
-  ArchitectureSignature.AtomAxiomatizedAAT.ofPureTheoremSuiteArrangementLaws
+  ArchitectureSignature.AtomAxiomatizedAAT.ofPureTheoremSuiteStaticArrangementPackage
     (X := noEdgeArchitectureLawModel)
     noEdgeAtomAxiomatizedPureTheoremSuite
-    noEdgeLayeringAtomArrangement
-    identityProjectionAtomArrangement
-    identityLSPAtomArrangement
-    allowAllBoundaryPolicyAtomArrangement
-    allowAllAbstractionPolicyAtomArrangement
+    noEdgeStaticAtomArrangementPackage
     True True True
 
 theorem noEdgePureAtomSuite_axiomatizedAAT_zeroCurvatureTheoremPackage :

@@ -8,6 +8,97 @@ universe u v w q r s t m
 namespace ArchitectureSignature
 
 /--
+Atom arrangement laws for the current required static ArchitectureLawModel
+components.
+
+This package groups the five arrangement readings that recover the existing
+static lawfulness surface from atom-configuration lawfulness.
+-/
+structure StaticAtomArrangementLawPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureLawModel C A Obs) {E : Type q} {D : Type r}
+    (law : DesignLaw C E D)
+    (requiredMolecule : AtomMolecule C E D -> Prop) where
+  layering : LayeringAtomArrangementLaw X.G law requiredMolecule
+  projection : ProjectionAtomArrangementLaw X.G X.π X.GA law requiredMolecule
+  lsp : LSPAtomArrangementLaw X.π X.O law requiredMolecule
+  boundaryPolicy :
+    EdgePolicyAtomArrangementLaw X.G X.boundaryAllowed law requiredMolecule
+  abstractionPolicy :
+    EdgePolicyAtomArrangementLaw X.G X.abstractionAllowed law requiredMolecule
+  arrangementBoundary : Prop
+  nonConclusions : Prop
+
+namespace StaticAtomArrangementLawPackage
+
+theorem strictLayered_of_lawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : StaticAtomArrangementLawPackage X law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    StrictLayered X.G :=
+  pkg.layering.strictLayered_of_lawful hLawful
+
+theorem projectionSound_of_lawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : StaticAtomArrangementLawPackage X law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    ProjectionSound X.G X.π X.GA :=
+  pkg.projection.projectionSound_of_lawful hLawful
+
+theorem lspCompatible_of_lawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : StaticAtomArrangementLawPackage X law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    LSPCompatible X.π X.O :=
+  pkg.lsp.lspCompatible_of_lawful hLawful
+
+theorem boundaryPolicySound_of_lawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : StaticAtomArrangementLawPackage X law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    BoundaryPolicySound X.G X.boundaryAllowed :=
+  pkg.boundaryPolicy.policySound_of_lawful hLawful
+
+theorem abstractionPolicySound_of_lawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : StaticAtomArrangementLawPackage X law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    AbstractionPolicySound X.G X.abstractionAllowed :=
+  pkg.abstractionPolicy.policySound_of_lawful hLawful
+
+theorem architectureLawful_of_lawful
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {law : DesignLaw C E D}
+    {requiredMolecule : AtomMolecule C E D -> Prop}
+    (pkg : StaticAtomArrangementLawPackage X law requiredMolecule)
+    (hLawful : LawfulWithinAtomConfiguration law requiredMolecule) :
+    ArchitectureLawful X :=
+  ⟨walkAcyclic_of_acyclic
+      (pkg.layering.acyclic_of_lawful hLawful),
+    pkg.projectionSound_of_lawful hLawful,
+    pkg.lspCompatible_of_lawful hLawful,
+    pkg.boundaryPolicySound_of_lawful hLawful,
+    pkg.abstractionPolicySound_of_lawful hLawful⟩
+
+end StaticAtomArrangementLawPackage
+
+/--
 Atom-derived bridge to the current static zero-curvature theorem package.
 
 The package records the selected atom law, the required atom molecules, the
@@ -128,6 +219,38 @@ def ofAtomArrangementLaws
     lsp.lspCompatible_of_lawful
     boundaryPolicy.policySound_of_lawful
     abstractionPolicy.policySound_of_lawful
+    atomBoundary
+    moleculeBoundary
+    obstructionCircuitBoundary
+    zeroCurvatureBoundary
+    nonConclusions
+
+/--
+Build the Signature-level atom-derived bridge from a grouped static atom
+arrangement-law package.
+-/
+def ofStaticAtomArrangementPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (atomPkg : AtomZeroCurvatureTheoremPackage core)
+    (arrangements :
+      StaticAtomArrangementLawPackage X
+        atomPkg.law atomPkg.requiredMolecule)
+    (atomBoundary : Prop)
+    (moleculeBoundary : Prop)
+    (obstructionCircuitBoundary : Prop)
+    (zeroCurvatureBoundary : Prop)
+    (nonConclusions : Prop) :
+    AtomDerivedZeroCurvaturePackage X E D :=
+  ofAtomArrangementLaws
+    (X := X)
+    atomPkg
+    arrangements.layering
+    arrangements.projection
+    arrangements.lsp
+    arrangements.boundaryPolicy
+    arrangements.abstractionPolicy
     atomBoundary
     moleculeBoundary
     obstructionCircuitBoundary
@@ -368,6 +491,28 @@ theorem architectureZeroCurvatureTheoremPackage_of_atomArrangementLaws
       True True True True True).architectureZeroCurvatureTheoremPackage
 
 /--
+Pure Atom-AAT zero curvature plus a grouped static atom arrangement-law package
+gives the existing Signature-level zero-curvature theorem package.
+-/
+theorem architectureZeroCurvatureTheoremPackage_of_staticAtomArrangementPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {core : AtomAxiomatizedPureAAT C E D}
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (atomPkg : AtomZeroCurvatureTheoremPackage core)
+    (arrangements :
+      StaticAtomArrangementLawPackage X
+        atomPkg.law atomPkg.requiredMolecule) :
+    ArchitectureZeroCurvatureTheoremPackage X :=
+  (ofStaticAtomArrangementPackage
+      (X := X)
+      atomPkg
+      arrangements
+      True True True True True).architectureZeroCurvatureTheoremPackage
+
+/--
 Build the Signature-level atom-derived bridge from the pure Atom-AAT theorem
 suite plus Signature arrangement readings.
 -/
@@ -472,6 +617,40 @@ def ofPureTheoremSuiteArrangementLaws
     lsp
     boundaryPolicy
     abstractionPolicy
+    atomBoundary
+    moleculeBoundary
+    obstructionCircuitBoundary
+    zeroCurvatureBoundary
+    nonConclusions
+
+/--
+Build the Signature-level atom-derived bridge from a pure theorem suite and a
+grouped static atom arrangement-law package.
+-/
+def ofPureTheoremSuiteStaticArrangementPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    (arrangements :
+      StaticAtomArrangementLawPackage X
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule)
+    (atomBoundary : Prop)
+    (moleculeBoundary : Prop)
+    (obstructionCircuitBoundary : Prop)
+    (zeroCurvatureBoundary : Prop)
+    (nonConclusions : Prop) :
+    AtomDerivedZeroCurvaturePackage X E D :=
+  ofStaticAtomArrangementPackage
+    (X := X)
+    suite.zeroCurvature
+    arrangements
     atomBoundary
     moleculeBoundary
     obstructionCircuitBoundary
@@ -676,6 +855,34 @@ theorem architectureZeroCurvatureTheoremPackage_of_pureTheoremSuiteArrangementLa
       True True True True True).architectureZeroCurvatureTheoremPackage
 
 /--
+Pure Atom-AAT theorem suite plus a grouped static atom arrangement-law package
+gives the existing Signature-level zero-curvature theorem package.
+-/
+theorem architectureZeroCurvatureTheoremPackage_of_pureTheoremSuiteStaticArrangementPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
+    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
+    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    (arrangements :
+      StaticAtomArrangementLawPackage X
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule) :
+    ArchitectureZeroCurvatureTheoremPackage X :=
+  (ofPureTheoremSuiteStaticArrangementPackage
+      (X := X)
+      suite
+      arrangements
+      True True True True True).architectureZeroCurvatureTheoremPackage
+
+/--
 Pure Atom-AAT theorem suite zero curvature, interpreted through Signature
 arrangement readings, gives the matrix diagnostic corollaries carried by the
 zero-curvature theorem package.
@@ -853,6 +1060,34 @@ def ofPureAtomArrangementLaws
     nonConclusions
 
 /--
+Build an atom-axiomatized AAT package from a pure Atom-AAT zero-curvature
+package and a grouped static atom arrangement-law package.
+-/
+def ofPureAtomStaticArrangementPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {core : AtomAxiomatizedPureAAT C E D}
+    (atomPkg : AtomZeroCurvatureTheoremPackage core)
+    (arrangements :
+      StaticAtomArrangementLawPackage X
+        atomPkg.law atomPkg.requiredMolecule)
+    (atomAxiomBoundary : Prop)
+    (theoremPackageBoundary : Prop)
+    (nonConclusions : Prop) :
+    AtomAxiomatizedAAT X E D :=
+  ofPureAtomArrangementLaws
+    (X := X)
+    atomPkg
+    arrangements.layering
+    arrangements.projection
+    arrangements.lsp
+    arrangements.boundaryPolicy
+    arrangements.abstractionPolicy
+    atomAxiomBoundary
+    theoremPackageBoundary
+    nonConclusions
+
+/--
 Build an atom-axiomatized AAT package from the pure Atom-AAT theorem suite and
 Signature arrangement readings.
 -/
@@ -951,6 +1186,36 @@ def ofPureTheoremSuiteArrangementLaws
     lsp
     boundaryPolicy
     abstractionPolicy
+    atomAxiomBoundary
+    theoremPackageBoundary
+    nonConclusions
+
+/--
+Build an atom-axiomatized AAT package from a pure theorem suite and a grouped
+static atom arrangement-law package.
+-/
+def ofPureTheoremSuiteStaticArrangementPackage
+    {C : Type u} {A : Type v} {Obs : Type w}
+    {X : ArchitectureLawModel C A Obs} {E : Type q} {D : Type r}
+    {RepairState : Type s} {RepairRule : Type t}
+    {SynthesisState : Type m}
+    {repairSource repairTarget : RepairState}
+    (suite :
+      AtomAxiomatizedPureTheoremSuite
+        C E D RepairState RepairRule SynthesisState
+        repairSource repairTarget)
+    (arrangements :
+      StaticAtomArrangementLawPackage X
+        suite.zeroCurvature.law
+        suite.zeroCurvature.requiredMolecule)
+    (atomAxiomBoundary : Prop)
+    (theoremPackageBoundary : Prop)
+    (nonConclusions : Prop) :
+    AtomAxiomatizedAAT X E D :=
+  ofPureAtomStaticArrangementPackage
+    (X := X)
+    suite.zeroCurvature
+    arrangements
     atomAxiomBoundary
     theoremPackageBoundary
     nonConclusions
