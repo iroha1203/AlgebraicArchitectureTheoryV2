@@ -255,6 +255,57 @@ theorem trans {C : Type u} {E : Type v} {D : Type w}
 end SupportSubset
 
 /--
+Machine-readable predicate grammar for primitive atoms.
+
+The human-readable `ArchitectureAtom.predicate` string remains a label for
+documentation and reports.  `AtomPredicate` is the Lean-facing predicate
+constructor that records which primitive fact shape is being asserted.
+-/
+inductive AtomPredicate (C : Type u) (E : Type v) (D : Type w) where
+  | component (component : C)
+  | relation (edge : E)
+  | capability (subject : C) (capability : String)
+  | dataState (diagram : D) (state : String)
+  | effect (diagram : D) (effect : String)
+  | boundaryAuthority (subject : C) (authority : String)
+  | contractSpecification (diagram : D) (contract : String)
+  | semanticInterpretation (diagram : D) (meaning : String)
+  | runtimeInteraction (edge : E) (interaction : String)
+  | custom (kind : AtomKind) (axis : Axis) (name : String)
+
+namespace AtomPredicate
+
+/-- The atom family determined by a typed predicate constructor. -/
+def kind {C : Type u} {E : Type v} {D : Type w} :
+    AtomPredicate C E D -> AtomKind
+  | component _ => AtomKind.existence
+  | relation _ => AtomKind.relation
+  | capability _ _ => AtomKind.capability
+  | dataState _ _ => AtomKind.dataState
+  | effect _ _ => AtomKind.effect
+  | boundaryAuthority _ _ => AtomKind.boundaryAuthority
+  | contractSpecification _ _ => AtomKind.contractSpecification
+  | semanticInterpretation _ _ => AtomKind.semanticInterpretation
+  | runtimeInteraction _ _ => AtomKind.runtimeInteraction
+  | custom kind _ _ => kind
+
+/-- The atom axis determined by a typed predicate constructor. -/
+def axis {C : Type u} {E : Type v} {D : Type w} :
+    AtomPredicate C E D -> Axis
+  | component _ => Axis.static
+  | relation _ => Axis.static
+  | capability _ _ => Axis.static
+  | dataState _ _ => Axis.dataflow
+  | effect _ _ => Axis.semantic
+  | boundaryAuthority _ _ => Axis.boundary
+  | contractSpecification _ _ => Axis.specification
+  | semanticInterpretation _ _ => Axis.semantic
+  | runtimeInteraction _ _ => Axis.runtime
+  | custom _ axis _ => axis
+
+end AtomPredicate
+
+/--
 Primitive architecture atom.
 
 This is a boundary-free typed architectural fact.  It is not created by an
@@ -266,6 +317,9 @@ structure ArchitectureAtom (C : Type u) (E : Type v) (D : Type w) where
   kind : AtomKind
   axis : Axis
   support : Support C E D
+  typedPredicate : AtomPredicate C E D
+  typedPredicateKindAligned : typedPredicate.kind = kind
+  typedPredicateAxisAligned : typedPredicate.axis = axis
   predicate : String
   singleFact : Prop
   singleFactEvidence : singleFact
@@ -299,6 +353,20 @@ theorem primitiveArchitectureAtom_constructive
       atom.lawIndependentEvidence⟩
 
 namespace ArchitectureAtom
+
+/-- A primitive atom's typed predicate determines the atom family it declares. -/
+theorem typedPredicate_kind
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    atom.typedPredicate.kind = atom.kind :=
+  atom.typedPredicateKindAligned
+
+/-- A primitive atom's typed predicate determines the atom axis it declares. -/
+theorem typedPredicate_axis
+    {C : Type u} {E : Type v} {D : Type w}
+    (atom : ArchitectureAtom C E D) :
+    atom.typedPredicate.axis = atom.axis :=
+  atom.typedPredicateAxisAligned
 
 /-- Contract/specification atoms record what must be satisfied. -/
 def IsContractSpecification

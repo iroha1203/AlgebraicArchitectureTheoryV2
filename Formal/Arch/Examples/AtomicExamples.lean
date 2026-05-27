@@ -29,6 +29,9 @@ def componentAtom : ArchitectureAtom Component Edge Diagram where
   kind := AtomKind.existence
   axis := Axis.static
   support := Support.component Edge Diagram Component.api
+  typedPredicate := AtomPredicate.component Component.api
+  typedPredicateKindAligned := rfl
+  typedPredicateAxisAligned := rfl
   predicate := "component api exists"
   singleFact := True
   singleFactEvidence := trivial
@@ -45,6 +48,9 @@ def relationAtom : ArchitectureAtom Component Edge Diagram where
   kind := AtomKind.relation
   axis := Axis.static
   support := Support.edge Component Diagram Edge.apiToDatabase
+  typedPredicate := AtomPredicate.relation Edge.apiToDatabase
+  typedPredicateKindAligned := rfl
+  typedPredicateAxisAligned := rfl
   predicate := "api depends on database"
   singleFact := True
   singleFactEvidence := trivial
@@ -61,6 +67,10 @@ def contractSpecificationAtom : ArchitectureAtom Component Edge Diagram where
   kind := AtomKind.contractSpecification
   axis := Axis.specification
   support := Support.diagram Component Edge Diagram.writePath
+  typedPredicate :=
+    AtomPredicate.contractSpecification Diagram.writePath "selected contract"
+  typedPredicateKindAligned := rfl
+  typedPredicateAxisAligned := rfl
   predicate := "write path satisfies selected contract"
   singleFact := True
   singleFactEvidence := trivial
@@ -77,6 +87,10 @@ def semanticInterpretationAtom : ArchitectureAtom Component Edge Diagram where
   kind := AtomKind.semanticInterpretation
   axis := Axis.semantic
   support := Support.diagram Component Edge Diagram.writePath
+  typedPredicate :=
+    AtomPredicate.semanticInterpretation Diagram.writePath "account registration"
+  typedPredicateKindAligned := rfl
+  typedPredicateAxisAligned := rfl
   predicate := "write path means account registration"
   singleFact := True
   singleFactEvidence := trivial
