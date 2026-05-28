@@ -4,7 +4,8 @@ use crate::{
     ARCHITECTURE_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION,
     ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION,
     DETECTABLE_VALUES_REPORTED_AXES_CATALOG_SCHEMA_VERSION,
-    FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, LAW_VIOLATION_REPORT_SCHEMA_VERSION,
+    FEATURE_EXTENSION_REPORT_SCHEMA_VERSION, LAW_POLICY_SCHEMA_VERSION,
+    LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION, LAW_VIOLATION_REPORT_SCHEMA_VERSION,
     OBSTRUCTION_WITNESS_SCHEMA_VERSION, PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
     SCHEMA_COMPATIBILITY_POLICY_SCHEMA_VERSION, SCHEMA_VERSION,
     SCHEMA_VERSION_CATALOG_SCHEMA_VERSION, SchemaCompatibilityBoundaryV0,
@@ -114,6 +115,50 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     ],
                     vec![
                         "Validation pass does not imply semantic correctness, completeness, architecture lawfulness, certified atom truth, zero curvature, or SFT forecast correctness.",
+                    ],
+                ),
+            ),
+            artifact(
+                "law-policy",
+                "LLM-native selected LawPolicy artifact",
+                LAW_POLICY_SCHEMA_VERSION,
+                "selected-law-universe-policy",
+                "LLM-native ArchMap / ArchSig",
+                "implemented",
+                vec![
+                    "docs/tool/llm_native_archmap_archsig_prd.md",
+                    "docs/tool/README.md",
+                ],
+                vec!["#1330"],
+                compatibility_boundary(
+                    "LawPolicy owns selected laws, witness rules, molecule patterns, obstruction definitions, signature axis definitions, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations.",
+                    vec![],
+                    vec![
+                        "New law families must declare witness rules, required zero axes, coverage requirements, and exactness assumptions.",
+                        "New signature axes must keep missing coverage distinct from measured zero.",
+                    ],
+                    vec![
+                        "LawPolicy is selected analysis policy, not AAT itself, architecture lawfulness, atom truth, or Lean theorem discharge.",
+                    ],
+                ),
+            ),
+            artifact(
+                "law-policy-validation-report",
+                "LLM-native LawPolicy validation report",
+                LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
+                "validation-output",
+                "LLM-native ArchMap / ArchSig",
+                "implemented",
+                vec!["docs/tool/llm_native_archmap_archsig_prd.md"],
+                vec!["#1330"],
+                compatibility_boundary(
+                    "Validation reports schema support, identity, id uniqueness, law/witness/axis references, coverage, exactness, and non-conclusion guardrails without proving lawfulness.",
+                    vec![],
+                    vec![
+                        "New checks must fail or warn without promoting policy validation to theorem evidence.",
+                    ],
+                    vec![
+                        "Validation pass does not imply architecture lawfulness, certified atom truth, zero curvature, or Lean theorem discharge.",
                     ],
                 ),
             ),
@@ -509,6 +554,8 @@ mod tests {
         for expected in [
             SCHEMA_VERSION,
             AIR_SCHEMA_VERSION,
+            LAW_POLICY_SCHEMA_VERSION,
+            LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION,
             FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
             OBSTRUCTION_WITNESS_SCHEMA_VERSION,
             ARCHITECTURE_DRIFT_LEDGER_SCHEMA_VERSION,

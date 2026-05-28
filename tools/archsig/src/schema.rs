@@ -38,6 +38,8 @@ pub const NO_SOLUTION_CERTIFICATE_VALIDATION_REPORT_SCHEMA_VERSION: &str =
 pub const ORGANIZATION_POLICY_SCHEMA_VERSION: &str = "organization-policy-v0";
 pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "organization-policy-validation-report-v0";
+pub const LAW_POLICY_SCHEMA_VERSION: &str = "law-policy-v0";
+pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report-v0";
 pub const LAW_POLICY_TEMPLATE_REGISTRY_SCHEMA_VERSION: &str = "law-policy-template-registry-v0";
 pub const LAW_POLICY_TEMPLATE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "law-policy-template-registry-validation-report-v0";
@@ -2513,6 +2515,172 @@ pub struct LawPolicyTemplateRegistryValidationInput {
 pub struct LawPolicyTemplateRegistryValidationSummary {
     pub result: String,
     pub template_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyDocumentV0 {
+    pub schema_version: String,
+    pub law_policy_id: String,
+    pub policy_version: String,
+    pub scope: String,
+    pub archmap_schema_ref: String,
+    pub selected_laws: Vec<LawPolicySelectedLawV0>,
+    pub required_zero_axes: Vec<LawPolicyAxisDefinitionV0>,
+    #[serde(default)]
+    pub optional_axes: Vec<LawPolicyAxisDefinitionV0>,
+    pub witness_rules: Vec<LawPolicyWitnessRuleV0>,
+    #[serde(default)]
+    pub molecule_patterns: Vec<LawPolicyMoleculePatternV0>,
+    pub obstruction_circuit_definitions: Vec<LawPolicyObstructionCircuitDefinitionV0>,
+    pub signature_axis_definitions: Vec<LawPolicySignatureAxisDefinitionV0>,
+    pub exactness_assumptions: Vec<String>,
+    pub coverage_requirements: Vec<LawPolicyCoverageRequirementV0>,
+    #[serde(default)]
+    pub excluded_readings: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicySelectedLawV0 {
+    pub law_id: String,
+    pub law_family: String,
+    pub description: String,
+    pub enforcement_boundary: String,
+    #[serde(default)]
+    pub applies_to_atom_families: Vec<String>,
+    #[serde(default)]
+    pub required_witness_refs: Vec<String>,
+    #[serde(default)]
+    pub required_axis_refs: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyAxisDefinitionV0 {
+    pub axis_id: String,
+    pub axis_family: String,
+    pub value_type: String,
+    pub zero_reading: String,
+    pub measurement_boundary: String,
+    #[serde(default)]
+    pub evidence_requirements: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyWitnessRuleV0 {
+    pub witness_rule_id: String,
+    pub law_ref: String,
+    pub witness_kind: String,
+    #[serde(default)]
+    pub atom_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub required_atom_families: Vec<String>,
+    #[serde(default)]
+    pub molecule_pattern_refs: Vec<String>,
+    pub evidence_boundary: String,
+    #[serde(default)]
+    pub missing_evidence_behavior: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyMoleculePatternV0 {
+    pub molecule_pattern_id: String,
+    pub role_name: String,
+    #[serde(default)]
+    pub required_atom_families: Vec<String>,
+    #[serde(default)]
+    pub optional_atom_families: Vec<String>,
+    pub interpretation_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyObstructionCircuitDefinitionV0 {
+    pub obstruction_circuit_id: String,
+    pub law_ref: String,
+    pub witness_rule_ref: String,
+    pub circuit_kind: String,
+    pub minimality_reading: String,
+    pub evidence_boundary: String,
+    #[serde(default)]
+    pub signature_axis_refs: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicySignatureAxisDefinitionV0 {
+    pub signature_axis_id: String,
+    pub law_ref: String,
+    pub axis_ref: String,
+    pub valuation_rule: String,
+    pub value_type: String,
+    pub zero_reading: String,
+    pub coverage_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyCoverageRequirementV0 {
+    pub coverage_requirement_id: String,
+    #[serde(default)]
+    pub applies_to_law_refs: Vec<String>,
+    #[serde(default)]
+    pub required_atom_families: Vec<String>,
+    #[serde(default)]
+    pub required_source_ref_kinds: Vec<String>,
+    pub missing_coverage_behavior: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyValidationReportV0 {
+    pub schema_version: String,
+    pub input: LawPolicyValidationInputV0,
+    pub policy: LawPolicyDocumentV0,
+    pub summary: LawPolicyValidationSummaryV0,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyValidationInputV0 {
+    pub schema_version: String,
+    pub path: String,
+    pub law_policy_id: String,
+    pub policy_version: String,
+    pub archmap_schema_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LawPolicyValidationSummaryV0 {
+    pub result: String,
+    pub selected_law_count: usize,
+    pub required_zero_axis_count: usize,
+    pub witness_rule_count: usize,
+    pub obstruction_circuit_definition_count: usize,
+    pub signature_axis_definition_count: usize,
+    pub coverage_requirement_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

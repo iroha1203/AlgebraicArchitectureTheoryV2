@@ -136,6 +136,66 @@
       }
     },
     {
+      "artifactId": "law-policy",
+      "artifactName": "LLM-native selected LawPolicy artifact",
+      "schemaVersionName": "law-policy-v0",
+      "artifactRole": "selected-law-universe-policy",
+      "ownerPhase": "LLM-native ArchMap / ArchSig",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/llm_native_archmap_archsig_prd.md",
+        "docs/tool/README.md"
+      ],
+      "downstreamIssues": [
+        "#1330"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "LawPolicy owns selected laws, witness rules, molecule patterns, obstruction definitions, signature axis definitions, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New law families must declare witness rules, required zero axes, coverage requirements, and exactness assumptions.",
+          "New signature axes must keep missing coverage distinct from measured zero."
+        ],
+        "coverageExactnessBoundary": [
+          "LawPolicy is selected analysis policy, not AAT itself, architecture lawfulness, atom truth, or Lean theorem discharge."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "law-policy-validation-report",
+      "artifactName": "LLM-native LawPolicy validation report",
+      "schemaVersionName": "law-policy-validation-report-v0",
+      "artifactRole": "validation-output",
+      "ownerPhase": "LLM-native ArchMap / ArchSig",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/llm_native_archmap_archsig_prd.md"
+      ],
+      "downstreamIssues": [
+        "#1330"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Validation reports schema support, identity, id uniqueness, law/witness/axis references, coverage, exactness, and non-conclusion guardrails without proving lawfulness.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New checks must fail or warn without promoting policy validation to theorem evidence."
+        ],
+        "coverageExactnessBoundary": [
+          "Validation pass does not imply architecture lawfulness, certified atom truth, zero curvature, or Lean theorem discharge."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
       "artifactId": "architecture-policy",
       "artifactName": "Architecture policy artifact",
       "schemaVersionName": "architecture-policy-v0",
