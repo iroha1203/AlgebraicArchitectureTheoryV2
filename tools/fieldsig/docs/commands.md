@@ -1,6 +1,6 @@
 # FieldSig Commands
 
-FieldSig owns SFT software evolution measurement and workflow-evidence artifacts. ArchSig artifacts enter FieldSig through JSON refs such as `archmap-v0`, `archsig-sig0-v0`, AIR, validation, and review-cue artifact paths. `archmap-sft-input` preserves ArchMap atom / circuit / observation gap refs as observation refs and unknown remainder refs; it does not consume them as certified atoms, zero-curvature proof, or forecast correctness. FieldSig does not share Rust types with ArchSig as a contract; the stable boundary is the serialized artifact ref.
+FieldSig owns SFT software evolution measurement and workflow-evidence artifacts. The current ArchSig handoff is the serialized `archsig-analysis-packet-v0`: FieldSig reads it as local AAT algebra state, not as forecast truth, causal correctness, or global safety. `archsig-analysis-sft-input` projects that packet into `operation-support-estimate-v0` while preserving obstruction circuits, signature axes, repair candidates, and coverage gaps as bounded refs. `archmap-sft-input` remains a legacy bounded projection and must not promote raw ArchMap observations to forecast truth. FieldSig does not share Rust types with ArchSig as a contract; the stable boundary is the serialized artifact ref.
 
 ## Measurement
 
@@ -10,6 +10,17 @@ FieldSig owns SFT software evolution measurement and workflow-evidence artifacts
 ## Forecast and Intent
 
 Use `artifact-descriptor`, `intent-map`, `intent-archmap-alignment`, `intent-forecast`, `operation-support-estimate`, `forecast-cone-skeleton`, `consequence-envelope`, `sft-review-summary`, `forecast-calibration-hook`, `intent-calibration-record`, and `sft-forecast` for bounded SFT forecast artifacts. These commands preserve missing evidence and unknown remainder; they do not create probability or causal-correctness claims.
+
+ArchSig analysis packet handoff:
+
+```bash
+cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
+  --analysis-packet tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json \
+  --out .fieldsig/operation-support-estimate.json
+```
+
+This command rejects raw ArchMap JSON when it is supplied as the analysis-packet
+input. The accepted boundary is `archsig-analysis-packet-v0`.
 
 ## Operational and Governance
 

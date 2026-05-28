@@ -44,3 +44,14 @@ These files are handoff fixtures. FieldSig wiring is handled in the dedicated
 FieldSig issue; the fixtures exist here so the handoff target is stable. The
 FieldSig test suite reads these files as JSON contract fixtures and locks their
 schema versions, LawPolicy split, and concern/gap guardrails.
+
+FieldSig's current handoff command reads the ArchSig analysis packet, not raw
+ArchMap observations:
+
+```text
+archsig-analysis-packet-v0 -> operation-support-estimate-v0
+```
+
+The projection keeps obstruction circuits, signature axes, repair candidates,
+and coverage gaps as bounded local AAT state. It does not promote raw ArchMap
+observations to forecast truth.

@@ -64,6 +64,12 @@ pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
         Some(PR_FORCE_REPORT_SCHEMA_VERSION),
         Some("fixture-pr-force-report-v0"),
     );
+    let archsig_analysis_ref = artifact_ref(
+        "archsig-analysis-packet",
+        "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
+        Some("archsig-analysis-packet-v0"),
+        Some("archsig-analysis-fixture"),
+    );
     let drift_ref = artifact_ref(
         "architecture-drift-ledger",
         "tools/archsig/tests/fixtures/minimal/architecture_drift_ledger.json",
@@ -101,11 +107,11 @@ pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
                         Some(json!(3)),
                         "measured",
                         None,
-                        vec![before_ref.clone()],
+                        vec![before_ref.clone(), archsig_analysis_ref.clone()],
                         boundary(
                             "signature",
                             &["boundaryViolationCount"],
-                            vec![before_ref.clone()],
+                            vec![before_ref.clone(), archsig_analysis_ref.clone()],
                             Some(window.clone()),
                             &["selected Signature snapshot is retained for the trajectory point"],
                             &["path safety outside the selected window"],
@@ -141,11 +147,19 @@ pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
                     Some(json!(5)),
                     "measured",
                     None,
-                    vec![middle_ref.clone(), force_ref.clone()],
+                    vec![
+                        middle_ref.clone(),
+                        force_ref.clone(),
+                        archsig_analysis_ref.clone(),
+                    ],
                     boundary(
                         "signature",
                         &["boundaryViolationCount"],
-                        vec![middle_ref.clone(), force_ref.clone()],
+                        vec![
+                            middle_ref.clone(),
+                            force_ref.clone(),
+                            archsig_analysis_ref.clone(),
+                        ],
                         Some(window.clone()),
                         &[
                             "trajectory point records an internal excursion before the selected endpoint",
@@ -169,11 +183,19 @@ pub fn static_signature_trajectory_report() -> SignatureTrajectoryReportV0 {
                     Some(json!(1)),
                     "measured",
                     None,
-                    vec![after_ref.clone(), force_ref.clone()],
+                    vec![
+                        after_ref.clone(),
+                        force_ref.clone(),
+                        archsig_analysis_ref.clone(),
+                    ],
                     boundary(
                         "signature",
                         &["boundaryViolationCount"],
-                        vec![after_ref.clone(), force_ref.clone()],
+                        vec![
+                            after_ref.clone(),
+                            force_ref.clone(),
+                            archsig_analysis_ref.clone(),
+                        ],
                         Some(window.clone()),
                         &["selected endpoint Signature snapshot is retained"],
                         &["global attractor inference"],

@@ -50,6 +50,7 @@ use fieldsig::{
     build_empirical_dataset, build_feature_extension_dataset_from_files,
     build_feature_extension_report, build_forecast_cone_skeleton_from_operation_support,
     build_law_violation_report, build_operation_support_estimate_from_archmap,
+    build_operation_support_estimate_from_archsig_analysis_packet,
     build_operation_support_estimate_from_descriptor,
     build_operation_support_estimate_from_intent_alignment,
     build_outcome_linkage_dataset_from_files, build_policy_decision_report,
@@ -547,6 +548,17 @@ enum Command {
         /// Input ArchMap JSON path.
         #[arg(long)]
         archmap: PathBuf,
+
+        /// Output operation-support-estimate-v0 JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Project an ArchSig analysis packet into SFT operation-support input.
+    ArchsigAnalysisSftInput {
+        /// Input archsig-analysis-packet-v0 JSON path.
+        #[arg(long = "analysis-packet")]
+        analysis_packet: PathBuf,
 
         /// Output operation-support-estimate-v0 JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
@@ -1648,6 +1660,18 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                     &document,
                     &archmap.display().to_string(),
                 );
+            write_json(out, &estimate)?;
+            Ok(ExitCode::SUCCESS)
+        }
+        Some(Command::ArchsigAnalysisSftInput {
+            analysis_packet,
+            out,
+        }) => {
+            let packet: serde_json::Value = read_json(&analysis_packet)?;
+            let estimate = build_operation_support_estimate_from_archsig_analysis_packet(
+                &packet,
+                &analysis_packet.display().to_string(),
+            )?;
             write_json(out, &estimate)?;
             Ok(ExitCode::SUCCESS)
         }

@@ -40,6 +40,12 @@
               "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
               "schemaVersion": "signature-snapshot-store-v0",
               "artifactId": "fixture-trajectory-before-signature"
+            },
+            {
+              "kind": "archsig-analysis-packet",
+              "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
+              "schemaVersion": "archsig-analysis-packet-v0",
+              "artifactId": "archsig-analysis-fixture"
             }
           ],
           "measurementBoundary": {
@@ -53,6 +59,12 @@
                 "path": "tools/archsig/tests/fixtures/minimal/signature_snapshot_before.json",
                 "schemaVersion": "signature-snapshot-store-v0",
                 "artifactId": "fixture-trajectory-before-signature"
+              },
+              {
+                "kind": "archsig-analysis-packet",
+                "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
+                "schemaVersion": "archsig-analysis-packet-v0",
+                "artifactId": "archsig-analysis-fixture"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -197,6 +209,12 @@
               "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "archsig-analysis-packet",
+              "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
+              "schemaVersion": "archsig-analysis-packet-v0",
+              "artifactId": "archsig-analysis-fixture"
             }
           ],
           "measurementBoundary": {
@@ -216,6 +234,12 @@
                 "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "archsig-analysis-packet",
+                "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
+                "schemaVersion": "archsig-analysis-packet-v0",
+                "artifactId": "archsig-analysis-fixture"
               }
             ],
             "extractorVersion": "0.1.0",
@@ -339,6 +363,12 @@
               "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
               "schemaVersion": "pr-force-report-v0",
               "artifactId": "fixture-pr-force-report-v0"
+            },
+            {
+              "kind": "archsig-analysis-packet",
+              "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
+              "schemaVersion": "archsig-analysis-packet-v0",
+              "artifactId": "archsig-analysis-fixture"
             }
           ],
           "measurementBoundary": {
@@ -358,6 +388,12 @@
                 "path": "tools/archsig/tests/fixtures/minimal/pr_force_report.json",
                 "schemaVersion": "pr-force-report-v0",
                 "artifactId": "fixture-pr-force-report-v0"
+              },
+              {
+                "kind": "archsig-analysis-packet",
+                "path": "tools/fieldsig/tests/fixtures/minimal/llm_native_handoff/archsig_analysis_packet.json",
+                "schemaVersion": "archsig-analysis-packet-v0",
+                "artifactId": "archsig-analysis-fixture"
               }
             ],
             "extractorVersion": "0.1.0",
