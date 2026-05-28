@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="AIR, the Architecture Interpretation Record that connects measurements, evidence, coverage, theorem preconditions, review reports, and SFT-facing interpretation.">
+    <meta name="description" content="AIR, the Architecture Interpretation Record that projects ArchSig analysis state into bounded review claims, evidence, coverage, theorem preconditions, and SFT-facing interpretation.">
     <title>ArchSig AIR</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/air/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig AIR">
-    <meta property="og:description" content="AIR, the Architecture Interpretation Record that connects measurements, evidence, coverage, theorem preconditions, review reports, and SFT-facing interpretation.">
+    <meta property="og:description" content="AIR, the Architecture Interpretation Record that projects ArchSig analysis state into bounded review claims, evidence, coverage, theorem preconditions, and SFT-facing interpretation.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/air/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig AIR">
-    <meta name="twitter:description" content="AIR, the Architecture Interpretation Record that connects measurements, evidence, coverage, theorem preconditions, review reports, and SFT-facing interpretation.">
+    <meta name="twitter:description" content="AIR, the Architecture Interpretation Record that projects ArchSig analysis state into bounded review claims, evidence, coverage, theorem preconditions, and SFT-facing interpretation.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -67,8 +67,8 @@
         <div class="site-shell">
           <nav class="breadcrumb" aria-label="Breadcrumb"><a href="../../">Home</a><a href="../">ArchSig</a><span>AIR</span></nav>
           <p class="eyebrow">Theory Behind ArchSig</p>
-          <h1>AIR is where measurements become reviewable claims.</h1>
-          <p class="lede">AIR turns raw signature evidence into architecture interpretation without losing coverage, uncertainty, or theorem preconditions.</p>
+          <h1>AIR is where analysis becomes reviewable claims.</h1>
+          <p class="lede">AIR projects ArchSig analysis packets into architecture interpretation without losing evidence refs, coverage gaps, uncertainty, or theorem preconditions.</p>
         </div>
       </section>
       <section class="section-band">
@@ -78,10 +78,10 @@
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Evidence Model</a></li><li><a href="../air/" aria-current="page">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="why" class="article-section"><h2>Why AIR exists</h2><p>Sig0 and signature diffs are measurement artifacts. Reviewers need interpretation: which movement matters, what supports the interpretation, which assumptions are missing, and how the result should appear in reports. AIR is the intermediate representation for that translation.</p></section>
-<section id="inputs" class="article-section"><h2>Inputs</h2><ul class="status-list"><li><strong>Sig0</strong><span>The current architecture signature and metric status.</span></li><li><strong>Validation</strong><span>Artifact coherence and warnings.</span></li><li><strong>Signature diff</strong><span>Before/after movement.</span></li><li><strong>PR metadata</strong><span>Review context, changed files, labels, and linked issues.</span></li><li><strong>ArchMap</strong><span>An optional evidence-carrying map candidate for semantic structure that was read from code, docs, tests, traces, or PR context.</span></li><li><strong>Law policy and framework adapter</strong><span>Optional interpretation layers that connect measured facts to architectural claims.</span></li></ul></section>
-<section id="archmap" class="article-section"><h2>ArchMap input</h2><p><a href="../archmap/">ArchMap</a> is the AIR input for architecture observations that cannot be reduced to static imports. <code>air-from-archmap</code> projects <code>archmap-v0</code> source refs, object mappings, relation mappings, semantic diagrams, nonfillability witnesses, missing evidence, and review follow-ups into AIR without treating the map as proof.</p></section>
-<section id="shape" class="article-section"><h2>AIR shape</h2><p>An AIR record should preserve source artifacts, claim candidates, evidence references, coverage records, theorem precondition status, report projections, and review follow-ups. It is the place where a measurement becomes an architecture interpretation.</p></section>
+            <section id="why" class="article-section"><h2>Why AIR exists</h2><p>ArchSig analysis packets are the current source-of-truth analysis artifacts. Reviewers still need compatibility projections: which movement matters, what supports the interpretation, which assumptions are missing, and how the result should appear in reports. AIR is the bounded representation for that translation.</p></section>
+<section id="inputs" class="article-section"><h2>Inputs</h2><ul class="status-list"><li><strong>ArchSig analysis packet</strong><span>The current molecule / obstruction / signature / repair / gap reading.</span></li><li><strong>Validation</strong><span>Artifact coherence and warnings.</span></li><li><strong>PR metadata</strong><span>Review context, changed files, labels, and linked issues.</span></li><li><strong>Adapter evidence</strong><span>Optional Sig0 import-graph evidence when static structure matters.</span></li><li><strong>LawPolicy</strong><span>The selected laws and signature axes under which the analysis was produced.</span></li></ul></section>
+<section id="archmap" class="article-section"><h2>ArchMap input</h2><p><a href="../archmap/">ArchMap</a> is the observation input upstream of ArchSig analysis. AIR should be read as a projection from validated analysis state, not as a proof that raw observations are architecture truth.</p></section>
+<section id="shape" class="article-section"><h2>AIR shape</h2><p>An AIR record should preserve source artifacts, claim candidates, evidence references, coverage records, theorem precondition status, report projections, and review follow-ups. It is the bounded projection where analysis becomes architecture interpretation.</p></section>
 <section id="claims" class="article-section"><h2>Claims</h2><p>AIR claims should be narrow and inspectable. They can describe an interface crossing, non-split extension, semantic dependency, missing runtime evidence, or policy-relevant movement. They should not become broad architecture judgments without evidence.</p></section>
 <section id="coverage" class="article-section"><h2>Coverage</h2><p>Coverage records say where the interpretation is strong and where it is incomplete. They are what let a report say, for example, that static code paths were inspected while runtime behavior and external provider behavior were not verified.</p></section>
 <section id="reports" class="article-section"><h2>Reports</h2><p>Feature reports, theorem checks, policy decisions, PR comments, and SFT artifacts consume AIR. When a report feels vague, inspect the AIR evidence refs and coverage before rewriting the report language.</p></section>

@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="How to wire ArchSig into CI and PR review with scans, snapshots, signature diffs, AIR, feature reports, policy decisions, and PR comments.">
+    <meta name="description" content="How to wire ArchSig into CI and PR review with ArchMap, LawPolicy, analysis packets, bounded review projections, policy decisions, and PR comments.">
     <title>ArchSig CI and PR Review</title>
     <link rel="canonical" href="https://iroha1203.dev/archsig/ci/">
     <meta property="og:site_name" content="AAT / SFT Research Notes">
     <meta property="og:type" content="article">
     <meta property="og:title" content="ArchSig CI and PR Review">
-    <meta property="og:description" content="How to wire ArchSig into CI and PR review with scans, snapshots, signature diffs, AIR, feature reports, policy decisions, and PR comments.">
+    <meta property="og:description" content="How to wire ArchSig into CI and PR review with ArchMap, LawPolicy, analysis packets, bounded review projections, policy decisions, and PR comments.">
     <meta property="og:url" content="https://iroha1203.dev/archsig/ci/">
     <meta property="og:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ArchSig CI and PR Review">
-    <meta name="twitter:description" content="How to wire ArchSig into CI and PR review with scans, snapshots, signature diffs, AIR, feature reports, policy decisions, and PR comments.">
+    <meta name="twitter:description" content="How to wire ArchSig into CI and PR review with ArchMap, LawPolicy, analysis packets, bounded review projections, policy decisions, and PR comments.">
     <meta name="twitter:image" content="https://iroha1203.dev/assets/ogp-aat-sft.png">
     <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
     <link rel="icon" href="../../assets/favicon-16.png" sizes="16x16" type="image/png">
@@ -74,59 +74,43 @@
       <section class="section-band">
         <div class="site-shell article-layout">
           <aside class="article-sidebar" aria-label="ArchSig page navigation">
-            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#shape">CI shape</a></li><li><a href="#before-after">Before and after scans</a></li><li><a href="#air">AIR and reports</a></li><li><a href="#comment">PR comment</a></li><li><a href="#gate">Review gate policy</a></li><li><a href="#minimal">Minimal workflow</a></li></ol></nav>
+            <nav class="toc-panel" aria-labelledby="toc-title"><h2 id="toc-title">On this page</h2><ol><li><a href="#shape">CI shape</a></li><li><a href="#before-after">ArchMap and policy</a></li><li><a href="#air">Analysis and reports</a></li><li><a href="#comment">PR comment</a></li><li><a href="#gate">Review gate policy</a></li><li><a href="#minimal">Minimal workflow</a></li></ol></nav>
             <div class="source-panel" data-sidebar-open="true"><h2>ArchSig manual</h2><ul><li><a href="../">Overview</a></li><li><a href="../why/">Why ArchSig?</a></li><li><a href="../getting-started/">Getting Started</a></li><li><a href="../ci/" aria-current="page">CI / PR Review</a></li><li><a href="../inputs/">Inputs</a></li><li><a href="../workflows/">Workflows</a></li><li><a href="../artifacts/">Artifacts</a></li><li><a href="../reading-output/">Reading Output</a></li><li><a href="../anatomy/">Signal Anatomy</a></li><li><a href="../examples/">Examples</a></li><li><a href="../boundaries/">Evidence Model</a></li><li><a href="../air/">AIR</a></li><li><a href="../archmap/">ArchMap</a></li><li><a href="../semantic-air/">Semantic AIR</a></li><li><a href="../commands/">Commands</a></li><li><a href="../schemas/">Schemas</a></li><li><a href="../operational-feedback/">Operational Feedback</a></li></ul></div>
           </aside>
           <div class="article-main">
-            <section id="shape" class="article-section"><h2>CI shape</h2><p>The strongest ArchSig CI path compares a base signature and a head signature, validates both, generates a diff, projects the diff into AIR, and then produces a human-readable review artifact.</p><figure class="code-panel"><figcaption>PR review pipeline</figcaption><pre><code>base scan
-  -&gt; base validate
-  -&gt; base snapshot
-head scan
-  -&gt; head validate
-  -&gt; head snapshot
-  -&gt; signature-diff
-  -&gt; AIR
-  -&gt; theorem-check
-  -&gt; feature-report
+            <section id="shape" class="article-section"><h2>CI shape</h2><p>The strongest ArchSig CI path validates the supplied ArchMap, validates the selected LawPolicy, builds an ArchSig analysis packet, validates that packet, and then emits bounded review projections for humans and LLM interpretation.</p><figure class="code-panel"><figcaption>PR review pipeline</figcaption><pre><code>ArchMap observation map
+  -&gt; archmap validation
+LawPolicy
+  -&gt; law-policy validation
+ArchMap + LawPolicy
+  -&gt; archsig-analysis-packet-v0
+  -&gt; analysis validation
+  -&gt; LLM interpretation packet
+  -&gt; AIR / theorem-check / feature-report
   -&gt; policy-decision
   -&gt; pr-comment</code></pre></figure></section>
-<section id="before-after" class="article-section"><h2>Before and after scans</h2><p>Keep before and after artifacts comparable. Record the revision SHA, branch, policy path, extractor output path, tags, and validation report used to construct each snapshot.</p><figure class="code-panel"><figcaption>Snapshot</figcaption><pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- snapshot \
-  --input .lake/signature-current/sig0.json \
-  --validation-report .lake/signature-current/validation.json \
-  --repo-owner example \
-  --repo-name service \
-  --revision-sha "$(git rev-parse HEAD)" \
-  --revision-ref "$(git rev-parse --abbrev-ref HEAD)" \
-  --revision-branch main \
-  --scanned-at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  --out .lake/signature-current/snapshot.json</code></pre></figure><figure class="code-panel"><figcaption>Signature diff</figcaption><pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- signature-diff \
-  --before-snapshot .lake/signature-previous/snapshot.json \
-  --after-snapshot .lake/signature-current/snapshot.json \
-  --before-sig0 .lake/signature-previous/sig0.json \
-  --after-sig0 .lake/signature-current/sig0.json \
-  --pr-metadata .lake/pr-metadata-123.json \
-  --out .lake/signature-current/diff-report.json</code></pre></figure></section>
-<section id="air" class="article-section"><h2>AIR and reports</h2><p>AIR is the bridge from measured output to review language. It records evidence references, coverage, theorem precondition status, and claim records before reports are generated.</p><figure class="code-panel"><figcaption>AIR to feature report</figcaption><pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- air \
-  --sig0 .lake/signature-current/sig0.json \
-  --validation .lake/signature-current/validation.json \
-  --diff .lake/signature-current/diff-report.json \
-  --pr-metadata .lake/pr-metadata-123.json \
-  --out .lake/signature-current/air.json
-
-cargo run --manifest-path tools/archsig/Cargo.toml -- feature-report \
-  --air .lake/signature-current/air.json \
-  --out .lake/signature-current/feature-report.json</code></pre></figure></section>
+<section id="before-after" class="article-section"><h2>ArchMap and policy</h2><p>Keep the observation map and policy file as first-class CI inputs. Record which source refs were read, which gaps remain, which laws were selected, and which axes are in scope for this review.</p><figure class="code-panel"><figcaption>LLM-native workflow</figcaption><pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
+  --archmap .archsig/input/archmap.json \
+  --law-policy .archsig/input/law-policy.json \
+  --out-dir .archsig/review</code></pre></figure><p>Use <code>adapter-scan</code> only when bounded import-graph evidence is needed. Adapter output can support comparison workflows, but it is not the source of truth for the current review path.</p></section>
+<section id="air" class="article-section"><h2>Analysis and reports</h2><p>The analysis packet is the first result to read. AIR, theorem checks, feature reports, policy decisions, PR comments, and FieldSig handoff artifacts are projections from that analysis state.</p><figure class="code-panel"><figcaption>Workflow outputs to read</figcaption><pre><code>.archsig/review/archsig-analysis-packet.json
+.archsig/review/archsig-analysis-validation.json
+.archsig/review/llm-interpretation-packet.json
+.archsig/review/air.json
+.archsig/review/theorem-precondition-check.json
+.archsig/review/feature-report.json
+.archsig/review/aat-observable-bundle.json</code></pre></figure></section>
 <section id="comment" class="article-section"><h2>PR comment</h2><p>The PR comment should summarize review action, not dump raw JSON. A good comment tells reviewers which architectural movement matters, what evidence supports it, what was not established, and which files or assumptions deserve inspection.</p><figure class="code-panel"><figcaption>PR comment summary</figcaption><pre><code>cargo run --manifest-path tools/archsig/Cargo.toml -- policy-decision \
-  --feature-report .lake/signature-current/feature-report.json \
+  --feature-report .archsig/review/feature-report.json \
   --policy organization-policy.json \
-  --out .lake/signature-current/policy-decision.json
+  --out .archsig/review/policy-decision.json
 
 cargo run --manifest-path tools/archsig/Cargo.toml -- pr-comment \
-  --feature-report .lake/signature-current/feature-report.json \
-  --policy-decision .lake/signature-current/policy-decision.json \
-  --out .lake/signature-current/pr-comment-summary.md</code></pre></figure></section>
+  --feature-report .archsig/review/feature-report.json \
+  --policy-decision .archsig/review/policy-decision.json \
+  --out .archsig/review/pr-comment-summary.md</code></pre></figure></section>
 <section id="gate" class="article-section"><h2>Review gate policy</h2><ul class="status-list"><li><strong>Block on artifact invalidity</strong><span>Schema or validation failures can block because the review artifact is not trustworthy.</span></li><li><strong>Warn on measured risk</strong><span>Measured architectural risk should usually become reviewer attention unless the organization has an explicit policy threshold.</span></li><li><strong>Do not block on unknown as if it were failure</strong><span>Unknown, unmeasured, unsupported, and private evidence states should be visible, not silently converted into pass/fail.</span></li><li><strong>Record suppressions</strong><span>Baseline suppressions need justification so the signal can be recalibrated later.</span></li></ul></section>
-<section id="minimal" class="article-section"><h2>Minimal workflow</h2><p>A minimal first CI integration can stop after scan, validate, and signature diff. Add AIR, feature reports, policy decisions, and PR comments once the team agrees on how signals should be read.</p></section>
+<section id="minimal" class="article-section"><h2>Minimal workflow</h2><p>A minimal first CI integration can stop after ArchMap validation, LawPolicy validation, and ArchSig analysis packet validation. Add AIR, feature reports, policy decisions, and PR comments once the team agrees on how analysis packets should be read.</p></section>
             <nav class="page-nav" aria-label="Reading sequence"><a class="page-nav-prev" href="../getting-started/"><span>Previous</span><strong>Getting Started</strong></a><a class="page-nav-next" href="../inputs/"><span>Next</span><strong>Inputs and Configuration</strong></a></nav>
           </div>
         </div>
