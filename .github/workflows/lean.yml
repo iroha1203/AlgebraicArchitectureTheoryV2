@@ -39,3 +39,72 @@ jobs:
 
       - name: Test FieldSig
         run: cargo test --manifest-path tools/fieldsig/Cargo.toml
+
+  llm-native-e2e:
+    name: llm-native ArchMap/ArchSig e2e
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run LLM-native ArchMap to FieldSig handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          out_dir=".lake/llm-native-e2e"
+          archsig_dir="$out_dir/archsig"
+          fieldsig_dir="$out_dir/fieldsig"
+          mkdir -p "$archsig_dir" "$fieldsig_dir"
+
+          cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
+            --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+            --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+            --out-dir "$archsig_dir"
+
+          test -s "$archsig_dir/archmap-validation.json"
+          test -s "$archsig_dir/law-policy-validation.json"
+          test -s "$archsig_dir/archsig-analysis-packet.json"
+          test -s "$archsig_dir/archsig-analysis-validation.json"
+          test -s "$archsig_dir/llm-interpretation-packet.json"
+
+          cmp "$archsig_dir/archsig-analysis-packet.json" "$archsig_dir/llm-interpretation-packet.json"
+
+          jq -e '
+            .schemaVersion == "archsig-analysis-packet-v0"
+            and .archMapRef.schemaVersion == "archmap-observation-map-v0"
+            and .selectedLawPolicyRef.schemaVersion == "law-policy-v0"
+            and ((.obstructionCircuits | length) > 0)
+            and ((.signatureAxes | length) > 0)
+            and ([.nonConclusions[] | contains("not a Lean theorem proof")] | any)
+          ' "$archsig_dir/archsig-analysis-packet.json"
+
+          jq -e '
+            .summary.result == "pass"
+            and ([.checks[]?.id] | index("archsig-analysis-packet-non-conclusion-boundary") != null)
+          ' "$archsig_dir/archsig-analysis-validation.json"
+
+          cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
+            --analysis-packet "$archsig_dir/archsig-analysis-packet.json" \
+            --out "$fieldsig_dir/operation-support-estimate.json"
+
+          jq -e '
+            .schemaVersion == "operation-support-estimate-v0"
+            and .descriptorRef.artifactKind == "archsig-analysis-packet"
+            and ([.candidateOperationFamilies[]?.supportKind] | index("archsig-analysis-repair-candidate") != null)
+            and ([.knownForbiddenSupport[]?.operationFamily] | index("raw-archmap-truth-promotion") != null)
+            and ([.unknownRemainder[]?.treatment] | map(contains("not round to absence, measured zero, or forecast truth")) | any)
+          ' "$fieldsig_dir/operation-support-estimate.json"
+
+          if cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-input \
+            --analysis-packet tools/archsig/tests/fixtures/minimal/archmap.json \
+            --out "$fieldsig_dir/raw-archmap-rejected.json"; then
+            echo "FieldSig accepted raw ArchMap as ArchSig analysis packet" >&2
+            exit 1
+          fi
+
+      - name: Upload LLM-native e2e artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: llm-native-e2e-${{ github.run_id }}
+          path: .lake/llm-native-e2e

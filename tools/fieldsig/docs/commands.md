@@ -22,6 +22,11 @@ cargo run --manifest-path tools/fieldsig/Cargo.toml -- archsig-analysis-sft-inpu
 This command rejects raw ArchMap JSON when it is supplied as the analysis-packet
 input. The accepted boundary is `archsig-analysis-packet-v0`.
 
+The end-to-end command transcript is fixed in
+[`docs/tool/llm_native_e2e_workflow.md`](../../../docs/tool/llm_native_e2e_workflow.md).
+CI runs the same flow from ArchMap and LawPolicy through ArchSig analysis,
+LLM interpretation packet emission, and FieldSig handoff.
+
 ## Operational and Governance
 
 Use `dataset`, `pr-metadata`, `pr-history-dataset`, `feature-extension-dataset`, `outcome-linkage-dataset`, `report-outcome-daily-ledger`, `calibration-review-record`, `team-threshold-policy`, `ownership-boundary-monitor`, `repair-adoption-record`, `incident-correlation-monitor`, `hypothesis-refresh-cycle`, `pr-force-report`, `signature-trajectory-report`, `architecture-field-snapshot`, `operation-proposal-log`, `architecture-dynamics-metrics`, `dynamics-measurements`, and `ai-proposal-governance` for workflow evidence, feedback, field dynamics, and AI proposal governance.

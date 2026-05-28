@@ -36,6 +36,13 @@ are projected from `archsig-analysis-packet-v0`. They retain the
 `ArchMap + LawPolicy -> ArchSig analysis` boundary and do not use the older
 ArchMap projection rule as their source of truth.
 
+The complete ArchSig-to-FieldSig transcript is fixed in
+[`docs/tool/llm_native_e2e_workflow.md`](../../../docs/tool/llm_native_e2e_workflow.md)
+and in the `llm-native ArchMap/ArchSig e2e` CI job. That E2E path verifies that
+the generated LLM interpretation packet is the same structured analysis packet
+and that FieldSig consumes only `archsig-analysis-packet-v0`, not raw ArchMap
+JSON.
+
 Equivalent step-by-step commands:
 
 ```bash

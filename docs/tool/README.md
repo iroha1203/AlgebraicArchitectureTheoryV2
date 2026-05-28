@@ -22,6 +22,7 @@ Atom handoff checklist:
 - [LawPolicy](law_policy.md)
 - [ArchSig Analysis Packet](archsig_analysis_packet.md)
 - [LLM-Native Golden Corpus](golden_corpus.md)
+- [LLM-native E2E Workflow](llm_native_e2e_workflow.md)
 
 Forward design PRDs:
 
