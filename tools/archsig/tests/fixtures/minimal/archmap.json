@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "archmap-v0",
-  "mapId": "fixture-archmap-mvp",
+  "schemaVersion": "archmap-observation-map-v0",
+  "mapId": "fixture-archmap-atom-observation",
   "architectureId": "archmap-fixture-repo",
   "generatedAt": "2026-05-23T00:00:00Z",
   "generator": {
@@ -44,7 +44,7 @@
       }
     ],
     "nonConclusions": [
-      "supplied ArchMap JSON is not generated architecture ground truth",
+      "source selection boundary does not imply extractor completeness",
       "private context is not reconstructed by validation"
     ]
   },
@@ -109,14 +109,40 @@
     ],
     "selectionBoundary": "bounded ArchMap MVP fixture over route, service, policy doc, and contract test"
   },
-  "targetUniverse": {
-    "representation": "aat-air-v0",
-    "selectedLayers": ["static", "semantic", "policy", "runtime"]
+  "provenance": {
+    "observer": "human-reviewed-fixture",
+    "observationMethod": "LLM-native source reading fixture",
+    "sourceRoot": ".",
+    "observationBoundary": "source-grounded observations only; no law-relative obstruction analysis",
+    "reviewedRefs": [
+      {
+        "artifactId": "src-route-users",
+        "kind": "file",
+        "path": "src/routes/users.ts",
+        "symbol": "createUserRoute",
+        "line": 42
+      },
+      {
+        "artifactId": "src-service-user",
+        "kind": "file",
+        "path": "src/services/user.ts",
+        "symbol": "UserService",
+        "line": 12
+      }
+    ],
+    "excludedReadings": [
+      "architecture lawfulness",
+      "obstruction circuit",
+      "zero curvature"
+    ],
+    "nonConclusions": [
+      "provenance records observation scope, not observation completeness"
+    ]
   },
-  "atomCandidates": [
+  "atomObservations": [
     {
-      "atomCandidateId": "atom-component-route-users",
-      "atomFamily": "Existence.Component",
+      "atomObservationId": "atom:component:route-users",
+      "atomFamily": "existence",
       "predicate": "component route.users exists",
       "subjectRef": "route.users",
       "objectRefs": ["route.users"],
@@ -130,14 +156,17 @@
         }
       ],
       "observationStatus": "observed",
-      "measurementBoundary": "measuredNonzero",
+      "evidenceBoundary": "sourceObserved",
       "confidence": "high",
       "uncertainty": [],
-      "nonConclusions": ["component atom candidate is not a certified universal atom"]
+      "projectionRefs": ["projection:aat:route-users"],
+      "nonConclusions": [
+        "component atom observation is not a certified universal atom"
+      ]
     },
     {
-      "atomCandidateId": "atom-component-service-user",
-      "atomFamily": "Existence.Component",
+      "atomObservationId": "atom:component:service-user",
+      "atomFamily": "existence",
       "predicate": "component service.user exists",
       "subjectRef": "service.user",
       "objectRefs": ["service.user"],
@@ -151,14 +180,17 @@
         }
       ],
       "observationStatus": "observed",
-      "measurementBoundary": "measuredNonzero",
+      "evidenceBoundary": "sourceObserved",
       "confidence": "high",
       "uncertainty": [],
-      "nonConclusions": ["service atom candidate is not complete service discovery"]
+      "projectionRefs": ["projection:aat:service-user"],
+      "nonConclusions": [
+        "service atom observation is not complete service discovery"
+      ]
     },
     {
-      "atomCandidateId": "atom-relation-route-service",
-      "atomFamily": "Relation.Dependency",
+      "atomObservationId": "atom:relation:route-service",
+      "atomFamily": "relation",
       "predicate": "route.users delegates user creation to service.user",
       "subjectRef": "semantic.route.users->service.user",
       "objectRefs": ["route.users", "service.user"],
@@ -179,14 +211,17 @@
         }
       ],
       "observationStatus": "observed",
-      "measurementBoundary": "measuredNonzero",
+      "evidenceBoundary": "sourceObserved",
       "confidence": "medium",
       "uncertainty": ["runtime frequency not measured"],
-      "nonConclusions": ["relation atom candidate does not prove runtime dependency"]
+      "projectionRefs": ["projection:aat:route-service"],
+      "nonConclusions": [
+        "relation atom observation does not prove runtime dependency"
+      ]
     },
     {
-      "atomCandidateId": "atom-contract-create-user",
-      "atomFamily": "Observation.Contract",
+      "atomObservationId": "atom:contract:create-user",
+      "atomFamily": "contractSpecification",
       "predicate": "contract test observes create-user success",
       "subjectRef": "contract.createsUser",
       "objectRefs": ["service.user"],
@@ -199,22 +234,25 @@
         }
       ],
       "observationStatus": "observed",
-      "measurementBoundary": "measuredNonzero",
+      "evidenceBoundary": "sourceObserved",
       "confidence": "medium",
       "uncertainty": ["production traces not supplied"],
-      "nonConclusions": ["contract atom candidate is not global semantic completeness"]
+      "projectionRefs": ["projection:aat:create-user-contract"],
+      "nonConclusions": [
+        "contract atom observation is not global semantic completeness"
+      ]
     }
   ],
-  "moleculeCandidates": [
+  "moleculeObservations": [
     {
-      "moleculeCandidateId": "molecule-user-request-responsibility",
-      "moleculeKind": "Responsibility",
+      "moleculeObservationId": "molecule:user-request-responsibility",
+      "moleculeFamily": "responsibility",
       "roleName": "user request orchestration",
-      "atomCandidateRefs": [
-        "atom-component-route-users",
-        "atom-component-service-user",
-        "atom-relation-route-service",
-        "atom-contract-create-user"
+      "atomObservationRefs": [
+        "atom:component:route-users",
+        "atom:component:service-user",
+        "atom:relation:route-service",
+        "atom:contract:create-user"
       ],
       "sourceRefs": [
         {
@@ -225,18 +263,31 @@
         }
       ],
       "observationStatus": "observed",
+      "evidenceBoundary": "sourceObserved",
       "confidence": "medium",
-      "nonConclusions": ["responsibility is a molecule over atoms, not a primitive atom"]
+      "nonConclusions": [
+        "responsibility is a molecule over atoms, not a primitive atom"
+      ]
     }
   ],
-  "obstructionCircuitCandidates": [
+  "semanticObservations": [
     {
-      "circuitCandidateId": "circuit-user-saga-missing-compensation",
-      "circuitKind": "FailedFilling",
-      "lawRef": "law:semantic-compensation",
-      "atomCandidateRefs": ["atom-contract-create-user"],
-      "moleculeCandidateRefs": ["molecule-user-request-responsibility"],
+      "semanticObservationId": "semantic:create-user-flow",
+      "semanticFamily": "operationMeaning",
+      "subjectRef": "operation.createUser",
+      "predicate": "route, service, and contract jointly describe create-user behavior",
+      "atomObservationRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "moleculeObservationRefs": ["molecule:user-request-responsibility"],
       "sourceRefs": [
+        {
+          "artifactId": "doc-architecture",
+          "kind": "docSection",
+          "path": "docs/architecture.md",
+          "section": "Layer policy"
+        },
         {
           "artifactId": "test-user-contract",
           "kind": "test",
@@ -245,9 +296,10 @@
         }
       ],
       "observationStatus": "observed",
-      "measurementBoundary": "measuredNonzero",
-      "claimBoundary": "selected witness of missing compensation; not a primitive atom and not incident causality",
-      "nonConclusions": ["obstruction circuit candidate is not an ArchitectureAtom"]
+      "evidenceBoundary": "sourceObserved",
+      "nonConclusions": [
+        "semantic observation is not a proof of global semantic correctness"
+      ]
     }
   ],
   "observationGaps": [
@@ -257,7 +309,7 @@
       "subjectRef": "runtime.service.user->db.users",
       "evidenceStatus": "unavailable",
       "reason": "runtime trace was requested but not supplied",
-      "expectedAtomFamilies": ["Runtime.Interaction", "Effect.DatabaseWrite"],
+      "expectedAtomFamilies": ["runtimeInteraction", "effect"],
       "sourceRefs": [
         {
           "kind": "runtimeTrace",
@@ -267,494 +319,65 @@
       "nonConclusions": ["unavailable runtime trace is not measured zero"]
     }
   ],
-  "homomorphism": {
-    "reading": "bounded AAT homomorphism from selected source architecture evidence to AAT observable signature, obstruction, and boundary space",
-    "domain": {
-      "universeId": "source:archmap-fixture-repo",
-      "description": "route, service, policy document, and contract-test source evidence",
-      "refs": ["src-route-users", "src-service-user", "doc-architecture", "test-user-contract"],
-      "boundary": "bounded ArchMap MVP fixture over route, service, policy doc, and contract test"
-    },
-    "codomain": {
-      "universeId": "aat:archmap-fixture-repo",
-      "description": "AAT object / relation / law / obstruction / signature-axis review universe",
-      "refs": ["aat-object", "aat-relation", "aat-law", "aat-obstruction", "aat-signature-axis"],
-      "boundary": "selected AAT observable universe; not global architecture truth"
-    },
-    "objectMap": [
-      {
-        "mapEntryId": "object-route-users",
-        "mapFamily": "object",
-        "sourceRef": "src-route-users",
-        "targetRef": "route.users",
-        "preserves": ["component identity"],
-        "forgets": ["method count"],
-        "measurementBoundary": "measuredNonzero",
-        "claimClassification": "measured",
-        "evidenceRefs": ["src-route-users"],
-        "nonConclusions": ["object map is bounded to the selected source universe"]
-      },
-      {
-        "mapEntryId": "object-service-user",
-        "mapFamily": "object",
-        "sourceRef": "src-service-user",
-        "targetRef": "service.user",
-        "preserves": ["component identity"],
-        "forgets": ["constructor details"],
-        "measurementBoundary": "measuredNonzero",
-        "claimClassification": "measured",
-        "evidenceRefs": ["src-service-user"],
-        "nonConclusions": ["object map is not complete service discovery"]
-      }
-    ],
-    "relationMap": [
-      {
-        "mapEntryId": "relation-route-service",
-        "mapFamily": "relation",
-        "sourceRef": "src-route-users",
-        "targetRef": "semantic.route.users->service.user",
-        "preserves": ["request-to-service semantic dependency"],
-        "forgets": ["call count", "runtime frequency"],
-        "measurementBoundary": "measuredNonzero",
-        "claimClassification": "measured",
-        "evidenceRefs": ["src-route-users", "src-service-user"],
-        "nonConclusions": ["semantic relation map does not prove runtime relation"]
-      },
-      {
-        "mapEntryId": "semantic-create-user-diagram",
-        "mapFamily": "relation",
-        "sourceRef": "test-user-contract",
-        "targetRef": "semantic.diagram.create_user",
-        "preserves": ["contract-test observation"],
-        "forgets": ["all production traces"],
-        "measurementBoundary": "measuredNonzero",
-        "claimClassification": "measured",
-        "evidenceRefs": ["test-user-contract"],
-        "nonConclusions": ["diagram map is not global semantic completeness"]
-      }
-    ],
-    "lawMap": [
-      {
-        "mapEntryId": "policy-layered-route-service",
-        "mapFamily": "law",
-        "sourceRef": "doc-architecture",
-        "targetRef": "policy.layered.route_to_service",
-        "preserves": ["Layered Architecture dependency direction", "SOLID DIP local policy boundary"],
-        "forgets": ["framework adapter implementation"],
-        "measurementBoundary": "unmeasured",
-        "claimClassification": "assumed",
-        "evidenceRefs": ["doc-architecture"],
-        "nonConclusions": ["policy assumption is not measured compliance"]
-      }
-    ],
-    "obstructionMap": [
-      {
-        "mapEntryId": "nonfillability-user-saga",
-        "mapFamily": "obstruction",
-        "sourceRef": "test-user-contract",
-        "targetRef": "witness-user-saga-missing-compensation",
-        "preserves": ["obstruction witness"],
-        "forgets": ["root-cause analysis"],
-        "measurementBoundary": "measuredNonzero",
-        "claimClassification": "measured",
-        "evidenceRefs": ["test-user-contract"],
-        "nonConclusions": ["obstruction map is not incident causality"]
-      }
-    ],
-    "signatureAxisMap": [
-      {
-        "mapEntryId": "aat-flatness-precondition",
-        "mapFamily": "signatureAxis",
-        "sourceRef": "test-user-contract",
-        "targetRef": "signature.semantic.flatnessPrecondition",
-        "preserves": ["AAT signature axis", "flatness precondition boundary"],
-        "forgets": ["global semantic completeness"],
-        "measurementBoundary": "measuredNonzero",
-        "claimClassification": "measured",
-        "evidenceRefs": ["test-user-contract"],
-        "nonConclusions": ["signature axis map does not discharge zero-curvature preconditions"]
-      },
-      {
-        "mapEntryId": "runtime-unmeasured-boundary",
-        "mapFamily": "signatureAxis",
-        "sourceRef": "src-service-user",
-        "targetRef": "runtime.service.user->db.users",
-        "preserves": ["runtime dependency boundary"],
-        "forgets": ["runtime frequency"],
-        "measurementBoundary": "unmeasured",
-        "claimClassification": "unmeasured",
-        "evidenceRefs": ["src-service-user"],
-        "nonConclusions": ["runtime boundary is not measured zero"]
-      }
-    ],
-    "preservationClaims": [
-      {
-        "claimId": "preservation-object-route-users",
-        "mapEntryRef": "object-route-users",
-        "preservedStructure": "component identity",
-        "status": "preserved",
-        "boundary": "selected source component",
-        "missingEvidence": [],
-        "nonConclusions": ["component identity preservation is bounded"]
-      },
-      {
-        "claimId": "preservation-policy-layered-route-service",
-        "mapEntryRef": "policy-layered-route-service",
-        "preservedStructure": "Layered Architecture dependency direction",
-        "status": "assumed",
-        "boundary": "policy document evidence",
-        "missingEvidence": [],
-        "nonConclusions": ["policy preservation is not measured compliance"]
-      },
-      {
-        "claimId": "preservation-runtime-boundary",
-        "mapEntryRef": "runtime-unmeasured-boundary",
-        "preservedStructure": "runtime dependency boundary",
-        "status": "blocked",
-        "boundary": "runtime trace unavailable",
-        "missingEvidence": ["runtime trace not supplied"],
-        "nonConclusions": ["unmeasured runtime map is not measured zero"]
-      }
-    ],
-    "forgetfulBoundary": [
-      "method count",
-      "constructor details",
-      "runtime frequency",
-      "global semantic completeness"
-    ],
-    "unmeasuredBoundary": ["runtime", "policy-layered-route-service", "runtime-unmeasured-boundary"],
-    "unsupportedBoundary": ["dynamic plugin loading"],
-    "nonConclusions": [
-      "ArchMap homomorphism is bounded to selected source evidence",
-      "homomorphism diagnostics do not prove architecture lawfulness"
-    ]
-  },
-  "mapItems": [
+  "projectionInfo": [
     {
-      "mapItemId": "object-route-users",
-      "mappingKind": "object",
-      "sourceRefs": [
-        {
-          "artifactId": "src-route-users",
-          "kind": "file",
-          "path": "src/routes/users.ts",
-          "symbol": "createUserRoute",
-          "line": 42
-        }
-      ],
-      "targetRef": {
-        "kind": "air-component",
-        "id": "route.users"
-      },
-      "preserves": ["component identity"],
-      "forgets": ["method count"],
-      "claimClassification": "measured",
-      "measurementBoundary": "measuredNonzero",
-      "confidence": "high",
-      "missingEvidence": [],
-      "nonConclusions": ["component mapping is bounded to the selected route source"]
+      "projectionId": "projection:aat:route-users",
+      "projectionFamily": "object",
+      "sourceObservationRef": "atom:component:route-users",
+      "targetSurface": "aat:object:route.users",
+      "reading": "route.users is an observed component object",
+      "projectionBoundary": "derived from observed source atom; not primary ArchMap law claim",
+      "nonConclusions": ["projection is not a Lean theorem"]
     },
     {
-      "mapItemId": "object-service-user",
-      "mappingKind": "object",
-      "sourceRefs": [
-        {
-          "artifactId": "src-service-user",
-          "kind": "file",
-          "path": "src/services/user.ts",
-          "symbol": "UserService",
-          "line": 12
-        }
-      ],
-      "targetRef": {
-        "kind": "air-component",
-        "id": "service.user"
-      },
-      "preserves": ["component identity"],
-      "forgets": ["constructor details"],
-      "claimClassification": "measured",
-      "measurementBoundary": "measuredNonzero",
-      "confidence": "high",
-      "missingEvidence": [],
-      "nonConclusions": ["service mapping is not global service completeness"]
+      "projectionId": "projection:aat:route-service",
+      "projectionFamily": "relation",
+      "sourceObservationRef": "atom:relation:route-service",
+      "targetSurface": "aat:relation:route.users->service.user",
+      "reading": "route.users to service.user is an observed relation",
+      "projectionBoundary": "derived from observed source atom; runtime frequency unmeasured",
+      "nonConclusions": ["projection is not a runtime dependency proof"]
     },
     {
-      "mapItemId": "relation-route-service",
-      "mappingKind": "relation",
-      "sourceRefs": [
-        {
-          "artifactId": "src-route-users",
-          "kind": "file",
-          "path": "src/routes/users.ts",
-          "symbol": "createUserRoute",
-          "line": 42
-        },
-        {
-          "artifactId": "src-service-user",
-          "kind": "file",
-          "path": "src/services/user.ts",
-          "symbol": "UserService",
-          "line": 12
-        }
-      ],
-      "targetRef": {
-        "kind": "air-relation",
-        "layer": "semantic",
-        "id": "relation-route-service",
-        "from": "route.users",
-        "to": "service.user",
-        "subjectRef": "semantic.route.users->service.user",
-        "predicate": "route delegates user creation to service"
-      },
-      "preserves": ["request-to-service semantic dependency"],
-      "forgets": ["call count", "runtime frequency"],
-      "claimClassification": "measured",
-      "measurementBoundary": "measuredNonzero",
-      "confidence": "medium",
-      "missingEvidence": [],
-      "nonConclusions": [
-        "semantic relation is not complete over all routes",
-        "LLM-authored relation does not prove runtime relation"
-      ],
-      "conflictCategory": "missing-static-edge"
-    },
-    {
-      "mapItemId": "srp-responsibility-users",
-      "mappingKind": "semanticRole",
-      "sourceRefs": [
-        {
-          "artifactId": "src-route-users",
-          "kind": "file",
-          "path": "src/routes/users.ts",
-          "symbol": "createUserRoute",
-          "line": 42
-        },
-        {
-          "artifactId": "doc-architecture",
-          "kind": "docSection",
-          "path": "docs/architecture.md",
-          "section": "Layer policy"
-        }
-      ],
-      "targetRef": {
-        "kind": "air-claim",
-        "layer": "semantic",
-        "id": "claim-srp-route-users",
-        "subjectRef": "component.route.users.responsibility",
-        "predicate": "route.users is mapped to user request orchestration responsibility"
-      },
-      "preserves": ["SRP responsibility region", "reason-to-change candidate"],
-      "forgets": ["file size heuristic"],
-      "claimClassification": "measured",
-      "measurementBoundary": "measuredNonzero",
-      "confidence": "medium",
-      "missingEvidence": [],
-      "nonConclusions": [
-        "SRP review cue is not a formal SRP violation proof",
-        "SOLID is treated as local contract policy, not a universal principle"
-      ]
-    },
-    {
-      "mapItemId": "policy-layered-route-service",
-      "mappingKind": "policyBoundary",
-      "sourceRefs": [
-        {
-          "artifactId": "doc-architecture",
-          "kind": "docSection",
-          "path": "docs/architecture.md",
-          "section": "Layer policy"
-        }
-      ],
-      "targetRef": {
-        "kind": "air-claim",
-        "layer": "policy",
-        "id": "claim-layered-route-service",
-        "subjectRef": "policy.layered.route_to_service",
-        "predicate": "route-to-service direction is allowed by selected Layered Architecture policy"
-      },
-      "preserves": ["Layered Architecture dependency direction", "SOLID DIP local policy boundary"],
-      "forgets": ["framework adapter implementation"],
-      "claimClassification": "assumed",
-      "measurementBoundary": "unmeasured",
-      "confidence": "medium",
-      "requiredAssumptions": ["Layer policy doc is supplied as bounded policy evidence"],
-      "missingEvidence": [],
-      "nonConclusions": ["policy assumption is not measured compliance"],
-      "conflictCategory": "policy-disagreement"
-    },
-    {
-      "mapItemId": "semantic-unmeasured-global-commutation",
-      "mappingKind": "semanticCommutationClaim",
-      "sourceRefs": [
-        {
-          "artifactId": "doc-architecture",
-          "kind": "docSection",
-          "path": "docs/architecture.md",
-          "section": "Layer policy"
-        }
-      ],
-      "targetRef": {
-        "kind": "semantic-diagram",
-        "layer": "semantic",
-        "id": "diagram-global-user-commutation",
-        "from": "request.createUser",
-        "to": "state.userCreated",
-        "lhsPathRef": "path-global-user-lhs",
-        "rhsPathRef": "path-global-user-rhs",
-        "equivalence": "observational",
-        "subjectRef": "semantic.diagram.global_user_commutation",
-        "predicate": "global user workflow commutation is outside the measured semantic universe"
-      },
-      "preserves": ["semantic commutation candidate"],
-      "forgets": ["global path coverage"],
-      "claimClassification": "unmeasured",
-      "measurementBoundary": "unmeasured",
-      "confidence": "low",
-      "missingEvidence": [],
-      "nonConclusions": ["unmeasured semantic commutation is not measured zero"]
-    },
-    {
-      "mapItemId": "aat-flatness-precondition",
-      "mappingKind": "semanticRole",
-      "sourceRefs": [
-        {
-          "artifactId": "test-user-contract",
-          "kind": "test",
-          "path": "tests/user_contract.test.ts",
-          "symbol": "createsUser"
-        }
-      ],
-      "targetRef": {
-        "kind": "air-claim",
-        "layer": "semantic",
-        "id": "claim-flatness-precondition",
-        "subjectRef": "signature.semantic.flatnessPrecondition",
-        "predicate": "selected contract test is evidence for one semantic precondition"
-      },
-      "preserves": ["AAT signature axis", "flatness precondition boundary"],
-      "forgets": ["global semantic completeness"],
-      "claimClassification": "measured",
-      "measurementBoundary": "measuredNonzero",
-      "confidence": "medium",
-      "missingEvidence": [],
-      "nonConclusions": ["zero-curvature theorem preconditions are not discharged"]
-    },
-    {
-      "mapItemId": "semantic-create-user-diagram",
-      "mappingKind": "semanticDiagram",
-      "sourceRefs": [
-        {
-          "artifactId": "test-user-contract",
-          "kind": "test",
-          "path": "tests/user_contract.test.ts",
-          "symbol": "createsUser"
-        }
-      ],
-      "targetRef": {
-        "kind": "semantic-diagram",
-        "layer": "semantic",
-        "id": "diagram-create-user",
-        "from": "request.createUser",
-        "to": "state.userCreated",
-        "lhsPathRef": "path-route-service-create",
-        "rhsPathRef": "path-direct-service-create",
-        "equivalence": "observational",
-        "subjectRef": "semantic.diagram.create_user",
-        "predicate": "selected create-user paths have the same contract-test observation"
-      },
-      "preserves": ["contract-test observation"],
-      "forgets": ["all production traces"],
-      "claimClassification": "measured",
-      "measurementBoundary": "measuredNonzero",
-      "confidence": "medium",
-      "missingEvidence": [],
-      "nonConclusions": ["selected semantic diagram is not global semantic completeness"]
-    },
-    {
-      "mapItemId": "nonfillability-user-saga",
-      "mappingKind": "nonfillabilityWitness",
-      "sourceRefs": [
-        {
-          "artifactId": "test-user-contract",
-          "kind": "test",
-          "path": "tests/user_contract.test.ts",
-          "symbol": "createsUser"
-        }
-      ],
-      "targetRef": {
-        "kind": "nonfillability-witness",
-        "layer": "semantic",
-        "id": "witness-user-saga-missing-compensation",
-        "subjectRef": "diagram-create-user",
-        "predicate": "selected saga branch lacks compensation witness"
-      },
-      "preserves": ["obstruction witness"],
-      "forgets": ["root-cause analysis"],
-      "claimClassification": "measured",
-      "measurementBoundary": "measuredNonzero",
-      "confidence": "low",
-      "missingEvidence": [],
-      "nonConclusions": ["nonfillability witness is a review cue, not incident causality"]
-    },
-    {
-      "mapItemId": "runtime-unmeasured-boundary",
-      "mappingKind": "relation",
-      "sourceRefs": [
-        {
-          "artifactId": "src-service-user",
-          "kind": "file",
-          "path": "src/services/user.ts",
-          "symbol": "UserService",
-          "line": 12
-        }
-      ],
-      "targetRef": {
-        "kind": "air-relation",
-        "layer": "runtime",
-        "id": "relation-runtime-user-db",
-        "from": "service.user",
-        "to": "db.users",
-        "subjectRef": "runtime.service.user->db.users",
-        "predicate": "runtime database dependency is unavailable in this fixture"
-      },
-      "preserves": ["runtime dependency boundary"],
-      "forgets": ["runtime frequency"],
-      "claimClassification": "unmeasured",
-      "measurementBoundary": "unmeasured",
-      "confidence": "low",
-      "missingEvidence": ["runtime trace not supplied"],
-      "nonConclusions": ["semantic unmeasured is not measured zero"],
-      "conflictCategory": "semantic-runtime-disagreement"
+      "projectionId": "projection:sft:create-user",
+      "projectionFamily": "signatureAxis",
+      "sourceObservationRef": "semantic:create-user-flow",
+      "targetSurface": "sft:observation:create-user-flow",
+      "reading": "semantic observation can be handed off as bounded SFT evidence",
+      "projectionBoundary": "SFT consequence analysis is not owned by ArchMap",
+      "nonConclusions": ["projection is not a forecast correctness claim"]
     }
   ],
-  "coverage": {
-    "measuredLayers": ["static", "semantic"],
-    "unmeasuredLayers": ["runtime"],
-    "assumedLayers": ["policy"],
-    "unsupportedConstructs": ["dynamic plugin loading"]
-  },
-  "conflicts": [
+  "concernHints": [
     {
-      "conflictId": "conflict-unexplained-static-edge-fixture",
-      "category": "unexplained-static-edge",
-      "subjectRef": "static.legacy->service.user",
-      "description": "static edge is not explained by the selected semantic map",
-      "sourceRefs": [],
-      "nonConclusions": ["unexplained edge is not automatically wrong"]
-    },
-    {
-      "conflictId": "conflict-source-ref-dangling-fixture",
-      "category": "source-ref-dangling",
-      "subjectRef": "runtimeTrace:.lake/runtime-trace.json",
-      "description": "runtime trace was requested but unavailable",
-      "sourceRefs": [],
-      "nonConclusions": ["unavailable runtime trace is not measured zero"]
+      "concernHintId": "concern:missing-compensation",
+      "concernFamily": "missingCompensation",
+      "subjectRef": "operation.createUser",
+      "atomObservationRefs": ["atom:contract:create-user"],
+      "moleculeObservationRefs": ["molecule:user-request-responsibility"],
+      "semanticObservationRefs": ["semantic:create-user-flow"],
+      "sourceRefs": [
+        {
+          "artifactId": "test-user-contract",
+          "kind": "test",
+          "path": "tests/user_contract.test.ts",
+          "symbol": "createsUser"
+        }
+      ],
+      "evidenceBoundary": "review cue from observed contract atom and semantic observation",
+      "analysisBoundary": "not an obstruction circuit; ArchSig must combine this ArchMap with LawPolicy before constructing obstruction witnesses",
+      "nonConclusions": [
+        "concern hint does not prove a law violation",
+        "concern hint is not an obstruction circuit"
+      ]
     }
   ],
   "nonConclusions": [
-    "archmap-v0 is not ground truth architecture",
-    "validation pass is not architecture lawfulness",
-    "LLM output does not prove semantic preservation",
-    "framework-specific extractor evidence remains useful"
+    "ArchMap does not prove architecture lawfulness",
+    "ArchMap does not output obstruction circuits",
+    "ArchMap does not prove zero curvature",
+    "concernHints are review cues, not obstruction circuits",
+    "observation gaps are not measured zero",
+    "Atom observations are source-grounded observations, not universal atom truth"
   ]
 }

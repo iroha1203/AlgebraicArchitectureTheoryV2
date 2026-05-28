@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "archmap-v0",
+  "schemaVersion": "archmap-observation-map-v0",
   "mapId": "archmap-expressiveness-suite-v0",
   "architectureId": "archmap-expressiveness-fixture-repo",
   "generatedAt": "2026-05-24T00:00:00Z",
@@ -347,6 +347,12 @@
     }
   ],
   "nonConclusions": [
+    "ArchMap does not prove architecture lawfulness",
+    "ArchMap does not output obstruction circuits",
+    "ArchMap does not prove zero curvature",
+    "concernHints are review cues, not obstruction circuits",
+    "observation gaps are not measured zero",
+    "Atom observations are source-grounded observations, not universal atom truth",
     "archmap-expressiveness-suite-v0 is not architecture ground truth",
     "suite pass does not prove semantic preservation",
     "suite pass does not prove LLM generation accuracy",

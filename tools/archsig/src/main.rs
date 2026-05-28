@@ -6,17 +6,17 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
-    AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION, AatAnalyticAxisV0, AatConceptMappingV0,
-    AatCoverageBoundaryV0, AatFeatureExtensionEvidenceV0, AatLlmReviewSurfaceV0,
-    AatObservableBundleV0, AatObservableBundleValidationReportV0, AatObservableSourceRefV0,
-    AatObservedAxisV0, AatOperationCandidateV0, AatProjectionObservationEvidenceV0,
-    AatRepairSynthesisEvidenceV0, AatResponsibilityBoundaryV0, AatReviewActionV0,
-    AatSelectedUniverseV0, AatSemanticDiagramEvidenceV0, AatStateEffectLawEvidenceV0,
-    AatTheoremBoundaryV0, AatWitnessCatalogEntryV0, AirDocumentInput, AirDocumentV0,
-    AirValidationReport, ArchMapDocumentV0, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
-    ArchMapValidationReportV0, ArchitecturePolicyV0, ArchitecturePolicyValidationReportV0,
-    ComponentUniverseValidationReport, CustomRulePluginRegistryV0,
-    CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
+    AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION, AatAnalyticAxisV0,
+    AatConceptMappingV0, AatCoverageBoundaryV0, AatFeatureExtensionEvidenceV0,
+    AatLlmReviewSurfaceV0, AatObservableBundleV0, AatObservableBundleValidationReportV0,
+    AatObservableSourceRefV0, AatObservedAxisV0, AatOperationCandidateV0,
+    AatProjectionObservationEvidenceV0, AatRepairSynthesisEvidenceV0, AatResponsibilityBoundaryV0,
+    AatReviewActionV0, AatSelectedUniverseV0, AatSemanticDiagramEvidenceV0,
+    AatStateEffectLawEvidenceV0, AatTheoremBoundaryV0, AatWitnessCatalogEntryV0, AirDocumentInput,
+    AirDocumentV0, AirValidationReport, ArchMapDocumentV0, ArchMapSourceInventoryInput,
+    ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchitecturePolicyV0,
+    ArchitecturePolicyValidationReportV0, ComponentUniverseValidationReport,
+    CustomRulePluginRegistryV0, CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
     DetectableValuesReportedAxesCatalogV0, EmpiricalDatasetInput, FeatureExtensionReportV0,
     FrameworkAdapterEvidenceV0, LawPolicyTemplateRegistryV0,
     LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0, MeasurementUnitRegistryV0,
@@ -896,7 +896,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 },
                 "requiredWorkflow": [
                     "read source inventory includedRefs / excludedRefs / privateRefs / unavailableRefs separately",
-                    "produce archmap-v0 JSON with sourceRefs, preserves, forgets, missingEvidence, and nonConclusions",
+                    "produce archmap-observation-map-v0 JSON with atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, concernHints, provenance, and nonConclusions",
                     "run archsig archmap --input <archmap.json> before downstream projection",
                     "preserve invalid, dangling, unsupported, private, and unavailable evidence as boundary data"
                 ],
@@ -1517,17 +1517,20 @@ fn observable_bundle_from_archmap_workflow(
         AatObservableSourceRefV0 {
             source_ref_id: "source:archmap:primary".to_string(),
             artifact_kind: "archmap".to_string(),
-            schema_version: "archmap-v0".to_string(),
+            schema_version: ARCHMAP_SCHEMA_VERSION.to_string(),
             path: archmap_path.display().to_string(),
             retained_fields: vec![
                 "sourceUniverse".to_string(),
-                "mapItems".to_string(),
-                "coverage".to_string(),
-                "conflicts".to_string(),
+                "atomObservations".to_string(),
+                "moleculeObservations".to_string(),
+                "semanticObservations".to_string(),
+                "observationGaps".to_string(),
+                "projectionInfo".to_string(),
+                "concernHints".to_string(),
                 "nonConclusions".to_string(),
             ],
             non_conclusions: vec![
-                "ArchMap is supplied structural evidence, not architecture ground truth"
+                "ArchMap is supplied atom observation evidence, not architecture ground truth"
                     .to_string(),
             ],
         },
@@ -1657,14 +1660,14 @@ fn observable_bundle_from_archmap_workflow(
         concept_mappings,
         observed_axes: vec![
             AatObservedAxisV0 {
-                axis_id: "axis:archmap-map-items".to_string(),
+                axis_id: "axis:archmap-atom-observations".to_string(),
                 concept_refs: vec!["concept:architecture-object".to_string()],
                 artifact_refs: vec!["source:archmap:primary".to_string()],
                 measurement_status: "partiallyMeasured".to_string(),
-                value: Some(archmap.map_items.len() as i64),
-                boundary: "mapItems are supplied evidence, not complete architecture enumeration"
+                value: Some(archmap.atom_observations.len() as i64),
+                boundary: "atomObservations are supplied source-grounded evidence, not complete architecture enumeration"
                     .to_string(),
-                non_conclusions: vec!["map item count is not a quality score".to_string()],
+                non_conclusions: vec!["atom observation count is not a quality score".to_string()],
             },
             AatObservedAxisV0 {
                 axis_id: "axis:air-relations".to_string(),

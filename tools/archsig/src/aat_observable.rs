@@ -45,7 +45,15 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
                 "archmap",
                 ARCHMAP_SCHEMA_VERSION,
                 "tools/archsig/tests/fixtures/minimal/archmap.json",
-                &["sourceUniverse", "mapItems", "coverage", "conflicts"],
+                &[
+                    "sourceUniverse",
+                    "atomObservations",
+                    "moleculeObservations",
+                    "semanticObservations",
+                    "observationGaps",
+                    "projectionInfo",
+                    "concernHints",
+                ],
             ),
             source_ref(
                 "source:feature-report:coupon",

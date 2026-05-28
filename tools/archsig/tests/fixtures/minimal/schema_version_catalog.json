@@ -67,32 +67,27 @@
     },
     {
       "artifactId": "archmap",
-      "artifactName": "ArchMap supplied JSON artifact",
-      "schemaVersionName": "archmap-v0",
-      "artifactRole": "semantic-observation-input",
-      "ownerPhase": "ArchMap MVP",
+      "artifactName": "LLM-native ArchMap Atom observation artifact",
+      "schemaVersionName": "archmap-observation-map-v0",
+      "artifactRole": "atom-observation-input",
+      "ownerPhase": "LLM-native ArchMap / ArchSig",
       "status": "implemented",
       "primaryDocs": [
-        "tools/archsig/docs/artifacts-and-boundaries.md",
-        "tools/archsig/docs/commands.md"
+        "docs/tool/llm_native_archmap_archsig_prd.md",
+        "docs/tool/atom_handoff.md"
       ],
       "downstreamIssues": [
-        "#1032",
-        "#1033",
-        "#1035",
-        "#1228",
-        "#1246"
+        "#1329"
       ],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Map source inventory, prompt/model provenance, atom candidates, molecule candidates, obstruction circuit candidates, observation gaps, AAT-facing and SFT-facing map items, coverage, conflicts, and non-conclusions by stable camelCase names.",
+        "fieldMappingPolicy": "ArchMap records source-grounded atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, concernHints, provenance, and nonConclusions without selecting laws or constructing obstruction circuits.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
-          "New mapping kinds must preserve source refs, claim boundary, missing evidence, and non-conclusions.",
-          "New atomic observation fields must remain optional/default-compatible in archmap-v0 unless schemaVersion is deliberately bumped.",
-          "SFT-facing mapping kinds must remain projection input and not forecast result claims."
+          "New observation families must cite source refs, keep evidence boundaries explicit, and avoid law-relative conclusions.",
+          "Concern hints must remain review cues until ArchSig combines ArchMap with a selected LawPolicy."
         ],
         "coverageExactnessBoundary": [
-          "ArchMap is supplied JSON evidence, not architecture ground truth, certified ArchitectureAtom truth, or a Lean theorem claim."
+          "ArchMap does not prove architecture lawfulness, output obstruction circuits, prove zero curvature, certify universal atom truth, or replace Lean theorem discharge."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
@@ -106,27 +101,24 @@
       "artifactName": "ArchMap Validation Report",
       "schemaVersionName": "archmap-validation-report-v0",
       "artifactRole": "validation-output",
-      "ownerPhase": "ArchMap MVP",
+      "ownerPhase": "LLM-native ArchMap / ArchSig",
       "status": "implemented",
       "primaryDocs": [
-        "tools/archsig/docs/artifacts-and-boundaries.md",
-        "tools/archsig/docs/commands.md"
+        "docs/tool/llm_native_archmap_archsig_prd.md",
+        "docs/tool/atom_handoff.md"
       ],
       "downstreamIssues": [
-        "#1032",
-        "#1034",
-        "#1229",
-        "#1245"
+        "#1329"
       ],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, conflict checks, projection-separation checks, formal promotion guardrail checks, homomorphism diagnostics, and atomic observation summary separate.",
+        "fieldMappingPolicy": "Keep source inventory checks, source ref checks, claim boundary checks, semantic coverage checks, projection-separation checks, formal promotion guardrail checks, derived projection diagnostics, atomic observation summary, and responsibility checks separate.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
-          "New checks must report whether they fail, warn, or pass without promoting uncertain mappings.",
-          "Atomic observation checks must distinguish atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps."
+          "New checks must report whether they fail, warn, or pass without promoting observed atoms to universal atom truth.",
+          "Atomic observation checks must distinguish atom observations, molecule observations, semantic observations, concern hints, and observation gaps."
         ],
         "coverageExactnessBoundary": [
-          "Validation pass does not imply semantic correctness, completeness, architecture lawfulness, certified atom truth, zero curvature, or SFT forecast correctness."
+          "Validation pass does not imply semantic correctness, completeness, architecture lawfulness, obstruction existence, certified atom truth, zero curvature, or SFT forecast correctness."
         ],
         "nonConclusions": [
           "field mapping does not prove semantic preservation",
