@@ -40,6 +40,9 @@ pub const ORGANIZATION_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "organization-policy-validation-report-v0";
 pub const LAW_POLICY_SCHEMA_VERSION: &str = "law-policy-v0";
 pub const LAW_POLICY_VALIDATION_REPORT_SCHEMA_VERSION: &str = "law-policy-validation-report-v0";
+pub const ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION: &str = "archsig-analysis-packet-v0";
+pub const ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION: &str =
+    "archsig-analysis-packet-validation-report-v0";
 pub const LAW_POLICY_TEMPLATE_REGISTRY_SCHEMA_VERSION: &str = "law-policy-template-registry-v0";
 pub const LAW_POLICY_TEMPLATE_REGISTRY_VALIDATION_REPORT_SCHEMA_VERSION: &str =
     "law-policy-template-registry-validation-report-v0";
@@ -2833,6 +2836,180 @@ pub struct LawPolicyValidationSummaryV0 {
     pub obstruction_circuit_definition_count: usize,
     pub signature_axis_definition_count: usize,
     pub coverage_requirement_count: usize,
+    pub failed_check_count: usize,
+    pub warning_check_count: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAnalysisPacketV0 {
+    pub schema_version: String,
+    pub analysis_id: String,
+    pub generated_at: String,
+    pub arch_map_ref: ArchSigAnalysisArtifactRefV0,
+    pub selected_law_policy_ref: ArchSigAnalysisArtifactRefV0,
+    pub atom_configuration_summary: ArchSigAtomConfigurationSummaryV0,
+    pub molecule_readings: Vec<ArchSigMoleculeReadingV0>,
+    pub obstruction_circuits: Vec<ArchSigObstructionCircuitV0>,
+    pub signature_axes: Vec<ArchSigSignatureAxisReadingV0>,
+    pub flatness_reading: ArchSigFlatnessReadingV0,
+    pub static_runtime_semantic_layer_split: ArchSigLayerSplitV0,
+    pub repair_operation_candidates: Vec<ArchSigRepairOperationCandidateV0>,
+    pub evidence_boundary: String,
+    #[serde(rename = "interpretationNotesForLLM")]
+    pub interpretation_notes_for_llm: Vec<String>,
+    #[serde(default)]
+    pub excluded_readings: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAnalysisArtifactRefV0 {
+    pub artifact_id: String,
+    pub artifact_kind: String,
+    pub schema_version: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content_hash: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAtomConfigurationSummaryV0 {
+    pub atom_observation_count: usize,
+    pub molecule_observation_count: usize,
+    pub semantic_observation_count: usize,
+    pub observation_gap_count: usize,
+    pub concern_hint_count: usize,
+    pub configuration_boundary: String,
+    pub coverage_summary: Vec<String>,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigMoleculeReadingV0 {
+    pub molecule_reading_id: String,
+    pub molecule_observation_ref: String,
+    pub law_refs: Vec<String>,
+    pub atom_observation_refs: Vec<String>,
+    pub reading: String,
+    pub evidence_summary: String,
+    pub evidence_boundary: String,
+    pub source_refs: Vec<String>,
+    #[serde(rename = "interpretationNotesForLLM")]
+    pub interpretation_notes_for_llm: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigObstructionCircuitV0 {
+    pub obstruction_circuit_id: String,
+    pub law_ref: String,
+    pub witness_rule_ref: String,
+    pub circuit_kind: String,
+    pub atom_observation_refs: Vec<String>,
+    pub molecule_reading_refs: Vec<String>,
+    #[serde(default)]
+    pub concern_hint_refs: Vec<String>,
+    pub signature_axis_refs: Vec<String>,
+    pub minimality_reading: String,
+    pub evidence_summary: String,
+    pub evidence_boundary: String,
+    #[serde(rename = "interpretationNotesForLLM")]
+    pub interpretation_notes_for_llm: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSignatureAxisReadingV0 {
+    pub signature_axis_id: String,
+    pub law_ref: String,
+    pub axis_ref: String,
+    pub value_type: String,
+    pub value: i64,
+    pub zero_reading: String,
+    pub coverage_status: String,
+    pub exactness_assumptions: Vec<String>,
+    pub evidence_summary: String,
+    pub source_refs: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigFlatnessReadingV0 {
+    pub reading_id: String,
+    pub selected_law_policy_ref: String,
+    pub status: String,
+    pub zero_signature_axis_refs: Vec<String>,
+    pub nonzero_signature_axis_refs: Vec<String>,
+    pub blocked_by_coverage_gaps: Vec<String>,
+    pub evidence_boundary: String,
+    #[serde(rename = "interpretationNotesForLLM")]
+    pub interpretation_notes_for_llm: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigLayerSplitV0 {
+    pub static_observation_refs: Vec<String>,
+    pub runtime_observation_refs: Vec<String>,
+    pub semantic_observation_refs: Vec<String>,
+    pub split_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRepairOperationCandidateV0 {
+    pub repair_operation_candidate_id: String,
+    pub operation_kind: String,
+    pub target_obstruction_refs: Vec<String>,
+    pub preserved_invariants: Vec<String>,
+    pub preconditions: Vec<String>,
+    pub expected_signature_axis_effects: Vec<String>,
+    pub transfer_risks: Vec<String>,
+    pub evidence_boundary: String,
+    #[serde(rename = "interpretationNotesForLLM")]
+    pub interpretation_notes_for_llm: Vec<String>,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAnalysisPacketValidationReportV0 {
+    pub schema_version: String,
+    pub input: ArchSigAnalysisPacketValidationInputV0,
+    pub packet: ArchSigAnalysisPacketV0,
+    pub summary: ArchSigAnalysisPacketValidationSummaryV0,
+    pub checks: Vec<ValidationCheck>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAnalysisPacketValidationInputV0 {
+    pub schema_version: String,
+    pub path: String,
+    pub analysis_id: String,
+    pub arch_map_ref: String,
+    pub selected_law_policy_ref: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigAnalysisPacketValidationSummaryV0 {
+    pub result: String,
+    pub molecule_reading_count: usize,
+    pub obstruction_circuit_count: usize,
+    pub signature_axis_count: usize,
+    pub repair_operation_candidate_count: usize,
     pub failed_check_count: usize,
     pub warning_check_count: usize,
 }

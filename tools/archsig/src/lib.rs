@@ -3,6 +3,7 @@ mod air;
 mod air_validation;
 mod architecture_policy;
 mod archmap;
+mod archsig_analysis_packet;
 mod artifact_retention;
 mod baseline_suppression;
 mod component_validation;
@@ -47,6 +48,9 @@ pub use architecture_policy::{
     srp_review_cue_from_archmap_item, validate_architecture_policy_report,
 };
 pub use archmap::{ArchMapSourceInventoryInput, build_air_from_archmap, validate_archmap_report};
+pub use archsig_analysis_packet::{
+    static_archsig_analysis_packet, validate_archsig_analysis_packet_report,
+};
 pub use artifact_retention::{
     static_report_artifact_retention_manifest, validate_report_artifact_retention_report,
 };

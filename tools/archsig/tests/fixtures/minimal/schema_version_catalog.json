@@ -188,6 +188,66 @@
       }
     },
     {
+      "artifactId": "archsig-analysis-packet",
+      "artifactName": "LLM-native ArchSig AAT analysis packet",
+      "schemaVersionName": "archsig-analysis-packet-v0",
+      "artifactRole": "analysis-output",
+      "ownerPhase": "LLM-native ArchMap / ArchSig",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/llm_native_archmap_archsig_prd.md",
+        "docs/tool/README.md"
+      ],
+      "downstreamIssues": [
+        "#1331"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "ArchSig analysis packet owns law-relative molecule readings, obstruction circuits, signature axes, flatness reading, static/runtime/semantic split, repair operation candidates, evidence boundary, LLM interpretation notes, excluded readings, and non-conclusions.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New packet readings must keep ArchMap refs and selected LawPolicy refs explicit.",
+          "New repair candidates must retain preserved invariants, preconditions, transfer risks, evidence boundary, and non-conclusions."
+        ],
+        "coverageExactnessBoundary": [
+          "Analysis packet is not a Lean theorem proof, global architecture truth, extractor completeness proof, quality score, or automatic safe repair."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
+      "artifactId": "archsig-analysis-packet-validation-report",
+      "artifactName": "LLM-native ArchSig analysis packet validation report",
+      "schemaVersionName": "archsig-analysis-packet-validation-report-v0",
+      "artifactRole": "validation-output",
+      "ownerPhase": "LLM-native ArchMap / ArchSig",
+      "status": "implemented",
+      "primaryDocs": [
+        "docs/tool/llm_native_archmap_archsig_prd.md"
+      ],
+      "downstreamIssues": [
+        "#1331"
+      ],
+      "compatibilityBoundary": {
+        "fieldMappingPolicy": "Validation checks identity, ArchMap and LawPolicy refs, law-relative obstruction links, signature and flatness boundaries, repair candidate guardrails, LLM interpretation surface, and non-conclusions without computing the analysis engine.",
+        "deprecatedFields": [],
+        "newRequiredAssumptions": [
+          "New checks must fail or warn without promoting packet validation to theorem evidence."
+        ],
+        "coverageExactnessBoundary": [
+          "Validation pass does not imply architecture lawfulness, source completeness, flatness proof, or repair safety."
+        ],
+        "nonConclusions": [
+          "field mapping does not prove semantic preservation",
+          "missing coverage is not measured zero",
+          "renamed fields do not discharge new required assumptions"
+        ]
+      }
+    },
+    {
       "artifactId": "architecture-policy",
       "artifactName": "Architecture policy artifact",
       "schemaVersionName": "architecture-policy-v0",
