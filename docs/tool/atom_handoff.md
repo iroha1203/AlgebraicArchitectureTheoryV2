@@ -3,15 +3,17 @@
 This checklist records the current tooling boundary for the flow:
 
 ```text
-source artifacts -> ArchMap / ArchSig observation -> AtomPresentation -> AAT package -> SFT boundary
+source artifacts -> ArchMap Atom observations -> LawPolicy -> ArchSig analysis -> AtomPresentation -> AAT package -> SFT boundary
 ```
 
 ## ArchMap / ArchSig Surface
 
-- `archmap-v0` `atomCandidates` are source-grounded observation candidates.
-- `moleculeCandidates` may group atom candidates into roles such as responsibility.
-- `obstructionCircuitCandidates` are law-relative witness candidates, not primitive atoms.
+- `archmap-observation-map-v0` `atomObservations` are source-grounded observations.
+- `moleculeObservations` may group atom observations into roles such as responsibility.
+- `semanticObservations` record source-grounded semantic readings without promoting them to theorem facts.
 - `observationGaps` remain explicit unknown, private, unavailable, unsupported, or dynamic blind-spot boundaries.
+- `concernHints` are review cues. They are not obstruction circuits and not law violations.
+- Law-relative obstruction circuits are computed downstream by ArchSig from ArchMap plus a selected LawPolicy.
 - Validation may report a Lean-facing `AtomPresentation` promotion boundary.
 - Validation does not certify universal `ArchitectureAtom` truth, Lean theorem discharge, extractor completeness, architecture lawfulness, zero curvature, or SFT forecast correctness.
 
@@ -26,14 +28,13 @@ source artifacts -> ArchMap / ArchSig observation -> AtomPresentation -> AAT pac
 
 - `ValidatedFieldAtomPresentation` and `AtomicSFTPresentationBridgePackage` exclude raw candidates from SFT theorem input.
 - `AtomTraceForecastBoundary` attaches `AtomTrace` and law-relative `CircuitTrace` to selected `ForecastCone` membership.
-- FieldSig may consume ArchMap atom / molecule / circuit / gap refs as observation refs.
+- FieldSig may consume ArchMap atom / molecule / concern / gap refs as observation refs.
 - FieldSig validation does not prove forecast correctness, probability, calibration, global future safety, or Lean theorem discharge.
 
 ## Current Fixture Check
 
-The minimal ArchMap fixtures used by ArchSig and FieldSig keep the same `archmap-v0` handoff shape:
+The minimal ArchMap fixture used by ArchSig now keeps the `archmap-observation-map-v0` handoff shape:
 
 - `tools/archsig/tests/fixtures/minimal/archmap.json`
-- `tools/fieldsig/tests/fixtures/minimal/archmap.json`
 
-Both fixtures distinguish `atomCandidates`, `moleculeCandidates`, `obstructionCircuitCandidates`, and `observationGaps`, and carry `nonConclusions` that prevent raw candidate / validation evidence from becoming theorem claims.
+The fixture distinguishes `atomObservations`, `moleculeObservations`, `semanticObservations`, `observationGaps`, `projectionInfo`, and `concernHints`, and carries `nonConclusions` that prevent raw observation / validation evidence from becoming theorem claims. FieldSig fixture handoff is updated in the dedicated FieldSig issue.

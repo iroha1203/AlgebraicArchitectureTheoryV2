@@ -12,7 +12,7 @@ pub const SIGNATURE_SNAPSHOT_STORE_SCHEMA_VERSION: &str = "signature-snapshot-st
 pub const SIGNATURE_DIFF_REPORT_SCHEMA_VERSION: &str = "signature-diff-report-v0";
 pub const AIR_SCHEMA_VERSION: &str = "aat-air-v0";
 pub const AIR_VALIDATION_REPORT_SCHEMA_VERSION: &str = "aat-air-validation-report-v0";
-pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-v0";
+pub const ARCHMAP_SCHEMA_VERSION: &str = "archmap-observation-map-v0";
 pub const ARCHMAP_SOURCE_INVENTORY_SCHEMA_VERSION: &str = "archmap-source-inventory-v0";
 pub const ARCHMAP_VALIDATION_REPORT_SCHEMA_VERSION: &str = "archmap-validation-report-v0";
 pub const FEATURE_EXTENSION_REPORT_SCHEMA_VERSION: &str = "feature-extension-report-v0";
@@ -1162,22 +1162,35 @@ pub struct ArchMapDocumentV0 {
     pub source_inventory_ref: Option<ArchMapArtifactRef>,
     pub generation_boundary: ArchMapGenerationBoundary,
     pub source_universe: ArchMapSourceUniverse,
-    pub target_universe: ArchMapTargetUniverse,
     #[serde(default)]
-    pub homomorphism: ArchMapHomomorphismV0,
+    pub provenance: ArchMapProvenanceV0,
     #[serde(default)]
-    pub atom_candidates: Vec<ArchMapAtomCandidateV0>,
+    pub atom_observations: Vec<ArchMapAtomObservationV0>,
     #[serde(default)]
-    pub molecule_candidates: Vec<ArchMapMoleculeCandidateV0>,
+    pub molecule_observations: Vec<ArchMapMoleculeObservationV0>,
     #[serde(default)]
-    pub obstruction_circuit_candidates: Vec<ArchMapObstructionCircuitCandidateV0>,
+    pub semantic_observations: Vec<ArchMapSemanticObservationV0>,
     #[serde(default)]
     pub observation_gaps: Vec<ArchMapObservationGapV0>,
     #[serde(default)]
+    pub projection_info: Vec<ArchMapProjectionInfoV0>,
+    #[serde(default)]
+    pub concern_hints: Vec<ArchMapConcernHintV0>,
+    #[serde(default, skip_serializing_if = "ArchMapTargetUniverse::is_empty")]
+    pub target_universe: ArchMapTargetUniverse,
+    #[serde(default, skip_serializing_if = "ArchMapHomomorphismV0::is_empty")]
+    pub homomorphism: ArchMapHomomorphismV0,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub atom_candidates: Vec<ArchMapAtomCandidateV0>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub molecule_candidates: Vec<ArchMapMoleculeCandidateV0>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub obstruction_circuit_candidates: Vec<ArchMapObstructionCircuitCandidateV0>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub map_items: Vec<ArchMapMapItem>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "ArchMapCoverage::is_empty")]
     pub coverage: ArchMapCoverage,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub conflicts: Vec<ArchMapConflict>,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
@@ -1212,6 +1225,22 @@ pub struct ArchMapHomomorphismV0 {
     pub unsupported_boundary: Vec<String>,
     #[serde(default)]
     pub non_conclusions: Vec<String>,
+}
+
+impl ArchMapHomomorphismV0 {
+    pub fn is_empty(&self) -> bool {
+        self.reading.is_empty()
+            && self.object_map.is_empty()
+            && self.relation_map.is_empty()
+            && self.law_map.is_empty()
+            && self.obstruction_map.is_empty()
+            && self.signature_axis_map.is_empty()
+            && self.preservation_claims.is_empty()
+            && self.forgetful_boundary.is_empty()
+            && self.unmeasured_boundary.is_empty()
+            && self.unsupported_boundary.is_empty()
+            && self.non_conclusions.is_empty()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -1352,6 +1381,12 @@ pub struct ArchMapTargetUniverse {
     pub selected_layers: Vec<String>,
 }
 
+impl ArchMapTargetUniverse {
+    pub fn is_empty(&self) -> bool {
+        self.representation.is_empty() && self.selected_layers.is_empty()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchMapSourceRef {
@@ -1366,6 +1401,112 @@ pub struct ArchMapSourceRef {
     pub line: Option<usize>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub section: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapProvenanceV0 {
+    pub observer: String,
+    pub observation_method: String,
+    pub source_root: String,
+    pub observation_boundary: String,
+    #[serde(default)]
+    pub reviewed_refs: Vec<ArchMapSourceRef>,
+    #[serde(default)]
+    pub excluded_readings: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapAtomObservationV0 {
+    pub atom_observation_id: String,
+    pub atom_family: String,
+    pub predicate: String,
+    pub subject_ref: String,
+    #[serde(default)]
+    pub object_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub observation_status: String,
+    pub evidence_boundary: String,
+    pub confidence: String,
+    #[serde(default)]
+    pub uncertainty: Vec<String>,
+    #[serde(default)]
+    pub projection_refs: Vec<String>,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapMoleculeObservationV0 {
+    pub molecule_observation_id: String,
+    pub molecule_family: String,
+    pub role_name: String,
+    #[serde(default)]
+    pub atom_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub observation_status: String,
+    pub evidence_boundary: String,
+    pub confidence: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapSemanticObservationV0 {
+    pub semantic_observation_id: String,
+    pub semantic_family: String,
+    pub subject_ref: String,
+    pub predicate: String,
+    #[serde(default)]
+    pub atom_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub molecule_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub observation_status: String,
+    pub evidence_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapProjectionInfoV0 {
+    pub projection_id: String,
+    pub projection_family: String,
+    pub source_observation_ref: String,
+    pub target_surface: String,
+    pub reading: String,
+    pub projection_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchMapConcernHintV0 {
+    pub concern_hint_id: String,
+    pub concern_family: String,
+    pub subject_ref: String,
+    #[serde(default)]
+    pub atom_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub molecule_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub semantic_observation_refs: Vec<String>,
+    #[serde(default)]
+    pub source_refs: Vec<ArchMapSourceRef>,
+    pub evidence_boundary: String,
+    pub analysis_boundary: String,
+    #[serde(default)]
+    pub non_conclusions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -1517,6 +1658,15 @@ pub struct ArchMapCoverage {
     pub unsupported_constructs: Vec<String>,
 }
 
+impl ArchMapCoverage {
+    pub fn is_empty(&self) -> bool {
+        self.measured_layers.is_empty()
+            && self.unmeasured_layers.is_empty()
+            && self.assumed_layers.is_empty()
+            && self.unsupported_constructs.is_empty()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchMapConflict {
@@ -1548,6 +1698,8 @@ pub struct ArchMapValidationReportV0 {
     pub atomic_observation_checks: Vec<ValidationCheck>,
     #[serde(default)]
     pub atomic_observation_summary: ArchMapAtomicObservationSummary,
+    #[serde(default)]
+    pub responsibility_checks: Vec<ValidationCheck>,
     pub summary: ArchMapValidationSummary,
     pub non_conclusions: Vec<String>,
 }
@@ -1555,14 +1707,14 @@ pub struct ArchMapValidationReportV0 {
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ArchMapAtomicObservationSummary {
-    pub atom_candidate_count: usize,
+    pub atom_observation_count: usize,
     pub observed_atom_count: usize,
-    pub promotable_atom_candidate_count: usize,
-    pub rejected_or_uncertain_candidate_count: usize,
-    pub molecule_candidate_count: usize,
+    pub promotable_atom_observation_count: usize,
+    pub rejected_or_uncertain_observation_count: usize,
+    pub molecule_observation_count: usize,
     pub observed_molecule_count: usize,
-    pub obstruction_circuit_candidate_count: usize,
-    pub observed_circuit_count: usize,
+    pub semantic_observation_count: usize,
+    pub concern_hint_count: usize,
     pub observation_gap_count: usize,
     pub lean_presentation_candidate_count: usize,
     pub sft_handoff_ref_count: usize,

@@ -132,16 +132,14 @@ fn cli_runs_archmap_primary_workflow() {
     );
     assert_eq!(
         validation_json["homomorphismDiagnostics"]["reading"].as_str(),
-        Some(
-            "bounded AAT homomorphism from selected source architecture evidence to AAT observable signature, obstruction, and boundary space"
-        )
+        Some("derived bounded projection from source-grounded Atom observations")
     );
     assert!(
         matches!(
             validation_json["homomorphismDiagnostics"]["classification"].as_str(),
-            Some("partial" | "nonHomomorphic")
+            Some("lossy" | "partial" | "nonHomomorphic")
         ),
-        "ArchMap validation must classify the bounded homomorphism with explicit boundary state"
+        "ArchMap validation must classify the derived projection with explicit boundary state"
     );
     let family_names = validation_json["homomorphismDiagnostics"]["mapFamilySummaries"]
         .as_array()
@@ -163,16 +161,16 @@ fn cli_runs_archmap_primary_workflow() {
         "ArchMap validation should complete without failing"
     );
     assert_eq!(
-        validation_json["atomicObservationSummary"]["atomCandidateCount"], 4,
-        "ArchMap validation must surface observed atom candidates"
+        validation_json["atomicObservationSummary"]["atomObservationCount"], 4,
+        "ArchMap validation must surface observed atoms"
     );
     assert_eq!(
-        validation_json["atomicObservationSummary"]["promotableAtomCandidateCount"], 4,
-        "ArchMap validation must count atom candidates promotable to Lean-facing presentation"
+        validation_json["atomicObservationSummary"]["promotableAtomObservationCount"], 4,
+        "ArchMap validation must count atom observations promotable to Lean-facing presentation"
     );
     assert_eq!(
         validation_json["atomicObservationSummary"]["leanPresentationCandidateCount"], 6,
-        "ArchMap validation must retain atom, molecule, and circuit presentation candidates"
+        "ArchMap validation must retain atom, molecule, and semantic presentation observations"
     );
     assert!(
         validation_json["atomicObservationSummary"]["promotionBoundary"]
@@ -186,8 +184,8 @@ fn cli_runs_archmap_primary_workflow() {
             .as_array()
             .expect("atomic observation checks are array")
             .iter()
-            .any(|check| check["id"] == "archmap-obstruction-circuits-are-not-atoms"),
-        "validation must keep obstruction circuits separate from primitive atoms"
+            .any(|check| check["id"] == "archmap-concern-hints-are-not-obstruction-circuits"),
+        "validation must keep concern hints separate from obstruction circuits"
     );
     assert!(
         validation_json["nonConclusions"]
@@ -226,10 +224,15 @@ fn cli_runs_archmap_primary_workflow() {
         );
     }
     assert!(
-        feature_json["homomorphismSummary"]["unmeasuredBoundaries"]
+        validation_json["responsibilityChecks"]
             .as_array()
-            .is_some_and(|items| !items.is_empty()),
-        "homomorphism summary must keep unmeasured boundaries"
+            .expect("responsibility checks are array")
+            .iter()
+            .any(
+                |check| check["id"] == "archmap-responsibility-non-conclusion-boundary"
+                    && check["result"] == "pass"
+            ),
+        "ArchMap validation must keep lawfulness and obstruction non-conclusions explicit"
     );
     let bundle_json = read_json(&out_dir.join("aat-observable-bundle.json"));
     assert_eq!(bundle_json["schemaVersion"], "aat-observable-bundle-v0");
