@@ -74,3 +74,19 @@ The builder:
 - preserves observation gaps as flatness blockers, not measured zero
 - emits repair operation candidates with preserved invariants, preconditions,
   transfer risks, evidence boundaries, and non-conclusions
+
+## Downstream Review Artifacts
+
+`llm-native-workflow` treats the analysis packet as the source artifact for
+downstream review surfaces:
+
+- AIR projection
+- AIR validation
+- theorem precondition check
+- Feature Extension Report
+- AAT Observable Bundle
+
+These projections carry the `ArchMap + LawPolicy -> ArchSig analysis` boundary.
+They do not make the legacy ArchMap projection rule the source of truth, and
+they do not promote analysis-packet validation into theorem proof, global
+architecture lawfulness, extractor completeness, or automatic repair safety.

@@ -20,10 +20,21 @@ The command emits:
 - `archsig-analysis-packet.json`
 - `archsig-analysis-validation.json`
 - `llm-interpretation-packet.json`
+- `air.json`
+- `air-validation.json`
+- `theorem-precondition-check.json`
+- `feature-report.json`
+- `aat-observable-bundle.json`
+- `aat-observable-bundle-validation.json`
 
 `llm-interpretation-packet.json` is the same structured packet written for LLM
 reading. It is not a natural-language judgement, not a Lean proof, and not an
 automatic repair instruction.
+
+The downstream AIR, theorem-check, Feature Report, and AAT Observable Bundle
+are projected from `archsig-analysis-packet-v0`. They retain the
+`ArchMap + LawPolicy -> ArchSig analysis` boundary and do not use the legacy
+legacy ArchMap projection rule as their source of truth.
 
 Equivalent step-by-step commands:
 

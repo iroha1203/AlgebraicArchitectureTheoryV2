@@ -1,10 +1,10 @@
 {
   "schemaVersion": "aat-observable-bundle-v0",
   "bundleId": "fixture-aat-observable-bundle-v0",
-  "architectureId": "coupon-service",
+  "architectureId": "llm-native-archsig-fixture",
   "sourceRefs": [
     {
-      "sourceRefId": "source:air:coupon",
+      "sourceRefId": "source:air:analysis-packet",
       "artifactKind": "air",
       "schemaVersion": "aat-air-v0",
       "path": "tools/archsig/tests/fixtures/air/good_extension.json",
@@ -20,22 +20,25 @@
       ]
     },
     {
-      "sourceRefId": "source:archmap:coupon",
+      "sourceRefId": "source:archsig-analysis-packet:fixture",
       "artifactKind": "archmap",
-      "schemaVersion": "archmap-v0",
+      "schemaVersion": "archmap-observation-map-v0",
       "path": "tools/archsig/tests/fixtures/minimal/archmap.json",
       "retainedFields": [
         "sourceUniverse",
-        "mapItems",
-        "coverage",
-        "conflicts"
+        "atomObservations",
+        "moleculeObservations",
+        "semanticObservations",
+        "observationGaps",
+        "projectionInfo",
+        "concernHints"
       ],
       "nonConclusions": [
         "source ref does not prove artifact completeness"
       ]
     },
     {
-      "sourceRefId": "source:feature-report:coupon",
+      "sourceRefId": "source:feature-report:analysis-packet",
       "artifactKind": "feature-extension-report",
       "schemaVersion": "feature-extension-report-v0",
       "path": "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
@@ -50,10 +53,10 @@
     }
   ],
   "selectedUniverse": {
-    "universeId": "universe:coupon-selected",
+    "universeId": "universe:llm-native-selected",
     "includedRefs": [
-      "component:checkout",
-      "component:coupon"
+      "component:archmap-observation",
+      "component:archsig-analysis"
     ],
     "excludedRefs": [
       "component:billing-private"
@@ -85,8 +88,8 @@
       "conceptId": "concept:architecture-object",
       "aatConcept": "ArchitectureObject / ComponentUniverse",
       "artifactRefs": [
-        "source:archmap:coupon",
-        "source:air:coupon"
+        "source:archsig-analysis-packet:fixture",
+        "source:air:analysis-packet"
       ],
       "reportRefs": [
         "coverage-boundary:dynamic-dispatch"
@@ -107,7 +110,7 @@
       "conceptId": "concept:obstruction-witness",
       "aatConcept": "ObstructionWitness",
       "artifactRefs": [
-        "source:feature-report:coupon"
+        "source:feature-report:analysis-packet"
       ],
       "reportRefs": [
         "witness:projection-mismatch",
@@ -172,7 +175,7 @@
       "conceptId": "concept:projection-observation",
       "aatConcept": "Projection / Observation / LSP / DIP",
       "artifactRefs": [
-        "source:air:coupon"
+        "source:air:analysis-packet"
       ],
       "reportRefs": [
         "evidence:projection-abstraction"
@@ -193,7 +196,7 @@
       "conceptId": "concept:feature-extension",
       "aatConcept": "FeatureExtension / ExtensionObstruction",
       "artifactRefs": [
-        "source:feature-report:coupon"
+        "source:feature-report:analysis-packet"
       ],
       "reportRefs": [
         "feature-evidence:coupon-extension"
@@ -214,7 +217,7 @@
       "conceptId": "concept:semantic-diagram",
       "aatConcept": "Path / Homotopy / DiagramFiller / NonFillability",
       "artifactRefs": [
-        "source:air:coupon"
+        "source:air:analysis-packet"
       ],
       "reportRefs": [
         "semantic:evidence:coupon-noncommutation"
@@ -235,7 +238,7 @@
       "conceptId": "concept:state-effect",
       "aatConcept": "StateTransition / EffectBoundary",
       "artifactRefs": [
-        "source:air:coupon"
+        "source:air:analysis-packet"
       ],
       "reportRefs": [
         "state-effect:evidence:coupon-replay"
@@ -256,7 +259,7 @@
       "conceptId": "concept:repair-synthesis",
       "aatConcept": "Repair / Synthesis / ComplexityTransfer",
       "artifactRefs": [
-        "source:feature-report:coupon"
+        "source:feature-report:analysis-packet"
       ],
       "reportRefs": [
         "repair:evidence:coupon-boundary"
@@ -319,7 +322,7 @@
         "concept:projection-observation"
       ],
       "artifactRefs": [
-        "source:air:coupon"
+        "source:air:analysis-packet"
       ],
       "measurementStatus": "measuredNonzero",
       "value": 1,
@@ -378,7 +381,7 @@
         "law:lsp-observation-preservation"
       ],
       "sourceRefs": [
-        "source:air:coupon"
+        "source:air:analysis-packet"
       ],
       "measurementStatus": "measuredNonzero",
       "severity": "high",
@@ -394,7 +397,7 @@
         "law:semantic-commutation"
       ],
       "sourceRefs": [
-        "source:air:coupon"
+        "source:air:analysis-packet"
       ],
       "measurementStatus": "measuredNonzero",
       "severity": "medium",
@@ -410,7 +413,7 @@
         "law:effect-boundary"
       ],
       "sourceRefs": [
-        "source:air:coupon"
+        "source:air:analysis-packet"
       ],
       "measurementStatus": "partiallyMeasured",
       "severity": "medium",
@@ -426,7 +429,7 @@
         "law:repair-selected-axis"
       ],
       "sourceRefs": [
-        "source:feature-report:coupon"
+        "source:feature-report:analysis-packet"
       ],
       "measurementStatus": "reviewNeeded",
       "severity": "medium",
@@ -468,7 +471,7 @@
     {
       "evidenceRef": "evidence:projection-abstraction",
       "evidenceKind": "projectionMismatch",
-      "sourceRef": "component:coupon-adapter",
+      "sourceRef": "component:archsig-analysis-adapter",
       "targetRef": "interface:discount-policy",
       "localContractBoundary": "LSP cue over selected interface methods",
       "globalLayeringBoundary": "does not conclude global Clean Architecture compliance",
@@ -491,7 +494,7 @@
         "residualCoverageGap"
       ],
       "sourceRefs": [
-        "source:feature-report:coupon"
+        "source:feature-report:analysis-packet"
       ],
       "witnessRefs": [
         "witness:projection-mismatch"
@@ -718,13 +721,13 @@
   "llmReviewSurface": {
     "skillRef": "tools/archsig/skills/aat-reviewer/SKILL.md",
     "inputArtifactRefs": [
-      "source:air:coupon",
-      "source:feature-report:coupon",
+      "source:air:analysis-packet",
+      "source:feature-report:analysis-packet",
       "bundle:fixture-aat-observable-bundle-v0"
     ],
     "reviewQuestions": [
       "Which invariant is preserved, broken, unmeasured, or out of scope?",
-      "Which obstruction witnesses are measured, and which witness families remain unmeasured?",
+      "Which obstruction witnesses are typed as obstruction circuits, and which circuit families remain unmeasured?",
       "Which operation family is plausible, and what must stay a human judgment?",
       "Which theorem boundary blocks a formal claim?",
       "What next evidence would change the review decision?"

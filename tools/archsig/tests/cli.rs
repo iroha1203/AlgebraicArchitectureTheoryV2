@@ -21,7 +21,7 @@ fn cli_help_excludes_fieldsig_owned_commands() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
         stdout.contains("archmap-workflow"),
-        "ArchSig help must expose the ArchMap-primary workflow\n{stdout}"
+        "ArchSig help must expose the bounded ArchMap projection workflow\n{stdout}"
     );
     assert!(
         stdout.contains("adapter-scan"),
@@ -53,8 +53,8 @@ fn cli_rejects_implicit_scan_default() {
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("ArchSig is ArchMap-primary"),
-        "implicit scan should be rejected with an ArchMap-primary boundary\n{stderr}"
+        stderr.contains("ArchSig is LLM-native"),
+        "implicit scan should be rejected with an LLM-native boundary\n{stderr}"
     );
 }
 
@@ -320,6 +320,65 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet);
+
+    let air_json = read_json(&out_dir.join("air.json"));
+    assert_eq!(air_json["schemaVersion"], "aat-air-v0");
+    assert_eq!(
+        air_json["feature"]["source"].as_str(),
+        Some("manual"),
+        "analysis-packet AIR remains a bounded manual review projection"
+    );
+    assert!(
+        air_json["artifacts"]
+            .as_array()
+            .expect("AIR artifacts are array")
+            .iter()
+            .any(|artifact| artifact["kind"] == "archsig_analysis_packet"),
+        "AIR must be projected from the ArchSig analysis packet"
+    );
+    assert!(
+        !serde_json::to_string(&air_json)
+            .expect("AIR serializes")
+            .contains("archmap-v0-projection"),
+        "LLM-native downstream AIR must not use the legacy ArchMap projection rule"
+    );
+    let air_validation = read_json(&out_dir.join("air-validation.json"));
+    assert_eq!(air_validation["summary"]["result"].as_str(), Some("pass"));
+    let theorem_check = read_json(&out_dir.join("theorem-precondition-check.json"));
+    assert_eq!(
+        theorem_check["schemaVersion"],
+        "theorem-precondition-check-report-v0"
+    );
+    let feature_report = read_json(&out_dir.join("feature-report.json"));
+    assert_eq!(
+        feature_report["schemaVersion"],
+        "feature-extension-report-v0"
+    );
+    assert_eq!(
+        feature_report["homomorphismSummary"]["domain"].as_str(),
+        Some("archmap-observation-map-v0"),
+        "Feature Report must read the new ArchMap observation boundary"
+    );
+    assert_eq!(
+        feature_report["homomorphismSummary"]["codomain"].as_str(),
+        Some("archsig-analysis-packet-v0"),
+        "Feature Report must carry ArchSig analysis packet state forward"
+    );
+    let bundle = read_json(&out_dir.join("aat-observable-bundle.json"));
+    assert_eq!(bundle["schemaVersion"], "aat-observable-bundle-v0");
+    let source_ref_ids = bundle["sourceRefs"]
+        .as_array()
+        .expect("source refs are array")
+        .iter()
+        .map(|entry| entry["sourceRefId"].as_str().expect("source ref id"))
+        .collect::<Vec<_>>();
+    assert!(source_ref_ids.contains(&"source:archsig-analysis-packet:primary"));
+    assert!(source_ref_ids.contains(&"source:air:analysis-packet"));
+    let bundle_validation = read_json(&out_dir.join("aat-observable-bundle-validation.json"));
+    assert_eq!(
+        bundle_validation["summary"]["result"].as_str(),
+        Some("pass")
+    );
 }
 
 #[test]

@@ -241,7 +241,12 @@ fn feature_report_homomorphism_summary(
     let relation_entries = document
         .relations
         .iter()
-        .filter(|relation| relation.extraction_rule.as_deref() == Some("archmap-v0-projection"))
+        .filter(|relation| {
+            matches!(
+                relation.extraction_rule.as_deref(),
+                Some("archmap-observation-map-to-air-v0") | Some("archmap-v0-projection")
+            )
+        })
         .count();
     let object_entries = document
         .components

@@ -5,7 +5,7 @@
     "artifactId": "artifact:archmap",
     "artifactKind": "archmap",
     "path": "archmap.json",
-    "schemaVersion": "archmap-v0",
+    "schemaVersion": "archmap-observation-map-v0",
     "selectedMapItemIds": [
       "object-route-users"
     ],
