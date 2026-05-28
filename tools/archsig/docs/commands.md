@@ -1,10 +1,52 @@
 # ArchSig Commands
 
-`archsig` is ArchMap-homomorphism-primary with an atomic observation surface. The normal review path starts from supplied `archmap-v0` evidence and reads it as a bounded AAT homomorphism from selected source architecture evidence into AAT object / relation / law / obstruction / signature-axis space, while also preserving atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps. Lean / Python import-graph scanning is available only through the explicit `adapter-scan` command as bounded evidence.
+`archsig` is the LLM-native ArchMap / LawPolicy / ArchSig tool surface. The normal review path starts from supplied `archmap-observation-map-v0` evidence, validates a selected `law-policy-v0`, and builds an `archsig-analysis-packet-v0` containing law-relative molecule readings, obstruction circuits, signature axes, flatness reading, repair operation candidates, evidence boundaries, LLM interpretation notes, and non-conclusions. Lean / Python import-graph scanning is available only through the explicit `adapter-scan` command as bounded evidence.
 
 FieldSig owns SFT forecast, IntentMap, workflow evidence, operational feedback, dynamics, governance, and calibration commands under `tools/fieldsig`.
 
-## ArchMap Homomorphism Workflow
+## LLM-Native Workflow
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out-dir .archsig/llm-native
+```
+
+The command emits:
+
+- `archmap-validation.json`
+- `law-policy-validation.json`
+- `archsig-analysis-packet.json`
+- `archsig-analysis-validation.json`
+- `llm-interpretation-packet.json`
+
+`llm-interpretation-packet.json` is the same structured packet written for LLM
+reading. It is not a natural-language judgement, not a Lean proof, and not an
+automatic repair instruction.
+
+Equivalent step-by-step commands:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
+  --input tools/archsig/tests/fixtures/minimal/archmap.json \
+  --out .archsig/llm-native/archmap-validation.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
+  --input tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out .archsig/llm-native/law-policy-validation.json
+
+cargo run --manifest-path tools/archsig/Cargo.toml -- archsig-analysis \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out .archsig/llm-native/archsig-analysis-packet.json \
+  --validation-out .archsig/llm-native/archsig-analysis-validation.json \
+  --llm-interpretation-out .archsig/llm-native/llm-interpretation-packet.json
+```
+
+`law-policy --fixture` emits the canonical minimal `law-policy-v0` fixture.
+
+## Legacy ArchMap Projection Workflow
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
@@ -12,7 +54,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
   --out-dir .archsig/archmap-primary
 ```
 
-The command emits ArchMap validation, AIR, AIR validation, theorem precondition check, Feature Extension Report, AAT Observable Bundle, and bundle validation artifacts. The ArchMap validation report includes `homomorphismDiagnostics`, `atomicObservationChecks`, and `atomicObservationSummary`; `atomicObservationSummary` also records the Lean-facing AtomPresentation promotion boundary, promotable atom candidate count, rejected / uncertain candidate count, and presentation candidate count. The Feature Extension Report carries the homomorphism family surface forward in `homomorphismSummary`, including object, relation, law, obstruction, and signature-axis families. The AAT Observable Bundle derives concept mapping and theorem-boundary review status from the validation checklist, theorem precondition report, and Feature Extension Report. These surfaces answer the user-facing AAT questions: what structure the ArchMap preserves, what it forgets, where it is partial or non-homomorphic, which atom candidates were observed, which responsibility-like molecules are only composed roles, which obstruction circuits are present, which observation gaps remain, which axes are unmeasured, which formal-promotion guardrails remain blocked, and which next evidence should be reviewed.
+The legacy command still emits ArchMap validation, AIR, AIR validation, theorem precondition check, Feature Extension Report, AAT Observable Bundle, and bundle validation artifacts for older review surfaces. New LLM-native work should prefer `llm-native-workflow` and `archsig-analysis`.
 
 The bundle is assembled from the input ArchMap and generated workflow reports, so static fixture architecture ids, source refs, witnesses, and selected universes are not carried into workflow output. Optional Sig0 adapter evidence can be supplied for static / semantic conflict checks:
 
