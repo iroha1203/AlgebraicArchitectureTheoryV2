@@ -319,6 +319,66 @@ fn read_json(path: &Path) -> Value {
 }
 
 #[test]
+fn fieldsig_locks_llm_native_archsig_handoff_fixtures() {
+    let root = fixture_root().join("llm_native_handoff");
+    let archmap = read_json(&root.join("archmap.json"));
+    assert_eq!(archmap["schemaVersion"], "archmap-observation-map-v0");
+    assert!(
+        archmap["atomObservations"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "handoff ArchMap must retain source-derived atom observations"
+    );
+    assert!(
+        archmap["concernHints"][0]["analysisBoundary"]
+            .as_str()
+            .expect("concern hint has analysis boundary")
+            .contains("not an obstruction circuit"),
+        "concern hints must not be promoted to obstruction circuits in ArchMap"
+    );
+    assert_eq!(
+        archmap["observationGaps"][0]["evidenceStatus"], "unavailable",
+        "observation gaps remain unavailable evidence, not measured zero"
+    );
+
+    let law_policy = read_json(&root.join("law_policy.json"));
+    let layer_policy = read_json(&root.join("law_policy_layer_only.json"));
+    assert_eq!(law_policy["schemaVersion"], "law-policy-v0");
+    assert_eq!(layer_policy["schemaVersion"], "law-policy-v0");
+    assert_ne!(
+        law_policy["lawPolicyId"], layer_policy["lawPolicyId"],
+        "same ArchMap must be reanalyzable under distinct LawPolicy artifacts"
+    );
+
+    let full_packet = read_json(&root.join("archsig_analysis_packet.json"));
+    let layer_packet = read_json(&root.join("archsig_analysis_packet_layer_only.json"));
+    assert_eq!(full_packet["schemaVersion"], "archsig-analysis-packet-v0");
+    assert_eq!(layer_packet["schemaVersion"], "archsig-analysis-packet-v0");
+    assert_eq!(
+        full_packet["selectedLawPolicyRef"]["artifactId"],
+        law_policy["lawPolicyId"]
+    );
+    assert_eq!(
+        layer_packet["selectedLawPolicyRef"]["artifactId"],
+        layer_policy["lawPolicyId"]
+    );
+    assert!(
+        full_packet["obstructionCircuits"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "full LawPolicy fixture should produce obstruction circuit observations"
+    );
+    assert_eq!(
+        layer_packet["obstructionCircuits"]
+            .as_array()
+            .expect("obstruction circuits are an array")
+            .len(),
+        0,
+        "layer-only LawPolicy fixture should produce a distinct no-obstruction packet"
+    );
+}
+
+#[test]
 fn cli_validates_archmap_fixture_and_guardrails() {
     let out_dir = temp_dir("archmap-validation");
     let input = fixture_root().join("archmap.json");
