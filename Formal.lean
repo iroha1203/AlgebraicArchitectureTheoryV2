@@ -110,6 +110,7 @@ import Formal.Arch.Examples.AATMoleculeLawExamples
 import Formal.Arch.Examples.AATZeroCurvatureExamples
 import Formal.Arch.Examples.AATOperationRepairSynthesisExamples
 import Formal.Arch.Examples.ArchMapObservationExamples
+import Formal.Arch.Examples.AATCoreSmokeExamples
 import Formal.Arch.Examples.AtomCoreAATExamples
 import Formal.Arch.Examples.AtomZeroCurvatureExamples
 import Formal.Arch.Examples.AtomOperationExamples
