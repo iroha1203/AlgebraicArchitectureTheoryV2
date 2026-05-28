@@ -857,13 +857,7 @@ reachability、support safety、`FieldUpdate`、`ConsequenceEnvelope`、AAT / Ar
 counterexample package の代表 declaration と non-conclusion boundary を束ねる metadata であり、
 calibration、extractor completeness、global future safety を theorem claim に昇格しない。
 
-Atom foundation との接続では、`AtomTrace` が validated atom presentation 間の変化を、
-`CircuitTrace` が law-relative obstruction-circuit delta を保持する。
-`AtomTraceForecastBoundary` はこれらを selected `ForecastCone` membership と合わせて
-読む bridge であり、horizon bound と governed-or-typed-boundary-failure branch を
-記録する。これは SFT forecast boundary の入力 surface であって、確率的予測、
-calibration、global future safety の theorem ではない。
-new Atom core では、SFT は `AATCoreLocalAlgebraForSFT` と
+Atom foundation との接続では、SFT は `AATCoreLocalAlgebraForSFT` と
 `AATCoreTransition` を通じて `AATCore system` の transition を読む。
 `AATCorePremisedConsequenceEnvelope` と `FieldSigAATCoreTransitionAnalysis` は
 この transition を envelope / FieldSig analysis input として保持するが、AAT を
