@@ -6,7 +6,7 @@ AAT の最小単位は Atom である。
 
 Atom は、ソフトウェアアーキテクチャにおいてそれ以上分解せずに扱う型付き事実である。
 Atom は component、relation、capability、state、effect、authority / trust、
-contract、semantic reading、runtime interaction などの形を取りうる。
+contract、semantic Atom、runtime interaction などの形を取りうる。
 
 Atom の集合を `At` と書く。各 Atom `a : At` には次が付随する。
 
@@ -67,7 +67,7 @@ component(c)
 component Atom は、ある architecture unit が存在することを表す。ここでいう unit は、
 module、service、class、package、process、table、queue、adapter、port などでありうる。
 component Atom は graph representation の vertex を生成するが、vertex だけが component の
-全内容ではない。同じ component は state、capability、contract、effect、semantic reading を
+全内容ではない。同じ component は state、capability、contract、effect、semantic Atom を
 持つことで、より豊かな architecture object になる。
 
 component Atom が支える典型的な問いは次である。
@@ -252,6 +252,20 @@ semantic(x, identifies y)
 semantic(v, satisfies q)
 ```
 
+semantic Atom は単一所属を要求しない。同じ subject が複数の semantic Atom を同時に
+担うことがある。これは意味の非一意性ではなく、semantic fact の重なりである。
+
+たとえば同じ email sending capability が two-factor authentication と newsletter delivery
+の両方に使われるなら、canonical Atom family は両方の semantic Atom を含む。
+
+```text
+semantic(sendEmail, twoFactorAuthentication)
+semantic(sendEmail, newsletterDelivery)
+```
+
+観測がこれを `notification` のような粗い意味へ潰す場合、それは semantic Atom の
+曖昧さではなく、coarse semantic observation である。
+
 semantic Atom は、static flatness と semantic flatness を分ける。dependency graph が整っていても、
 semantic Atom が要求する diagram が可換でなければ obstruction が残る。
 
@@ -342,8 +356,8 @@ module C
     return q(y)
 ```
 
-Atom vocabulary、型の読み、意味注釈の読みが固定されているなら、この断片から本質的に
-次の Atom family が決まる。
+Atom vocabulary に従ってこの source を読むと、この断片から本質的に次の Atom family が
+決まる。意味注釈も source に現れる primitive fact として Atom family に含まれる。
 
 ```text
 component(C)
@@ -418,9 +432,11 @@ semantic(q(y), denotes result-of-m)
 は、operation `m` の入出力上の約束と、その結果値に与える意味を表す。
 ここから substitution、projection、semantic consistency の law が読める。
 
-Atom family そのものは、同じ source、同じ vocabulary、同じ resolution の下では一意に読む。
-粗い読みと細かい読みは、異なる Atom truth ではなく、同じ canonical Atom family に対する
-projection または truncation である。
+Atom family そのものは、同じ source と同じ Atom vocabulary の下では一意に読む。
+semantic Atom も例外ではない。semantic reading は Atom の存在条件ではなく、
+canonical Atom family に含まれる semantic Atom を読むための後段の解釈である。
+resolution も Atom の存在条件ではない。粗い読みと細かい読みは、異なる Atom truth
+ではなく、同じ canonical Atom family に対する projection または truncation である。
 
 ```text
 canonical:
@@ -518,17 +534,19 @@ F, G subset At
 
 ### 公理 A8 Essential Uniqueness
 
-source、Atom vocabulary、resolution、semantic reading が固定されているとき、
-その source が定める canonical Atom family は一意である。
+source と Atom vocabulary が固定されているとき、その source が定める canonical Atom
+family は一意である。
 
 ```text
-Atomize_V,rho(S) = F
-Atomize_V,rho(S) = G
+Atomize_V(S) = F
+Atomize_V(S) = G
 ----------------------
 F = G
 ```
 
-異なる観測精度は、この canonical Atom family の projection として読む。
+semantic reading と resolution は Atom の存在条件ではない。
+それらは canonical Atom family の説明、接続、projection の仕方に関わる。
+異なる観測精度は、この family の projection として読む。
 
 ```text
 pi : F -> F_coarse
@@ -598,7 +616,7 @@ Atom family `F` は `At` の部分集合である。
 F subset At
 ```
 
-`F` は component、relation、state、contract、effect、semantic reading を混在して含みうる。
+`F` は component、relation、state、contract、effect、semantic Atom を混在して含みうる。
 AAT はこの混在を排除しない。むしろ、混在した primitive fact がどの law を満たし、
 どの obstruction を生むかを問う。
 
@@ -695,8 +713,10 @@ effect(e)
 semantic(t, s)
 ```
 
-この molecule は、一つの architecture concern を表す。どの concern と読むかは、
-Atom family に与えられた semantic Atom と selected reading によって決まる。
+この molecule は、一つの architecture concern を担う有限 Atom 配置である。
+semantic Atom は、その concern に含まれる意味的事実を与える。
+selected reading は、この molecule をどの role、responsibility、pattern 名で説明するかを
+与える後段の interpretation であり、molecule 自体の存在条件ではない。
 
 ### 定義 4.4 Subconfiguration
 
