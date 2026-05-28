@@ -59,3 +59,18 @@ Validation does not imply:
 The fixture is locked against the static Rust builder and the schema catalog
 records both `archsig-analysis-packet-v0` and
 `archsig-analysis-packet-validation-report-v0`.
+
+## Builder
+
+`build_archsig_analysis_packet` deterministically builds a packet from one
+`ArchMapDocumentV0` and one `LawPolicyDocumentV0`.
+
+The builder:
+
+- evaluates selected LawPolicy witness rules over ArchMap atom and semantic observations
+- uses `concernHints` only as auxiliary evidence
+- constructs obstruction circuits only as ArchSig outputs
+- values required signature axes from constructed obstruction circuits
+- preserves observation gaps as flatness blockers, not measured zero
+- emits repair operation candidates with preserved invariants, preconditions,
+  transfer risks, evidence boundaries, and non-conclusions
