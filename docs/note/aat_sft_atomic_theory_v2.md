@@ -776,9 +776,8 @@ ReplayViolationCircuit
 観測状態や tool 出力も Atom ではない。
 
 ```text
-OntologicalAtom
-AtomOntology
-AtomObservationBoundary
+AtomAxiomSystem presentation record
+Atom observation boundary
 AtomCandidate
 ObservedAtom
 RejectedCandidate
@@ -792,9 +791,10 @@ ForecastCone
 ConsequenceEnvelope
 ```
 
-`OntologicalAtom` / `AtomOntology` は AAT が前提にする理論対象である。
-`AtomObservationBoundary`、`ObservedAtom`、`ObservationGap`、`ValidationPass` は、
-その理論対象を観測・近似・提示する層であり、Atom の存在条件ではない。
+`AtomAxiomSystem` は AAT が前提にする root であるが、presentation record や
+observation boundary は Atom そのものではない。
+`ObservedAtom`、`ObservationGap`、`ValidationPass` は、その root atom を観測・近似・
+提示する層であり、Atom の存在条件ではない。
 
 これらは、Atom を読むための観測・分析 surface である。
 

@@ -3358,41 +3358,23 @@ File: `Formal/Arch/Extension/Flatness.lean`
 | `LawfulExtensionPreservesFlatness_of_runtimeSemanticSplitPreservation` | `theorem` | runtime / semantic split preservation package で `LawfulExtensionPreservesFlatness` の runtime / semantic flatness 前提を discharge する。 | `proved` |
 | `architectureFlatWithin_of_splitFeatureExtensionWithin` | `theorem` | `SplitFeatureExtensionWithin` から induced flatness model の bounded `ArchitectureFlatWithin` を得る public preservation theorem。 | `proved` |
 
-## ArchMap Formal Bridge
+## ArchMap Observation Layer
 
+File: `Formal/Arch/Observation/ArchMap.lean`
 
-この節は ArchMap tooling artifact と Lean formal bridge の境界を索引する。`ArchMapModel` は
-Rust の `archmap-v0` JSON artifact ではなく、selected source universe から AAT の
-`ArchitectureFlatnessModel` へ写す抽象 model である。tooling validation pass や AIR projection
-success は、Lean theorem witness ではない。
+この節は ArchMap を pure AAT core の外側にある observation layer として索引する。
+ArchMap は Atom を観測するが、Atom / AAT を生成・定義しない。
 
 | Lean 名 | 種別 | 意味 | Status |
 | --- | --- | --- | --- |
-| `ArchMapModel` | `structure` | source universe / target architecture universe、object map、semantic diagram map、selected coverage / precondition / forgetting / non-conclusion boundary を持つ Lean 抽象 model。 | `defined only` |
-| `ArchMapModel.ObjectPreservation` | `def` | selected source object が target `ComponentUniverse` に写ること。 | `defined only` |
-| `ArchMapModel.RelationPreservation` | `def` | selected source relation が target static dependency edge に写ること。unsupported / forgotten relation とは分離する。 | `defined only` |
-| `ArchMapModel.ObjectRelationPreservation` | `def` | object preservation と relation preservation の package。 | `defined only` |
-| `ArchMapModel.SemanticDiagramPreservation` | `def` | selected semantic diagram が measured target semantic diagram universe に写ること。 | `defined only` |
-| `ArchMapModel.SemanticCommutationPreservation` | `def` | selected semantic diagram の commutation が target semantics で保たれること。 | `defined only` |
-| `ArchMapModel.NonfillabilityWitnessPreservation` | `def` | selected source nonfillability witness が target witness に写ること。 | `defined only` |
-| `ArchMapModel.SemanticMeasuredZeroUnmeasuredSeparated` | `def` | semantic measured zero と semantic coverage gap を別 boundary として保持する marker。 | `defined only` |
-| `ArchMapModel.LawPolicyPreservation` | `def` | selected law と policy boundary の preservation marker。 | `defined only` |
-| `ArchMapModel.FlatnessPreconditionPreservation` | `def` | selected flatness precondition、`ExhaustiveFlatnessCoverage`、`ExactFlatnessObservation` を束ねる zero-curvature theorem package への接続前提。 | `defined only` |
-| `ArchMapModel.SelectedTargetFlatness` | `def` | target 側の selected static / runtime / semantic flatness evidence。 | `defined only` |
-| `ArchMapModel.AATStructurePreserved` | `def` | object / relation / semantic / law / flatness preservation と forgetting / coverage / exactness / guardrail / non-conclusion を含む bounded conclusion。 | `defined only` |
-| `ArchMapModel.BoundedHomomorphismPreservation` | `def` | object / relation / semantic diagram / semantic commutation / nonfillability witness / law-policy / flatness precondition と boundary field を束ねる top-level bounded homomorphism predicate。 | `defined only` |
-| `ArchMapModel.AATHomomorphicRelation` | `def` | selected ArchMap model を AAT architecture surface への bounded homomorphic relation として読み、`BoundedHomomorphismPreservation` と `AATStructurePreserved` を束ねる。 | `defined only` |
-| `ArchMapModel.aatStructurePreserved_of_archMapPreservationPackage` | `theorem` | package-based structure preservation の top-level spelling。 | `proved` |
-| `ArchMapModel.aatHomomorphicRelation_of_archMapPreservationPackage` | `theorem` | ArchMap-to-AAT homomorphic relation の top-level spelling。 | `proved` |
-| `ArchMapModel.Examples.unitArchMapModel` | `def` | singleton finite target 上の positive ArchMap model。JSON fixture の parse ではなく、formal bridge smoke test 用の bounded model。 | `defined only` |
-| `ArchMapModel.Examples.unitArchMap_aatStructurePreserved` | `theorem` | positive package から bounded `AATStructurePreserved` を取り出す。 | `proved` |
-| `ArchMapModel.Examples.unitArchMap_boundedHomomorphismPreserved` | `theorem` | positive package から `BoundedHomomorphismPreservation` を取り出す。 | `proved` |
-| `ArchMapModel.Examples.unitArchMap_aatHomomorphicRelation` | `theorem` | positive package から ArchMap-to-AAT homomorphic relation を取り出す。 | `proved` |
+| `Observation.ArchMapObservationLayer` | `structure` | `AtomAxiomSystem` と `AtomPresentation` に相対化された ArchMap observation layer。selected source、raw candidate boundary、validation / coverage / exactness boundary、non-conclusions を持つ。 | `defined only` |
+| `Observation.ArchMapObservationLayer.observes_atoms` | `theorem` | ArchMap が atom を観測する boundary evidence を取り出す。 | `proved` |
+| `Observation.ArchMapObservationLayer.archmap_does_not_create_atoms` | `theorem` | ArchMap observation が Atom 公理系の atom existence を生成しないことを取り出す。 | `proved` |
+| `Observation.ArchMapObservationLayer.archmap_does_not_define_aat` | `theorem` | ArchMap が AAT を定義しないことを取り出す。 | `proved` |
+| `Observation.ArchMapObservationLayer.raw_candidate_is_not_atom_truth` | `theorem` | raw candidate は atom truth ではないことを presentation boundary から取り出す。 | `proved` |
+| `Observation.ArchMapObservationLayer.missing_is_not_atom_absence` | `theorem` | missing observation は atom absence ではないことを presentation boundary から取り出す。 | `proved` |
 
-Non-conclusions: `ArchMapModel` は `archmap-v0` JSON を Lean が parse / validate した結果ではない。
-相対化された theorem package であり、tooling validation pass、AIR projection success、global
-semantic completeness、architecture lawfulness、extractor completeness、runtime telemetry completeness、
-private / unavailable context の completeness を結論しない。
+Non-conclusions: ArchMap validation pass、AIR projection success、extractor completeness、global semantic completeness、certified atom truth、zero-curvature theorem discharge は結論しない。
 
 ## Architecture Core / Certified Architecture
 
@@ -3664,10 +3646,6 @@ File: `Formal/Arch/Signature/SignatureLawfulness.lean`
 | `ArchitectureSignature.architectureLawful_of_localReplacementContract` | `theorem` | closed-walk acyclicity、`LocalReplacementContract`、boundary / abstraction policy soundness から `ArchitectureLawful X` を得る。 | `proved` |
 | `ArchitectureSignature.requiredSignatureAxesZero_of_localReplacementContract` | `theorem` | closed-walk acyclicity、`LocalReplacementContract`、boundary / abstraction policy soundness から `RequiredSignatureAxesZero (signatureOf X)` を得る derived zero-curvature bridge。 | `proved` |
 | `ArchitectureSignature.architectureZeroCurvatureTheoremPackage_of_localReplacementContract` | `theorem` | LocalReplacement と残りの static laws から static structural core の QED package を得る derived bridge。 | `proved` |
-| `AtomZeroCurvature`, `AtomZeroCurvatureTheoremPackage` | `def` / `structure` | pure Atom-AAT core 上で、selected required obstruction circuit が存在しないことを atom-level zero curvature として束ねる Signature 以前の theorem package。 | `defined only` |
-| `atomZeroCurvature_iff_noRequiredObstructionCircuit`, `AtomZeroCurvatureTheoremPackage.noRequiredObstructionCircuit`, `atomLawful`, `requiredCircuit_on_surface`, `law_does_not_create_atoms`, `law_does_not_change_atom_existence` | `theorem` | atom-level zero curvature を no required obstruction circuit と同値に読み、pure atom zero curvature から atom lawfulness と law-separation 境界を取り出す。 | `proved` |
-| `ArchitectureSignature.AtomDerivedZeroCurvaturePackage`, `ofAtomZeroCurvatureTheoremPackage`, `ofAtomArrangementLaws`, `ofStaticAtomArrangementPackage`, `ofPureTheoremSuite`, `ofPureTheoremSuiteArrangementLaws`, `ofPureTheoremSuiteStaticArrangementPackage` | `structure` / `def` | selected atom law、required atom molecule、atom lawfulness bridge、no required obstruction circuit、grouped `StaticAtomArrangementLawPackage` を束ねる Signature-level interpretation。`AtomDerivedZeroCurvaturePackage` は static arrangement package を `staticArrangements` として直接保持する。 | `defined only` |
-| `ArchitectureSignature.AtomDerivedZeroCurvaturePackage.atomZeroCurvature`, `atomLawful`, `architectureLawful`, `requiredSignatureAxesZero`, `architectureZeroCurvatureTheoremPackage`, `matrixDiagnosticCorollaries`, `architectureZeroCurvatureTheoremPackage_of_atomZeroCurvatureTheoremPackage`, `architectureZeroCurvatureTheoremPackage_of_atomArrangementLaws`, `architectureZeroCurvatureTheoremPackage_of_staticAtomArrangementPackage`, `architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite`, `architectureZeroCurvatureTheoremPackage_of_pureTheoremSuiteArrangementLaws`, `architectureZeroCurvatureTheoremPackage_of_pureTheoremSuiteStaticArrangementPackage` | `theorem` | atom-only zero curvature / no required atom obstruction circuit から `LawfulWithinAtomConfiguration` を得て、full static atom arrangement law package の下で既存 `ArchitectureLawful X`、`RequiredSignatureAxesZero (signatureOf X)`、`ArchitectureZeroCurvatureTheoremPackage X`、matrix diagnostic corollaries を導く。 | `proved` |
 | `AtomSurfacePresented`, `AtomDeltaPreservesSurface`, `AtomPresentationOperation` | `def` / `structure` | pure AAT surface 上の selected atoms が presentation で測定付きに観測され、atom delta で保存されることを束ねる Signature-free operation-level bridge。 | `defined only` |
 | `AtomPresentationOperation.target_presented_of_source`, `preservesSurfaceInvariant`, `ops_mem_surfaceInvariant` | `theorem` | surface を保存する atom presentation operation から、target presentation の surface coverage、通常の `PreservesInvariant`、singleton invariant family 上の `Ops` membership を導く。 | `proved` |
 
