@@ -218,6 +218,43 @@ score(A) = sum_x w_x q_x(A)
 ただし、aggregate は signature 全体の代替ではない。異なる obstruction は異なる axis に
 残る。
 
+### 定義 5.4 Representation Strength
+
+analytic representation の強さは少なくとも四つに分かれる。
+
+```text
+ZeroPreserving:
+  structural zero -> analytic zero
+
+ZeroReflecting:
+  analytic zero + assumptions -> structural zero
+
+ObstructionPreserving:
+  structural obstruction -> analytic obstruction
+
+ObstructionReflecting:
+  analytic obstruction + assumptions -> structural obstruction
+```
+
+`ZeroPreserving` は、構造的に flat であれば解析値も zero になることをいう。
+`ZeroReflecting` は、解析値が zero であることから構造的 flatness へ戻る方向である。
+戻る方向には、coverage、witness completeness、semantic contract coverage、
+値域の zero-reflecting 性質が必要になる。
+
+同様に、`ObstructionPreserving` は構造的 obstruction が解析表現に現れることをいう。
+`ObstructionReflecting` は、解析表現上の obstruction から構造的 obstruction を復元する方向である。
+
+### 命題 5.5 Analytic Non-Reduction
+
+analytic value だけから architecture object の全構造を読むことはできない。
+
+```text
+R(A) = R(B)
+```
+
+であっても、`A` と `B` が同じ architecture object であるとは限らない。
+analytic representation は selected axes の読みであり、architecture object 全体の代替ではない。
+
 ## 6. Numerical Curvature
 
 Curvature は obstruction valuation の数値表現として扱える。
@@ -251,6 +288,9 @@ K(A) = 0 -> forall i, kappa(D_i) = 0
 ```
 
 が成り立つ。
+
+この命題は、aggregate の値域が zero-reflecting である場合に限って使える。
+負の値や cancellation を許す aggregate では、全体の zero から各 diagram の zero は従わない。
 
 ### 命題 6.4 Local Lawfulness
 
@@ -300,6 +340,20 @@ t . t = t
 I(t(s)) = I(s)
 compensate(t(s)) = s
 ```
+
+状態遷移層では、command、event、retry、compensation、snapshot、migration を生成元として扱い、
+それらの law を関係式として読む。
+
+```text
+f ; f = f
+compensate ; action ~= id
+project(xs ++ ys) = replay(project(xs), ys)
+decode ; encode ~= id
+migrate ; project_old = project_new ; migrateEvents
+```
+
+Event Sourcing、Saga、retry safety、snapshot consistency、migration naturality は、
+この状態遷移代数の異なる projection として読む。
 
 ### 定義 7.4 Transition Obstruction
 
@@ -356,6 +410,10 @@ compensate(e)(apply(e,s)) = s
 ```
 
 これらの law は effect relation の obstruction を生む。
+
+effect relation は、dependency graph だけでは見えない obstruction を扱う。
+外部 effect、暗黙の authority、handler 欠落、可換であるべき effect pair の非可換性は、
+effect-level obstruction として扱う。
 
 ## 9. 例: User Model
 
@@ -425,6 +483,12 @@ semantic(FinalAmount includes tax after discount)
 ext_coupon : Checkout -> CheckoutWithCoupon
 ```
 
+この extension は、core embedding、coupon feature view、price calculation への interaction を
+同時に持つ。良い extension では、coupon の計算は declared interface を通り、
+payment core への相互作用は selected law を保つ。悪い extension では、coupon service が
+payment adapter や hidden cache に直接依存し、feature-local な都合が core 側の
+invariant を破る。
+
 ### Law
 
 ```text
@@ -446,6 +510,9 @@ subtotal -> tax -> discount -> round
 
 discount と tax が可換であるという law が成り立つ場合に限り、二つの path は同じ
 calculation として読める。可換でないなら、homotopy は存在しない。
+
+hidden interaction は static obstruction として読める。rounding order や discount
+application order の観測差は semantic obstruction として読める。
 
 ## 11. 例: Static Flat but Semantic Obstruction
 
@@ -510,6 +577,14 @@ contract(D) != contract(A)
 repair は一つの obstruction を減らしながら、別の axis に obstruction を移すことがある。
 AAT はこの移動を signature の変化として読む。
 
+```text
+selected obstruction decreases
+  does not imply
+all axes are non-increasing
+```
+
+この反例は、repair theorem が selected obstruction measure に相対化される理由を示す。
+
 ## 13. SOLID 型の反例
 
 設計原則は law family として読まれる。
@@ -541,10 +616,21 @@ subtype relation があることだけでは十分ではない。
 interface に依存していても、semantic contract が不一致なら obstruction は残る。
 依存方向だけでは flatness は決まらない。
 
+SOLID-style local contracts は `Decomposable(G)` を含意しない。
+局所契約層の性質を満たしても、大域的な decomposability や acyclicity は自動的には従わない。
+
+より強い反例では、具象は抽象へ依存する向きを保ったまま、抽象層そのものが循環する。
+これにより、DIP 系の局所契約と大域的な層化可能性が別の invariant であることが分かる。
+
 ## 14. 数学的射程
 
 AAT は Atom 公理系から architecture object を生成し、law、obstruction、flatness、
 operation、path、homotopy、diagram filling、analytic representation を構成する。
+
+operation と invariant の関係は、弱いガロア対応として読める。feature extension の
+obstruction は、inherited core obstruction、feature-local obstruction、interaction
+obstruction、lifting failure、filling failure、complexity transfer、residual coverage gap
+として分類される。解析表現は、preservation と reflection の向きを分けて扱う。
 
 中心的な対応は次である。
 
