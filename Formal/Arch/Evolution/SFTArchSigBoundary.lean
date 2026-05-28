@@ -7,12 +7,14 @@ namespace Formal.Arch
 universe u v w q r s
 
 /--
-Lean-side boundary record for an ArchSig report read as SFT input.
+Lean-side boundary record for an ArchSig analysis/report state read as SFT input.
 
 The report stores one selected `SoftwareFieldEstimate` together with
 tooling-facing candidates and explicit boundaries. It is not a ground-truth
 architecture object, an AAT theorem package, or a calibrated forecast
-certificate.
+certificate. In the LLM-native tooling pipeline, FieldSig receives the
+ArchSig analysis packet as bounded local AAT state rather than raw ArchMap
+observations.
 -/
 structure ArchSigSFTReport
     (FieldState : Type s) (C : Type u) (A : Type v)

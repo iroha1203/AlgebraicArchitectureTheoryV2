@@ -11,6 +11,8 @@ Signature / ArchSig bridge as an analysis layer over an Atom-generated AAT core.
 
 The bridge consumes an `AAT.ZeroCurvaturePackage`; it does not define AAT,
 create atoms, or promote validation artifacts to Lean theorem discharge.
+LLM-native `LawPolicy` artifacts select a tooling policy for reading observations;
+they do not replace the pure AAT law carried by the core.
 -/
 structure AATCoreSignatureLawfulnessBridge
     {system : AtomAxiomSystem.{q, r}}
