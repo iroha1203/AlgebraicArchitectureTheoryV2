@@ -19,9 +19,9 @@ signature trajectories, and bounded software evolution.
   computation over field state, operation support, policy, forecast
   cones, consequence envelopes, governance interventions, and feedback.
 - Architecture Signature (ArchSig) is an AI-native Architecture Evidence
-  Layer connected to AAT and SFT. It turns code changes into reviewable
-  architectural signals, grounds them in bounded structural, semantic, or
-  operational evidence, and does not treat review artifacts as proofs of
+  Layer connected to AAT and SFT. It reads source-grounded ArchMap
+  observations with a selected LawPolicy, emits LLM-readable architecture
+  analysis packets, and does not treat review artifacts as proofs of
   architecture correctness.
 
 ## Relationship between AAT and SFT
@@ -36,8 +36,8 @@ operations, policies, feedback, and consequence envelopes shape what
 changes become easier, harder, safer, or more costly.
 
 ArchSig is the bounded diagnostic and tooling layer that connects to both
-AAT and SFT. It should be read as measurement and review support, not as
-a proof system.
+AAT and SFT. It should be read as source-grounded observation, selected
+policy analysis, and review support, not as a proof system.
 
 ## Primary public pages
 
@@ -81,8 +81,8 @@ a proof system.
 3. Read SFT for the field-shaped model of software evolution,
    forecast cones, consequence envelopes, governance interventions,
    and feedback updates.
-4. Read ArchSig for the tooling surface, report artifacts, workflow
-   usage, and measurement boundaries.
+4. Read ArchSig for the ArchMap / LawPolicy / analysis packet workflow,
+   report artifacts, FieldSig handoff, and measurement boundaries.
 
 ## Outreach
 
