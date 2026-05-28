@@ -43,6 +43,7 @@ import Formal.Arch.Operation.OperationKernel
 import Formal.Arch.Core.Matrix
 import Formal.Arch.Signature.DependencyObstruction
 import Formal.Arch.Signature.SignatureLawfulness
+import Formal.Arch.Signature.AATCoreBridge
 import Formal.Arch.Signature.ArchMap
 import Formal.Arch.Patterns.StructuralDesignPattern
 import Formal.Arch.Patterns.RuntimeProtectionDesignPattern
