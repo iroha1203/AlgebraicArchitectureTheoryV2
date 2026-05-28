@@ -31,17 +31,17 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
     AatObservableBundleV0 {
         schema_version: AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION.to_string(),
         bundle_id: "fixture-aat-observable-bundle-v0".to_string(),
-        architecture_id: "coupon-service".to_string(),
+        architecture_id: "llm-native-archsig-fixture".to_string(),
         source_refs: vec![
             source_ref(
-                "source:air:coupon",
+                "source:air:analysis-packet",
                 "air",
                 AIR_SCHEMA_VERSION,
                 "tools/archsig/tests/fixtures/air/good_extension.json",
                 &["components", "relations", "claims", "coverage", "semanticDiagrams"],
             ),
             source_ref(
-                "source:archmap:coupon",
+                "source:archsig-analysis-packet:fixture",
                 "archmap",
                 ARCHMAP_SCHEMA_VERSION,
                 "tools/archsig/tests/fixtures/minimal/archmap.json",
@@ -56,7 +56,7 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
                 ],
             ),
             source_ref(
-                "source:feature-report:coupon",
+                "source:feature-report:analysis-packet",
                 "feature-extension-report",
                 FEATURE_EXTENSION_REPORT_SCHEMA_VERSION,
                 "tools/archsig/tests/fixtures/minimal/feature_extension_report.json",
@@ -68,8 +68,8 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
             ),
         ],
         selected_universe: AatSelectedUniverseV0 {
-            universe_id: "universe:coupon-selected".to_string(),
-            included_refs: vec!["component:checkout".to_string(), "component:coupon".to_string()],
+            universe_id: "universe:llm-native-selected".to_string(),
+            included_refs: vec!["component:archmap-observation".to_string(), "component:archsig-analysis".to_string()],
             excluded_refs: vec!["component:billing-private".to_string()],
             private_refs: vec!["repo:private-observability".to_string()],
             unavailable_refs: vec!["runtime:production-traces".to_string()],
@@ -101,8 +101,8 @@ pub fn static_aat_observable_bundle() -> AatObservableBundleV0 {
         llm_review_surface: AatLlmReviewSurfaceV0 {
             skill_ref: "tools/archsig/skills/aat-reviewer/SKILL.md".to_string(),
             input_artifact_refs: vec![
-                "source:air:coupon".to_string(),
-                "source:feature-report:coupon".to_string(),
+                "source:air:analysis-packet".to_string(),
+                "source:feature-report:analysis-packet".to_string(),
                 "bundle:fixture-aat-observable-bundle-v0".to_string(),
             ],
             review_questions: vec![
@@ -205,7 +205,10 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:architecture-object",
             "ArchitectureObject / ComponentUniverse",
-            &["source:archmap:coupon", "source:air:coupon"],
+            &[
+                "source:archsig-analysis-packet:fixture",
+                "source:air:analysis-packet",
+            ],
             &["coverage-boundary:dynamic-dispatch"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",
@@ -218,7 +221,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:obstruction-witness",
             "ObstructionWitness",
-            &["source:feature-report:coupon"],
+            &["source:feature-report:analysis-packet"],
             &["witness:projection-mismatch", "witness:nonfillability"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",
@@ -257,7 +260,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:projection-observation",
             "Projection / Observation / LSP / DIP",
-            &["source:air:coupon"],
+            &["source:air:analysis-packet"],
             &["evidence:projection-abstraction"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",
@@ -270,7 +273,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:feature-extension",
             "FeatureExtension / ExtensionObstruction",
-            &["source:feature-report:coupon"],
+            &["source:feature-report:analysis-packet"],
             &["feature-evidence:coupon-extension"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",
@@ -283,7 +286,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:semantic-diagram",
             "Path / Homotopy / DiagramFiller / NonFillability",
-            &["source:air:coupon"],
+            &["source:air:analysis-packet"],
             &["semantic:evidence:coupon-noncommutation"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",
@@ -296,7 +299,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:state-effect",
             "StateTransition / EffectBoundary",
-            &["source:air:coupon"],
+            &["source:air:analysis-packet"],
             &["state-effect:evidence:coupon-replay"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",
@@ -309,7 +312,7 @@ fn concept_mappings() -> Vec<AatConceptMappingV0> {
         concept(
             "concept:repair-synthesis",
             "Repair / Synthesis / ComplexityTransfer",
-            &["source:feature-report:coupon"],
+            &["source:feature-report:analysis-packet"],
             &["repair:evidence:coupon-boundary"],
             &["tools/archsig/skills/aat-reviewer/SKILL.md"],
             "representable",
@@ -353,7 +356,7 @@ fn observed_axes() -> Vec<AatObservedAxisV0> {
         AatObservedAxisV0 {
             axis_id: "axis:projectionSoundnessViolation".to_string(),
             concept_refs: vec!["concept:projection-observation".to_string()],
-            artifact_refs: vec!["source:air:coupon".to_string()],
+            artifact_refs: vec!["source:air:analysis-packet".to_string()],
             measurement_status: "measuredNonzero".to_string(),
             value: Some(1),
             boundary: "selected AIR claim and witness universe".to_string(),
@@ -404,7 +407,7 @@ fn witness_catalog() -> Vec<AatWitnessCatalogEntryV0> {
             "witness:projection-mismatch",
             "projectionFailure",
             &["law:lsp-observation-preservation"],
-            &["source:air:coupon"],
+            &["source:air:analysis-packet"],
             "measuredNonzero",
             "high",
             "review:inspect-projection-mismatch",
@@ -414,7 +417,7 @@ fn witness_catalog() -> Vec<AatWitnessCatalogEntryV0> {
             "witness:nonfillability",
             "nonFillabilityWitness",
             &["law:semantic-commutation"],
-            &["source:air:coupon"],
+            &["source:air:analysis-packet"],
             "measuredNonzero",
             "medium",
             "review:inspect-semantic-diagram",
@@ -424,7 +427,7 @@ fn witness_catalog() -> Vec<AatWitnessCatalogEntryV0> {
             "witness:effect-leakage",
             "effectLeakage",
             &["law:effect-boundary"],
-            &["source:air:coupon"],
+            &["source:air:analysis-packet"],
             "partiallyMeasured",
             "medium",
             "review:request-effect-evidence",
@@ -434,7 +437,7 @@ fn witness_catalog() -> Vec<AatWitnessCatalogEntryV0> {
             "witness:complexity-transfer",
             "complexityTransfer",
             &["law:repair-selected-axis"],
-            &["source:feature-report:coupon"],
+            &["source:feature-report:analysis-packet"],
             "reviewNeeded",
             "medium",
             "review:inspect-repair-transfer",
@@ -468,7 +471,7 @@ fn projection_observation_evidence() -> Vec<AatProjectionObservationEvidenceV0> 
     vec![AatProjectionObservationEvidenceV0 {
         evidence_ref: "evidence:projection-abstraction".to_string(),
         evidence_kind: "projectionMismatch".to_string(),
-        source_ref: "component:coupon-adapter".to_string(),
+        source_ref: "component:archsig-analysis-adapter".to_string(),
         target_ref: "interface:discount-policy".to_string(),
         local_contract_boundary: "LSP cue over selected interface methods".to_string(),
         global_layering_boundary: "does not conclude global Clean Architecture compliance"
@@ -488,7 +491,7 @@ fn feature_extension_evidence() -> Vec<AatFeatureExtensionEvidenceV0> {
             "interactionObstruction".to_string(),
             "residualCoverageGap".to_string(),
         ],
-        source_refs: vec!["source:feature-report:coupon".to_string()],
+        source_refs: vec!["source:feature-report:analysis-packet".to_string()],
         witness_refs: vec!["witness:projection-mismatch".to_string()],
         missing_evidence_refs: vec!["runtime:production-traces".to_string()],
         static_boundary: "static component/relation delta is retained".to_string(),

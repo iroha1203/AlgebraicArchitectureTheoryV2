@@ -853,7 +853,7 @@ pub fn build_air_from_archmap(
                     kind: "archmap-relation".to_string(),
                     lifecycle: "after".to_string(),
                     protected_by: None,
-                    extraction_rule: Some("archmap-v0-projection".to_string()),
+                    extraction_rule: Some("archmap-observation-map-to-air-v0".to_string()),
                     evidence_refs: evidence_refs.clone(),
                 });
             }
@@ -966,7 +966,9 @@ pub fn build_air_from_archmap(
         feature: AirFeature {
             feature_id: Some(document.map_id.clone()),
             title: Some("ArchMap supplied JSON projection".to_string()),
-            description: Some("AIR generated from supplied archmap-v0 artifact".to_string()),
+            description: Some(
+                "AIR generated from supplied ArchMap observation artifact".to_string(),
+            ),
             source: "manual".to_string(),
             ai_session: None,
         },
@@ -1698,7 +1700,7 @@ fn archmap_air_coverage(
             projection_rule: if layer == "runtime" && !measured {
                 None
             } else {
-                Some("archmap-v0-to-air-v0".to_string())
+                Some("archmap-observation-map-to-air-v0".to_string())
             },
             extraction_scope: vec![document.source_universe.selection_boundary.clone()],
             exactness_assumptions: vec![
@@ -1746,7 +1748,7 @@ fn archmap_signature_axes(document: &ArchMapDocumentV0) -> Vec<crate::AirSignatu
                 } else {
                     "unmeasured".to_string()
                 },
-                source: Some("archmap-v0".to_string()),
+                source: Some("archmap-observation-map-v0".to_string()),
                 reason: (!measured).then(|| format!("{layer} layer is not measured by ArchMap")),
             }
         })
@@ -1756,8 +1758,8 @@ fn archmap_signature_axes(document: &ArchMapDocumentV0) -> Vec<crate::AirSignatu
         value: None,
         measured: false,
         measurement_boundary: "unmeasured".to_string(),
-        source: Some("archmap-v0".to_string()),
-        reason: Some("runtime traces are not supplied by ArchMap MVP fixture".to_string()),
+        source: Some("archmap-observation-map-v0".to_string()),
+        reason: Some("runtime traces are retained as ArchMap observation gaps".to_string()),
     });
     axes
 }
@@ -1989,7 +1991,9 @@ fn archmap_formal_promotion_guardrail_checklist_entry() -> ArchMapLeanPreservati
             "validation and projection do not discharge ArchMapPreservationPackage fields"
                 .to_string(),
         ],
-        missing_evidence: vec!["Lean theorem witness not supplied by archmap-v0".to_string()],
+        missing_evidence: vec![
+            "Lean theorem witness not supplied by ArchMap observation artifact".to_string(),
+        ],
         coverage_boundary:
             "formal promotion requires explicit Lean theorem refs and discharged preconditions"
                 .to_string(),

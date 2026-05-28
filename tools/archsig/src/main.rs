@@ -6,22 +6,25 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use archsig::{
-    AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION, AatAnalyticAxisV0,
-    AatConceptMappingV0, AatCoverageBoundaryV0, AatFeatureExtensionEvidenceV0,
+    AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION, AIR_SCHEMA_VERSION, ARCHMAP_SCHEMA_VERSION,
+    AatAnalyticAxisV0, AatConceptMappingV0, AatCoverageBoundaryV0, AatFeatureExtensionEvidenceV0,
     AatLlmReviewSurfaceV0, AatObservableBundleV0, AatObservableBundleValidationReportV0,
     AatObservableSourceRefV0, AatObservedAxisV0, AatOperationCandidateV0,
     AatProjectionObservationEvidenceV0, AatRepairSynthesisEvidenceV0, AatResponsibilityBoundaryV0,
     AatReviewActionV0, AatSelectedUniverseV0, AatSemanticDiagramEvidenceV0,
-    AatStateEffectLawEvidenceV0, AatTheoremBoundaryV0, AatWitnessCatalogEntryV0, AirDocumentInput,
-    AirDocumentV0, AirValidationReport, ArchMapDocumentV0, ArchMapSourceInventoryInput,
-    ArchMapSourceInventoryV0, ArchMapValidationReportV0, ArchitecturePolicyV0,
+    AatStateEffectLawEvidenceV0, AatTheoremBoundaryV0, AatWitnessCatalogEntryV0, AirArtifact,
+    AirClaim, AirComponent, AirCoverage, AirCoverageLayer, AirDocumentInput, AirDocumentV0,
+    AirEvidence, AirExtension, AirFeature, AirIdPolicies, AirOperationTrace, AirPolicies,
+    AirRelation, AirRevision, AirSignature, AirSignatureAxis, AirValidationReport,
+    ArchMapDocumentV0, ArchMapSourceInventoryInput, ArchMapSourceInventoryV0,
+    ArchMapValidationReportV0, ArchSigAnalysisPacketV0, ArchitecturePolicyV0,
     ArchitecturePolicyValidationReportV0, ComponentUniverseValidationReport,
     CustomRulePluginRegistryV0, CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
     DetectableValuesReportedAxesCatalogV0, EmpiricalDatasetInput, FeatureExtensionReportV0,
-    FrameworkAdapterEvidenceV0, LawPolicyDocumentV0, LawPolicyTemplateRegistryV0,
-    LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0, MeasurementUnitRegistryV0,
-    MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
-    NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
+    FeatureReportHomomorphismFamily, FeatureReportHomomorphismSummary, FrameworkAdapterEvidenceV0,
+    LawPolicyDocumentV0, LawPolicyTemplateRegistryV0, LawPolicyTemplateRegistryValidationReportV0,
+    LawViolationReportV0, MeasurementUnitRegistryV0, MeasurementUnitRegistryValidationReportV0,
+    NoSolutionCertificateV0, NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
     OrganizationPolicyValidationReportV0, PolicyDecisionReportV0, PrQualityAnalysisReportV0,
     PrQualityAnalysisValidationReportV0, RepairRuleRegistryV0,
     RepairRuleRegistryValidationReportV0, ReportArtifactRetentionManifestV0,
@@ -273,7 +276,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate a supplied ArchMap v0 JSON artifact.
+    /// Validate a supplied ArchMap observation JSON artifact.
     Archmap {
         /// Input ArchMap JSON path.
         #[arg(long)]
@@ -349,7 +352,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Project a supplied ArchMap v0 JSON artifact into AIR v0.
+    /// Project a supplied ArchMap observation JSON artifact into AIR v0.
     AirFromArchmap {
         /// Input ArchMap JSON path.
         #[arg(long)]
@@ -538,7 +541,7 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Build the ArchMap-primary review workflow artifacts.
+    /// Build the legacy ArchMap projection review workflow artifacts.
     ArchmapWorkflow {
         /// Input ArchMap JSON path.
         #[arg(long)]
@@ -1417,6 +1420,12 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let analysis_packet_path = out_dir.join("archsig-analysis-packet.json");
             let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
             let llm_interpretation_path = out_dir.join("llm-interpretation-packet.json");
+            let air_path = out_dir.join("air.json");
+            let air_validation_path = out_dir.join("air-validation.json");
+            let theorem_check_path = out_dir.join("theorem-precondition-check.json");
+            let feature_report_path = out_dir.join("feature-report.json");
+            let observable_bundle_path = out_dir.join("aat-observable-bundle.json");
+            let observable_validation_path = out_dir.join("aat-observable-bundle-validation.json");
 
             let archmap_document: ArchMapDocumentV0 = read_json(&archmap)?;
             let source_inventory_path = archmap_document
@@ -1474,9 +1483,53 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
                 &analysis_packet_path.display().to_string(),
             );
             let analysis_failed = analysis_validation.summary.result == "fail";
-            write_json(Some(analysis_validation_path), &analysis_validation)?;
+            write_json(Some(analysis_validation_path.clone()), &analysis_validation)?;
 
-            Ok(if archmap_failed || law_policy_failed || analysis_failed {
+            let air = build_air_from_archsig_analysis_packet(
+                &analysis_packet,
+                &analysis_packet_path.display().to_string(),
+            );
+            write_json(Some(air_path.clone()), &air)?;
+            let air_validation =
+                validate_air_document_report(&air, &air_path.display().to_string(), false);
+            let air_failed = air_validation.summary.result == "fail";
+            write_json(Some(air_validation_path.clone()), &air_validation)?;
+
+            let theorem_check =
+                build_theorem_precondition_check_report(&air, &air_path.display().to_string());
+            write_json(Some(theorem_check_path.clone()), &theorem_check)?;
+
+            let mut feature_report =
+                build_feature_extension_report(&air, &air_path.display().to_string());
+            apply_archsig_analysis_packet_to_feature_report(&mut feature_report, &analysis_packet);
+            write_json(Some(feature_report_path.clone()), &feature_report)?;
+
+            let observable_bundle = observable_bundle_from_archsig_analysis_workflow(
+                &analysis_packet,
+                &air,
+                &theorem_check,
+                &feature_report,
+                &analysis_packet_path,
+                &analysis_validation_path,
+                &air_path,
+                &air_validation_path,
+                &theorem_check_path,
+                &feature_report_path,
+            );
+            write_json(Some(observable_bundle_path.clone()), &observable_bundle)?;
+            let observable_validation = validate_aat_observable_bundle(
+                &observable_bundle,
+                &observable_bundle_path.display().to_string(),
+            );
+            let observable_failed = observable_validation.summary.result == "fail";
+            write_json(Some(observable_validation_path), &observable_validation)?;
+
+            Ok(if archmap_failed
+                || law_policy_failed
+                || analysis_failed
+                || air_failed
+                || observable_failed
+            {
                 ExitCode::from(1)
             } else {
                 ExitCode::SUCCESS
@@ -1638,7 +1691,7 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             })
         }
         None => {
-            Err("ArchSig is ArchMap-primary; use `archsig archmap-workflow` for review artifacts or `archsig adapter-scan` for bounded Lean/Python evidence.".into())
+            Err("ArchSig is LLM-native ArchMap/LawPolicy/analysis-packet primary; use `archsig llm-native-workflow` for review artifacts or `archsig adapter-scan` for bounded Lean/Python evidence.".into())
         }
     }
 }
@@ -1686,6 +1739,979 @@ fn build_adapter_sig0(
         _ => unreachable!("clap restricts language values"),
     };
     Ok(document)
+}
+
+fn build_air_from_archsig_analysis_packet(
+    packet: &ArchSigAnalysisPacketV0,
+    packet_path: &str,
+) -> AirDocumentV0 {
+    let analysis_artifact_id = "artifact-archsig-analysis-packet".to_string();
+    let artifacts = vec![
+        AirArtifact {
+            artifact_id: analysis_artifact_id.clone(),
+            kind: "archsig_analysis_packet".to_string(),
+            schema_version: Some(packet.schema_version.clone()),
+            path: Some(packet_path.to_string()),
+            content_hash: None,
+            produced_by: Some("archsig".to_string()),
+        },
+        AirArtifact {
+            artifact_id: "artifact-archmap-observation".to_string(),
+            kind: packet.arch_map_ref.artifact_kind.clone(),
+            schema_version: Some(packet.arch_map_ref.schema_version.clone()),
+            path: packet.arch_map_ref.path.clone(),
+            content_hash: packet.arch_map_ref.content_hash.clone(),
+            produced_by: Some("external-agent".to_string()),
+        },
+        AirArtifact {
+            artifact_id: "artifact-law-policy".to_string(),
+            kind: packet.selected_law_policy_ref.artifact_kind.clone(),
+            schema_version: Some(packet.selected_law_policy_ref.schema_version.clone()),
+            path: packet.selected_law_policy_ref.path.clone(),
+            content_hash: packet.selected_law_policy_ref.content_hash.clone(),
+            produced_by: Some("human-selected-policy".to_string()),
+        },
+    ];
+    let mut evidence: Vec<AirEvidence> = artifacts
+        .iter()
+        .map(|artifact| AirEvidence {
+            evidence_id: format!("evidence-{}", artifact.artifact_id.replace("artifact-", "")),
+            kind: "manual_annotation".to_string(),
+            artifact_ref: Some(artifact.artifact_id.clone()),
+            path: artifact.path.clone(),
+            symbol: None,
+            line: None,
+            rule_id: artifact.schema_version.clone(),
+            confidence: Some("high".to_string()),
+        })
+        .collect();
+
+    let mut components = Vec::new();
+    let mut component_ids = BTreeSet::new();
+    for source_ref in &packet.atom_configuration_summary.source_refs {
+        let id = format!("observation-{}", stable_fragment(source_ref));
+        if component_ids.insert(id.clone()) {
+            components.push(AirComponent {
+                id,
+                kind: "archsig-observation-ref".to_string(),
+                lifecycle: "after".to_string(),
+                owner: None,
+                evidence_refs: vec!["evidence-archsig-analysis-packet".to_string()],
+            });
+        }
+    }
+    for obstruction in &packet.obstruction_circuits {
+        if component_ids.insert(obstruction.obstruction_circuit_id.clone()) {
+            components.push(AirComponent {
+                id: obstruction.obstruction_circuit_id.clone(),
+                kind: "archsig-obstruction-circuit".to_string(),
+                lifecycle: "after".to_string(),
+                owner: None,
+                evidence_refs: vec!["evidence-archsig-analysis-packet".to_string()],
+            });
+        }
+    }
+    for molecule in &packet.molecule_readings {
+        let id = format!(
+            "observation-{}",
+            stable_fragment(&molecule.molecule_observation_ref)
+        );
+        if component_ids.insert(id.clone()) {
+            components.push(AirComponent {
+                id,
+                kind: "archsig-molecule-reading".to_string(),
+                lifecycle: "after".to_string(),
+                owner: None,
+                evidence_refs: vec!["evidence-archsig-analysis-packet".to_string()],
+            });
+        }
+    }
+
+    let mut relations = Vec::new();
+    for (index, molecule) in packet.molecule_readings.iter().enumerate() {
+        let from = molecule
+            .atom_observation_refs
+            .first()
+            .map(|value| format!("observation-{}", stable_fragment(value)));
+        let to = Some(format!(
+            "observation-{}",
+            stable_fragment(&molecule.molecule_observation_ref)
+        ));
+        relations.push(AirRelation {
+            id: format!("relation-archsig-molecule-{:04}", index + 1),
+            layer: "semantic".to_string(),
+            from_component: from,
+            to_component: to,
+            kind: "archsig-molecule-reading".to_string(),
+            lifecycle: "after".to_string(),
+            protected_by: None,
+            extraction_rule: Some("archsig-analysis-packet-to-air-v0".to_string()),
+            evidence_refs: vec!["evidence-archsig-analysis-packet".to_string()],
+        });
+    }
+    for (index, obstruction) in packet.obstruction_circuits.iter().enumerate() {
+        let from = obstruction
+            .atom_observation_refs
+            .first()
+            .map(|value| format!("observation-{}", stable_fragment(value)));
+        relations.push(AirRelation {
+            id: format!("relation-archsig-obstruction-{:04}", index + 1),
+            layer: "policy".to_string(),
+            from_component: from,
+            to_component: Some(obstruction.obstruction_circuit_id.clone()),
+            kind: obstruction.circuit_kind.clone(),
+            lifecycle: "after".to_string(),
+            protected_by: Some(obstruction.law_ref.clone()),
+            extraction_rule: Some("archsig-analysis-packet-to-air-v0".to_string()),
+            evidence_refs: vec!["evidence-archsig-analysis-packet".to_string()],
+        });
+    }
+
+    for axis in &packet.signature_axes {
+        evidence.push(AirEvidence {
+            evidence_id: format!("evidence-axis-{}", stable_fragment(&axis.signature_axis_id)),
+            kind: "manual_annotation".to_string(),
+            artifact_ref: Some(analysis_artifact_id.clone()),
+            path: Some(packet_path.to_string()),
+            symbol: Some(axis.signature_axis_id.clone()),
+            line: None,
+            rule_id: Some(axis.law_ref.clone()),
+            confidence: Some("high".to_string()),
+        });
+    }
+
+    let mut claims = Vec::new();
+    for obstruction in &packet.obstruction_circuits {
+        claims.push(AirClaim {
+            claim_id: format!(
+                "claim-archsig-obstruction-{}",
+                stable_fragment(&obstruction.obstruction_circuit_id)
+            ),
+            subject_ref: obstruction.obstruction_circuit_id.clone(),
+            predicate: format!("selected LawPolicy constructs {}", obstruction.circuit_kind),
+            claim_level: "tooling-analysis".to_string(),
+            claim_classification: "measured".to_string(),
+            measurement_boundary: "measuredNonzero".to_string(),
+            theorem_refs: vec![
+                obstruction.law_ref.clone(),
+                obstruction.witness_rule_ref.clone(),
+            ],
+            evidence_refs: vec!["evidence-archsig-analysis-packet".to_string()],
+            required_assumptions: vec![obstruction.minimality_reading.clone()],
+            coverage_assumptions: obstruction.atom_observation_refs.clone(),
+            exactness_assumptions: vec![obstruction.evidence_boundary.clone()],
+            missing_preconditions: Vec::new(),
+            non_conclusions: obstruction.non_conclusions.clone(),
+        });
+    }
+    for axis in &packet.signature_axes {
+        claims.push(AirClaim {
+            claim_id: format!(
+                "claim-archsig-axis-{}",
+                stable_fragment(&axis.signature_axis_id)
+            ),
+            subject_ref: axis.signature_axis_id.clone(),
+            predicate: format!(
+                "selected LawPolicy axis {} has value {}",
+                axis.axis_ref, axis.value
+            ),
+            claim_level: "tooling-analysis".to_string(),
+            claim_classification: "measured".to_string(),
+            measurement_boundary: axis_measurement_boundary(axis.value),
+            theorem_refs: vec![axis.law_ref.clone()],
+            evidence_refs: vec![format!(
+                "evidence-axis-{}",
+                stable_fragment(&axis.signature_axis_id)
+            )],
+            required_assumptions: axis.exactness_assumptions.clone(),
+            coverage_assumptions: axis.source_refs.clone(),
+            exactness_assumptions: axis.exactness_assumptions.clone(),
+            missing_preconditions: packet.flatness_reading.blocked_by_coverage_gaps.clone(),
+            non_conclusions: axis.non_conclusions.clone(),
+        });
+    }
+    claims.push(AirClaim {
+        claim_id: "claim-archsig-flatness-reading".to_string(),
+        subject_ref: packet.flatness_reading.reading_id.clone(),
+        predicate: format!(
+            "selected LawPolicy flatness status is {}",
+            packet.flatness_reading.status
+        ),
+        claim_level: "tooling-analysis".to_string(),
+        claim_classification: "empirical".to_string(),
+        measurement_boundary: if packet
+            .flatness_reading
+            .nonzero_signature_axis_refs
+            .is_empty()
+        {
+            "measuredZero".to_string()
+        } else {
+            "measuredNonzero".to_string()
+        },
+        theorem_refs: vec![packet.flatness_reading.selected_law_policy_ref.clone()],
+        evidence_refs: vec!["evidence-archsig-analysis-packet".to_string()],
+        required_assumptions: packet.flatness_reading.interpretation_notes_for_llm.clone(),
+        coverage_assumptions: packet.flatness_reading.zero_signature_axis_refs.clone(),
+        exactness_assumptions: vec![packet.flatness_reading.evidence_boundary.clone()],
+        missing_preconditions: packet.flatness_reading.blocked_by_coverage_gaps.clone(),
+        non_conclusions: packet.flatness_reading.non_conclusions.clone(),
+    });
+
+    let signature_axes = packet
+        .signature_axes
+        .iter()
+        .map(|axis| AirSignatureAxis {
+            axis: axis.signature_axis_id.clone(),
+            value: Some(axis.value),
+            measured: true,
+            measurement_boundary: axis_measurement_boundary(axis.value),
+            source: Some("archsig-analysis-packet-v0".to_string()),
+            reason: Some(axis.evidence_summary.clone()),
+        })
+        .chain([AirSignatureAxis {
+            axis: "runtimePropagation".to_string(),
+            value: None,
+            measured: false,
+            measurement_boundary: "unmeasured".to_string(),
+            source: Some("archsig-analysis-packet-v0".to_string()),
+            reason: Some(
+                "runtime observations are retained as gaps in the analysis packet".to_string(),
+            ),
+        }])
+        .collect();
+    let coverage = AirCoverage {
+        layers: archsig_analysis_air_coverage_layers(packet),
+    };
+
+    AirDocumentV0 {
+        schema_version: AIR_SCHEMA_VERSION.to_string(),
+        schema_compatibility: None,
+        architecture_id: packet.arch_map_ref.artifact_id.clone(),
+        ids: AirIdPolicies {
+            component_id_policy: "ArchSig packet observation and obstruction ids".to_string(),
+            relation_id_policy: "ArchSig packet stable ordinal".to_string(),
+            evidence_id_policy: "ArchSig packet artifact and axis ids".to_string(),
+            claim_id_policy: "ArchSig packet obstruction, axis, and flatness ids".to_string(),
+        },
+        revision: AirRevision {
+            before: None,
+            after: packet.generated_at.clone(),
+        },
+        feature: AirFeature {
+            feature_id: Some(packet.analysis_id.clone()),
+            title: Some("ArchSig analysis packet downstream projection".to_string()),
+            description: Some(
+                "AIR generated from archsig-analysis-packet-v0, not direct ArchMap homomorphism"
+                    .to_string(),
+            ),
+            source: "manual".to_string(),
+            ai_session: None,
+        },
+        artifacts,
+        evidence,
+        components,
+        relations,
+        policies: AirPolicies {
+            laws: stable_strings(
+                packet
+                    .signature_axes
+                    .iter()
+                    .map(|axis| axis.law_ref.clone())
+                    .chain(
+                        packet
+                            .molecule_readings
+                            .iter()
+                            .flat_map(|reading| reading.law_refs.clone()),
+                    )
+                    .collect(),
+            ),
+            boundaries: vec![packet.evidence_boundary.clone()],
+            allowed_edges: Vec::new(),
+            forbidden_edges: packet
+                .obstruction_circuits
+                .iter()
+                .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+                .collect(),
+            abstraction_rules: packet.excluded_readings.clone(),
+            protection_rules: packet.interpretation_notes_for_llm.clone(),
+        },
+        semantic_diagrams: Vec::new(),
+        architecture_paths: Vec::new(),
+        homotopy_generators: Vec::new(),
+        nonfillability_witnesses: Vec::new(),
+        signature: AirSignature {
+            axes: signature_axes,
+        },
+        coverage,
+        claims,
+        operation_trace: AirOperationTrace {
+            operations: packet
+                .repair_operation_candidates
+                .iter()
+                .map(|candidate| candidate.repair_operation_candidate_id.clone())
+                .collect(),
+        },
+        extension: AirExtension {
+            embedding_claim_ref: Some("claim-archsig-flatness-reading".to_string()),
+            feature_view_claim_ref: None,
+            interaction_claim_refs: packet
+                .obstruction_circuits
+                .iter()
+                .map(|obstruction| {
+                    format!(
+                        "claim-archsig-obstruction-{}",
+                        stable_fragment(&obstruction.obstruction_circuit_id)
+                    )
+                })
+                .collect(),
+            split_claim_ref: Some("claim-archsig-flatness-reading".to_string()),
+            split_status: packet.flatness_reading.status.clone(),
+        },
+    }
+}
+
+fn archsig_analysis_air_coverage_layers(packet: &ArchSigAnalysisPacketV0) -> Vec<AirCoverageLayer> {
+    [
+        (
+            "static",
+            &packet
+                .static_runtime_semantic_layer_split
+                .static_observation_refs,
+        ),
+        (
+            "runtime",
+            &packet
+                .static_runtime_semantic_layer_split
+                .runtime_observation_refs,
+        ),
+        (
+            "semantic",
+            &packet
+                .static_runtime_semantic_layer_split
+                .semantic_observation_refs,
+        ),
+    ]
+    .into_iter()
+    .map(|(layer, refs)| {
+        let has_refs = !refs.is_empty();
+        let is_runtime_gap = layer == "runtime"
+            && refs
+                .iter()
+                .any(|reference| reference.starts_with("gap") || reference.contains("gap"));
+        let measured_layer = layer == "static" && has_refs && !is_runtime_gap;
+        AirCoverageLayer {
+            layer: layer.to_string(),
+            measurement_boundary: if measured_layer {
+                "measuredNonzero".to_string()
+            } else {
+                "unmeasured".to_string()
+            },
+            universe_refs: vec!["artifact-archsig-analysis-packet".to_string()],
+            measured_axes: if measured_layer {
+                vec![format!("{layer}ArchSigAnalysisCoverage")]
+            } else {
+                Vec::new()
+            },
+            unmeasured_axes: if !measured_layer {
+                if layer == "runtime" {
+                    vec![
+                        format!("{layer}ArchSigAnalysisCoverage"),
+                        "runtimePropagation".to_string(),
+                    ]
+                } else {
+                    vec![format!("{layer}ArchSigAnalysisCoverage")]
+                }
+            } else {
+                Vec::new()
+            },
+            projection_rule: measured_layer
+                .then(|| "archsig-analysis-packet-to-air-v0".to_string()),
+            extraction_scope: packet.atom_configuration_summary.coverage_summary.clone(),
+            exactness_assumptions: packet
+                .signature_axes
+                .iter()
+                .flat_map(|axis| axis.exactness_assumptions.clone())
+                .collect(),
+            unsupported_constructs: if is_runtime_gap {
+                refs.clone()
+            } else {
+                Vec::new()
+            },
+        }
+    })
+    .collect()
+}
+
+fn apply_archsig_analysis_packet_to_feature_report(
+    report: &mut FeatureExtensionReportV0,
+    packet: &ArchSigAnalysisPacketV0,
+) {
+    report.homomorphism_summary = FeatureReportHomomorphismSummary {
+        classification: packet.flatness_reading.status.clone(),
+        domain: packet.arch_map_ref.schema_version.clone(),
+        codomain: packet.schema_version.clone(),
+        map_families: vec![
+            FeatureReportHomomorphismFamily {
+                map_family: "atomObservation".to_string(),
+                entry_count: packet.atom_configuration_summary.atom_observation_count,
+                measured_count: packet.atom_configuration_summary.atom_observation_count,
+                unmeasured_count: packet.atom_configuration_summary.observation_gap_count,
+                lossy_count: packet.atom_configuration_summary.concern_hint_count,
+            },
+            FeatureReportHomomorphismFamily {
+                map_family: "moleculeReading".to_string(),
+                entry_count: packet.molecule_readings.len(),
+                measured_count: packet.molecule_readings.len(),
+                unmeasured_count: 0,
+                lossy_count: 0,
+            },
+            FeatureReportHomomorphismFamily {
+                map_family: "obstructionCircuit".to_string(),
+                entry_count: packet.obstruction_circuits.len(),
+                measured_count: packet.obstruction_circuits.len(),
+                unmeasured_count: 0,
+                lossy_count: 0,
+            },
+            FeatureReportHomomorphismFamily {
+                map_family: "signatureAxis".to_string(),
+                entry_count: packet.signature_axes.len(),
+                measured_count: packet.signature_axes.len(),
+                unmeasured_count: packet.flatness_reading.blocked_by_coverage_gaps.len(),
+                lossy_count: 0,
+            },
+        ],
+        preserved_structure_refs: packet
+            .signature_axes
+            .iter()
+            .flat_map(|axis| axis.source_refs.clone())
+            .collect(),
+        obstruction_refs: packet
+            .obstruction_circuits
+            .iter()
+            .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+            .collect(),
+        forgetful_boundaries: packet.excluded_readings.clone(),
+        unmeasured_boundaries: packet.flatness_reading.blocked_by_coverage_gaps.clone(),
+        unsupported_boundaries: packet
+            .static_runtime_semantic_layer_split
+            .runtime_observation_refs
+            .clone(),
+        next_evidence: packet
+            .repair_operation_candidates
+            .iter()
+            .flat_map(|candidate| candidate.preconditions.clone())
+            .collect(),
+        non_conclusions: stable_strings(
+            packet
+                .non_conclusions
+                .iter()
+                .cloned()
+                .chain([
+                    "Feature Report is derived from ArchSig analysis packet state".to_string(),
+                    "ArchMap concern hints are interpreted only after LawPolicy selection"
+                        .to_string(),
+                ])
+                .collect(),
+        ),
+    };
+    report.review_summary.top_witnesses = packet
+        .obstruction_circuits
+        .iter()
+        .map(|obstruction| obstruction.circuit_kind.clone())
+        .collect();
+    report.review_summary.required_action = if packet.obstruction_circuits.is_empty() {
+        "inspect-selected-policy-boundaries".to_string()
+    } else {
+        "review-selected-policy-obstruction-circuits".to_string()
+    };
+    report.non_conclusions = stable_strings(
+        report
+            .non_conclusions
+            .iter()
+            .cloned()
+            .chain(packet.non_conclusions.clone())
+            .collect(),
+    );
+}
+
+fn observable_bundle_from_archsig_analysis_workflow(
+    packet: &ArchSigAnalysisPacketV0,
+    _air: &AirDocumentV0,
+    theorem_check: &TheoremPreconditionCheckReportV0,
+    feature_report: &FeatureExtensionReportV0,
+    analysis_packet_path: &Path,
+    analysis_validation_path: &Path,
+    air_path: &Path,
+    air_validation_path: &Path,
+    theorem_check_path: &Path,
+    feature_report_path: &Path,
+) -> AatObservableBundleV0 {
+    let source_refs = vec![
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:archsig-analysis-packet:primary".to_string(),
+            artifact_kind: "archsig-analysis-packet".to_string(),
+            schema_version: packet.schema_version.clone(),
+            path: analysis_packet_path.display().to_string(),
+            retained_fields: vec![
+                "archMapRef".to_string(),
+                "selectedLawPolicyRef".to_string(),
+                "obstructionCircuits".to_string(),
+                "signatureAxes".to_string(),
+                "flatnessReading".to_string(),
+                "repairOperationCandidates".to_string(),
+                "nonConclusions".to_string(),
+            ],
+            non_conclusions: packet.non_conclusions.clone(),
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:archsig-analysis-validation:primary".to_string(),
+            artifact_kind: "archsig-analysis-validation-report".to_string(),
+            schema_version: "archsig-analysis-packet-validation-report-v0".to_string(),
+            path: analysis_validation_path.display().to_string(),
+            retained_fields: vec!["checks".to_string(), "summary".to_string()],
+            non_conclusions: vec![
+                "analysis validation does not prove architecture lawfulness".to_string(),
+            ],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:air:analysis-packet".to_string(),
+            artifact_kind: "air".to_string(),
+            schema_version: AIR_SCHEMA_VERSION.to_string(),
+            path: air_path.display().to_string(),
+            retained_fields: vec![
+                "artifacts".to_string(),
+                "claims".to_string(),
+                "coverage".to_string(),
+            ],
+            non_conclusions: vec![
+                "AIR projection records analysis packet claims, not Lean theorem discharge"
+                    .to_string(),
+            ],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:air-validation:analysis-packet".to_string(),
+            artifact_kind: "air-validation-report".to_string(),
+            schema_version: "aat-air-validation-report-v0".to_string(),
+            path: air_validation_path.display().to_string(),
+            retained_fields: vec!["checks".to_string(), "summary".to_string()],
+            non_conclusions: vec!["AIR validation does not approve merge".to_string()],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:theorem-check:analysis-packet".to_string(),
+            artifact_kind: "theorem-precondition-check-report".to_string(),
+            schema_version: "theorem-precondition-check-report-v0".to_string(),
+            path: theorem_check_path.display().to_string(),
+            retained_fields: vec!["checks".to_string(), "summary".to_string()],
+            non_conclusions: vec!["theorem precondition check is not a Lean proof".to_string()],
+        },
+        AatObservableSourceRefV0 {
+            source_ref_id: "source:feature-report:analysis-packet".to_string(),
+            artifact_kind: "feature-extension-report".to_string(),
+            schema_version: "feature-extension-report-v0".to_string(),
+            path: feature_report_path.display().to_string(),
+            retained_fields: vec![
+                "homomorphismSummary".to_string(),
+                "reviewSummary".to_string(),
+                "nonConclusions".to_string(),
+            ],
+            non_conclusions: vec![
+                "feature report is analysis-packet-derived review evidence".to_string(),
+            ],
+        },
+    ];
+    let source_ref_ids: Vec<String> = source_refs
+        .iter()
+        .map(|source_ref| source_ref.source_ref_id.clone())
+        .collect();
+    let witness_refs: Vec<String> = packet
+        .obstruction_circuits
+        .iter()
+        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .collect();
+    let theorem_claim_ref = theorem_check
+        .checks
+        .first()
+        .map(|check| check.claim_id.clone())
+        .unwrap_or_else(|| "claim-archsig-flatness-reading".to_string());
+
+    AatObservableBundleV0 {
+        schema_version: AAT_OBSERVABLE_BUNDLE_SCHEMA_VERSION.to_string(),
+        bundle_id: format!("llm-native-archsig-analysis:{}", packet.analysis_id),
+        architecture_id: packet.arch_map_ref.artifact_id.clone(),
+        source_refs,
+        selected_universe: AatSelectedUniverseV0 {
+            universe_id: format!("universe:{}", packet.arch_map_ref.artifact_id),
+            included_refs: packet.atom_configuration_summary.source_refs.clone(),
+            excluded_refs: packet.excluded_readings.clone(),
+            private_refs: Vec::new(),
+            unavailable_refs: packet.flatness_reading.blocked_by_coverage_gaps.clone(),
+            unsupported_refs: packet
+                .static_runtime_semantic_layer_split
+                .runtime_observation_refs
+                .clone(),
+            dynamic_boundary_refs: packet.flatness_reading.blocked_by_coverage_gaps.clone(),
+            exactness_assumptions: packet
+                .signature_axes
+                .iter()
+                .flat_map(|axis| axis.exactness_assumptions.clone())
+                .collect(),
+            measurement_status: "partiallyMeasured".to_string(),
+            non_conclusions: packet.non_conclusions.clone(),
+        },
+        concept_mappings: archsig_analysis_concept_mappings(packet, feature_report),
+        observed_axes: packet
+            .signature_axes
+            .iter()
+            .map(|axis| AatObservedAxisV0 {
+                axis_id: axis.signature_axis_id.clone(),
+                concept_refs: vec!["concept:archsig-signature-axis".to_string()],
+                artifact_refs: vec!["source:archsig-analysis-packet:primary".to_string()],
+                measurement_status: axis.coverage_status.clone(),
+                value: Some(axis.value),
+                boundary: axis.evidence_summary.clone(),
+                non_conclusions: axis.non_conclusions.clone(),
+            })
+            .collect(),
+        coverage_boundaries: vec![
+            AatCoverageBoundaryV0 {
+                boundary_id: "coverage:archsig-analysis-packet".to_string(),
+                boundary_kind: "analysis-packet-boundary".to_string(),
+                affected_refs: source_ref_ids.clone(),
+                measurement_status: "partiallyMeasured".to_string(),
+                review_action_ref: Some("review:inspect-analysis-packet-boundaries".to_string()),
+                non_conclusions: packet.non_conclusions.clone(),
+            },
+            AatCoverageBoundaryV0 {
+                boundary_id: "coverage:archsig-runtime-gaps".to_string(),
+                boundary_kind: "unmeasured".to_string(),
+                affected_refs: packet.flatness_reading.blocked_by_coverage_gaps.clone(),
+                measurement_status: "unmeasured".to_string(),
+                review_action_ref: Some("review:inspect-analysis-packet-boundaries".to_string()),
+                non_conclusions: vec!["observation gaps are not measured zero".to_string()],
+            },
+            AatCoverageBoundaryV0 {
+                boundary_id: "coverage:archsig-excluded-readings".to_string(),
+                boundary_kind: "out-of-scope".to_string(),
+                affected_refs: packet.excluded_readings.clone(),
+                measurement_status: "outOfScope".to_string(),
+                review_action_ref: Some("review:inspect-analysis-packet-boundaries".to_string()),
+                non_conclusions: vec![
+                    "excluded readings are retained as boundary data".to_string(),
+                ],
+            },
+        ],
+        witness_catalog: if witness_refs.is_empty() {
+            Vec::new()
+        } else {
+            vec![AatWitnessCatalogEntryV0 {
+                witness_ref: witness_refs[0].clone(),
+                witness_kind: packet.obstruction_circuits[0].circuit_kind.clone(),
+                law_refs: vec![packet.obstruction_circuits[0].law_ref.clone()],
+                source_refs: source_ref_ids.clone(),
+                measurement_status: "measuredNonzero".to_string(),
+                severity: feature_report.review_summary.required_action.clone(),
+                review_action_ref: "review:inspect-analysis-packet-boundaries".to_string(),
+                non_conclusions: packet.obstruction_circuits[0].non_conclusions.clone(),
+            }]
+        },
+        operation_candidates: packet
+            .repair_operation_candidates
+            .iter()
+            .map(|candidate| AatOperationCandidateV0 {
+                operation_ref: candidate.repair_operation_candidate_id.clone(),
+                operation_kind: candidate.operation_kind.clone(),
+                role: "repair-operation-candidate".to_string(),
+                confidence: "medium".to_string(),
+                deterministic_cues: candidate.expected_signature_axis_effects.clone(),
+                llm_judgment_needed: candidate.preconditions.clone(),
+                evidence_refs: source_ref_ids.clone(),
+                preserved_invariant_refs: candidate.preserved_invariants.clone(),
+                possible_transferred_obstruction_refs: candidate.transfer_risks.clone(),
+                non_conclusions: candidate.non_conclusions.clone(),
+            })
+            .collect(),
+        projection_observation_evidence: vec![AatProjectionObservationEvidenceV0 {
+            evidence_ref: "evidence:analysis-packet-to-air".to_string(),
+            evidence_kind: "analysis-packet-projection".to_string(),
+            source_ref: "source:archsig-analysis-packet:primary".to_string(),
+            target_ref: "source:air:analysis-packet".to_string(),
+            local_contract_boundary: packet.evidence_boundary.clone(),
+            global_layering_boundary: "global layering is not concluded from packet projection"
+                .to_string(),
+            witness_refs: witness_refs.clone(),
+            non_conclusions: vec![
+                "projection evidence does not prove semantic preservation".to_string(),
+            ],
+        }],
+        feature_extension_evidence: vec![AatFeatureExtensionEvidenceV0 {
+            evidence_ref: "evidence:feature-report:analysis-packet".to_string(),
+            feature_ref: packet.analysis_id.clone(),
+            operation_ref: "operation:llm-native-archsig-review".to_string(),
+            obstruction_classifications: feature_report.review_summary.top_witnesses.clone(),
+            source_refs: source_ref_ids.clone(),
+            witness_refs: witness_refs.clone(),
+            missing_evidence_refs: feature_report.undischarged_assumptions.clone(),
+            static_boundary: "static observations are read from the analysis packet".to_string(),
+            runtime_boundary: packet
+                .static_runtime_semantic_layer_split
+                .split_boundary
+                .clone(),
+            semantic_boundary: packet.evidence_boundary.clone(),
+            coverage_boundary: packet.flatness_reading.evidence_boundary.clone(),
+            non_conclusions: feature_report.non_conclusions.clone(),
+        }],
+        semantic_diagram_evidence: Vec::new(),
+        state_effect_law_evidence: vec![AatStateEffectLawEvidenceV0 {
+            evidence_ref: "evidence:selected-law-policy:analysis-packet".to_string(),
+            law_kind: packet.selected_law_policy_ref.artifact_id.clone(),
+            law_case_refs: packet
+                .signature_axes
+                .iter()
+                .map(|axis| axis.law_ref.clone())
+                .collect(),
+            measurement_status: "partiallyMeasured".to_string(),
+            witness_refs: witness_refs.clone(),
+            unmeasured_law_families: packet.flatness_reading.blocked_by_coverage_gaps.clone(),
+            non_conclusions: packet.non_conclusions.clone(),
+        }],
+        repair_synthesis_evidence: vec![AatRepairSynthesisEvidenceV0 {
+            evidence_ref: "evidence:repair-candidates:analysis-packet".to_string(),
+            repair_step_refs: packet
+                .repair_operation_candidates
+                .iter()
+                .map(|candidate| candidate.repair_operation_candidate_id.clone())
+                .collect(),
+            synthesis_candidate_refs: Vec::new(),
+            no_solution_certificate_refs: Vec::new(),
+            selected_obstruction_decrease_refs: packet
+                .repair_operation_candidates
+                .iter()
+                .flat_map(|candidate| candidate.target_obstruction_refs.clone())
+                .collect(),
+            transferred_risk_refs: packet
+                .repair_operation_candidates
+                .iter()
+                .flat_map(|candidate| candidate.transfer_risks.clone())
+                .collect(),
+            solver_status: "not-run".to_string(),
+            non_conclusions: vec![
+                "repair candidates are review hypotheses, not guaranteed improvements".to_string(),
+            ],
+        }],
+        analytic_axes: vec![AatAnalyticAxisV0 {
+            axis_id: "analytic:archsig-analysis-packet".to_string(),
+            metric_ref: "archsigAnalysis.signatureAxes".to_string(),
+            representation_strength: vec!["law-policy-relative".to_string()],
+            selected_witness_universe: witness_refs.clone(),
+            aggregate_zero_reflection:
+                "zero selected axes still requires explicit coverage and exactness assumptions"
+                    .to_string(),
+            coverage_assumptions: packet.atom_configuration_summary.coverage_summary.clone(),
+            non_conclusions: packet.non_conclusions.clone(),
+        }],
+        theorem_boundaries: vec![AatTheoremBoundaryV0 {
+            boundary_ref: "boundary:archsig-analysis-theorem-preconditions".to_string(),
+            claim_ref: theorem_claim_ref,
+            claim_level: "tooling-analysis".to_string(),
+            claim_classification: "review".to_string(),
+            missing_preconditions: theorem_check
+                .checks
+                .iter()
+                .flat_map(|check| check.missing_preconditions.clone())
+                .collect(),
+            measured_violation_refs: witness_refs,
+            review_action_ref: "review:inspect-analysis-packet-boundaries".to_string(),
+            non_conclusions: vec!["theorem precondition check is not a Lean proof".to_string()],
+        }],
+        review_actions: vec![AatReviewActionV0 {
+            review_action_id: "review:inspect-analysis-packet-boundaries".to_string(),
+            category: "human-review".to_string(),
+            source_refs: source_ref_ids.clone(),
+            action:
+                "inspect ArchSig analysis packet boundaries before interpreting repair candidates"
+                    .to_string(),
+            next_evidence: packet.flatness_reading.blocked_by_coverage_gaps.clone(),
+            owner: "human-reviewer".to_string(),
+            non_conclusions: packet.non_conclusions.clone(),
+        }],
+        llm_review_surface: AatLlmReviewSurfaceV0 {
+            skill_ref: "tools/archsig/skills/aat-reviewer/SKILL.md".to_string(),
+            input_artifact_refs: source_ref_ids,
+            review_questions: vec![
+                "Which selected LawPolicy generated the obstruction circuit?".to_string(),
+                "Which observation gaps block flatness or global zero readings?".to_string(),
+                "Which repair candidates preserve declared invariants?".to_string(),
+            ],
+            output_categories: vec![
+                "selectedPolicyObstruction".to_string(),
+                "coverageGap".to_string(),
+                "repairCandidate".to_string(),
+                "nonConclusion".to_string(),
+            ],
+            deterministic_inputs: vec![
+                "ArchSig analysis packet".to_string(),
+                "AIR projection from analysis packet".to_string(),
+                "theorem precondition checks".to_string(),
+                "feature report analysis summary".to_string(),
+            ],
+            llm_judgment_boundaries: vec![
+                "interpret repair candidate tradeoffs".to_string(),
+                "translate evidence gaps into next review questions".to_string(),
+            ],
+            human_review_boundaries: vec![
+                "risk acceptance".to_string(),
+                "merge approval".to_string(),
+            ],
+            non_conclusions: packet.non_conclusions.clone(),
+        },
+        responsibility_boundary: AatResponsibilityBoundaryV0 {
+            deterministic_tool: vec![
+                "validate analysis packet schema and refs".to_string(),
+                "project packet claims into AIR and review artifacts".to_string(),
+            ],
+            llm_review: vec![
+                "interpret packet notes and repair candidates".to_string(),
+                "prioritize next evidence from gaps".to_string(),
+            ],
+            human_review: vec![
+                "accept residual risk".to_string(),
+                "decide implementation changes".to_string(),
+            ],
+            formal_proof: vec![
+                "Lean theorem packages remain separate from ArchSig validation".to_string(),
+            ],
+            non_conclusions: packet.non_conclusions.clone(),
+        },
+        non_conclusions: stable_strings(
+            packet
+                .non_conclusions
+                .iter()
+                .cloned()
+                .chain([
+                    "AAT observable bundle is generated from ArchSig analysis packet state"
+                        .to_string(),
+                    "AAT observable bundle is tooling evidence, not a Lean theorem proof"
+                        .to_string(),
+                    "unmeasured is not measured zero".to_string(),
+                    "validation pass does not prove extractor completeness".to_string(),
+                    "LLM review output is judgment support, not automatic merge approval"
+                        .to_string(),
+                ])
+                .collect(),
+        ),
+    }
+}
+
+fn archsig_analysis_concept_mappings(
+    packet: &ArchSigAnalysisPacketV0,
+    feature_report: &FeatureExtensionReportV0,
+) -> Vec<AatConceptMappingV0> {
+    vec![
+        archmap_concept_mapping(
+            "concept:architecture-object",
+            "ArchitectureObject / ComponentUniverse",
+            "partiallyMeasured",
+            "reviewable",
+            &["atom observations are source-grounded, not universal atom truth"],
+        ),
+        archmap_concept_mapping(
+            "concept:obstruction-witness",
+            "ObstructionWitness",
+            if packet.obstruction_circuits.is_empty() {
+                "measuredZeroUnderSelectedPolicy"
+            } else {
+                "measuredNonzero"
+            },
+            "reviewable",
+            &["obstruction circuits are computed by ArchSig from ArchMap plus LawPolicy"],
+        ),
+        archmap_concept_mapping(
+            "concept:signature-axis",
+            "AnalyticRepresentation / ObstructionValuation",
+            "partiallyMeasured",
+            &feature_report.review_summary.required_action,
+            &["signature axes are law-policy-relative, not universal quality scores"],
+        ),
+        archmap_concept_mapping(
+            "concept:theorem-boundary",
+            "TheoremBoundary / NonConclusion",
+            "unmeasured",
+            "reviewable",
+            &["theorem boundary status records blocked preconditions and guardrails"],
+        ),
+        archmap_concept_mapping(
+            "concept:operation",
+            "ArchitectureOperation",
+            "partiallyMeasured",
+            "reviewable",
+            &["repair operation candidates are not automatic safe refactorings"],
+        ),
+        archmap_concept_mapping(
+            "concept:projection-observation",
+            "Projection / Observation / LSP / DIP",
+            "partiallyMeasured",
+            "reviewable",
+            &["analysis packet projection is review evidence, not semantic preservation proof"],
+        ),
+        archmap_concept_mapping(
+            "concept:feature-extension",
+            "FeatureExtension / ExtensionObstruction",
+            if packet.obstruction_circuits.is_empty() {
+                "unmeasured"
+            } else {
+                "partiallyMeasured"
+            },
+            "reviewable",
+            &["feature report is derived from selected analysis packet state"],
+        ),
+        archmap_concept_mapping(
+            "concept:semantic-diagram",
+            "Path / Homotopy / DiagramFiller / NonFillability",
+            "unmeasured",
+            "reviewable",
+            &["semantic diagram evidence is not reconstructed from the packet adapter"],
+        ),
+        archmap_concept_mapping(
+            "concept:state-effect",
+            "StateTransition / EffectBoundary",
+            "partiallyMeasured",
+            "reviewable",
+            &["state/effect law evidence is selected-law-policy-relative"],
+        ),
+        archmap_concept_mapping(
+            "concept:repair-synthesis",
+            "Repair / Synthesis / ComplexityTransfer",
+            "outOfScope",
+            "reviewable",
+            &["repair synthesis is not run by the analysis packet adapter"],
+        ),
+    ]
+}
+
+fn axis_measurement_boundary(value: i64) -> String {
+    if value == 0 {
+        "measuredZero".to_string()
+    } else {
+        "measuredNonzero".to_string()
+    }
+}
+
+fn stable_fragment(value: &str) -> String {
+    let mut out = String::new();
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric() {
+            out.push(ch.to_ascii_lowercase());
+        } else if !out.ends_with('-') {
+            out.push('-');
+        }
+    }
+    out.trim_matches('-').to_string()
+}
+
+fn stable_strings(mut values: Vec<String>) -> Vec<String> {
+    values.sort();
+    values.dedup();
+    values
 }
 
 fn observable_bundle_from_archmap_workflow(

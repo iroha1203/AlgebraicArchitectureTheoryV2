@@ -1,6 +1,6 @@
 use crate::validation::{count_checks, validation_check};
 use crate::{
-    PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
+    ARCHMAP_SCHEMA_VERSION, PR_QUALITY_ANALYSIS_REPORT_SCHEMA_VERSION,
     PR_QUALITY_ANALYSIS_VALIDATION_REPORT_SCHEMA_VERSION, PrQualityAnalysisReportV0,
     PrQualityAnalysisValidationInput, PrQualityAnalysisValidationReportV0,
     PrQualityAnalysisValidationSummary, PrQualityArchMapArtifactRefV0, PrQualityArtifactRefV0,
@@ -22,7 +22,7 @@ pub fn static_pr_quality_analysis_report() -> PrQualityAnalysisReportV0 {
         archmap_ref: PrQualityArchMapArtifactRefV0 {
             artifact_id: "artifact:archmap".to_string(),
             artifact_kind: "archmap".to_string(),
-            schema_version: Some("archmap-v0".to_string()),
+            schema_version: Some(ARCHMAP_SCHEMA_VERSION.to_string()),
             path: "archmap.json".to_string(),
             selected_map_item_ids: vec!["object-route-users".to_string()],
             non_conclusions: strings(&PR_QUALITY_NON_CONCLUSIONS),
