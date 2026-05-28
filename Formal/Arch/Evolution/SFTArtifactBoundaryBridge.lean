@@ -1,15 +1,15 @@
 import Formal.Arch.Evolution.SFTAATFundamentalModularity
 import Formal.Arch.Evolution.SFTArchSigBoundary
-import Formal.Arch.Signature.ArchMap
+import Formal.Arch.Observation.ArchMap
 
 /-!
 Artifact-to-theorem-boundary bridge for AAT-supported SFT.
 
-This module connects ArchMap and ArchSig-style artifact boundaries to the
-existing AAT-supported finite selected SFT boundary surface.  The bridge keeps
-the artifact evidence on the precondition/boundary side: it does not turn a
-tool artifact into extractor completeness, calibrated forecast correctness, or
-an assumption-free Grand Theorem.
+This module connects ArchMap observation layers and ArchSig-style artifact
+boundaries to the existing AAT-supported finite selected SFT boundary surface.
+The bridge keeps the artifact evidence on the precondition/boundary side: it
+does not turn a tool artifact into extractor completeness, calibrated forecast
+correctness, or an assumption-free Grand Theorem.
 -/
 
 namespace Formal.Arch
@@ -21,71 +21,79 @@ universe u v w x y z q r s t a b c d e f
 
 namespace AATSelectedArchitectureSlice
 
-variable {Src : Type u} {Tgt : Type v} {Abs : Type w}
-variable {StaticObs : Type q} {SrcExpr : Type r}
-variable {TgtExpr : Type s} {SemanticObs : Type t}
-variable {M : ArchMapModel Src Tgt Abs StaticObs SrcExpr TgtExpr SemanticObs}
+variable {system : AtomAxiomSystem.{u, v}}
+variable {Source : Type q} {Evidence : Type r}
+variable {layer : Observation.ArchMapObservationLayer system Source Evidence}
 
 /--
-Read an ArchMap preservation package as the selected AAT architecture slice
+Evidence that an ArchMap observation layer can be read as a selected AAT slice.
+
+The observation layer itself records the boundary propositions. This package
+keeps the proof obligations explicit so that an ArchMap artifact is not
+promoted into atom truth, extractor completeness, or theorem discharge.
+-/
+structure ArchMapDerivedAATSliceBoundary
+    (layer : Observation.ArchMapObservationLayer system Source Evidence) where
+  recordsProjectionBoundary : layer.rawCandidateBoundary
+  recordsObservationBoundary : layer.coverageBoundary ∧ layer.exactnessBoundary
+  recordsReconstructionBoundary : layer.validationBoundary
+  recordsMissingEvidence : layer.presentation.missingIsNotAtomAbsence
+  recordsNonConclusions : layer.nonConclusions ∧ layer.presentation.nonConclusions
+
+/--
+Read an ArchMap observation layer as the selected AAT architecture slice
 needed by AAT-supported SFT.
 
-The fields are boundary/precondition readings of the ArchMap package. They do
+The fields are boundary/precondition readings of the ArchMap layer. They do
 not assert completeness for a real extractor or for an ambient repository.
 -/
-def ofArchMapPreservationPackage
-    (_pkg : ArchMapModel.ArchMapPreservationPackage M) :
+def ofArchMapObservationBoundary
+    (_boundary : ArchMapDerivedAATSliceBoundary layer) :
     AATSelectedArchitectureSlice where
-  selectedArchitecture := ArchMapModel.AATStructurePreserved M
-  projectionBoundary :=
-    ArchMapModel.ObjectRelationPreservation M ∧
-      M.forgettingBoundary ∧ M.unsupportedRelationBoundary
-  observationBoundary := M.coverageBoundary ∧ M.exactnessBoundary
-  reconstructionBoundary :=
-    ArchMapModel.SemanticDiagramPreservation M ∧
-      ArchMapModel.SemanticCommutationPreservation M ∧
-        ArchMapModel.NonfillabilityWitnessPreservation M
-  missingEvidence := M.semanticCoverageGapBoundary
-  theoremStatusBoundary := M.formalPromotionGuardrail
-  nonConclusions := M.nonConclusions
+  selectedArchitecture := layer.observesAtoms
+  projectionBoundary := layer.rawCandidateBoundary
+  observationBoundary := layer.coverageBoundary ∧ layer.exactnessBoundary
+  reconstructionBoundary := layer.validationBoundary
+  missingEvidence := layer.presentation.missingIsNotAtomAbsence
+  theoremStatusBoundary :=
+    layer.archMapDoesNotDefineAAT ∧ system.noObservationBoundaryCreatesAtoms
+  nonConclusions := layer.nonConclusions ∧ layer.presentation.nonConclusions
 
 theorem archMap_records_selectedArchitecture
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
-    (ofArchMapPreservationPackage pkg).RecordsSelectedArchitecture :=
-  pkg.aatStructurePreserved
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
+    (ofArchMapObservationBoundary boundary).RecordsSelectedArchitecture :=
+  layer.observes_atoms
 
 theorem archMap_records_projectionBoundary
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
-    (ofArchMapPreservationPackage pkg).RecordsProjectionBoundary :=
-  ⟨pkg.objectRelationPreservation,
-    pkg.forgettingBoundary, pkg.unsupportedRelationBoundary⟩
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
+    (ofArchMapObservationBoundary boundary).RecordsProjectionBoundary :=
+  boundary.recordsProjectionBoundary
 
 theorem archMap_records_observationBoundary
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
-    (ofArchMapPreservationPackage pkg).RecordsObservationBoundary :=
-  ⟨pkg.coverageBoundary, pkg.exactnessBoundary⟩
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
+    (ofArchMapObservationBoundary boundary).RecordsObservationBoundary :=
+  boundary.recordsObservationBoundary
 
 theorem archMap_records_reconstructionBoundary
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
-    (ofArchMapPreservationPackage pkg).RecordsReconstructionBoundary :=
-  ⟨pkg.semanticDiagramPreservation,
-    pkg.semanticCommutationPreservation,
-    pkg.nonfillabilityWitnessPreservation⟩
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
+    (ofArchMapObservationBoundary boundary).RecordsReconstructionBoundary :=
+  boundary.recordsReconstructionBoundary
 
 theorem archMap_records_missingEvidence
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
-    (ofArchMapPreservationPackage pkg).RecordsMissingEvidence :=
-  pkg.semanticMeasuredZeroUnmeasuredSeparated.2
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
+    (ofArchMapObservationBoundary boundary).RecordsMissingEvidence :=
+  boundary.recordsMissingEvidence
 
 theorem archMap_records_theoremStatusBoundary
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
-    (ofArchMapPreservationPackage pkg).RecordsTheoremStatusBoundary :=
-  pkg.formalPromotionGuardrail
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
+    (ofArchMapObservationBoundary boundary).RecordsTheoremStatusBoundary :=
+  ⟨layer.archmap_does_not_define_aat,
+    layer.archmap_does_not_create_atoms⟩
 
 theorem archMap_preserves_nonConclusions
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
-    (ofArchMapPreservationPackage pkg).RecordsNonConclusions :=
-  pkg.nonConclusions
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
+    (ofArchMapObservationBoundary boundary).RecordsNonConclusions :=
+  boundary.recordsNonConclusions
 
 /--
 ArchMap-to-AAT homomorphic reading used by the AAT/SFT artifact bridge.
@@ -96,26 +104,26 @@ of the ArchMap package. It is a boundary/precondition reading, not a claim that
 the supplied tooling artifact is complete or globally correct.
 -/
 def ArchMapAATHomomorphicReading
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
     Prop :=
-  (ofArchMapPreservationPackage pkg).RecordsSelectedArchitecture ∧
-  (ofArchMapPreservationPackage pkg).RecordsProjectionBoundary ∧
-  (ofArchMapPreservationPackage pkg).RecordsObservationBoundary ∧
-  (ofArchMapPreservationPackage pkg).RecordsReconstructionBoundary ∧
-  (ofArchMapPreservationPackage pkg).RecordsMissingEvidence ∧
-  (ofArchMapPreservationPackage pkg).RecordsTheoremStatusBoundary ∧
-  (ofArchMapPreservationPackage pkg).RecordsNonConclusions
+  (ofArchMapObservationBoundary boundary).RecordsSelectedArchitecture ∧
+  (ofArchMapObservationBoundary boundary).RecordsProjectionBoundary ∧
+  (ofArchMapObservationBoundary boundary).RecordsObservationBoundary ∧
+  (ofArchMapObservationBoundary boundary).RecordsReconstructionBoundary ∧
+  (ofArchMapObservationBoundary boundary).RecordsMissingEvidence ∧
+  (ofArchMapObservationBoundary boundary).RecordsTheoremStatusBoundary ∧
+  (ofArchMapObservationBoundary boundary).RecordsNonConclusions
 
 theorem archMap_aatHomomorphicReading
-    (pkg : ArchMapModel.ArchMapPreservationPackage M) :
-    ArchMapAATHomomorphicReading pkg :=
-  ⟨archMap_records_selectedArchitecture pkg,
-    archMap_records_projectionBoundary pkg,
-    archMap_records_observationBoundary pkg,
-    archMap_records_reconstructionBoundary pkg,
-    archMap_records_missingEvidence pkg,
-    archMap_records_theoremStatusBoundary pkg,
-    archMap_preserves_nonConclusions pkg⟩
+    (boundary : ArchMapDerivedAATSliceBoundary layer) :
+    ArchMapAATHomomorphicReading boundary :=
+  ⟨archMap_records_selectedArchitecture boundary,
+    archMap_records_projectionBoundary boundary,
+    archMap_records_observationBoundary boundary,
+    archMap_records_reconstructionBoundary boundary,
+    archMap_records_missingEvidence boundary,
+    archMap_records_theoremStatusBoundary boundary,
+    archMap_preserves_nonConclusions boundary⟩
 
 end AATSelectedArchitectureSlice
 
@@ -241,11 +249,9 @@ relation is intentionally boundary-level: it does not prove calibrated forecast
 correctness or turn tool output into a Lean theorem witness.
 -/
 def ArchMapAATSFTHomomorphicBoundary
-    {Src : Type a} {Tgt : Type b} {Abs : Type c}
-    {MapStaticObs : Type d} {SrcExpr : Type e}
-    {TgtExpr : Type f} {MapSemanticObs : Type q}
-    {M :
-      ArchMapModel Src Tgt Abs MapStaticObs SrcExpr TgtExpr MapSemanticObs}
+    {system : AtomAxiomSystem.{u, v}}
+    {Source : Type a} {Evidence : Type b}
+    {layer : Observation.ArchMapObservationLayer system Source Evidence}
     {FieldState : Type r} {ReportC : Type s} {ReportA : Type t}
     {ReportStaticObs : Type u} {ReportSemanticExpr : Type v}
     {ReportSemanticObs : Type w}
@@ -256,12 +262,13 @@ def ArchMapAATSFTHomomorphicBoundary
       SoftwareFieldEstimate FieldState ReportC ReportA ReportStaticObs
         ReportSemanticExpr ReportSemanticObs}
     {forecast : SFTForecastStatus}
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (archMapBoundary :
+      AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary layer)
     (_archSigBoundary :
       ArchSigDerivedSFTReportBoundary report estimate forecast) :
     Prop :=
   AATSelectedArchitectureSlice.ArchMapAATHomomorphicReading
-    archMapPackage ∧
+    archMapBoundary ∧
   estimate.RecordsObservationBoundary ∧
   estimate.RecordsReconstructionBoundary ∧
   estimate.RecordsMissingEvidence ∧
@@ -272,11 +279,9 @@ def ArchMapAATSFTHomomorphicBoundary
   forecast.RecordsNonConclusions
 
 theorem archMap_archSig_aatSftHomomorphicBoundary
-    {Src : Type a} {Tgt : Type b} {Abs : Type c}
-    {MapStaticObs : Type d} {SrcExpr : Type e}
-    {TgtExpr : Type f} {MapSemanticObs : Type q}
-    {M :
-      ArchMapModel Src Tgt Abs MapStaticObs SrcExpr TgtExpr MapSemanticObs}
+    {system : AtomAxiomSystem.{u, v}}
+    {Source : Type a} {Evidence : Type b}
+    {layer : Observation.ArchMapObservationLayer system Source Evidence}
     {FieldState : Type r} {ReportC : Type s} {ReportA : Type t}
     {ReportStaticObs : Type u} {ReportSemanticExpr : Type v}
     {ReportSemanticObs : Type w}
@@ -287,12 +292,13 @@ theorem archMap_archSig_aatSftHomomorphicBoundary
       SoftwareFieldEstimate FieldState ReportC ReportA ReportStaticObs
         ReportSemanticExpr ReportSemanticObs}
     {forecast : SFTForecastStatus}
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (archMapBoundary :
+      AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary layer)
     (archSigBoundary :
       ArchSigDerivedSFTReportBoundary report estimate forecast) :
-    ArchMapAATSFTHomomorphicBoundary archMapPackage archSigBoundary :=
+    ArchMapAATSFTHomomorphicBoundary archMapBoundary archSigBoundary :=
   ⟨AATSelectedArchitectureSlice.archMap_aatHomomorphicReading
-      archMapPackage,
+      archMapBoundary,
     archSigBoundary.report_preserves_observationBoundary,
     archSigBoundary.report_preserves_reconstructionBoundary,
     archSigBoundary.report_missing_invariants_remain_missingEvidence,
@@ -310,12 +316,9 @@ variable {Governance : Type z}
 variable {exactModel :
   FiniteExactSFTModel Global Index Local OperationG OperationL Governance}
 variable {source : Global} {horizon : Nat}
-variable {Src : Type a} {Tgt : Type b} {Abs : Type c}
-variable {MapStaticObs : Type d} {SrcExpr : Type e}
-variable {TgtExpr : Type f} {MapSemanticObs : Type q}
-variable
-  {M :
-    ArchMapModel Src Tgt Abs MapStaticObs SrcExpr TgtExpr MapSemanticObs}
+variable {system : AtomAxiomSystem.{q, r}}
+variable {Source : Type a} {Evidence : Type b}
+variable {layer : Observation.ArchMapObservationLayer system Source Evidence}
 variable {FieldState : Type r} {ReportC : Type s} {ReportA : Type t}
 variable {ReportStaticObs : Type u} {ReportSemanticExpr : Type v}
 variable {ReportSemanticObs : Type w}
@@ -335,7 +338,8 @@ Construct an AAT-supported SFT boundary from an ArchMap-derived selected slice
 and an ArchSig-derived SFT report boundary.
 -/
 def ofArchMapAndArchSigBoundaries
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (archMapBoundary :
+      AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary layer)
     (_archSigBoundary :
       ArchSigDerivedSFTReportBoundary report estimate forecast)
     (interfaceBoundary : AATToSFTInterfaceBoundary aatStatus forecast)
@@ -348,24 +352,25 @@ def ofArchMapAndArchSigBoundaries
     AATSupportedSFTBoundary exactModel source horizon :=
   ofSelectedSliceAndFiniteExactModel
     (exactModel := exactModel) (source := source) (horizon := horizon)
-    (AATSelectedArchitectureSlice.ofArchMapPreservationPackage
-      archMapPackage)
+    (AATSelectedArchitectureSlice.ofArchMapObservationBoundary
+      archMapBoundary)
     aatStatus forecast interfaceBoundary
     selectedSourceBoundary selectedHorizonBoundary
     hFinite hExact hObservation
     (AATSelectedArchitectureSlice.archMap_records_projectionBoundary
-      archMapPackage)
+      archMapBoundary)
     (AATSelectedArchitectureSlice.archMap_records_observationBoundary
-      archMapPackage)
+      archMapBoundary)
     (AATSelectedArchitectureSlice.archMap_records_reconstructionBoundary
-      archMapPackage)
+      archMapBoundary)
     (AATSelectedArchitectureSlice.archMap_records_missingEvidence
-      archMapPackage)
+      archMapBoundary)
     forecast.RecordsToolingBoundary
     theoremBoundary typedFailureBoundary nonConclusions
 
 theorem artifact_constructor_records_archMap_boundaries
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (archMapBoundary :
+      AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary layer)
     (archSigBoundary :
       ArchSigDerivedSFTReportBoundary report estimate forecast)
     (interfaceBoundary : AATToSFTInterfaceBoundary aatStatus forecast)
@@ -376,19 +381,20 @@ theorem artifact_constructor_records_archMap_boundaries
     (theoremBoundary typedFailureBoundary nonConclusions : Prop) :
     (ofArchMapAndArchSigBoundaries
       (exactModel := exactModel) (source := source) (horizon := horizon)
-      archMapPackage archSigBoundary interfaceBoundary
+      archMapBoundary archSigBoundary interfaceBoundary
       selectedSourceBoundary selectedHorizonBoundary hFinite hExact
       hObservation theoremBoundary typedFailureBoundary
       nonConclusions).RecordsAATSliceBoundaries :=
   (ofArchMapAndArchSigBoundaries
       (exactModel := exactModel) (source := source) (horizon := horizon)
-      archMapPackage archSigBoundary interfaceBoundary
+      archMapBoundary archSigBoundary interfaceBoundary
       selectedSourceBoundary selectedHorizonBoundary hFinite hExact
       hObservation theoremBoundary typedFailureBoundary
       nonConclusions).records_projection_observation_reconstruction_missingEvidence
 
 theorem artifact_constructor_reads_aat_status_as_sft_local_premise
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (archMapBoundary :
+      AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary layer)
     (archSigBoundary :
       ArchSigDerivedSFTReportBoundary report estimate forecast)
     (interfaceBoundary : AATToSFTInterfaceBoundary aatStatus forecast)
@@ -400,19 +406,20 @@ theorem artifact_constructor_reads_aat_status_as_sft_local_premise
     (hAAT : aatStatus.RecordsTheoremPackage) :
     (ofArchMapAndArchSigBoundaries
       (exactModel := exactModel) (source := source) (horizon := horizon)
-      archMapPackage archSigBoundary interfaceBoundary
+      archMapBoundary archSigBoundary interfaceBoundary
       selectedSourceBoundary selectedHorizonBoundary hFinite hExact
       hObservation theoremBoundary typedFailureBoundary
       nonConclusions).forecastStatus.RecordsLocalPremise :=
   (ofArchMapAndArchSigBoundaries
       (exactModel := exactModel) (source := source) (horizon := horizon)
-      archMapPackage archSigBoundary interfaceBoundary
+      archMapBoundary archSigBoundary interfaceBoundary
       selectedSourceBoundary selectedHorizonBoundary hFinite hExact
       hObservation theoremBoundary typedFailureBoundary
       nonConclusions).aat_status_as_sft_local_premise hAAT
 
 theorem artifact_constructor_preserves_nonConclusions
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M)
+    (archMapBoundary :
+      AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary layer)
     (archSigBoundary :
       ArchSigDerivedSFTReportBoundary report estimate forecast)
     (interfaceBoundary : AATToSFTInterfaceBoundary aatStatus forecast)
@@ -426,19 +433,19 @@ theorem artifact_constructor_preserves_nonConclusions
     (hExactNonConclusions : exactModel.RecordsNonConclusions) :
     (ofArchMapAndArchSigBoundaries
       (exactModel := exactModel) (source := source) (horizon := horizon)
-      archMapPackage archSigBoundary interfaceBoundary
+      archMapBoundary archSigBoundary interfaceBoundary
       selectedSourceBoundary selectedHorizonBoundary hFinite hExact
       hObservation theoremBoundary typedFailureBoundary
       nonConclusions).RecordsNonConclusions :=
   (ofArchMapAndArchSigBoundaries
       (exactModel := exactModel) (source := source) (horizon := horizon)
-      archMapPackage archSigBoundary interfaceBoundary
+      archMapBoundary archSigBoundary interfaceBoundary
       selectedSourceBoundary selectedHorizonBoundary hFinite hExact
       hObservation theoremBoundary typedFailureBoundary
       nonConclusions).preserves_nonConclusions
       hBoundary
       (AATSelectedArchitectureSlice.archMap_preserves_nonConclusions
-        archMapPackage)
+        archMapBoundary)
       hAAT hExactNonConclusions
 
 end AATSupportedSFTBoundary

@@ -1,7 +1,6 @@
 import Formal.Arch.Evolution.SFTField
 import Formal.Arch.AAT.Operation
-import Formal.Arch.Signature.AtomZeroCurvature
-import Formal.Arch.Atomization
+import Formal.Arch.Signature.SignatureLawfulness
 
 namespace Formal.Arch
 
@@ -84,128 +83,7 @@ theorem records_theoremPackage_of_architectureZeroCurvatureTheoremPackage
       nonConclusions).RecordsTheoremPackage :=
   hPackage
 
-/--
-Read a pure Atom-AAT theorem suite, interpreted through a Signature static
-arrangement package, as an AAT theorem-status item for SFT interface purposes.
--/
-noncomputable def ofPureAtomTheoremSuite
-    {C : Type u} {A : Type v} {Obs : Type w}
-    (X : ArchitectureSignature.ArchitectureLawModel C A Obs)
-    {E : Type q} {D : Type r}
-    {RepairState : Type s} {RepairRule : Type t}
-    {SynthesisState : Type m}
-    {repairSource repairTarget : RepairState}
-    (suite :
-      AtomAxiomatizedPureTheoremSuite
-        C E D RepairState RepairRule SynthesisState
-        repairSource repairTarget)
-    (arrangements :
-      ArchitectureSignature.StaticAtomArrangementLawPackage X
-        suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
-    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
-    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
-    (measuredZeroEvidence theoremBoundary unmeasuredAxisBoundary
-      toolingBoundary nonConclusions : Prop) :
-    AATTheoremStatus where
-  theoremPackage :=
-    have _hPackage :
-        ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage X :=
-      ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
-        (X := X)
-        suite
-        arrangements
-    ArchitectureSignature.ArchitectureZeroCurvatureTheoremPackage X
-  measuredZeroEvidence := measuredZeroEvidence
-  theoremBoundary := theoremBoundary
-  unmeasuredAxisBoundary := unmeasuredAxisBoundary
-  toolingBoundary := toolingBoundary
-  nonConclusions := nonConclusions
-
-/--
-The pure Atom theorem-suite constructor exposes the stored theorem package
-when the required Signature arrangement package is supplied.
--/
-theorem records_theoremPackage_of_pureAtomTheoremSuite
-    {C : Type u} {A : Type v} {Obs : Type w}
-    (X : ArchitectureSignature.ArchitectureLawModel C A Obs)
-    {E : Type q} {D : Type r}
-    {RepairState : Type s} {RepairRule : Type t}
-    {SynthesisState : Type m}
-    {repairSource repairTarget : RepairState}
-    (suite :
-      AtomAxiomatizedPureTheoremSuite
-        C E D RepairState RepairRule SynthesisState
-        repairSource repairTarget)
-    (arrangements :
-      ArchitectureSignature.StaticAtomArrangementLawPackage X
-        suite.zeroCurvature.law
-        suite.zeroCurvature.requiredMolecule)
-    [DecidableEq C] [DecidableEq A] [DecidableEq Obs]
-    [DecidableRel X.G.edge] [DecidableRel X.GA.edge]
-    [DecidableRel X.boundaryAllowed] [DecidableRel X.abstractionAllowed]
-    {measuredZeroEvidence theoremBoundary unmeasuredAxisBoundary
-      toolingBoundary nonConclusions : Prop} :
-    (ofPureAtomTheoremSuite X suite arrangements measuredZeroEvidence
-      theoremBoundary unmeasuredAxisBoundary toolingBoundary
-      nonConclusions).RecordsTheoremPackage :=
-  ArchitectureSignature.AtomDerivedZeroCurvaturePackage.architectureZeroCurvatureTheoremPackage_of_pureTheoremSuite
-    (X := X)
-    suite
-    arrangements
-
 end AATTheoremStatus
-
-/--
-SFT reads a pure AAT surface as local algebra.
-
-The package records the one-way dependency: AAT supplies local algebraic
-structure over atoms; SFT consumes it to model evolution.  SFT does not redefine
-Atom, Molecule, DesignLaw, or ObstructionCircuit.
--/
-structure AATLocalAlgebraForSFT (C : Type u) (E : Type v) (D : Type w) where
-  aatSurface : AATPureTheorySurface C E D
-  usedAsLocalAlgebra : Prop
-  usedAsLocalAlgebraEvidence : usedAsLocalAlgebra
-  sftDoesNotRedefineAtoms : Prop
-  sftDoesNotRedefineAtomsEvidence : sftDoesNotRedefineAtoms
-  sftDoesNotRedefineAAT : Prop
-  sftDoesNotRedefineAATEvidence : sftDoesNotRedefineAAT
-  noForecastCorrectnessFromAATAlone : Prop
-  noForecastCorrectnessFromAATAloneEvidence : noForecastCorrectnessFromAATAlone
-  nonConclusions : Prop
-
-namespace AATLocalAlgebraForSFT
-
-variable {C : Type u} {E : Type v} {D : Type w}
-
-theorem reads_aat_as_local_algebra
-    (boundary : AATLocalAlgebraForSFT C E D) :
-    boundary.usedAsLocalAlgebra :=
-  boundary.usedAsLocalAlgebraEvidence
-
-theorem sft_does_not_redefine_atoms
-    (boundary : AATLocalAlgebraForSFT C E D) :
-    boundary.sftDoesNotRedefineAtoms :=
-  boundary.sftDoesNotRedefineAtomsEvidence
-
-theorem sft_does_not_redefine_aat
-    (boundary : AATLocalAlgebraForSFT C E D) :
-    boundary.sftDoesNotRedefineAAT :=
-  boundary.sftDoesNotRedefineAATEvidence
-
-theorem aat_alone_does_not_prove_forecast_correctness
-    (boundary : AATLocalAlgebraForSFT C E D) :
-    boundary.noForecastCorrectnessFromAATAlone :=
-  boundary.noForecastCorrectnessFromAATAloneEvidence
-
-theorem preserves_aat_sft_independence
-    (boundary : AATLocalAlgebraForSFT C E D) :
-    boundary.aatSurface.noSFTDependency :=
-  boundary.aatSurface.independent_of_sft
-
-end AATLocalAlgebraForSFT
 
 /--
 SFT reads an Atom-axiomatized `AATCore` as local algebra.

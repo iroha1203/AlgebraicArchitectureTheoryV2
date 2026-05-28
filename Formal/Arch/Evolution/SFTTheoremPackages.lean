@@ -361,7 +361,8 @@ def representativeDeclarations : Candidate -> List String
        "h1_vanishes_implies_finite_descent"]
   | aatSupportedFundamentalModularity =>
       ["SFTAATFundamentalModularity.AATSelectedArchitectureSlice",
-       "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ofArchMapPreservationPackage",
+       "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary",
+       "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ofArchMapObservationBoundary",
        "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_records_selectedArchitecture",
        "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.archMap_preserves_nonConclusions",
        "SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary",
@@ -706,7 +707,8 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
       [{ schematic := "AAT-supported finite selected Fundamental Modularity",
          leanDeclarations :=
          ["SFTAATFundamentalModularity.AATSupportedSFTBoundary",
-           "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ofArchMapPreservationPackage",
+           "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary",
+           "SFTAATFundamentalModularity.AATSelectedArchitectureSlice.ofArchMapObservationBoundary",
            "SFTAATFundamentalModularity.ArchSigDerivedSFTReportBoundary",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofSelectedSliceAndFiniteExactModel",
            "SFTAATFundamentalModularity.AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries",

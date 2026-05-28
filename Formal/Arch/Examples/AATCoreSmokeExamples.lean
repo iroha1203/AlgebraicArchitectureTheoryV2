@@ -12,7 +12,7 @@ open Formal.Arch.AATMoleculeLawExamples
 open Formal.Arch.AATZeroCurvatureExamples
 open Formal.Arch.AATOperationRepairSynthesisExamples
 open Formal.Arch.ArchMapObservationExamples
-open Formal.Arch.AtomicExamples
+open Formal.Arch.AtomSFTInterfaceExamples
 
 /-- Smoke test: the root example starts from an Atom axiom system. -/
 theorem atom_axiom_system_root_primitive :
@@ -69,7 +69,7 @@ theorem archmap_observation_layer_is_outside_pure_core :
 theorem sft_fieldsig_reads_aatcore_transition_without_forecast_correctness :
     exampleAATCoreLocalAlgebraForSFT.noForecastCorrectnessFromAATAlone ∧
       exampleArchSigAATCoreTransition.fieldSigAnalysisBoundary ∧
-      exampleAATCoreSFTForecastStatus.RecordsForecastBoundary := by
+      exampleSFTForecastStatus.RecordsForecastBoundary := by
   exact
     ⟨exampleAATCoreLocalAlgebra_no_forecast_correctness,
       exampleFieldSig_reads_archsig_transition_as_sft_analysis,

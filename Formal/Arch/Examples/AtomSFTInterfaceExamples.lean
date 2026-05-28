@@ -1,13 +1,16 @@
-import Formal.Arch.Evolution.SFTInterfaceBoundary
 import Formal.Arch.Evolution.SFTEnvelope
 import Formal.Arch.Evolution.SFTArchSigBoundary
-import Formal.Arch.Examples.AtomPureAATExamples
 import Formal.Arch.Examples.AATOperationRepairSynthesisExamples
 
-namespace Formal.Arch.AtomicExamples
+namespace Formal.Arch.AtomSFTInterfaceExamples
+
+open Formal.Arch.AtomFoundationExamples
+open Formal.Arch.AATMoleculeLawExamples
+open Formal.Arch.AATZeroCurvatureExamples
+open Formal.Arch.AATOperationRepairSynthesisExamples
 
 def exampleAATCoreLocalAlgebraForSFT :
-    AATCoreLocalAlgebraForSFT AATZeroCurvatureExamples.noBadCore where
+    AATCoreLocalAlgebraForSFT noBadCore where
   usedAsLocalAlgebra := True
   usedAsLocalAlgebraEvidence := trivial
   sftDoesNotRedefineAtoms := True
@@ -17,7 +20,7 @@ def exampleAATCoreLocalAlgebraForSFT :
   noForecastCorrectnessFromAATAlone := True
   noForecastCorrectnessFromAATAloneEvidence := trivial
   sftEventDoesNotCreateAtomsEvidence :=
-    AtomFoundationExamples.exampleAtomAxiomSystem.sft_event_does_not_create_atoms
+    exampleAtomAxiomSystem.sft_event_does_not_create_atoms
   nonConclusions := True
 
 theorem exampleAATCoreLocalAlgebra_reads_core :
@@ -31,22 +34,17 @@ theorem exampleAATCoreLocalAlgebra_no_forecast_correctness :
       |>.aatcore_alone_does_not_prove_forecast_correctness
 
 def exampleAATCoreAtomDelta :
-    AATCoreAtomDelta
-      AATZeroCurvatureExamples.noBadCore
-      AATZeroCurvatureExamples.noBadCore where
-  sourceAtom := fun atom =>
-    atom = AtomFoundationExamples.ExampleAtom.apiComponent
-  targetAtom := fun atom =>
-    atom = AtomFoundationExamples.ExampleAtom.apiComponent
-  preservedAtom := fun atom =>
-    atom = AtomFoundationExamples.ExampleAtom.apiComponent
+    AATCoreAtomDelta noBadCore noBadCore where
+  sourceAtom := fun atom => atom = ExampleAtom.apiComponent
+  targetAtom := fun atom => atom = ExampleAtom.apiComponent
+  preservedAtom := fun atom => atom = ExampleAtom.apiComponent
   transformedAtom := fun source target => source = target
   sourceAtomPrimitive := by
     intro atom _hAtom
-    exact AtomFoundationExamples.exampleAtomAxiomSystem.primitive atom
+    exact exampleAtomAxiomSystem.primitive atom
   targetAtomPrimitive := by
     intro atom _hAtom
-    exact AtomFoundationExamples.exampleAtomAxiomSystem.primitive atom
+    exact exampleAtomAxiomSystem.primitive atom
   preservedAtomOnSource := by
     intro atom hAtom
     exact hAtom
@@ -55,30 +53,27 @@ def exampleAATCoreAtomDelta :
     exact hAtom
   transitionBoundary := True
   doesNotCreateAtomsEvidence :=
-    AtomFoundationExamples.exampleAtomAxiomSystem.sft_event_does_not_create_atoms
+    exampleAtomAxiomSystem.sft_event_does_not_create_atoms
   nonConclusions := True
 
 def exampleAATCoreSemanticDelta :
     AATCoreSemanticDelta exampleAATCoreAtomDelta where
-  semanticAtom := fun atom =>
-    atom = AtomFoundationExamples.ExampleAtom.apiComponent
+  semanticAtom := fun atom => atom = ExampleAtom.apiComponent
   sourceSemanticAtomsPrimitive := by
     intro atom _hSource _hSemantic
-    exact AtomFoundationExamples.exampleAtomAxiomSystem.primitive atom
+    exact exampleAtomAxiomSystem.primitive atom
   targetSemanticAtomsPrimitive := by
     intro atom _hTarget _hSemantic
-    exact AtomFoundationExamples.exampleAtomAxiomSystem.primitive atom
+    exact exampleAtomAxiomSystem.primitive atom
   semanticBoundary := True
   doesNotCreateAtomsEvidence :=
-    AtomFoundationExamples.exampleAtomAxiomSystem.sft_event_does_not_create_atoms
+    exampleAtomAxiomSystem.sft_event_does_not_create_atoms
   nonConclusions := True
 
 def exampleAATCoreCircuitDelta :
-    AATCoreCircuitDelta
-      AATZeroCurvatureExamples.noBadCore
-      AATZeroCurvatureExamples.noBadCore where
-  law := AATZeroCurvatureExamples.noBadLaw
-  molecule := AATMoleculeLawExamples.apiMolecule
+    AATCoreCircuitDelta noBadCore noBadCore where
+  law := noBadLaw
+  molecule := apiMolecule
   lawOnSource := rfl
   lawOnTarget := rfl
   moleculeOnSource := rfl
@@ -88,15 +83,12 @@ def exampleAATCoreCircuitDelta :
   preservedCircuit := fun _ => False
   circuitBoundary := True
   doesNotCreateAtomsEvidence :=
-    AtomFoundationExamples.exampleAtomAxiomSystem.sft_event_does_not_create_atoms
+    exampleAtomAxiomSystem.sft_event_does_not_create_atoms
   nonConclusions := True
 
 def exampleAATCoreTransition :
-    AATCoreTransition
-      AATZeroCurvatureExamples.noBadCore
-      AATZeroCurvatureExamples.noBadCore where
-  operationPackage :=
-    AATOperationRepairSynthesisExamples.identityOperationPackage
+    AATCoreTransition noBadCore noBadCore where
+  operationPackage := identityOperationPackage
   atomDelta := exampleAATCoreAtomDelta
   semanticDelta := exampleAATCoreSemanticDelta
   circuitDelta := exampleAATCoreCircuitDelta
@@ -105,52 +97,43 @@ def exampleAATCoreTransition :
   nonConclusions := True
 
 theorem exampleAATCoreTransition_operation_does_not_create_atoms :
-    AtomFoundationExamples.exampleAtomAxiomSystem.noToolOutputCreatesAtoms := by
+    exampleAtomAxiomSystem.noToolOutputCreatesAtoms := by
   exact exampleAATCoreTransition.operation_does_not_create_atoms
 
 theorem exampleAATCoreTransition_atom_delta_does_not_create_atoms :
-    AtomFoundationExamples.exampleAtomAxiomSystem.noSFTEventCreatesAtoms := by
+    exampleAtomAxiomSystem.noSFTEventCreatesAtoms := by
   exact exampleAATCoreTransition.atom_delta_does_not_create_atoms
 
-def exampleAATCoreUnitOperationSupport : OperationSupport Unit Unit where
+def exampleUnitOperationSupport : OperationSupport Unit Unit where
   supports := fun _ _ => True
   coverageAssumptions := True
   supportBoundary := True
   nonConclusions := True
 
-def exampleAATCoreUnitStepRelation : StepRelation Unit Unit where
+def exampleUnitStepRelation : StepRelation Unit Unit where
   step := fun _ _ _ => True
   coverageAssumptions := True
   theoremBoundary := True
   nonConclusions := True
 
-def exampleAATCoreForecastRecord :
-    ForecastRecord
-      exampleAATCoreUnitOperationSupport
-      exampleAATCoreUnitStepRelation
-      ()
-      0 where
+def exampleForecastRecord :
+    ForecastRecord exampleUnitOperationSupport exampleUnitStepRelation () 0 where
   target := ()
   path := ArchitecturePath.nil ()
   coneMember := ForecastCone.nil_mem ()
   forecastBoundary := True
   nonConclusions := True
 
-def exampleAATCoreConeFamily :
-    ConeFamily
-      exampleAATCoreUnitOperationSupport
-      exampleAATCoreUnitStepRelation
-      ()
-      0 where
-  records := [exampleAATCoreForecastRecord]
+def exampleConeFamily :
+    ConeFamily exampleUnitOperationSupport exampleUnitStepRelation () 0 where
+  records := [exampleForecastRecord]
   nonempty := by
     simp
   familyBoundary := True
   unknownRemainder := True
   nonConclusions := True
 
-def exampleAATCoreEnvelopeObservationBoundary :
-    ObservationBoundary Unit where
+def exampleEnvelopeObservationBoundary : ObservationBoundary Unit where
   pathClassesVisible := True
   affectedRegionsVisible := True
   comparableAxes := True
@@ -160,12 +143,8 @@ def exampleAATCoreEnvelopeObservationBoundary :
   unknownRemainder := True
   nonConclusions := True
 
-def exampleAATCoreConsequenceEnvelope :
-    ConsequenceEnvelope
-      exampleAATCoreUnitOperationSupport
-      exampleAATCoreUnitStepRelation
-      ()
-      0 where
+def exampleConsequenceEnvelope :
+    ConsequenceEnvelope exampleUnitOperationSupport exampleUnitStepRelation () 0 where
   selectedConeCount := 1
   pathClasses := True
   affectedRegions := True
@@ -179,11 +158,11 @@ def exampleAATCoreConsequenceEnvelope :
   nonConclusions := True
   projectionBoundary := True
 
-def exampleAATCoreEnvelopeProjection :
+def exampleEnvelopeProjection :
     EnvelopeProjection
-      exampleAATCoreConeFamily
-      exampleAATCoreEnvelopeObservationBoundary
-      exampleAATCoreConsequenceEnvelope where
+      exampleConeFamily
+      exampleEnvelopeObservationBoundary
+      exampleConsequenceEnvelope where
   recordsSelectedConeCount := by
     rfl
   preservesPathClasses := by
@@ -223,29 +202,29 @@ def exampleAATCorePremisedConsequenceEnvelope :
       (ArchitecturePath.nil ())
       exampleAATCoreLocalAlgebraForSFT
       exampleAATCoreTransition
-      exampleAATCoreConeFamily
-      exampleAATCoreEnvelopeObservationBoundary
-      exampleAATCoreConsequenceEnvelope where
-  projection := exampleAATCoreEnvelopeProjection
+      exampleConeFamily
+      exampleEnvelopeObservationBoundary
+      exampleConsequenceEnvelope where
+  projection := exampleEnvelopeProjection
   forecastConeBoundary := ForecastCone.nil_mem ()
   readsAATCoreLocalAlgebra := trivial
   transitionBoundary := trivial
   fieldSigBoundary := trivial
   operationDoesNotCreateAtoms :=
-    AtomFoundationExamples.exampleAtomAxiomSystem.tool_output_does_not_create_atoms
+    exampleAtomAxiomSystem.tool_output_does_not_create_atoms
   atomDeltaDoesNotCreateAtoms :=
-    AtomFoundationExamples.exampleAtomAxiomSystem.sft_event_does_not_create_atoms
+    exampleAtomAxiomSystem.sft_event_does_not_create_atoms
   circuitDeltaDoesNotCreateAtoms :=
-    AtomFoundationExamples.exampleAtomAxiomSystem.sft_event_does_not_create_atoms
+    exampleAtomAxiomSystem.sft_event_does_not_create_atoms
   noForecastCorrectnessFromAAT := trivial
   envelopeForecastBoundary := trivial
   envelopeProjectionBoundary := trivial
   nonConclusions := trivial
 
 theorem exampleAATCorePremisedEnvelope_records_boundaries :
-    exampleAATCoreConsequenceEnvelope.RecordsForecastBoundary ∧
-      exampleAATCoreConsequenceEnvelope.RecordsProjectionBoundary ∧
-      exampleAATCoreConsequenceEnvelope.RecordsNonConclusions := by
+    exampleConsequenceEnvelope.RecordsForecastBoundary ∧
+      exampleConsequenceEnvelope.RecordsProjectionBoundary ∧
+      exampleConsequenceEnvelope.RecordsNonConclusions := by
   exact exampleAATCorePremisedConsequenceEnvelope.records_envelope_boundaries
 
 theorem exampleAATCorePremisedEnvelope_no_forecast_correctness :
@@ -254,20 +233,77 @@ theorem exampleAATCorePremisedEnvelope_no_forecast_correctness :
     exampleAATCorePremisedConsequenceEnvelope
       |>.aatcore_premise_does_not_prove_forecast_correctness
 
+def unitGraph : ArchGraph Unit where
+  edge := fun _ _ => False
+
+def unitProjection : InterfaceProjection Unit Unit where
+  expose := fun _ => ()
+
+def unitObservation : Observation Unit Unit where
+  observe := fun _ => ()
+
+def unitComponentUniverse : ComponentUniverse unitGraph where
+  components := [()]
+  nodup := by
+    simp
+  covers := by
+    intro c
+    cases c
+    simp
+  edgeClosed := by
+    intro _ _ hEdge
+    cases hEdge
+
+def unitArchitectureLawModel :
+    ArchitectureSignature.ArchitectureLawModel Unit Unit Unit where
+  G := unitGraph
+  π := unitProjection
+  GA := unitGraph
+  O := unitObservation
+  U := unitComponentUniverse
+  boundaryAllowed := fun _ _ => True
+  abstractionAllowed := fun _ _ => True
+  lspPairClosed := by
+    intro x y _h
+    exact ⟨unitComponentUniverse.covers x, unitComponentUniverse.covers y⟩
+
+theorem unitGraph_acyclic : Acyclic unitGraph := by
+  intro _ _ hEdge _hReach
+  cases hEdge
+
+theorem unitGraph_walkAcyclic : WalkAcyclic unitGraph := by
+  exact walkAcyclic_of_acyclic unitGraph_acyclic
+
+theorem unitArchitectureLawful :
+    ArchitectureSignature.ArchitectureLawful unitArchitectureLawModel := by
+  constructor
+  · exact unitGraph_walkAcyclic
+  · constructor
+    · intro _ _ hEdge
+      cases hEdge
+    · constructor
+      · intro _ _ _h
+        rfl
+      · constructor
+        · intro _ _ hEdge
+          cases hEdge
+        · intro _ _ hEdge
+          cases hEdge
+
 def exampleAATCoreSignatureBridge :
     ArchitectureSignature.AATCoreSignatureLawfulnessBridge
-      AATZeroCurvatureExamples.noBadCore
-      noEdgeArchitectureLawModel where
-  zeroCurvaturePackage := AATZeroCurvatureExamples.noBadZeroCurvaturePackage
+      noBadCore
+      unitArchitectureLawModel where
+  zeroCurvaturePackage := noBadZeroCurvaturePackage
   architectureLawfulFromAAT := by
     intro _hLawful
-    exact noEdgePureAtomSuite_architectureLawful
+    exact unitArchitectureLawful
   analyzesUsingAAT := True
   analyzesUsingAATEvidence := trivial
   archSigDoesNotDefineAAT := True
   archSigDoesNotDefineAATEvidence := trivial
   archSigDoesNotCreateAtomsEvidence :=
-    AtomFoundationExamples.exampleAtomAxiomSystem.tool_output_does_not_create_atoms
+    exampleAtomAxiomSystem.tool_output_does_not_create_atoms
   unknownRejectedUnmeasuredSeparated := True
   unknownRejectedUnmeasuredSeparatedEvidence := trivial
   measuredZeroBoundary := True
@@ -275,10 +311,7 @@ def exampleAATCoreSignatureBridge :
   nonConclusions := True
 
 def exampleArchSigAATCoreTransition :
-    ArchSigAATCoreTransition
-      AATZeroCurvatureExamples.noBadCore
-      AATZeroCurvatureExamples.noBadCore
-      noEdgeArchitectureLawModel where
+    ArchSigAATCoreTransition noBadCore noBadCore unitArchitectureLawModel where
   transition := exampleAATCoreTransition
   sourceBridge := exampleAATCoreSignatureBridge
   targetBridge := exampleAATCoreSignatureBridge
@@ -290,17 +323,17 @@ def exampleArchSigAATCoreTransition :
   fieldSigAnalysisBoundaryEvidence := trivial
   nonConclusions := True
 
-def exampleAATCoreSoftwareField :
-    SoftwareField Unit Component Component Unit Unit Unit where
+def exampleSoftwareField :
+    SoftwareField Unit Unit Unit Unit Unit Unit where
   state := ()
   architectureProjection :=
-    { static := noEdgeArchitectureLawModel.G
+    { static := unitArchitectureLawModel.G
       runtime := { edge := fun _ _ => False }
-      projection := noEdgeArchitectureLawModel.π
-      abstractStatic := noEdgeArchitectureLawModel.GA
-      staticObservation := noEdgeArchitectureLawModel.O
-      boundaryAllowed := noEdgeArchitectureLawModel.boundaryAllowed
-      abstractionAllowed := noEdgeArchitectureLawModel.abstractionAllowed
+      projection := unitArchitectureLawModel.π
+      abstractStatic := unitArchitectureLawModel.GA
+      staticObservation := unitArchitectureLawModel.O
+      boundaryAllowed := unitArchitectureLawModel.boundaryAllowed
+      abstractionAllowed := unitArchitectureLawModel.abstractionAllowed
       runtimeAllowed := fun _ _ => True
       semantic := { eval := fun _ => () }
       requiredSemantic := fun _ => False
@@ -316,9 +349,9 @@ def exampleAATCoreSoftwareField :
   fieldBoundary := True
   nonConclusions := True
 
-def exampleAATCoreSoftwareFieldEstimate :
-    SoftwareFieldEstimate Unit Component Component Unit Unit Unit where
-  field := exampleAATCoreSoftwareField
+def exampleSoftwareFieldEstimate :
+    SoftwareFieldEstimate Unit Unit Unit Unit Unit Unit where
+  field := exampleSoftwareField
   coverageAssumptions := True
   observationBoundary := True
   reconstructionBoundary := True
@@ -326,9 +359,9 @@ def exampleAATCoreSoftwareFieldEstimate :
   missingEvidence := True
   nonConclusions := True
 
-def exampleAATCoreArchSigSFTReport :
-    ArchSigSFTReport Unit Component Component Unit Unit Unit where
-  selectedEstimate := exampleAATCoreSoftwareFieldEstimate
+def exampleArchSigSFTReport :
+    ArchSigSFTReport Unit Unit Unit Unit Unit Unit where
+  selectedEstimate := exampleSoftwareFieldEstimate
   actionClassCandidates := True
   targetRegions := True
   candidateOperationFamilies := True
@@ -343,7 +376,7 @@ def exampleAATCoreArchSigSFTReport :
   reportBoundary := True
   nonConclusions := True
 
-def exampleAATCoreSFTForecastStatus : SFTForecastStatus where
+def exampleSFTForecastStatus : SFTForecastStatus where
   localPremise := True
   supportBoundary := True
   trajectorySafetyBoundary := True
@@ -354,11 +387,11 @@ def exampleAATCoreSFTForecastStatus : SFTForecastStatus where
   forecastBoundary := True
   nonConclusions := True
 
-def exampleAATCoreArchSigSFTReportEstimateBoundary :
+def exampleArchSigSFTReportEstimateBoundary :
     ArchSigSFTReportEstimateBoundary
-      exampleAATCoreArchSigSFTReport
-      exampleAATCoreSoftwareFieldEstimate
-      exampleAATCoreSFTForecastStatus where
+      exampleArchSigSFTReport
+      exampleSoftwareFieldEstimate
+      exampleSFTForecastStatus where
   reportSelectsEstimate := rfl
   preservesCoverageAssumptions := by
     intro h
@@ -391,10 +424,10 @@ def exampleAATCoreArchSigSFTReportEstimateBoundary :
 def exampleFieldSigAATCoreTransitionAnalysis :
     FieldSigAATCoreTransitionAnalysis
       exampleArchSigAATCoreTransition
-      exampleAATCoreArchSigSFTReport
-      exampleAATCoreSoftwareFieldEstimate
-      exampleAATCoreSFTForecastStatus where
-  reportBoundary := exampleAATCoreArchSigSFTReportEstimateBoundary
+      exampleArchSigSFTReport
+      exampleSoftwareFieldEstimate
+      exampleSFTForecastStatus where
+  reportBoundary := exampleArchSigSFTReportEstimateBoundary
   readsArchSigTransitionAsSFTAnalysisEvidence := trivial
   fieldSigDoesNotDefineAATEvidence := trivial
   transitionDoesNotCreateAtoms :=
@@ -410,29 +443,9 @@ theorem exampleFieldSig_reads_archsig_transition_as_sft_analysis :
       |>.fieldsig_reads_archsig_transition_as_sft_analysis
 
 theorem exampleFieldSig_forecast_correctness_remains_boundary :
-    exampleAATCoreSFTForecastStatus.RecordsForecastBoundary := by
+    exampleSFTForecastStatus.RecordsForecastBoundary := by
   exact
     exampleFieldSigAATCoreTransitionAnalysis
       |>.forecast_correctness_remains_boundary
 
-/--
-The no-edge pure Atom theorem suite read as an AAT theorem-status item for
-the SFT interface, after supplying the selected Signature arrangement package.
--/
-noncomputable def noEdgePureAtomSuiteTheoremStatus :
-    AATTheoremStatus :=
-  AATTheoremStatus.ofPureAtomTheoremSuite
-    noEdgeArchitectureLawModel
-    noEdgeAtomAxiomatizedPureTheoremSuite
-    noEdgeStaticAtomArrangementPackage
-    True True True True True
-
-theorem noEdgePureAtomSuiteTheoremStatus_records_theoremPackage :
-    noEdgePureAtomSuiteTheoremStatus.RecordsTheoremPackage := by
-  exact
-    AATTheoremStatus.records_theoremPackage_of_pureAtomTheoremSuite
-      noEdgeArchitectureLawModel
-      noEdgeAtomAxiomatizedPureTheoremSuite
-      noEdgeStaticAtomArrangementPackage
-
-end Formal.Arch.AtomicExamples
+end Formal.Arch.AtomSFTInterfaceExamples

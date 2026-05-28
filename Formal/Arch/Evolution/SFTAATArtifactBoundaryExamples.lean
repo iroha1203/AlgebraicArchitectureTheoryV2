@@ -1,5 +1,8 @@
 import Formal.Arch.Evolution.SFTAATFundamentalModularityExamples
 import Formal.Arch.Evolution.SFTArtifactBoundaryBridge
+import Formal.Arch.Observation.AtomPresentation
+import Formal.Arch.Observation.ArchMap
+import Formal.Arch.Examples.AtomFoundationExamples
 
 /-!
 Selected finite artifact-boundary examples for AAT-supported SFT.
@@ -99,73 +102,103 @@ def artifactDerivedReportBoundary :
   recordsReportBoundary := trivial
   recordsNonConclusions := trivial
 
-variable {Src : Type u} {Tgt : Type v} {Abs : Type w}
-variable {StaticObs : Type q} {SrcExpr : Type r}
-variable {TgtExpr : Type s} {SemanticObs : Type t}
-variable {M : ArchMapModel Src Tgt Abs StaticObs SrcExpr TgtExpr SemanticObs}
+def artifactAtomPresentation :
+    Observation.AtomPresentation
+      AtomFoundationExamples.exampleAtomAxiomSystem Unit where
+  rawCandidate := fun _ => False
+  observed := fun _ => True
+  validated := fun _ => True
+  rejected := fun _ => False
+  uncertain := fun _ => False
+  missing := fun _ => False
+  validationBoundary := True
+  rawCandidateIsNotAtomTruth := True
+  rawCandidateIsNotAtomTruthEvidence := trivial
+  rejectedIsNotMeasuredZero := True
+  rejectedIsNotMeasuredZeroEvidence := trivial
+  uncertainIsNotMeasuredZero := True
+  uncertainIsNotMeasuredZeroEvidence := trivial
+  missingIsNotAtomAbsence := True
+  missingIsNotAtomAbsenceEvidence := trivial
+  nonConclusions := True
 
-def canonicalArtifactSupportedBoundary
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M) :
+def artifactArchMapObservationLayer :
+    Observation.ArchMapObservationLayer
+      AtomFoundationExamples.exampleAtomAxiomSystem Unit Unit where
+  presentation := artifactAtomPresentation
+  selectedSource := fun _ => True
+  observesAtoms := True
+  observesAtomsEvidence := trivial
+  archMapDoesNotCreateAtomsEvidence :=
+    AtomFoundationExamples.exampleAtomAxiomSystem_observation_boundary_does_not_create_atoms
+  archMapDoesNotDefineAAT := True
+  archMapDoesNotDefineAATEvidence := trivial
+  rawCandidateBoundary := True
+  validationBoundary := True
+  coverageBoundary := True
+  exactnessBoundary := True
+  nonConclusions := True
+
+def artifactArchMapAATSliceBoundary :
+    AATSelectedArchitectureSlice.ArchMapDerivedAATSliceBoundary
+      artifactArchMapObservationLayer where
+  recordsProjectionBoundary := trivial
+  recordsObservationBoundary := ⟨trivial, trivial⟩
+  recordsReconstructionBoundary := trivial
+  recordsMissingEvidence := trivial
+  recordsNonConclusions := ⟨trivial, trivial⟩
+
+def canonicalArtifactSupportedBoundary :
     AATSupportedSFTBoundary canonicalExactModel () 1 :=
   AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries
     (exactModel := canonicalExactModel) (source := ()) (horizon := 1)
-    archMapPackage artifactDerivedReportBoundary canonicalInterfaceBoundary
+    artifactArchMapAATSliceBoundary artifactDerivedReportBoundary
+    canonicalInterfaceBoundary
     True True
     canonicalExactModel_recordsFiniteModelBoundary
     canonicalExactModel_recordsExactCoverBoundary
     canonicalExactModel_recordsObservationBoundary
     True True True
 
-theorem canonicalArtifactSupportedBoundary_records_artifact_slice
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M) :
-    (canonicalArtifactSupportedBoundary archMapPackage).RecordsAATSliceBoundaries :=
-  (canonicalArtifactSupportedBoundary
-    archMapPackage).records_projection_observation_reconstruction_missingEvidence
+theorem canonicalArtifactSupportedBoundary_records_artifact_slice :
+    canonicalArtifactSupportedBoundary.RecordsAATSliceBoundaries :=
+  canonicalArtifactSupportedBoundary.records_projection_observation_reconstruction_missingEvidence
 
-theorem canonicalArtifactSupportedBoundary_records_report_boundary
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M) :
-    (canonicalArtifactSupportedBoundary archMapPackage).archSigReportBoundary :=
-  artifactDerivedReportBoundary.report_boundary_remains_toolingBoundary
+theorem canonicalArtifactSupportedBoundary_records_report_boundary :
+    canonicalArtifactSupportedBoundary.archSigReportBoundary := by
+  change canonicalForecastStatus.RecordsToolingBoundary
+  exact artifactDerivedReportBoundary.report_boundary_remains_toolingBoundary
 
-theorem canonicalArtifactSupportedBoundary_preserves_nonConclusions
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M) :
-    (canonicalArtifactSupportedBoundary archMapPackage).RecordsNonConclusions :=
-  (canonicalArtifactSupportedBoundary archMapPackage).preserves_nonConclusions
+theorem canonicalArtifactSupportedBoundary_preserves_nonConclusions :
+    canonicalArtifactSupportedBoundary.RecordsNonConclusions := by
+  exact canonicalArtifactSupportedBoundary.preserves_nonConclusions
     trivial
     (AATSelectedArchitectureSlice.archMap_preserves_nonConclusions
-      archMapPackage)
+      artifactArchMapAATSliceBoundary)
     trivial canonicalExactModel_recordsNonConclusions
 
-def canonicalArtifactSupportedFundamentalModularityPackage
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M) :
+def canonicalArtifactSupportedFundamentalModularityPackage :
     AATSupportedFundamentalModularityPackage canonicalExactModel () 1 :=
   AATSupportedFundamentalModularityPackage.ofBoundaryAndFiniteSelectedHypotheses
     (exactModel := canonicalExactModel) (source := ()) (horizon := 1)
-    (canonicalArtifactSupportedBoundary archMapPackage)
+    canonicalArtifactSupportedBoundary
     canonicalFundamentalModularityHypotheses
     canonicalExactModel_recordsGovernanceBoundary
     trivial trivial
-    (canonicalArtifactSupportedBoundary_records_report_boundary archMapPackage)
+    canonicalArtifactSupportedBoundary_records_report_boundary
     trivial trivial trivial
     (AATSelectedArchitectureSlice.archMap_preserves_nonConclusions
-      archMapPackage)
+      artifactArchMapAATSliceBoundary)
     trivial canonicalExactModel_recordsNonConclusions trivial
 
-theorem canonicalArtifactSupported_final_typed_conclusion
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M) :
-    (canonicalArtifactSupportedFundamentalModularityPackage
-      archMapPackage).AATSupportedFinalTypedConclusion :=
-  (canonicalArtifactSupportedFundamentalModularityPackage
-    archMapPackage).governed_or_finite_failure_or_aat_boundary_failure
+theorem canonicalArtifactSupported_final_typed_conclusion :
+    canonicalArtifactSupportedFundamentalModularityPackage.AATSupportedFinalTypedConclusion :=
+  canonicalArtifactSupportedFundamentalModularityPackage.governed_or_finite_failure_or_aat_boundary_failure
 
-theorem canonicalArtifactSupported_preserves_nonConclusions
-    (archMapPackage : ArchMapModel.ArchMapPreservationPackage M) :
-    (canonicalArtifactSupportedFundamentalModularityPackage
-      archMapPackage).boundary.RecordsNonConclusions ∧
-      (canonicalArtifactSupportedFundamentalModularityPackage
-        archMapPackage).finalPackage.RecordsNonConclusions :=
-  (canonicalArtifactSupportedFundamentalModularityPackage
-    archMapPackage).does_not_promote_to_unconditional_claim
+theorem canonicalArtifactSupported_preserves_nonConclusions :
+    canonicalArtifactSupportedFundamentalModularityPackage.boundary.RecordsNonConclusions ∧
+      canonicalArtifactSupportedFundamentalModularityPackage.finalPackage.RecordsNonConclusions :=
+  canonicalArtifactSupportedFundamentalModularityPackage.does_not_promote_to_unconditional_claim
 
 end Examples
 end SFTAATFundamentalModularity
