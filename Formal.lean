@@ -90,6 +90,7 @@ import Formal.Arch.AAT.Molecule
 import Formal.Arch.AAT.Law
 import Formal.Arch.AAT.Circuit
 import Formal.Arch.AAT.Core
+import Formal.Arch.AAT.ZeroCurvature
 import Formal.Arch.Atomization
 import Formal.Arch.AtomCoreAAT
 import Formal.Arch.Signature.AtomZeroCurvature
@@ -100,6 +101,7 @@ import Formal.Arch.AtomAAT
 import Formal.Arch.Examples.AtomicExamples
 import Formal.Arch.Examples.AtomFoundationExamples
 import Formal.Arch.Examples.AATMoleculeLawExamples
+import Formal.Arch.Examples.AATZeroCurvatureExamples
 import Formal.Arch.Examples.AtomCoreAATExamples
 import Formal.Arch.Examples.AtomZeroCurvatureExamples
 import Formal.Arch.Examples.AtomOperationExamples
