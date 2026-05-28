@@ -1,0 +1,336 @@
+{
+  "schemaVersion": "law-policy-v0",
+  "lawPolicyId": "llm-native-aat-law-policy-fixture",
+  "policyVersion": "v0",
+  "scope": "LLM-native ArchMap observation analysis fixture",
+  "archmapSchemaRef": "archmap-observation-map-v0",
+  "selectedLaws": [
+    {
+      "lawId": "law:layer-respecting",
+      "lawFamily": "dependency-direction",
+      "description": "Dependencies must respect the selected layer order.",
+      "enforcementBoundary": "ArchSig computes witnesses from observed Atom records; this policy does not prove lawfulness",
+      "appliesToAtomFamilies": [
+        "relation",
+        "boundaryAuthority"
+      ],
+      "requiredWitnessRefs": [
+        "witness:layer-violation"
+      ],
+      "requiredAxisRefs": [
+        "axis:layer-violation"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    },
+    {
+      "lawId": "law:semantic-contract-alignment",
+      "lawFamily": "semantic-contract",
+      "description": "Semantic observations and contract observations must agree on the selected operation meaning.",
+      "enforcementBoundary": "ArchSig computes witnesses from observed Atom records; this policy does not prove lawfulness",
+      "appliesToAtomFamilies": [
+        "contractSpecification",
+        "semanticInterpretation"
+      ],
+      "requiredWitnessRefs": [
+        "witness:semantic-contract-mismatch"
+      ],
+      "requiredAxisRefs": [
+        "axis:semantic-inconsistency"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "requiredZeroAxes": [
+    {
+      "axisId": "axis:layer-violation",
+      "axisFamily": "dependency-direction",
+      "valueType": "nat",
+      "zeroReading": "zero means no required layer violation witness was constructed under this policy",
+      "measurementBoundary": "computedFromObservedAtoms",
+      "evidenceRequirements": [
+        "observed relation atoms",
+        "observed boundary membership atoms"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    },
+    {
+      "axisId": "axis:semantic-inconsistency",
+      "axisFamily": "semantic-contract",
+      "valueType": "nat",
+      "zeroReading": "zero means no required semantic contract mismatch witness was constructed under this policy",
+      "measurementBoundary": "computedFromObservedAtoms",
+      "evidenceRequirements": [
+        "observed semantic atoms",
+        "observed contract atoms"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "optionalAxes": [
+    {
+      "axisId": "axis:observation-gap",
+      "axisFamily": "coverage",
+      "valueType": "nat",
+      "zeroReading": "zero means no policy-required observation gap was reported",
+      "measurementBoundary": "coverageBoundary",
+      "evidenceRequirements": [
+        "observation gap records"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "witnessRules": [
+    {
+      "witnessRuleId": "witness:layer-violation",
+      "lawRef": "law:layer-respecting",
+      "witnessKind": "forbidden-dependency-direction",
+      "atomObservationRefs": [],
+      "requiredAtomFamilies": [
+        "relation",
+        "boundaryAuthority"
+      ],
+      "moleculePatternRefs": [
+        "molecule:layered-component"
+      ],
+      "evidenceBoundary": "construct only from observed ArchMap Atom observations; concern hints are not obstruction circuits",
+      "missingEvidenceBehavior": "report observation gap; do not infer measured zero",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    },
+    {
+      "witnessRuleId": "witness:semantic-contract-mismatch",
+      "lawRef": "law:semantic-contract-alignment",
+      "witnessKind": "semantic-contract-noncommutation",
+      "atomObservationRefs": [],
+      "requiredAtomFamilies": [
+        "contractSpecification",
+        "semanticInterpretation"
+      ],
+      "moleculePatternRefs": [
+        "molecule:operation-contract"
+      ],
+      "evidenceBoundary": "construct only from observed ArchMap Atom observations; concern hints are not obstruction circuits",
+      "missingEvidenceBehavior": "report observation gap; do not infer measured zero",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "moleculePatterns": [
+    {
+      "moleculePatternId": "molecule:layered-component",
+      "roleName": "layered component",
+      "requiredAtomFamilies": [
+        "existence",
+        "boundaryAuthority"
+      ],
+      "optionalAtomFamilies": [
+        "relation"
+      ],
+      "interpretationBoundary": "molecule pattern is role interpretation over atoms, not a primitive atom",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    },
+    {
+      "moleculePatternId": "molecule:operation-contract",
+      "roleName": "operation contract",
+      "requiredAtomFamilies": [
+        "capability",
+        "contractSpecification"
+      ],
+      "optionalAtomFamilies": [
+        "semanticInterpretation",
+        "effect"
+      ],
+      "interpretationBoundary": "molecule pattern is role interpretation over atoms, not a primitive atom",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "obstructionCircuitDefinitions": [
+    {
+      "obstructionCircuitId": "obstruction:layer-violation",
+      "lawRef": "law:layer-respecting",
+      "witnessRuleRef": "witness:layer-violation",
+      "circuitKind": "BoundaryLeakCircuit",
+      "minimalityReading": "minimality is evaluated within the selected observed Atom configuration and witness rule",
+      "evidenceBoundary": "law-relative ArchSig witness, not ArchMap observation and not Lean theorem discharge",
+      "signatureAxisRefs": [
+        "axis:layer-violation"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    },
+    {
+      "obstructionCircuitId": "obstruction:semantic-contract-mismatch",
+      "lawRef": "law:semantic-contract-alignment",
+      "witnessRuleRef": "witness:semantic-contract-mismatch",
+      "circuitKind": "SemanticMismatchCircuit",
+      "minimalityReading": "minimality is evaluated within the selected observed Atom configuration and witness rule",
+      "evidenceBoundary": "law-relative ArchSig witness, not ArchMap observation and not Lean theorem discharge",
+      "signatureAxisRefs": [
+        "axis:semantic-inconsistency"
+      ],
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "signatureAxisDefinitions": [
+    {
+      "signatureAxisId": "sig-axis:layer-violation",
+      "lawRef": "law:layer-respecting",
+      "axisRef": "axis:layer-violation",
+      "valuationRule": "count constructed BoundaryLeakCircuit witnesses",
+      "valueType": "nat",
+      "zeroReading": "zero means no matching required witness was constructed under declared coverage and exactness assumptions",
+      "coverageBoundary": "coverage gaps remain observation gaps, not measured zero",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    },
+    {
+      "signatureAxisId": "sig-axis:semantic-inconsistency",
+      "lawRef": "law:semantic-contract-alignment",
+      "axisRef": "axis:semantic-inconsistency",
+      "valuationRule": "count constructed SemanticMismatchCircuit witnesses",
+      "valueType": "nat",
+      "zeroReading": "zero means no matching required witness was constructed under declared coverage and exactness assumptions",
+      "coverageBoundary": "coverage gaps remain observation gaps, not measured zero",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "exactnessAssumptions": [
+    "the selected witness rules cover only policy-declared laws",
+    "zero readings are exact only for observed atoms and declared coverage requirements"
+  ],
+  "coverageRequirements": [
+    {
+      "coverageRequirementId": "coverage:layer-atoms",
+      "appliesToLawRefs": [
+        "law:layer-respecting"
+      ],
+      "requiredAtomFamilies": [
+        "existence",
+        "relation",
+        "boundaryAuthority"
+      ],
+      "requiredSourceRefKinds": [
+        "file",
+        "symbol"
+      ],
+      "missingCoverageBehavior": "report observation gap and block signature-zero reflection",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    },
+    {
+      "coverageRequirementId": "coverage:semantic-contract-atoms",
+      "appliesToLawRefs": [
+        "law:semantic-contract-alignment"
+      ],
+      "requiredAtomFamilies": [
+        "capability",
+        "contractSpecification",
+        "semanticInterpretation"
+      ],
+      "requiredSourceRefKinds": [
+        "file",
+        "doc-section",
+        "test"
+      ],
+      "missingCoverageBehavior": "report observation gap and block signature-zero reflection",
+      "nonConclusions": [
+        "law policy is selected analysis policy, not AAT itself",
+        "law policy validation does not prove architecture lawfulness",
+        "law policy validation does not certify atom truth",
+        "missing coverage is not measured zero",
+        "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+      ]
+    }
+  ],
+  "excludedReadings": [
+    "global architecture truth",
+    "Lean theorem discharge",
+    "SFT forecast correctness"
+  ],
+  "nonConclusions": [
+    "law policy is selected analysis policy, not AAT itself",
+    "law policy validation does not prove architecture lawfulness",
+    "law policy validation does not certify atom truth",
+    "missing coverage is not measured zero",
+    "signature zero requires ArchSig analysis with declared coverage and exactness assumptions"
+  ]
+}

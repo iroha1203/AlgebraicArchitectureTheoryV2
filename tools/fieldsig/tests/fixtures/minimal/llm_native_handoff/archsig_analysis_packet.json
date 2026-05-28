@@ -1,0 +1,243 @@
+{
+  "schemaVersion": "archsig-analysis-packet-v0",
+  "analysisId": "archsig-analysis-fixture",
+  "generatedAt": "2026-05-23T00:00:00Z",
+  "archMapRef": {
+    "artifactId": "fixture-archmap-atom-observation",
+    "artifactKind": "archmap",
+    "schemaVersion": "archmap-observation-map-v0",
+    "path": "tools/archsig/tests/fixtures/minimal/archmap.json"
+  },
+  "selectedLawPolicyRef": {
+    "artifactId": "llm-native-aat-law-policy-fixture",
+    "artifactKind": "law-policy",
+    "schemaVersion": "law-policy-v0",
+    "path": "tools/archsig/tests/fixtures/minimal/law_policy.json"
+  },
+  "atomConfigurationSummary": {
+    "atomObservationCount": 4,
+    "moleculeObservationCount": 1,
+    "semanticObservationCount": 1,
+    "observationGapCount": 1,
+    "concernHintCount": 1,
+    "configurationBoundary": "counts are read from one bounded ArchMap fixture, not complete architecture enumeration",
+    "coverageSummary": [
+      "static source atoms observed",
+      "semantic contract observation observed",
+      "runtime trace remains unavailable"
+    ],
+    "sourceRefs": [
+      "atom:component:route-users",
+      "atom:component:service-user",
+      "atom:relation:route-service",
+      "atom:contract:create-user",
+      "gap-runtime-user-db-trace"
+    ],
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings"
+    ]
+  },
+  "moleculeReadings": [
+    {
+      "moleculeReadingId": "molecule-reading:user-request-responsibility",
+      "moleculeObservationRef": "molecule:user-request-responsibility",
+      "lawRefs": ["law:semantic-contract-alignment"],
+      "atomObservationRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "reading": "observed route/service/contract atoms form one operation-responsibility molecule",
+      "evidenceSummary": "molecule reading uses ArchMap atom observations and the selected semantic-contract law",
+      "evidenceBoundary": "law-relative reading over observed atoms; not a primitive atom and not theorem evidence",
+      "sourceRefs": ["doc-architecture", "test-user-contract"],
+      "interpretationNotesForLLM": [
+        "Explain this as a responsibility grouping over observed atoms."
+      ],
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
+  "obstructionCircuits": [
+    {
+      "obstructionCircuitId": "obstruction:semantic-contract-mismatch:create-user",
+      "lawRef": "law:semantic-contract-alignment",
+      "witnessRuleRef": "witness:semantic-contract-mismatch",
+      "circuitKind": "SemanticMismatchCircuit",
+      "atomObservationRefs": [
+        "atom:relation:route-service",
+        "atom:contract:create-user"
+      ],
+      "moleculeReadingRefs": ["molecule-reading:user-request-responsibility"],
+      "concernHintRefs": ["concern:missing-compensation"],
+      "signatureAxisRefs": ["sig-axis:semantic-inconsistency"],
+      "minimalityReading": "minimal within the selected operation molecule and semantic contract witness rule",
+      "evidenceSummary": "constructed from the concern hint, contract atom, relation atom, and semantic molecule reading",
+      "evidenceBoundary": "computed ArchSig witness under selected LawPolicy; not an ArchMap observation",
+      "interpretationNotesForLLM": [
+        "Describe the obstruction as law-relative, not as a universal architecture defect."
+      ],
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
+  "signatureAxes": [
+    {
+      "signatureAxisId": "sig-axis:layer-violation",
+      "lawRef": "law:layer-respecting",
+      "axisRef": "axis:layer-violation",
+      "valueType": "nat",
+      "value": 0,
+      "zeroReading": "zero means no selected layer violation witness was constructed under declared coverage",
+      "coverageStatus": "covered-for-selected-static-atoms",
+      "exactnessAssumptions": [
+        "selected layer law observes only declared route/service relation atoms"
+      ],
+      "evidenceSummary": "no BoundaryLeakCircuit witness was constructed from the fixture atoms",
+      "sourceRefs": ["atom:relation:route-service"],
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    },
+    {
+      "signatureAxisId": "sig-axis:semantic-inconsistency",
+      "lawRef": "law:semantic-contract-alignment",
+      "axisRef": "axis:semantic-inconsistency",
+      "valueType": "nat",
+      "value": 1,
+      "zeroReading": "nonzero means one selected semantic mismatch witness was constructed",
+      "coverageStatus": "runtime-gap-blocked",
+      "exactnessAssumptions": [
+        "runtime trace gap blocks global zero reflection"
+      ],
+      "evidenceSummary": "one SemanticMismatchCircuit witness is present under the selected LawPolicy",
+      "sourceRefs": [
+        "atom:contract:create-user",
+        "concern:missing-compensation"
+      ],
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
+  "flatnessReading": {
+    "readingId": "flatness:selected-law-policy",
+    "selectedLawPolicyRef": "llm-native-aat-law-policy-fixture",
+    "status": "nonflatUnderSelectedPolicy",
+    "zeroSignatureAxisRefs": ["sig-axis:layer-violation"],
+    "nonzeroSignatureAxisRefs": ["sig-axis:semantic-inconsistency"],
+    "blockedByCoverageGaps": ["gap-runtime-user-db-trace"],
+    "evidenceBoundary": "flatness is read from selected signature axes; coverage gaps block global zero claims",
+    "interpretationNotesForLLM": [
+      "Report this as selected-policy non-flatness, not global architecture quality."
+    ],
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings"
+    ]
+  },
+  "staticRuntimeSemanticLayerSplit": {
+    "staticObservationRefs": [
+      "atom:component:route-users",
+      "atom:component:service-user",
+      "atom:relation:route-service"
+    ],
+    "runtimeObservationRefs": ["gap-runtime-user-db-trace"],
+    "semanticObservationRefs": [
+      "atom:contract:create-user",
+      "semantic:create-user-flow"
+    ],
+    "splitBoundary": "runtime layer is gap-preserved and must not be rounded into measured zero",
+    "nonConclusions": [
+      "ArchSig analysis packet is not a Lean theorem proof",
+      "ArchSig analysis packet is not global architecture truth",
+      "ArchSig analysis packet does not prove source extraction completeness",
+      "signature axes are law-policy-relative, not universal quality scores",
+      "flatness reading is blocked by coverage gaps and exactness assumptions",
+      "repair operation candidates are not automatic safe refactorings"
+    ]
+  },
+  "repairOperationCandidates": [
+    {
+      "repairOperationCandidateId": "repair:add-compensation-path",
+      "operationKind": "add-compensation-operation",
+      "targetObstructionRefs": [
+        "obstruction:semantic-contract-mismatch:create-user"
+      ],
+      "preservedInvariants": [
+        "preserve route/service dependency direction",
+        "preserve create-user contract visibility"
+      ],
+      "preconditions": [
+        "identify authoritative compensation owner",
+        "supply runtime trace evidence before claiming global zero"
+      ],
+      "expectedSignatureAxisEffects": [
+        "decrease sig-axis:semantic-inconsistency if compensation semantics are observed"
+      ],
+      "transferRisks": [
+        "may transfer complexity into runtime retry or idempotency layer"
+      ],
+      "evidenceBoundary": "repair candidate is an operation hypothesis over the selected packet, not an automatic patch",
+      "interpretationNotesForLLM": [
+        "Explain preserved invariants before proposing implementation work."
+      ],
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
+  "evidenceBoundary": "packet is computed from one ArchMap fixture and one selected LawPolicy fixture",
+  "interpretationNotesForLLM": [
+    "Lead with selected LawPolicy scope and evidence gaps.",
+    "Explain each nonzero signature axis with source refs and non-conclusions."
+  ],
+  "excludedReadings": [
+    "single architecture quality score",
+    "global architecture lawfulness",
+    "automatic repair safety"
+  ],
+  "nonConclusions": [
+    "ArchSig analysis packet is not a Lean theorem proof",
+    "ArchSig analysis packet is not global architecture truth",
+    "ArchSig analysis packet does not prove source extraction completeness",
+    "signature axes are law-policy-relative, not universal quality scores",
+    "flatness reading is blocked by coverage gaps and exactness assumptions",
+    "repair operation candidates are not automatic safe refactorings"
+  ]
+}

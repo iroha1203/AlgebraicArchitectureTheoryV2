@@ -357,6 +357,96 @@ fn cli_archsig_analysis_step_outputs_packet_and_validation() {
 }
 
 #[test]
+fn cli_negative_archmap_fixtures_preserve_guardrails() {
+    let out_dir = temp_dir("negative-archmap-fixtures");
+    let root = fixture_root();
+
+    let concern_validation = out_dir.join("concern-validation.json");
+    let concern_output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        root.join("archmap_invalid_concern_promoted.json")
+            .to_str()
+            .expect("invalid concern fixture path is utf-8"),
+        "--out",
+        concern_validation
+            .to_str()
+            .expect("concern validation path is utf-8"),
+    ]);
+    assert!(
+        !concern_output.status.success(),
+        "concern promotion fixture must fail validation"
+    );
+    let concern_json = read_json(&concern_validation);
+    assert!(
+        concern_json["atomicObservationChecks"]
+            .as_array()
+            .expect("atomic checks are array")
+            .iter()
+            .any(
+                |check| check["id"] == "archmap-concern-hints-are-not-obstruction-circuits"
+                    && check["result"] == "fail"
+            ),
+        "concernHints must not be accepted as obstruction circuits"
+    );
+
+    let gap_validation = out_dir.join("gap-validation.json");
+    let gap_output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        root.join("archmap_invalid_gap_measured_zero.json")
+            .to_str()
+            .expect("invalid gap fixture path is utf-8"),
+        "--out",
+        gap_validation
+            .to_str()
+            .expect("gap validation path is utf-8"),
+    ]);
+    assert!(
+        !gap_output.status.success(),
+        "gap measured-zero fixture must fail validation"
+    );
+    let gap_json = read_json(&gap_validation);
+    assert!(
+        gap_json["atomicObservationChecks"]
+            .as_array()
+            .expect("atomic checks are array")
+            .iter()
+            .any(
+                |check| check["id"] == "archmap-observation-gaps-not-measured-zero"
+                    && check["result"] == "fail"
+            ),
+        "observation gaps must not be rounded to measured zero"
+    );
+}
+
+#[test]
+fn cli_regression_same_archmap_multiple_law_policies() {
+    let root = fixture_root();
+    let full_packet = read_json(&root.join("archsig_analysis_packet.json"));
+    let layer_only_packet = read_json(&root.join("archsig_analysis_packet_layer_only.json"));
+    assert_ne!(
+        full_packet["selectedLawPolicyRef"]["artifactId"],
+        layer_only_packet["selectedLawPolicyRef"]["artifactId"],
+        "golden corpus must include multiple LawPolicy analyses"
+    );
+    assert!(
+        full_packet["obstructionCircuits"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "full policy fixture should construct an obstruction"
+    );
+    assert_eq!(
+        layer_only_packet["obstructionCircuits"]
+            .as_array()
+            .expect("layer-only obstructions are array")
+            .len(),
+        0,
+        "layer-only policy should reanalyze the same ArchMap without semantic obstruction"
+    );
+}
+
+#[test]
 fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
     let out_dir = temp_dir("archmap-homomorphism-expressiveness");
     let archmap = expressiveness_root().join("archmap_expressiveness_suite_v0.json");
