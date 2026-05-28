@@ -1,4 +1,5 @@
 import Formal.Arch.Evolution.SFTField
+import Formal.Arch.AAT.Operation
 import Formal.Arch.Signature.AtomZeroCurvature
 import Formal.Arch.Atomization
 
@@ -205,6 +206,303 @@ theorem preserves_aat_sft_independence
   boundary.aatSurface.independent_of_sft
 
 end AATLocalAlgebraForSFT
+
+/--
+SFT reads an Atom-axiomatized `AATCore` as local algebra.
+
+This is the new Atom-rooted boundary.  It starts from an `AtomAxiomSystem` and
+an `AATCore system`, not from an observation or presentation wrapper.
+-/
+structure AATCoreLocalAlgebraForSFT
+    {system : AtomAxiomSystem.{u, v}}
+    (core : AAT.AATCore system) where
+  usedAsLocalAlgebra : Prop
+  usedAsLocalAlgebraEvidence : usedAsLocalAlgebra
+  sftDoesNotRedefineAtoms : Prop
+  sftDoesNotRedefineAtomsEvidence : sftDoesNotRedefineAtoms
+  sftDoesNotRedefineAAT : Prop
+  sftDoesNotRedefineAATEvidence : sftDoesNotRedefineAAT
+  noForecastCorrectnessFromAATAlone : Prop
+  noForecastCorrectnessFromAATAloneEvidence :
+    noForecastCorrectnessFromAATAlone
+  sftEventDoesNotCreateAtomsEvidence : system.noSFTEventCreatesAtoms
+  nonConclusions : Prop
+
+namespace AATCoreLocalAlgebraForSFT
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {core : AAT.AATCore system}
+
+/-- SFT uses the selected `AATCore` as local algebra. -/
+theorem reads_aatcore_as_local_algebra
+    (boundary : AATCoreLocalAlgebraForSFT core) :
+    boundary.usedAsLocalAlgebra :=
+  boundary.usedAsLocalAlgebraEvidence
+
+/-- SFT does not redefine Atom when consuming `AATCore`. -/
+theorem sft_does_not_redefine_atoms
+    (boundary : AATCoreLocalAlgebraForSFT core) :
+    boundary.sftDoesNotRedefineAtoms :=
+  boundary.sftDoesNotRedefineAtomsEvidence
+
+/-- SFT does not redefine AAT when consuming `AATCore`. -/
+theorem sft_does_not_redefine_aat
+    (boundary : AATCoreLocalAlgebraForSFT core) :
+    boundary.sftDoesNotRedefineAAT :=
+  boundary.sftDoesNotRedefineAATEvidence
+
+/-- The `AATCore` premise alone does not prove forecast correctness. -/
+theorem aatcore_alone_does_not_prove_forecast_correctness
+    (boundary : AATCoreLocalAlgebraForSFT core) :
+    boundary.noForecastCorrectnessFromAATAlone :=
+  boundary.noForecastCorrectnessFromAATAloneEvidence
+
+/-- The consumed `AATCore` remains observation-independent. -/
+theorem core_independent_of_observation
+    (_boundary : AATCoreLocalAlgebraForSFT core) :
+    core.noObservationDependency :=
+  core.independent_of_observation
+
+/-- SFT events do not create atoms in the root axiom system. -/
+theorem sft_event_does_not_create_atoms
+    (boundary : AATCoreLocalAlgebraForSFT core) :
+    system.noSFTEventCreatesAtoms :=
+  boundary.sftEventDoesNotCreateAtomsEvidence
+
+end AATCoreLocalAlgebraForSFT
+
+/--
+Atom-level delta between two selected Atom-axiomatized AAT cores.
+
+The delta records source/target/preserved atom readings.  It does not create
+atoms; all atoms still come from the root axiom system.
+-/
+structure AATCoreAtomDelta
+    {system : AtomAxiomSystem.{u, v}}
+    (source target : AAT.AATCore system) where
+  sourceAtom : system.Atom -> Prop
+  targetAtom : system.Atom -> Prop
+  preservedAtom : system.Atom -> Prop
+  transformedAtom : system.Atom -> system.Atom -> Prop
+  sourceAtomPrimitive :
+    ∀ atom, sourceAtom atom -> system.Primitive atom
+  targetAtomPrimitive :
+    ∀ atom, targetAtom atom -> system.Primitive atom
+  preservedAtomOnSource :
+    ∀ atom, preservedAtom atom -> sourceAtom atom
+  preservedAtomOnTarget :
+    ∀ atom, preservedAtom atom -> targetAtom atom
+  transitionBoundary : Prop
+  doesNotCreateAtomsEvidence : system.noSFTEventCreatesAtoms
+  nonConclusions : Prop
+
+namespace AATCoreAtomDelta
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+
+/-- Source-side atoms in the delta are primitive root atoms. -/
+theorem source_atom_primitive
+    (delta : AATCoreAtomDelta source target)
+    {atom : system.Atom}
+    (hAtom : delta.sourceAtom atom) :
+    system.Primitive atom :=
+  delta.sourceAtomPrimitive atom hAtom
+
+/-- Target-side atoms in the delta are primitive root atoms. -/
+theorem target_atom_primitive
+    (delta : AATCoreAtomDelta source target)
+    {atom : system.Atom}
+    (hAtom : delta.targetAtom atom) :
+    system.Primitive atom :=
+  delta.targetAtomPrimitive atom hAtom
+
+/-- Preserved atoms are present on both source and target readings. -/
+theorem preserved_atom_on_source_and_target
+    (delta : AATCoreAtomDelta source target)
+    {atom : system.Atom}
+    (hPreserved : delta.preservedAtom atom) :
+    delta.sourceAtom atom ∧ delta.targetAtom atom :=
+  ⟨delta.preservedAtomOnSource atom hPreserved,
+    delta.preservedAtomOnTarget atom hPreserved⟩
+
+/-- Atom deltas do not create atom existence. -/
+theorem delta_does_not_create_atoms
+    (delta : AATCoreAtomDelta source target) :
+    system.noSFTEventCreatesAtoms :=
+  delta.doesNotCreateAtomsEvidence
+
+end AATCoreAtomDelta
+
+/--
+Semantic delta over an `AATCoreAtomDelta`.
+
+The semantic predicate is an SFT-side reading over existing atoms.  It is not a
+new atom constructor.
+-/
+structure AATCoreSemanticDelta
+    {system : AtomAxiomSystem.{u, v}}
+    {source target : AAT.AATCore system}
+    (delta : AATCoreAtomDelta source target) where
+  semanticAtom : system.Atom -> Prop
+  sourceSemanticAtomsPrimitive :
+    ∀ atom, delta.sourceAtom atom -> semanticAtom atom ->
+      system.Primitive atom
+  targetSemanticAtomsPrimitive :
+    ∀ atom, delta.targetAtom atom -> semanticAtom atom ->
+      system.Primitive atom
+  semanticBoundary : Prop
+  doesNotCreateAtomsEvidence : system.noSFTEventCreatesAtoms
+  nonConclusions : Prop
+
+namespace AATCoreSemanticDelta
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+variable {delta : AATCoreAtomDelta source target}
+
+/-- Source-side semantic atoms are still primitive root atoms. -/
+theorem source_semantic_atom_primitive
+    (semanticDelta : AATCoreSemanticDelta delta)
+    {atom : system.Atom}
+    (hSource : delta.sourceAtom atom)
+    (hSemantic : semanticDelta.semanticAtom atom) :
+    system.Primitive atom :=
+  semanticDelta.sourceSemanticAtomsPrimitive atom hSource hSemantic
+
+/-- Target-side semantic atoms are still primitive root atoms. -/
+theorem target_semantic_atom_primitive
+    (semanticDelta : AATCoreSemanticDelta delta)
+    {atom : system.Atom}
+    (hTarget : delta.targetAtom atom)
+    (hSemantic : semanticDelta.semanticAtom atom) :
+    system.Primitive atom :=
+  semanticDelta.targetSemanticAtomsPrimitive atom hTarget hSemantic
+
+/-- Semantic deltas do not create atom existence. -/
+theorem semantic_delta_does_not_create_atoms
+    (semanticDelta : AATCoreSemanticDelta delta) :
+    system.noSFTEventCreatesAtoms :=
+  semanticDelta.doesNotCreateAtomsEvidence
+
+end AATCoreSemanticDelta
+
+/--
+Law-relative circuit delta between two selected `AATCore` readings.
+
+Circuits remain law-relative obstruction witnesses over selected molecules.
+The delta connects them to source/target cores without turning SFT transition
+data into an atom constructor.
+-/
+structure AATCoreCircuitDelta
+    {system : AtomAxiomSystem.{u, v}}
+    (source target : AAT.AATCore system) where
+  law : AAT.DesignLaw system
+  molecule : AAT.Molecule system
+  lawOnSource : source.laws law
+  lawOnTarget : target.laws law
+  moleculeOnSource : source.molecules molecule
+  moleculeOnTarget : target.molecules molecule
+  createdCircuit : AAT.ObstructionCircuit law molecule -> Prop
+  removedCircuit : AAT.ObstructionCircuit law molecule -> Prop
+  preservedCircuit : AAT.ObstructionCircuit law molecule -> Prop
+  circuitBoundary : Prop
+  doesNotCreateAtomsEvidence : system.noSFTEventCreatesAtoms
+  nonConclusions : Prop
+
+namespace AATCoreCircuitDelta
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+
+/-- Source-side circuit molecules contain primitive root atoms. -/
+theorem source_molecule_atom_primitive
+    (delta : AATCoreCircuitDelta source target)
+    {atom : system.Atom}
+    (hAtom : delta.molecule.atoms atom) :
+    system.Primitive atom :=
+  source.atom_of_selected_molecule delta.moleculeOnSource hAtom
+
+/-- Target-side circuit molecules contain primitive root atoms. -/
+theorem target_molecule_atom_primitive
+    (delta : AATCoreCircuitDelta source target)
+    {atom : system.Atom}
+    (hAtom : delta.molecule.atoms atom) :
+    system.Primitive atom :=
+  target.atom_of_selected_molecule delta.moleculeOnTarget hAtom
+
+/-- The selected circuit law does not create atom existence. -/
+theorem law_does_not_create_atoms
+    (delta : AATCoreCircuitDelta source target) :
+    system.noLawCreatesAtoms :=
+  delta.law.does_not_create_atoms
+
+/-- Circuit deltas do not create atom existence. -/
+theorem circuit_delta_does_not_create_atoms
+    (delta : AATCoreCircuitDelta source target) :
+    system.noSFTEventCreatesAtoms :=
+  delta.doesNotCreateAtomsEvidence
+
+end AATCoreCircuitDelta
+
+/--
+SFT-visible transition between two Atom-axiomatized AAT cores.
+
+The transition consumes an AAT operation package and records atom, semantic,
+and circuit deltas as SFT analysis inputs.  It does not define AAT and does not
+create atom existence.
+-/
+structure AATCoreTransition
+    {system : AtomAxiomSystem.{u, v}}
+    (source target : AAT.AATCore system) where
+  operationPackage : AAT.OperationPreservationPackage source target
+  atomDelta : AATCoreAtomDelta source target
+  semanticDelta : AATCoreSemanticDelta atomDelta
+  circuitDelta : AATCoreCircuitDelta source target
+  transitionBoundary : Prop
+  fieldSigBoundary : Prop
+  nonConclusions : Prop
+
+namespace AATCoreTransition
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+
+/-- The selected transition boundary remains explicit. -/
+def RecordsTransitionBoundary
+    (transition : AATCoreTransition source target) : Prop :=
+  transition.transitionBoundary
+
+/-- FieldSig-related transition data remains an analysis boundary. -/
+def RecordsFieldSigBoundary
+    (transition : AATCoreTransition source target) : Prop :=
+  transition.fieldSigBoundary
+
+/-- The underlying AAT operation package does not create atom existence. -/
+theorem operation_does_not_create_atoms
+    (transition : AATCoreTransition source target) :
+    system.noToolOutputCreatesAtoms :=
+  transition.operationPackage.operation_does_not_create_atoms
+
+/-- The atom delta does not create atom existence. -/
+theorem atom_delta_does_not_create_atoms
+    (transition : AATCoreTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.atomDelta.delta_does_not_create_atoms
+
+/-- The semantic delta does not create atom existence. -/
+theorem semantic_delta_does_not_create_atoms
+    (transition : AATCoreTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.semanticDelta.semantic_delta_does_not_create_atoms
+
+/-- The circuit delta does not create atom existence. -/
+theorem circuit_delta_does_not_create_atoms
+    (transition : AATCoreTransition source target) :
+    system.noSFTEventCreatesAtoms :=
+  transition.circuitDelta.circuit_delta_does_not_create_atoms
+
+end AATCoreTransition
 
 /--
 SFT-side forecast status exposed at the AAT/SFT interface.

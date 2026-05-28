@@ -863,6 +863,11 @@ Atom foundation との接続では、`AtomTrace` が validated atom presentation
 読む bridge であり、horizon bound と governed-or-typed-boundary-failure branch を
 記録する。これは SFT forecast boundary の入力 surface であって、確率的予測、
 calibration、global future safety の theorem ではない。
+new Atom core では、SFT は `AATCoreLocalAlgebraForSFT` と
+`AATCoreTransition` を通じて `AATCore system` の transition を読む。
+`AATCorePremisedConsequenceEnvelope` と `FieldSigAATCoreTransitionAnalysis` は
+この transition を envelope / FieldSig analysis input として保持するが、AAT を
+再定義せず、forecast correctness や global future safety を結論しない。
 
 ### 17. Proposal Accounting and Review Mediation（proposal accounting と review mediation）
 

@@ -408,4 +408,113 @@ theorem aat_premise_does_not_prove_forecast_correctness
 
 end AATPremisedConsequenceEnvelope
 
+/--
+ConsequenceEnvelope boundary over an Atom-axiomatized `AATCore` transition.
+
+This is the new SFT / FieldSig-facing package: SFT reads `AATCore` as local
+algebra, consumes an `AATCoreTransition`, and projects selected forecast
+records into a reviewer-facing envelope without claiming forecast correctness.
+-/
+structure AATCorePremisedConsequenceEnvelope
+    {Field : Type u} {Operation : Type v}
+    {system : AtomAxiomSystem.{w, q}}
+    {sourceCore targetCore : AAT.AATCore system}
+    {support : OperationSupport Field Operation}
+    {relation : StepRelation Field Operation}
+    {source : Field} {horizon : Nat}
+    (target : Field)
+    (path : FieldPath support relation source target)
+    (localAlgebra : AATCoreLocalAlgebraForSFT sourceCore)
+    (transition : AATCoreTransition sourceCore targetCore)
+    (family : ConeFamily support relation source horizon)
+    (boundary : ObservationBoundary Field)
+    (envelope : ConsequenceEnvelope support relation source horizon) :
+    Prop where
+  projection : EnvelopeProjection family boundary envelope
+  forecastConeBoundary :
+    ForecastCone support relation source horizon target path
+  readsAATCoreLocalAlgebra : localAlgebra.usedAsLocalAlgebra
+  transitionBoundary : transition.RecordsTransitionBoundary
+  fieldSigBoundary : transition.RecordsFieldSigBoundary
+  operationDoesNotCreateAtoms : system.noToolOutputCreatesAtoms
+  atomDeltaDoesNotCreateAtoms : system.noSFTEventCreatesAtoms
+  circuitDeltaDoesNotCreateAtoms : system.noSFTEventCreatesAtoms
+  noForecastCorrectnessFromAAT :
+    localAlgebra.noForecastCorrectnessFromAATAlone
+  envelopeForecastBoundary : envelope.RecordsForecastBoundary
+  envelopeProjectionBoundary : envelope.RecordsProjectionBoundary
+  nonConclusions : envelope.RecordsNonConclusions
+
+namespace AATCorePremisedConsequenceEnvelope
+
+variable {Field : Type u} {Operation : Type v}
+variable {system : AtomAxiomSystem.{w, q}}
+variable {sourceCore targetCore : AAT.AATCore system}
+variable {support : OperationSupport Field Operation}
+variable {relation : StepRelation Field Operation}
+variable {source : Field} {horizon : Nat}
+variable {target : Field}
+variable {path : FieldPath support relation source target}
+variable {localAlgebra : AATCoreLocalAlgebraForSFT sourceCore}
+variable {transition : AATCoreTransition sourceCore targetCore}
+variable {family : ConeFamily support relation source horizon}
+variable {boundary : ObservationBoundary Field}
+variable {envelope : ConsequenceEnvelope support relation source horizon}
+
+/-- The package exposes selected ForecastCone membership. -/
+theorem forecast_cone
+    (package :
+      AATCorePremisedConsequenceEnvelope
+        target path localAlgebra transition family boundary envelope) :
+    ForecastCone support relation source horizon target path :=
+  package.forecastConeBoundary
+
+/-- The package records that SFT reads `AATCore` as local algebra. -/
+theorem reads_aatcore_local_algebra
+    (package :
+      AATCorePremisedConsequenceEnvelope
+        target path localAlgebra transition family boundary envelope) :
+    localAlgebra.usedAsLocalAlgebra :=
+  package.readsAATCoreLocalAlgebra
+
+/-- The transition and FieldSig boundaries remain explicit. -/
+theorem records_transition_boundaries
+    (package :
+      AATCorePremisedConsequenceEnvelope
+        target path localAlgebra transition family boundary envelope) :
+    transition.RecordsTransitionBoundary ∧
+      transition.RecordsFieldSigBoundary :=
+  ⟨package.transitionBoundary, package.fieldSigBoundary⟩
+
+/-- The transition package does not create atom existence. -/
+theorem transition_does_not_create_atoms
+    (package :
+      AATCorePremisedConsequenceEnvelope
+        target path localAlgebra transition family boundary envelope) :
+    system.noToolOutputCreatesAtoms ∧ system.noSFTEventCreatesAtoms :=
+  ⟨package.operationDoesNotCreateAtoms,
+    package.atomDeltaDoesNotCreateAtoms⟩
+
+/-- An `AATCore` local premise still does not prove forecast correctness. -/
+theorem aatcore_premise_does_not_prove_forecast_correctness
+    (package :
+      AATCorePremisedConsequenceEnvelope
+        target path localAlgebra transition family boundary envelope) :
+    localAlgebra.noForecastCorrectnessFromAATAlone :=
+  package.noForecastCorrectnessFromAAT
+
+/-- Envelope forecast / projection / non-conclusion boundaries remain explicit. -/
+theorem records_envelope_boundaries
+    (package :
+      AATCorePremisedConsequenceEnvelope
+        target path localAlgebra transition family boundary envelope) :
+    envelope.RecordsForecastBoundary ∧
+      envelope.RecordsProjectionBoundary ∧
+      envelope.RecordsNonConclusions :=
+  ⟨package.envelopeForecastBoundary,
+    package.envelopeProjectionBoundary,
+    package.nonConclusions⟩
+
+end AATCorePremisedConsequenceEnvelope
+
 end Formal.Arch
