@@ -18,7 +18,7 @@ use archsig::{
     ArchitecturePolicyValidationReportV0, ComponentUniverseValidationReport,
     CustomRulePluginRegistryV0, CustomRulePluginRegistryValidationReportV0, DEFAULT_UNIVERSE_MODE,
     DetectableValuesReportedAxesCatalogV0, EmpiricalDatasetInput, FeatureExtensionReportV0,
-    FrameworkAdapterEvidenceV0, LawPolicyTemplateRegistryV0,
+    FrameworkAdapterEvidenceV0, LawPolicyDocumentV0, LawPolicyTemplateRegistryV0,
     LawPolicyTemplateRegistryValidationReportV0, LawViolationReportV0, MeasurementUnitRegistryV0,
     MeasurementUnitRegistryValidationReportV0, NoSolutionCertificateV0,
     NoSolutionCertificateValidationReportV0, OrganizationPolicyV0,
@@ -31,21 +31,22 @@ use archsig::{
     SnapshotRepositoryRef, SynthesisConstraintArtifactV0, SynthesisConstraintValidationReportV0,
     TheoremPreconditionCheckReportV0, apply_architecture_policy_to_sig0,
     attach_framework_adapter_evidence, build_air_document, build_air_from_archmap,
-    build_baseline_suppression_report, build_feature_extension_report,
-    build_feature_extension_report_with_archmap_diagnostics, build_law_violation_report,
-    build_policy_decision_report, build_schema_compatibility_check_report,
-    build_signature_diff_report, build_signature_snapshot_record,
-    build_theorem_precondition_check_report, extract_python_sig0,
+    build_archsig_analysis_packet, build_baseline_suppression_report,
+    build_feature_extension_report, build_feature_extension_report_with_archmap_diagnostics,
+    build_law_violation_report, build_policy_decision_report,
+    build_schema_compatibility_check_report, build_signature_diff_report,
+    build_signature_snapshot_record, build_theorem_precondition_check_report, extract_python_sig0,
     extract_relation_complexity_observation_from_file, extract_sig0_with_runtime,
     read_architecture_policy, render_pr_comment_markdown, static_aat_observable_bundle,
     static_custom_rule_plugin_registry, static_detectable_values_reported_axes_catalog,
-    static_law_policy_template_registry, static_measurement_unit_registry,
+    static_law_policy, static_law_policy_template_registry, static_measurement_unit_registry,
     static_no_solution_certificate, static_organization_policy, static_pr_quality_analysis_report,
     static_repair_rule_registry, static_report_artifact_retention_manifest,
     static_schema_version_catalog, static_synthesis_constraint_artifact,
     validate_aat_observable_bundle, validate_air_document_report,
     validate_architecture_policy_report, validate_archmap_report,
-    validate_component_universe_report, validate_custom_rule_plugin_registry_report,
+    validate_archsig_analysis_packet_report, validate_component_universe_report,
+    validate_custom_rule_plugin_registry_report, validate_law_policy_report,
     validate_law_policy_template_registry_report, validate_measurement_unit_registry_report,
     validate_no_solution_certificate_report, validate_organization_policy_report,
     validate_pr_quality_analysis_report, validate_repair_rule_registry_report,
@@ -56,7 +57,7 @@ use clap::{Parser, Subcommand};
 #[derive(Debug, Parser)]
 #[command(
     version,
-    about = "Validate ArchMap-first ArchSig review artifacts and bounded adapter evidence"
+    about = "Validate LLM-native ArchMap, LawPolicy, and ArchSig analysis artifacts"
 )]
 struct Args {
     #[command(subcommand)]
@@ -285,6 +286,44 @@ enum Command {
         /// Output ArchMap validation report JSON path. If omitted, JSON is written to stdout.
         #[arg(long)]
         out: Option<PathBuf>,
+    },
+
+    /// Validate or emit a LawPolicy artifact for LLM-native ArchSig analysis.
+    LawPolicy {
+        /// Optional LawPolicy JSON path. If omitted, the static fixture policy is validated.
+        #[arg(long)]
+        input: Option<PathBuf>,
+
+        /// Emit the canonical law-policy-v0 fixture instead of a validation report.
+        #[arg(long)]
+        fixture: bool,
+
+        /// Output LawPolicy fixture or validation report JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+
+    /// Build an ArchSig analysis packet from ArchMap + LawPolicy.
+    ArchsigAnalysis {
+        /// Input ArchMap observation artifact path.
+        #[arg(long)]
+        archmap: PathBuf,
+
+        /// Input LawPolicy artifact path.
+        #[arg(long = "law-policy")]
+        law_policy: PathBuf,
+
+        /// Output archsig-analysis-packet-v0 JSON path. If omitted, JSON is written to stdout.
+        #[arg(long)]
+        out: Option<PathBuf>,
+
+        /// Optional output validation report path.
+        #[arg(long = "validation-out")]
+        validation_out: Option<PathBuf>,
+
+        /// Optional LLM interpretation packet output path. This writes the same structured packet for LLM reading.
+        #[arg(long = "llm-interpretation-out")]
+        llm_interpretation_out: Option<PathBuf>,
     },
 
     /// Emit a bounded external-agent protocol for generating ArchMap JSON.
@@ -516,6 +555,21 @@ enum Command {
         /// Treat measured AIR claims without evidence refs as validation failures.
         #[arg(long)]
         strict_measured_evidence: bool,
+    },
+
+    /// Run the LLM-native ArchMap -> LawPolicy -> ArchSig analysis workflow.
+    LlmNativeWorkflow {
+        /// Input ArchMap observation artifact path.
+        #[arg(long)]
+        archmap: PathBuf,
+
+        /// Input LawPolicy artifact path.
+        #[arg(long = "law-policy")]
+        law_policy: PathBuf,
+
+        /// Output directory for LLM-native workflow artifacts.
+        #[arg(long = "out-dir")]
+        out_dir: PathBuf,
     },
 
     /// Emit the B9 detectable values / reported axes catalog.
@@ -863,6 +917,65 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             );
             let failed = report.summary.result == "fail";
             write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::LawPolicy {
+            input,
+            fixture,
+            out,
+        }) => {
+            if fixture {
+                let policy = static_law_policy();
+                write_json(out, &policy)?;
+                return Ok(ExitCode::SUCCESS);
+            }
+            let policy: LawPolicyDocumentV0 = input
+                .as_ref()
+                .map(read_json)
+                .transpose()?
+                .unwrap_or_else(static_law_policy);
+            let input_path = input
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_else(|| "static-law-policy".to_string());
+            let report = validate_law_policy_report(&policy, &input_path);
+            let failed = report.summary.result == "fail";
+            write_json(out, &report)?;
+            Ok(if failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::ArchsigAnalysis {
+            archmap,
+            law_policy,
+            out,
+            validation_out,
+            llm_interpretation_out,
+        }) => {
+            let archmap_document: ArchMapDocumentV0 = read_json(&archmap)?;
+            let law_policy_document: LawPolicyDocumentV0 = read_json(&law_policy)?;
+            let packet = build_archsig_analysis_packet(
+                &archmap_document,
+                &law_policy_document,
+                Some(&archmap.display().to_string()),
+                Some(&law_policy.display().to_string()),
+            );
+            let validation =
+                validate_archsig_analysis_packet_report(&packet, "archsig-analysis-packet");
+            let failed = validation.summary.result == "fail";
+            if let Some(path) = validation_out {
+                write_json(Some(path), &validation)?;
+            }
+            if let Some(path) = llm_interpretation_out {
+                write_json(Some(path), &packet)?;
+            }
+            write_json(out, &packet)?;
             Ok(if failed {
                 ExitCode::from(1)
             } else {
@@ -1289,6 +1402,81 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             write_json(Some(observable_validation_path), &observable_validation)?;
 
             Ok(if archmap_failed || air_failed || observable_failed {
+                ExitCode::from(1)
+            } else {
+                ExitCode::SUCCESS
+            })
+        }
+        Some(Command::LlmNativeWorkflow {
+            archmap,
+            law_policy,
+            out_dir,
+        }) => {
+            let archmap_validation_path = out_dir.join("archmap-validation.json");
+            let law_policy_validation_path = out_dir.join("law-policy-validation.json");
+            let analysis_packet_path = out_dir.join("archsig-analysis-packet.json");
+            let analysis_validation_path = out_dir.join("archsig-analysis-validation.json");
+            let llm_interpretation_path = out_dir.join("llm-interpretation-packet.json");
+
+            let archmap_document: ArchMapDocumentV0 = read_json(&archmap)?;
+            let source_inventory_path = archmap_document
+                .source_inventory_ref
+                .as_ref()
+                .and_then(|source_inventory_ref| source_inventory_ref.path.as_deref());
+            let mut source_inventory_document: Option<ArchMapSourceInventoryV0> = None;
+            let mut source_inventory_error: Option<String> = None;
+            if let Some(path) = source_inventory_path {
+                match resolve_archmap_sidecar_path(&archmap, path) {
+                    Some(resolved_path) => match read_json(&resolved_path) {
+                        Ok(source_inventory) => source_inventory_document = Some(source_inventory),
+                        Err(error) => {
+                            source_inventory_error = Some(format!(
+                                "source inventory artifact could not be read: {error}"
+                            ));
+                        }
+                    },
+                    None => {
+                        source_inventory_error =
+                            Some("source inventory artifact path does not exist".to_string());
+                    }
+                }
+            }
+            let source_inventory = source_inventory_path.map(|path| ArchMapSourceInventoryInput {
+                path,
+                document: source_inventory_document.as_ref(),
+                read_error: source_inventory_error.clone(),
+            });
+            let archmap_validation = validate_archmap_report(
+                &archmap_document,
+                &archmap.display().to_string(),
+                None,
+                source_inventory,
+            );
+            let archmap_failed = archmap_validation.summary.result == "fail";
+            write_json(Some(archmap_validation_path), &archmap_validation)?;
+
+            let law_policy_document: LawPolicyDocumentV0 = read_json(&law_policy)?;
+            let law_policy_validation =
+                validate_law_policy_report(&law_policy_document, &law_policy.display().to_string());
+            let law_policy_failed = law_policy_validation.summary.result == "fail";
+            write_json(Some(law_policy_validation_path), &law_policy_validation)?;
+
+            let analysis_packet = build_archsig_analysis_packet(
+                &archmap_document,
+                &law_policy_document,
+                Some(&archmap.display().to_string()),
+                Some(&law_policy.display().to_string()),
+            );
+            write_json(Some(analysis_packet_path.clone()), &analysis_packet)?;
+            write_json(Some(llm_interpretation_path), &analysis_packet)?;
+            let analysis_validation = validate_archsig_analysis_packet_report(
+                &analysis_packet,
+                &analysis_packet_path.display().to_string(),
+            );
+            let analysis_failed = analysis_validation.summary.result == "fail";
+            write_json(Some(analysis_validation_path), &analysis_validation)?;
+
+            Ok(if archmap_failed || law_policy_failed || analysis_failed {
                 ExitCode::from(1)
             } else {
                 ExitCode::SUCCESS

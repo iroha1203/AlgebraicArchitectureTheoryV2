@@ -265,6 +265,98 @@ fn cli_runs_archmap_primary_workflow() {
 }
 
 #[test]
+fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
+    let out_dir = temp_dir("llm-native-workflow");
+    let root = fixture_root();
+    let archmap = root.join("archmap.json");
+    let law_policy = root.join("law_policy.json");
+
+    run_sig0(&[
+        "llm-native-workflow",
+        "--archmap",
+        archmap.to_str().expect("archmap path is utf-8"),
+        "--law-policy",
+        law_policy.to_str().expect("law policy path is utf-8"),
+        "--out-dir",
+        out_dir.to_str().expect("output directory path is utf-8"),
+    ]);
+
+    let archmap_validation = read_json(&out_dir.join("archmap-validation.json"));
+    assert_eq!(
+        archmap_validation["schemaVersion"],
+        "archmap-validation-report-v0"
+    );
+    let law_policy_validation = read_json(&out_dir.join("law-policy-validation.json"));
+    assert_eq!(
+        law_policy_validation["schemaVersion"],
+        "law-policy-validation-report-v0"
+    );
+    let analysis_packet = read_json(&out_dir.join("archsig-analysis-packet.json"));
+    assert_eq!(
+        analysis_packet["schemaVersion"],
+        "archsig-analysis-packet-v0"
+    );
+    assert!(
+        analysis_packet["obstructionCircuits"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "analysis packet must construct obstruction circuits"
+    );
+    assert!(
+        analysis_packet["signatureAxes"]
+            .as_array()
+            .expect("signature axes are array")
+            .iter()
+            .any(
+                |axis| axis["signatureAxisId"] == "sig-axis:semantic-inconsistency"
+                    && axis["value"] == 1
+            ),
+        "analysis packet must value required signature axes"
+    );
+    let analysis_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
+    assert_eq!(
+        analysis_validation["summary"]["result"].as_str(),
+        Some("pass")
+    );
+    let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
+    assert_eq!(llm_packet, analysis_packet);
+}
+
+#[test]
+fn cli_archsig_analysis_step_outputs_packet_and_validation() {
+    let out_dir = temp_dir("archsig-analysis-step");
+    let root = fixture_root();
+    let packet = out_dir.join("packet.json");
+    let validation = out_dir.join("validation.json");
+    let llm_packet = out_dir.join("llm-packet.json");
+    run_sig0(&[
+        "archsig-analysis",
+        "--archmap",
+        root.join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("law policy path is utf-8"),
+        "--out",
+        packet.to_str().expect("packet path is utf-8"),
+        "--validation-out",
+        validation.to_str().expect("validation path is utf-8"),
+        "--llm-interpretation-out",
+        llm_packet.to_str().expect("llm packet path is utf-8"),
+    ]);
+    let packet_json = read_json(&packet);
+    let validation_json = read_json(&validation);
+    assert_eq!(packet_json["schemaVersion"], "archsig-analysis-packet-v0");
+    assert_eq!(
+        validation_json["schemaVersion"],
+        "archsig-analysis-packet-validation-report-v0"
+    );
+    assert_eq!(read_json(&llm_packet), packet_json);
+}
+
+#[test]
 fn cli_locks_archmap_homomorphism_expressiveness_matrix() {
     let out_dir = temp_dir("archmap-homomorphism-expressiveness");
     let archmap = expressiveness_root().join("archmap_expressiveness_suite_v0.json");
