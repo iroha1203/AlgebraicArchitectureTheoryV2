@@ -20,4 +20,8 @@ Atom handoff checklist:
 
 - [Atom Handoff Checklist](atom_handoff.md)
 
-New ArchMap-homomorphism-first specification documents should be added here only when they match the implementation and keep those boundaries explicit.
+Forward design PRDs:
+
+- [LLM-native ArchMap / ArchSig PRD](llm_native_archmap_archsig_prd.md)
+
+New implementation-facing specification documents should be added here only when they match the implementation and keep those boundaries explicit. Forward PRDs should keep future schema and migration work separate from the current source-of-truth boundaries above.
