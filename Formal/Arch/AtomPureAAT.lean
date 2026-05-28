@@ -1,4 +1,7 @@
 import Formal.Arch.AtomCoreAAT
+import Formal.Arch.AAT.Operation
+import Formal.Arch.AAT.Repair
+import Formal.Arch.AAT.Synthesis
 import Formal.Arch.Operation.AtomPureOperation
 import Formal.Arch.Repair.AtomPureRepair
 import Formal.Arch.Repair.AtomPureSynthesis
@@ -6,6 +9,27 @@ import Formal.Arch.Repair.AtomPureSynthesis
 namespace Formal.Arch
 
 universe u v w r s t
+
+/-- New AtomAxiomSystem-rooted operation package alias. -/
+abbrev AtomAxiomSystemOperationPackage
+    {system : AtomAxiomSystem.{u, v}}
+    (source target : AAT.AATCore system) :=
+  AAT.OperationPreservationPackage source target
+
+/-- New AtomAxiomSystem-rooted repair clearing package alias. -/
+abbrev AtomAxiomSystemRepairClearingPackage
+    {system : AtomAxiomSystem.{u, v}}
+    (core : AAT.AATCore system)
+    (State : Type r) (Rule : Type s)
+    (source target : State) :=
+  AAT.RepairClearingPackage core State Rule source target
+
+/-- New AtomAxiomSystem-rooted synthesis soundness package alias. -/
+abbrev AtomAxiomSystemSynthesisSoundnessPackage
+    {system : AtomAxiomSystem.{u, v}}
+    (core : AAT.AATCore system)
+    (State : Type t) :=
+  AAT.SynthesisSoundnessPackage core State
 
 /--
 Signature-free Atom-axiomatized AAT theorem suite.
