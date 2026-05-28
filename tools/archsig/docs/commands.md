@@ -33,8 +33,8 @@ automatic repair instruction.
 
 The downstream AIR, theorem-check, Feature Report, and AAT Observable Bundle
 are projected from `archsig-analysis-packet-v0`. They retain the
-`ArchMap + LawPolicy -> ArchSig analysis` boundary and do not use the legacy
-legacy ArchMap projection rule as their source of truth.
+`ArchMap + LawPolicy -> ArchSig analysis` boundary and do not use the older
+ArchMap projection rule as their source of truth.
 
 Equivalent step-by-step commands:
 
@@ -57,7 +57,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archsig-analysis \
 
 `law-policy --fixture` emits the canonical minimal `law-policy-v0` fixture.
 
-## Legacy ArchMap Projection Workflow
+## Compatibility Projection Commands
 
 ```bash
 cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
@@ -65,7 +65,7 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap-workflow \
   --out-dir .archsig/archmap-primary
 ```
 
-The legacy command still emits ArchMap validation, AIR, AIR validation, theorem precondition check, Feature Extension Report, AAT Observable Bundle, and bundle validation artifacts for older review surfaces. New LLM-native work should prefer `llm-native-workflow` and `archsig-analysis`.
+These commands emit ArchMap validation, AIR, AIR validation, theorem precondition check, Feature Extension Report, AAT Observable Bundle, and bundle validation artifacts for older review surfaces. They are compatibility projections, not the current ArchSig source of truth. New LLM-native work should prefer `llm-native-workflow` and `archsig-analysis`.
 
 The bundle is assembled from the input ArchMap and generated workflow reports, so static fixture architecture ids, source refs, witnesses, and selected universes are not carried into workflow output. Optional Sig0 adapter evidence can be supplied for static / semantic conflict checks:
 

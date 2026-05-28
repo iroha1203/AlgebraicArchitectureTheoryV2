@@ -1,4 +1,4 @@
-# ArchSig Artifacts And Boundaries
+# FieldSig Artifacts And Boundaries
 
 この文書は `fieldsig` が出す主要 SFT / operational artifact と読み方の境界をまとめる。
 
@@ -11,8 +11,8 @@ non-conclusions を落とさない。
 
 | Surface | Artifact families | Boundary |
 | --- | --- | --- |
-| ArchSig Core | Sig0、validation report、snapshot、signature diff。 | repository observation であり、完全な architecture model 抽出ではない。 |
-| ArchSig Review | AIR、ArchMap、AIR validation、theorem precondition check、Feature Extension Report、policy decision、PR comment、baseline suppression、AAT Observable Bundle。 | review cue / CI cue であり、Lean theorem proof ではない。 |
+| ArchSig handoff | `archsig-analysis-packet-v0` から生成する `operation-support-estimate-v0`。 | ArchSig analysis state を局所 AAT algebra state として読む。raw ArchMap observation、forecast truth、causal proof ではない。 |
+| Adapter / review refs | Sig0、validation report、snapshot、signature diff、AIR、Feature Extension Report、AAT Observable Bundle。 | historical / bounded review refs として読めるが、FieldSig の現行 handoff source of truth ではない。 |
 | FieldSig SFT | ArtifactDescriptor、OperationSupportEstimate、ForecastConeSkeleton、ConsequenceEnvelope、ForecastCalibrationHook と validation report。 | bounded forecast report projection であり、point prediction、causal proof、forecast correctness ではない。 |
 | FieldSig Operational | PR history dataset、feature extension dataset、outcome linkage、daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh。 | empirical / operational feedback であり、correlation を causal theorem にしない。 |
 
@@ -25,7 +25,9 @@ non-conclusions を落とさない。
 | Snapshot | `signature-snapshot-store-v0` | repository revision ごとの保存用 signature record。 |
 | Diff report | `signature-diff-report-v0` | before / after の悪化軸、改善軸、未評価軸、evidence diff、PR attribution candidate。 |
 | AIR | `aat-air-v0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
-| ArchMap | `archmap-v0` | supplied JSON の architecture homomorphism map / atomic observation 候補。source inventory、provenance、atom candidates、molecule candidates、obstruction circuit candidates、observation gaps、coverage、conflict、non-conclusions を保持する。 |
+| ArchMap observation map | `archmap-observation-map-v0` | ArchSig 入力の source-grounded Atom observation map。FieldSig はこれを現行 handoff として直接読まない。 |
+| LawPolicy | `law-policy-v0` | ArchSig analysis 用 selected law / witness / signature-axis policy artifact。AAT theory そのものではない。 |
+| ArchSig analysis packet | `archsig-analysis-packet-v0` | FieldSig の現行 ArchSig handoff。obstruction circuits、signature axes、repair candidates、coverage gaps、non-conclusions を bounded SFT input として読む。 |
 | ArchMap validation report | `archmap-validation-report-v0` | ArchMap の source refs、claim boundary、semantic coverage、conflict、formal promotion guardrail、atomic observation checks / summary の検査結果。 |
 | AIR validation report | `aat-air-validation-report-v0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
 | Theorem precondition check report | `theorem-precondition-check-report-v0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
@@ -83,7 +85,7 @@ non-conclusions を落とさない。
 | IntentMap validation report | `intentmap-validation-report-v0` | source refs、claim classification、confidence boundary、missing decision / ambiguity / missing evidence、non-conclusions を検査する。 |
 | AlignmentMap | `intent-archmap-alignment-v0` | IntentMap item と ArchMap item の対応、preserves / forgets、unaligned / unsupported / ambiguous boundary、missing evidence を保持する。 |
 | AlignmentMap validation report | `intent-archmap-alignment-validation-report-v0` | IntentMap refs と ArchMap refs の dangling reference、alignment kind、measured zero への丸め、non-conclusions を検査する。 |
-| OperationSupportEstimate | `operation-support-estimate-v0` | descriptor refs、candidate operation families、ArchMap atom / circuit / observation gap refs、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
+| OperationSupportEstimate | `operation-support-estimate-v0` | descriptor refs、candidate operation families、ArchSig analysis refs、obstruction / signature / repair support refs、coverage gaps、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
 | OperationSupportEstimate validation report | `operation-support-estimate-validation-report-v0` | unknown support と measured zero の混同、global policy safety / future trajectory safety への昇格を検査する。 |
 | ForecastConeSkeleton | `forecast-cone-skeleton-v0` | finite support refs、bounded horizon、path class candidates、gluing evidence、governance interventions、typed boundary failures、forecast boundary、unknown remainder を保持する。 |
 | ForecastConeSkeleton validation report | `forecast-cone-skeleton-validation-report-v0` | probability claim、unmeasured axis の safe 扱い、support / horizon refs 欠落を検査する。 |
@@ -99,10 +101,12 @@ non-conclusions を落とさない。
 | AI Proposal Governance validation report | `ai-proposal-governance-validation-report-v0` | support category、shortcut witness、review / CI / posterior boundary、AI safety / forecast correctness / lawfulness non-conclusions を検査する。 |
 | Lifecycle Decision Report | planned `lifecycle-decision-report-v0` | repair / migration / contraction / deletion の selected inputs、field capacity impact、runtime / ownership boundary、non-conclusions を保持する将来候補。 |
 
-`archmap-sft-input` は ArchMap v2 の `atomCandidates`、`obstructionCircuitCandidates`、
-`observationGaps` を FieldSig 側へ observation refs / unknown remainder refs として渡す。
+`archsig-analysis-sft-input` は `archsig-analysis-packet-v0` を
+`operation-support-estimate-v0` へ射影する現行 handoff command である。obstruction circuits、
+signature axes、repair candidates、coverage gaps は bounded refs / unknown remainder として残る。
 これは certified universal atoms、zero curvature proof、forecast correctness、future outcome
-probability ではない。
+probability ではない。`archmap-sft-input` は legacy bounded projection であり、raw ArchMap
+observation を forecast truth へ昇格してはならない。
 
 `artifact-descriptor-v0` は B12 SFT forecasting MVP の最初の入力正規化 artifact である。
 後段では `operation-support-estimate-v0`、`forecast-cone-skeleton-v0`、
@@ -230,7 +234,7 @@ tooling evidence であり、Lean `ComponentUniverse` bridge precondition なし
 | 到達 cone | `reachableConeSize` | 変更理解や影響確認の範囲が広がる候補。 | edge 方向は `source depends on target`。 |
 | boundary violation | `boundaryViolationCount`, `policyViolations[]` | 意図した layer / domain boundary が破られている候補。 | policy 未指定なら placeholder 0 でも違反なしとは読まない。 |
 | Layered law violation | `law-violation-report-v0.deterministicViolations[]`, `policyViolations[]` | resolved layer selector と measured import edge に対する deterministic forbidden dependency。 | selector 未解決、dynamic import、framework convention は unmeasured。policy pass は architecture lawfulness proof ではない。 |
-| SRP review cue | `archmap-v0.mapItems[].semanticRole`, `responsibilityRegions`, `reasonToChange`, `lawRefs`, `law-violation-report-v0.srpCues[]` | LLM Review Skill が probable violation / acceptable orchestrator / unmeasured を判断するための semantic evidence。 | tool 単独で SRP violation を断定しない。 |
+| SRP review cue | `archsig-analysis-packet-v0.moleculeReadings[]`, `signatureAxes[]`, `repairCandidates[]`, `law-violation-report-v0.srpCues[]` | LLM Review Skill が probable violation / acceptable orchestrator / unmeasured を判断するための semantic evidence。 | tool 単独で SRP violation を断定しない。 |
 | abstraction violation | `abstractionViolationCount`, `policyViolations[]` | abstraction boundary の破れ候補。 | Lean の `ProjectionSound` witness そのものではない。 |
 | runtime exposure | `runtimePropagation`, `runtimeDependencyGraph`, `runtimeEdgeEvidence[]` | runtime evidence 上の exposure radius が大きい。 | runtime edge evidence を渡した場合だけ測定済み。 |
 | relation complexity | `relationComplexity`, `counts.*`, `excludedEvidence[]` | 状態遷移設計や運用リスクの review 対象候補。 | candidate evidence からの observation。 |
