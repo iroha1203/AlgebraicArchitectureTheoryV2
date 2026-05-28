@@ -6,7 +6,7 @@ Roadmap は mutable planning である。ここには phase、拡張候補、標
 ## Roadmap management
 
 tooling の進捗、実装候補、未実装 gap はこの文書で管理する。
-第一級理論本文は `docs/aat/mathematical_theory.md`,
+第一級理論本文は `docs/aat/mathematical_theory/README.md`,
 `docs/sft/aat_interface.md`, `docs/sft/software_field_theory.md` に置き、
 ここには tool artifact、CLI、CI、schema、fixture、validator、empirical / operational
 workflow の計画だけを書く。

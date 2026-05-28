@@ -50,7 +50,7 @@ body:
       label: 修正対象ファイル・候補
       description: 変更してほしいファイル、または調査してほしい候補ファイルを列挙してください。
       placeholder: |
-        - `docs/aat/mathematical_theory.md`
+        - `docs/aat/mathematical_theory/README.md`
         - `docs/aat/proof_obligations.md`
         - `website/...`
     validations:

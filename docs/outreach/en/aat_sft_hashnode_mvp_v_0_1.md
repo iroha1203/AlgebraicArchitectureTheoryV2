@@ -556,7 +556,7 @@ AAT/SFT is an attempt to define questions for software that keeps changing.
 
 If you want to read more about the mathematical definitions of AAT/SFT, theorem boundaries, and the connection to SFT, see the following primary documents:
 
-- [Algebraic Architecture Theory](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md)
+- [Algebraic Architecture Theory](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory/README.md)
 - [Software Field Theory](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md)
 - [AAT / SFT Interface](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/aat_interface.md)
 

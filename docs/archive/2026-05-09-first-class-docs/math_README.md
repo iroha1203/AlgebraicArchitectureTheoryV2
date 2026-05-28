@@ -2,7 +2,7 @@
 
 Active mathematical source-of-truth documents live in `docs/aat/`.
 
-- [AAT 数学理論](../aat/mathematical_theory.md): current mathematical source of truth.
+- [AAT 数学理論](../../aat/mathematical_theory/README.md): current mathematical source of truth.
 - [AAT / SFT Interface](../sft/aat_interface.md): one-way boundary between AAT and SFT.
 - [ソフトウェアの場の理論](../sft/software_field_theory.md): field dynamics, forecast, control, organization, AI, lifecycle.
 - [証明義務と実証仮説](../aat/proof_obligations.md): Lean status and proof obligation ledger.

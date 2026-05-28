@@ -111,4 +111,4 @@ ProjectionExact G π GA ->
 Issue #82 では、`projectionSoundnessViolation` を soundness-only metric として固定し、
 exact projection は抽象辺を具体依存由来として読むための refinement として分離する。
 `DIPCompatible` と `StrongDIPCompatible` の使い分けは
-[AAT 数学理論の設計原則](../aat/mathematical_theory.md#16-設計原則) と整合する。
+[AAT 数学理論](../../../aat/mathematical_theory/README.md) と整合する。

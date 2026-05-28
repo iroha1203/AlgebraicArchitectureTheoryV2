@@ -74,7 +74,7 @@ file move を含む PR では、少なくとも次を確認する。
 - `docs/aat/proof_obligations.md`: status ledger / proof obligation index に影響する path。
 - `docs/README.md` と `docs/design/*.md`: Lean module path を参照する箇所。
 
-`docs/aat/mathematical_theory.md` は数学面の第一級設計書であり、作業状態や移行 status を
+`docs/aat/mathematical_theory/README.md` は数学面の第一級設計書であり、作業状態や移行 status を
 混ぜない。module path の進捗管理はこの文書、`docs/aat/proof_obligations.md`、
 `docs/aat/lean_theorem_index.md` で扱う。
 
