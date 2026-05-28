@@ -1,4 +1,4 @@
-import Formal.Arch.AAT.Core
+import Formal.Arch.AAT.ZeroCurvature
 import Formal.Arch.Atomization
 
 namespace Formal.Arch
@@ -15,6 +15,12 @@ layers are migrated and the obsolete Lean code is deleted.
 -/
 abbrev AtomAxiomSystemPureAAT (system : AtomAxiomSystem.{u, v}) :=
   AAT.PureTheory system
+
+/-- Atom-axiom-system zero-curvature package for the new pure AAT core. -/
+abbrev AtomAxiomSystemZeroCurvaturePackage
+    {system : AtomAxiomSystem.{u, v}}
+    (core : AtomAxiomSystemPureAAT system) :=
+  AAT.ZeroCurvaturePackage core
 
 /--
 Pure Atom-axiomatized AAT core.
