@@ -19,6 +19,7 @@ Current source-of-truth boundaries:
 Atom handoff checklist:
 
 - [Atom Handoff Checklist](atom_handoff.md)
+- [LawPolicy](law_policy.md)
 
 Forward design PRDs:
 

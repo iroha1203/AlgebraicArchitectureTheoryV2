@@ -12,6 +12,7 @@ mod extractor;
 mod feature_report;
 mod framework_adapter;
 mod graph;
+mod law_policy;
 mod law_policy_template;
 mod measurement_unit;
 mod no_solution_certificate;
@@ -59,6 +60,7 @@ pub use feature_report::{
     build_feature_extension_report, build_feature_extension_report_with_archmap_diagnostics,
 };
 pub use framework_adapter::attach_framework_adapter_evidence;
+pub use law_policy::{static_law_policy, validate_law_policy_report};
 pub use law_policy_template::{
     static_law_policy_template_registry, validate_law_policy_template_registry_report,
 };
