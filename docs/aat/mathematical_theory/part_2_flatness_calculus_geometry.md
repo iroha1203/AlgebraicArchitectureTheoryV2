@@ -95,17 +95,32 @@ kappa_U(A) = omega_U(A)
 ZeroCurvature_U(A) iff kappa_U(A) = 0
 ```
 
-### 定理 2.3 Zero Curvature Theorem
+### 定理 2.3 Architecture Zero Curvature Theorem
 
-`kappa_U` が law universe `U` の obstruction valuation として sound かつ complete なら、
+law universe `U`、required obstruction family `W`、signature axes `S`、
+curvature valuation `kappa_U` が同じ law failure を exact に読むとする。
+このとき、次の四つの読みは一致する。
 
 ```text
-ZeroCurvature_U(A) iff Lawful_U(A)
+Lawful_U(A)
+  <-> NoRequiredObstruction_W(A)
+  <-> RequiredSignatureAxesZero_S(A)
+  <-> ZeroCurvature_U(A)
 ```
 
-が成り立つ。
+ここで、
 
-この定理は、architecture の平坦性を「law failure が測る曲率が 0 である」と読む。
+```text
+ZeroCurvature_U(A) iff kappa_U(A) = 0
+NoRequiredObstruction_W(A) iff required obstruction circuit が存在しない
+RequiredSignatureAxesZero_S(A) iff required signature axes がすべて zero
+```
+
+である。
+
+この定理が AAT における architecture zero curvature theorem の基本形である。
+零曲率とは、選ばれた law universe に対する required obstruction-free condition の
+幾何学的な名前である。
 
 ## 3. Architecture Signature
 

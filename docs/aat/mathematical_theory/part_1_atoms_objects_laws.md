@@ -5,8 +5,8 @@
 AAT の最小単位は Atom である。
 
 Atom は、ソフトウェアアーキテクチャにおいてそれ以上分解せずに扱う型付き事実である。
-Atom は component、relation、capability、state、effect、contract、semantic reading
-などの形を取りうる。
+Atom は component、relation、capability、state、effect、authority / trust、
+contract、semantic reading、runtime interaction などの形を取りうる。
 
 Atom の集合を `At` と書く。各 Atom `a : At` には次が付随する。
 
@@ -44,8 +44,11 @@ relation_r(c, d)
 capability(c, k)
 state(c, x)
 effect(e)
+authority(actor, action, resource)
+trust_relation(source, target)
 contract(m, p)
 semantic(t, s)
+runtime_interaction(u, v, h)
 ```
 
 これらはすべて、AAT の中では primitive architectural fact として扱える。
@@ -174,6 +177,41 @@ effect pair commutes
 effect Atom の obstruction は、dependency graph には現れないことが多い。
 したがって AAT では、effect を component relation へ潰さず、独立した Atom として保持する。
 
+#### Authority / Trust Atom
+
+```text
+authority(actor, action, resource)
+```
+
+authority / trust Atom は、誰が、どの action を、どの resource に対して行う権限や
+信頼関係を持つかを表す。owner、visibility、permission、policy scope、access path、
+encapsulation、allocation などがこの family に入る。
+
+```text
+permission(subject, action, resource)
+trust_relation(source, target)
+owner(subject, owner)
+visibility(subject, v)
+policy_scope(policy, target)
+access_path(subject, resource)
+encapsulates(subject, detail)
+```
+
+authority / trust Atom は、dependency や effect と混同しない。ある component が resource に
+到達できることと、その action を行う権限を持つことは別の primitive fact である。
+
+典型的な law は次である。
+
+```text
+effect requires authority
+access path respects permission
+hidden detail remains encapsulated
+policy applies to selected target
+```
+
+これらが壊れると、unauthorized effect、leaked detail、policy mismatch、unexpected access path
+といった obstruction が生じる。
+
 #### Contract Atom
 
 ```text
@@ -217,6 +255,46 @@ semantic(v, satisfies q)
 semantic Atom は、static flatness と semantic flatness を分ける。dependency graph が整っていても、
 semantic Atom が要求する diagram が可換でなければ obstruction が残る。
 
+#### Runtime / Interaction Atom
+
+```text
+runtime_interaction(u, v, h)
+```
+
+runtime / interaction Atom は、実行時の呼び出し、message、event、retry、timeout、
+protection、synchronization、transaction、schedule constraint などを表す。
+
+```text
+runtime_call(u, v)
+rpc(u, v)
+message(ch, payload)
+event_emission(u, event)
+event_handling(h, event)
+retry(op)
+timeout(op)
+circuit_breaker(op)
+bulkhead(op)
+lock(resource)
+transaction(scope)
+schedule_constraint(subject, constraint)
+```
+
+これらは obstruction そのものではない。runtime protection や interaction の存在を表す
+primitive fact である。例えば timeout や circuit breaker は、それ自体が failure ではなく、
+runtime law が作用する対象である。
+
+runtime / interaction Atom が支える典型的な問いは次である。
+
+```text
+どの runtime call がどの component 間で起こるか。
+どの message や event が発生し、どの handler が処理するか。
+どの operation が retry、timeout、lock、transaction を持つか。
+どの runtime protection が selected effect を局所化するか。
+```
+
+static relation が flat でも、runtime interaction が別の obstruction を作ることがある。
+このため runtime / interaction Atom は、relation Atom や effect Atom へ潰さず、独立に保持する。
+
 #### Atom 間の組み合わせ
 
 基本 Atom は単独でも意味を持つが、AAT の力は組み合わせで現れる。
@@ -228,11 +306,15 @@ capability(d, k)
 state(c, x)
 contract(m, p)
 effect(e)
+authority(a, act, r)
+trust_relation(c, d)
 semantic(t, s)
+runtime_interaction(c, d, h)
 ```
 
 この family は、一つの concern に関する molecule を生成する。ここから relation law、
-state transition law、effect ordering law、contract preservation law、semantic consistency law が
+state transition law、effect ordering law、authority law、contract preservation law、
+runtime interaction law、semantic consistency law が
 同時に立ち上がる。
 
 ### 例 1.4 実コード断片からの Atom 抽出
@@ -252,9 +334,11 @@ module C
   provides k : K
 
   def m(input : P) : Q
+    require authority a on r
     y = D.read(input.id)
     x = update(x, y)
     emit e(y)
+    with timeout T
     return q(y)
 ```
 
@@ -267,12 +351,15 @@ component(D)
 relation_imports(C, D)
 capability(C, k)
 state(C, x : X)
+authority(a, act, r)
 contract(m, P -> Q)
 relation_calls(m, D.read)
 relation_reads(m, input.id)
 relation_writes(m, x)
 effect(e)
 relation_emits(m, e)
+runtime_interaction(m, D.read, call)
+timeout(m, T)
 semantic(q(y), denotes result-of-m)
 ```
 
@@ -309,6 +396,21 @@ relation_emits(m, e)
 idempotence、compensation の law が読める。
 
 ```text
+authority(a, act, r)
+```
+
+は、actor `a` が resource `r` に対する action `act` の権限を持つことを表す。
+ここから access law、permission law、encapsulation law が読める。
+
+```text
+runtime_interaction(m, D.read, call)
+timeout(m, T)
+```
+
+は、`m` が runtime 上で `D.read` と interaction し、timeout parameter `T` を持つことを表す。
+ここから runtime protection、retry、timeout、transaction、synchronization の law が読める。
+
+```text
 contract(m, P -> Q)
 semantic(q(y), denotes result-of-m)
 ```
@@ -330,6 +432,9 @@ canonical:
   relation_writes(m,x)
   effect(e)
   relation_emits(m,e)
+  authority(a,act,r)
+  runtime_interaction(m,D.read,call)
+  timeout(m,T)
   contract(m, P -> Q)
   semantic(q(y), denotes result-of-m)
 
