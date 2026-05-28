@@ -20,6 +20,7 @@ Atom handoff checklist:
 
 - [Atom Handoff Checklist](atom_handoff.md)
 - [LawPolicy](law_policy.md)
+- [ArchSig Analysis Packet](archsig_analysis_packet.md)
 
 Forward design PRDs:
 
