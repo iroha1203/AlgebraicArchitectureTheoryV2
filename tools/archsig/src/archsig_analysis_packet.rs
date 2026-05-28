@@ -3,12 +3,14 @@ use std::collections::BTreeSet;
 use crate::validation::{count_checks, duplicates, generic_validation_example, validation_check};
 use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
-    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchSigAnalysisArtifactRefV0,
-    ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
+    ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceRef,
+    ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
     ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
     ArchSigAtomConfigurationSummaryV0, ArchSigFlatnessReadingV0, ArchSigLayerSplitV0,
     ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigRepairOperationCandidateV0,
-    ArchSigSignatureAxisReadingV0, LAW_POLICY_SCHEMA_VERSION, ValidationCheck, ValidationExample,
+    ArchSigSignatureAxisReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
+    LawPolicyObstructionCircuitDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck,
+    ValidationExample,
 };
 
 const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
@@ -231,6 +233,355 @@ pub fn static_archsig_analysis_packet() -> ArchSigAnalysisPacketV0 {
         ],
         non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
     }
+}
+
+pub fn build_archsig_analysis_packet(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    archmap_path: Option<&str>,
+    law_policy_path: Option<&str>,
+) -> ArchSigAnalysisPacketV0 {
+    let molecule_readings = build_molecule_readings(archmap, law_policy);
+    let obstruction_circuits = build_obstruction_circuits(archmap, law_policy, &molecule_readings);
+    let signature_axes = build_signature_axes(archmap, law_policy, &obstruction_circuits);
+    let flatness_reading = build_flatness_reading(archmap, law_policy, &signature_axes);
+    let repair_operation_candidates =
+        build_repair_candidates(archmap, &obstruction_circuits, &signature_axes);
+
+    ArchSigAnalysisPacketV0 {
+        schema_version: ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION.to_string(),
+        analysis_id: format!(
+            "archsig-analysis:{}:{}",
+            archmap.map_id, law_policy.law_policy_id
+        ),
+        generated_at: archmap.generated_at.clone(),
+        arch_map_ref: artifact_ref(
+            &archmap.map_id,
+            "archmap",
+            &archmap.schema_version,
+            archmap_path,
+        ),
+        selected_law_policy_ref: artifact_ref(
+            &law_policy.law_policy_id,
+            "law-policy",
+            &law_policy.schema_version,
+            law_policy_path,
+        ),
+        atom_configuration_summary: build_atom_configuration_summary(archmap),
+        molecule_readings,
+        obstruction_circuits,
+        signature_axes,
+        flatness_reading,
+        static_runtime_semantic_layer_split: build_layer_split(archmap),
+        repair_operation_candidates,
+        evidence_boundary: format!(
+            "computed from ArchMap {} and selected LawPolicy {}; concernHints are auxiliary cues only",
+            archmap.map_id, law_policy.law_policy_id
+        ),
+        interpretation_notes_for_llm: vec![
+            "Lead with selected LawPolicy scope and evidence gaps.".to_string(),
+            "Explain nonzero signature axes as law-relative ArchSig outputs.".to_string(),
+            "Do not describe concernHints as obstruction circuits.".to_string(),
+        ],
+        excluded_readings: vec![
+            "single architecture quality score".to_string(),
+            "global architecture lawfulness".to_string(),
+            "automatic repair safety".to_string(),
+            "concern hint promoted without LawPolicy witness rule".to_string(),
+        ],
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_atom_configuration_summary(
+    archmap: &ArchMapDocumentV0,
+) -> ArchSigAtomConfigurationSummaryV0 {
+    let mut source_refs = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| atom.atom_observation_id.clone())
+        .chain(
+            archmap
+                .observation_gaps
+                .iter()
+                .map(|gap| gap.gap_id.clone()),
+        )
+        .collect::<Vec<_>>();
+    source_refs.sort();
+    source_refs.dedup();
+
+    ArchSigAtomConfigurationSummaryV0 {
+        atom_observation_count: archmap.atom_observations.len(),
+        molecule_observation_count: archmap.molecule_observations.len(),
+        semantic_observation_count: archmap.semantic_observations.len(),
+        observation_gap_count: archmap.observation_gaps.len(),
+        concern_hint_count: archmap.concern_hints.len(),
+        configuration_boundary:
+            "counts are read from one bounded ArchMap, not complete architecture enumeration"
+                .to_string(),
+        coverage_summary: coverage_summary(archmap),
+        source_refs,
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_molecule_readings(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+) -> Vec<ArchSigMoleculeReadingV0> {
+    archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| {
+            let law_refs =
+                selected_laws_for_atom_refs(law_policy, archmap, &molecule.atom_observation_refs);
+            ArchSigMoleculeReadingV0 {
+                molecule_reading_id: format!(
+                    "molecule-reading:{}",
+                    stable_id(&molecule.molecule_observation_id)
+                ),
+                molecule_observation_ref: molecule.molecule_observation_id.clone(),
+                law_refs,
+                atom_observation_refs: molecule.atom_observation_refs.clone(),
+                reading: format!(
+                    "{} is read as a {} molecule under selected LawPolicy",
+                    molecule.molecule_observation_id, molecule.molecule_family
+                ),
+                evidence_summary: format!(
+                    "molecule uses {} atom observation refs and {} source refs",
+                    molecule.atom_observation_refs.len(),
+                    molecule.source_refs.len()
+                ),
+                evidence_boundary:
+                    "law-relative molecule reading over ArchMap observations; not a primitive atom"
+                        .to_string(),
+                source_refs: molecule.source_refs.iter().map(source_ref_label).collect(),
+                interpretation_notes_for_llm: vec![
+                    "Explain molecule readings as grouped observed atoms before discussing laws."
+                        .to_string(),
+                ],
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_obstruction_circuits(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    molecule_readings: &[ArchSigMoleculeReadingV0],
+) -> Vec<ArchSigObstructionCircuitV0> {
+    law_policy
+        .obstruction_circuit_definitions
+        .iter()
+        .filter_map(|definition| {
+            let witness_rule = law_policy
+                .witness_rules
+                .iter()
+                .find(|rule| rule.witness_rule_id == definition.witness_rule_ref)?;
+            let atom_refs = matching_atom_refs_for_witness(archmap, witness_rule);
+            let molecule_refs = molecule_readings
+                .iter()
+                .filter(|reading| reading.law_refs.contains(&definition.law_ref))
+                .map(|reading| reading.molecule_reading_id.clone())
+                .collect::<Vec<_>>();
+            let concern_refs = archmap
+                .concern_hints
+                .iter()
+                .filter(|hint| concern_supports_witness(hint.concern_family.as_str(), witness_rule))
+                .map(|hint| hint.concern_hint_id.clone())
+                .collect::<Vec<_>>();
+
+            if !witness_constructible(witness_rule, &atom_refs, &molecule_refs, &concern_refs) {
+                return None;
+            }
+
+            Some(obstruction_circuit(
+                definition,
+                witness_rule,
+                atom_refs,
+                molecule_refs,
+                concern_refs,
+            ))
+        })
+        .collect()
+}
+
+fn build_signature_axes(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+) -> Vec<ArchSigSignatureAxisReadingV0> {
+    law_policy
+        .signature_axis_definitions
+        .iter()
+        .map(|definition| {
+            let value = obstruction_circuits
+                .iter()
+                .filter(|circuit| {
+                    circuit
+                        .signature_axis_refs
+                        .contains(&definition.signature_axis_id)
+                })
+                .count() as i64;
+            let coverage_status = if archmap.observation_gaps.is_empty() {
+                "covered-for-selected-atoms"
+            } else {
+                "coverage-gap-preserved"
+            };
+            ArchSigSignatureAxisReadingV0 {
+                signature_axis_id: definition.signature_axis_id.clone(),
+                law_ref: definition.law_ref.clone(),
+                axis_ref: definition.axis_ref.clone(),
+                value_type: definition.value_type.clone(),
+                value,
+                zero_reading: if value == 0 {
+                    format!(
+                        "zero means no {} witness was constructed under declared coverage",
+                        definition.axis_ref
+                    )
+                } else {
+                    format!(
+                        "nonzero means {} witness count is present under selected LawPolicy",
+                        definition.axis_ref
+                    )
+                },
+                coverage_status: coverage_status.to_string(),
+                exactness_assumptions: law_policy.exactness_assumptions.clone(),
+                evidence_summary: format!(
+                    "{} obstruction circuit(s) contribute to {}",
+                    value, definition.signature_axis_id
+                ),
+                source_refs: obstruction_circuits
+                    .iter()
+                    .filter(|circuit| {
+                        circuit
+                            .signature_axis_refs
+                            .contains(&definition.signature_axis_id)
+                    })
+                    .flat_map(|circuit| circuit.atom_observation_refs.clone())
+                    .collect(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_flatness_reading(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> ArchSigFlatnessReadingV0 {
+    let zero_signature_axis_refs = signature_axes
+        .iter()
+        .filter(|axis| axis.value == 0)
+        .map(|axis| axis.signature_axis_id.clone())
+        .collect::<Vec<_>>();
+    let nonzero_signature_axis_refs = signature_axes
+        .iter()
+        .filter(|axis| axis.value != 0)
+        .map(|axis| axis.signature_axis_id.clone())
+        .collect::<Vec<_>>();
+    let blocked_by_coverage_gaps = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let status = if !nonzero_signature_axis_refs.is_empty() {
+        "nonflatUnderSelectedPolicy"
+    } else if !blocked_by_coverage_gaps.is_empty() {
+        "flatForConstructedWitnessesButCoverageGapBlocked"
+    } else {
+        "flatUnderSelectedPolicy"
+    };
+    ArchSigFlatnessReadingV0 {
+        reading_id: format!("flatness:{}", law_policy.law_policy_id),
+        selected_law_policy_ref: law_policy.law_policy_id.clone(),
+        status: status.to_string(),
+        zero_signature_axis_refs,
+        nonzero_signature_axis_refs,
+        blocked_by_coverage_gaps,
+        evidence_boundary:
+            "flatness is relative to selected signature axes, coverage gaps, and exactness assumptions"
+                .to_string(),
+        interpretation_notes_for_llm: vec![
+            "Do not turn zero signature axes into global lawfulness claims.".to_string(),
+        ],
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_layer_split(archmap: &ArchMapDocumentV0) -> ArchSigLayerSplitV0 {
+    ArchSigLayerSplitV0 {
+        static_observation_refs: archmap
+            .atom_observations
+            .iter()
+            .filter(|atom| matches!(atom.atom_family.as_str(), "existence" | "relation"))
+            .map(|atom| atom.atom_observation_id.clone())
+            .collect(),
+        runtime_observation_refs: archmap
+            .observation_gaps
+            .iter()
+            .filter(|gap| gap.gap_kind.to_ascii_lowercase().contains("runtime"))
+            .map(|gap| gap.gap_id.clone())
+            .collect(),
+        semantic_observation_refs: archmap
+            .atom_observations
+            .iter()
+            .filter(|atom| atom.atom_family.to_ascii_lowercase().contains("contract"))
+            .map(|atom| atom.atom_observation_id.clone())
+            .chain(
+                archmap
+                    .semantic_observations
+                    .iter()
+                    .map(|semantic| semantic.semantic_observation_id.clone()),
+            )
+            .collect(),
+        split_boundary:
+            "runtime gaps are preserved separately and are not interpreted as measured zero"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_repair_candidates(
+    archmap: &ArchMapDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> Vec<ArchSigRepairOperationCandidateV0> {
+    obstruction_circuits
+        .iter()
+        .map(|circuit| {
+            let preserved_invariants = preserved_invariants_for_repair(signature_axes);
+            ArchSigRepairOperationCandidateV0 {
+            repair_operation_candidate_id: format!(
+                "repair:{}",
+                stable_id(&circuit.obstruction_circuit_id)
+            ),
+            operation_kind: format!("repair-{}", stable_id(&circuit.circuit_kind)),
+            target_obstruction_refs: vec![circuit.obstruction_circuit_id.clone()],
+            preserved_invariants,
+            preconditions: repair_preconditions(archmap),
+            expected_signature_axis_effects: circuit
+                .signature_axis_refs
+                .iter()
+                .map(|axis| format!("decrease {axis} if the witness no longer constructs"))
+                .collect(),
+            transfer_risks: vec![
+                "may transfer obstruction into runtime behavior, ownership, or idempotency boundary"
+                    .to_string(),
+            ],
+            evidence_boundary:
+                "repair candidate is derived from ArchSig packet evidence, not an automatic patch"
+                    .to_string(),
+            interpretation_notes_for_llm: vec![
+                "Explain preconditions and transfer risks before implementation advice."
+                    .to_string(),
+            ],
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
 }
 
 pub fn validate_archsig_analysis_packet_report(
@@ -580,6 +931,237 @@ fn check_non_conclusions(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     )
 }
 
+fn selected_laws_for_atom_refs(
+    law_policy: &LawPolicyDocumentV0,
+    archmap: &ArchMapDocumentV0,
+    atom_refs: &[String],
+) -> Vec<String> {
+    let atom_families = atom_refs
+        .iter()
+        .filter_map(|atom_ref| {
+            archmap
+                .atom_observations
+                .iter()
+                .find(|atom| atom.atom_observation_id == *atom_ref)
+        })
+        .map(|atom| atom.atom_family.to_ascii_lowercase())
+        .collect::<BTreeSet<_>>();
+    let mut law_refs = law_policy
+        .selected_laws
+        .iter()
+        .filter(|law| {
+            law.applies_to_atom_families.iter().any(|family| {
+                atom_families.contains(&family.to_ascii_lowercase())
+                    || atom_families.iter().any(|observed| {
+                        observed.contains(&family.to_ascii_lowercase())
+                            || family.to_ascii_lowercase().contains(observed)
+                    })
+            })
+        })
+        .map(|law| law.law_id.clone())
+        .collect::<Vec<_>>();
+    if law_refs.is_empty() {
+        law_refs = law_policy
+            .selected_laws
+            .iter()
+            .map(|law| law.law_id.clone())
+            .collect();
+    }
+    law_refs.sort();
+    law_refs.dedup();
+    law_refs
+}
+
+fn matching_atom_refs_for_witness(
+    archmap: &ArchMapDocumentV0,
+    witness_rule: &LawPolicyWitnessRuleV0,
+) -> Vec<String> {
+    let mut refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| {
+            witness_rule
+                .required_atom_families
+                .iter()
+                .any(|family| family_matches(atom.atom_family.as_str(), family.as_str()))
+        })
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    refs.extend(
+        archmap
+            .semantic_observations
+            .iter()
+            .filter(|semantic| {
+                witness_rule.required_atom_families.iter().any(|family| {
+                    family_matches(semantic.semantic_family.as_str(), family.as_str())
+                        || family_matches(semantic.predicate.as_str(), family.as_str())
+                })
+            })
+            .map(|semantic| semantic.semantic_observation_id.clone()),
+    );
+    refs.sort();
+    refs.dedup();
+    refs
+}
+
+fn concern_supports_witness(concern_family: &str, witness_rule: &LawPolicyWitnessRuleV0) -> bool {
+    let concern = concern_family.to_ascii_lowercase();
+    let witness = witness_rule.witness_kind.to_ascii_lowercase();
+    (concern.contains("missing")
+        && (witness.contains("mismatch") || witness.contains("noncommutation")))
+        || ((concern.contains("semantic") || concern.contains("missing"))
+            && witness_rule
+                .law_ref
+                .to_ascii_lowercase()
+                .contains("semantic"))
+}
+
+fn witness_constructible(
+    witness_rule: &LawPolicyWitnessRuleV0,
+    atom_refs: &[String],
+    molecule_refs: &[String],
+    concern_refs: &[String],
+) -> bool {
+    if witness_rule.required_atom_families.is_empty() {
+        return !molecule_refs.is_empty() || !concern_refs.is_empty();
+    }
+    let required_count = witness_rule.required_atom_families.len();
+    atom_refs.len() >= required_count
+        || (!atom_refs.is_empty() && !molecule_refs.is_empty() && !concern_refs.is_empty())
+        || (witness_rule
+            .witness_kind
+            .to_ascii_lowercase()
+            .contains("mismatch")
+            && !concern_refs.is_empty())
+}
+
+fn obstruction_circuit(
+    definition: &LawPolicyObstructionCircuitDefinitionV0,
+    witness_rule: &LawPolicyWitnessRuleV0,
+    atom_observation_refs: Vec<String>,
+    molecule_reading_refs: Vec<String>,
+    concern_hint_refs: Vec<String>,
+) -> ArchSigObstructionCircuitV0 {
+    ArchSigObstructionCircuitV0 {
+        obstruction_circuit_id: format!("{}:computed", definition.obstruction_circuit_id),
+        law_ref: definition.law_ref.clone(),
+        witness_rule_ref: definition.witness_rule_ref.clone(),
+        circuit_kind: definition.circuit_kind.clone(),
+        atom_observation_refs,
+        molecule_reading_refs,
+        concern_hint_refs,
+        signature_axis_refs: signature_axis_refs_for_obstruction(definition),
+        minimality_reading: definition.minimality_reading.clone(),
+        evidence_summary: format!(
+            "constructed by witness rule {} from observed ArchMap atoms and LawPolicy molecule boundaries",
+            witness_rule.witness_rule_id
+        ),
+        evidence_boundary:
+            "computed ArchSig witness under selected LawPolicy; concern hints are auxiliary evidence only"
+                .to_string(),
+        interpretation_notes_for_llm: vec![
+            "Explain this obstruction as selected LawPolicy-relative.".to_string(),
+        ],
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn signature_axis_refs_for_obstruction(
+    definition: &LawPolicyObstructionCircuitDefinitionV0,
+) -> Vec<String> {
+    definition
+        .signature_axis_refs
+        .iter()
+        .map(|axis_ref| {
+            if axis_ref.starts_with("sig-axis:") {
+                axis_ref.clone()
+            } else {
+                format!("sig-{}", axis_ref)
+            }
+        })
+        .collect()
+}
+
+fn coverage_summary(archmap: &ArchMapDocumentV0) -> Vec<String> {
+    let mut summary = vec![
+        format!("{} atom observations", archmap.atom_observations.len()),
+        format!(
+            "{} molecule observations",
+            archmap.molecule_observations.len()
+        ),
+        format!(
+            "{} semantic observations",
+            archmap.semantic_observations.len()
+        ),
+    ];
+    if archmap.observation_gaps.is_empty() {
+        summary.push("no observation gaps reported".to_string());
+    } else {
+        summary.push(format!(
+            "{} observation gaps preserved as gaps",
+            archmap.observation_gaps.len()
+        ));
+    }
+    summary
+}
+
+fn repair_preconditions(archmap: &ArchMapDocumentV0) -> Vec<String> {
+    let mut preconditions = vec!["human review selects a repair operation".to_string()];
+    preconditions.extend(
+        archmap
+            .observation_gaps
+            .iter()
+            .map(|gap| format!("resolve or explicitly accept coverage gap {}", gap.gap_id)),
+    );
+    preconditions
+}
+
+fn preserved_invariants_for_repair(
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> Vec<String> {
+    let invariants = signature_axes
+        .iter()
+        .filter(|axis| axis.value == 0)
+        .map(|axis| format!("preserve zero reading for {}", axis.signature_axis_id))
+        .collect::<Vec<_>>();
+    if invariants.is_empty() {
+        vec!["preserve existing observed atom configuration boundaries".to_string()]
+    } else {
+        invariants
+    }
+}
+
+fn source_ref_label(source_ref: &ArchMapSourceRef) -> String {
+    source_ref
+        .artifact_id
+        .clone()
+        .or_else(|| source_ref.path.clone())
+        .unwrap_or_else(|| source_ref.kind.clone())
+}
+
+fn family_matches(observed: &str, required: &str) -> bool {
+    let observed = observed.to_ascii_lowercase();
+    let required = required.to_ascii_lowercase();
+    observed == required || observed.contains(&required) || required.contains(&observed)
+}
+
+fn stable_id(value: &str) -> String {
+    value
+        .chars()
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() {
+                ch.to_ascii_lowercase()
+            } else {
+                '-'
+            }
+        })
+        .collect::<String>()
+        .split('-')
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join("-")
+}
+
 fn artifact_ref(
     artifact_id: &str,
     artifact_kind: &str,
@@ -693,5 +1275,86 @@ mod tests {
         ))
         .expect("ArchSig analysis packet fixture parses");
         assert_eq!(fixture, static_archsig_analysis_packet());
+    }
+
+    #[test]
+    fn builds_packet_from_archmap_and_law_policy() {
+        let archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let law_policy: LawPolicyDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/law_policy.json"))
+                .expect("LawPolicy fixture parses");
+        let packet = build_archsig_analysis_packet(
+            &archmap,
+            &law_policy,
+            Some("archmap.json"),
+            Some("law_policy.json"),
+        );
+        let report = validate_archsig_analysis_packet_report(&packet, "computed-analysis.json");
+        assert_eq!(report.summary.result, "pass", "{:?}", report.checks);
+        assert!(
+            packet.obstruction_circuits.iter().any(|circuit| {
+                circuit.law_ref == "law:semantic-contract-alignment"
+                    && circuit
+                        .concern_hint_refs
+                        .contains(&"concern:missing-compensation".to_string())
+            }),
+            "{:?}",
+            packet.obstruction_circuits
+        );
+        assert!(
+            packet
+                .signature_axes
+                .iter()
+                .any(
+                    |axis| axis.signature_axis_id == "sig-axis:semantic-inconsistency"
+                        && axis.value == 1
+                )
+        );
+        assert!(
+            packet
+                .flatness_reading
+                .blocked_by_coverage_gaps
+                .contains(&"gap-runtime-user-db-trace".to_string())
+        );
+    }
+
+    #[test]
+    fn same_archmap_reanalyzes_with_different_law_policy() {
+        let archmap: ArchMapDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+                .expect("ArchMap fixture parses");
+        let mut law_policy: LawPolicyDocumentV0 =
+            serde_json::from_str(include_str!("../tests/fixtures/minimal/law_policy.json"))
+                .expect("LawPolicy fixture parses");
+        law_policy.law_policy_id = "layer-only-law-policy-fixture".to_string();
+        law_policy
+            .selected_laws
+            .retain(|law| law.law_id == "law:layer-respecting");
+        law_policy
+            .witness_rules
+            .retain(|rule| rule.law_ref == "law:layer-respecting");
+        law_policy
+            .obstruction_circuit_definitions
+            .retain(|definition| definition.law_ref == "law:layer-respecting");
+        law_policy
+            .signature_axis_definitions
+            .retain(|axis| axis.law_ref == "law:layer-respecting");
+
+        let packet = build_archsig_analysis_packet(&archmap, &law_policy, None, None);
+        let report = validate_archsig_analysis_packet_report(&packet, "layer-only.json");
+        assert_eq!(report.summary.result, "pass", "{:?}", report.checks);
+        assert_eq!(packet.obstruction_circuits.len(), 0);
+        assert!(
+            packet
+                .signature_axes
+                .iter()
+                .all(|axis| axis.value == 0 && axis.law_ref == "law:layer-respecting")
+        );
+        assert_eq!(
+            packet.flatness_reading.selected_law_policy_ref,
+            "layer-only-law-policy-fixture"
+        );
     }
 }

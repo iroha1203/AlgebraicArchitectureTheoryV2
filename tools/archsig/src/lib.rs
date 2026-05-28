@@ -49,7 +49,8 @@ pub use architecture_policy::{
 };
 pub use archmap::{ArchMapSourceInventoryInput, build_air_from_archmap, validate_archmap_report};
 pub use archsig_analysis_packet::{
-    static_archsig_analysis_packet, validate_archsig_analysis_packet_report,
+    build_archsig_analysis_packet, static_archsig_analysis_packet,
+    validate_archsig_analysis_packet_report,
 };
 pub use artifact_retention::{
     static_report_artifact_retention_manifest, validate_report_artifact_retention_report,
