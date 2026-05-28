@@ -243,6 +243,10 @@ ArchSig-derived report boundary を、selected finite exact model と interface 
 後段 analysis bridge であり、ArchSig が AAT を定義するものではない。unknown / rejected /
 unmeasured は measured zero と分けて保持し、validation pass や extractor output を theorem
 discharge と読まない。
+`Observation.ArchMapObservationLayer` は raw candidate / observed atom / validated /
+rejected / uncertain / missing を pure AAT core の外に置く observation layer である。
+ArchMap は Atom を観測するが、Atom や AAT を生成しない。missing observation は atom
+absence ではなく、raw candidate は atom truth ではない。
 `Examples.canonicalArtifactSupportedFundamentalModularityPackage` は、この artifact-boundary
 pipeline から canonical finite AAT-supported package へ到達し、final typed conclusion と
 non-conclusions preservation を取り出す selected finite example である。この pipeline でも
