@@ -163,6 +163,96 @@ pub fn build_operation_support_estimate_from_archmap(
     }
 }
 
+pub fn build_operation_support_estimate_from_archsig_analysis_packet(
+    packet: &serde_json::Value,
+    input_path: &str,
+) -> Result<OperationSupportEstimateV0, Box<dyn std::error::Error>> {
+    let schema_version = packet
+        .get("schemaVersion")
+        .and_then(|value| value.as_str())
+        .unwrap_or_default();
+    if schema_version != "archsig-analysis-packet-v0" {
+        return Err(format!(
+            "FieldSig ArchSig handoff requires archsig-analysis-packet-v0, got {schema_version}"
+        )
+        .into());
+    }
+    let analysis_id = packet
+        .get("analysisId")
+        .and_then(|value| value.as_str())
+        .unwrap_or("archsig-analysis-packet");
+    let source_ref_ids = archsig_packet_sft_source_refs(packet, input_path);
+    let action_class_candidate_ids = archsig_packet_action_candidate_ids(packet);
+    let candidate_operation_families =
+        archsig_packet_candidate_families(packet, &source_ref_ids, &action_class_candidate_ids);
+    let family_ids = candidate_operation_families
+        .iter()
+        .map(|family| family.family_id.clone())
+        .collect::<Vec<_>>();
+    let non_conclusions = archsig_packet_sft_non_conclusions(packet);
+
+    Ok(OperationSupportEstimateV0 {
+        schema_version: OPERATION_SUPPORT_ESTIMATE_SCHEMA_VERSION.to_string(),
+        estimate_id: format!("estimate:archsig-analysis:{}", stable_id(analysis_id)),
+        descriptor_ref: OperationSupportDescriptorRefV0 {
+            descriptor_schema_version: ARTIFACT_DESCRIPTOR_SCHEMA_VERSION.to_string(),
+            descriptor_id: format!("descriptor:archsig-analysis:{analysis_id}"),
+            artifact_kind: "archsig-analysis-packet".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            action_class_candidate_ids: action_class_candidate_ids.clone(),
+            non_conclusions: non_conclusions.clone(),
+        },
+        candidate_operation_families,
+        policy_constraints: vec![OperationSupportPolicyConstraintV0 {
+            constraint_id: "constraint:archsig-analysis:no-forecast-truth-promotion".to_string(),
+            constraint_kind: "claim-boundary".to_string(),
+            applies_to_family_ids: family_ids.clone(),
+            source_ref_ids: source_ref_ids.clone(),
+            rule: "ArchSig analysis packet is local AAT algebra state for SFT input, not forecast truth".to_string(),
+            safety_claim_boundary:
+                "SFT consumes selected obstruction, axis, repair, and gap refs as bounded coordinates only"
+                    .to_string(),
+            policy_refs: vec!["policy:archsig-analysis-sft-boundary".to_string()],
+            support_disposition: "conditionallyAllowed".to_string(),
+            governance_action_refs: vec!["governance:review-archsig-analysis-handoff".to_string()],
+            non_conclusions: non_conclusions.clone(),
+        }],
+        known_forbidden_support: vec![KnownForbiddenOperationSupportV0 {
+            forbidden_id: "forbidden:raw-archmap-forecast-truth".to_string(),
+            operation_family: "raw-archmap-truth-promotion".to_string(),
+            source_ref_ids: source_ref_ids.clone(),
+            constraint_refs: vec![
+                "constraint:archsig-analysis:no-forecast-truth-promotion".to_string(),
+            ],
+            reason: "raw ArchMap observations and ArchSig analysis packets do not assert SFT forecast correctness".to_string(),
+            boundary: "FieldSig must keep ArchSig packet refs as bounded local AAT state, not ground truth".to_string(),
+            non_conclusions: non_conclusions.clone(),
+        }],
+        unknown_remainder: archsig_packet_unknown_remainders(packet, &family_ids, &source_ref_ids),
+        evidence_boundary: OperationSupportEvidenceBoundaryV0 {
+            boundary_id: format!("boundary:archsig-analysis:{}:sft-input", stable_id(analysis_id)),
+            source_ref_ids,
+            measurement_boundary_refs: archsig_packet_measurement_boundary_refs(packet),
+            confidence_boundary:
+                "ArchSig analysis packet confidence is structural review evidence, not probability"
+                    .to_string(),
+            evidence_kinds: vec![
+                "archsig-analysis-packet".to_string(),
+                "selected-law-policy".to_string(),
+                "archmap-observation-map".to_string(),
+            ],
+            unsupported_constructs: json_string_array(packet, &["excludedReadings"]),
+            assumptions: vec![
+                "FieldSig reads ArchSig analysis packet refs as local AAT algebra state".to_string(),
+                "obstruction circuits are law-policy-relative coordinates, not causal proof".to_string(),
+                "observation gaps remain unknown remainder, not measured zero".to_string(),
+            ],
+            non_conclusions,
+        },
+        non_conclusions: archsig_packet_sft_non_conclusions(packet),
+    })
+}
+
 pub fn build_air_from_archmap(
     document: &ArchMapDocumentV0,
     input_path: &str,
@@ -457,6 +547,187 @@ pub fn build_air_from_archmap(
             split_status: "unmeasured".to_string(),
         },
     }
+}
+
+fn archsig_packet_sft_source_refs(packet: &serde_json::Value, input_path: &str) -> Vec<String> {
+    let mut refs = vec![format!("source:archsig-analysis-packet:{input_path}")];
+    refs.extend(json_string_array(
+        packet,
+        &["atomConfigurationSummary", "sourceRefs"],
+    ));
+    refs.extend(
+        packet
+            .get("obstructionCircuits")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .filter_map(|obstruction| obstruction.get("obstructionCircuitId")?.as_str())
+            .map(|id| format!("archsigObstructionCircuit:{id}")),
+    );
+    refs.extend(
+        packet
+            .get("signatureAxes")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .filter_map(|axis| axis.get("signatureAxisId")?.as_str())
+            .map(|id| format!("archsigSignatureAxis:{id}")),
+    );
+    unique_strings(refs)
+}
+
+fn archsig_packet_action_candidate_ids(packet: &serde_json::Value) -> Vec<String> {
+    let mut ids = json_object_string_array(
+        packet,
+        &["repairOperationCandidates"],
+        "repairOperationCandidateId",
+    );
+    ids.extend(json_object_string_array(
+        packet,
+        &["obstructionCircuits"],
+        "obstructionCircuitId",
+    ));
+    unique_strings(ids)
+}
+
+fn archsig_packet_candidate_families(
+    packet: &serde_json::Value,
+    source_ref_ids: &[String],
+    action_class_candidate_ids: &[String],
+) -> Vec<CandidateOperationFamilyV0> {
+    let non_conclusions = archsig_packet_sft_non_conclusions(packet);
+    let mut families = Vec::new();
+    for candidate in packet
+        .get("repairOperationCandidates")
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+    {
+        let id = candidate
+            .get("repairOperationCandidateId")
+            .and_then(|value| value.as_str())
+            .unwrap_or("repair-operation-candidate");
+        let operation_family = candidate
+            .get("operationKind")
+            .and_then(|value| value.as_str())
+            .unwrap_or("archsig-repair-operation-candidate");
+        families.push(CandidateOperationFamilyV0 {
+            family_id: format!("family:archsig-repair:{}", stable_id(id)),
+            operation_family: operation_family.to_string(),
+            support_kind: "archsig-analysis-repair-candidate".to_string(),
+            action_class_candidate_ids: vec![id.to_string()],
+            source_ref_ids: source_ref_ids.to_vec(),
+            confidence: "medium".to_string(),
+            rationale: "repair candidate is read from ArchSig analysis packet as local AAT state"
+                .to_string(),
+            assumptions: json_string_array_value(candidate, "preconditions"),
+            non_conclusions: non_conclusions.clone(),
+        });
+    }
+    if families.is_empty() {
+        families.push(CandidateOperationFamilyV0 {
+            family_id: "family:archsig-review-only".to_string(),
+            operation_family: "review-selected-archsig-analysis".to_string(),
+            support_kind: "review-boundary".to_string(),
+            action_class_candidate_ids: action_class_candidate_ids.to_vec(),
+            source_ref_ids: source_ref_ids.to_vec(),
+            confidence: "low".to_string(),
+            rationale: "no repair candidate is present; FieldSig keeps the packet as review input"
+                .to_string(),
+            assumptions: vec!["selected LawPolicy may not cover all future SFT axes".to_string()],
+            non_conclusions,
+        });
+    }
+    families
+}
+
+fn archsig_packet_unknown_remainders(
+    packet: &serde_json::Value,
+    family_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<OperationSupportUnknownRemainderV0> {
+    json_string_array(packet, &["flatnessReading", "blockedByCoverageGaps"])
+        .into_iter()
+        .map(|gap| OperationSupportUnknownRemainderV0 {
+            remainder_id: format!("unknown:archsig-analysis:{}", stable_id(&gap)),
+            affected_family_ids: family_ids.to_vec(),
+            source_ref_ids: source_ref_ids.to_vec(),
+            unknown_axes: vec![gap.clone()],
+            reason: "ArchSig flatness reading is blocked by a coverage gap".to_string(),
+            treatment: "carry as unknown remainder; do not round to absence, measured zero, or forecast truth".to_string(),
+            non_conclusions: archsig_packet_sft_non_conclusions(packet),
+        })
+        .collect()
+}
+
+fn archsig_packet_measurement_boundary_refs(packet: &serde_json::Value) -> Vec<String> {
+    let mut refs = json_string_array(packet, &["flatnessReading", "blockedByCoverageGaps"])
+        .into_iter()
+        .map(|gap| format!("archsigCoverageGap:{gap}"))
+        .collect::<Vec<_>>();
+    refs.extend(
+        packet
+            .get("signatureAxes")
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+            .filter_map(|axis| axis.get("coverageStatus")?.as_str())
+            .map(|status| format!("archsigAxisCoverage:{status}")),
+    );
+    unique_strings(refs)
+}
+
+fn archsig_packet_sft_non_conclusions(packet: &serde_json::Value) -> Vec<String> {
+    let mut values = json_string_array(packet, &["nonConclusions"]);
+    values.extend([
+        "ArchSig analysis packet is FieldSig input state, not forecast correctness".to_string(),
+        "raw ArchMap observations are not promoted to SFT ground truth".to_string(),
+        "observation gaps are unknown remainder, not measured zero".to_string(),
+        "FieldSig handoff does not prove causal correctness or global safety".to_string(),
+    ]);
+    unique_strings(values)
+}
+
+fn json_string_array(packet: &serde_json::Value, path: &[&str]) -> Vec<String> {
+    let mut current = packet;
+    for key in path {
+        let Some(next) = current.get(*key) else {
+            return Vec::new();
+        };
+        current = next;
+    }
+    current
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|value| value.as_str().map(ToOwned::to_owned))
+        .collect()
+}
+
+fn json_object_string_array(packet: &serde_json::Value, path: &[&str], key: &str) -> Vec<String> {
+    let mut current = packet;
+    for segment in path {
+        let Some(next) = current.get(*segment) else {
+            return Vec::new();
+        };
+        current = next;
+    }
+    current
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|value| value.get(key)?.as_str().map(ToOwned::to_owned))
+        .collect()
+}
+
+fn json_string_array_value(value: &serde_json::Value, key: &str) -> Vec<String> {
+    value
+        .get(key)
+        .and_then(|value| value.as_array())
+        .into_iter()
+        .flatten()
+        .filter_map(|value| value.as_str().map(ToOwned::to_owned))
+        .collect()
 }
 
 fn check_archmap_schema_version(schema_version: &str) -> ValidationCheck {

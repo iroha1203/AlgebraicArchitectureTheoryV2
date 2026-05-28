@@ -73,8 +73,12 @@ Lean 側では `Formal/Arch/Evolution/SFTInterfaceBoundary.lean` の
 `Formal/Arch/Observation/AtomPresentation.lean` と
 `Formal/Arch/Observation/ArchMap.lean` の observation layer に分離する。
 SFT が読むのは raw ArchMap candidate ではなく、AATCore transition に接続された
-selected observation / delta boundary である。旧 compatibility surface は #1307 で
-archive せず削除し、Lean source of truth は `AtomAxiomSystem` / `AATCore` /
+selected observation / delta boundary である。tooling handoff では、FieldSig は raw
+ArchMap observation ではなく `archsig-analysis-packet-v0` を局所 AAT algebra state
+として読む。obstruction circuit、signature axis、repair candidate、coverage gap は
+SFT の forecast truth ではなく、`operation-support-estimate-v0` へ渡される bounded
+coordinate / unknown remainder である。旧 compatibility surface は #1307 で archive
+せず削除し、Lean source of truth は `AtomAxiomSystem` / `AATCore` /
 `AATCoreTransition` に一本化する。
 
 ## 3. SFT 側で導入するもの

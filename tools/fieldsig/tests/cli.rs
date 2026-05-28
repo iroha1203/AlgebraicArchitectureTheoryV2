@@ -379,6 +379,103 @@ fn fieldsig_locks_llm_native_archsig_handoff_fixtures() {
 }
 
 #[test]
+fn cli_projects_archsig_analysis_packet_to_sft_input_boundary() {
+    let out_dir = temp_dir("archsig-analysis-sft-input");
+    let root = fixture_root().join("llm_native_handoff");
+    let packet = root.join("archsig_analysis_packet.json");
+    let estimate = out_dir.join("operation-support-estimate.json");
+    let cone = out_dir.join("forecast-cone.json");
+
+    run_sig0(&[
+        "archsig-analysis-sft-input",
+        "--analysis-packet",
+        packet.to_str().expect("analysis packet path is utf-8"),
+        "--out",
+        estimate.to_str().expect("estimate path is utf-8"),
+    ]);
+    run_sig0(&[
+        "forecast-cone-skeleton",
+        "--operation-support",
+        estimate.to_str().expect("estimate path is utf-8"),
+        "--out",
+        cone.to_str().expect("cone path is utf-8"),
+    ]);
+
+    let estimate_json = read_json(&estimate);
+    assert_eq!(
+        estimate_json["schemaVersion"],
+        "operation-support-estimate-v0"
+    );
+    assert_eq!(
+        estimate_json["descriptorRef"]["artifactKind"],
+        "archsig-analysis-packet"
+    );
+    assert!(
+        estimate_json["candidateOperationFamilies"]
+            .as_array()
+            .expect("candidate families are array")
+            .iter()
+            .any(|family| family["supportKind"] == "archsig-analysis-repair-candidate"),
+        "FieldSig must read repair candidates from ArchSig analysis state"
+    );
+    assert!(
+        estimate_json["knownForbiddenSupport"]
+            .as_array()
+            .expect("forbidden support entries are array")
+            .iter()
+            .any(|entry| entry["operationFamily"] == "raw-archmap-truth-promotion"),
+        "raw ArchMap observation must not be promoted to forecast truth"
+    );
+    assert!(
+        estimate_json["unknownRemainder"]
+            .as_array()
+            .expect("unknown remainder is array")
+            .iter()
+            .any(|entry| {
+                entry["treatment"]
+                    .as_str()
+                    .expect("treatment is string")
+                    .contains("not round to absence, measured zero, or forecast truth")
+            }),
+        "coverage gaps must remain unknown remainder"
+    );
+
+    let cone_json = read_json(&cone);
+    assert!(
+        cone_json["operationSupportRef"]["sourceRefIds"]
+            .as_array()
+            .expect("source refs are array")
+            .iter()
+            .any(|source| {
+                source
+                    .as_str()
+                    .expect("source ref is string")
+                    .starts_with("source:archsig-analysis-packet:")
+            }),
+        "forecast cone must carry the ArchSig analysis packet boundary forward"
+    );
+
+    let rejected = run_sig0_output(&[
+        "archsig-analysis-sft-input",
+        "--analysis-packet",
+        fixture_root()
+            .join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--out",
+        out_dir
+            .join("rejected.json")
+            .to_str()
+            .expect("rejected path is utf-8"),
+    ]);
+    assert!(!rejected.status.success());
+    assert!(
+        String::from_utf8_lossy(&rejected.stderr).contains("requires archsig-analysis-packet-v0"),
+        "raw ArchMap input must be rejected by the ArchSig analysis handoff command"
+    );
+}
+
+#[test]
 fn cli_validates_archmap_fixture_and_guardrails() {
     let out_dir = temp_dir("archmap-validation");
     let input = fixture_root().join("archmap.json");
