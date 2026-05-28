@@ -39,22 +39,22 @@ To answer these questions, the project keeps the following layers separate:
 - structural claims proved in Lean;
 - claims observed or inferred from artifacts by tooling;
 - hypotheses to be tested empirically;
-- non-conclusions outside explicit theorem and forecast boundaries.
+- non-conclusions outside explicit theorem assumptions and forecast scopes.
 
 ## Layers
 
 | Layer | Role | Source of truth |
 | --- | --- | --- |
-| AAT | A local algebra for architecture objects, operations, invariants, obstruction witnesses, signatures, and theorem boundaries. | [AAT mathematical theory](docs/aat/mathematical_theory.md) |
-| AAT / SFT Interface | The boundary explaining how local AAT claims are read through SFT projections, observable coordinates, and governance. | [AAT / SFT Interface](docs/sft/aat_interface.md) |
+| AAT | A pure algebraic theory generated from architectural atoms, reconstructing architecture objects, laws, obstruction circuits, operations, flatness, homotopy, and analytic representations. | [AAT mathematical theory](docs/aat/mathematical_theory/README.md) |
+| AAT / SFT Interface | The interface explaining how local AAT claims are read through SFT projections, observable coordinates, and governance. | [AAT / SFT Interface](docs/sft/aat_interface.md) |
 | ArchSig / FieldSig Tooling | ArchSig reads supplied ArchMap evidence into AAT structural review artifacts; Lean / Python scans are optional bounded adapters. FieldSig measures SFT software evolution evidence from ArchSig refs plus workflow evidence. | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | A computational theory of how PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and feedback change reachable futures. | [Software Field Theory](docs/sft/software_field_theory.md) |
 | Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) |
-| Proof / empirical ledger | Theorem boundaries, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) |
+| Proof / empirical ledger | Theorem assumptions, open proof obligations, empirical hypotheses, and their GitHub Issue links. | [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) |
 | Website | The public reading surface for AAT, SFT, and ArchSig, published as a no-build Cloudflare Pages site. | [Website operating notes](docs/website/README.md) and [website source](website/index.html) |
 
 The README does not duplicate detailed theorem lists or progress ledgers.
-Current Lean status, non-conclusion boundaries, and open proof obligations are
+Current Lean status, non-conclusions, and open proof obligations are
 tracked in [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md)
 and [Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
 
@@ -64,7 +64,7 @@ summaries will be added as the theory and Lean formalization stabilize.
 ## Reading Order
 
 1. [Research Goal](docs/research_goal.md)
-2. [AAT Mathematical Theory](docs/aat/mathematical_theory.md)
+2. [AAT Mathematical Theory](docs/aat/mathematical_theory/README.md)
 3. [AAT / SFT Interface](docs/sft/aat_interface.md)
 4. [Software Field Theory](docs/sft/software_field_theory.md)
 5. [Proof Obligations and Empirical Hypotheses](docs/aat/proof_obligations.md)
@@ -78,26 +78,29 @@ summaries will be added as the theory and Lean formalization stabilize.
 
 ## AAT
 
-AAT treats a bounded piece of software architecture as an `ArchitectureObject`.
-It studies which invariants are preserved by operations on that object, which
-obstruction witnesses are produced when preservation fails, and which signature
-axes expose the break.
+AAT begins from primitive architectural facts called atoms. From atom families
+and configurations it constructs architecture objects, law families,
+obstruction circuits, operations, flatness conditions, paths, homotopies, and
+analytic representations.
 
 ```text
 software architecture
-  = ArchitectureObject
-  + ArchitectureOperation
+  = Atom
+  + AtomFamily
+  + Configuration
+  + ArchitectureObject
   + InvariantFamily
-  + ObstructionWitness
+  + Law
+  + ObstructionCircuit
+  + ArchitectureOperation
   + ArchitectureSignature
-  + theorem boundary / non-conclusions
 ```
 
 AAT reads design principles as operations rather than slogans. SOLID,
 Layered / Clean Architecture, Event Sourcing, Saga, Circuit Breaker, Replicated
 Log, and related patterns are not treated as universal maxims. Instead, the
-theory asks which invariants, operations, observations, and theorem boundaries
-each principle is connected to.
+theory asks which atoms, laws, invariants, operations, observations, and
+obstruction circuits each principle is connected to.
 
 ## SFT
 
@@ -111,14 +114,14 @@ SFT uses the local algebra of AAT through architecture projections, observable
 coordinates, local transition laws, and governance inputs in the field model.
 However, AAT theorems do not automatically become empirical forecasts.
 `ForecastCone`, `ConsequenceEnvelope`, `FieldUpdate`, and AI proposal
-governance are handled under explicit computable cores and claim boundaries.
+governance are handled under explicit computable cores and stated claim scopes.
 
 ## Tooling
 
 The tooling goal is to connect the vocabulary of AAT and SFT to real development
 artifacts. ArchSig extracts observable evidence from codebases, PRs, reports,
-and policies, then turns it into signature axes, obstruction witnesses, theorem
-boundary status, and forecast boundaries that review and CI can handle.
+and policies, then turns it into signature axes, obstruction witnesses,
+precondition status, and forecast scopes that review and CI can handle.
 
 The tooling is not the theory itself. It does not confuse measured zero with
 unmeasured, and a tool pass is not read as a Lean theorem.
@@ -128,7 +131,7 @@ unmeasured, and a tool pass is not read as a Lean theorem.
 The public website in `website/` is a Cloudflare Pages reading surface for AAT, SFT,
 and ArchSig. It is not the research ledger or the source of theorem status.
 Instead, it presents the theory as web-native preprint / monograph pages and
-presents ArchSig as a public manual while preserving the claim boundaries kept
+presents ArchSig as a public manual while preserving the claim discipline kept
 in `docs/`.
 
 Website planning and editorial rules live in [docs/website](docs/website/README.md).
@@ -139,7 +142,7 @@ MathJax, and local assets under `website/assets`.
 
 See [Lean definitions and theorem index](docs/aat/lean_theorem_index.md) for the
 main definitions and theorems currently present on the Lean side. Theorem names,
-bounded readings, and non-conclusion boundaries are tracked in
+assumption-relative readings, and non-conclusions are tracked in
 [Proof obligations and empirical hypotheses](docs/aat/proof_obligations.md) and
 [Lean definitions and theorem index](docs/aat/lean_theorem_index.md).
 
@@ -160,11 +163,11 @@ completeness of real-code extractors are not included in that QED.
   - First-class theory documents, Lean status, proof obligations, tool docs,
     and empirical protocol.
 - `docs/aat`
-  - AAT mathematical theory, proof obligations, and Lean theorem index.
+  - Atom-based AAT mathematical theory, proof obligations, and Lean theorem index.
 - `docs/sft`
   - AAT / SFT interface and the SFT body.
 - `docs/tool`
-  - AIR, extractor, report, claim boundary, workflow, and schema compatibility.
+  - AIR, extractor, report, claim discipline, workflow, and schema compatibility.
 - `docs/website`
   - Internal operating notes for the public website, including sitemap, design,
     tone, and publication rules.
