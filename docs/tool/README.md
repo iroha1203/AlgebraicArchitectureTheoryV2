@@ -14,7 +14,7 @@ Current source-of-truth boundaries:
 - `concernHints` are review cues. They are not obstruction circuits, not law violations, and not theorem evidence.
 - Lean / Python import-graph output is optional bounded adapter evidence, emitted explicitly by `archsig adapter-scan`; adapter artifacts retain `coverageBoundary`, `unsupportedConstructs`, `missingEvidence`, and `nonConclusions`.
 - ArchSig validation does not prove extractor completeness, semantic correctness, architecture lawfulness, global safety, certified universal atom truth, zero curvature, SFT forecast correctness, or Lean theorem discharge.
-- FieldSig / SFT forecast and governance surfaces are not owned by ArchSig. FieldSig consumes ArchMap atom / concern / observation gap refs as boundary-preserving observation refs, not as raw ground-truth guesses.
+- FieldSig / SFT forecast and governance surfaces are not owned by ArchSig. FieldSig consumes `archsig-analysis-packet-v0` as bounded local AAT state and projects obstruction circuits, signature axes, repair candidates, and coverage gaps into SFT input boundaries. It does not read raw ArchMap observations as forecast truth.
 
 Atom handoff checklist:
 
