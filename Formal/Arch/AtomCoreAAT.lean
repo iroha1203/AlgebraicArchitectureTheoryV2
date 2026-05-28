@@ -1,8 +1,20 @@
+import Formal.Arch.AAT.Core
 import Formal.Arch.Atomization
 
 namespace Formal.Arch
 
 universe u v w
+
+/--
+Boundary-free pure AAT core generated directly from an `AtomAxiomSystem`.
+
+This is the new source-of-truth surface for Atom-first AAT.  The
+`AtomAxiomatizedPureAAT` structures below remain as compatibility bridges until
+the dependent zero-curvature, operation, repair, synthesis, and Signature
+layers are migrated and the obsolete Lean code is deleted.
+-/
+abbrev AtomAxiomSystemPureAAT (system : AtomAxiomSystem.{u, v}) :=
+  AAT.PureTheory system
 
 /--
 Pure Atom-axiomatized AAT core.
