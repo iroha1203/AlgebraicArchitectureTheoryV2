@@ -1,5 +1,6 @@
 import Formal.Arch.Evolution.SFTField
 import Formal.Arch.Evolution.SFTInterfaceBoundary
+import Formal.Arch.Signature.AATCoreBridge
 
 namespace Formal.Arch
 
@@ -287,5 +288,153 @@ theorem report_preserves_nonConclusions
   hBoundary.recordsNonConclusions hNonConclusions
 
 end ArchSigSFTReportEstimateBoundary
+
+/--
+ArchSig-side transition between two Atom-axiomatized AAT cores.
+
+The transition is read through ArchSig bridges, but the bridges consume AATCore
+packages; they do not define AAT and do not create atom existence.
+-/
+structure ArchSigAATCoreTransition
+    {system : AtomAxiomSystem.{u, v}}
+    (source target : AAT.AATCore system)
+    {C : Type u} {A : Type v} {Obs : Type w}
+    (X : ArchitectureSignature.ArchitectureLawModel C A Obs) where
+  transition : AATCoreTransition source target
+  sourceBridge :
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge source X
+  targetBridge :
+    ArchitectureSignature.AATCoreSignatureLawfulnessBridge target X
+  transitionBoundary : Prop
+  transitionBoundaryEvidence : transitionBoundary
+  archsigDoesNotDefineAAT : Prop
+  archsigDoesNotDefineAATEvidence : archsigDoesNotDefineAAT
+  fieldSigAnalysisBoundary : Prop
+  fieldSigAnalysisBoundaryEvidence : fieldSigAnalysisBoundary
+  nonConclusions : Prop
+
+namespace ArchSigAATCoreTransition
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+variable {C : Type u} {A : Type v} {Obs : Type w}
+variable {X : ArchitectureSignature.ArchitectureLawModel C A Obs}
+
+/-- The ArchSig transition records its selected transition boundary. -/
+theorem records_transition_boundary
+    (archsigTransition : ArchSigAATCoreTransition source target X) :
+    archsigTransition.transitionBoundary :=
+  archsigTransition.transitionBoundaryEvidence
+
+/-- The ArchSig transition does not define AAT. -/
+theorem archsig_transition_does_not_define_aat
+    (archsigTransition : ArchSigAATCoreTransition source target X) :
+    archsigTransition.archsigDoesNotDefineAAT :=
+  archsigTransition.archsigDoesNotDefineAATEvidence
+
+/-- The transition remains an analysis boundary for FieldSig. -/
+theorem records_fieldsig_analysis_boundary
+    (archsigTransition : ArchSigAATCoreTransition source target X) :
+    archsigTransition.fieldSigAnalysisBoundary :=
+  archsigTransition.fieldSigAnalysisBoundaryEvidence
+
+/-- The underlying AATCore transition does not create atom existence. -/
+theorem transition_does_not_create_atoms
+    (archsigTransition : ArchSigAATCoreTransition source target X) :
+    system.noToolOutputCreatesAtoms :=
+  archsigTransition.transition.operation_does_not_create_atoms
+
+end ArchSigAATCoreTransition
+
+/--
+FieldSig analysis boundary over an ArchSig-observed AATCore transition.
+
+FieldSig reads the ArchSig transition as SFT analysis input.  It preserves the
+report / forecast boundaries and does not promote the report to forecast
+correctness, AAT definition, or global future safety.
+-/
+structure FieldSigAATCoreTransitionAnalysis
+    {system : AtomAxiomSystem.{u, v}}
+    {source target : AAT.AATCore system}
+    {C : Type u} {A : Type v} {StaticObs : Type w}
+    {SemanticExpr : Type q} {SemanticObs : Type r}
+    {FieldState : Type s}
+    {X : ArchitectureSignature.ArchitectureLawModel C A StaticObs}
+    (archsigTransition : ArchSigAATCoreTransition source target X)
+    (report :
+      ArchSigSFTReport FieldState C A StaticObs SemanticExpr SemanticObs)
+    (estimate :
+      SoftwareFieldEstimate FieldState C A StaticObs SemanticExpr SemanticObs)
+    (forecast : SFTForecastStatus) :
+    Prop where
+  reportBoundary : ArchSigSFTReportEstimateBoundary report estimate forecast
+  readsArchSigTransitionAsSFTAnalysisEvidence :
+    archsigTransition.fieldSigAnalysisBoundary
+  fieldSigDoesNotDefineAATEvidence :
+    archsigTransition.archsigDoesNotDefineAAT
+  transitionDoesNotCreateAtoms : system.noToolOutputCreatesAtoms
+  forecastBoundary : forecast.RecordsForecastBoundary
+  theoremBoundary : forecast.RecordsTheoremBoundary
+  nonConclusions : forecast.RecordsNonConclusions
+
+namespace FieldSigAATCoreTransitionAnalysis
+
+variable {system : AtomAxiomSystem.{u, v}}
+variable {source target : AAT.AATCore system}
+variable {C : Type u} {A : Type v} {StaticObs : Type w}
+variable {SemanticExpr : Type q} {SemanticObs : Type r}
+variable {FieldState : Type s}
+variable {X : ArchitectureSignature.ArchitectureLawModel C A StaticObs}
+variable
+  {archsigTransition : ArchSigAATCoreTransition source target X}
+variable
+  {report :
+    ArchSigSFTReport FieldState C A StaticObs SemanticExpr SemanticObs}
+variable
+  {estimate :
+    SoftwareFieldEstimate FieldState C A StaticObs SemanticExpr SemanticObs}
+variable {forecast : SFTForecastStatus}
+
+/-- FieldSig reads the ArchSig transition as SFT analysis input. -/
+theorem fieldsig_reads_archsig_transition_as_sft_analysis
+    (analysis :
+      FieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    archsigTransition.fieldSigAnalysisBoundary :=
+  analysis.readsArchSigTransitionAsSFTAnalysisEvidence
+
+/-- FieldSig analysis does not define AAT. -/
+theorem fieldsig_does_not_define_aat
+    (analysis :
+      FieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    archsigTransition.archsigDoesNotDefineAAT :=
+  analysis.fieldSigDoesNotDefineAATEvidence
+
+/-- FieldSig analysis over the transition does not create atom existence. -/
+theorem transition_does_not_create_atoms
+    (analysis :
+      FieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    system.noToolOutputCreatesAtoms :=
+  analysis.transitionDoesNotCreateAtoms
+
+/-- Forecast correctness remains a forecast boundary. -/
+theorem forecast_correctness_remains_boundary
+    (analysis :
+      FieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    forecast.RecordsForecastBoundary :=
+  analysis.forecastBoundary
+
+/-- Theorem and non-conclusion boundaries remain visible. -/
+theorem theorem_and_nonConclusions_remain_boundaries
+    (analysis :
+      FieldSigAATCoreTransitionAnalysis
+        archsigTransition report estimate forecast) :
+    forecast.RecordsTheoremBoundary ∧ forecast.RecordsNonConclusions :=
+  ⟨analysis.theoremBoundary, analysis.nonConclusions⟩
+
+end FieldSigAATCoreTransitionAnalysis
 
 end Formal.Arch

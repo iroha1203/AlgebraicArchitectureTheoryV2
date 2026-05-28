@@ -156,15 +156,21 @@ def representativeDeclarations : Candidate -> List String
       ["ConeFamily",
        "ObservationBoundary",
        "ConsequenceEnvelope",
-       "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim"]
+       "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim",
+       "AATCorePremisedConsequenceEnvelope",
+       "AATCorePremisedConsequenceEnvelope.aatcore_premise_does_not_prove_forecast_correctness"]
   | aatInterfaceBoundary =>
       ["AATTheoremStatus",
        "SFTForecastStatus",
+       "AATCoreLocalAlgebraForSFT",
+       "AATCoreTransition",
        "AATToSFTInterfaceBoundary",
        "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary"]
   | archSigReportBoundary =>
       ["ArchSigSFTReport",
        "ArchSigSFTReportEstimateBoundary",
+       "ArchSigAATCoreTransition",
+       "FieldSigAATCoreTransitionAnalysis",
        "ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_aat_theorem_status",
        "ArchSigSFTReportEstimateBoundary.report_existence_does_not_promote_calibrated_forecast"]
   | counterexamplePackage =>
@@ -514,18 +520,22 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
           ["EnvelopeProjection.envelope_records_selectedConeCount",
            "EnvelopeProjection.envelope_preserves_missingBoundary",
            "EnvelopeProjection.envelope_preserves_theoremBoundary",
-           "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim"],
+           "EnvelopeProjection.envelope_does_not_strengthen_forecast_claim",
+           "AATCorePremisedConsequenceEnvelope.records_envelope_boundaries",
+           "AATCorePremisedConsequenceEnvelope.aatcore_premise_does_not_prove_forecast_correctness"],
          reading :=
-          "loss-aware report projection preserving missing/theorem/forecast boundaries",
+          "loss-aware report projection preserving missing/theorem/forecast boundaries and AATCore transition premises",
          status := "proved accessors" }]
   | aatInterfaceBoundary =>
       [{ schematic := "AAT theorem status is only an SFT local premise",
          leanDeclarations :=
           ["AATToSFTInterfaceBoundary.aat_theorem_status_as_local_premise",
            "AATToSFTInterfaceBoundary.aat_lawfulness_alone_does_not_discharge_trajectory_safety_boundary",
-           "AATToSFTInterfaceBoundary.measured_zero_does_not_discharge_unmeasured_axis_safety_boundary"],
+           "AATToSFTInterfaceBoundary.measured_zero_does_not_discharge_unmeasured_axis_safety_boundary",
+           "AATCoreLocalAlgebraForSFT.reads_aatcore_as_local_algebra",
+           "AATCoreTransition.operation_does_not_create_atoms"],
          reading :=
-          "AAT theorem evidence does not automatically promote to forecast safety",
+          "AATCore evidence is read as local algebra and does not automatically promote to forecast safety",
          status := "proved accessors" }]
   | archSigReportBoundary =>
       [{ schematic := "ArchSig report reads as SFT estimate/status boundary",
@@ -533,9 +543,11 @@ def schematicCorrespondences : Candidate -> List SchematicCorrespondence
           ["ArchSigSFTReportEstimateBoundary.estimate_eq_report_estimate",
            "ArchSigSFTReportEstimateBoundary.report_preserves_theoremBoundary",
            "ArchSigSFTReportEstimateBoundary.report_preserves_forecastBoundary",
-           "ArchSigSFTReportEstimateBoundary.report_preserves_nonConclusions"],
+           "ArchSigSFTReportEstimateBoundary.report_preserves_nonConclusions",
+           "FieldSigAATCoreTransitionAnalysis.fieldsig_reads_archsig_transition_as_sft_analysis",
+           "FieldSigAATCoreTransitionAnalysis.forecast_correctness_remains_boundary"],
          reading :=
-          "tool report output preserves selected SFT boundaries without promoting claims",
+          "tool report output and AATCore transition analysis preserve selected SFT boundaries without promoting claims",
          status := "proved accessors" }]
   | counterexamplePackage =>
       [{ schematic := "SFT forbidden readings have canonical counterexample entrypoints",
