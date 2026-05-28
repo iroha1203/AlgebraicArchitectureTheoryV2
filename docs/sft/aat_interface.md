@@ -238,6 +238,11 @@ forecast correctness を強めずに SFT report / forecast boundary を保持す
 `AATSupportedSFTBoundary.ofArchMapAndArchSigBoundaries` は、ArchMap-derived slice と
 ArchSig-derived report boundary を、selected finite exact model と interface boundary に接続して
 `AATSupportedSFTBoundary` を構成する higher-level constructor である。
+`ArchitectureSignature.AATCoreSignatureLawfulnessBridge` は、`AATCore` と
+`AAT.ZeroCurvaturePackage` を消費して Signature lawfulness / required Signature axes zero へ渡す
+後段 analysis bridge であり、ArchSig が AAT を定義するものではない。unknown / rejected /
+unmeasured は measured zero と分けて保持し、validation pass や extractor output を theorem
+discharge と読まない。
 `Examples.canonicalArtifactSupportedFundamentalModularityPackage` は、この artifact-boundary
 pipeline から canonical finite AAT-supported package へ到達し、final typed conclusion と
 non-conclusions preservation を取り出す selected finite example である。この pipeline でも
