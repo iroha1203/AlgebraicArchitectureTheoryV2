@@ -4,7 +4,7 @@
 [`docs/archive/2026-05-09-aat-sft-reorg/aat_v2_mathematical_design.md`](archive/2026-05-09-aat-sft-reorg/aat_v2_mathematical_design.md)
 に退避した。
 
-新しい AAT の数学理論は [docs/aat/mathematical_theory.md](aat/mathematical_theory.md) を
+新しい AAT の数学理論は [docs/aat/mathematical_theory/README.md](../../aat/mathematical_theory/README.md) を
 参照する。
 
 Lean 実装 status は [docs/aat/proof_obligations.md](aat/proof_obligations.md) と

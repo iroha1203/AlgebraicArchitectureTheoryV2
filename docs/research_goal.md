@@ -124,7 +124,7 @@ tool pass を Lean theorem として読まない。
 この文書はビジョンを述べる入口であり、詳細な定義や台帳は持たない。
 第一級本文は次の 3 文書に固定する。
 
-1. [AAT 数学理論](aat/mathematical_theory.md)
+1. [AAT 数学理論](aat/mathematical_theory/README.md)
 2. [AAT / SFT Interface](sft/aat_interface.md)
 3. [ソフトウェアの場の理論](sft/software_field_theory.md)
 

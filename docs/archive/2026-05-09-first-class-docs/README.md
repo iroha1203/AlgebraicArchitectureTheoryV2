@@ -5,7 +5,7 @@
 
 現行の第一級文書:
 
-1. [AAT 数学理論](../../aat/mathematical_theory.md)
+1. [AAT 数学理論](../../aat/mathematical_theory/README.md)
 2. [AAT / SFT Interface](../../sft/aat_interface.md)
 3. [ソフトウェアの場の理論](../../sft/software_field_theory.md)
 

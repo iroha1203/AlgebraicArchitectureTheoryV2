@@ -543,7 +543,7 @@ AAT/SFT は、変わり続けるソフトウェアに対して、問いを定義
 
 AAT/SFT の数学的な定義や theorem boundary、SFT との接続を詳しく知りたい場合は、次の first-class documents を参照してください。
 
-- [Algebraic Architecture Theory 代数的アーキテクチャ論](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory.md)
+- [Algebraic Architecture Theory 代数的アーキテクチャ論](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/aat/mathematical_theory/README.md)
 - [Software Field Theory](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/software_field_theory.md)
 - [AAT / SFT Interface](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/main/docs/sft/aat_interface.md)
 
