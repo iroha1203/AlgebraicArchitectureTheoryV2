@@ -1,3 +1,4 @@
+import Formal.Arch.Atom.Foundation
 import Formal.Arch.Evolution.SFTField
 import Formal.Arch.Evolution.SFTForecastCone
 import Formal.Arch.Law.LSP
@@ -8,110 +9,6 @@ import Formal.Arch.Patterns.SRPDesignPattern
 namespace Formal.Arch
 
 universe u v w q r s
-
-/--
-Atom axes are coordinates used to organize architectural facts.
-
-Axes help later AAT / ArchSig readings select views over already-existing
-atoms.  They are not observation boundaries, scores, theorem discharges, or
-extractor completeness claims.
--/
-inductive Axis where
-  | static
-  | semantic
-  | specification
-  | runtime
-  | boundary
-  | dataflow
-  | governance
-  | evolution
-  | policy
-  deriving DecidableEq, Repr
-
-/--
-Core atom families selected for the boundary-free Atom foundation.
-
-This is the initial Lean-facing grammar for primitive typed architectural
-facts.  It is not a claim that the taxonomy is globally complete.  Obstructions,
-observation artifacts, roles, patterns, repairs, and SFT deltas are separate
-structures, not atom kinds.
--/
-inductive AtomKind where
-  | existence
-  | relation
-  | capability
-  | dataState
-  | effect
-  | boundaryAuthority
-  | contractSpecification
-  | semanticInterpretation
-  | runtimeInteraction
-  deriving DecidableEq, Repr
-
-namespace AtomKind
-
-/--
-In the current Atom Core every `AtomKind` constructor in this file is primitive.
-
-This predicate is intentionally small: it records the current Lean-facing atom
-grammar, not a claim that the taxonomy is globally complete.
--/
-def IsPrimitive (_kind : AtomKind) : Prop := True
-
-theorem isPrimitive (kind : AtomKind) : kind.IsPrimitive := by
-  trivial
-
-end AtomKind
-
-/--
-Lean-facing policy for extending the atom grammar.
-
-The policy records which currently declared `AtomKind` / `Axis` coordinates are
-allowed in a selected presentation and keeps that extension boundary separate
-from derived witnesses such as obstruction circuits, observation gaps, repair
-steps, and SFT forecasts.
--/
-structure AtomGrammarExtensionPolicy where
-  permittedKind : AtomKind -> Prop
-  permittedAxis : Axis -> Prop
-  primitiveKindBoundary :
-    ∀ kind, permittedKind kind -> kind.IsPrimitive
-  openGrammarBoundary : Prop
-  derivedWitnessesSeparated : Prop
-  toolingSchemaBoundary : Prop
-  noGlobalTaxonomyCompleteness : Prop
-
-namespace AtomGrammarExtensionPolicy
-
-/-- The current policy permits all atom kinds and axes declared in this file. -/
-def current : AtomGrammarExtensionPolicy where
-  permittedKind := fun _ => True
-  permittedAxis := fun _ => True
-  primitiveKindBoundary := fun kind _ => AtomKind.isPrimitive kind
-  openGrammarBoundary := True
-  derivedWitnessesSeparated := True
-  toolingSchemaBoundary := True
-  noGlobalTaxonomyCompleteness := True
-
-theorem current_permits_kind (kind : AtomKind) :
-    current.permittedKind kind := by
-  trivial
-
-theorem current_permits_axis (axis : Axis) :
-    current.permittedAxis axis := by
-  trivial
-
-theorem primitive_of_permitted
-    (policy : AtomGrammarExtensionPolicy) {kind : AtomKind}
-    (h : policy.permittedKind kind) :
-    kind.IsPrimitive :=
-  policy.primitiveKindBoundary kind h
-
-theorem current_permittedKind_isPrimitive (kind : AtomKind) :
-    kind.IsPrimitive :=
-  primitive_of_permitted current (current_permits_kind kind)
-
-end AtomGrammarExtensionPolicy
 
 /--
 Measurement status of an observation.
@@ -254,57 +151,6 @@ theorem trans {C : Type u} {E : Type v} {D : Type w}
       fun d h => hTU.2.2 d (hST.2.2 d h)⟩
 
 end SupportSubset
-
-/--
-Machine-readable predicate grammar for primitive atoms.
-
-The human-readable `ArchitectureAtom.predicate` string remains a label for
-documentation and reports.  `AtomPredicate` is the Lean-facing predicate
-constructor that records which primitive fact shape is being asserted.
--/
-inductive AtomPredicate (C : Type u) (E : Type v) (D : Type w) where
-  | component (component : C)
-  | relation (edge : E)
-  | capability (subject : C) (capability : String)
-  | dataState (diagram : D) (state : String)
-  | effect (diagram : D) (effect : String)
-  | boundaryAuthority (subject : C) (authority : String)
-  | contractSpecification (diagram : D) (contract : String)
-  | semanticInterpretation (diagram : D) (meaning : String)
-  | runtimeInteraction (edge : E) (interaction : String)
-  | custom (kind : AtomKind) (axis : Axis) (name : String)
-
-namespace AtomPredicate
-
-/-- The atom family determined by a typed predicate constructor. -/
-def kind {C : Type u} {E : Type v} {D : Type w} :
-    AtomPredicate C E D -> AtomKind
-  | component _ => AtomKind.existence
-  | relation _ => AtomKind.relation
-  | capability _ _ => AtomKind.capability
-  | dataState _ _ => AtomKind.dataState
-  | effect _ _ => AtomKind.effect
-  | boundaryAuthority _ _ => AtomKind.boundaryAuthority
-  | contractSpecification _ _ => AtomKind.contractSpecification
-  | semanticInterpretation _ _ => AtomKind.semanticInterpretation
-  | runtimeInteraction _ _ => AtomKind.runtimeInteraction
-  | custom kind _ _ => kind
-
-/-- The atom axis determined by a typed predicate constructor. -/
-def axis {C : Type u} {E : Type v} {D : Type w} :
-    AtomPredicate C E D -> Axis
-  | component _ => Axis.static
-  | relation _ => Axis.static
-  | capability _ _ => Axis.static
-  | dataState _ _ => Axis.dataflow
-  | effect _ _ => Axis.semantic
-  | boundaryAuthority _ _ => Axis.boundary
-  | contractSpecification _ _ => Axis.specification
-  | semanticInterpretation _ _ => Axis.semantic
-  | runtimeInteraction _ _ => Axis.runtime
-  | custom _ axis _ => axis
-
-end AtomPredicate
 
 /--
 Pure ontological atom.
