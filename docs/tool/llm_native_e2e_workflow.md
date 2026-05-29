@@ -1,15 +1,15 @@
 # LLM-native ArchMap / ArchSig E2E Workflow
 
 This document fixes the end-to-end workflow required by the LLM-native
-ArchMap / LawPolicy / ArchSig redesign. It is an implementation transcript,
-not a new theory document.
+ArchMap / interpretation profile / ArchSig redesign. It is an implementation
+transcript, not a new theory document.
 
 ## Flow
 
 ```text
 source artifacts
   -> supplied archmap-observation-map-v0
-  -> selected law-policy-v0
+  -> selected interpretation profile (law-policy-v0 JSON)
   -> archsig-analysis-packet-v0
   -> llm-interpretation-packet.json
   -> operation-support-estimate-v0
@@ -31,6 +31,9 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
   --out-dir .lake/llm-native-e2e/archsig
 ```
+
+`north-star-workflow` is the equivalent visible command alias for the same
+ArchSig-owned route.
 
 Expected ArchSig outputs:
 
@@ -67,16 +70,20 @@ The output must be `operation-support-estimate-v0` with
 The E2E flow must preserve these boundaries:
 
 - ArchMap remains law-independent source-grounded Atom observation evidence.
-- LawPolicy is the selected law universe and witness-rule artifact.
-- ArchSig computes law-relative obstruction circuits, signature axes, flatness
-  readings, repair candidates, coverage gaps, and non-conclusions.
+- The interpretation profile is the selected LawUniverse, witness-rule,
+  coverage, and exactness artifact. The current schema name is `law-policy-v0`.
+- ArchSig computes AAT concept surfaces, architecture state, design pressure,
+  change impact, law-relative obstruction circuits, signature axes, analytic
+  representations, coupling/cohesion readings, design principle readings,
+  bounded judgements, repair candidates, operation deltas, coverage gaps, and
+  non-conclusions.
 - `llm-interpretation-packet.json` is structured analysis input for an LLM, not
   a natural-language judgement, proof, or automatic repair instruction.
 - FieldSig accepts `archsig-analysis-packet-v0` and rejects raw ArchMap JSON as
   the current handoff input.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
-- ArchSig emits only the current ArchMap validation, LawPolicy validation,
+- ArchSig emits only the current ArchMap validation, profile validation,
   analysis packet, analysis validation, and LLM interpretation packet in the
   current E2E route. Pre-Atom artifacts are not compatibility outputs.
 

@@ -27,8 +27,11 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
         "archmap",
         "archmap-generate",
         "law-policy",
+        "interpretation-profile",
         "archsig-analysis",
+        "aat-analysis",
         "llm-native-workflow",
+        "north-star-workflow",
         "schema-catalog",
     ] {
         assert!(
@@ -43,6 +46,56 @@ fn cli_help_exposes_only_llm_atom_archmap_surface() {
             "ArchSig help still exposes removed command {removed}\n{stdout}"
         );
     }
+}
+
+#[test]
+fn cli_accepts_north_star_command_aliases() {
+    let out_dir = temp_dir("north-star-aliases");
+    let root = fixture_root();
+    let profile_validation = out_dir.join("interpretation-profile-validation.json");
+    run_sig0(&[
+        "interpretation-profile",
+        "--input",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("profile path is utf-8"),
+        "--out",
+        profile_validation
+            .to_str()
+            .expect("profile validation path is utf-8"),
+    ]);
+
+    let packet = out_dir.join("aat-analysis-packet.json");
+    run_sig0(&[
+        "aat-analysis",
+        "--archmap",
+        root.join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("profile path is utf-8"),
+        "--out",
+        packet.to_str().expect("packet path is utf-8"),
+    ]);
+    assert_north_star_packet_surfaces(&read_json(&packet));
+
+    let workflow_dir = out_dir.join("workflow");
+    run_sig0(&[
+        "north-star-workflow",
+        "--archmap",
+        root.join("archmap.json")
+            .to_str()
+            .expect("archmap path is utf-8"),
+        "--law-policy",
+        root.join("law_policy.json")
+            .to_str()
+            .expect("profile path is utf-8"),
+        "--out-dir",
+        workflow_dir.to_str().expect("workflow dir is utf-8"),
+    ]);
+    assert!(workflow_dir.join("archsig-analysis-packet.json").is_file());
 }
 
 #[test]
@@ -143,10 +196,22 @@ fn cli_runs_llm_native_archmap_lawpolicy_archsig_workflow() {
             ),
         "analysis packet must value required signature axes"
     );
+    assert_north_star_packet_surfaces(&analysis_packet);
     let analysis_validation = read_json(&out_dir.join("archsig-analysis-validation.json"));
     assert_eq!(
         analysis_validation["summary"]["result"].as_str(),
         Some("pass")
+    );
+    assert_eq!(analysis_validation["summary"]["aatConceptSurfaceCount"], 12);
+    assert_eq!(
+        analysis_validation["summary"]["designPrincipleReadingCount"],
+        9
+    );
+    assert!(
+        analysis_validation["summary"]["boundedJudgementCount"]
+            .as_u64()
+            .is_some_and(|count| count >= 10),
+        "validation summary must count bounded judgements"
     );
     let llm_packet = read_json(&out_dir.join("llm-interpretation-packet.json"));
     assert_eq!(llm_packet, analysis_packet);
@@ -219,6 +284,7 @@ fn cli_archsig_analysis_step_outputs_packet_and_validation() {
     let packet_json = read_json(&packet);
     let validation_json = read_json(&validation);
     assert_eq!(packet_json["schemaVersion"], "archsig-analysis-packet-v0");
+    assert_north_star_packet_surfaces(&packet_json);
     assert_eq!(
         validation_json["schemaVersion"],
         "archsig-analysis-packet-validation-report-v0"
@@ -374,6 +440,7 @@ fn cli_locks_archmap_atom_observation_regression() {
             .expect("full validation path is utf-8"),
     ]);
     let full = read_json(&full_packet);
+    assert_north_star_packet_surfaces(&full);
     assert!(
         full["obstructionCircuits"]
             .as_array()
@@ -595,6 +662,87 @@ fn has_check_result(json: &Value, id: &str, result: &str) -> bool {
             })
         })
     })
+}
+
+fn assert_north_star_packet_surfaces(json: &Value) {
+    for concept in [
+        "Atom",
+        "Configuration",
+        "ArchitectureObject",
+        "Invariant",
+        "LawUniverse",
+        "ObstructionCircuit",
+        "ArchitectureSignature",
+        "Operation",
+        "Path",
+        "Homotopy",
+        "Diagram",
+        "AnalyticRepresentation",
+    ] {
+        assert!(
+            json["aatConceptSurfaces"]
+                .as_array()
+                .expect("aat concept surfaces are array")
+                .iter()
+                .any(|entry| entry["concept"] == concept),
+            "North Star packet must expose AAT concept {concept}"
+        );
+    }
+    for family in [
+        "weightedAdjacencyMatrix",
+        "walkCount",
+        "reachableConeSize",
+        "nilpotenceBoundary",
+        "selectedSubgraphSpectrum",
+        "propagationDepth",
+        "spectralRadius",
+        "curvatureValuation",
+        "stateAlgebra",
+        "zeroReflectingAggregateBoundary",
+    ] {
+        assert!(
+            json["analyticRepresentations"]
+                .as_array()
+                .expect("analytic representations are array")
+                .iter()
+                .any(|entry| entry["representationFamily"] == family),
+            "North Star packet must expose analytic representation {family}"
+        );
+    }
+    for principle in [
+        "InformationHiding",
+        "Encapsulation",
+        "SeparationOfConcerns",
+        "Substitutability",
+        "OpenClosedExtension",
+        "DependencyInversion",
+        "RepresentationIndependence",
+        "IdempotencyAndReplaySafety",
+        "AuthorityAndTrustBoundary",
+    ] {
+        assert!(
+            json["designPrincipleReadings"]
+                .as_array()
+                .expect("design principle readings are array")
+                .iter()
+                .any(|entry| entry["principle"] == principle),
+            "North Star packet must expose design principle {principle}"
+        );
+    }
+    assert!(
+        json["boundedJudgements"]
+            .as_array()
+            .expect("bounded judgements are array")
+            .iter()
+            .any(|entry| entry["status"] == "actionable"),
+        "bounded judgements must include actionable readings"
+    );
+    assert!(
+        json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]
+            .as_array()
+            .is_some_and(|items| !items.is_empty()),
+        "LLM interpretation packet must provide review focus"
+    );
 }
 
 fn collect_files(root: &Path) -> Vec<PathBuf> {

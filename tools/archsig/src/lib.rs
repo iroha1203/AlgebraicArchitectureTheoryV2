@@ -7,8 +7,7 @@ mod validation;
 
 pub use archmap::{ArchMapSourceInventoryInput, validate_archmap_report};
 pub use archsig_analysis_packet::{
-    build_archsig_analysis_packet, static_archsig_analysis_packet,
-    validate_archsig_analysis_packet_report,
+    build_archsig_analysis_packet, validate_archsig_analysis_packet_report,
 };
 pub use law_policy::{static_law_policy, validate_law_policy_report};
 pub(crate) use schema::*;

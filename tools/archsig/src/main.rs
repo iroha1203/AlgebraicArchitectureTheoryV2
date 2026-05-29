@@ -35,7 +35,8 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Validate or emit a LawPolicy artifact for LLM-native ArchSig analysis.
+    /// Validate or emit an interpretation profile artifact for ArchSig AAT analysis.
+    #[command(visible_alias = "interpretation-profile")]
     LawPolicy {
         /// Optional LawPolicy JSON path. If omitted, the static fixture policy is validated.
         #[arg(long)]
@@ -50,7 +51,8 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Build an ArchSig analysis packet from ArchMap + LawPolicy.
+    /// Build an ArchSig AAT analysis packet from ArchMap + interpretation profile.
+    #[command(visible_alias = "aat-analysis")]
     ArchsigAnalysis {
         /// Input ArchMap observation artifact path.
         #[arg(long)]
@@ -96,7 +98,8 @@ enum Command {
         out: Option<PathBuf>,
     },
 
-    /// Run the LLM-native ArchMap -> LawPolicy -> ArchSig analysis workflow.
+    /// Run the ArchMap -> interpretation profile -> ArchSig North Star workflow.
+    #[command(visible_alias = "north-star-workflow")]
     LlmNativeWorkflow {
         /// Input ArchMap observation artifact path.
         #[arg(long)]

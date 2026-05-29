@@ -61,18 +61,19 @@
     },
     {
       "artifactId": "law-policy",
-      "artifactName": "Selected LawPolicy artifact",
+      "artifactName": "Selected interpretation profile artifact",
       "schemaVersionName": "law-policy-v0",
       "artifactRole": "primary",
-      "ownerPhase": "LLM Atom ArchMap",
+      "ownerPhase": "ArchSig North Star AAT analysis",
       "status": "implemented",
       "primaryDocs": [
+        "docs/tool/archsig_aat_analysis_engine_prd.md",
         "docs/tool/llm_native_archmap_archsig_prd.md",
         "docs/tool/README.md"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "LawPolicy owns selected laws, witness rules, molecule patterns, obstruction definitions, signature axis definitions, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations.",
+        "fieldMappingPolicy": "The law-policy-v0 JSON contract is used as an interpretation profile: it selects laws, witness rules, molecule patterns, obstruction definitions, signature axes, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations. It is not the center of ArchSig output.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",
@@ -82,7 +83,7 @@
           "Coverage and exactness are artifact-local and do not imply semantic completeness."
         ],
         "nonConclusions": [
-          "LawPolicy is selected analysis policy, not AAT itself, architecture lawfulness, atom truth, or Lean theorem discharge.",
+          "Interpretation profile is selected analysis policy, not AAT itself, architecture lawfulness, atom truth, or Lean theorem discharge.",
           "Adding a law family must preserve missing coverage as distinct from measured zero."
         ]
       }
@@ -119,15 +120,16 @@
       "artifactName": "ArchSig AAT analysis packet",
       "schemaVersionName": "archsig-analysis-packet-v0",
       "artifactRole": "primary",
-      "ownerPhase": "LLM Atom ArchMap",
+      "ownerPhase": "ArchSig North Star AAT analysis",
       "status": "implemented",
       "primaryDocs": [
+        "docs/tool/archsig_aat_analysis_engine_prd.md",
         "docs/tool/archsig_analysis_packet.md",
         "docs/tool/llm_native_archmap_archsig_prd.md"
       ],
       "downstreamIssues": [],
       "compatibilityBoundary": {
-        "fieldMappingPolicy": "ArchSig analysis packet owns law-relative molecule readings, obstruction circuits, signature axes, flatness reading, static/runtime/semantic split, repair operation candidates, evidence boundary, LLM interpretation notes, excluded readings, and non-conclusions.",
+        "fieldMappingPolicy": "ArchSig analysis packet owns AAT concept surfaces, architecture state, design pressure, change impact, architecture object projections, invariant family readings, LawUniverse reading, molecule readings, obstruction circuits, signature axes, analytic representations, coupling/cohesion readings, design principle readings, operation deltas, path/homotopy/diagram readings, bounded judgements, LLM interpretation packet, evidence boundary, excluded readings, and non-conclusions.",
         "deprecatedFields": [],
         "newRequiredAssumptions": [
           "Required fields, observation families, law refs, or analysis axes change.",

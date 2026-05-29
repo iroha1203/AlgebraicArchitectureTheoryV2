@@ -1,11 +1,12 @@
 # ArchSig Commands
 
-`archsig` is now a small LLM Atom ArchMap CLI. The current route is:
+`archsig` is now the AAT analysis engine over ArchMap. The current route is:
 
 ```text
 archmap-observation-map-v0
-  + law-policy-v0
+  + interpretation profile (law-policy-v0 JSON)
   -> archsig-analysis-packet-v0
+  -> LLM interpretation
   -> FieldSig handoff
 ```
 
@@ -21,6 +22,15 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
   --out-dir .archsig/llm-native
+```
+
+`north-star-workflow` is a visible alias for the same workflow:
+
+```bash
+cargo run --manifest-path tools/archsig/Cargo.toml -- north-star-workflow \
+  --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
+  --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
+  --out-dir .archsig/north-star
 ```
 
 The command emits only:
@@ -75,11 +85,11 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archmap \
   --input tools/archsig/tests/fixtures/minimal/archmap.json \
   --out .archsig/llm-native/archmap-validation.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- law-policy \
+cargo run --manifest-path tools/archsig/Cargo.toml -- interpretation-profile \
   --input tools/archsig/tests/fixtures/minimal/law_policy.json \
   --out .archsig/llm-native/law-policy-validation.json
 
-cargo run --manifest-path tools/archsig/Cargo.toml -- archsig-analysis \
+cargo run --manifest-path tools/archsig/Cargo.toml -- aat-analysis \
   --archmap tools/archsig/tests/fixtures/minimal/archmap.json \
   --law-policy tools/archsig/tests/fixtures/minimal/law_policy.json \
   --out .archsig/llm-native/archsig-analysis-packet.json \
@@ -87,7 +97,10 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- archsig-analysis \
   --llm-interpretation-out .archsig/llm-native/llm-interpretation-packet.json
 ```
 
-`law-policy --fixture` emits the canonical minimal `law-policy-v0` fixture.
+`law-policy` / `interpretation-profile` validate the selected analysis profile.
+The JSON schema name remains `law-policy-v0`, but ArchSig treats it as a
+profile selecting LawUniverse, witness rules, axes, coverage, and exactness.
+`law-policy --fixture` emits the canonical minimal profile fixture.
 
 ## ArchMap Generation Protocol
 

@@ -1,9 +1,9 @@
 # ArchSig
 
-`archsig` is the ArchMap / LawPolicy / ArchSig analysis CLI. It is intentionally
-small: the current surface is the LLM Atom ArchMap route from supplied
-`archmap-observation-map-v0` evidence and selected `law-policy-v0` into an
-`archsig-analysis-packet-v0`.
+`archsig` is the ArchMap -> AAT analysis packet CLI. It reads supplied
+`archmap-observation-map-v0` evidence and a selected interpretation profile
+(`law-policy-v0` JSON) into a North Star `archsig-analysis-packet-v0` for LLM
+and human review.
 
 ArchSig is not a Lean prover, extractor-completeness claim, architecture
 lawfulness oracle, merge approval system, or SFT forecast engine. FieldSig owns
@@ -15,8 +15,8 @@ forecast, governance, calibration, and operational feedback under
 | Surface | Commands | Boundary |
 | --- | --- | --- |
 | ArchMap validation | `archmap`, `archmap-generate` | ArchMap records source-grounded Atom observations and concern hints. It does not select laws or output obstruction circuits. |
-| LawPolicy | `law-policy` | LawPolicy selects the law universe, witness rules, signature axes, coverage requirements, and non-conclusions. |
-| ArchSig analysis | `archsig-analysis`, `llm-native-workflow` | ArchSig combines ArchMap and LawPolicy into law-relative molecule readings, obstruction circuits, signature axes, flatness readings, repair candidates, and LLM interpretation notes. |
+| Interpretation profile | `law-policy`, `interpretation-profile` | The profile selects the LawUniverse, witness rules, signature axes, coverage requirements, exactness assumptions, and non-conclusions. It is not AAT itself. |
+| ArchSig analysis | `archsig-analysis`, `aat-analysis`, `llm-native-workflow`, `north-star-workflow` | ArchSig combines ArchMap and the profile into AAT concept surfaces, architecture state, design pressure, change impact, analytic axes, semantic coupling/cohesion, design principle readings, bounded judgements, repair operation deltas, and an LLM interpretation packet. |
 | Schema | `schema-catalog` | The catalog lists only the current LLM Atom ArchMap artifacts. |
 
 Large ArchMaps may be authored in shards for review and parallel generation,
@@ -35,6 +35,8 @@ cargo run --manifest-path tools/archsig/Cargo.toml -- llm-native-workflow \
   --out-dir .archsig/llm-native
 ```
 
+`north-star-workflow` is the same current workflow under the North Star name.
+
 This writes:
 
 - `.archsig/llm-native/archmap-validation.json`
@@ -44,8 +46,8 @@ This writes:
 - `.archsig/llm-native/llm-interpretation-packet.json`
 
 `llm-interpretation-packet.json` is the same structured packet written for LLM
-reading. It is not a natural-language judgment, Lean proof, or automatic repair
-instruction.
+reading. It is not a natural-language judgment, Lean proof, architecture truth,
+merge approval, or automatic repair instruction.
 
 Calling `archsig` without a subcommand intentionally fails. The old implicit
 scan-first path is no longer an ArchSig workflow.

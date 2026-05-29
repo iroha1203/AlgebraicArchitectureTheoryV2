@@ -46,17 +46,18 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
             ),
             artifact(
                 "law-policy",
-                "Selected LawPolicy artifact",
+                "Selected interpretation profile artifact",
                 LAW_POLICY_SCHEMA_VERSION,
                 "primary",
-                "LLM Atom ArchMap",
+                "ArchSig North Star AAT analysis",
                 vec![
+                    "docs/tool/archsig_aat_analysis_engine_prd.md",
                     "docs/tool/llm_native_archmap_archsig_prd.md",
                     "docs/tool/README.md",
                 ],
-                "LawPolicy owns selected laws, witness rules, molecule patterns, obstruction definitions, signature axis definitions, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations.",
+                "The law-policy-v0 JSON contract is used as an interpretation profile: it selects laws, witness rules, molecule patterns, obstruction definitions, signature axes, exactness assumptions, coverage requirements, excluded readings, and non-conclusions separately from ArchMap observations. It is not the center of ArchSig output.",
                 vec![
-                    "LawPolicy is selected analysis policy, not AAT itself, architecture lawfulness, atom truth, or Lean theorem discharge.",
+                    "Interpretation profile is selected analysis policy, not AAT itself, architecture lawfulness, atom truth, or Lean theorem discharge.",
                     "Adding a law family must preserve missing coverage as distinct from measured zero.",
                 ],
             ),
@@ -78,12 +79,13 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "ArchSig AAT analysis packet",
                 ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
                 "primary",
-                "LLM Atom ArchMap",
+                "ArchSig North Star AAT analysis",
                 vec![
+                    "docs/tool/archsig_aat_analysis_engine_prd.md",
                     "docs/tool/archsig_analysis_packet.md",
                     "docs/tool/llm_native_archmap_archsig_prd.md",
                 ],
-                "ArchSig analysis packet owns law-relative molecule readings, obstruction circuits, signature axes, flatness reading, static/runtime/semantic split, repair operation candidates, evidence boundary, LLM interpretation notes, excluded readings, and non-conclusions.",
+                "ArchSig analysis packet owns AAT concept surfaces, architecture state, design pressure, change impact, architecture object projections, invariant family readings, LawUniverse reading, molecule readings, obstruction circuits, signature axes, analytic representations, coupling/cohesion readings, design principle readings, operation deltas, path/homotopy/diagram readings, bounded judgements, LLM interpretation packet, evidence boundary, excluded readings, and non-conclusions.",
                 vec![
                     "Analysis packet is not a Lean theorem proof, global architecture truth, extractor completeness proof, quality score, or automatic safe repair.",
                     "Analysis packet compatibility is a JSON contract, not a semantic-preservation theorem.",

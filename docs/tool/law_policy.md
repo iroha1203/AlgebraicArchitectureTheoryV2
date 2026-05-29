@@ -1,7 +1,7 @@
-# LawPolicy
+# Interpretation Profile
 
-`law-policy-v0` is the selected LawUniverse artifact used by the
-LLM-native ArchMap / ArchSig pipeline.
+`law-policy-v0` is the current JSON schema for the selected interpretation
+profile used by the ArchMap / ArchSig AAT analysis pipeline.
 
 It is intentionally separate from ArchMap.
 
@@ -9,18 +9,19 @@ It is intentionally separate from ArchMap.
 ArchMap
   records law-independent Atom observations.
 
-LawPolicy
+InterpretationProfile
   selects laws, witness rules, molecule patterns, obstruction definitions,
   signature axes, coverage requirements, and exactness assumptions.
 
 ArchSig
-  reads ArchMap + LawPolicy and computes law-relative analysis.
+  reads ArchMap + InterpretationProfile and computes the AAT analysis packet.
 ```
 
 ## Responsibility
 
-LawPolicy owns the selected analysis policy for a specific review context.
-It does not define AAT and does not prove architecture lawfulness.
+The interpretation profile owns the selected analysis policy for a specific
+review context. It does not define AAT, does not act as a design-rule
+collection, and does not prove architecture lawfulness.
 
 The implemented schema records:
 
@@ -39,9 +40,9 @@ The implemented schema records:
 
 ## Validation Boundary
 
-LawPolicy validation checks schema support, identity, uniqueness, cross-reference
-integrity, witness / obstruction boundaries, coverage requirements, exactness
-assumptions, and required non-conclusions.
+Profile validation checks schema support, identity, uniqueness,
+cross-reference integrity, witness / obstruction boundaries, coverage
+requirements, exactness assumptions, and required non-conclusions.
 
 Validation does not imply:
 
@@ -58,4 +59,7 @@ Missing coverage remains a coverage gap. It is not measured zero.
 - `tools/archsig/tests/fixtures/minimal/law_policy.json`
 
 The fixture is locked against the static Rust builder and the schema catalog
-records both `law-policy-v0` and `law-policy-validation-report-v0`.
+records both `law-policy-v0` and `law-policy-validation-report-v0`. The schema
+name remains historical; the current ArchSig output treats it as
+`interpretationProfileRef`, while preserving `selectedLawPolicyRef` as
+provenance for existing profile content.
