@@ -61,6 +61,7 @@ Use `excludedReadings` for things intentionally not read, such as lawfulness, ob
 ## Atom Observations
 
 An atom observation records a bounded observation of a primitive architectural fact. It does not certify the canonical Atom itself.
+An atom observation should not have coarse/fine scale. If a candidate observation summarizes a workflow, role, subsystem, or policy reading, split it into primitive atoms and move the larger reading to `moleculeObservations[]` or `semanticObservations[]`.
 
 Each `atomObservations[]` entry should include:
 
@@ -78,6 +79,28 @@ Each `atomObservations[]` entry should include:
 - `nonConclusions`
 
 Do not use atom families such as `responsibility`, `obstruction`, `lawViolation`, `forecast`, `qualityScore`, or `incidentCausality`. Responsibility is a molecule. Obstruction is law-relative ArchSig analysis, not an ArchMap atom observation.
+
+Atom family intent:
+
+| atomFamily | Intended primitive fact | Required evidence cue |
+| --- | --- | --- |
+| `existence` | component, module, service, class, package, process, table, queue, route, command object | selected source defines or declares the subject |
+| `relation` | import, call, read, write, publish, subscribe, owner edge, implementation edge, dependency edge | selected source shows the edge or explicit dependency |
+| `capability` | command, query, handler, port, adapter, processor, serializer, storage access | selected source exposes or dispatches the capability |
+| `state` | field, table column, cache entry, config value, status, lifecycle marker, projection | selected source defines, stores, or mutates the state |
+| `effect` | DB write, message send, email, payment, event publish, remote call, object storage mutation, queue enqueue | selected source executes or schedules the effect |
+| `authority` | permission, owner scope, role gate, visibility boundary, access path, policy scope, admin bypass | selected source checks or establishes authority |
+| `trust` | trusted source, token verification, delegated authority, provider/webhook/LLM trust boundary | selected source accepts, verifies, delegates, or constrains trust |
+| `contractSpecification` | precondition, postcondition, return shape, error behavior, invariant, idempotency, retry rule | selected source defines validation, behavior, or failure contract |
+| `semantic` | bounded domain meaning, identity meaning, ownership meaning, unit meaning, status meaning | selected source names or constrains the meaning |
+| `runtimeInteraction` | runtime call, edge, message, effect, or trace/log event | supplied runtime trace or log directly supports it |
+
+Boundary rule:
+
+- `observed` + `sourceObserved` requires inspected source refs.
+- `assumed` + `assumedSource` is for supplied policy/doc assumptions, not independent measurement.
+- `unmeasured`, `unavailable`, `private`, or `outOfScope` normally belongs in `observationGaps[]`, unless the schema field itself is recording a boundary note.
+- Missing runtime evidence, private provider behavior, unexpanded framework convention, or generated code not read is not an observed atom.
 
 ## Molecule Observations
 

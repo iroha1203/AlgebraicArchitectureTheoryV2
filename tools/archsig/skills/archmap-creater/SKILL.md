@@ -44,28 +44,41 @@ Use these rules before writing any observation.
 
 - An Atom is a primitive architectural fact: a small typed fact such as component existence, relation, capability, state, effect, authority, trust, contract, semantic fact, or runtime interaction.
 - An Atom observation is the LLM's bounded observation of such a fact from selected sources. It is not the certified canonical Atom itself.
+- An Atom observation has no coarse/fine scale. If the reading needs to be split into smaller architectural facts, it is not yet an atom observation.
 - A Molecule observation composes Atom observations into a higher role such as responsibility. Do not model responsibility as a primitive atom.
 - A Semantic observation records a source-supported meaning, contract reading, workflow reading, or commutation cue. It is not global semantic correctness.
 - A Concern hint records a review cue over observations. It is not an obstruction circuit or law violation.
 - A Projection info entry is a downstream handoff hint, especially toward AAT or SFT surfaces. It is not proof or forecast output.
 - An Observation gap records unavailable, private, unmeasured, or out-of-scope evidence. Never rewrite missing evidence as measured absence.
+- Static structure, ASTs, symbol indexes, route lists, and framework conventions may guide navigation, but they do not by themselves create an atom. The source text still has to support the architectural fact being recorded.
+
+Before writing an atom observation, ask:
+
+1. What exact architectural fact is observed?
+2. Which selected source refs directly support it?
+3. Is it primitive, or is it a responsibility, workflow, policy reading, concern, or gap?
+4. What evidence boundary prevents overclaiming?
+
+If any answer is unclear, do not write an atom yet. Read more source evidence, lower the confidence, or record an observation gap.
 
 Common Atom families:
 
-```text
-existence              component, module, service, class, package, process, table, queue
-relation               imports, calls, reads, writes, publishes, subscribes, owns, implements
-capability             port, command, query, handler, storage access, serialization
-state                  field, table column, cache entry, config value, event projection
-effect                 database write, message send, email, payment, event publish, remote call
-authority              permission, owner, visibility, access path, policy scope
-trust                  trusted source, delegated authority, integration trust boundary
-contractSpecification  precondition, postcondition, return shape, error behavior, invariant
-semantic               domain meaning, identity meaning, ownership meaning, workflow meaning
-runtimeInteraction     trace/log evidence for runtime call, edge, message, or effect
-```
+| atomFamily | Record when the selected source directly shows | Do not record when |
+| --- | --- | --- |
+| `existence` | component, module, service, class, package, process, table, queue, or public surface exists | the only evidence is a guessed layer or inferred runtime instance |
+| `relation` | import, call, read, write, publish, subscribe, ownership, implementation, or explicit dependency edge | the edge is only a naming similarity, directory proximity, or framework convention not inspected |
+| `capability` | command, query, handler, port, interface, storage access, serializer, processor, or tool surface | the statement is really an end-to-end workflow or responsibility |
+| `state` | field, table column, cache entry, config value, event projection, lifecycle status, durable job marker | the fact is a transient runtime value with no supplied source or trace |
+| `effect` | database write, message send, email, payment, event publish, remote call, file/object storage mutation, provider call | the effect is only possible from a library name and no effecting code was read |
+| `authority` | permission check, owner scope, role gate, visibility boundary, access path, policy scope, admin bypass | the source only names a user or role without an observed guard or authority state |
+| `trust` | trusted source, delegated authority, token verification, webhook boundary, integration trust, provider output boundary | the source merely calls an external library without a trust decision or boundary |
+| `contractSpecification` | precondition, postcondition, return shape, error behavior, invariant, validation rule, retry or idempotency contract | a test or doc is being generalized to all executions |
+| `semantic` | source-supported domain meaning, identity meaning, ownership meaning, unit meaning, workflow term meaning | the statement is a large workflow reading better represented as `semanticObservations[]` |
+| `runtimeInteraction` | trace/log-supported runtime call, edge, message, or effect | runtime evidence was unavailable or only expected |
 
 If a source can support both a primitive fact and a larger interpretation, write the primitive fact in `atomObservations[]` first. Put the larger interpretation in `moleculeObservations[]`, `semanticObservations[]`, `projectionInfo[]`, or `concernHints[]`.
+
+See `references/mapping-guide.md` for atomFamily-specific yes/no examples and `references/schema-cheatsheet.md` for required evidence metadata.
 
 ## Workflow
 
@@ -117,6 +130,8 @@ If this skill bundle is copied outside the ArchSig repository, use the local pat
 
 4. Draft `.archsig/archmap/archmap.json`.
    - Use `atomObservations[]` for source-grounded primitive observations.
+   - For every observed atom, make `sourceRefs[].artifactId` resolve to `sourceUniverse.includedRefs[]` and keep `evidenceBoundary` consistent with what was actually inspected.
+   - Put inferred, private, unavailable, framework-expanded, or runtime-only evidence into `observationGaps[]` unless it was directly supplied and read.
    - Use `moleculeObservations[]` for composed roles such as responsibility over atom observation refs.
    - Use `semanticObservations[]` for selected behavioral, contract, workflow, or diagram readings supported by sources.
    - Use `observationGaps[]` for unknown/private/unavailable/out-of-scope evidence; never round gaps to absence.
