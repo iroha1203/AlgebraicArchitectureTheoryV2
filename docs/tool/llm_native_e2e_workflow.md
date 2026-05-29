@@ -76,9 +76,9 @@ The E2E flow must preserve these boundaries:
   the current handoff input.
 - Coverage gaps are carried as unknown remainder; they are not rounded to
   absence, measured zero, or forecast truth.
-- ArchSig does not emit AIR, Feature Report, theorem-check, AAT Observable
-  Bundle, Sig0 adapter, PR governance, or signature-diff artifacts in the
-  current E2E route.
+- ArchSig emits only the current ArchMap validation, LawPolicy validation,
+  analysis packet, analysis validation, and LLM interpretation packet in the
+  current E2E route. Pre-Atom artifacts are not compatibility outputs.
 
 ## CI
 

@@ -25,8 +25,8 @@ artifacts.
 
 The expressiveness fixture is now an Atom observation regression. It locks
 `atomObservations`, `moleculeObservations`, `semanticObservations`,
-`observationGaps`, `projectionInfo`, and `concernHints` without requiring
-legacy `mapItems`, `homomorphism`, or `obstructionCircuitCandidates`.
+`observationGaps`, `projectionInfo`, and `concernHints`. Pre-Atom ArchMap
+root fields are rejected rather than carried as compatibility inputs.
 
 ## Negative Fixtures
 

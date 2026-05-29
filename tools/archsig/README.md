@@ -19,9 +19,8 @@ forecast, governance, calibration, and operational feedback under
 | ArchSig analysis | `archsig-analysis`, `llm-native-workflow` | ArchSig combines ArchMap and LawPolicy into law-relative molecule readings, obstruction circuits, signature axes, flatness readings, repair candidates, and LLM interpretation notes. |
 | Schema | `schema-catalog` | The catalog lists only the current LLM Atom ArchMap artifacts. |
 
-Legacy Sig0 / AIR / Feature Report / theorem-check / PR governance commands are
-not current ArchSig surface. They were removed instead of kept as compatibility
-shims.
+Pre-Atom ArchSig commands were removed instead of kept as compatibility shims.
+Git history is the archive for those workflows.
 
 ## Quick Start
 

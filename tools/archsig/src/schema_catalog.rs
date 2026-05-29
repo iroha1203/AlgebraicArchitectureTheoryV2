@@ -132,7 +132,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
         },
         non_conclusions: vec![
             "schema migration is not a semantic-preservation theorem".to_string(),
-            "schema catalog does not retain legacy AIR, Sig0, PR review, or governance surfaces as current ArchSig contracts".to_string(),
+            "schema catalog does not retain pre-Atom scan, projection, report, or PR-review surfaces as current ArchSig contracts".to_string(),
             "FieldSig-owned forecast and governance artifacts are intentionally outside this ArchSig catalog".to_string(),
         ],
     }

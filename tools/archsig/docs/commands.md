@@ -9,8 +9,8 @@ archmap-observation-map-v0
   -> FieldSig handoff
 ```
 
-ArchSig no longer exposes the old Sig0 / AIR / Feature Report / theorem-check /
-PR governance command surface. Git history is the archive for those workflows.
+ArchSig no longer exposes pre-Atom scan, projection, report, or PR-review
+commands. Git history is the archive for those workflows.
 FieldSig owns SFT forecast, IntentMap, operational feedback, governance, and
 calibration commands under `tools/fieldsig`.
 
@@ -87,10 +87,5 @@ The catalog contains only current ArchSig artifacts:
 - `archsig-analysis-packet`
 - `archsig-analysis-packet-validation-report`
 
-Removed commands include `adapter-scan`, `validate`, `snapshot`,
-`signature-diff`, `air`, `air-from-archmap`, `validate-air`,
-`feature-report`, `theorem-check`, `aat-observable-bundle`,
-`archmap-workflow`, `architecture-policy`, `law-violation-report`,
-`organization-policy`, `policy-decision`, `pr-comment`,
-`baseline-suppression`, `pr-quality-analysis`, `report-artifacts`, and
-`schema-compatibility`.
+Removed commands are not documented as active workflow variants. The CLI
+allowlist is fixed by the tests and by `archsig --help`.

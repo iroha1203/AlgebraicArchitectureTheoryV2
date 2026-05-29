@@ -204,7 +204,7 @@
   },
   "nonConclusions": [
     "schema migration is not a semantic-preservation theorem",
-    "schema catalog does not retain legacy AIR, Sig0, PR review, or governance surfaces as current ArchSig contracts",
+    "schema catalog does not retain pre-Atom scan, projection, report, or PR-review surfaces as current ArchSig contracts",
     "FieldSig-owned forecast and governance artifacts are intentionally outside this ArchSig catalog"
   ]
 }

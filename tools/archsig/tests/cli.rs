@@ -13,17 +13,6 @@ fn expressiveness_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/expressiveness")
 }
 
-fn validation_check_result<'a>(json: &'a Value, group: &str, id: &str) -> &'a str {
-    json[group]
-        .as_array()
-        .expect("validation check group is array")
-        .iter()
-        .find(|check| check["id"] == id)
-        .unwrap_or_else(|| panic!("validation check {id} exists in {group}"))["result"]
-        .as_str()
-        .expect("validation check result is string")
-}
-
 #[test]
 fn cli_help_exposes_only_llm_atom_archmap_surface() {
     let output = run_sig0_output(&["--help"]);
@@ -216,14 +205,11 @@ fn cli_negative_archmap_fixtures_preserve_guardrails() {
     );
     let concern_json = read_json(&concern_validation);
     assert!(
-        concern_json["atomicObservationChecks"]
-            .as_array()
-            .expect("atomic checks are array")
-            .iter()
-            .any(
-                |check| check["id"] == "archmap-concern-hints-are-not-obstruction-circuits"
-                    && check["result"] == "fail"
-            ),
+        has_check_result(
+            &concern_json,
+            "archmap-concern-hints-are-not-obstruction-circuits",
+            "fail"
+        ),
         "concernHints must not be accepted as obstruction circuits"
     );
 
@@ -245,14 +231,11 @@ fn cli_negative_archmap_fixtures_preserve_guardrails() {
     );
     let gap_json = read_json(&gap_validation);
     assert!(
-        gap_json["atomicObservationChecks"]
-            .as_array()
-            .expect("atomic checks are array")
-            .iter()
-            .any(
-                |check| check["id"] == "archmap-observation-gaps-not-measured-zero"
-                    && check["result"] == "fail"
-            ),
+        has_check_result(
+            &gap_json,
+            "archmap-observation-gaps-not-measured-zero",
+            "fail"
+        ),
         "observation gaps must not be rounded to measured zero"
     );
 }
@@ -319,19 +302,14 @@ fn cli_locks_archmap_atom_observation_regression() {
         json["atomicObservationSummary"]["concernHintCount"], 1,
         "Atom observation regression must keep concern hints as review cues"
     );
-    assert_eq!(
-        validation_check_result(&json, "legacySchemaChecks", "archmap-legacy-schema-fields"),
-        "pass",
-        "Atom observation regression must not require legacy homomorphism or mapItems"
+    assert!(
+        json.get(&["legacy", "SchemaChecks"].concat()).is_none(),
+        "ArchMap validation report must not retain legacy compatibility checks"
     );
-    assert_eq!(
-        validation_check_result(
-            &json,
-            "legacySchemaChecks",
-            "archmap-legacy-obstruction-circuit-candidates"
-        ),
-        "pass",
-        "Atom observation regression must not require legacy obstruction candidate input"
+    assert!(
+        json.get(&["homo", "morphismDiagnostics"].concat())
+            .is_none(),
+        "ArchMap validation report must not retain pre-Atom projection diagnostics"
     );
 
     let full_packet = out_dir.join("archsig-analysis-full.json");
@@ -387,6 +365,82 @@ fn cli_locks_archmap_atom_observation_regression() {
         0,
         "layer-only LawPolicy should reanalyze the same ArchMap without semantic obstruction"
     );
+}
+
+#[test]
+fn cli_rejects_legacy_archmap_fields() {
+    let out_dir = temp_dir("legacy-archmap-fields");
+    let mut archmap = read_json(&fixture_root().join("archmap.json"));
+    archmap[["map", "Items"].concat()] = serde_json::json!([]);
+    archmap[["homo", "morphism"].concat()] =
+        serde_json::json!({"reading": "old compatibility input"});
+    archmap[["obstruction", "CircuitCandidates"].concat()] = serde_json::json!([]);
+    let input = out_dir.join("legacy-archmap.json");
+    fs::write(
+        &input,
+        serde_json::to_vec_pretty(&archmap).expect("json serializes"),
+    )
+    .expect("legacy fixture can be written");
+    let output = run_sig0_output(&[
+        "archmap",
+        "--input",
+        input.to_str().expect("legacy input path is utf-8"),
+        "--out",
+        out_dir
+            .join("validation.json")
+            .to_str()
+            .expect("validation path is utf-8"),
+    ]);
+    assert!(
+        !output.status.success(),
+        "legacy ArchMap fields must be rejected instead of accepted as compatibility input"
+    );
+}
+
+#[test]
+fn legacy_archsig_surface_does_not_reenter_source_or_paths() {
+    let crate_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let src_root = crate_root.join("src");
+    let disallowed_source_symbols = [
+        "pub struct Sig0Document",
+        "AIR_SCHEMA_VERSION",
+        "SIGNATURE_DIFF_REPORT_SCHEMA_VERSION",
+        "FEATURE_EXTENSION_REPORT_SCHEMA_VERSION",
+        "THEOREM_PRECONDITION_CHECK_REPORT_SCHEMA_VERSION",
+        "RepairRuleRegistryV0",
+        "SynthesisConstraint",
+        "NoSolutionCertificate",
+        "AatObservableBundle",
+        "OrganizationPolicy",
+        "ArchitecturePolicy",
+        "PolicyDecision",
+        "PrQuality",
+        "SnapshotAttribution",
+        "FrameworkAdapter",
+    ];
+    for file in collect_files(&src_root) {
+        let text = fs::read_to_string(&file).expect("source file is utf-8");
+        for symbol in disallowed_source_symbols {
+            assert!(
+                !text.contains(symbol),
+                "legacy ArchSig symbol {symbol} re-entered {}",
+                file.display()
+            );
+        }
+    }
+
+    for removed_path in [
+        "skills/aat-reviewer",
+        "skills/arch-pr-analyzer",
+        "tests/fixtures/air",
+        "tests/fixtures/module_root",
+        "tests/fixtures/python_imports",
+    ] {
+        assert!(
+            !crate_root.join(removed_path).exists(),
+            "legacy ArchSig path {removed_path} re-entered"
+        );
+    }
 }
 
 #[test]
@@ -485,4 +539,33 @@ fn run_sig0_output(args: &[&str]) -> std::process::Output {
 fn read_json(path: &Path) -> Value {
     serde_json::from_slice(&fs::read(path).expect("json fixture can be read"))
         .expect("json fixture parses")
+}
+
+fn has_check_result(json: &Value, id: &str, result: &str) -> bool {
+    json.as_object().is_some_and(|object| {
+        object.values().any(|value| {
+            value.as_array().is_some_and(|checks| {
+                checks
+                    .iter()
+                    .any(|check| check["id"] == id && check["result"] == result)
+            })
+        })
+    })
+}
+
+fn collect_files(root: &Path) -> Vec<PathBuf> {
+    let mut files = Vec::new();
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(path) = stack.pop() {
+        for entry in fs::read_dir(&path).expect("directory can be read") {
+            let entry = entry.expect("directory entry can be read");
+            let path = entry.path();
+            if path.is_dir() {
+                stack.push(path);
+            } else {
+                files.push(path);
+            }
+        }
+    }
+    files
 }

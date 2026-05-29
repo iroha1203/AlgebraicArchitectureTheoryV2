@@ -86,9 +86,8 @@ The builder:
 
 `llm-native-workflow` treats the analysis packet as the source artifact and
 emits only ArchMap validation, LawPolicy validation, the analysis packet, packet
-validation, and the LLM interpretation packet. Old AIR, theorem-check, Feature
-Report, and AAT Observable Bundle projections are no longer current ArchSig
-CLI surface.
+validation, and the LLM interpretation packet. Pre-Atom projections and review
+surfaces are not current ArchSig CLI surface or compatibility commands.
 
 FieldSig handoff projects child-level `missingEvidence` / `excludedReadings`
 as unknown remainder and evidence-boundary refs instead of rounding them to

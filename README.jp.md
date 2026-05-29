@@ -53,7 +53,7 @@ SFT makes software evolution computable.
 | --- | --- | --- |
 | AAT | Atom から architecture object、law、obstruction circuit、operation、flatness、homotopy、analytic representation を構成する純粋代数理論。 | [AAT 数学理論](docs/aat/mathematical_theory/README.md) |
 | AAT / SFT Interface | AAT の局所主張を SFT の projection、observable coordinate、governance 側でどう読むかを定める interface。 | [AAT / SFT Interface](docs/sft/aat_interface.md) |
-| ArchSig / FieldSig Tooling | ArchSig は supplied ArchMap evidence を AAT structural review artifact へ写す。Lean / Python scan は任意の bounded adapter として扱う。FieldSig は ArchSig refs と workflow evidence から SFT software evolution evidence を測定する。 | [AAT Tooling Documentation](docs/tool/README.md) |
+| ArchSig / FieldSig Tooling | ArchSig は supplied Atom ArchMap evidence と LawPolicy から AAT structural review artifact を作る。FieldSig は ArchSig refs と workflow evidence から SFT software evolution evidence を測定する。 | [AAT Tooling Documentation](docs/tool/README.md) |
 | SFT | PRD、Spec、Issue、PR、review、CI、organization、AI、feedback が reachable future をどう変えるかを扱う計算理論。 | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) |
 | Lean 形式化 | 前提を明示できる構造的命題、finite universe、lawfulness bridge、bounded theorem package。 | [Lean 定義・定理索引](docs/aat/lean_theorem_index.md) |
 | Proof / empirical ledger | theorem assumptions、未解決 proof obligation、empirical hypothesis、Issue との対応。 | [証明義務と実証仮説](docs/aat/proof_obligations.md) |

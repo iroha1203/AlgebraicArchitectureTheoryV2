@@ -165,7 +165,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let report: ArchMapValidationReportV0 = validate_archmap_report(
                 &document,
                 &input.display().to_string(),
-                None,
                 source_inventory,
             );
             let failed = report.summary.result == "fail";
@@ -322,7 +321,6 @@ fn run() -> Result<ExitCode, Box<dyn Error>> {
             let archmap_validation = validate_archmap_report(
                 &archmap_document,
                 &archmap.display().to_string(),
-                None,
                 source_inventory,
             );
             let archmap_failed = archmap_validation.summary.result == "fail";
