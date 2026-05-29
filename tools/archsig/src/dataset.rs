@@ -1,12 +1,10 @@
 use std::collections::BTreeMap;
-use std::error::Error;
 
 use crate::graph::Graph;
 use crate::{
-    ArchitectureSignatureV1DatasetShape, EMPIRICAL_DATASET_SCHEMA_VERSION, EXTRACTOR_NAME,
-    EXTRACTOR_VERSION, EmpiricalDatasetInput, EmpiricalSignatureDatasetV0, ExtractorRef,
-    GitCommitRef, MetricDeltaStatus, MetricStatus, NullableSignatureIntVector, RULE_SET_VERSION,
-    Sig0Document, SignatureSnapshot, measured_status, unmeasured_status,
+    ArchitectureSignatureV1DatasetShape, MetricDeltaStatus, MetricStatus,
+    NullableSignatureIntVector, Sig0Document, SignatureSnapshot, measured_status,
+    unmeasured_status,
 };
 
 pub(crate) const DATASET_SIGNATURE_AXES: [&str; 16] = [
@@ -45,76 +43,6 @@ pub(crate) const DATASET_DELTA_AXES: [&str; 15] = [
     "runtimePropagation",
     "relationComplexity",
 ];
-
-pub fn build_empirical_dataset(
-    before: &Sig0Document,
-    after: &Sig0Document,
-    mut input: EmpiricalDatasetInput,
-    after_commit_role: &str,
-) -> Result<EmpiricalSignatureDatasetV0, Box<dyn Error>> {
-    if !matches!(after_commit_role, "head" | "merge") {
-        return Err(format!("unsupported after commit role: {after_commit_role}").into());
-    }
-
-    let before_snapshot = signature_snapshot(
-        before,
-        GitCommitRef {
-            sha: input.pull_request.base_commit.clone(),
-            role: "base".to_string(),
-        },
-    );
-    let after_sha = match after_commit_role {
-        "head" => input.pull_request.head_commit.clone(),
-        "merge" => input
-            .pull_request
-            .merge_commit
-            .clone()
-            .ok_or("after commit role merge requires pullRequest.mergeCommit")?,
-        _ => unreachable!("after commit role is checked above"),
-    };
-    let after_snapshot = signature_snapshot(
-        after,
-        GitCommitRef {
-            sha: after_sha,
-            role: after_commit_role.to_string(),
-        },
-    );
-    let delta_signature_signed = delta_signature_signed(&before_snapshot, &after_snapshot);
-    let metric_delta_status = metric_delta_status(&before_snapshot, &after_snapshot);
-
-    input.analysis_metadata.signature_after_commit_role = after_commit_role.to_string();
-
-    Ok(EmpiricalSignatureDatasetV0 {
-        schema_version: EMPIRICAL_DATASET_SCHEMA_VERSION.to_string(),
-        repository: input.repository,
-        pull_request: input.pull_request,
-        signature_before: before_snapshot,
-        signature_after: after_snapshot,
-        delta_signature_signed,
-        metric_delta_status,
-        pr_metrics: input.pr_metrics,
-        issue_incident_links: input.issue_incident_links,
-        analysis_metadata: input.analysis_metadata,
-    })
-}
-
-pub(crate) fn signature_snapshot(
-    document: &Sig0Document,
-    commit: GitCommitRef,
-) -> SignatureSnapshot {
-    let signature = dataset_signature_shape(document);
-    SignatureSnapshot {
-        commit,
-        extractor: ExtractorRef {
-            name: EXTRACTOR_NAME.to_string(),
-            version: EXTRACTOR_VERSION.to_string(),
-            rule_set_version: RULE_SET_VERSION.to_string(),
-            policy_version: document.policies.policy_id.clone(),
-        },
-        metric_status: dataset_metric_status(document),
-        signature,
-    }
-}
 
 pub(crate) fn dataset_signature_shape(
     document: &Sig0Document,
@@ -340,101 +268,4 @@ fn metric_status_reason(axis: &str, metric_status: &BTreeMap<String, MetricStatu
         .get(axis)
         .and_then(|status| status.reason.clone())
         .unwrap_or_else(|| "metricStatus entry is missing".to_string())
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::EMPIRICAL_DATASET_SCHEMA_VERSION;
-    use crate::test_support::{dataset_input, sig0_document_for_edges};
-
-    use super::build_empirical_dataset;
-
-    #[test]
-    fn builds_empirical_dataset_with_comparable_and_unmeasured_deltas() {
-        let before = sig0_document_for_edges(
-            vec![
-                ("A", "A.lean"),
-                ("B", "B.lean"),
-                ("C", "C.lean"),
-                ("D", "D.lean"),
-            ],
-            vec![("A", "B")],
-        );
-        let after = sig0_document_for_edges(
-            vec![
-                ("A", "A.lean"),
-                ("B", "B.lean"),
-                ("C", "C.lean"),
-                ("D", "D.lean"),
-            ],
-            vec![("A", "B"), ("A", "C"), ("C", "D")],
-        );
-
-        let dataset = build_empirical_dataset(&before, &after, dataset_input(), "head")
-            .expect("dataset builds");
-
-        assert_eq!(dataset.schema_version, EMPIRICAL_DATASET_SCHEMA_VERSION);
-        assert_eq!(dataset.signature_before.commit.sha, "base-sha");
-        assert_eq!(dataset.signature_after.commit.role, "head");
-        assert_eq!(dataset.delta_signature_signed.fanout_risk, Some(2));
-        assert_eq!(dataset.delta_signature_signed.max_fanout, Some(1));
-        assert_eq!(dataset.delta_signature_signed.reachable_cone_size, Some(2));
-        assert_eq!(
-            dataset.delta_signature_signed.boundary_violation_count,
-            None
-        );
-        assert_eq!(dataset.signature_after.signature.weighted_scc_risk, None);
-        assert!(
-            !dataset
-                .signature_after
-                .metric_status
-                .get("weightedSccRisk")
-                .expect("weighted status")
-                .measured
-        );
-        assert_eq!(dataset.signature_after.signature.runtime_propagation, None);
-        assert!(
-            !dataset
-                .signature_after
-                .metric_status
-                .get("runtimePropagation")
-                .expect("runtime status")
-                .measured
-        );
-
-        let fanout_status = dataset
-            .metric_delta_status
-            .get("fanoutRisk")
-            .expect("fanout delta status");
-        assert!(fanout_status.comparable);
-        assert!(fanout_status.before_measured);
-        assert!(fanout_status.after_measured);
-
-        let boundary_status = dataset
-            .metric_delta_status
-            .get("boundaryViolationCount")
-            .expect("boundary delta status");
-        assert!(!boundary_status.comparable);
-        assert!(!boundary_status.before_measured);
-        assert!(!boundary_status.after_measured);
-        assert!(
-            boundary_status
-                .reason
-                .contains("policy file not provided before")
-                || boundary_status.reason.contains("policy file not provided")
-        );
-    }
-
-    #[test]
-    fn dataset_merge_role_uses_merge_commit() {
-        let document = sig0_document_for_edges(vec![("A", "A.lean")], Vec::new());
-        let dataset = build_empirical_dataset(&document, &document, dataset_input(), "merge")
-            .expect("dataset builds");
-
-        assert_eq!(dataset.signature_after.commit.sha, "merge-sha");
-        assert_eq!(
-            dataset.analysis_metadata.signature_after_commit_role,
-            "merge"
-        );
-    }
 }
