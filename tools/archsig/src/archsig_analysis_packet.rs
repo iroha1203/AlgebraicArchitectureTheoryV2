@@ -16,17 +16,21 @@ use crate::{
     ArchSigDominantAtomFamilyCompositionV0, ArchSigEvolutionRiskRankingV0,
     ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigInvariantFamilyReadingV0,
     ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
-    ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigOperationDeltaReadingV0,
+    ArchSigLocalCurvatureDiagramReadingV0, ArchSigMoleculeReadingV0,
+    ArchSigObservationProjectionReadingV0, ArchSigObstructionCircuitV0,
+    ArchSigOperationDeltaReadingV0, ArchSigOperationInvariantGaloisReadingV0,
     ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairAxisDeltaReadingV0,
     ArchSigRepairOperationCandidateV0, ArchSigRepairTransferRiskRankV0,
-    ArchSigSignatureAxisReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralDrilldownReadingV0,
-    ArchSigSpectralMatrixShapeV0, ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0,
-    ArchSigSpectralValueV0, ArchSigTransferBridgeReadingV0, ArchSigTransferMatrixEntryV0,
-    ArchSigWorkflowAtomFamilyCountV0, ArchSigWorkflowRiskAxisReadingV0,
-    ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
-    LawPolicyObstructionCircuitDefinitionV0, LawPolicySignatureAxisDefinitionV0,
-    LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
+    ArchSigRepresentationStrengthReadingV0, ArchSigSignatureAxisReadingV0,
+    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
+    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
+    ArchSigSplitReadinessReadingV0, ArchSigStateTransitionAlgebraReadingV0,
+    ArchSigThreeLayerFlatnessReadingV0, ArchSigTransferBridgeReadingV0,
+    ArchSigTransferMatrixEntryV0, ArchSigWorkflowAtomFamilyCountV0,
+    ArchSigWorkflowRiskAxisReadingV0, ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION,
+    LawPolicyDocumentV0, LawPolicyObstructionCircuitDefinitionV0,
+    LawPolicySignatureAxisDefinitionV0, LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
 };
 
 const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
@@ -112,6 +116,29 @@ pub fn build_archsig_analysis_packet(
     );
     let path_homotopy_diagram_readings =
         build_path_homotopy_diagram_readings(archmap, &molecule_readings, &obstruction_circuits);
+    let layer_split = build_layer_split(archmap);
+    let representation_strength_readings = build_representation_strength_readings(
+        archmap,
+        &analytic_representations,
+        &spectral_analysis_readings,
+        &flatness_reading,
+    );
+    let local_curvature_diagram_readings =
+        build_local_curvature_diagram_readings(archmap, &obstruction_circuits);
+    let three_layer_flatness_readings =
+        build_three_layer_flatness_readings(archmap, &layer_split, &signature_axes);
+    let observation_projection_readings = build_observation_projection_readings(archmap);
+    let state_transition_algebra_readings =
+        build_state_transition_algebra_readings(archmap, &obstruction_circuits);
+    let operation_invariant_galois_readings = build_operation_invariant_galois_readings(
+        &invariant_family_readings,
+        &repair_operation_candidates,
+    );
+    let split_readiness_readings = build_split_readiness_readings(
+        &molecule_readings,
+        &obstruction_circuits,
+        &transfer_bridge_readings,
+    );
     let bounded_judgements = build_bounded_judgements(
         archmap,
         &obstruction_circuits,
@@ -145,6 +172,13 @@ pub fn build_archsig_analysis_packet(
         &spectral_mode_readings,
         &spectral_drilldown_readings,
         &transfer_bridge_readings,
+        &representation_strength_readings,
+        &local_curvature_diagram_readings,
+        &three_layer_flatness_readings,
+        &observation_projection_readings,
+        &state_transition_algebra_readings,
+        &operation_invariant_galois_readings,
+        &split_readiness_readings,
         &repair_operation_candidates,
         &bounded_judgements,
     );
@@ -187,9 +221,16 @@ pub fn build_archsig_analysis_packet(
         spectral_mode_readings,
         spectral_drilldown_readings,
         transfer_bridge_readings,
+        representation_strength_readings,
+        local_curvature_diagram_readings,
+        three_layer_flatness_readings,
+        observation_projection_readings,
+        state_transition_algebra_readings,
+        operation_invariant_galois_readings,
+        split_readiness_readings,
         design_principle_readings,
         flatness_reading,
-        static_runtime_semantic_layer_split: build_layer_split(archmap),
+        static_runtime_semantic_layer_split: layer_split,
         repair_operation_candidates,
         operation_deltas,
         path_homotopy_diagram_readings,
@@ -3027,6 +3068,544 @@ fn bridge_edge_cut_rationale(
     }
 }
 
+fn build_representation_strength_readings(
+    archmap: &ArchMapDocumentV0,
+    analytic_representations: &[ArchSigAnalyticRepresentationV0],
+    spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
+    flatness_reading: &ArchSigFlatnessReadingV0,
+) -> Vec<ArchSigRepresentationStrengthReadingV0> {
+    let blockers = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let required_assumptions = flatness_reading
+        .blocked_by_coverage_gaps
+        .iter()
+        .cloned()
+        .chain(vec![
+            "witness completeness for selected LawPolicy".to_string(),
+            "signature axis exactness for selected readings".to_string(),
+        ])
+        .collect::<Vec<_>>();
+
+    analytic_representations
+        .iter()
+        .map(|representation| ArchSigRepresentationStrengthReadingV0 {
+            reading_id: format!(
+                "representation-strength:{}",
+                stable_id(&representation.representation_id)
+            ),
+            source_reading_ref: representation.representation_id.clone(),
+            representation_family: representation.representation_family.clone(),
+            zero_preserving: if representation.status == "measured" {
+                "supported".to_string()
+            } else {
+                "bounded".to_string()
+            },
+            zero_reflecting: if representation
+                .zero_reflecting_boundary
+                .to_ascii_lowercase()
+                .contains("blocked")
+                || !blockers.is_empty()
+            {
+                "blockedByCoverageGap".to_string()
+            } else {
+                "assumptionRelative".to_string()
+            },
+            obstruction_preserving: if representation.axis_refs.is_empty()
+                && representation.graph_scope_refs.is_empty()
+            {
+                "weak".to_string()
+            } else {
+                "supported".to_string()
+            },
+            obstruction_reflecting: if blockers.is_empty() {
+                "assumptionRelative".to_string()
+            } else {
+                "blockedByCoverageGap".to_string()
+            },
+            required_assumptions: required_assumptions.clone(),
+            blocked_by: blockers.clone(),
+            reading: format!(
+                "{} is a bounded analytic representation; use its zero/obstruction readings only with the recorded strength boundary",
+                representation.representation_family
+            ),
+            evidence_boundary: representation.coverage_boundary.clone(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        })
+        .chain(spectral_analysis_readings.iter().map(|reading| {
+            ArchSigRepresentationStrengthReadingV0 {
+                reading_id: format!(
+                    "representation-strength:{}",
+                    stable_id(&reading.spectral_reading_id)
+                ),
+                source_reading_ref: reading.spectral_reading_id.clone(),
+                representation_family: reading.representation_family.clone(),
+                zero_preserving: "boundedProxy".to_string(),
+                zero_reflecting: if blockers.is_empty() {
+                    "assumptionRelative".to_string()
+                } else {
+                    "blockedByCoverageGap".to_string()
+                },
+                obstruction_preserving: if reading.support_refs.is_empty() {
+                    "weak".to_string()
+                } else {
+                    "supported".to_string()
+                },
+                obstruction_reflecting: "notAnEigenvalueTheorem".to_string(),
+                required_assumptions: required_assumptions.clone(),
+                blocked_by: blockers.clone(),
+                reading: format!(
+                    "{} is a spectral proxy for review; it preserves selected pressure but does not reflect global architecture truth",
+                    reading.representation_family
+                ),
+                evidence_boundary: reading.coverage_boundary.clone(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        }))
+        .collect()
+}
+
+fn build_local_curvature_diagram_readings(
+    archmap: &ArchMapDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+) -> Vec<ArchSigLocalCurvatureDiagramReadingV0> {
+    let atom_sources = atom_source_refs_by_id(archmap);
+    if obstruction_circuits.is_empty() {
+        return vec![ArchSigLocalCurvatureDiagramReadingV0 {
+            diagram_id: format!("local-curvature:{}:non-conclusion", stable_id(&archmap.map_id)),
+            law_ref: "law:none-observed".to_string(),
+            obstruction_ref: "obstruction:none-observed".to_string(),
+            signature_axis_refs: Vec::new(),
+            molecule_refs: archmap
+                .molecule_observations
+                .iter()
+                .take(6)
+                .map(|molecule| molecule.molecule_observation_id.clone())
+                .collect(),
+            lhs_path_refs: Vec::new(),
+            rhs_path_refs: Vec::new(),
+            curvature_value: 0,
+            curvature_status: "nonConclusion".to_string(),
+            diagram_reading:
+                "no local curvature diagram is constructed because no obstruction circuit was observed under the selected LawPolicy"
+                    .to_string(),
+            filling_boundary:
+                "absence of constructed curvature is not proof of global flatness".to_string(),
+            source_refs: archmap
+                .provenance
+                .reviewed_refs
+                .iter()
+                .map(source_ref_label)
+                .collect(),
+            evidence_boundary:
+                "local curvature placeholder records the selected evidence boundary only".to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        }];
+    }
+    obstruction_circuits
+        .iter()
+        .map(|obstruction| {
+            let source_refs = obstruction
+                .atom_observation_refs
+                .iter()
+                .flat_map(|atom_ref| atom_sources.get(atom_ref).cloned().unwrap_or_default())
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>();
+            let molecule_refs = obstruction
+                .molecule_reading_refs
+                .iter()
+                .map(|reading_ref| reading_ref.trim_start_matches("molecule-reading:").to_string())
+                .collect::<Vec<_>>();
+            ArchSigLocalCurvatureDiagramReadingV0 {
+                diagram_id: format!(
+                    "local-curvature:{}",
+                    stable_id(&obstruction.obstruction_circuit_id)
+                ),
+                law_ref: obstruction.law_ref.clone(),
+                obstruction_ref: obstruction.obstruction_circuit_id.clone(),
+                signature_axis_refs: obstruction.signature_axis_refs.clone(),
+                molecule_refs: molecule_refs.clone(),
+                lhs_path_refs: molecule_refs.iter().take(3).cloned().collect(),
+                rhs_path_refs: vec![
+                    format!("law-path:{}", stable_id(&obstruction.law_ref)),
+                    format!("witness-path:{}", stable_id(&obstruction.witness_rule_ref)),
+                ],
+                curvature_value: obstruction.signature_axis_refs.len().max(1) as i64,
+                curvature_status: "nonzero".to_string(),
+                diagram_reading: format!(
+                    "{} is read as local curvature for {}",
+                    obstruction.obstruction_circuit_id, obstruction.law_ref
+                ),
+                filling_boundary:
+                    "diagram filling is LawPolicy-relative and requires selected witness completeness"
+                        .to_string(),
+                source_refs,
+                evidence_boundary: obstruction.evidence_boundary.clone(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_three_layer_flatness_readings(
+    archmap: &ArchMapDocumentV0,
+    layer_split: &ArchSigLayerSplitV0,
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> Vec<ArchSigThreeLayerFlatnessReadingV0> {
+    let nonzero_axes = signature_axes
+        .iter()
+        .filter(|axis| axis.value != 0)
+        .map(|axis| axis.signature_axis_id.clone())
+        .collect::<Vec<_>>();
+    let cross_layer_atom_refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| {
+            matches!(
+                atom.atom_family.as_str(),
+                "contractSpecification" | "state" | "effect" | "authority" | "trust" | "semantic"
+            )
+        })
+        .take(24)
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    vec![ArchSigThreeLayerFlatnessReadingV0 {
+        reading_id: format!("three-layer-flatness:{}", stable_id(&archmap.map_id)),
+        static_status: if layer_split.static_observation_refs.is_empty() {
+            "unmeasured".to_string()
+        } else if nonzero_axes.is_empty() {
+            "candidateFlat".to_string()
+        } else {
+            "needsReview".to_string()
+        },
+        runtime_status: if layer_split.runtime_observation_refs.is_empty()
+            || archmap
+                .observation_gaps
+                .iter()
+                .any(|gap| gap.gap_id.contains("runtime"))
+        {
+            "blockedByCoverageGap".to_string()
+        } else {
+            "needsReview".to_string()
+        },
+        semantic_status: if nonzero_axes.is_empty() {
+            "candidateFlat".to_string()
+        } else {
+            "stressed".to_string()
+        },
+        static_observation_refs: layer_split.static_observation_refs.clone(),
+        runtime_observation_refs: layer_split.runtime_observation_refs.clone(),
+        semantic_observation_refs: layer_split.semantic_observation_refs.clone(),
+        cross_layer_atom_refs,
+        non_implication_reading:
+            "static flatness does not imply runtime or semantic flatness; cross-layer atoms must be reviewed separately"
+                .to_string(),
+        evidence_boundary: layer_split.split_boundary.clone(),
+        recommended_next_action:
+            "review cross-layer contract/state/effect/authority atoms before treating layer separation as flatness"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_observation_projection_readings(
+    archmap: &ArchMapDocumentV0,
+) -> Vec<ArchSigObservationProjectionReadingV0> {
+    let observed_atom_families = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| atom.atom_family.clone())
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    let forgotten_coordinates = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let source_refs = archmap
+        .provenance
+        .reviewed_refs
+        .iter()
+        .map(source_ref_label)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    vec![ArchSigObservationProjectionReadingV0 {
+        reading_id: format!("observation-projection:{}", stable_id(&archmap.map_id)),
+        observed_atom_family_count: observed_atom_families.len(),
+        observed_atom_families,
+        forgotten_coordinates: forgotten_coordinates.clone(),
+        coarse_projection_risks: vec![
+            "coarse observation may merge distinct canonical atoms".to_string(),
+            "unobserved source coordinates must not be read as absent atoms".to_string(),
+            "LLM observation uncertainty is projection loss, not Atom non-uniqueness".to_string(),
+        ],
+        reconstruction_blockers: forgotten_coordinates,
+        source_refs,
+        reading:
+            "ArchMap is treated as an observation projection of a canonical source-derived Atom family"
+                .to_string(),
+        evidence_boundary:
+            "projection reading records lost coordinates and does not reconstruct the complete canonical Atom family"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_state_transition_algebra_readings(
+    archmap: &ArchMapDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+) -> Vec<ArchSigStateTransitionAlgebraReadingV0> {
+    let family_refs = |family: &str| {
+        archmap
+            .atom_observations
+            .iter()
+            .filter(|atom| atom.atom_family == family)
+            .take(40)
+            .map(|atom| atom.atom_observation_id.clone())
+            .collect::<Vec<_>>()
+    };
+    let state_atom_refs = family_refs("state");
+    let effect_atom_refs = family_refs("effect");
+    let runtime_atom_refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| {
+            atom.atom_family.to_ascii_lowercase().contains("runtime")
+                || atom.predicate.to_ascii_lowercase().contains("retry")
+                || atom.predicate.to_ascii_lowercase().contains("transaction")
+                || atom.predicate.to_ascii_lowercase().contains("idempot")
+        })
+        .take(40)
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    let generator_refs = state_atom_refs
+        .iter()
+        .chain(effect_atom_refs.iter())
+        .chain(runtime_atom_refs.iter())
+        .take(48)
+        .cloned()
+        .collect::<Vec<_>>();
+    let obstruction_refs = obstruction_circuits
+        .iter()
+        .filter(|obstruction| {
+            let text = format!(
+                "{} {} {}",
+                obstruction.law_ref, obstruction.circuit_kind, obstruction.evidence_summary
+            )
+            .to_ascii_lowercase();
+            text.contains("state")
+                || text.contains("effect")
+                || text.contains("replay")
+                || text.contains("runtime")
+                || text.contains("idempot")
+        })
+        .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+        .collect::<Vec<_>>();
+    vec![ArchSigStateTransitionAlgebraReadingV0 {
+        reading_id: format!("state-transition-algebra:{}", stable_id(&archmap.map_id)),
+        generator_refs,
+        state_atom_refs,
+        effect_atom_refs,
+        runtime_atom_refs,
+        required_relations: vec![
+            "idempotency".to_string(),
+            "replay safety".to_string(),
+            "state/effect ordering".to_string(),
+            "compensation or finalization".to_string(),
+            "transaction boundary ownership".to_string(),
+        ],
+        unresolved_relations: archmap
+            .observation_gaps
+            .iter()
+            .filter(|gap| {
+                let text = format!("{} {}", gap.gap_id, gap.reason).to_ascii_lowercase();
+                text.contains("runtime")
+                    || text.contains("test")
+                    || text.contains("model")
+                    || text.contains("route")
+            })
+            .map(|gap| gap.gap_id.clone())
+            .collect(),
+        obstruction_refs,
+        reading:
+            "state/effect/runtime atoms generate a bounded state transition algebra reading"
+                .to_string(),
+        evidence_boundary:
+            "transition algebra is derived from observed atoms only; runtime traces and tests remain required for reflecting laws"
+                .to_string(),
+        recommended_next_action:
+            "verify idempotency, replay, ordering, and transaction ownership before claiming state/effect flatness"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_operation_invariant_galois_readings(
+    invariant_readings: &[ArchSigInvariantFamilyReadingV0],
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+) -> Vec<ArchSigOperationInvariantGaloisReadingV0> {
+    let invariant_family_refs = invariant_readings
+        .iter()
+        .map(|reading| reading.invariant_id.clone())
+        .collect::<Vec<_>>();
+    let operation_family_refs = repair_candidates
+        .iter()
+        .map(|candidate| candidate.repair_operation_candidate_id.clone())
+        .collect::<Vec<_>>();
+    let preserved_invariant_refs = invariant_readings
+        .iter()
+        .filter(|reading| reading.status != "stressed")
+        .map(|reading| reading.invariant_id.clone())
+        .collect::<Vec<_>>();
+    let blocked_operation_refs = repair_candidates
+        .iter()
+        .filter(|candidate| {
+            !candidate.missing_evidence.is_empty()
+                || candidate
+                    .preconditions
+                    .iter()
+                    .any(|precondition| precondition.contains("coverage gap"))
+        })
+        .map(|candidate| candidate.repair_operation_candidate_id.clone())
+        .collect::<Vec<_>>();
+    vec![ArchSigOperationInvariantGaloisReadingV0 {
+        reading_id: "operation-invariant-galois:selected-law-policy".to_string(),
+        invariant_family_refs,
+        operation_family_refs,
+        ops_of_invariants: repair_candidates
+            .iter()
+            .map(|candidate| {
+                format!(
+                    "{} is allowed only relative to preserved {:?}",
+                    candidate.repair_operation_candidate_id, candidate.preserved_invariants
+                )
+            })
+            .collect(),
+        inv_of_operations: invariant_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} must be preserved by selected operation families ({})",
+                    reading.invariant_id, reading.status
+                )
+            })
+            .collect(),
+        preserved_invariant_refs,
+        blocked_operation_refs,
+        reading:
+            "operation families and invariant families form an AAT Galois-style review reading"
+                .to_string(),
+        evidence_boundary:
+            "this reading classifies allowed operation families; it does not prove repair soundness"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_split_readiness_readings(
+    molecule_readings: &[ArchSigMoleculeReadingV0],
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    transfer_bridge_readings: &[ArchSigTransferBridgeReadingV0],
+) -> Vec<ArchSigSplitReadinessReadingV0> {
+    let mut bridge_edges_by_molecule =
+        BTreeMap::<String, Vec<&ArchSigBridgeEdgeBreakdownV0>>::new();
+    for edge in transfer_bridge_readings
+        .iter()
+        .flat_map(|reading| reading.bridge_atom_families.iter())
+        .flat_map(|bridge| bridge.edge_breakdowns.iter())
+    {
+        bridge_edges_by_molecule
+            .entry(edge.source_molecule_ref.clone())
+            .or_default()
+            .push(edge);
+        bridge_edges_by_molecule
+            .entry(edge.target_molecule_ref.clone())
+            .or_default()
+            .push(edge);
+    }
+    molecule_readings
+        .iter()
+        .map(|molecule| {
+            let obstruction_refs = obstruction_circuits
+                .iter()
+                .filter(|obstruction| {
+                    obstruction
+                        .molecule_reading_refs
+                        .iter()
+                        .any(|molecule_ref| molecule_ref == &molecule.molecule_reading_id)
+                })
+                .map(|obstruction| obstruction.obstruction_circuit_id.clone())
+                .collect::<Vec<_>>();
+            let bridge_edges = bridge_edges_by_molecule
+                .get(&molecule.molecule_observation_ref)
+                .cloned()
+                .unwrap_or_default();
+            let bridge_edge_refs = bridge_edges
+                .iter()
+                .map(|edge| edge.edge_id.clone())
+                .collect::<Vec<_>>();
+            let recommended_boundary_operation = bridge_edges
+                .first()
+                .map(|edge| edge.recommended_cut_kind.clone())
+                .unwrap_or_else(|| "interface".to_string());
+            let penalty =
+                (obstruction_refs.len() as i64 * 8 + bridge_edge_refs.len() as i64 * 15).min(100);
+            let readiness_score = 100 - penalty;
+            let status = if !bridge_edge_refs.is_empty() {
+                "needsBoundaryPreparation"
+            } else if !obstruction_refs.is_empty() {
+                "needsReview"
+            } else {
+                "candidateSplitReady"
+            };
+            ArchSigSplitReadinessReadingV0 {
+                reading_id: format!(
+                    "split-readiness:{}",
+                    stable_id(&molecule.molecule_observation_ref)
+                ),
+                molecule_ref: molecule.molecule_observation_ref.clone(),
+                status: status.to_string(),
+                readiness_score,
+                core_embedding_status: if molecule.atom_observation_refs.is_empty() {
+                    "missingEvidence".to_string()
+                } else {
+                    "observed".to_string()
+                },
+                feature_view_section_status: if molecule
+                    .interpretation_notes_for_llm
+                    .iter()
+                    .any(|note| note.to_ascii_lowercase().contains("semantic"))
+                {
+                    "observed".to_string()
+                } else {
+                    "needsSemanticView".to_string()
+                },
+                lifting_evidence_status: if bridge_edge_refs.is_empty() {
+                    "notBlockedByObservedBridge".to_string()
+                } else {
+                    "blockedByBridgeEdge".to_string()
+                },
+                interaction_obstruction_refs: obstruction_refs,
+                bridge_edge_refs,
+                recommended_boundary_operation,
+                reading: format!(
+                    "{} has split readiness score {} under current ArchSig evidence",
+                    molecule.molecule_observation_ref, readiness_score
+                ),
+                evidence_boundary:
+                    "split readiness is a current-state architecture reading, not a feature-extension proof"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
 fn dominant_mode_component(
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     representation_family: &str,
@@ -3564,6 +4143,13 @@ fn build_llm_interpretation_packet(
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
     transfer_bridge_readings: &[ArchSigTransferBridgeReadingV0],
+    representation_strength_readings: &[ArchSigRepresentationStrengthReadingV0],
+    local_curvature_diagram_readings: &[ArchSigLocalCurvatureDiagramReadingV0],
+    three_layer_flatness_readings: &[ArchSigThreeLayerFlatnessReadingV0],
+    observation_projection_readings: &[ArchSigObservationProjectionReadingV0],
+    state_transition_algebra_readings: &[ArchSigStateTransitionAlgebraReadingV0],
+    operation_invariant_galois_readings: &[ArchSigOperationInvariantGaloisReadingV0],
+    split_readiness_readings: &[ArchSigSplitReadinessReadingV0],
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
     bounded_judgements: &[ArchSigBoundedJudgementV0],
 ) -> ArchSigLlmInterpretationPacketV0 {
@@ -3692,6 +4278,92 @@ fn build_llm_interpretation_packet(
                 })
             })
             .collect(),
+        representation_strength_summary: representation_strength_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} zeroReflecting={} obstructionReflecting={} blockedBy={}",
+                    reading.representation_family,
+                    reading.zero_reflecting,
+                    reading.obstruction_reflecting,
+                    reading.blocked_by.len()
+                )
+            })
+            .collect(),
+        local_curvature_diagram_summary: local_curvature_diagram_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} law={} curvature={} axes={}",
+                    reading.diagram_id,
+                    reading.law_ref,
+                    reading.curvature_value,
+                    reading.signature_axis_refs.len()
+                )
+            })
+            .collect(),
+        three_layer_flatness_summary: three_layer_flatness_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} static={} runtime={} semantic={} crossLayerAtoms={}",
+                    reading.reading_id,
+                    reading.static_status,
+                    reading.runtime_status,
+                    reading.semantic_status,
+                    reading.cross_layer_atom_refs.len()
+                )
+            })
+            .collect(),
+        observation_projection_summary: observation_projection_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} families={} forgotten={} blockers={}",
+                    reading.reading_id,
+                    reading.observed_atom_family_count,
+                    reading.forgotten_coordinates.len(),
+                    reading.reconstruction_blockers.len()
+                )
+            })
+            .collect(),
+        state_transition_algebra_summary: state_transition_algebra_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} generators={} unresolved={} obstructions={}",
+                    reading.reading_id,
+                    reading.generator_refs.len(),
+                    reading.unresolved_relations.len(),
+                    reading.obstruction_refs.len()
+                )
+            })
+            .collect(),
+        operation_invariant_galois_summary: operation_invariant_galois_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} invariants={} operations={} blockedOps={}",
+                    reading.reading_id,
+                    reading.invariant_family_refs.len(),
+                    reading.operation_family_refs.len(),
+                    reading.blocked_operation_refs.len()
+                )
+            })
+            .collect(),
+        split_readiness_summary: split_readiness_readings
+            .iter()
+            .take(12)
+            .map(|reading| {
+                format!(
+                    "{} status={} score={} boundaryOp={}",
+                    reading.molecule_ref,
+                    reading.status,
+                    reading.readiness_score,
+                    reading.recommended_boundary_operation
+                )
+            })
+            .collect(),
         repair_operation_summary: repair_candidates
             .iter()
             .map(|candidate| {
@@ -3791,6 +4463,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_spectral_mode_surface(packet),
         check_spectral_drilldown_surface(packet),
         check_transfer_bridge_surface(packet),
+        check_aat_structural_reading_surfaces(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -3816,6 +4489,13 @@ pub fn validate_archsig_analysis_packet_report(
         spectral_mode_reading_count: packet.spectral_mode_readings.len(),
         spectral_drilldown_reading_count: packet.spectral_drilldown_readings.len(),
         transfer_bridge_reading_count: packet.transfer_bridge_readings.len(),
+        representation_strength_reading_count: packet.representation_strength_readings.len(),
+        local_curvature_diagram_reading_count: packet.local_curvature_diagram_readings.len(),
+        three_layer_flatness_reading_count: packet.three_layer_flatness_readings.len(),
+        observation_projection_reading_count: packet.observation_projection_readings.len(),
+        state_transition_algebra_reading_count: packet.state_transition_algebra_readings.len(),
+        operation_invariant_galois_reading_count: packet.operation_invariant_galois_readings.len(),
+        split_readiness_reading_count: packet.split_readiness_readings.len(),
         design_principle_reading_count: packet.design_principle_readings.len(),
         repair_operation_candidate_count: packet.repair_operation_candidates.len(),
         operation_delta_count: packet.operation_deltas.len(),
@@ -4942,6 +5622,220 @@ fn check_transfer_bridge_surface(packet: &ArchSigAnalysisPacketV0) -> Validation
     )
 }
 
+fn check_aat_structural_reading_surfaces(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mut examples = Vec::new();
+    if packet.representation_strength_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "representationStrengthReadings",
+            "empty",
+            "packet must expose representation strength readings",
+        ));
+    }
+    if packet.local_curvature_diagram_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "localCurvatureDiagramReadings",
+            "empty",
+            "packet must expose local curvature diagram readings",
+        ));
+    }
+    if packet.three_layer_flatness_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "threeLayerFlatnessReadings",
+            "empty",
+            "packet must expose three-layer flatness readings",
+        ));
+    }
+    if packet.observation_projection_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "observationProjectionReadings",
+            "empty",
+            "packet must expose observation projection readings",
+        ));
+    }
+    if packet.state_transition_algebra_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "stateTransitionAlgebraReadings",
+            "empty",
+            "packet must expose state transition algebra readings",
+        ));
+    }
+    if packet.operation_invariant_galois_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "operationInvariantGaloisReadings",
+            "empty",
+            "packet must expose operation-invariant Galois readings",
+        ));
+    }
+    if packet.split_readiness_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "splitReadinessReadings",
+            "empty",
+            "packet must expose split readiness readings",
+        ));
+    }
+
+    for reading in &packet.representation_strength_readings {
+        push_blank(
+            &mut examples,
+            &reading.reading_id,
+            &reading.source_reading_ref,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} representationFamily", reading.reading_id),
+            &reading.representation_family,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} zeroReflecting", reading.reading_id),
+            &reading.zero_reflecting,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} obstructionReflecting", reading.reading_id),
+            &reading.obstruction_reflecting,
+        );
+        if reading.required_assumptions.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "requiredAssumptions",
+                "representation strength must record required assumptions",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.local_curvature_diagram_readings {
+        push_blank(&mut examples, &reading.diagram_id, &reading.law_ref);
+        push_blank(
+            &mut examples,
+            &format!("{} obstructionRef", reading.diagram_id),
+            &reading.obstruction_ref,
+        );
+        if reading.curvature_status != "nonConclusion"
+            && (reading.curvature_value <= 0 || reading.signature_axis_refs.is_empty())
+        {
+            examples.push(generic_validation_example(
+                &reading.diagram_id,
+                &reading.curvature_value.to_string(),
+                "local curvature diagram must carry positive curvature and signature axis refs",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} diagramReading", reading.diagram_id),
+            &reading.diagram_reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} fillingBoundary", reading.diagram_id),
+            &reading.filling_boundary,
+        );
+    }
+    for reading in &packet.three_layer_flatness_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.static_status);
+        push_blank(&mut examples, &reading.reading_id, &reading.runtime_status);
+        push_blank(&mut examples, &reading.reading_id, &reading.semantic_status);
+        push_blank(
+            &mut examples,
+            &format!("{} nonImplicationReading", reading.reading_id),
+            &reading.non_implication_reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.observation_projection_readings {
+        if reading.observed_atom_families.is_empty() || reading.observed_atom_family_count == 0 {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "observedAtomFamilies",
+                "observation projection must report observed atom families",
+            ));
+        }
+        if reading.coarse_projection_risks.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "coarseProjectionRisks",
+                "observation projection must record projection loss risks",
+            ));
+        }
+        push_blank(&mut examples, &reading.reading_id, &reading.reading);
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.state_transition_algebra_readings {
+        if reading.required_relations.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "requiredRelations",
+                "state transition algebra must record required relations",
+            ));
+        }
+        push_blank(&mut examples, &reading.reading_id, &reading.reading);
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.reading_id),
+            &reading.recommended_next_action,
+        );
+    }
+    for reading in &packet.operation_invariant_galois_readings {
+        if reading.invariant_family_refs.is_empty() && reading.operation_family_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                "invariant/operation refs",
+                "operation-invariant Galois reading must carry invariant or operation family refs",
+            ));
+        }
+        push_blank(&mut examples, &reading.reading_id, &reading.reading);
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    for reading in &packet.split_readiness_readings {
+        push_blank(&mut examples, &reading.reading_id, &reading.molecule_ref);
+        push_blank(&mut examples, &reading.reading_id, &reading.status);
+        if !(0..=100).contains(&reading.readiness_score) {
+            examples.push(generic_validation_example(
+                &reading.reading_id,
+                &reading.readiness_score.to_string(),
+                "split readiness score must stay in 0..=100",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedBoundaryOperation", reading.reading_id),
+            &reading.recommended_boundary_operation,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.reading_id),
+            &reading.evidence_boundary,
+        );
+    }
+    check_from_examples(
+        "archsig-analysis-packet-aat-structural-readings",
+        "packet exposes representation strength, curvature, layer flatness, projection, transition algebra, Galois, and split readiness readings",
+        examples,
+        "fail",
+    )
+}
+
 fn check_law_relative_analysis(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
     let axis_ids = set(packet
         .signature_axes
@@ -5585,6 +6479,24 @@ fn preserved_invariants_for_repair(
     } else {
         invariants
     }
+}
+
+fn atom_source_refs_by_id(archmap: &ArchMapDocumentV0) -> BTreeMap<String, Vec<String>> {
+    archmap
+        .atom_observations
+        .iter()
+        .map(|atom| {
+            (
+                atom.atom_observation_id.clone(),
+                atom.source_refs
+                    .iter()
+                    .map(source_ref_label)
+                    .collect::<BTreeSet<_>>()
+                    .into_iter()
+                    .collect::<Vec<_>>(),
+            )
+        })
+        .collect()
 }
 
 fn source_ref_label(source_ref: &ArchMapSourceRef) -> String {
