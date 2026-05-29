@@ -16,7 +16,8 @@ use crate::{
     ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigOperationDeltaReadingV0,
     ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairOperationCandidateV0,
     ArchSigSignatureAxisReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralMatrixShapeV0, ArchSigSpectralValueV0,
+    ArchSigSpectralDominantComponentV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
     ArchSigWorkflowAtomFamilyCountV0, ArchSigWorkflowRiskAxisReadingV0,
     ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
     LawPolicyObstructionCircuitDefinitionV0, LawPolicySignatureAxisDefinitionV0,
@@ -89,6 +90,7 @@ pub fn build_archsig_analysis_packet(
         &signature_axes,
         &operation_deltas,
     );
+    let spectral_mode_readings = build_spectral_mode_readings(&spectral_analysis_readings);
     let path_homotopy_diagram_readings =
         build_path_homotopy_diagram_readings(archmap, &molecule_readings, &obstruction_circuits);
     let bounded_judgements = build_bounded_judgements(
@@ -121,6 +123,7 @@ pub fn build_archsig_analysis_packet(
         &analytic_representations,
         &workflow_risk_readings,
         &spectral_analysis_readings,
+        &spectral_mode_readings,
         &repair_operation_candidates,
         &bounded_judgements,
     );
@@ -160,6 +163,7 @@ pub fn build_archsig_analysis_packet(
         coupling_cohesion_readings,
         workflow_risk_readings,
         spectral_analysis_readings,
+        spectral_mode_readings,
         design_principle_readings,
         flatness_reading,
         static_runtime_semantic_layer_split: build_layer_split(archmap),
@@ -2087,6 +2091,210 @@ fn spectral_upper_bound(max_row: i64, max_col: i64) -> f64 {
     ((max_row.max(0) as f64) * (max_col.max(0) as f64)).sqrt()
 }
 
+fn build_spectral_mode_readings(
+    spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
+) -> Vec<ArchSigSpectralModeReadingV0> {
+    spectral_analysis_readings
+        .iter()
+        .map(spectral_mode_reading)
+        .collect()
+}
+
+fn spectral_mode_reading(
+    spectral_reading: &ArchSigSpectralAnalysisReadingV0,
+) -> ArchSigSpectralModeReadingV0 {
+    let max_row = spectral_value_by_name(spectral_reading, "maxRowSum");
+    let max_col = spectral_value_by_name(spectral_reading, "maxColumnSum");
+    let frobenius = spectral_value_by_name(spectral_reading, "frobeniusNorm");
+    let dominant = if max_row > 0.0 { max_row } else { max_col };
+    let dominant_norm = dominant.min(frobenius);
+    let residual = (frobenius.powi(2) - dominant_norm.powi(2)).max(0.0).sqrt();
+    let gap_proxy = dominant_norm - residual;
+    let localization = if frobenius > 0.0 {
+        (dominant_norm / frobenius).min(1.0)
+    } else {
+        0.0
+    };
+    let density = spectral_matrix_density(&spectral_reading.matrix_shape);
+    let mode_kind = spectral_mode_kind(
+        &spectral_reading.representation_family,
+        localization,
+        density,
+    );
+    let mode_components = spectral_reading
+        .dominant_components
+        .iter()
+        .enumerate()
+        .map(|(index, component)| ArchSigSpectralModeComponentV0 {
+            component_ref: component.component_ref.clone(),
+            component_kind: component.component_kind.clone(),
+            weight: component.value.clone(),
+            role: if index == 0 {
+                "primaryDominantComponent"
+            } else {
+                "coupledDominantComponent"
+            }
+            .to_string(),
+            reading: component.reading.clone(),
+        })
+        .collect::<Vec<_>>();
+
+    ArchSigSpectralModeReadingV0 {
+        spectral_mode_id: format!(
+            "spectral-mode:{}",
+            stable_id(&spectral_reading.spectral_reading_id)
+        ),
+        source_spectral_reading_ref: spectral_reading.spectral_reading_id.clone(),
+        representation_family: spectral_reading.representation_family.clone(),
+        status: spectral_mode_status(spectral_reading, localization, density).to_string(),
+        mode_kind: mode_kind.to_string(),
+        mode_components,
+        spectral_gap_proxy: spectral_float_value(
+            "dominantResidualGapProxy",
+            gap_proxy,
+            "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem",
+        ),
+        localization_index: spectral_float_value(
+            "dominantFrobeniusLocalization",
+            localization,
+            "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized",
+        ),
+        matrix_density: spectral_float_value(
+            "nonzeroMatrixDensity",
+            density,
+            "nonzero entries divided by finite matrix capacity; higher means more distributed coupling",
+        ),
+        decomposability_reading: spectral_decomposability_reading(localization, density).to_string(),
+        repair_perturbation_reading: spectral_repair_perturbation_reading(
+            spectral_reading,
+            localization,
+            density,
+        ),
+        evidence_boundary:
+            "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem"
+                .to_string(),
+        recommended_next_action: spectral_mode_next_action(
+            &spectral_reading.representation_family,
+            localization,
+            density,
+        ),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn spectral_value_by_name(reading: &ArchSigSpectralAnalysisReadingV0, name: &str) -> f64 {
+    reading
+        .values
+        .iter()
+        .find(|value| value.name == name)
+        .and_then(|value| value.value.parse::<f64>().ok())
+        .unwrap_or_default()
+}
+
+fn spectral_matrix_density(shape: &ArchSigSpectralMatrixShapeV0) -> f64 {
+    let capacity = shape.row_count.saturating_mul(shape.column_count);
+    if capacity == 0 {
+        0.0
+    } else {
+        shape.nonzero_entry_count as f64 / capacity as f64
+    }
+}
+
+fn spectral_mode_kind(
+    representation_family: &str,
+    localization: f64,
+    density: f64,
+) -> &'static str {
+    match representation_family {
+        "workflowRiskAxisPressureMatrix" if density >= 0.65 => "distributedPressureMode",
+        "workflowRiskAxisPressureMatrix" if localization >= 0.55 => "localizedPressureMode",
+        "workflowRiskAxisPressureMatrix" => "distributedPressureMode",
+        "moleculeAtomOverlapCouplingMatrix" if density >= 0.65 => "delocalizedCouplingMode",
+        "moleculeAtomOverlapCouplingMatrix" => "localizedCouplingMode",
+        "obstructionAxisCurvatureMatrix" => "curvatureMode",
+        "operationSignatureDeltaMatrix" if density >= 0.65 => "broadPerturbationMode",
+        "operationSignatureDeltaMatrix" => "localizedPerturbationMode",
+        _ => "boundedSpectralMode",
+    }
+}
+
+fn spectral_mode_status(
+    spectral_reading: &ArchSigSpectralAnalysisReadingV0,
+    localization: f64,
+    density: f64,
+) -> &'static str {
+    if spectral_reading.matrix_shape.nonzero_entry_count == 0 {
+        "nonConclusion"
+    } else if spectral_reading.status == "needsReview" || density >= 0.65 || localization < 0.35 {
+        "needsReview"
+    } else {
+        "actionable"
+    }
+}
+
+fn spectral_decomposability_reading(localization: f64, density: f64) -> &'static str {
+    if density <= 0.35 && localization >= 0.55 {
+        "mode is relatively localized; decomposition or targeted repair may be reviewable as a local operation"
+    } else if density >= 0.65 || localization < 0.35 {
+        "mode is delocalized or dense; treat the concern as architecture-wide coupling before attempting local repair"
+    } else {
+        "mode is mixed; local repair may work, but review nearby coupled components and transferred axes"
+    }
+}
+
+fn spectral_repair_perturbation_reading(
+    spectral_reading: &ArchSigSpectralAnalysisReadingV0,
+    localization: f64,
+    density: f64,
+) -> String {
+    if spectral_reading.representation_family == "operationSignatureDeltaMatrix" {
+        if density >= 0.65 {
+            "candidate operations touch many signature axes; repair is likely to move complexity across axes"
+                .to_string()
+        } else if localization >= 0.55 {
+            "candidate operations have a dominant perturbation mode; review the leading operation before broad refactoring"
+                .to_string()
+        } else {
+            "candidate operations have no strongly localized perturbation mode; require human review before code changes"
+                .to_string()
+        }
+    } else {
+        "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations"
+            .to_string()
+    }
+}
+
+fn spectral_mode_next_action(
+    representation_family: &str,
+    localization: f64,
+    density: f64,
+) -> String {
+    match representation_family {
+        "workflowRiskAxisPressureMatrix" => {
+            if localization >= 0.55 {
+                "start review from the dominant workflow and dominant risk axis, then verify coverage gaps"
+            } else {
+                "treat review as a cross-workflow pressure mode and compare top workflows before assigning local ownership"
+            }
+        }
+        "moleculeAtomOverlapCouplingMatrix" => {
+            if density >= 0.65 {
+                "map shared atom families across the dense molecule cluster before splitting boundaries"
+            } else {
+                "inspect the dominant molecule overlap and decide whether the boundary is semantic or accidental"
+            }
+        }
+        "obstructionAxisCurvatureMatrix" => {
+            "review whether repeated obstruction-axis curvature is local, transferred, or a law-policy coverage gap"
+        }
+        "operationSignatureDeltaMatrix" => {
+            "compare the perturbation mode against candidate repair preconditions before changing code"
+        }
+        _ => "review dominant components and evidence boundaries before drawing architectural conclusions",
+    }
+    .to_string()
+}
+
 fn build_design_principle_readings(
     archmap: &ArchMapDocumentV0,
     invariant_readings: &[ArchSigInvariantFamilyReadingV0],
@@ -2447,6 +2655,7 @@ fn build_llm_interpretation_packet(
     analytic_representations: &[ArchSigAnalyticRepresentationV0],
     workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
     spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
+    spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
     bounded_judgements: &[ArchSigBoundedJudgementV0],
 ) -> ArchSigLlmInterpretationPacketV0 {
@@ -2505,6 +2714,20 @@ fn build_llm_interpretation_packet(
                     upper_bound,
                     reading.matrix_shape.row_count,
                     reading.matrix_shape.column_count,
+                    reading.status
+                )
+            })
+            .collect(),
+        spectral_mode_summary: spectral_mode_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} {} gap={} localization={} density={} ({})",
+                    reading.representation_family,
+                    reading.mode_kind,
+                    reading.spectral_gap_proxy.value,
+                    reading.localization_index.value,
+                    reading.matrix_density.value,
                     reading.status
                 )
             })
@@ -2605,6 +2828,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_analytic_and_principle_surfaces(packet),
         check_workflow_risk_surface(packet),
         check_spectral_analysis_surface(packet),
+        check_spectral_mode_surface(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -2627,6 +2851,7 @@ pub fn validate_archsig_analysis_packet_report(
         coupling_cohesion_reading_count: packet.coupling_cohesion_readings.len(),
         workflow_risk_reading_count: packet.workflow_risk_readings.len(),
         spectral_analysis_reading_count: packet.spectral_analysis_readings.len(),
+        spectral_mode_reading_count: packet.spectral_mode_readings.len(),
         design_principle_reading_count: packet.design_principle_readings.len(),
         repair_operation_candidate_count: packet.repair_operation_candidates.len(),
         operation_delta_count: packet.operation_deltas.len(),
@@ -3135,6 +3360,130 @@ fn check_spectral_analysis_surface(packet: &ArchSigAnalysisPacketV0) -> Validati
     check_from_examples(
         "archsig-analysis-packet-spectral-analysis-surface",
         "packet exposes AAT spectral readings as bounded finite-representation proxies",
+        examples,
+        "fail",
+    )
+}
+
+fn check_spectral_mode_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let source_reading_ids = set(packet
+        .spectral_analysis_readings
+        .iter()
+        .map(|reading| reading.spectral_reading_id.as_str()));
+    let source_families = packet
+        .spectral_analysis_readings
+        .iter()
+        .map(|reading| reading.representation_family.as_str())
+        .collect::<BTreeSet<_>>();
+    let mode_families = packet
+        .spectral_mode_readings
+        .iter()
+        .map(|reading| reading.representation_family.as_str())
+        .collect::<BTreeSet<_>>();
+    let allowed_statuses =
+        BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let mut examples = source_families
+        .iter()
+        .filter(|family| !mode_families.contains(**family))
+        .map(|family| {
+            generic_validation_example(
+                "spectralModeReadings",
+                family,
+                "packet must expose one spectral mode reading for each spectral analysis representation family",
+            )
+        })
+        .collect::<Vec<_>>();
+    if packet.spectral_mode_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "spectralModeReadings",
+            "empty",
+            "packet must expose bounded spectral mode readings",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "spectralModeReadings[].spectralModeId",
+        duplicates(
+            packet
+                .spectral_mode_readings
+                .iter()
+                .map(|reading| reading.spectral_mode_id.as_str()),
+        ),
+    ));
+    for reading in &packet.spectral_mode_readings {
+        if !source_reading_ids.contains(reading.source_spectral_reading_ref.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.spectral_mode_id,
+                &reading.source_spectral_reading_ref,
+                "spectral mode reading must reference an existing spectral analysis reading",
+            ));
+        }
+        if !allowed_statuses.contains(reading.status.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.spectral_mode_id,
+                &reading.status,
+                "spectral mode status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} modeKind", reading.spectral_mode_id),
+            &reading.mode_kind,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} decomposabilityReading", reading.spectral_mode_id),
+            &reading.decomposability_reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} repairPerturbationReading", reading.spectral_mode_id),
+            &reading.repair_perturbation_reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.spectral_mode_id),
+            &reading.evidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.spectral_mode_id),
+            &reading.recommended_next_action,
+        );
+        for value in [
+            &reading.spectral_gap_proxy,
+            &reading.localization_index,
+            &reading.matrix_density,
+        ] {
+            push_blank(
+                &mut examples,
+                &format!("{} modeValue.name", reading.spectral_mode_id),
+                &value.name,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} modeValue.value", reading.spectral_mode_id),
+                &value.value,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} modeValue.interpretation", reading.spectral_mode_id),
+                &value.interpretation,
+            );
+        }
+        if reading.mode_components.is_empty()
+            && reading.status != "nonConclusion"
+            && reading.representation_family != "obstructionAxisCurvatureMatrix"
+        {
+            examples.push(generic_validation_example(
+                &reading.spectral_mode_id,
+                "modeComponents",
+                "spectral mode reading should expose dominant mode components unless the source representation is a non-conclusion",
+            ));
+        }
+    }
+    check_from_examples(
+        "archsig-analysis-packet-spectral-mode-surface",
+        "packet exposes bounded spectral mode readings for localization, decomposability, and repair perturbation review",
         examples,
         "fail",
     )

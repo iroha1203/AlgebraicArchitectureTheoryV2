@@ -85,7 +85,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                     "docs/tool/archsig_analysis_packet.md",
                     "docs/tool/llm_native_archmap_archsig_prd.md",
                 ],
-                "ArchSig analysis packet owns AAT concept surfaces, architecture state, design pressure, change impact, architecture object projections, invariant family readings, LawUniverse reading, molecule readings, obstruction circuits, signature axes, analytic representations, coupling/cohesion readings, workflow risk readings, spectral analysis readings, design principle readings, operation deltas, path/homotopy/diagram readings, bounded judgements, LLM interpretation packet, evidence boundary, excluded readings, and non-conclusions.",
+                "ArchSig analysis packet owns AAT concept surfaces, architecture state, design pressure, change impact, architecture object projections, invariant family readings, LawUniverse reading, molecule readings, obstruction circuits, signature axes, analytic representations, coupling/cohesion readings, workflow risk readings, spectral analysis readings, spectral mode readings, design principle readings, operation deltas, path/homotopy/diagram readings, bounded judgements, LLM interpretation packet, evidence boundary, excluded readings, and non-conclusions.",
                 vec![
                     "Analysis packet is not a Lean theorem proof, global architecture truth, extractor completeness proof, quality score, or automatic safe repair.",
                     "Analysis packet compatibility is a JSON contract, not a semantic-preservation theorem.",
@@ -98,7 +98,7 @@ pub fn static_schema_version_catalog() -> SchemaVersionCatalogV0 {
                 "primary",
                 "LLM Atom ArchMap",
                 vec!["docs/tool/archsig_analysis_packet.md"],
-                "Validation checks identity, ArchMap and LawPolicy refs, workflow risk readings, spectral analysis readings, law-relative obstruction links, signature and flatness boundaries, repair candidate guardrails, LLM interpretation surface, and non-conclusions without computing the analysis engine.",
+                "Validation checks identity, ArchMap and LawPolicy refs, workflow risk readings, spectral analysis readings, spectral mode readings, law-relative obstruction links, signature and flatness boundaries, repair candidate guardrails, LLM interpretation surface, and non-conclusions without computing the analysis engine.",
                 vec![
                     "Validation pass does not imply architecture lawfulness, source completeness, flatness proof, or repair safety.",
                     "Validation report compatibility is not a semantic-preservation theorem.",

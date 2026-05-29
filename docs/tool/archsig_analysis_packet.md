@@ -16,9 +16,9 @@ ArchSig Analysis Packet
   records AAT concept surfaces, architecture state, design pressure, change
   impact, molecule readings, obstruction circuits, signature axes, analytic
   representations, workflow risk readings, spectral analysis readings, design
-  principle readings, bounded judgements, repair operation candidates, operation
-  deltas, path / homotopy / diagram readings, child-level evidence boundaries,
-  and an LLM interpretation packet.
+  principle readings, spectral mode readings, bounded judgements, repair
+  operation candidates, operation deltas, path / homotopy / diagram readings,
+  child-level evidence boundaries, and an LLM interpretation packet.
 ```
 
 ## Responsibility
@@ -46,6 +46,7 @@ The implemented schema records:
 - `couplingCohesionReadings`
 - `workflowRiskReadings`
 - `spectralAnalysisReadings`
+- `spectralModeReadings`
 - `designPrincipleReadings`
 - `flatnessReading`
 - `staticRuntimeSemanticLayerSplit`
@@ -63,9 +64,10 @@ The implemented schema records:
 
 Packet validation checks identity, ArchMap / interpretation profile references,
 AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
-readings, spectral analysis readings, design principle readings, law-relative
-obstruction links, signature / flatness references, repair candidate guardrails,
-LLM interpretation notes, evidence boundary, and required non-conclusions.
+readings, spectral analysis readings, spectral mode readings, design principle
+readings, law-relative obstruction links, signature / flatness references,
+repair candidate guardrails, LLM interpretation notes, evidence boundary, and
+required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -117,6 +119,9 @@ The builder:
   matrix shape, entry rule, bounded values, dominant components, coverage
   boundary, and zero-reflecting boundary. They are spectral proxies for review,
   not exact eigenvalue theorems or quality scores.
+- spectral mode readings lift spectral analysis into bounded mode proxies:
+  dominant/residual gap, localization, matrix density, decomposability, and
+  repair perturbation. They are review modes, not exact eigenvector theorems.
 - analytic representations include weighted adjacency, walk count, reachable
   cone size, nilpotence boundary, selected subgraph spectrum, propagation depth,
   spectral radius, curvature valuation, state algebra boundary, and

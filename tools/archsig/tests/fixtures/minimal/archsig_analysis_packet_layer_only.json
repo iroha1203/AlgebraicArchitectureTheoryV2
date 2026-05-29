@@ -1299,6 +1299,186 @@
       ]
     }
   ],
+  "spectralModeReadings": [
+    {
+      "spectralModeId": "spectral-mode:spectral-workflow-risk-axis-pressure",
+      "sourceSpectralReadingRef": "spectral:workflow-risk-axis-pressure",
+      "representationFamily": "workflowRiskAxisPressureMatrix",
+      "status": "needsReview",
+      "modeKind": "distributedPressureMode",
+      "modeComponents": [
+        {
+          "componentRef": "molecule:user-request-responsibility",
+          "componentKind": "workflow",
+          "weight": "19",
+          "role": "primaryDominantComponent",
+          "reading": "dominant row pressure in the workflow-by-axis matrix"
+        },
+        {
+          "componentRef": "sourceBackedDomainCohesion",
+          "componentKind": "workflowRiskAxis",
+          "weight": "6",
+          "role": "coupledDominantComponent",
+          "reading": "dominant column pressure accumulated across workflows"
+        }
+      ],
+      "spectralGapProxy": {
+        "name": "dominantResidualGapProxy",
+        "value": "9.434",
+        "interpretation": "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem"
+      },
+      "localizationIndex": {
+        "name": "dominantFrobeniusLocalization",
+        "value": "1.000",
+        "interpretation": "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized"
+      },
+      "matrixDensity": {
+        "name": "nonzeroMatrixDensity",
+        "value": "1.000",
+        "interpretation": "nonzero entries divided by finite matrix capacity; higher means more distributed coupling"
+      },
+      "decomposabilityReading": "mode is delocalized or dense; treat the concern as architecture-wide coupling before attempting local repair",
+      "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
+      "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
+      "recommendedNextAction": "start review from the dominant workflow and dominant risk axis, then verify coverage gaps",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    },
+    {
+      "spectralModeId": "spectral-mode:spectral-molecule-atom-overlap-coupling",
+      "sourceSpectralReadingRef": "spectral:molecule-atom-overlap-coupling",
+      "representationFamily": "moleculeAtomOverlapCouplingMatrix",
+      "status": "needsReview",
+      "modeKind": "delocalizedCouplingMode",
+      "modeComponents": [
+        {
+          "componentRef": "molecule:user-request-responsibility",
+          "componentKind": "molecule",
+          "weight": "4",
+          "role": "primaryDominantComponent",
+          "reading": "dominant molecule by atom/family overlap mass"
+        }
+      ],
+      "spectralGapProxy": {
+        "name": "dominantResidualGapProxy",
+        "value": "4.000",
+        "interpretation": "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem"
+      },
+      "localizationIndex": {
+        "name": "dominantFrobeniusLocalization",
+        "value": "1.000",
+        "interpretation": "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized"
+      },
+      "matrixDensity": {
+        "name": "nonzeroMatrixDensity",
+        "value": "1.000",
+        "interpretation": "nonzero entries divided by finite matrix capacity; higher means more distributed coupling"
+      },
+      "decomposabilityReading": "mode is delocalized or dense; treat the concern as architecture-wide coupling before attempting local repair",
+      "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
+      "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
+      "recommendedNextAction": "map shared atom families across the dense molecule cluster before splitting boundaries",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    },
+    {
+      "spectralModeId": "spectral-mode:spectral-obstruction-axis-curvature",
+      "sourceSpectralReadingRef": "spectral:obstruction-axis-curvature",
+      "representationFamily": "obstructionAxisCurvatureMatrix",
+      "status": "nonConclusion",
+      "modeKind": "curvatureMode",
+      "modeComponents": [],
+      "spectralGapProxy": {
+        "name": "dominantResidualGapProxy",
+        "value": "0.000",
+        "interpretation": "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem"
+      },
+      "localizationIndex": {
+        "name": "dominantFrobeniusLocalization",
+        "value": "0.000",
+        "interpretation": "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized"
+      },
+      "matrixDensity": {
+        "name": "nonzeroMatrixDensity",
+        "value": "0.000",
+        "interpretation": "nonzero entries divided by finite matrix capacity; higher means more distributed coupling"
+      },
+      "decomposabilityReading": "mode is delocalized or dense; treat the concern as architecture-wide coupling before attempting local repair",
+      "repairPerturbationReading": "not an operation transition matrix; use this mode to choose review focus before evaluating repair perturbations",
+      "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
+      "recommendedNextAction": "review whether repeated obstruction-axis curvature is local, transferred, or a law-policy coverage gap",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    },
+    {
+      "spectralModeId": "spectral-mode:spectral-operation-signature-delta",
+      "sourceSpectralReadingRef": "spectral:operation-signature-delta",
+      "representationFamily": "operationSignatureDeltaMatrix",
+      "status": "needsReview",
+      "modeKind": "broadPerturbationMode",
+      "modeComponents": [
+        {
+          "componentRef": "operation-delta:observe-before-repair",
+          "componentKind": "operationDelta",
+          "weight": "0",
+          "role": "primaryDominantComponent",
+          "reading": "dominant operation row by declared decreased axes"
+        },
+        {
+          "componentRef": "sig-axis:layer-violation",
+          "componentKind": "signatureAxis",
+          "weight": "1",
+          "role": "coupledDominantComponent",
+          "reading": "dominant signature axis touched by operation deltas"
+        }
+      ],
+      "spectralGapProxy": {
+        "name": "dominantResidualGapProxy",
+        "value": "1.000",
+        "interpretation": "dominant component magnitude minus residual Frobenius mass; bounded proxy, not an eigenvalue gap theorem"
+      },
+      "localizationIndex": {
+        "name": "dominantFrobeniusLocalization",
+        "value": "1.000",
+        "interpretation": "dominant component magnitude divided by Frobenius norm; higher means pressure is more localized"
+      },
+      "matrixDensity": {
+        "name": "nonzeroMatrixDensity",
+        "value": "1.000",
+        "interpretation": "nonzero entries divided by finite matrix capacity; higher means more distributed coupling"
+      },
+      "decomposabilityReading": "mode is delocalized or dense; treat the concern as architecture-wide coupling before attempting local repair",
+      "repairPerturbationReading": "candidate operations touch many signature axes; repair is likely to move complexity across axes",
+      "evidenceBoundary": "spectral mode is a bounded proxy computed from ArchSig finite representation summaries, not an exact eigenvector theorem",
+      "recommendedNextAction": "compare the perturbation mode against candidate repair preconditions before changing code",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
   "designPrincipleReadings": [
     {
       "principleId": "principle:informationhiding",
@@ -2053,6 +2233,12 @@
       "moleculeAtomOverlapCouplingMatrix upperBound=4.000 shape=1x1 (needsReview)",
       "obstructionAxisCurvatureMatrix upperBound=0.000 shape=0x1 (nonConclusion)",
       "operationSignatureDeltaMatrix upperBound=1.000 shape=1x1 (actionable)"
+    ],
+    "spectralModeSummary": [
+      "workflowRiskAxisPressureMatrix distributedPressureMode gap=9.434 localization=1.000 density=1.000 (needsReview)",
+      "moleculeAtomOverlapCouplingMatrix delocalizedCouplingMode gap=4.000 localization=1.000 density=1.000 (needsReview)",
+      "obstructionAxisCurvatureMatrix curvatureMode gap=0.000 localization=0.000 density=0.000 (nonConclusion)",
+      "operationSignatureDeltaMatrix broadPerturbationMode gap=1.000 localization=1.000 density=1.000 (needsReview)"
     ],
     "repairOperationSummary": [],
     "complexityTransferNotes": [

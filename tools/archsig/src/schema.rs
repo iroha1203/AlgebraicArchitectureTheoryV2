@@ -617,6 +617,7 @@ pub struct ArchSigAnalysisPacketV0 {
     pub coupling_cohesion_readings: Vec<ArchSigCouplingCohesionReadingV0>,
     pub workflow_risk_readings: Vec<ArchSigWorkflowRiskReadingV0>,
     pub spectral_analysis_readings: Vec<ArchSigSpectralAnalysisReadingV0>,
+    pub spectral_mode_readings: Vec<ArchSigSpectralModeReadingV0>,
     pub design_principle_readings: Vec<ArchSigDesignPrincipleReadingV0>,
     pub flatness_reading: ArchSigFlatnessReadingV0,
     pub static_runtime_semantic_layer_split: ArchSigLayerSplitV0,
@@ -939,6 +940,35 @@ pub struct ArchSigSpectralDominantComponentV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigSpectralModeReadingV0 {
+    pub spectral_mode_id: String,
+    pub source_spectral_reading_ref: String,
+    pub representation_family: String,
+    pub status: String,
+    pub mode_kind: String,
+    pub mode_components: Vec<ArchSigSpectralModeComponentV0>,
+    pub spectral_gap_proxy: ArchSigSpectralValueV0,
+    pub localization_index: ArchSigSpectralValueV0,
+    pub matrix_density: ArchSigSpectralValueV0,
+    pub decomposability_reading: String,
+    pub repair_perturbation_reading: String,
+    pub evidence_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigSpectralModeComponentV0 {
+    pub component_ref: String,
+    pub component_kind: String,
+    pub weight: String,
+    pub role: String,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigDesignPrincipleReadingV0 {
     pub principle_id: String,
     pub principle: String,
@@ -1059,6 +1089,7 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub signature_axes_summary: Vec<String>,
     pub analytic_readings_summary: Vec<String>,
     pub spectral_readings_summary: Vec<String>,
+    pub spectral_mode_summary: Vec<String>,
     pub repair_operation_summary: Vec<String>,
     pub complexity_transfer_notes: Vec<String>,
     pub coverage_gaps_and_exactness_blockers: Vec<String>,
@@ -1098,6 +1129,7 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub coupling_cohesion_reading_count: usize,
     pub workflow_risk_reading_count: usize,
     pub spectral_analysis_reading_count: usize,
+    pub spectral_mode_reading_count: usize,
     pub design_principle_reading_count: usize,
     pub repair_operation_candidate_count: usize,
     pub operation_delta_count: usize,
