@@ -50,6 +50,13 @@ The implemented schema records:
 - `spectralModeReadings`
 - `spectralDrilldownReadings`
 - `transferBridgeReadings`
+- `representationStrengthReadings`
+- `localCurvatureDiagramReadings`
+- `threeLayerFlatnessReadings`
+- `observationProjectionReadings`
+- `stateTransitionAlgebraReadings`
+- `operationInvariantGaloisReadings`
+- `splitReadinessReadings`
 - `designPrincipleReadings`
 - `flatnessReading`
 - `staticRuntimeSemanticLayerSplit`
@@ -69,9 +76,9 @@ Packet validation checks identity, ArchMap / interpretation profile references,
 AAT concept coverage, bounded judgement statuses, analytic axes, workflow risk
 readings, spectral analysis readings, spectral mode readings, design principle
 readings, spectral drilldown readings, transfer bridge readings and bridge-edge
-source refs, law-relative obstruction links, signature / flatness references,
-repair candidate guardrails, LLM interpretation notes, evidence boundary, and
-required non-conclusions.
+source refs, AAT structural state readings, law-relative obstruction links,
+signature / flatness references, repair candidate guardrails, LLM interpretation
+notes, evidence boundary, and required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -136,6 +143,11 @@ The builder:
   family-supporting atom refs, source refs, explicit-contract / implicit-
   dependency reading, and a recommended cut kind: interface, policy,
   transaction boundary, or anti-corruption layer.
+- AAT structural state readings expose representation strength, local curvature
+  diagrams, three-layer flatness, observation projection loss, state transition
+  algebra, operation / invariant Galois-style correspondence, and split
+  readiness. These readings describe the current architecture state; PR / diff
+  projection remains a FieldSig responsibility.
 - analytic representations include weighted adjacency, walk count, reachable
   cone size, nilpotence boundary, selected subgraph spectrum, propagation depth,
   spectral radius, curvature valuation, state algebra boundary, and

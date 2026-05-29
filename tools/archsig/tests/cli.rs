@@ -962,6 +962,96 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         }),
         "bridge edge breakdowns must carry molecule refs, source refs, dependency reading, and cut recommendation"
     );
+    for surface in [
+        "representationStrengthReadings",
+        "localCurvatureDiagramReadings",
+        "threeLayerFlatnessReadings",
+        "observationProjectionReadings",
+        "stateTransitionAlgebraReadings",
+        "operationInvariantGaloisReadings",
+        "splitReadinessReadings",
+    ] {
+        assert!(
+            json[surface]
+                .as_array()
+                .is_some_and(|items| !items.is_empty()),
+            "North Star packet must expose AAT structural surface {surface}"
+        );
+    }
+    assert!(
+        json["representationStrengthReadings"]
+            .as_array()
+            .expect("representation strength readings are array")
+            .iter()
+            .all(|reading| {
+                reading["sourceReadingRef"].as_str().is_some()
+                    && reading["representationFamily"].as_str().is_some()
+                    && reading["zeroReflecting"].as_str().is_some()
+                    && reading["obstructionReflecting"].as_str().is_some()
+                    && reading["requiredAssumptions"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["evidenceBoundary"].as_str().is_some()
+            }),
+        "representation strength readings must carry strength classes and assumptions"
+    );
+    assert!(
+        json["threeLayerFlatnessReadings"]
+            .as_array()
+            .expect("three-layer flatness readings are array")
+            .iter()
+            .all(|reading| {
+                reading["staticStatus"].as_str().is_some()
+                    && reading["runtimeStatus"].as_str().is_some()
+                    && reading["semanticStatus"].as_str().is_some()
+                    && reading["nonImplicationReading"].as_str().is_some()
+                    && reading["recommendedNextAction"].as_str().is_some()
+            }),
+        "three-layer flatness readings must carry static/runtime/semantic statuses"
+    );
+    assert!(
+        json["observationProjectionReadings"]
+            .as_array()
+            .expect("observation projection readings are array")
+            .iter()
+            .all(|reading| {
+                reading["observedAtomFamilies"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                    && reading["coarseProjectionRisks"]
+                        .as_array()
+                        .is_some_and(|items| !items.is_empty())
+                    && reading["evidenceBoundary"].as_str().is_some()
+            }),
+        "observation projection readings must carry observed families and projection risks"
+    );
+    assert!(
+        json["stateTransitionAlgebraReadings"]
+            .as_array()
+            .expect("state transition algebra readings are array")
+            .iter()
+            .all(|reading| {
+                reading["requiredRelations"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                    && reading["reading"].as_str().is_some()
+                    && reading["recommendedNextAction"].as_str().is_some()
+            }),
+        "state transition algebra readings must carry required transition relations"
+    );
+    assert!(
+        json["splitReadinessReadings"]
+            .as_array()
+            .expect("split readiness readings are array")
+            .iter()
+            .all(|reading| {
+                reading["moleculeRef"].as_str().is_some()
+                    && reading["status"].as_str().is_some()
+                    && reading["readinessScore"].as_i64().is_some()
+                    && reading["recommendedBoundaryOperation"].as_str().is_some()
+            }),
+        "split readiness readings must carry molecule refs, score, and boundary operation"
+    );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]
             .as_array()
