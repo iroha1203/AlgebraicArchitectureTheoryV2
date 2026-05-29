@@ -737,6 +737,27 @@ fn assert_north_star_packet_surfaces(json: &Value) {
             .any(|entry| entry["status"] == "actionable"),
         "bounded judgements must include actionable readings"
     );
+    let workflow_risks = json["workflowRiskReadings"]
+        .as_array()
+        .expect("workflow risk readings are array");
+    assert!(
+        !workflow_risks.is_empty(),
+        "North Star packet must expose workflow risk readings"
+    );
+    assert!(
+        workflow_risks.iter().all(|entry| {
+            entry["moleculeObservationRef"].as_str().is_some()
+                && entry["riskScore"].as_i64().is_some_and(|score| score >= 0)
+                && entry["topAxes"]
+                    .as_array()
+                    .is_some_and(|axes| !axes.is_empty())
+                && entry["reviewFocus"]
+                    .as_array()
+                    .is_some_and(|focus| !focus.is_empty())
+                && entry["evidenceBoundary"].as_str().is_some()
+        }),
+        "workflow risk readings must carry molecule refs, non-negative scores, axes, review focus, and evidence boundaries"
+    );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]
             .as_array()
