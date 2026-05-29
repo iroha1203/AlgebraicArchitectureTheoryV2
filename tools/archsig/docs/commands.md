@@ -44,6 +44,14 @@ are projected from `archsig-analysis-packet-v0`. They retain the
 `ArchMap + LawPolicy -> ArchSig analysis` boundary and do not use the older
 ArchMap projection rule as their source of truth.
 
+Standalone commands such as `air`, `validate-air`, `theorem-check`,
+`feature-report`, and `aat-observable-bundle` remain available as bounded
+projection / validation utilities for existing consumers. They are not the
+normal source-of-truth path. New review automation should call
+`llm-native-workflow`, or call `archsig-analysis` first and treat
+`archsig-analysis-packet-v0` as the source artifact before producing downstream
+review projections.
+
 The complete ArchSig-to-FieldSig transcript is fixed in
 [`docs/tool/llm_native_e2e_workflow.md`](../../../docs/tool/llm_native_e2e_workflow.md)
 and in the `llm-native ArchMap/ArchSig e2e` CI job. That E2E path verifies that
