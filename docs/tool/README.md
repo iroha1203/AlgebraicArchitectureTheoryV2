@@ -14,6 +14,8 @@ Current source-of-truth boundaries:
 - `concernHints` are review cues. They are not obstruction circuits, not law violations, and not theorem evidence.
 - Legacy ArchMap fields such as `homomorphism`, `mapItems`, `atomCandidates`, `moleculeCandidates`, and `obstructionCircuitCandidates` are compatibility-only when accepted. ArchMap validation reports them under `legacySchemaChecks`; new authoring should use the Atom observation fields above.
 - Lean / Python import-graph output is optional bounded adapter evidence, emitted explicitly by `archsig adapter-scan`; adapter artifacts retain `coverageBoundary`, `unsupportedConstructs`, `missingEvidence`, and `nonConclusions`.
+- `architecture-policy` and `law-violation-report` are adapter-evidence review surfaces over Sig0; they are not substitutes for `law-policy-v0` or `archsig-analysis-packet-v0`.
+- `organization-policy`, `policy-decision`, `pr-comment`, `baseline-suppression`, `pr-quality-analysis`, and `report-artifacts` are bounded review projections. They do not own merge approval, FieldSig governance, forecast correctness, calibration, or operational feedback.
 - ArchSig validation does not prove extractor completeness, semantic correctness, architecture lawfulness, global safety, certified universal atom truth, zero curvature, SFT forecast correctness, or Lean theorem discharge.
 - FieldSig / SFT forecast and governance surfaces are not owned by ArchSig. FieldSig consumes `archsig-analysis-packet-v0` as bounded local AAT state and projects obstruction circuits, signature axes, repair candidates, and coverage gaps into SFT input boundaries. It does not read raw ArchMap observations as forecast truth.
 
