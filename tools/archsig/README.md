@@ -50,6 +50,23 @@ instruction.
 Calling `archsig` without a subcommand intentionally fails. The old implicit
 scan-first path is no longer an ArchSig workflow.
 
+## Release Assets
+
+ArchSig release assets are built by `.github/workflows/archsig-release.yml` when
+a GitHub Release is published, or manually with `workflow_dispatch` for an
+existing tag. The workflow uploads:
+
+- `archsig-<tag>-linux-arm64.tar.gz`
+- `archsig-<tag>-linux-x86_64.tar.gz`
+- `archsig-<tag>-macos-universal.tar.gz`
+- `archsig-<tag>-windows-x86_64.zip`
+- `archsig-skills-<tag>.tar.gz`
+- `SHA256SUMS.txt`
+
+Each binary archive contains the `archsig` executable, the repository license,
+and the ArchSig README / command guide. The skills archive contains
+`tools/archsig/skills`.
+
 ## Docs
 
 - [Command Guide](docs/commands.md)
