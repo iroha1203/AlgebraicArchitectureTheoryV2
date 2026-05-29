@@ -1,20 +1,23 @@
 # ArchSig Analysis Packet
 
-`archsig-analysis-packet-v0` is the LLM-native ArchSig output artifact.
-It reads a source-grounded ArchMap together with one selected LawPolicy and
-records AAT-based, law-relative analysis.
+`archsig-analysis-packet-v0` is the North Star ArchSig output artifact.
+It reads a source-grounded ArchMap together with one selected interpretation
+profile and records AAT-based, bounded analysis for LLM and human review.
 
 ```text
 ArchMap
   records law-independent Atom observations.
 
-LawPolicy
+InterpretationProfile
   selects the LawUniverse, witness rules, signature axes, coverage, and exactness.
+  The current JSON artifact is still named law-policy-v0 for the profile input.
 
 ArchSig Analysis Packet
-  records molecule readings, obstruction circuits, signature axes, flatness
-  reading, repair operation candidates, child-level evidence boundaries, and
-  LLM notes.
+  records AAT concept surfaces, architecture state, design pressure, change
+  impact, molecule readings, obstruction circuits, signature axes, analytic
+  representations, design principle readings, bounded judgements, repair
+  operation candidates, operation deltas, path / homotopy / diagram readings,
+  child-level evidence boundaries, and an LLM interpretation packet.
 ```
 
 ## Responsibility
@@ -24,15 +27,30 @@ a single architecture quality score.
 
 The implemented schema records:
 
+- `interpretationProfileRef`
 - `selectedLawPolicyRef`
 - `archMapRef`
+- `architectureState`
+- `designPressure`
+- `changeImpact`
+- `aatConceptSurfaces`
 - `atomConfigurationSummary`
+- `architectureObjectProjections`
+- `invariantFamilyReadings`
+- `lawUniverseReading`
 - `moleculeReadings`
 - `obstructionCircuits`
 - `signatureAxes`
+- `analyticRepresentations`
+- `couplingCohesionReadings`
+- `designPrincipleReadings`
 - `flatnessReading`
 - `staticRuntimeSemanticLayerSplit`
 - `repairOperationCandidates`
+- `operationDeltas`
+- `pathHomotopyDiagramReadings`
+- `boundedJudgements`
+- `llmInterpretationPacket`
 - `evidenceBoundary`
 - `interpretationNotesForLLM`
 - `excludedReadings`
@@ -40,9 +58,11 @@ The implemented schema records:
 
 ## Validation Boundary
 
-Packet validation checks identity, ArchMap / LawPolicy references, law-relative
-obstruction links, signature / flatness references, repair candidate guardrails,
-LLM interpretation notes, evidence boundary, and required non-conclusions.
+Packet validation checks identity, ArchMap / interpretation profile references,
+AAT concept coverage, bounded judgement statuses, analytic axes, design
+principle readings, law-relative obstruction links, signature / flatness
+references, repair candidate guardrails, LLM interpretation notes, evidence
+boundary, and required non-conclusions.
 Each obstruction circuit, signature axis reading, and repair operation candidate
 must carry its own `missingEvidence` and `excludedReadings`. Packet-level
 `excludedReadings` does not stand in for child-record evidence boundaries.
@@ -55,6 +75,9 @@ Validation does not imply:
 - universal quality score
 - global flatness proof
 - automatic repair safety
+- source extraction completeness
+- merge approval
+- LLM output as architecture truth
 
 ## Current Fixture
 
@@ -71,15 +94,27 @@ records both `archsig-analysis-packet-v0` and
 
 The builder:
 
-- evaluates selected LawPolicy witness rules over ArchMap atom and semantic observations
+- evaluates selected interpretation-profile witness rules over ArchMap atom and semantic observations
 - uses `concernHints` only as auxiliary evidence
 - constructs obstruction circuits only as ArchSig outputs
 - values required signature axes from constructed obstruction circuits
 - preserves observation gaps as flatness blockers, not measured zero
+- emits AAT concept surfaces for Atom, Configuration, ArchitectureObject,
+  Invariant, LawUniverse, ObstructionCircuit, ArchitectureSignature, Operation,
+  Path, Homotopy, Diagram, and AnalyticRepresentation
+- emits architecture state, design pressure, change impact, bounded judgements,
+  LLM interpretation, analytic representation, semantic coupling/cohesion, and
+  design principle readings
+- analytic representations include weighted adjacency, walk count, reachable
+  cone size, nilpotence boundary, selected subgraph spectrum, propagation depth,
+  spectral radius, curvature valuation, state algebra boundary, and
+  zero-reflecting aggregate boundary
 - emits repair operation candidates with preserved invariants, preconditions,
   transfer risks, evidence boundaries, and non-conclusions
+- emits operation deltas and path / homotopy / diagram readings for repair
+  planning and review focus
 - fills child-level `missingEvidence` / `excludedReadings` from ArchMap
-  observation gaps, LawPolicy coverage and exactness assumptions, selected
+  observation gaps, interpretation-profile coverage and exactness assumptions, selected
   witness rules, and repair-candidate evidence limits
 
 ## Downstream Handoff

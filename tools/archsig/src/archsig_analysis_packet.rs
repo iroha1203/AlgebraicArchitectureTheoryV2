@@ -4,10 +4,16 @@ use crate::validation::{count_checks, duplicates, generic_validation_example, va
 use crate::{
     ARCHMAP_SCHEMA_VERSION, ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION,
     ARCHSIG_ANALYSIS_PACKET_VALIDATION_REPORT_SCHEMA_VERSION, ArchMapDocumentV0, ArchMapSourceRef,
-    ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0, ArchSigAnalysisPacketValidationInputV0,
-    ArchSigAnalysisPacketValidationReportV0, ArchSigAnalysisPacketValidationSummaryV0,
-    ArchSigAtomConfigurationSummaryV0, ArchSigFlatnessReadingV0, ArchSigLayerSplitV0,
-    ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigRepairOperationCandidateV0,
+    ArchSigAatConceptSurfaceV0, ArchSigAnalysisArtifactRefV0, ArchSigAnalysisPacketV0,
+    ArchSigAnalysisPacketValidationInputV0, ArchSigAnalysisPacketValidationReportV0,
+    ArchSigAnalysisPacketValidationSummaryV0, ArchSigAnalyticRepresentationV0,
+    ArchSigArchitectureObjectProjectionV0, ArchSigArchitectureStateV0,
+    ArchSigAtomConfigurationSummaryV0, ArchSigBoundedJudgementV0, ArchSigChangeImpactReadingV0,
+    ArchSigCouplingCohesionReadingV0, ArchSigDesignPressureReadingV0,
+    ArchSigDesignPrincipleReadingV0, ArchSigFlatnessReadingV0, ArchSigInvariantFamilyReadingV0,
+    ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
+    ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigOperationDeltaReadingV0,
+    ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairOperationCandidateV0,
     ArchSigSignatureAxisReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
     LawPolicyObstructionCircuitDefinitionV0, LawPolicySignatureAxisDefinitionV0,
     LawPolicyWitnessRuleV0, ValidationCheck, ValidationExample,
@@ -22,264 +28,20 @@ const REQUIRED_NON_CONCLUSIONS: [&str; 6] = [
     "repair operation candidates are not automatic safe refactorings",
 ];
 
-pub fn static_archsig_analysis_packet() -> ArchSigAnalysisPacketV0 {
-    ArchSigAnalysisPacketV0 {
-        schema_version: ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION.to_string(),
-        analysis_id: "archsig-analysis-fixture".to_string(),
-        generated_at: "2026-05-23T00:00:00Z".to_string(),
-        arch_map_ref: artifact_ref(
-            "fixture-archmap-atom-observation",
-            "archmap",
-            ARCHMAP_SCHEMA_VERSION,
-            Some("tools/archsig/tests/fixtures/minimal/archmap.json"),
-        ),
-        selected_law_policy_ref: artifact_ref(
-            "llm-native-aat-law-policy-fixture",
-            "law-policy",
-            LAW_POLICY_SCHEMA_VERSION,
-            Some("tools/archsig/tests/fixtures/minimal/law_policy.json"),
-        ),
-        atom_configuration_summary: ArchSigAtomConfigurationSummaryV0 {
-            atom_observation_count: 4,
-            molecule_observation_count: 1,
-            semantic_observation_count: 1,
-            observation_gap_count: 1,
-            concern_hint_count: 1,
-            configuration_boundary:
-                "counts are read from one bounded ArchMap fixture, not complete architecture enumeration"
-                    .to_string(),
-            coverage_summary: vec![
-                "static source atoms observed".to_string(),
-                "semantic contract observation observed".to_string(),
-                "runtime trace remains unavailable".to_string(),
-            ],
-            source_refs: strings(&[
-                "atom:component:route-users",
-                "atom:component:service-user",
-                "atom:relation:route-service",
-                "atom:contract:create-user",
-                "gap-runtime-user-db-trace",
-            ]),
-            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-        },
-        molecule_readings: vec![ArchSigMoleculeReadingV0 {
-            molecule_reading_id: "molecule-reading:user-request-responsibility".to_string(),
-            molecule_observation_ref: "molecule:user-request-responsibility".to_string(),
-            law_refs: vec!["law:semantic-contract-alignment".to_string()],
-            atom_observation_refs: strings(&[
-                "atom:relation:route-service",
-                "atom:contract:create-user",
-            ]),
-            reading:
-                "observed route/service/contract atoms form one operation-responsibility molecule"
-                    .to_string(),
-            evidence_summary:
-                "molecule reading uses ArchMap atom observations and the selected semantic-contract law"
-                    .to_string(),
-            evidence_boundary:
-                "law-relative reading over observed atoms; not a primitive atom and not theorem evidence"
-                    .to_string(),
-            source_refs: strings(&["doc-architecture", "test-user-contract"]),
-            interpretation_notes_for_llm: vec![
-                "Explain this as a responsibility grouping over observed atoms.".to_string(),
-            ],
-            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-        }],
-        obstruction_circuits: vec![ArchSigObstructionCircuitV0 {
-            obstruction_circuit_id: "obstruction:semantic-contract-mismatch:create-user"
-                .to_string(),
-            law_ref: "law:semantic-contract-alignment".to_string(),
-            witness_rule_ref: "witness:semantic-contract-mismatch".to_string(),
-            circuit_kind: "SemanticMismatchCircuit".to_string(),
-            atom_observation_refs: strings(&[
-                "atom:relation:route-service",
-                "atom:contract:create-user",
-            ]),
-            molecule_reading_refs: vec![
-                "molecule-reading:user-request-responsibility".to_string(),
-            ],
-            concern_hint_refs: vec!["concern:missing-compensation".to_string()],
-            signature_axis_refs: vec!["sig-axis:semantic-inconsistency".to_string()],
-            minimality_reading:
-                "minimal within the selected operation molecule and semantic contract witness rule"
-                    .to_string(),
-            evidence_summary:
-                "constructed from the concern hint, contract atom, relation atom, and semantic molecule reading"
-                    .to_string(),
-            evidence_boundary:
-                "computed ArchSig witness under selected LawPolicy; not an ArchMap observation"
-                    .to_string(),
-            missing_evidence: vec![
-                "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
-                    .to_string(),
-                "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection"
-                    .to_string(),
-            ],
-            excluded_readings: vec![
-                "single architecture quality score".to_string(),
-                "global architecture lawfulness".to_string(),
-                "zero readings are exact only for observed atoms and declared coverage requirements"
-                    .to_string(),
-            ],
-            interpretation_notes_for_llm: vec![
-                "Describe the obstruction as law-relative, not as a universal architecture defect."
-                    .to_string(),
-            ],
-            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-        }],
-        signature_axes: vec![
-            ArchSigSignatureAxisReadingV0 {
-                signature_axis_id: "sig-axis:layer-violation".to_string(),
-                law_ref: "law:layer-respecting".to_string(),
-                axis_ref: "axis:layer-violation".to_string(),
-                value_type: "nat".to_string(),
-                value: 0,
-                zero_reading:
-                    "zero means no selected layer violation witness was constructed under declared coverage"
-                        .to_string(),
-                coverage_status: "covered-for-selected-static-atoms".to_string(),
-                exactness_assumptions: vec![
-                    "selected layer law observes only declared route/service relation atoms".to_string(),
-                ],
-                evidence_summary:
-                    "no BoundaryLeakCircuit witness was constructed from the fixture atoms"
-                        .to_string(),
-                source_refs: strings(&["atom:relation:route-service"]),
-                missing_evidence: vec![
-                    "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
-                        .to_string(),
-                    "coverage:layer-atoms: report observation gap and block signature-zero reflection"
-                        .to_string(),
-                ],
-                excluded_readings: vec![
-                    "global architecture lawfulness".to_string(),
-                    "automatic repair safety".to_string(),
-                    "zero readings are exact only for observed atoms and declared coverage requirements"
-                        .to_string(),
-                ],
-                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-            },
-            ArchSigSignatureAxisReadingV0 {
-                signature_axis_id: "sig-axis:semantic-inconsistency".to_string(),
-                law_ref: "law:semantic-contract-alignment".to_string(),
-                axis_ref: "axis:semantic-inconsistency".to_string(),
-                value_type: "nat".to_string(),
-                value: 1,
-                zero_reading:
-                    "nonzero means one selected semantic mismatch witness was constructed"
-                        .to_string(),
-                coverage_status: "runtime-gap-blocked".to_string(),
-                exactness_assumptions: vec![
-                    "runtime trace gap blocks global zero reflection".to_string(),
-                ],
-                evidence_summary:
-                    "one SemanticMismatchCircuit witness is present under the selected LawPolicy"
-                        .to_string(),
-                source_refs: strings(&[
-                    "atom:contract:create-user",
-                    "concern:missing-compensation",
-                ]),
-                missing_evidence: vec![
-                    "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
-                        .to_string(),
-                    "coverage:semantic-contract-atoms: report observation gap and block signature-zero reflection"
-                        .to_string(),
-                ],
-                excluded_readings: vec![
-                    "single architecture quality score".to_string(),
-                    "global architecture lawfulness".to_string(),
-                    "zero readings are exact only for observed atoms and declared coverage requirements"
-                        .to_string(),
-                ],
-                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-            },
-        ],
-        flatness_reading: ArchSigFlatnessReadingV0 {
-            reading_id: "flatness:selected-law-policy".to_string(),
-            selected_law_policy_ref: "llm-native-aat-law-policy-fixture".to_string(),
-            status: "nonflatUnderSelectedPolicy".to_string(),
-            zero_signature_axis_refs: vec!["sig-axis:layer-violation".to_string()],
-            nonzero_signature_axis_refs: vec!["sig-axis:semantic-inconsistency".to_string()],
-            blocked_by_coverage_gaps: vec!["gap-runtime-user-db-trace".to_string()],
-            evidence_boundary:
-                "flatness is read from selected signature axes; coverage gaps block global zero claims"
-                    .to_string(),
-            interpretation_notes_for_llm: vec![
-                "Report this as selected-policy non-flatness, not global architecture quality."
-                    .to_string(),
-            ],
-            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-        },
-        static_runtime_semantic_layer_split: ArchSigLayerSplitV0 {
-            static_observation_refs: strings(&[
-                "atom:component:route-users",
-                "atom:component:service-user",
-                "atom:relation:route-service",
-            ]),
-            runtime_observation_refs: vec!["gap-runtime-user-db-trace".to_string()],
-            semantic_observation_refs: strings(&[
-                "atom:contract:create-user",
-                "semantic:create-user-flow",
-            ]),
-            split_boundary:
-                "runtime layer is gap-preserved and must not be rounded into measured zero"
-                    .to_string(),
-            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-        },
-        repair_operation_candidates: vec![ArchSigRepairOperationCandidateV0 {
-            repair_operation_candidate_id: "repair:add-compensation-path".to_string(),
-            operation_kind: "add-compensation-operation".to_string(),
-            target_obstruction_refs: vec![
-                "obstruction:semantic-contract-mismatch:create-user".to_string(),
-            ],
-            preserved_invariants: vec![
-                "preserve route/service dependency direction".to_string(),
-                "preserve create-user contract visibility".to_string(),
-            ],
-            preconditions: vec![
-                "identify authoritative compensation owner".to_string(),
-                "supply runtime trace evidence before claiming global zero".to_string(),
-            ],
-            expected_signature_axis_effects: vec![
-                "decrease sig-axis:semantic-inconsistency if compensation semantics are observed"
-                    .to_string(),
-            ],
-            transfer_risks: vec![
-                "may transfer complexity into runtime retry or idempotency layer".to_string(),
-            ],
-            evidence_boundary:
-                "repair candidate is an operation hypothesis over the selected packet, not an automatic patch"
-                    .to_string(),
-            missing_evidence: vec![
-                "gap-runtime-user-db-trace: runtime trace was requested but not supplied"
-                    .to_string(),
-                "implementation patch and verification evidence are not supplied by ArchSig analysis"
-                    .to_string(),
-            ],
-            excluded_readings: vec![
-                "automatic repair safety".to_string(),
-                "causal forecast correctness".to_string(),
-                "global architecture lawfulness".to_string(),
-            ],
-            interpretation_notes_for_llm: vec![
-                "Explain preserved invariants before proposing implementation work.".to_string(),
-            ],
-            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-        }],
-        evidence_boundary:
-            "packet is computed from one ArchMap fixture and one selected LawPolicy fixture"
-                .to_string(),
-        interpretation_notes_for_llm: vec![
-            "Lead with selected LawPolicy scope and evidence gaps.".to_string(),
-            "Explain each nonzero signature axis with source refs and non-conclusions.".to_string(),
-        ],
-        excluded_readings: vec![
-            "single architecture quality score".to_string(),
-            "global architecture lawfulness".to_string(),
-            "automatic repair safety".to_string(),
-        ],
-        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
-    }
+#[cfg(test)]
+fn static_archsig_analysis_packet() -> ArchSigAnalysisPacketV0 {
+    let archmap: ArchMapDocumentV0 =
+        serde_json::from_str(include_str!("../tests/fixtures/minimal/archmap.json"))
+            .expect("static ArchMap fixture parses");
+    let law_policy: LawPolicyDocumentV0 =
+        serde_json::from_str(include_str!("../tests/fixtures/minimal/law_policy.json"))
+            .expect("static LawPolicy fixture parses");
+    build_archsig_analysis_packet(
+        &archmap,
+        &law_policy,
+        Some("tools/archsig/tests/fixtures/minimal/archmap.json"),
+        Some("tools/archsig/tests/fixtures/minimal/law_policy.json"),
+    )
 }
 
 pub fn build_archsig_analysis_packet(
@@ -288,12 +50,66 @@ pub fn build_archsig_analysis_packet(
     archmap_path: Option<&str>,
     law_policy_path: Option<&str>,
 ) -> ArchSigAnalysisPacketV0 {
+    let interpretation_profile_ref = artifact_ref(
+        &law_policy.law_policy_id,
+        "interpretation-profile",
+        &law_policy.schema_version,
+        law_policy_path,
+    );
     let molecule_readings = build_molecule_readings(archmap, law_policy);
     let obstruction_circuits = build_obstruction_circuits(archmap, law_policy, &molecule_readings);
     let signature_axes = build_signature_axes(archmap, law_policy, &obstruction_circuits);
     let flatness_reading = build_flatness_reading(archmap, law_policy, &signature_axes);
     let repair_operation_candidates =
         build_repair_candidates(archmap, &obstruction_circuits, &signature_axes);
+    let architecture_object_projections = build_architecture_object_projections(archmap);
+    let invariant_family_readings =
+        build_invariant_family_readings(archmap, law_policy, &obstruction_circuits);
+    let law_universe_reading = build_law_universe_reading(law_policy);
+    let analytic_representations =
+        build_analytic_representations(archmap, &signature_axes, &obstruction_circuits);
+    let coupling_cohesion_readings = build_coupling_cohesion_readings(archmap);
+    let design_principle_readings = build_design_principle_readings(
+        archmap,
+        &invariant_family_readings,
+        &obstruction_circuits,
+        &repair_operation_candidates,
+    );
+    let operation_deltas =
+        build_operation_deltas(archmap, &repair_operation_candidates, &signature_axes);
+    let path_homotopy_diagram_readings =
+        build_path_homotopy_diagram_readings(archmap, &molecule_readings, &obstruction_circuits);
+    let bounded_judgements = build_bounded_judgements(
+        archmap,
+        &obstruction_circuits,
+        &signature_axes,
+        &design_principle_readings,
+    );
+    let architecture_state =
+        build_architecture_state(archmap, &signature_axes, &invariant_family_readings);
+    let design_pressure = build_design_pressure(archmap, &obstruction_circuits, &signature_axes);
+    let change_impact = build_change_impact(
+        &repair_operation_candidates,
+        &operation_deltas,
+        &signature_axes,
+    );
+    let aat_concept_surfaces = build_aat_concept_surfaces(
+        archmap,
+        law_policy,
+        &obstruction_circuits,
+        &signature_axes,
+        &repair_operation_candidates,
+        &analytic_representations,
+    );
+    let llm_interpretation_packet = build_llm_interpretation_packet(
+        archmap,
+        &architecture_state,
+        &design_pressure,
+        &signature_axes,
+        &analytic_representations,
+        &repair_operation_candidates,
+        &bounded_judgements,
+    );
 
     ArchSigAnalysisPacketV0 {
         schema_version: ARCHSIG_ANALYSIS_PACKET_SCHEMA_VERSION.to_string(),
@@ -308,21 +124,36 @@ pub fn build_archsig_analysis_packet(
             &archmap.schema_version,
             archmap_path,
         ),
+        interpretation_profile_ref,
         selected_law_policy_ref: artifact_ref(
             &law_policy.law_policy_id,
             "law-policy",
             &law_policy.schema_version,
             law_policy_path,
         ),
+        architecture_state,
+        design_pressure,
+        change_impact,
+        aat_concept_surfaces,
         atom_configuration_summary: build_atom_configuration_summary(archmap),
+        architecture_object_projections,
+        invariant_family_readings,
+        law_universe_reading,
         molecule_readings,
         obstruction_circuits,
         signature_axes,
+        analytic_representations,
+        coupling_cohesion_readings,
+        design_principle_readings,
         flatness_reading,
         static_runtime_semantic_layer_split: build_layer_split(archmap),
         repair_operation_candidates,
+        operation_deltas,
+        path_homotopy_diagram_readings,
+        bounded_judgements,
+        llm_interpretation_packet,
         evidence_boundary: format!(
-            "computed from ArchMap {} and selected LawPolicy {}; concernHints are auxiliary cues only",
+            "computed from ArchMap {} and selected interpretation profile {}; concernHints are auxiliary cues only",
             archmap.map_id, law_policy.law_policy_id
         ),
         interpretation_notes_for_llm: vec![
@@ -478,6 +309,39 @@ fn build_signature_axes(
             } else {
                 "coverage-gap-preserved"
             };
+            let mut source_refs = obstruction_circuits
+                .iter()
+                .filter(|circuit| {
+                    circuit
+                        .signature_axis_refs
+                        .contains(&definition.signature_axis_id)
+                })
+                .flat_map(|circuit| circuit.atom_observation_refs.clone())
+                .collect::<Vec<_>>();
+            if source_refs.is_empty() {
+                source_refs = archmap
+                    .atom_observations
+                    .iter()
+                    .filter(|atom| {
+                        law_policy
+                            .selected_laws
+                            .iter()
+                            .filter(|law| law.law_id == definition.law_ref)
+                            .any(|law| {
+                                law.applies_to_atom_families
+                                    .iter()
+                                    .any(|family| family_matches(&atom.atom_family, family))
+                            })
+                    })
+                    .map(|atom| atom.atom_observation_id.clone())
+                    .collect();
+            }
+            if source_refs.is_empty() {
+                source_refs.push(format!(
+                    "{}: no direct source refs under selected coverage",
+                    definition.signature_axis_id
+                ));
+            }
             ArchSigSignatureAxisReadingV0 {
                 signature_axis_id: definition.signature_axis_id.clone(),
                 law_ref: definition.law_ref.clone(),
@@ -501,15 +365,7 @@ fn build_signature_axes(
                     "{} obstruction circuit(s) contribute to {}",
                     value, definition.signature_axis_id
                 ),
-                source_refs: obstruction_circuits
-                    .iter()
-                    .filter(|circuit| {
-                        circuit
-                            .signature_axis_refs
-                            .contains(&definition.signature_axis_id)
-                    })
-                    .flat_map(|circuit| circuit.atom_observation_refs.clone())
-                    .collect(),
+                source_refs,
                 missing_evidence: signature_axis_missing_evidence(archmap, law_policy, definition),
                 excluded_readings: signature_axis_excluded_readings(law_policy, definition),
                 non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
@@ -595,6 +451,1114 @@ fn build_layer_split(archmap: &ArchMapDocumentV0) -> ArchSigLayerSplitV0 {
     }
 }
 
+fn build_architecture_state(
+    archmap: &ArchMapDocumentV0,
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    invariant_readings: &[ArchSigInvariantFamilyReadingV0],
+) -> ArchSigArchitectureStateV0 {
+    ArchSigArchitectureStateV0 {
+        state_id: format!("architecture-state:{}", stable_id(&archmap.architecture_id)),
+        reading: format!(
+            "{} is represented as {} atom observations, {} molecules, {} semantic observations, and {} preserved observation gaps",
+            archmap.architecture_id,
+            archmap.atom_observations.len(),
+            archmap.molecule_observations.len(),
+            archmap.semantic_observations.len(),
+            archmap.observation_gaps.len()
+        ),
+        atom_family_refs: unique_strings(
+            archmap
+                .atom_observations
+                .iter()
+                .map(|atom| atom.atom_family.clone()),
+        ),
+        molecule_refs: archmap
+            .molecule_observations
+            .iter()
+            .map(|molecule| molecule.molecule_observation_id.clone())
+            .collect(),
+        workflow_refs: archmap
+            .semantic_observations
+            .iter()
+            .map(|semantic| semantic.semantic_observation_id.clone())
+            .collect(),
+        boundary_refs: archmap
+            .observation_gaps
+            .iter()
+            .map(|gap| gap.gap_id.clone())
+            .collect(),
+        invariant_refs: invariant_readings
+            .iter()
+            .map(|reading| reading.invariant_id.clone())
+            .collect(),
+        signature_axis_refs: signature_axes
+            .iter()
+            .map(|axis| axis.signature_axis_id.clone())
+            .collect(),
+        coverage_boundary:
+            "state is an ArchMap-relative architecture state, not a complete source reconstruction"
+                .to_string(),
+        recommended_next_action:
+            "review nonzero axes, stressed principles, and preserved observation gaps before planning repair"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_design_pressure(
+    archmap: &ArchMapDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> Vec<ArchSigDesignPressureReadingV0> {
+    let obstruction_refs = obstruction_circuits
+        .iter()
+        .map(|circuit| circuit.obstruction_circuit_id.clone())
+        .collect::<Vec<_>>();
+    let signature_axis_refs = signature_axes
+        .iter()
+        .filter(|axis| axis.value != 0)
+        .map(|axis| axis.signature_axis_id.clone())
+        .collect::<Vec<_>>();
+    vec![ArchSigDesignPressureReadingV0 {
+        pressure_id: "design-pressure:selected-atom-configuration".to_string(),
+        status: if obstruction_refs.is_empty() {
+            "needsReview"
+        } else {
+            "actionable"
+        }
+        .to_string(),
+        reading: format!(
+            "{} selected obstruction circuit(s) and {} coverage gap(s) define the current pressure surface",
+            obstruction_refs.len(),
+            archmap.observation_gaps.len()
+        ),
+        atom_configuration_refs: archmap
+            .atom_observations
+            .iter()
+            .map(|atom| atom.atom_observation_id.clone())
+            .collect(),
+        obstruction_refs,
+        signature_axis_refs,
+        coverage_boundary:
+            "pressure is relative to the observed finite Atom configuration and selected profile"
+                .to_string(),
+        recommended_next_action:
+            "use bounded judgements to decide whether to inspect source refs, add evidence, or plan repair"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_change_impact(
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> ArchSigChangeImpactReadingV0 {
+    ArchSigChangeImpactReadingV0 {
+        impact_id: "change-impact:selected-repair-operations".to_string(),
+        operation_scope: "repair, extension, migration, and refactor operations over observed ArchMap atoms".to_string(),
+        signature_delta_summary: operation_deltas
+            .iter()
+            .flat_map(|delta| delta.signature_delta.clone())
+            .collect(),
+        affected_boundaries: signature_axes
+            .iter()
+            .map(|axis| format!("{}: {}", axis.signature_axis_id, axis.coverage_status))
+            .collect(),
+        complexity_transfer_notes: repair_candidates
+            .iter()
+            .flat_map(|candidate| candidate.transfer_risks.clone())
+            .collect(),
+        coverage_boundary:
+            "impact is a pre-change operation reading; it is not evidence that a future patch is safe"
+                .to_string(),
+        recommended_next_action:
+            "compare operation deltas before and after the patch and keep transferred obstruction notes"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_aat_concept_surfaces(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    analytic_representations: &[ArchSigAnalyticRepresentationV0],
+) -> Vec<ArchSigAatConceptSurfaceV0> {
+    let concept_specs = [
+        (
+            "Atom",
+            archmap.atom_observations.len(),
+            all_atom_refs(archmap),
+        ),
+        (
+            "Configuration",
+            archmap.atom_observations.len() + archmap.molecule_observations.len(),
+            all_atom_refs(archmap),
+        ),
+        (
+            "ArchitectureObject",
+            archmap.projection_info.len().max(1),
+            archmap
+                .projection_info
+                .iter()
+                .map(|projection| projection.projection_id.clone())
+                .collect(),
+        ),
+        (
+            "Invariant",
+            law_policy.selected_laws.len(),
+            law_policy
+                .selected_laws
+                .iter()
+                .map(|law| law.law_id.clone())
+                .collect(),
+        ),
+        (
+            "LawUniverse",
+            law_policy.selected_laws.len(),
+            law_policy
+                .selected_laws
+                .iter()
+                .map(|law| law.law_id.clone())
+                .collect(),
+        ),
+        (
+            "ObstructionCircuit",
+            obstruction_circuits.len(),
+            obstruction_circuits
+                .iter()
+                .map(|circuit| circuit.obstruction_circuit_id.clone())
+                .collect(),
+        ),
+        (
+            "ArchitectureSignature",
+            signature_axes.len(),
+            signature_axes
+                .iter()
+                .map(|axis| axis.signature_axis_id.clone())
+                .collect(),
+        ),
+        (
+            "Operation",
+            repair_candidates.len(),
+            repair_candidates
+                .iter()
+                .map(|candidate| candidate.repair_operation_candidate_id.clone())
+                .collect(),
+        ),
+        (
+            "Path",
+            archmap.molecule_observations.len().max(1),
+            archmap
+                .molecule_observations
+                .iter()
+                .map(|molecule| molecule.molecule_observation_id.clone())
+                .collect(),
+        ),
+        (
+            "Homotopy",
+            archmap.semantic_observations.len().max(1),
+            archmap
+                .semantic_observations
+                .iter()
+                .map(|semantic| semantic.semantic_observation_id.clone())
+                .collect(),
+        ),
+        (
+            "Diagram",
+            obstruction_circuits.len().max(1),
+            obstruction_circuits
+                .iter()
+                .map(|circuit| circuit.obstruction_circuit_id.clone())
+                .collect(),
+        ),
+        (
+            "AnalyticRepresentation",
+            analytic_representations.len(),
+            analytic_representations
+                .iter()
+                .map(|representation| representation.representation_id.clone())
+                .collect(),
+        ),
+    ];
+
+    concept_specs
+        .into_iter()
+        .map(|(concept, count, evidence_refs)| ArchSigAatConceptSurfaceV0 {
+            concept: concept.to_string(),
+            status: if count == 0 {
+                "unmeasured"
+            } else {
+                "observedOrRepresented"
+            }
+            .to_string(),
+            reading: format!("{concept} is represented with {count} bounded packet record(s)"),
+            evidence_refs,
+            coverage_boundary:
+                "concept surface records packet expressiveness, not theorem proof or extraction completeness"
+                    .to_string(),
+            exactness_boundary:
+                "exactness is relative to ArchMap coverage and selected interpretation profile"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        })
+        .collect()
+}
+
+fn build_architecture_object_projections(
+    archmap: &ArchMapDocumentV0,
+) -> Vec<ArchSigArchitectureObjectProjectionV0> {
+    if archmap.projection_info.is_empty() {
+        return vec![ArchSigArchitectureObjectProjectionV0 {
+            projection_id: "architecture-object:default-observed-configuration".to_string(),
+            projection_family: "observedAtomConfiguration".to_string(),
+            atom_refs: all_atom_refs(archmap),
+            molecule_refs: archmap
+                .molecule_observations
+                .iter()
+                .map(|molecule| molecule.molecule_observation_id.clone())
+                .collect(),
+            semantic_refs: archmap
+                .semantic_observations
+                .iter()
+                .map(|semantic| semantic.semantic_observation_id.clone())
+                .collect(),
+            reading:
+                "default architecture object projection formed from observed atoms, molecules, and semantic records"
+                    .to_string(),
+            projection_boundary: "synthetic projection used because ArchMap provided no explicit projectionInfo".to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        }];
+    }
+
+    archmap
+        .projection_info
+        .iter()
+        .map(|projection| ArchSigArchitectureObjectProjectionV0 {
+            projection_id: projection.projection_id.clone(),
+            projection_family: projection.projection_family.clone(),
+            atom_refs: archmap
+                .atom_observations
+                .iter()
+                .filter(|atom| atom.projection_refs.contains(&projection.projection_id))
+                .map(|atom| atom.atom_observation_id.clone())
+                .collect(),
+            molecule_refs: vec![],
+            semantic_refs: vec![projection.source_observation_ref.clone()],
+            reading: projection.reading.clone(),
+            projection_boundary: projection.projection_boundary.clone(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        })
+        .collect()
+}
+
+fn build_invariant_family_readings(
+    archmap: &ArchMapDocumentV0,
+    law_policy: &LawPolicyDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+) -> Vec<ArchSigInvariantFamilyReadingV0> {
+    law_policy
+        .selected_laws
+        .iter()
+        .map(|law| {
+            let obstruction_refs = obstruction_circuits
+                .iter()
+                .filter(|circuit| circuit.law_ref == law.law_id)
+                .map(|circuit| circuit.obstruction_circuit_id.clone())
+                .collect::<Vec<_>>();
+            ArchSigInvariantFamilyReadingV0 {
+                invariant_id: format!("invariant:{}", stable_id(&law.law_id)),
+                invariant_family: law.law_family.clone(),
+                status: if obstruction_refs.is_empty() {
+                    "preservedForConstructedWitnesses"
+                } else {
+                    "stressed"
+                }
+                .to_string(),
+                law_refs: vec![law.law_id.clone()],
+                atom_refs: archmap
+                    .atom_observations
+                    .iter()
+                    .filter(|atom| {
+                        law.applies_to_atom_families
+                            .iter()
+                            .any(|family| family_matches(&atom.atom_family, family))
+                    })
+                    .map(|atom| atom.atom_observation_id.clone())
+                    .collect(),
+                obstruction_refs,
+                reading: format!(
+                    "{} is read as an invariant family selected by the interpretation profile",
+                    law.description
+                ),
+                evidence_boundary: law.enforcement_boundary.clone(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn build_law_universe_reading(law_policy: &LawPolicyDocumentV0) -> ArchSigLawUniverseReadingV0 {
+    ArchSigLawUniverseReadingV0 {
+        law_universe_id: format!("law-universe:{}", stable_id(&law_policy.law_policy_id)),
+        profile_ref: law_policy.law_policy_id.clone(),
+        selected_law_refs: law_policy
+            .selected_laws
+            .iter()
+            .map(|law| law.law_id.clone())
+            .collect(),
+        witness_rule_refs: law_policy
+            .witness_rules
+            .iter()
+            .map(|rule| rule.witness_rule_id.clone())
+            .collect(),
+        signature_axis_refs: law_policy
+            .signature_axis_definitions
+            .iter()
+            .map(|axis| axis.signature_axis_id.clone())
+            .collect(),
+        exactness_assumptions: law_policy.exactness_assumptions.clone(),
+        coverage_requirements: law_policy
+            .coverage_requirements
+            .iter()
+            .map(|requirement| requirement.coverage_requirement_id.clone())
+            .collect(),
+        reading:
+            "LawPolicy is interpreted as an analysis profile selecting a bounded LawUniverse, witnesses, axes, coverage, and exactness assumptions"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_analytic_representations(
+    archmap: &ArchMapDocumentV0,
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+) -> Vec<ArchSigAnalyticRepresentationV0> {
+    let relation_count = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| atom.atom_family.to_ascii_lowercase().contains("relation"))
+        .count();
+    let node_count = unique_strings(
+        archmap
+            .atom_observations
+            .iter()
+            .flat_map(|atom| atom.object_refs.clone()),
+    )
+    .len()
+    .max(archmap.atom_observations.len());
+    let reachable_cone_size = node_count + relation_count;
+    let walk_count = relation_count + archmap.molecule_observations.len();
+    let propagation_depth = if relation_count == 0 { 0 } else { 1 };
+    let nilpotence_boundary = if archmap.observation_gaps.is_empty() {
+        "candidateNilpotentForSelectedStaticGraph"
+    } else {
+        "blockedByCoverageGap"
+    };
+    let spectral_proxy = if node_count == 0 {
+        "unavailable".to_string()
+    } else {
+        format!("{:.3}", relation_count as f64 / node_count as f64)
+    };
+    vec![
+        analytic_representation(
+            "analytic:weighted-adjacency",
+            "weightedAdjacencyMatrix",
+            "measured",
+            "matrixShape",
+            &format!("{node_count}x{node_count}; edgeCount={relation_count}"),
+            all_atom_refs(archmap),
+            signature_axes,
+            "selected relation atoms induce a bounded weighted adjacency representation",
+        ),
+        analytic_representation(
+            "analytic:reachable-cone-size",
+            "reachableConeSize",
+            "measured",
+            "nat",
+            &reachable_cone_size.to_string(),
+            all_atom_refs(archmap),
+            signature_axes,
+            "reachable cone is a bounded graph proxy over observed object refs and relation atoms",
+        ),
+        analytic_representation(
+            "analytic:walk-count",
+            "walkCount",
+            "measured",
+            "nat",
+            &walk_count.to_string(),
+            all_atom_refs(archmap),
+            signature_axes,
+            "walk count is a bounded proxy from observed relation atoms and molecule paths",
+        ),
+        analytic_representation(
+            "analytic:nilpotence-boundary",
+            "nilpotenceBoundary",
+            "needsReview",
+            "boundaryStatus",
+            nilpotence_boundary,
+            all_atom_refs(archmap),
+            signature_axes,
+            "nilpotence is represented as a boundary condition, not folded into Decomposable or global acyclicity",
+        ),
+        analytic_representation(
+            "analytic:selected-subgraph-spectrum",
+            "selectedSubgraphSpectrum",
+            "measured",
+            "vector",
+            &format!("[{spectral_proxy}]"),
+            all_atom_refs(archmap),
+            signature_axes,
+            "selected subgraph spectrum records the bounded spectrum vector for the observed relation subgraph",
+        ),
+        analytic_representation(
+            "analytic:propagation-depth",
+            "propagationDepth",
+            "measured",
+            "nat",
+            &propagation_depth.to_string(),
+            all_atom_refs(archmap),
+            signature_axes,
+            "propagation depth is computed over observed relation atoms only",
+        ),
+        analytic_representation(
+            "analytic:spectral-radius-proxy",
+            "spectralRadius",
+            if spectral_proxy == "unavailable" {
+                "unavailable"
+            } else {
+                "measured"
+            },
+            "float",
+            &spectral_proxy,
+            all_atom_refs(archmap),
+            signature_axes,
+            "spectral radius is represented as a bounded proxy until full matrix extraction is supplied",
+        ),
+        analytic_representation(
+            "analytic:curvature-valuation",
+            "curvatureValuation",
+            "measured",
+            "nat",
+            &obstruction_circuits.len().to_string(),
+            obstruction_circuits
+                .iter()
+                .map(|circuit| circuit.obstruction_circuit_id.clone())
+                .collect(),
+            signature_axes,
+            "curvature valuation counts constructed obstruction circuits under the selected profile",
+        ),
+        analytic_representation(
+            "analytic:state-algebra-boundary",
+            "stateAlgebra",
+            if archmap
+                .observation_gaps
+                .iter()
+                .any(|gap| gap.gap_kind.to_ascii_lowercase().contains("runtime"))
+            {
+                "unmeasured"
+            } else {
+                "needsReview"
+            },
+            "boundaryStatus",
+            "state/effect algebra requires explicit state transition and runtime/effect atoms",
+            all_atom_refs(archmap),
+            signature_axes,
+            "state algebra is preserved as a first-class analytic boundary even when state evidence is unavailable",
+        ),
+        analytic_representation(
+            "analytic:zero-reflecting-aggregate-boundary",
+            "zeroReflectingAggregateBoundary",
+            "needsReview",
+            "boundaryStatus",
+            if archmap.observation_gaps.is_empty() {
+                "candidateForSelectedCoverage"
+            } else {
+                "blockedByObservationGaps"
+            },
+            archmap
+                .observation_gaps
+                .iter()
+                .map(|gap| gap.gap_id.clone())
+                .collect(),
+            signature_axes,
+            "zero-reflecting aggregate boundary says when zero axes may and may not be read as absence",
+        ),
+    ]
+}
+
+fn analytic_representation(
+    representation_id: &str,
+    representation_family: &str,
+    status: &str,
+    value_type: &str,
+    value: &str,
+    graph_scope_refs: Vec<String>,
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    reading: &str,
+) -> ArchSigAnalyticRepresentationV0 {
+    ArchSigAnalyticRepresentationV0 {
+        representation_id: representation_id.to_string(),
+        representation_family: representation_family.to_string(),
+        status: status.to_string(),
+        value_type: value_type.to_string(),
+        value: value.to_string(),
+        graph_scope_refs,
+        axis_refs: signature_axes
+            .iter()
+            .map(|axis| axis.signature_axis_id.clone())
+            .collect(),
+        reading: reading.to_string(),
+        coverage_boundary:
+            "analytic value is relative to selected graph / matrix representation and is not a quality score"
+                .to_string(),
+        zero_reflecting_boundary:
+            "zero reflects only the selected representation when coverage and exactness assumptions hold"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_coupling_cohesion_readings(
+    archmap: &ArchMapDocumentV0,
+) -> Vec<ArchSigCouplingCohesionReadingV0> {
+    let relation_refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| atom.atom_family.to_ascii_lowercase().contains("relation"))
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    let contract_refs = archmap
+        .atom_observations
+        .iter()
+        .filter(|atom| atom.atom_family.to_ascii_lowercase().contains("contract"))
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect::<Vec<_>>();
+    let semantic_refs = archmap
+        .semantic_observations
+        .iter()
+        .map(|semantic| semantic.semantic_observation_id.clone())
+        .collect::<Vec<_>>();
+    let gap_refs = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+
+    vec![
+        coupling_reading(
+            "coupling:static-dependency",
+            "staticDependencyCoupling",
+            relation_refs.len(),
+            relation_refs,
+            vec![],
+            "static relation atoms show direct source-level coupling",
+        ),
+        coupling_reading(
+            "cohesion:semantic-contract",
+            "contractCohesion",
+            contract_refs.len() + semantic_refs.len(),
+            contract_refs.into_iter().chain(semantic_refs).collect(),
+            vec![],
+            "contract and semantic observations give a semantic cohesion reading",
+        ),
+        coupling_reading(
+            "coupling:state-effect",
+            "stateEffectCoupling",
+            gap_refs.len(),
+            gap_refs.clone(),
+            gap_refs,
+            "state/effect coupling remains stressed when runtime or effect evidence is unavailable",
+        ),
+        coupling_reading(
+            "coupling:authority-trust",
+            "authorityTrustCoupling",
+            archmap
+                .atom_observations
+                .iter()
+                .filter(|atom| {
+                    let family = atom.atom_family.to_ascii_lowercase();
+                    family.contains("authority") || family.contains("trust")
+                })
+                .count(),
+            all_atom_refs(archmap),
+            archmap
+                .observation_gaps
+                .iter()
+                .map(|gap| gap.gap_id.clone())
+                .collect(),
+            "authority and trust coupling are unmeasured unless ArchMap records explicit authority/trust atoms",
+        ),
+    ]
+}
+
+fn coupling_reading(
+    reading_id: &str,
+    axis: &str,
+    value: usize,
+    supporting_refs: Vec<String>,
+    stressed_refs: Vec<String>,
+    reading: &str,
+) -> ArchSigCouplingCohesionReadingV0 {
+    ArchSigCouplingCohesionReadingV0 {
+        reading_id: reading_id.to_string(),
+        axis: axis.to_string(),
+        status: if value == 0 {
+            "unmeasured"
+        } else if stressed_refs.is_empty() {
+            "actionable"
+        } else {
+            "needsReview"
+        }
+        .to_string(),
+        value_type: "boundedCount".to_string(),
+        value: value.to_string(),
+        supporting_refs,
+        stressed_refs,
+        reading: reading.to_string(),
+        coverage_boundary:
+            "coupling/cohesion is semantic ArchMap-relative evidence, not import-count truth"
+                .to_string(),
+        recommended_next_action:
+            "inspect supporting refs and add missing state/effect/authority evidence before treating zero as absence"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }
+}
+
+fn build_design_principle_readings(
+    archmap: &ArchMapDocumentV0,
+    invariant_readings: &[ArchSigInvariantFamilyReadingV0],
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+) -> Vec<ArchSigDesignPrincipleReadingV0> {
+    let specs = [
+        (
+            "InformationHiding",
+            "representation, state, effect, and provider details stay inside declared boundaries",
+        ),
+        (
+            "Encapsulation",
+            "state mutation, effect execution, and authority checks are owned by the selected boundary",
+        ),
+        (
+            "SeparationOfConcerns",
+            "semantic concern, state transition, effect, policy, and presentation remain unmixed",
+        ),
+        (
+            "Substitutability",
+            "replacement preserves contract, effect, state transition, and semantic reading",
+        ),
+        (
+            "OpenClosedExtension",
+            "feature extension preserves core invariants without new interaction obstruction",
+        ),
+        (
+            "DependencyInversion",
+            "abstract boundary semantics remain aligned with implementation obligations",
+        ),
+        (
+            "RepresentationIndependence",
+            "internal representation changes preserve selected observations and contracts",
+        ),
+        (
+            "IdempotencyAndReplaySafety",
+            "retry, replay, jobs, and external effects preserve selected state transition law",
+        ),
+        (
+            "AuthorityAndTrustBoundary",
+            "authority labels and trust handoffs survive operation paths",
+        ),
+    ];
+    let gap_refs = archmap
+        .observation_gaps
+        .iter()
+        .map(|gap| gap.gap_id.clone())
+        .collect::<Vec<_>>();
+    let obstruction_refs = obstruction_circuits
+        .iter()
+        .map(|circuit| circuit.obstruction_circuit_id.clone())
+        .collect::<Vec<_>>();
+    let invariant_refs = invariant_readings
+        .iter()
+        .map(|reading| reading.invariant_id.clone())
+        .collect::<Vec<_>>();
+    let operation_refs = repair_candidates
+        .iter()
+        .map(|candidate| candidate.repair_operation_candidate_id.clone())
+        .collect::<Vec<_>>();
+    specs
+        .into_iter()
+        .map(|(principle, reading)| {
+            let status = principle_status(principle, archmap, obstruction_circuits);
+            ArchSigDesignPrincipleReadingV0 {
+                principle_id: format!("principle:{}", stable_id(principle)),
+                principle: principle.to_string(),
+                status: status.to_string(),
+                aat_reading: format!("{principle} is read as invariant preservation / obstruction / operation preservation: {reading}"),
+                invariant_refs: invariant_refs.clone(),
+                obstruction_refs: obstruction_refs.clone(),
+                operation_refs: operation_refs.clone(),
+                evidence_refs: all_atom_refs(archmap),
+                confidence: if status == "unmeasured" { "low" } else { "medium" }.to_string(),
+                coverage_boundary:
+                    "principle reading uses semantic ArchMap evidence and is not a slogan or static lint rule"
+                        .to_string(),
+                exactness_blockers: if gap_refs.is_empty() {
+                    vec!["exactness remains selected-profile-relative".to_string()]
+                } else {
+                    gap_refs.clone()
+                },
+                recommended_next_action:
+                    "turn stressed readings into source review questions or repair preconditions"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn principle_status(
+    principle: &str,
+    archmap: &ArchMapDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+) -> &'static str {
+    let lower = principle.to_ascii_lowercase();
+    if lower.contains("idempotency")
+        || lower.contains("authority")
+        || lower.contains("representation")
+    {
+        if archmap.observation_gaps.is_empty() {
+            "needsReview"
+        } else {
+            "unmeasured"
+        }
+    } else if obstruction_circuits.is_empty() {
+        "preserved"
+    } else {
+        "stressed"
+    }
+}
+
+fn build_operation_deltas(
+    archmap: &ArchMapDocumentV0,
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+) -> Vec<ArchSigOperationDeltaReadingV0> {
+    if repair_candidates.is_empty() {
+        return vec![ArchSigOperationDeltaReadingV0 {
+            operation_delta_id: "operation-delta:observe-before-repair".to_string(),
+            operation_kind: "evidence-enrichment".to_string(),
+            support_refs: all_atom_refs(archmap),
+            preconditions: repair_preconditions(archmap),
+            atom_transformations: vec![
+                "add or refine ArchMap atom observations before claiming repair".to_string(),
+            ],
+            transition_relation:
+                "ArchMap enrichment changes analysis coverage without changing source architecture"
+                    .to_string(),
+            invariant_preservation_claims: vec![
+                "preserve all existing source-grounded atom observation refs".to_string(),
+            ],
+            obstruction_transport: vec![
+                "no constructed obstruction is transported because no repair candidate exists"
+                    .to_string(),
+            ],
+            signature_delta: signature_axes
+                .iter()
+                .map(|axis| format!("{} remains {}", axis.signature_axis_id, axis.value))
+                .collect(),
+            decreased_axes: vec![],
+            transferred_obstructions: archmap
+                .observation_gaps
+                .iter()
+                .map(|gap| gap.gap_id.clone())
+                .collect(),
+            excluded_readings: vec![
+                "evidence enrichment is not a source-code repair".to_string(),
+                "no automatic patch safety".to_string(),
+            ],
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        }];
+    }
+
+    repair_candidates
+        .iter()
+        .map(|candidate| ArchSigOperationDeltaReadingV0 {
+            operation_delta_id: format!(
+                "operation-delta:{}",
+                stable_id(&candidate.repair_operation_candidate_id)
+            ),
+            operation_kind: candidate.operation_kind.clone(),
+            support_refs: candidate.target_obstruction_refs.clone(),
+            preconditions: candidate.preconditions.clone(),
+            atom_transformations: vec![
+                "split or enrich atoms that currently support the target obstruction".to_string(),
+                "add observed compensation / authority / effect atoms only after source review"
+                    .to_string(),
+            ],
+            transition_relation:
+                "operation maps the current bounded Atom configuration to a candidate repaired configuration"
+                    .to_string(),
+            invariant_preservation_claims: candidate.preserved_invariants.clone(),
+            obstruction_transport: candidate
+                .target_obstruction_refs
+                .iter()
+                .map(|target| {
+                    format!("{target} may decrease or move to a runtime/state/effect axis")
+                })
+                .collect(),
+            signature_delta: candidate.expected_signature_axis_effects.clone(),
+            decreased_axes: signature_axes
+                .iter()
+                .filter(|axis| axis.value != 0)
+                .map(|axis| axis.signature_axis_id.clone())
+                .collect(),
+            transferred_obstructions: candidate.transfer_risks.clone(),
+            excluded_readings: candidate.excluded_readings.clone(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        })
+        .collect()
+}
+
+fn build_path_homotopy_diagram_readings(
+    archmap: &ArchMapDocumentV0,
+    molecule_readings: &[ArchSigMoleculeReadingV0],
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+) -> Vec<ArchSigPathHomotopyDiagramReadingV0> {
+    vec![
+        ArchSigPathHomotopyDiagramReadingV0 {
+            reading_id: "path:semantic-operation-flow".to_string(),
+            surface: "Path".to_string(),
+            status: if archmap.semantic_observations.is_empty() {
+                "unmeasured"
+            } else {
+                "observedOrRepresented"
+            }
+            .to_string(),
+            path_refs: archmap
+                .semantic_observations
+                .iter()
+                .map(|semantic| semantic.semantic_observation_id.clone())
+                .collect(),
+            homotopy_refs: molecule_readings
+                .iter()
+                .map(|reading| reading.molecule_reading_id.clone())
+                .collect(),
+            diagram_refs: obstruction_circuits
+                .iter()
+                .map(|circuit| circuit.obstruction_circuit_id.clone())
+                .collect(),
+            filling_boundary:
+                "path reading is a source-grounded semantic workflow proxy, not a free-category proof"
+                    .to_string(),
+            reading: "semantic observations and molecules provide path candidates for review".to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+        ArchSigPathHomotopyDiagramReadingV0 {
+            reading_id: "diagram:obstruction-filling".to_string(),
+            surface: "Diagram".to_string(),
+            status: if obstruction_circuits.is_empty() {
+                "needsReview"
+            } else {
+                "actionable"
+            }
+            .to_string(),
+            path_refs: all_atom_refs(archmap),
+            homotopy_refs: molecule_readings
+                .iter()
+                .map(|reading| reading.molecule_reading_id.clone())
+                .collect(),
+            diagram_refs: obstruction_circuits
+                .iter()
+                .map(|circuit| circuit.obstruction_circuit_id.clone())
+                .collect(),
+            filling_boundary:
+                "diagram filling is reported as obstruction / repair planning surface, not theorem discharge"
+                    .to_string(),
+            reading: "constructed obstruction circuits identify diagrams whose filling requires review or repair".to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        },
+    ]
+}
+
+fn build_bounded_judgements(
+    archmap: &ArchMapDocumentV0,
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    design_principles: &[ArchSigDesignPrincipleReadingV0],
+) -> Vec<ArchSigBoundedJudgementV0> {
+    let mut judgements = vec![ArchSigBoundedJudgementV0 {
+        judgement_id: "judgement:architecture-state".to_string(),
+        status: "actionable".to_string(),
+        aat_concept: "ArchitectureObject".to_string(),
+        reading: "observed atoms, molecules, semantic records, gaps, and signature axes define a bounded architecture state".to_string(),
+        evidence_refs: all_atom_refs(archmap),
+        confidence: "medium".to_string(),
+        uncertainty: archmap
+            .observation_gaps
+            .iter()
+            .map(|gap| gap.reason.clone())
+            .collect(),
+        coverage_boundary: "bounded to supplied ArchMap and selected interpretation profile".to_string(),
+        exactness_boundary: "not global architecture truth and not Lean theorem proof".to_string(),
+        recommended_next_action: "review nonzero axes and stressed principle readings first".to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }];
+
+    for circuit in obstruction_circuits {
+        judgements.push(ArchSigBoundedJudgementV0 {
+            judgement_id: format!("judgement:{}", stable_id(&circuit.obstruction_circuit_id)),
+            status: "actionable".to_string(),
+            aat_concept: "ObstructionCircuit".to_string(),
+            reading: circuit.evidence_summary.clone(),
+            evidence_refs: circuit
+                .atom_observation_refs
+                .iter()
+                .chain(circuit.molecule_reading_refs.iter())
+                .chain(circuit.concern_hint_refs.iter())
+                .cloned()
+                .collect(),
+            confidence: "medium".to_string(),
+            uncertainty: circuit.missing_evidence.clone(),
+            coverage_boundary: circuit.evidence_boundary.clone(),
+            exactness_boundary: "witness is selected-profile-relative".to_string(),
+            recommended_next_action: "inspect source refs and repair operation preconditions"
+                .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        });
+    }
+
+    for axis in signature_axes {
+        judgements.push(ArchSigBoundedJudgementV0 {
+            judgement_id: format!("judgement:{}", stable_id(&axis.signature_axis_id)),
+            status: if axis.value == 0 {
+                "needsReview"
+            } else {
+                "actionable"
+            }
+            .to_string(),
+            aat_concept: "ArchitectureSignature".to_string(),
+            reading: axis.evidence_summary.clone(),
+            evidence_refs: axis.source_refs.clone(),
+            confidence: if axis.value == 0 { "low" } else { "medium" }.to_string(),
+            uncertainty: axis.missing_evidence.clone(),
+            coverage_boundary: axis.coverage_status.clone(),
+            exactness_boundary: axis.exactness_assumptions.join("; "),
+            recommended_next_action:
+                "use zero axes only with exactness assumptions; review nonzero axes as design pressure"
+                    .to_string(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        });
+    }
+
+    for principle in design_principles {
+        judgements.push(ArchSigBoundedJudgementV0 {
+            judgement_id: format!("judgement:{}", stable_id(&principle.principle_id)),
+            status: match principle.status.as_str() {
+                "preserved" => "needsReview",
+                "stressed" => "actionable",
+                "unmeasured" => "blocked",
+                _ => "needsReview",
+            }
+            .to_string(),
+            aat_concept: "Invariant".to_string(),
+            reading: principle.aat_reading.clone(),
+            evidence_refs: principle.evidence_refs.clone(),
+            confidence: principle.confidence.clone(),
+            uncertainty: principle.exactness_blockers.clone(),
+            coverage_boundary: principle.coverage_boundary.clone(),
+            exactness_boundary: "design principle reading is not static lint and not theorem proof"
+                .to_string(),
+            recommended_next_action: principle.recommended_next_action.clone(),
+            non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        });
+    }
+
+    judgements
+}
+
+fn build_llm_interpretation_packet(
+    archmap: &ArchMapDocumentV0,
+    architecture_state: &ArchSigArchitectureStateV0,
+    design_pressure: &[ArchSigDesignPressureReadingV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    analytic_representations: &[ArchSigAnalyticRepresentationV0],
+    repair_candidates: &[ArchSigRepairOperationCandidateV0],
+    bounded_judgements: &[ArchSigBoundedJudgementV0],
+) -> ArchSigLlmInterpretationPacketV0 {
+    ArchSigLlmInterpretationPacketV0 {
+        packet_id: format!("llm-interpretation:{}", stable_id(&archmap.map_id)),
+        short_diagnosis: format!(
+            "{} actionable judgement(s), {} design pressure reading(s), and {} observation gap(s) require review",
+            bounded_judgements
+                .iter()
+                .filter(|judgement| judgement.status == "actionable")
+                .count(),
+            design_pressure.len(),
+            archmap.observation_gaps.len()
+        ),
+        aat_concept_map: vec![
+            "Atom -> Configuration -> ArchitectureObject".to_string(),
+            "InvariantFamily -> LawUniverse -> ObstructionCircuit -> ArchitectureSignature"
+                .to_string(),
+            "Operation -> Path -> Homotopy -> Diagram -> AnalyticRepresentation".to_string(),
+        ],
+        observed_atoms_summary: architecture_state.atom_family_refs.clone(),
+        obstruction_summary: design_pressure
+            .iter()
+            .flat_map(|pressure| pressure.obstruction_refs.clone())
+            .collect(),
+        signature_axes_summary: signature_axes
+            .iter()
+            .map(|axis| {
+                format!(
+                    "{}={} ({})",
+                    axis.signature_axis_id, axis.value, axis.coverage_status
+                )
+            })
+            .collect(),
+        analytic_readings_summary: analytic_representations
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{}={} ({})",
+                    reading.representation_family, reading.value, reading.status
+                )
+            })
+            .collect(),
+        repair_operation_summary: repair_candidates
+            .iter()
+            .map(|candidate| {
+                format!(
+                    "{} targets {:?}",
+                    candidate.repair_operation_candidate_id, candidate.target_obstruction_refs
+                )
+            })
+            .collect(),
+        complexity_transfer_notes: repair_candidates
+            .iter()
+            .flat_map(|candidate| candidate.transfer_risks.clone())
+            .collect(),
+        coverage_gaps_and_exactness_blockers: archmap_gap_missing_evidence(archmap),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+        recommended_human_review_focus: bounded_judgements
+            .iter()
+            .filter(|judgement| judgement.status != "nonConclusion")
+            .map(|judgement| {
+                format!(
+                    "{}: {}",
+                    judgement.judgement_id, judgement.recommended_next_action
+                )
+            })
+            .collect(),
+    }
+}
+
 fn build_repair_candidates(
     archmap: &ArchMapDocumentV0,
     obstruction_circuits: &[ArchSigObstructionCircuitV0],
@@ -644,6 +1608,9 @@ pub fn validate_archsig_analysis_packet_report(
     let checks = vec![
         check_schema_version(packet),
         check_refs_and_identity(packet),
+        check_north_star_aat_surfaces(packet),
+        check_bounded_judgement_surface(packet),
+        check_analytic_and_principle_surfaces(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -658,10 +1625,16 @@ pub fn validate_archsig_analysis_packet_report(
         } else {
             "pass".to_string()
         },
+        aat_concept_surface_count: packet.aat_concept_surfaces.len(),
         molecule_reading_count: packet.molecule_readings.len(),
         obstruction_circuit_count: packet.obstruction_circuits.len(),
         signature_axis_count: packet.signature_axes.len(),
+        analytic_representation_count: packet.analytic_representations.len(),
+        coupling_cohesion_reading_count: packet.coupling_cohesion_readings.len(),
+        design_principle_reading_count: packet.design_principle_readings.len(),
         repair_operation_candidate_count: packet.repair_operation_candidates.len(),
+        operation_delta_count: packet.operation_deltas.len(),
+        bounded_judgement_count: packet.bounded_judgements.len(),
         failed_check_count: count_checks(&checks, "fail"),
         warning_check_count: count_checks(&checks, "warn"),
     };
@@ -711,6 +1684,11 @@ fn check_refs_and_identity(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck 
     );
     push_blank(
         &mut examples,
+        "interpretationProfileRef.artifactId",
+        &packet.interpretation_profile_ref.artifact_id,
+    );
+    push_blank(
+        &mut examples,
         "selectedLawPolicyRef.artifactId",
         &packet.selected_law_policy_ref.artifact_id,
     );
@@ -731,6 +1709,203 @@ fn check_refs_and_identity(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck 
     check_from_examples(
         "archsig-analysis-packet-refs-and-identity",
         "analysis identity and ArchMap / LawPolicy references are recorded",
+        examples,
+        "fail",
+    )
+}
+
+fn check_north_star_aat_surfaces(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let required_concepts = BTreeSet::from([
+        "Atom",
+        "Configuration",
+        "ArchitectureObject",
+        "Invariant",
+        "LawUniverse",
+        "ObstructionCircuit",
+        "ArchitectureSignature",
+        "Operation",
+        "Path",
+        "Homotopy",
+        "Diagram",
+        "AnalyticRepresentation",
+    ]);
+    let present = packet
+        .aat_concept_surfaces
+        .iter()
+        .map(|surface| surface.concept.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = required_concepts
+        .iter()
+        .filter(|concept| !present.contains(**concept))
+        .map(|concept| {
+            generic_validation_example(
+                "aatConceptSurfaces",
+                concept,
+                "North Star packet must represent every AAT concept surface",
+            )
+        })
+        .collect::<Vec<_>>();
+
+    if packet.architecture_object_projections.is_empty() {
+        examples.push(generic_validation_example(
+            "architectureObjectProjections",
+            "empty",
+            "packet must expose ArchitectureObject projection surface",
+        ));
+    }
+    if packet.invariant_family_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "invariantFamilyReadings",
+            "empty",
+            "packet must expose invariant family readings",
+        ));
+    }
+    if packet.law_universe_reading.selected_law_refs.is_empty() {
+        examples.push(generic_validation_example(
+            "lawUniverseReading.selectedLawRefs",
+            "empty",
+            "packet must expose selected law universe/profile refs",
+        ));
+    }
+    if packet.path_homotopy_diagram_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "pathHomotopyDiagramReadings",
+            "empty",
+            "packet must expose path, homotopy, and diagram readings",
+        ));
+    }
+
+    check_from_examples(
+        "archsig-analysis-packet-north-star-aat-surfaces",
+        "packet represents all AAT concept surfaces required by the North Star PRD",
+        examples,
+        "fail",
+    )
+}
+
+fn check_bounded_judgement_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let allowed = BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let mut examples = Vec::new();
+    if packet.bounded_judgements.is_empty() {
+        examples.push(generic_validation_example(
+            "boundedJudgements",
+            "empty",
+            "packet must provide bounded judgement records",
+        ));
+    }
+    for judgement in &packet.bounded_judgements {
+        if !allowed.contains(judgement.status.as_str()) {
+            examples.push(generic_validation_example(
+                &judgement.judgement_id,
+                &judgement.status,
+                "bounded judgement status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        if judgement.evidence_refs.is_empty() || has_blank(&judgement.evidence_refs) {
+            examples.push(generic_validation_example(
+                &judgement.judgement_id,
+                "evidenceRefs",
+                "bounded judgement must carry evidence refs",
+            ));
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} coverageBoundary", judgement.judgement_id),
+            &judgement.coverage_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} exactnessBoundary", judgement.judgement_id),
+            &judgement.exactness_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", judgement.judgement_id),
+            &judgement.recommended_next_action,
+        );
+    }
+    check_from_examples(
+        "archsig-analysis-packet-bounded-judgement-surface",
+        "packet makes non-conclusion usable through bounded judgement records",
+        examples,
+        "fail",
+    )
+}
+
+fn check_analytic_and_principle_surfaces(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let required_principles = BTreeSet::from([
+        "InformationHiding",
+        "Encapsulation",
+        "SeparationOfConcerns",
+        "Substitutability",
+        "OpenClosedExtension",
+        "DependencyInversion",
+        "RepresentationIndependence",
+        "IdempotencyAndReplaySafety",
+        "AuthorityAndTrustBoundary",
+    ]);
+    let present_principles = packet
+        .design_principle_readings
+        .iter()
+        .map(|reading| reading.principle.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut examples = required_principles
+        .iter()
+        .filter(|principle| !present_principles.contains(**principle))
+        .map(|principle| {
+            generic_validation_example(
+                "designPrincipleReadings",
+                principle,
+                "packet must expose static-hard design principles as AAT readings",
+            )
+        })
+        .collect::<Vec<_>>();
+
+    for required_axis in [
+        "weightedAdjacencyMatrix",
+        "walkCount",
+        "reachableConeSize",
+        "nilpotenceBoundary",
+        "selectedSubgraphSpectrum",
+        "propagationDepth",
+        "spectralRadius",
+        "curvatureValuation",
+        "stateAlgebra",
+        "zeroReflectingAggregateBoundary",
+    ] {
+        if !packet
+            .analytic_representations
+            .iter()
+            .any(|reading| reading.representation_family == required_axis)
+        {
+            examples.push(generic_validation_example(
+                "analyticRepresentations",
+                required_axis,
+                "packet must expose graph/matrix/spectrum/curvature analytic axes",
+            ));
+        }
+    }
+    for required_axis in [
+        "staticDependencyCoupling",
+        "contractCohesion",
+        "stateEffectCoupling",
+        "authorityTrustCoupling",
+    ] {
+        if !packet
+            .coupling_cohesion_readings
+            .iter()
+            .any(|reading| reading.axis == required_axis)
+        {
+            examples.push(generic_validation_example(
+                "couplingCohesionReadings",
+                required_axis,
+                "packet must expose semantic coupling/cohesion axes",
+            ));
+        }
+    }
+    check_from_examples(
+        "archsig-analysis-packet-analytic-and-principle-surfaces",
+        "packet exposes analytic axes, semantic coupling/cohesion, and static-hard design principle readings",
         examples,
         "fail",
     )
@@ -1352,6 +2527,18 @@ fn repair_preconditions(archmap: &ArchMapDocumentV0) -> Vec<String> {
             .map(|gap| format!("resolve or explicitly accept coverage gap {}", gap.gap_id)),
     );
     preconditions
+}
+
+fn all_atom_refs(archmap: &ArchMapDocumentV0) -> Vec<String> {
+    archmap
+        .atom_observations
+        .iter()
+        .map(|atom| atom.atom_observation_id.clone())
+        .collect()
+}
+
+fn unique_strings(values: impl Iterator<Item = String>) -> Vec<String> {
+    values.collect::<BTreeSet<_>>().into_iter().collect()
 }
 
 fn preserved_invariants_for_repair(
