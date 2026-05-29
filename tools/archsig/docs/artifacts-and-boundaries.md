@@ -56,6 +56,19 @@ Adapter output must preserve coverage boundary, unsupported constructs, missing
 evidence, and non-conclusions. Missing, private, unavailable, unsupported,
 dynamic, or framework-specific evidence is not measured zero.
 
+## Compatibility Guardrails
+
+`archmap-observation-map-v0` is the primary ArchMap surface. Legacy fields such
+as `homomorphism`, `mapItems`, `atomCandidates`, `moleculeCandidates`, and
+`obstructionCircuitCandidates` may still deserialize for compatibility, but
+ArchMap validation reports them under `legacySchemaChecks`. These fields are not
+new authoring targets. In particular, `obstructionCircuitCandidates` is not a
+first-class ArchMap output; new ArchMap files use `concernHints` for review cues,
+and ArchSig constructs law-relative obstruction circuits only from ArchMap plus
+LawPolicy.
+
+## Snapshot Attribution Boundary
+
 ArchSig keeps the shared signature-shape and delta helpers only for snapshot,
 diff, AIR, and bounded review attribution. PR metadata accepted by `air` and
 `signature-diff` is read as `archsig-snapshot-attribution-input-v0`, not as an
