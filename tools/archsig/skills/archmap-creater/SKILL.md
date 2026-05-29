@@ -80,6 +80,27 @@ If a source can support both a primitive fact and a larger interpretation, write
 
 See `references/mapping-guide.md` for atomFamily-specific yes/no examples and `references/schema-cheatsheet.md` for required evidence metadata.
 
+## Static Navigation Aid Boundary
+
+Use ASTs, symbol indexes, route lists, import graphs, class/function maps, framework registries, and text-search result sets only as navigation aids.
+
+Allowed uses:
+
+- selecting candidate files for the source inventory
+- assigning exploration tasks to agents
+- finding source refs to read directly
+- identifying blind spots such as generated code, dynamic loading, or framework expansion
+- creating review queues or observation gaps
+
+Disallowed uses:
+
+- emitting `atomObservations[]` only because a static index found a symbol or edge
+- treating a route list, import graph, or AST as proof of semantic dependency, authority coverage, runtime interaction, or effect execution
+- upgrading uninspected generated/framework-expanded evidence into observed source evidence
+- claiming extractor completeness or measured absence from a partial scan
+
+When a navigation aid points to a candidate, read the selected source before writing an observed atom. If the source cannot be read, keep the candidate as an `observationGaps[]` entry or a low-confidence review cue, not an observed atom.
+
 ## Observation Surface Decision Rules
 
 Choose the output surface by the role of the reading, not by how important it feels:
@@ -95,6 +116,39 @@ Choose the output surface by the role of the reading, not by how important it fe
 
 Workflow-first exploration is allowed: you may read a workflow to discover atoms. The ArchMap output must still put primitive facts in atoms and the workflow reading in `semanticObservations[]` after the atoms exist.
 
+## Parallel Exploration Protocol
+
+For large repositories, use parallel agents to survey bounded surfaces. The integrator owns the final ArchMap; sub-agent output is candidate evidence, not final artifact truth.
+
+Recommended independent surfaces:
+
+- authority and authentication: roles, ownership checks, policy gates, admin bypasses
+- state and model: schemas, persisted state, lifecycle markers, projections
+- effects and jobs: writes, queues, background workers, emails, provider calls
+- provider and trust boundaries: webhooks, tokens, LLM/provider output validation, delegated credentials
+- domain semantics and contracts: operation meanings, tests, invariants, DTO validation
+- runtime and framework boundaries: supplied traces, generated files, dynamic imports, framework conventions
+- docs and governance: architecture policy, review policy, operational runbooks
+
+Each sub-agent should return a compact packet, not a full ArchMap:
+
+- reviewed refs and excluded refs
+- candidate atom observations with primitive predicates, source refs, confidence, uncertainty, and non-conclusions
+- candidate molecule or semantic observations only when they reference candidate atoms
+- observation gaps for private, unavailable, generated, framework-expanded, or runtime-only evidence
+- concern hints as review cues only
+- notes about static navigation aids used and why they are not observation support
+
+Integration rules:
+
+- Deduplicate candidates by primitive predicate, subject/object refs, and supporting source refs.
+- Resolve every accepted `sourceRefs[].artifactId` into `sourceUniverse.includedRefs[]`.
+- Re-read or sample-check source refs before accepting high-confidence atoms from sub-agent output.
+- Lower confidence or create a concern/gap when agents disagree or when evidence crosses surfaces.
+- Split coarse candidates before promotion; responsibilities, workflows, policy readings, and concerns do not become atoms.
+- Preserve each agent's blind spots and excluded readings in `sourceUniverse`, `provenance`, `observationGaps[]`, or `nonConclusions[]`.
+- Do not merge all candidates mechanically. The final ArchMap is an integrated bounded observation map.
+
 ## Workflow
 
 1. Identify the bounded source universe.
@@ -105,6 +159,7 @@ Workflow-first exploration is allowed: you may read a workflow to discover atoms
    - For non-trivial authoring, read `references/mapping-guide.md` before drafting observations.
    - When unsure about field values, read `references/schema-cheatsheet.md`.
    - When checking output quality, compare against `references/examples.md`.
+   - For large repositories, use `references/repository-survey.md` to split parallel exploration surfaces and keep sub-agent results as candidates until integrated.
 
 2. Create a source inventory file.
 

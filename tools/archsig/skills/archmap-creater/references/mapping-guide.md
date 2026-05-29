@@ -3,6 +3,20 @@
 Use this guide when deciding what repository evidence should become an ArchMap observation.
 ArchMap authoring is source-grounded observation, not architecture invention and not law-relative analysis.
 
+## Navigation Aid Boundary
+
+Static analysis artifacts can speed up source selection, but they are not ArchMap observations.
+
+| Artifact | Allowed reading | Not allowed |
+| --- | --- | --- |
+| AST or symbol index | Candidate source refs to inspect | Atom truth, semantic dependency, or complete coverage |
+| Import graph | Candidate relation evidence to read in source | Runtime call frequency, architecture lawfulness, or dependency intent |
+| Route list or class/function map | Candidate entrypoints and capabilities to inspect | Permission coverage, effect execution, or workflow correctness |
+| Framework registry or convention output | Framework expansion to mark as a blind spot or inspect directly | Observed atoms without reading generated/expanded source |
+| Search result set | Bounded survey queue | Source inventory completeness |
+
+After a navigation aid identifies a candidate, read the cited source and record the directly supported primitive fact. If the source is unavailable or outside scope, use `observationGaps[]` or a low-confidence `concernHints[]` review cue.
+
 ## Source Cues To Observations
 
 | Source cue | Preferred ArchMap reading | Primary field | Notes |
