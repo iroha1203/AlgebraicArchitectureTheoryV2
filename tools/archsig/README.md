@@ -16,7 +16,7 @@ forecast, governance, calibration, and operational feedback under
 | --- | --- | --- |
 | ArchMap validation | `archmap`, `archmap-generate` | ArchMap records source-grounded Atom observations and concern hints. It does not select laws or output obstruction circuits. |
 | Interpretation profile | `law-policy`, `interpretation-profile` | The profile selects the LawUniverse, witness rules, signature axes, coverage requirements, exactness assumptions, and non-conclusions. It is not AAT itself. |
-| ArchSig analysis | `archsig-analysis`, `aat-analysis`, `llm-native-workflow`, `north-star-workflow` | ArchSig combines ArchMap and the profile into AAT concept surfaces, architecture state, design pressure, change impact, analytic axes, semantic coupling/cohesion, workflow risk readings, spectral analysis readings, design principle readings, bounded judgements, repair operation deltas, and an LLM interpretation packet. |
+| ArchSig analysis | `archsig-analysis`, `aat-analysis`, `llm-native-workflow`, `north-star-workflow` | ArchSig combines ArchMap and the profile into AAT concept surfaces, architecture state, design pressure, change impact, analytic axes, semantic coupling/cohesion, workflow risk readings, spectral analysis readings, spectral mode readings, design principle readings, bounded judgements, repair operation deltas, and an LLM interpretation packet. |
 | Schema | `schema-catalog` | The catalog lists only the current LLM Atom ArchMap artifacts. |
 
 Large ArchMaps may be authored in shards for review and parallel generation,

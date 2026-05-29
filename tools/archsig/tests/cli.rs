@@ -792,6 +792,40 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         }),
         "spectral analysis readings must carry matrix shape, entry rule, values, and evidence boundaries"
     );
+    let spectral_modes = json["spectralModeReadings"]
+        .as_array()
+        .expect("spectral mode readings are array");
+    assert!(
+        !spectral_modes.is_empty(),
+        "North Star packet must expose spectral mode readings"
+    );
+    for family in [
+        "workflowRiskAxisPressureMatrix",
+        "moleculeAtomOverlapCouplingMatrix",
+        "obstructionAxisCurvatureMatrix",
+        "operationSignatureDeltaMatrix",
+    ] {
+        assert!(
+            spectral_modes
+                .iter()
+                .any(|entry| entry["representationFamily"] == family),
+            "North Star packet must expose spectral mode for representation {family}"
+        );
+    }
+    assert!(
+        spectral_modes.iter().all(|entry| {
+            entry["sourceSpectralReadingRef"].as_str().is_some()
+                && entry["modeKind"].as_str().is_some()
+                && entry["spectralGapProxy"]["value"].as_str().is_some()
+                && entry["localizationIndex"]["value"].as_str().is_some()
+                && entry["matrixDensity"]["value"].as_str().is_some()
+                && entry["decomposabilityReading"].as_str().is_some()
+                && entry["repairPerturbationReading"].as_str().is_some()
+                && entry["evidenceBoundary"].as_str().is_some()
+                && entry["recommendedNextAction"].as_str().is_some()
+        }),
+        "spectral mode readings must carry source refs, mode metrics, decomposability, repair perturbation, and evidence boundaries"
+    );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]
             .as_array()
