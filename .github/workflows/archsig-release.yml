@@ -1,0 +1,205 @@
+name: ArchSig Release Assets
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to build and upload assets for"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archsig-release-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  release-context:
+    name: Resolve release tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      asset_tag: ${{ steps.tag.outputs.asset_tag }}
+    steps:
+      - name: Resolve tag
+        id: tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            tag="${{ github.event.release.tag_name }}"
+          else
+            tag="${{ inputs.tag }}"
+          fi
+
+          if [[ -z "$tag" ]]; then
+            echo "Release tag is empty" >&2
+            exit 1
+          fi
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "asset_tag=${tag//\//-}" >> "$GITHUB_OUTPUT"
+
+  build-binaries:
+    name: Build ${{ matrix.asset_name }}
+    needs: release-context
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - asset_name: linux-x86_64
+            runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary_name: archsig
+            archive_format: tar.gz
+          - asset_name: linux-arm64
+            runner: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            binary_name: archsig
+            archive_format: tar.gz
+          - asset_name: macos-universal
+            runner: macos-latest
+            target: universal-apple-darwin
+            binary_name: archsig
+            archive_format: tar.gz
+          - asset_name: windows-x86_64
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary_name: archsig.exe
+            archive_format: zip
+    runs-on: ${{ matrix.runner }}
+    env:
+      CARGO_TERM_COLOR: always
+      RELEASE_TAG: ${{ needs.release-context.outputs.tag }}
+      ASSET_TAG: ${{ needs.release-context.outputs.asset_tag }}
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-context.outputs.tag }}
+
+      - name: Build ArchSig
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist package/bin package/docs
+
+          if [[ "${{ matrix.target }}" == "universal-apple-darwin" ]]; then
+            rustup target add x86_64-apple-darwin aarch64-apple-darwin
+            cargo build --release --manifest-path tools/archsig/Cargo.toml --target x86_64-apple-darwin
+            cargo build --release --manifest-path tools/archsig/Cargo.toml --target aarch64-apple-darwin
+            lipo -create \
+              tools/archsig/target/x86_64-apple-darwin/release/archsig \
+              tools/archsig/target/aarch64-apple-darwin/release/archsig \
+              -output package/bin/archsig
+          else
+            rustup target add "${{ matrix.target }}"
+            cargo build --release --manifest-path tools/archsig/Cargo.toml --target "${{ matrix.target }}"
+            cp "tools/archsig/target/${{ matrix.target }}/release/${{ matrix.binary_name }}" "package/bin/${{ matrix.binary_name }}"
+          fi
+
+          cp LICENSE package/LICENSE
+          cp tools/archsig/README.md package/README.md
+          cp tools/archsig/docs/commands.md package/docs/commands.md
+
+      - name: Create tar archive
+        if: matrix.archive_format == 'tar.gz'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          archive="archsig-${ASSET_TAG}-${{ matrix.asset_name }}.tar.gz"
+          tar -czf "dist/$archive" -C package .
+
+      - name: Create zip archive
+        if: matrix.archive_format == 'zip'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $archive = "archsig-$env:ASSET_TAG-${{ matrix.asset_name }}.zip"
+          Compress-Archive -Path package/* -DestinationPath "dist/$archive"
+
+      - name: Upload binary archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: archsig-${{ matrix.asset_name }}
+          path: dist/*
+          if-no-files-found: error
+
+  package-skills:
+    name: Package ArchSig skills
+    needs: release-context
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ needs.release-context.outputs.tag }}
+      ASSET_TAG: ${{ needs.release-context.outputs.asset_tag }}
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-context.outputs.tag }}
+
+      - name: Create skills archive
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist
+          tar -czf "dist/archsig-skills-${ASSET_TAG}.tar.gz" -C tools/archsig skills
+
+      - name: Upload skills archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: archsig-skills
+          path: dist/*
+          if-no-files-found: error
+
+  publish-assets:
+    name: Upload release assets
+    needs:
+      - release-context
+      - build-binaries
+      - package-skills
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ needs.release-context.outputs.tag }}
+    steps:
+      - name: Download packaged assets
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd dist
+          sha256sum archsig-* > SHA256SUMS.txt
+
+      - name: Ensure release exists
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --generate-notes
+          fi
+
+      - name: Upload assets to release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gh release upload "$RELEASE_TAG" dist/* --clobber
