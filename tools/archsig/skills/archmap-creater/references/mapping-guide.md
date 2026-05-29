@@ -23,6 +23,34 @@ ArchMap authoring is source-grounded observation, not architecture invention and
 | Domain event, state update, migration, lifecycle transition | Event / state transition observation | `atomObservations[]`, `semanticObservations[]`, `projectionInfo[]` | Preserve source refs and missing preconditions. |
 | Test oracle, acceptance criterion, invariant check | Test oracle observation | `semanticObservations[]`, `projectionInfo[]` | Use as evidence for later operation support, not correctness proof. |
 
+## Atom Family Extraction Guide
+
+Use this section when deciding whether a source-backed reading belongs in `atomObservations[]`.
+Each atom should record one primitive architectural fact. If the candidate combines multiple
+facts, split it before writing the atom. If the candidate is still meaningful only as a workflow,
+responsibility, policy interpretation, concern, or missing evidence note, use the corresponding
+non-atom surface.
+
+| atomFamily | Good atom cue | Not an atom cue | Usually move to |
+| --- | --- | --- | --- |
+| `existence` | A selected file defines `BillingService`, a route module, a queue name, a DB model, or a command object. | A directory name suggests there is a service, but no file or symbol was read. | `observationGaps[]` if the component is expected but uninspected. |
+| `relation` | Source shows `OrderRoute` calling `OrderService.create`, a repository reading a table, or a task publishing to a queue. | Two files share a domain word, or an AST import exists without architectural boundary relevance. | `semanticObservations[]` for larger dependency readings; `observationGaps[]` for unexpanded framework edges. |
+| `capability` | A service exposes a command/query, a handler processes a message, a processor supports a MIME type, or an adapter exposes storage access. | The candidate describes the whole end-to-end request workflow. | `moleculeObservations[]` for composed responsibility; `semanticObservations[]` for workflow meaning. |
+| `state` | A model field, table column, cache key, enum status, job lifecycle marker, or persisted projection is defined or mutated. | A runtime value is guessed from domain knowledge or not present in selected evidence. | `observationGaps[]` for unavailable runtime state. |
+| `effect` | Code commits DB writes, sends email, invokes a provider, publishes an event, mutates object storage, or enqueues work. | A dependency name implies possible I/O but no effecting code path was read. | `observationGaps[]` or `concernHints[]` if review should check effect ordering. |
+| `authority` | Code checks workspace role, admin level, owner scope, RLS/session context, signed token, allowlist, or route dependency. | A schema has `user_id` but no access rule, ownership check, or authority boundary was inspected. | `semanticObservations[]` for authority architecture reading; `observationGaps[]` for route audit gaps. |
+| `trust` | Source verifies webhook signatures, JWT/JWKS, provider identity, delegated credentials, or treats LLM/provider output as untrusted until validation. | Any external API call is treated as trust evidence without an observed trust decision. | `concernHints[]` for provider trust review cues; `observationGaps[]` for missing provider logs. |
+| `contractSpecification` | DTO validation, precondition, postcondition, error mapping, idempotency key, retry rule, invariant, or bounded return shape is visible. | A passing test is generalized into universal correctness. | `semanticObservations[]` for behavior reading; `projectionInfo[]` for downstream handoff. |
+| `semantic` | Source names a domain identity, ownership meaning, unit, status meaning, or bounded business term. | A long process narrative combines many atoms and roles. | `semanticObservations[]` for larger meaning/workflow readings. |
+| `runtimeInteraction` | Supplied trace or log directly shows runtime call, edge, message, or effect. | Runtime behavior is expected from source code but no trace/log was supplied. | `observationGaps[]`; never measured-zero. |
+
+Anti-patterns:
+
+- Do not create a coarse atom such as "the authentication system owns all tenant access". Split observed role gates, token verification, session/RLS state, and admin bypass facts into atoms, then compose the larger reading as a molecule or semantic observation.
+- Do not create an atom only because AST, import graph, or route discovery found a symbol. Use that index to navigate to source evidence, then record the architectural fact supported by the source.
+- Do not use atom families such as `responsibility`, `workflow`, `policy`, `obstruction`, `lawViolation`, `forecast`, `qualityScore`, or `incidentCausality`.
+- Do not turn an unavailable trace, private secret, unexpanded framework convention, or unreviewed generated file into an observed atom.
+
 ## AAT-Facing Vs SFT-Facing
 
 AAT-facing observations preserve architecture structure:
@@ -59,6 +87,19 @@ Use conservative status and boundary text:
 | LLM inference without specific source refs | avoid the observation | `unmeasured` if retained as a gap | `low` |
 
 Never use measured absence for unavailable evidence. Use measured absence only when the selected measurement actually observed absence.
+
+## Source Reference And Boundary Requirements
+
+For every `atomObservations[]` entry:
+
+- `sourceRefs[]` must name the source artifacts that were actually read.
+- For `observationStatus: "observed"`, each supporting `sourceRefs[].artifactId` should resolve to `sourceUniverse.includedRefs[]`.
+- `evidenceBoundary` should say how the evidence was observed, usually `sourceObserved`, `assumedSource`, `unmeasured`, `unavailable`, `private`, or `outOfScope`.
+- `confidence` is qualitative review priority, not probability. Use `high` only for direct, local source evidence; use `medium` when the fact spans files or depends on supplied policy; use `low` when retained only as weak evidence.
+- `uncertainty[]` should preserve local caveats, such as missing runtime confirmation, framework expansion, sampled coverage, or partial route audit.
+- `nonConclusions[]` should prevent promotion to architecture truth, global correctness, lawfulness, or proof discharge.
+
+Move the candidate to `observationGaps[]` when the relevant evidence exists only as a private credential, provider log, runtime trace, generated file, framework expansion, production database row, or unreviewed test suite.
 
 ## Concern Hints
 

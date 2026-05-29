@@ -19,6 +19,9 @@ Create an `archmap-observation-map-v0` JSON artifact from the supplied bounded s
 ## Atom Reading
 
 Write `atomObservations[]` only for primitive architectural facts grounded in selected source refs.
+An atom has no coarse/fine scale. If a candidate summarizes a subsystem, responsibility, workflow, policy reading, or concern, split the primitive facts into atom observations and move the larger reading to `moleculeObservations[]`, `semanticObservations[]`, `observationGaps[]`, or `concernHints[]`.
+
+ASTs, symbol indexes, import graphs, route lists, and framework conventions may guide source navigation. They are not sufficient evidence by themselves. Cite the selected source refs that were actually read and that directly support the architectural fact.
 
 Common primitive fact families:
 
@@ -34,6 +37,14 @@ Common primitive fact families:
 - `runtimeInteraction`: trace/log-supported runtime edge, message, call, or effect
 
 Do not use `atomObservations[]` for responsibility, law violation, obstruction, forecast, quality, incident causality, or global correctness.
+
+Before emitting an observed atom:
+
+- Confirm the fact belongs to exactly one atomFamily.
+- Confirm the fact is primitive enough that it cannot be usefully split into smaller architectural observations.
+- Confirm `sourceRefs[].artifactId` resolves to `sourceUniverse.includedRefs[]`.
+- Preserve local uncertainty in `uncertainty[]` and `nonConclusions[]`.
+- Move unavailable runtime, private, generated, or unexpanded framework evidence to `observationGaps[]`.
 
 ## Observation Surfaces
 

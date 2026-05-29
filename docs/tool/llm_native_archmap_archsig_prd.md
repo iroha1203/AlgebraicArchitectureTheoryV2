@@ -104,6 +104,17 @@ atomObservation
 `confidence` は truth probability ではない。review priority、観測の粗さ、追加確認の必要性を
 読むための epistemic metadata である。
 
+Atom observation authoring では、atomFamily ごとに観測対象と禁止対象を skill / prompt
+pack / mapping guide で明示する。LLM は AST、symbol index、route list、framework convention
+を探索補助として使ってよいが、それらを Atom observation の根拠そのものとして扱わない。
+`sourceRefs` は実際に読んだ source evidence を指し、`evidenceBoundary` は source observed、
+assumed、unmeasured、private、unavailable、out-of-scope の違いを保持する。
+
+大きな workflow、責務、policy reading、review cue は coarse Atom として記録しない。
+primitive fact を `atomObservations` に置き、責務は `moleculeObservations`、意味・workflow
+reading は `semanticObservations`、不足 evidence は `observationGaps`、review cue は
+`concernHints` に分離する。
+
 ### R2. ArchMap は law-independent に保つ
 
 ArchMap は Atom、Molecule、Semantic observation、Observation gap を記録する。
