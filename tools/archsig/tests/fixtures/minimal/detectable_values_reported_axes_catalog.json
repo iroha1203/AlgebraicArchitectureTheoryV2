@@ -110,17 +110,18 @@
       ]
     },
     {
-      "fixtureId": "archmap-homomorphism-expressiveness",
-      "path": "tools/archsig/tests/fixtures/expressiveness/archmap_expressiveness_suite_v0.json",
+      "fixtureId": "archmap-atom-observation-regression",
+      "path": "tools/archsig/tests/fixtures/expressiveness/archmap_atom_observation_suite_v0.json",
       "artifactKind": "ArchMap",
       "frozenFor": [
-        "AAT concept coverage matrix",
-        "homomorphism boundary preservation"
+        "source-grounded Atom observations",
+        "molecule / semantic observations",
+        "observation gap and concern hint boundaries"
       ],
       "expectedBoundaries": [
-        "archMapHomomorphismClassification:partial",
-        "runtime:unmeasured",
-        "dynamic:unsupported"
+        "archMapAtomObservationReadiness:gapBlocked",
+        "observationGaps:notMeasuredZero",
+        "concernHints:notObstructionCircuit"
       ],
       "updateRuleRefs": [
         "axis-addition-requires-version-review",
@@ -350,7 +351,7 @@
       ],
       "defaultMeasurementBoundary": "unmeasured",
       "evidenceRequirements": [
-        "ArchMap mapItems preserve AAT-facing object / relation / semantic / law / flatness selectors"
+        "ArchMap atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, and concernHints are present with explicit boundaries"
       ],
       "theoremRefs": [
         "ArchMapModel.ArchMapPreservationPackage.aatHomomorphicRelation"
@@ -365,9 +366,9 @@
       ]
     },
     {
-      "axisId": "archMapHomomorphismClassification",
+      "axisId": "archMapAtomObservationReadiness",
       "layer": "archmap",
-      "valueType": "homomorphic | partial | lossy | nonHomomorphic | unmeasured",
+      "valueType": "ready | gapBlocked | concernOnly | unmeasured",
       "reportedIn": [
         "ArchMap Validation Report",
         "Feature Extension Report",
@@ -385,15 +386,15 @@
       ],
       "defaultMeasurementBoundary": "unmeasured",
       "evidenceRequirements": [
-        "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, signature-axis map, atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps",
-        "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit"
+        "ArchMap records atom observations, molecule observations, semantic observations, observation gaps, and concern hints without requiring mapItems or obstructionCircuitCandidates",
+        "observation gaps remain gaps and concern hints remain review cues"
       ],
       "theoremRefs": [
-        "ArchMapModel.AATHomomorphicRelation"
+        "Observation.ArchMapObservationLayer.observes_atoms"
       ],
       "compatibilityNotes": [
-        "homomorphic is bounded to the selected ArchMap domain and codomain",
-        "partial and lossy are review states, not failure to parse JSON"
+        "ready is bounded to the supplied source-grounded observation map",
+        "gapBlocked and concernOnly are review states, not failure to parse JSON"
       ],
       "nonConclusions": [
         "axis value compatibility does not prove semantic preservation",
@@ -509,22 +510,22 @@
         "axisOrLayer": "archMapAatProjection",
         "measurementBoundary": "unmeasured",
         "coverageAssumptions": [
-          "ArchMap mapItems preserve AAT-facing object / relation / semantic / law / flatness selectors"
+          "ArchMap atomObservations, moleculeObservations, semanticObservations, observationGaps, projectionInfo, and concernHints are present with explicit boundaries"
         ],
         "exactnessAssumptions": [
           "AAT-facing projection is a bounded preservation checklist, not JSON proof parsing"
         ]
       },
       {
-        "axisOrLayer": "archMapHomomorphismClassification",
+        "axisOrLayer": "archMapAtomObservationReadiness",
         "measurementBoundary": "unmeasured",
         "coverageAssumptions": [
-          "ArchMap declares or derives domain, codomain, object map, relation map, law map, obstruction map, signature-axis map, atom candidates, molecule candidates, obstruction circuit candidates, and observation gaps",
-          "forgetful, unmeasured, unsupported, and non-conclusion boundaries remain explicit"
+          "ArchMap records atom observations, molecule observations, semantic observations, observation gaps, and concern hints without requiring mapItems or obstructionCircuitCandidates",
+          "observation gaps remain gaps and concern hints remain review cues"
         ],
         "exactnessAssumptions": [
-          "homomorphic is bounded to the selected ArchMap domain and codomain",
-          "partial and lossy are review states, not failure to parse JSON"
+          "ready is bounded to the supplied source-grounded observation map",
+          "gapBlocked and concernOnly are review states, not failure to parse JSON"
         ]
       }
     ],
