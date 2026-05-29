@@ -619,6 +619,7 @@ pub struct ArchSigAnalysisPacketV0 {
     pub spectral_analysis_readings: Vec<ArchSigSpectralAnalysisReadingV0>,
     pub spectral_mode_readings: Vec<ArchSigSpectralModeReadingV0>,
     pub spectral_drilldown_readings: Vec<ArchSigSpectralDrilldownReadingV0>,
+    pub transfer_bridge_readings: Vec<ArchSigTransferBridgeReadingV0>,
     pub design_principle_readings: Vec<ArchSigDesignPrincipleReadingV0>,
     pub flatness_reading: ArchSigFlatnessReadingV0,
     pub static_runtime_semantic_layer_split: ArchSigLayerSplitV0,
@@ -1023,6 +1024,79 @@ pub struct ArchSigRepairAxisDeltaReadingV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigTransferBridgeReadingV0 {
+    pub transfer_bridge_id: String,
+    pub status: String,
+    pub transfer_matrix_entries: Vec<ArchSigTransferMatrixEntryV0>,
+    pub bridge_atom_families: Vec<ArchSigBridgeAtomFamilyReadingV0>,
+    pub evolution_risk_ranking: ArchSigEvolutionRiskRankingV0,
+    pub reading: String,
+    pub evidence_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigTransferMatrixEntryV0 {
+    pub operation_delta_ref: String,
+    pub transferred_axis_ref: String,
+    pub transfer_weight: i64,
+    pub transfer_kind: String,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigBridgeAtomFamilyReadingV0 {
+    pub bridge_id: String,
+    pub source_hub_molecule_ref: String,
+    pub target_hub_molecule_ref: String,
+    pub intermediate_molecule_refs: Vec<String>,
+    pub bridge_atom_families: Vec<String>,
+    pub bridge_score: i64,
+    pub path_pair_refs: Vec<String>,
+    pub shared_axis_refs: Vec<String>,
+    pub review_risk: String,
+    pub recommended_boundary_preparation: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigEvolutionRiskRankingV0 {
+    pub repair_transfer_risk_ranking: Vec<ArchSigRepairTransferRiskRankV0>,
+    pub boundary_preparation_ranking: Vec<ArchSigBoundaryPreparationRankV0>,
+    pub reading: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRepairTransferRiskRankV0 {
+    pub rank: usize,
+    pub operation_delta_ref: String,
+    pub positive_axis_count: usize,
+    pub transferred_axis_count: usize,
+    pub transfer_weight: i64,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigBoundaryPreparationRankV0 {
+    pub rank: usize,
+    pub pair_ref: String,
+    pub left_molecule_ref: String,
+    pub right_molecule_ref: String,
+    pub overlap_score: i64,
+    pub shared_atom_families: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigDesignPrincipleReadingV0 {
     pub principle_id: String,
     pub principle: String,
@@ -1145,6 +1219,7 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub spectral_readings_summary: Vec<String>,
     pub spectral_mode_summary: Vec<String>,
     pub spectral_drilldown_summary: Vec<String>,
+    pub transfer_bridge_summary: Vec<String>,
     pub repair_operation_summary: Vec<String>,
     pub complexity_transfer_notes: Vec<String>,
     pub coverage_gaps_and_exactness_blockers: Vec<String>,
@@ -1186,6 +1261,7 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub spectral_analysis_reading_count: usize,
     pub spectral_mode_reading_count: usize,
     pub spectral_drilldown_reading_count: usize,
+    pub transfer_bridge_reading_count: usize,
     pub design_principle_reading_count: usize,
     pub repair_operation_candidate_count: usize,
     pub operation_delta_count: usize,

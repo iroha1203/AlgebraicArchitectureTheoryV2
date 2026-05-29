@@ -1739,6 +1739,75 @@
       ]
     }
   ],
+  "transferBridgeReadings": [
+    {
+      "transferBridgeId": "transfer-bridge:fixture-archmap-atom-observation",
+      "status": "nonConclusion",
+      "transferMatrixEntries": [],
+      "bridgeAtomFamilies": [
+        {
+          "bridgeId": "bridge:molecule-user-request-responsibility:molecule-user-request-responsibility",
+          "sourceHubMoleculeRef": "molecule:user-request-responsibility",
+          "targetHubMoleculeRef": "molecule:user-request-responsibility",
+          "intermediateMoleculeRefs": [],
+          "bridgeAtomFamilies": [],
+          "bridgeScore": 0,
+          "pathPairRefs": [],
+          "sharedAxisRefs": [
+            "authorityTrustBoundary",
+            "llmOutputMediation",
+            "permissionCoverage",
+            "sourceBackedDomainCohesion",
+            "stateEffectReconciliation"
+          ],
+          "reviewRisk": "high",
+          "recommendedBoundaryPreparation": "review bridge atom families before assuming molecule:user-request-responsibility and molecule:user-request-responsibility are independent architecture hubs",
+          "evidenceBoundary": "bridge path is computed from high-overlap molecule pairs and shared atom families, not from direct source dependency proof",
+          "nonConclusions": [
+            "ArchSig analysis packet is not a Lean theorem proof",
+            "ArchSig analysis packet is not global architecture truth",
+            "ArchSig analysis packet does not prove source extraction completeness",
+            "signature axes are law-policy-relative, not universal quality scores",
+            "flatness reading is blocked by coverage gaps and exactness assumptions",
+            "repair operation candidates are not automatic safe refactorings"
+          ]
+        }
+      ],
+      "evolutionRiskRanking": {
+        "repairTransferRiskRanking": [
+          {
+            "rank": 1,
+            "operationDeltaRef": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed",
+            "positiveAxisCount": 1,
+            "transferredAxisCount": 0,
+            "transferWeight": 1,
+            "reading": "operation-delta:repair-obstruction-semantic-contract-mismatch-computed has 1 target-positive axis/axes and 0 transferred axis/axes"
+          }
+        ],
+        "boundaryPreparationRanking": [],
+        "reading": "evolution risk ranks repairs by transfer-axis pressure and molecule pairs by boundary-preparation need",
+        "nonConclusions": [
+          "ArchSig analysis packet is not a Lean theorem proof",
+          "ArchSig analysis packet is not global architecture truth",
+          "ArchSig analysis packet does not prove source extraction completeness",
+          "signature axes are law-policy-relative, not universal quality scores",
+          "flatness reading is blocked by coverage gaps and exactness assumptions",
+          "repair operation candidates are not automatic safe refactorings"
+        ]
+      },
+      "reading": "transfer bridge reading connects repair transfer axes, bridge atom families, and evolution risk ranking",
+      "evidenceBoundary": "transfer bridge is derived from ArchMap atom/molecule overlap and ArchSig repair delta summaries; it is not a repair correctness theorem",
+      "recommendedNextAction": "review bridge atom families and top transfer-risk repairs before applying local architecture changes",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
   "designPrincipleReadings": [
     {
       "principleId": "principle:informationhiding",
@@ -2668,6 +2737,9 @@
     ],
     "spectralDrilldownSummary": [
       "spectral-drilldown:fixture-archmap-atom-observation atomFamilies=3 overlapPairs=0 repairAxisDeltas=1 (needsReview)"
+    ],
+    "transferBridgeSummary": [
+      "transfer-bridge:fixture-archmap-atom-observation transfers=0 bridges=1 repairRanks=1 boundaryRanks=0 (nonConclusion)"
     ],
     "repairOperationSummary": [
       "repair:obstruction-semantic-contract-mismatch-computed targets [\"obstruction:semantic-contract-mismatch:computed\"]"
