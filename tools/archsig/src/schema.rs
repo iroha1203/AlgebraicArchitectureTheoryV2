@@ -618,6 +618,7 @@ pub struct ArchSigAnalysisPacketV0 {
     pub workflow_risk_readings: Vec<ArchSigWorkflowRiskReadingV0>,
     pub spectral_analysis_readings: Vec<ArchSigSpectralAnalysisReadingV0>,
     pub spectral_mode_readings: Vec<ArchSigSpectralModeReadingV0>,
+    pub spectral_drilldown_readings: Vec<ArchSigSpectralDrilldownReadingV0>,
     pub design_principle_readings: Vec<ArchSigDesignPrincipleReadingV0>,
     pub flatness_reading: ArchSigFlatnessReadingV0,
     pub static_runtime_semantic_layer_split: ArchSigLayerSplitV0,
@@ -969,6 +970,59 @@ pub struct ArchSigSpectralModeComponentV0 {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ArchSigSpectralDrilldownReadingV0 {
+    pub drilldown_id: String,
+    pub status: String,
+    pub source_spectral_mode_refs: Vec<String>,
+    pub dominant_atom_family_composition: Vec<ArchSigDominantAtomFamilyCompositionV0>,
+    pub high_overlap_molecule_pairs: Vec<ArchSigHighOverlapMoleculePairV0>,
+    pub repair_axis_delta_readings: Vec<ArchSigRepairAxisDeltaReadingV0>,
+    pub reading: String,
+    pub evidence_boundary: String,
+    pub recommended_next_action: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigDominantAtomFamilyCompositionV0 {
+    pub source_component_ref: String,
+    pub source_component_kind: String,
+    pub atom_family: String,
+    pub count: usize,
+    pub atom_observation_refs: Vec<String>,
+    pub reading: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigHighOverlapMoleculePairV0 {
+    pub pair_id: String,
+    pub left_molecule_ref: String,
+    pub right_molecule_ref: String,
+    pub overlap_score: i64,
+    pub shared_atom_families: Vec<String>,
+    pub shared_atom_refs: Vec<String>,
+    pub boundary_advice: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchSigRepairAxisDeltaReadingV0 {
+    pub operation_delta_ref: String,
+    pub operation_kind: String,
+    pub positive_delta_axes: Vec<String>,
+    pub negative_delta_axes: Vec<String>,
+    pub neutral_or_unknown_axes: Vec<String>,
+    pub transfer_risk_refs: Vec<String>,
+    pub reading: String,
+    pub evidence_boundary: String,
+    pub non_conclusions: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArchSigDesignPrincipleReadingV0 {
     pub principle_id: String,
     pub principle: String,
@@ -1090,6 +1144,7 @@ pub struct ArchSigLlmInterpretationPacketV0 {
     pub analytic_readings_summary: Vec<String>,
     pub spectral_readings_summary: Vec<String>,
     pub spectral_mode_summary: Vec<String>,
+    pub spectral_drilldown_summary: Vec<String>,
     pub repair_operation_summary: Vec<String>,
     pub complexity_transfer_notes: Vec<String>,
     pub coverage_gaps_and_exactness_blockers: Vec<String>,
@@ -1130,6 +1185,7 @@ pub struct ArchSigAnalysisPacketValidationSummaryV0 {
     pub workflow_risk_reading_count: usize,
     pub spectral_analysis_reading_count: usize,
     pub spectral_mode_reading_count: usize,
+    pub spectral_drilldown_reading_count: usize,
     pub design_principle_reading_count: usize,
     pub repair_operation_candidate_count: usize,
     pub operation_delta_count: usize,

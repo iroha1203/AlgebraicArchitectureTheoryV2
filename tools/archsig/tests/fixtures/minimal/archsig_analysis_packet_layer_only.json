@@ -1479,6 +1479,87 @@
       ]
     }
   ],
+  "spectralDrilldownReadings": [
+    {
+      "drilldownId": "spectral-drilldown:fixture-archmap-atom-observation",
+      "status": "needsReview",
+      "sourceSpectralModeRefs": [
+        "spectral-mode:spectral-workflow-risk-axis-pressure",
+        "spectral-mode:spectral-molecule-atom-overlap-coupling",
+        "spectral-mode:spectral-obstruction-axis-curvature",
+        "spectral-mode:spectral-operation-signature-delta"
+      ],
+      "dominantAtomFamilyComposition": [
+        {
+          "sourceComponentRef": "molecule:user-request-responsibility",
+          "sourceComponentKind": "workflow",
+          "atomFamily": "existence",
+          "count": 2,
+          "atomObservationRefs": [
+            "atom:component:route-users",
+            "atom:component:service-user"
+          ],
+          "reading": "molecule:user-request-responsibility contributes 2 observed existence atom(s) to the dominant spectral mode"
+        },
+        {
+          "sourceComponentRef": "molecule:user-request-responsibility",
+          "sourceComponentKind": "workflow",
+          "atomFamily": "contractSpecification",
+          "count": 1,
+          "atomObservationRefs": [
+            "atom:contract:create-user"
+          ],
+          "reading": "molecule:user-request-responsibility contributes 1 observed contractSpecification atom(s) to the dominant spectral mode"
+        },
+        {
+          "sourceComponentRef": "molecule:user-request-responsibility",
+          "sourceComponentKind": "workflow",
+          "atomFamily": "relation",
+          "count": 1,
+          "atomObservationRefs": [
+            "atom:relation:route-service"
+          ],
+          "reading": "molecule:user-request-responsibility contributes 1 observed relation atom(s) to the dominant spectral mode"
+        }
+      ],
+      "highOverlapMoleculePairs": [],
+      "repairAxisDeltaReadings": [
+        {
+          "operationDeltaRef": "operation-delta:observe-before-repair",
+          "operationKind": "evidence-enrichment",
+          "positiveDeltaAxes": [],
+          "negativeDeltaAxes": [
+            "sig-axis:layer-violation"
+          ],
+          "neutralOrUnknownAxes": [],
+          "transferRiskRefs": [
+            "gap-runtime-user-db-trace"
+          ],
+          "reading": "operation has 0 target-positive axis/axes and 1 transferred or side-effect axis/axes; review complexity movement before applying repair",
+          "evidenceBoundary": "positive axes come from target obstruction support; negative axes are touched but not target axes; neutral axes are unmentioned under current operation delta evidence",
+          "nonConclusions": [
+            "ArchSig analysis packet is not a Lean theorem proof",
+            "ArchSig analysis packet is not global architecture truth",
+            "ArchSig analysis packet does not prove source extraction completeness",
+            "signature axes are law-policy-relative, not universal quality scores",
+            "flatness reading is blocked by coverage gaps and exactness assumptions",
+            "repair operation candidates are not automatic safe refactorings"
+          ]
+        }
+      ],
+      "reading": "spectral drilldown explains dominant modes with atom-family composition, molecule overlap pairs, and repair axis deltas",
+      "evidenceBoundary": "drilldown is derived from ArchMap atom/molecule observations and ArchSig spectral summaries; it is not exact eigendecomposition or repair correctness",
+      "recommendedNextAction": "review dominant atom families, high-overlap molecule pairs, and positive/negative repair delta axes before changing boundaries",
+      "nonConclusions": [
+        "ArchSig analysis packet is not a Lean theorem proof",
+        "ArchSig analysis packet is not global architecture truth",
+        "ArchSig analysis packet does not prove source extraction completeness",
+        "signature axes are law-policy-relative, not universal quality scores",
+        "flatness reading is blocked by coverage gaps and exactness assumptions",
+        "repair operation candidates are not automatic safe refactorings"
+      ]
+    }
+  ],
   "designPrincipleReadings": [
     {
       "principleId": "principle:informationhiding",
@@ -2239,6 +2320,9 @@
       "moleculeAtomOverlapCouplingMatrix delocalizedCouplingMode gap=4.000 localization=1.000 density=1.000 (needsReview)",
       "obstructionAxisCurvatureMatrix curvatureMode gap=0.000 localization=0.000 density=0.000 (nonConclusion)",
       "operationSignatureDeltaMatrix broadPerturbationMode gap=1.000 localization=1.000 density=1.000 (needsReview)"
+    ],
+    "spectralDrilldownSummary": [
+      "spectral-drilldown:fixture-archmap-atom-observation atomFamilies=3 overlapPairs=0 repairAxisDeltas=1 (needsReview)"
     ],
     "repairOperationSummary": [],
     "complexityTransferNotes": [

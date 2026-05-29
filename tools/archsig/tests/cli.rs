@@ -826,6 +826,45 @@ fn assert_north_star_packet_surfaces(json: &Value) {
         }),
         "spectral mode readings must carry source refs, mode metrics, decomposability, repair perturbation, and evidence boundaries"
     );
+    let spectral_drilldowns = json["spectralDrilldownReadings"]
+        .as_array()
+        .expect("spectral drilldown readings are array");
+    assert!(
+        !spectral_drilldowns.is_empty(),
+        "North Star packet must expose spectral drilldown readings"
+    );
+    assert!(
+        spectral_drilldowns.iter().all(|entry| {
+            entry["sourceSpectralModeRefs"]
+                .as_array()
+                .is_some_and(|refs| !refs.is_empty())
+                && entry["dominantAtomFamilyComposition"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["repairAxisDeltaReadings"]
+                    .as_array()
+                    .is_some_and(|items| !items.is_empty())
+                && entry["evidenceBoundary"].as_str().is_some()
+                && entry["recommendedNextAction"].as_str().is_some()
+        }),
+        "spectral drilldown readings must carry source mode refs, atom-family composition, repair axis deltas, and evidence boundaries"
+    );
+    assert!(
+        spectral_drilldowns.iter().all(|entry| {
+            entry["dominantAtomFamilyComposition"]
+                .as_array()
+                .expect("dominant atom family composition is array")
+                .iter()
+                .all(|composition| {
+                    composition["atomFamily"].as_str().is_some()
+                        && composition["count"].as_u64().is_some_and(|count| count > 0)
+                        && composition["atomObservationRefs"]
+                            .as_array()
+                            .is_some_and(|refs| !refs.is_empty())
+                })
+        }),
+        "dominant atom-family composition must carry atom family counts and refs"
+    );
     assert!(
         json["llmInterpretationPacket"]["recommendedHumanReviewFocus"]
             .as_array()

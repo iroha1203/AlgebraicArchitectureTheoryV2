@@ -11,12 +11,14 @@ use crate::{
     ArchSigAnalyticRepresentationV0, ArchSigArchitectureObjectProjectionV0,
     ArchSigArchitectureStateV0, ArchSigAtomConfigurationSummaryV0, ArchSigBoundedJudgementV0,
     ArchSigChangeImpactReadingV0, ArchSigCouplingCohesionReadingV0, ArchSigDesignPressureReadingV0,
-    ArchSigDesignPrincipleReadingV0, ArchSigFlatnessReadingV0, ArchSigInvariantFamilyReadingV0,
+    ArchSigDesignPrincipleReadingV0, ArchSigDominantAtomFamilyCompositionV0,
+    ArchSigFlatnessReadingV0, ArchSigHighOverlapMoleculePairV0, ArchSigInvariantFamilyReadingV0,
     ArchSigLawUniverseReadingV0, ArchSigLayerSplitV0, ArchSigLlmInterpretationPacketV0,
     ArchSigMoleculeReadingV0, ArchSigObstructionCircuitV0, ArchSigOperationDeltaReadingV0,
-    ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairOperationCandidateV0,
-    ArchSigSignatureAxisReadingV0, ArchSigSpectralAnalysisReadingV0,
-    ArchSigSpectralDominantComponentV0, ArchSigSpectralMatrixShapeV0,
+    ArchSigPathHomotopyDiagramReadingV0, ArchSigRepairAxisDeltaReadingV0,
+    ArchSigRepairOperationCandidateV0, ArchSigSignatureAxisReadingV0,
+    ArchSigSpectralAnalysisReadingV0, ArchSigSpectralDominantComponentV0,
+    ArchSigSpectralDrilldownReadingV0, ArchSigSpectralMatrixShapeV0,
     ArchSigSpectralModeComponentV0, ArchSigSpectralModeReadingV0, ArchSigSpectralValueV0,
     ArchSigWorkflowAtomFamilyCountV0, ArchSigWorkflowRiskAxisReadingV0,
     ArchSigWorkflowRiskReadingV0, LAW_POLICY_SCHEMA_VERSION, LawPolicyDocumentV0,
@@ -91,6 +93,14 @@ pub fn build_archsig_analysis_packet(
         &operation_deltas,
     );
     let spectral_mode_readings = build_spectral_mode_readings(&spectral_analysis_readings);
+    let spectral_drilldown_readings = build_spectral_drilldown_readings(
+        archmap,
+        &spectral_mode_readings,
+        &workflow_risk_readings,
+        &obstruction_circuits,
+        &signature_axes,
+        &operation_deltas,
+    );
     let path_homotopy_diagram_readings =
         build_path_homotopy_diagram_readings(archmap, &molecule_readings, &obstruction_circuits);
     let bounded_judgements = build_bounded_judgements(
@@ -124,6 +134,7 @@ pub fn build_archsig_analysis_packet(
         &workflow_risk_readings,
         &spectral_analysis_readings,
         &spectral_mode_readings,
+        &spectral_drilldown_readings,
         &repair_operation_candidates,
         &bounded_judgements,
     );
@@ -164,6 +175,7 @@ pub fn build_archsig_analysis_packet(
         workflow_risk_readings,
         spectral_analysis_readings,
         spectral_mode_readings,
+        spectral_drilldown_readings,
         design_principle_readings,
         flatness_reading,
         static_runtime_semantic_layer_split: build_layer_split(archmap),
@@ -2295,6 +2307,333 @@ fn spectral_mode_next_action(
     .to_string()
 }
 
+fn build_spectral_drilldown_readings(
+    archmap: &ArchMapDocumentV0,
+    spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
+    workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+) -> Vec<ArchSigSpectralDrilldownReadingV0> {
+    let dominant_atom_family_composition =
+        build_dominant_atom_family_composition(archmap, spectral_mode_readings);
+    let high_overlap_molecule_pairs = build_high_overlap_molecule_pairs(archmap);
+    let repair_axis_delta_readings =
+        build_repair_axis_delta_readings(obstruction_circuits, signature_axes, operation_deltas);
+    let has_transfer_risk = repair_axis_delta_readings
+        .iter()
+        .any(|reading| !reading.negative_delta_axes.is_empty());
+    let status = if dominant_atom_family_composition.is_empty()
+        && high_overlap_molecule_pairs.is_empty()
+        && repair_axis_delta_readings.is_empty()
+    {
+        "nonConclusion"
+    } else if !high_overlap_molecule_pairs.is_empty()
+        || has_transfer_risk
+        || workflow_risk_readings
+            .iter()
+            .any(|reading| reading.status == "needsReview")
+    {
+        "needsReview"
+    } else {
+        "actionable"
+    };
+
+    vec![ArchSigSpectralDrilldownReadingV0 {
+        drilldown_id: format!("spectral-drilldown:{}", stable_id(&archmap.map_id)),
+        status: status.to_string(),
+        source_spectral_mode_refs: spectral_mode_readings
+            .iter()
+            .map(|reading| reading.spectral_mode_id.clone())
+            .collect(),
+        dominant_atom_family_composition,
+        high_overlap_molecule_pairs,
+        repair_axis_delta_readings,
+        reading:
+            "spectral drilldown explains dominant modes with atom-family composition, molecule overlap pairs, and repair axis deltas"
+                .to_string(),
+        evidence_boundary:
+            "drilldown is derived from ArchMap atom/molecule observations and ArchSig spectral summaries; it is not exact eigendecomposition or repair correctness"
+                .to_string(),
+        recommended_next_action:
+            "review dominant atom families, high-overlap molecule pairs, and positive/negative repair delta axes before changing boundaries"
+                .to_string(),
+        non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+    }]
+}
+
+fn build_dominant_atom_family_composition(
+    archmap: &ArchMapDocumentV0,
+    spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
+) -> Vec<ArchSigDominantAtomFamilyCompositionV0> {
+    let molecule_by_id = archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| (molecule.molecule_observation_id.as_str(), molecule))
+        .collect::<BTreeMap<_, _>>();
+    let atom_by_id = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom))
+        .collect::<BTreeMap<_, _>>();
+    let mut composition = Vec::new();
+    let mut seen_composition = BTreeSet::<(String, String)>::new();
+    for component in spectral_mode_readings
+        .iter()
+        .flat_map(|mode| mode.mode_components.iter())
+    {
+        if component.component_kind != "workflow" && component.component_kind != "molecule" {
+            continue;
+        }
+        let Some(molecule) = molecule_by_id.get(component.component_ref.as_str()) else {
+            continue;
+        };
+        let mut refs_by_family = BTreeMap::<String, Vec<String>>::new();
+        for atom_ref in &molecule.atom_observation_refs {
+            if let Some(atom) = atom_by_id.get(atom_ref.as_str()) {
+                refs_by_family
+                    .entry(atom.atom_family.clone())
+                    .or_default()
+                    .push(atom.atom_observation_id.clone());
+            }
+        }
+        for (atom_family, mut atom_refs) in refs_by_family {
+            if !seen_composition.insert((component.component_ref.clone(), atom_family.clone())) {
+                continue;
+            }
+            atom_refs.sort();
+            composition.push(ArchSigDominantAtomFamilyCompositionV0 {
+                source_component_ref: component.component_ref.clone(),
+                source_component_kind: component.component_kind.clone(),
+                atom_family: atom_family.clone(),
+                count: atom_refs.len(),
+                atom_observation_refs: atom_refs,
+                reading: format!(
+                    "{} contributes {} observed {} atom(s) to the dominant spectral mode",
+                    component.component_ref,
+                    molecule
+                        .atom_observation_refs
+                        .iter()
+                        .filter(|atom_ref| {
+                            atom_by_id
+                                .get(atom_ref.as_str())
+                                .is_some_and(|atom| atom.atom_family == atom_family)
+                        })
+                        .count(),
+                    atom_family
+                ),
+            });
+        }
+    }
+    composition.sort_by(|left, right| {
+        right
+            .count
+            .cmp(&left.count)
+            .then(left.source_component_ref.cmp(&right.source_component_ref))
+            .then(left.atom_family.cmp(&right.atom_family))
+    });
+    composition
+}
+
+fn build_high_overlap_molecule_pairs(
+    archmap: &ArchMapDocumentV0,
+) -> Vec<ArchSigHighOverlapMoleculePairV0> {
+    let atom_family_by_id = archmap
+        .atom_observations
+        .iter()
+        .map(|atom| (atom.atom_observation_id.as_str(), atom.atom_family.as_str()))
+        .collect::<BTreeMap<_, _>>();
+    let molecule_atoms = archmap
+        .molecule_observations
+        .iter()
+        .map(|molecule| {
+            let atom_refs = molecule
+                .atom_observation_refs
+                .iter()
+                .cloned()
+                .collect::<BTreeSet<_>>();
+            let family_counts = molecule
+                .atom_observation_refs
+                .iter()
+                .filter_map(|atom_ref| atom_family_by_id.get(atom_ref.as_str()).copied())
+                .fold(BTreeMap::<String, usize>::new(), |mut counts, family| {
+                    *counts.entry(family.to_string()).or_default() += 1;
+                    counts
+                });
+            (
+                molecule.molecule_observation_id.clone(),
+                atom_refs,
+                family_counts,
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut pairs = Vec::new();
+    for left_index in 0..molecule_atoms.len() {
+        for right_index in (left_index + 1)..molecule_atoms.len() {
+            let (left_id, left_atoms, left_families) = &molecule_atoms[left_index];
+            let (right_id, right_atoms, right_families) = &molecule_atoms[right_index];
+            let shared_atom_refs = left_atoms
+                .intersection(right_atoms)
+                .cloned()
+                .collect::<Vec<_>>();
+            let shared_atom_families = left_families
+                .iter()
+                .filter_map(|(family, left_count)| {
+                    right_families
+                        .get(family)
+                        .map(|right_count| (family.clone(), (*left_count).min(*right_count)))
+                })
+                .collect::<Vec<_>>();
+            let family_overlap = shared_atom_families
+                .iter()
+                .map(|(_, count)| *count)
+                .sum::<usize>() as i64;
+            let overlap_score = shared_atom_refs.len() as i64 * 3 + family_overlap;
+            if overlap_score == 0 {
+                continue;
+            }
+            let mut shared_families = shared_atom_families
+                .into_iter()
+                .map(|(family, _)| family)
+                .collect::<Vec<_>>();
+            shared_families.sort();
+            pairs.push(ArchSigHighOverlapMoleculePairV0 {
+                pair_id: format!(
+                    "overlap-pair:{}:{}",
+                    stable_id(left_id),
+                    stable_id(right_id)
+                ),
+                left_molecule_ref: left_id.clone(),
+                right_molecule_ref: right_id.clone(),
+                overlap_score,
+                shared_atom_families: shared_families,
+                shared_atom_refs,
+                boundary_advice: overlap_boundary_advice(left_id, right_id),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            });
+        }
+    }
+    pairs.sort_by(|left, right| {
+        right
+            .overlap_score
+            .cmp(&left.overlap_score)
+            .then(left.left_molecule_ref.cmp(&right.left_molecule_ref))
+            .then(left.right_molecule_ref.cmp(&right.right_molecule_ref))
+    });
+    pairs.truncate(12);
+    pairs
+}
+
+fn overlap_boundary_advice(left_id: &str, right_id: &str) -> String {
+    format!(
+        "review shared atom families before splitting or merging {left_id} and {right_id}; overlap may indicate a semantic hub or leaked responsibility"
+    )
+}
+
+fn build_repair_axis_delta_readings(
+    obstruction_circuits: &[ArchSigObstructionCircuitV0],
+    signature_axes: &[ArchSigSignatureAxisReadingV0],
+    operation_deltas: &[ArchSigOperationDeltaReadingV0],
+) -> Vec<ArchSigRepairAxisDeltaReadingV0> {
+    let all_axes = signature_axes
+        .iter()
+        .map(|axis| axis.signature_axis_id.clone())
+        .collect::<BTreeSet<_>>();
+    let obstruction_axes = obstruction_circuits
+        .iter()
+        .map(|circuit| {
+            (
+                circuit.obstruction_circuit_id.as_str(),
+                circuit
+                    .signature_axis_refs
+                    .iter()
+                    .cloned()
+                    .collect::<BTreeSet<_>>(),
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    operation_deltas
+        .iter()
+        .map(|delta| {
+            let positive_axes = delta
+                .support_refs
+                .iter()
+                .filter_map(|support_ref| obstruction_axes.get(support_ref.as_str()))
+                .flat_map(|axes| axes.iter().cloned())
+                .collect::<BTreeSet<_>>();
+            let mentioned_axes = delta
+                .signature_delta
+                .iter()
+                .flat_map(|entry| {
+                    all_axes
+                        .iter()
+                        .filter(|axis| entry.contains(axis.as_str()))
+                        .cloned()
+                        .collect::<Vec<_>>()
+                })
+                .chain(delta.decreased_axes.iter().cloned())
+                .filter(|axis| all_axes.contains(axis))
+                .collect::<BTreeSet<_>>();
+            let positive_delta_axes = if positive_axes.is_empty() {
+                delta
+                    .decreased_axes
+                    .iter()
+                    .filter(|axis| all_axes.contains(*axis))
+                    .cloned()
+                    .collect::<BTreeSet<_>>()
+            } else {
+                positive_axes
+            };
+            let negative_delta_axes = mentioned_axes
+                .difference(&positive_delta_axes)
+                .cloned()
+                .collect::<Vec<_>>();
+            let neutral_or_unknown_axes = all_axes
+                .difference(&mentioned_axes)
+                .cloned()
+                .collect::<Vec<_>>();
+            let positive_delta_axes = positive_delta_axes.into_iter().collect::<Vec<_>>();
+            ArchSigRepairAxisDeltaReadingV0 {
+                operation_delta_ref: delta.operation_delta_id.clone(),
+                operation_kind: delta.operation_kind.clone(),
+                reading: repair_axis_delta_reading_text(
+                    &positive_delta_axes,
+                    &negative_delta_axes,
+                    &neutral_or_unknown_axes,
+                ),
+                positive_delta_axes,
+                negative_delta_axes,
+                neutral_or_unknown_axes,
+                transfer_risk_refs: delta.transferred_obstructions.clone(),
+                evidence_boundary:
+                    "positive axes come from target obstruction support; negative axes are touched but not target axes; neutral axes are unmentioned under current operation delta evidence"
+                        .to_string(),
+                non_conclusions: strings(&REQUIRED_NON_CONCLUSIONS),
+            }
+        })
+        .collect()
+}
+
+fn repair_axis_delta_reading_text(
+    positive_delta_axes: &[String],
+    negative_delta_axes: &[String],
+    neutral_or_unknown_axes: &[String],
+) -> String {
+    if !negative_delta_axes.is_empty() {
+        format!(
+            "operation has {} target-positive axis/axes and {} transferred or side-effect axis/axes; review complexity movement before applying repair",
+            positive_delta_axes.len(),
+            negative_delta_axes.len()
+        )
+    } else if !positive_delta_axes.is_empty() && neutral_or_unknown_axes.is_empty() {
+        "operation touches only target-positive axes under current evidence, but this is not repair correctness"
+            .to_string()
+    } else {
+        "operation has bounded positive axes and leaves some axes neutral or unknown under current evidence"
+            .to_string()
+    }
+}
+
 fn build_design_principle_readings(
     archmap: &ArchMapDocumentV0,
     invariant_readings: &[ArchSigInvariantFamilyReadingV0],
@@ -2656,6 +2995,7 @@ fn build_llm_interpretation_packet(
     workflow_risk_readings: &[ArchSigWorkflowRiskReadingV0],
     spectral_analysis_readings: &[ArchSigSpectralAnalysisReadingV0],
     spectral_mode_readings: &[ArchSigSpectralModeReadingV0],
+    spectral_drilldown_readings: &[ArchSigSpectralDrilldownReadingV0],
     repair_candidates: &[ArchSigRepairOperationCandidateV0],
     bounded_judgements: &[ArchSigBoundedJudgementV0],
 ) -> ArchSigLlmInterpretationPacketV0 {
@@ -2728,6 +3068,19 @@ fn build_llm_interpretation_packet(
                     reading.spectral_gap_proxy.value,
                     reading.localization_index.value,
                     reading.matrix_density.value,
+                    reading.status
+                )
+            })
+            .collect(),
+        spectral_drilldown_summary: spectral_drilldown_readings
+            .iter()
+            .map(|reading| {
+                format!(
+                    "{} atomFamilies={} overlapPairs={} repairAxisDeltas={} ({})",
+                    reading.drilldown_id,
+                    reading.dominant_atom_family_composition.len(),
+                    reading.high_overlap_molecule_pairs.len(),
+                    reading.repair_axis_delta_readings.len(),
                     reading.status
                 )
             })
@@ -2829,6 +3182,7 @@ pub fn validate_archsig_analysis_packet_report(
         check_workflow_risk_surface(packet),
         check_spectral_analysis_surface(packet),
         check_spectral_mode_surface(packet),
+        check_spectral_drilldown_surface(packet),
         check_law_relative_analysis(packet),
         check_signature_and_flatness(packet),
         check_repair_candidates(packet),
@@ -2852,6 +3206,7 @@ pub fn validate_archsig_analysis_packet_report(
         workflow_risk_reading_count: packet.workflow_risk_readings.len(),
         spectral_analysis_reading_count: packet.spectral_analysis_readings.len(),
         spectral_mode_reading_count: packet.spectral_mode_readings.len(),
+        spectral_drilldown_reading_count: packet.spectral_drilldown_readings.len(),
         design_principle_reading_count: packet.design_principle_readings.len(),
         repair_operation_candidate_count: packet.repair_operation_candidates.len(),
         operation_delta_count: packet.operation_deltas.len(),
@@ -3484,6 +3839,199 @@ fn check_spectral_mode_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCh
     check_from_examples(
         "archsig-analysis-packet-spectral-mode-surface",
         "packet exposes bounded spectral mode readings for localization, decomposability, and repair perturbation review",
+        examples,
+        "fail",
+    )
+}
+
+fn check_spectral_drilldown_surface(packet: &ArchSigAnalysisPacketV0) -> ValidationCheck {
+    let mode_ids = set(packet
+        .spectral_mode_readings
+        .iter()
+        .map(|reading| reading.spectral_mode_id.as_str()));
+    let atom_ids = set(packet
+        .molecule_readings
+        .iter()
+        .flat_map(|reading| reading.atom_observation_refs.iter().map(String::as_str)));
+    let molecule_ids = set(packet
+        .molecule_readings
+        .iter()
+        .map(|reading| reading.molecule_observation_ref.as_str()));
+    let axis_ids = set(packet
+        .signature_axes
+        .iter()
+        .map(|axis| axis.signature_axis_id.as_str()));
+    let operation_ids = set(packet
+        .operation_deltas
+        .iter()
+        .map(|delta| delta.operation_delta_id.as_str()));
+    let allowed_statuses =
+        BTreeSet::from(["actionable", "needsReview", "blocked", "nonConclusion"]);
+    let mut examples = Vec::new();
+    if packet.spectral_drilldown_readings.is_empty() {
+        examples.push(generic_validation_example(
+            "spectralDrilldownReadings",
+            "empty",
+            "packet must expose spectral drilldown readings for mode explanation",
+        ));
+    }
+    examples.extend(duplicate_examples(
+        "spectralDrilldownReadings[].drilldownId",
+        duplicates(
+            packet
+                .spectral_drilldown_readings
+                .iter()
+                .map(|reading| reading.drilldown_id.as_str()),
+        ),
+    ));
+    for reading in &packet.spectral_drilldown_readings {
+        if !allowed_statuses.contains(reading.status.as_str()) {
+            examples.push(generic_validation_example(
+                &reading.drilldown_id,
+                &reading.status,
+                "spectral drilldown status must be actionable, needsReview, blocked, or nonConclusion",
+            ));
+        }
+        if reading.source_spectral_mode_refs.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.drilldown_id,
+                "sourceSpectralModeRefs",
+                "spectral drilldown must reference source spectral modes",
+            ));
+        }
+        for mode_ref in &reading.source_spectral_mode_refs {
+            if !mode_ids.contains(mode_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.drilldown_id,
+                    mode_ref,
+                    "spectral drilldown references an unknown spectral mode",
+                ));
+            }
+        }
+        if reading.dominant_atom_family_composition.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.drilldown_id,
+                "dominantAtomFamilyComposition",
+                "spectral drilldown must explain dominant mode atom families",
+            ));
+        }
+        for composition in &reading.dominant_atom_family_composition {
+            push_blank(
+                &mut examples,
+                &format!("{} atomFamily", reading.drilldown_id),
+                &composition.atom_family,
+            );
+            if composition.count == 0 || composition.atom_observation_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.drilldown_id,
+                    &composition.atom_family,
+                    "dominant atom family composition must carry positive atom evidence",
+                ));
+            }
+            for atom_ref in &composition.atom_observation_refs {
+                if !atom_ids.contains(atom_ref.as_str()) {
+                    examples.push(generic_validation_example(
+                        &reading.drilldown_id,
+                        atom_ref,
+                        "dominant atom family composition references an unknown atom observation",
+                    ));
+                }
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} composition.reading", reading.drilldown_id),
+                &composition.reading,
+            );
+        }
+        for pair in &reading.high_overlap_molecule_pairs {
+            if pair.overlap_score <= 0 {
+                examples.push(generic_validation_example(
+                    &reading.drilldown_id,
+                    &pair.pair_id,
+                    "high-overlap molecule pair score must be positive",
+                ));
+            }
+            if !molecule_ids.contains(pair.left_molecule_ref.as_str())
+                || !molecule_ids.contains(pair.right_molecule_ref.as_str())
+            {
+                examples.push(generic_validation_example(
+                    &reading.drilldown_id,
+                    &pair.pair_id,
+                    "high-overlap molecule pair must reference existing molecules",
+                ));
+            }
+            if pair.shared_atom_families.is_empty() && pair.shared_atom_refs.is_empty() {
+                examples.push(generic_validation_example(
+                    &reading.drilldown_id,
+                    &pair.pair_id,
+                    "high-overlap molecule pair must carry shared atom family or atom ref evidence",
+                ));
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} pair.boundaryAdvice", reading.drilldown_id),
+                &pair.boundary_advice,
+            );
+        }
+        if reading.repair_axis_delta_readings.is_empty() {
+            examples.push(generic_validation_example(
+                &reading.drilldown_id,
+                "repairAxisDeltaReadings",
+                "spectral drilldown must expose repair axis delta readings",
+            ));
+        }
+        for delta in &reading.repair_axis_delta_readings {
+            if !operation_ids.contains(delta.operation_delta_ref.as_str()) {
+                examples.push(generic_validation_example(
+                    &reading.drilldown_id,
+                    &delta.operation_delta_ref,
+                    "repair axis delta reading references an unknown operation delta",
+                ));
+            }
+            for axis_ref in delta
+                .positive_delta_axes
+                .iter()
+                .chain(delta.negative_delta_axes.iter())
+                .chain(delta.neutral_or_unknown_axes.iter())
+            {
+                if !axis_ids.contains(axis_ref.as_str()) {
+                    examples.push(generic_validation_example(
+                        &reading.drilldown_id,
+                        axis_ref,
+                        "repair axis delta references an unknown signature axis",
+                    ));
+                }
+            }
+            push_blank(
+                &mut examples,
+                &format!("{} repairAxisDelta.reading", reading.drilldown_id),
+                &delta.reading,
+            );
+            push_blank(
+                &mut examples,
+                &format!("{} repairAxisDelta.evidenceBoundary", reading.drilldown_id),
+                &delta.evidence_boundary,
+            );
+        }
+        push_blank(
+            &mut examples,
+            &format!("{} reading", reading.drilldown_id),
+            &reading.reading,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} evidenceBoundary", reading.drilldown_id),
+            &reading.evidence_boundary,
+        );
+        push_blank(
+            &mut examples,
+            &format!("{} recommendedNextAction", reading.drilldown_id),
+            &reading.recommended_next_action,
+        );
+    }
+    check_from_examples(
+        "archsig-analysis-packet-spectral-drilldown-surface",
+        "packet explains spectral modes through atom families, overlap pairs, and repair axis deltas",
         examples,
         "fail",
     )
