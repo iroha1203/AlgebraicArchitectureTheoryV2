@@ -646,7 +646,7 @@ fn archsig_packet_unknown_remainders(
     family_ids: &[String],
     source_ref_ids: &[String],
 ) -> Vec<OperationSupportUnknownRemainderV0> {
-    json_string_array(packet, &["flatnessReading", "blockedByCoverageGaps"])
+    let mut remainders = json_string_array(packet, &["flatnessReading", "blockedByCoverageGaps"])
         .into_iter()
         .map(|gap| OperationSupportUnknownRemainderV0 {
             remainder_id: format!("unknown:archsig-analysis:{}", stable_id(&gap)),
@@ -657,7 +657,71 @@ fn archsig_packet_unknown_remainders(
             treatment: "carry as unknown remainder; do not round to absence, measured zero, or forecast truth".to_string(),
             non_conclusions: archsig_packet_sft_non_conclusions(packet),
         })
-        .collect()
+        .collect::<Vec<_>>();
+    remainders.extend(archsig_packet_child_boundary_remainders(
+        packet,
+        family_ids,
+        source_ref_ids,
+    ));
+    remainders
+}
+
+fn archsig_packet_child_boundary_remainders(
+    packet: &serde_json::Value,
+    family_ids: &[String],
+    source_ref_ids: &[String],
+) -> Vec<OperationSupportUnknownRemainderV0> {
+    let mut remainders = Vec::new();
+    for (path, id_key, prefix) in [
+        (
+            "obstructionCircuits",
+            "obstructionCircuitId",
+            "archsig-obstruction",
+        ),
+        ("signatureAxes", "signatureAxisId", "archsig-axis"),
+        (
+            "repairOperationCandidates",
+            "repairOperationCandidateId",
+            "archsig-repair",
+        ),
+    ] {
+        for child in packet
+            .get(path)
+            .and_then(|value| value.as_array())
+            .into_iter()
+            .flatten()
+        {
+            let child_id = child
+                .get(id_key)
+                .and_then(|value| value.as_str())
+                .unwrap_or(path);
+            let mut missing = json_string_array_value(child, "missingEvidence");
+            missing.extend(
+                json_string_array_value(child, "excludedReadings")
+                    .into_iter()
+                    .map(|reading| format!("excluded reading: {reading}")),
+            );
+            if missing.is_empty() {
+                continue;
+            }
+            remainders.push(OperationSupportUnknownRemainderV0 {
+                remainder_id: format!(
+                    "unknown:archsig-analysis:{}:{}",
+                    prefix,
+                    stable_id(child_id)
+                ),
+                affected_family_ids: family_ids.to_vec(),
+                source_ref_ids: source_ref_ids.to_vec(),
+                unknown_axes: unique_strings(missing),
+                reason: format!(
+                    "ArchSig child record {child_id} carries missing evidence or excluded readings"
+                ),
+                treatment: "carry as unknown remainder; do not round child boundary to absence, measured zero, forecast truth, or repair safety".to_string(),
+                non_conclusions: archsig_packet_sft_non_conclusions(packet),
+            });
+        }
+    }
+    remainders
 }
 
 fn archsig_packet_measurement_boundary_refs(packet: &serde_json::Value) -> Vec<String> {
@@ -673,6 +737,11 @@ fn archsig_packet_measurement_boundary_refs(packet: &serde_json::Value) -> Vec<S
             .flatten()
             .filter_map(|axis| axis.get("coverageStatus")?.as_str())
             .map(|status| format!("archsigAxisCoverage:{status}")),
+    );
+    refs.extend(
+        archsig_packet_child_boundary_remainders(packet, &[], &[])
+            .into_iter()
+            .map(|remainder| remainder.remainder_id),
     );
     unique_strings(refs)
 }
